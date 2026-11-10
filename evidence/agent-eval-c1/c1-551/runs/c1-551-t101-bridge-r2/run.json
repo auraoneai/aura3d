@@ -1,0 +1,663 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t101-bridge-r2",
+  "batch": "c1-551",
+  "arm": "bridge",
+  "task": 101,
+  "slug": "spider",
+  "idx": 2,
+  "order": 2,
+  "seed": 20261108002,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T07:25:40.185Z",
+  "docsCommit": "6ee56fe804fcd0ddf1fe296a5721a7d3f685d3e1",
+  "docs": {
+    "files": 136,
+    "sha256": "58a0aaea1742fbe5a1b5c17c2bb985e5f74c3a1da17027d026e17c30229e57c1"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Pressing Space toggles the spider between walking and paused: when paused the legs and body freeze in their current pose; pressing Space again resumes the walk. Expose window.__TASK_STATE__ = { walking: boolean } and keep it up to date.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 255202,
+  "usage": {
+    "input": 1170383,
+    "uncachedInput": 1170383,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 6880,
+    "turns": 28,
+    "providerCredits": 6.198382000000002,
+    "providerCostUsd": null,
+    "modelMs": 179623,
+    "toolMs": 75579,
+    "perTurnInput": [
+      4258,
+      5617,
+      14374,
+      30650,
+      31885,
+      32139,
+      34782,
+      35481,
+      38651,
+      38795,
+      41148,
+      42508,
+      43020,
+      43291,
+      43467,
+      46512,
+      47091,
+      48418,
+      49447,
+      49879,
+      52458,
+      52776,
+      54408,
+      55679,
+      56730,
+      58359,
+      58490,
+      60070
+    ],
+    "perTurnOutput": [
+      13,
+      24,
+      55,
+      2985,
+      215,
+      52,
+      18,
+      79,
+      440,
+      5,
+      145,
+      58,
+      301,
+      51,
+      27,
+      78,
+      49,
+      29,
+      107,
+      96,
+      733,
+      71,
+      307,
+      94,
+      52,
+      489,
+      5,
+      302
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 126336,
+      "input": 393308,
+      "uncachedInput": 393308,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 4390,
+      "turns": 13,
+      "providerCredits": 2.956778000000001,
+      "providerCostUsd": null,
+      "modelMs": 102779,
+      "toolMs": 23557,
+      "perTurnInput": [
+        4258,
+        5617,
+        14374,
+        30650,
+        31885,
+        32139,
+        34782,
+        35481,
+        38651,
+        38795,
+        41148,
+        42508,
+        43020
+      ],
+      "perTurnOutput": [
+        13,
+        24,
+        55,
+        2985,
+        215,
+        52,
+        18,
+        79,
+        440,
+        5,
+        145,
+        58,
+        301
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.830516,
+        "listUsd": 0.830516,
+        "providerUsd": null,
+        "providerCredits": 2.956778,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 128866,
+      "input": 777075,
+      "uncachedInput": 777075,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 2490,
+      "turns": 15,
+      "providerCredits": 3.2416039999999993,
+      "providerCostUsd": null,
+      "modelMs": 76844,
+      "toolMs": 52022,
+      "perTurnInput": [
+        43291,
+        43467,
+        46512,
+        47091,
+        48418,
+        49447,
+        49879,
+        52458,
+        52776,
+        54408,
+        55679,
+        56730,
+        58359,
+        58490,
+        60070
+      ],
+      "perTurnOutput": [
+        51,
+        27,
+        78,
+        49,
+        29,
+        107,
+        96,
+        733,
+        71,
+        307,
+        94,
+        52,
+        489,
+        5,
+        302
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 1.57905,
+        "listUsd": 1.57905,
+        "providerUsd": null,
+        "providerCredits": 3.241604,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 2.409566,
+    "listUsd": 2.409566,
+    "providerUsd": null,
+    "providerCredits": 6.198382,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2430,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 12
+    },
+    {
+      "i": 1,
+      "t": 2430,
+      "type": "read",
+      "path": "BRIDGE.md",
+      "lines": 21
+    },
+    {
+      "i": 2,
+      "t": 4545,
+      "type": "read",
+      "path": "docs/agents/three-bridge.md",
+      "lines": 121
+    },
+    {
+      "i": 3,
+      "t": 4545,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 4,
+      "t": 4545,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 8505,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 162
+    },
+    {
+      "i": 6,
+      "t": 8505,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 7,
+      "t": 8896,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 391
+    },
+    {
+      "i": 8,
+      "t": 53958,
+      "type": "write",
+      "tool": "write_file",
+      "path": "recipes/spider.mjs",
+      "bytes": 5781
+    },
+    {
+      "i": 9,
+      "t": 65940,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 10,
+      "t": 65941,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "recipes/spider.mjs"
+    },
+    {
+      "i": 11,
+      "t": 70615,
+      "type": "bridge",
+      "name": "spider",
+      "pass": true,
+      "ms": 425
+    },
+    {
+      "i": 12,
+      "t": 72692,
+      "type": "read",
+      "path": "src/three-bridge/spider.scene.ts",
+      "lines": 16
+    },
+    {
+      "i": 13,
+      "t": 72693,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 14,
+      "t": 77410,
+      "type": "read",
+      "path": "src/three-bridge/spider.bridge.ts",
+      "lines": 40
+    },
+    {
+      "i": 15,
+      "t": 77414,
+      "type": "search",
+      "pattern": "export (const|function)"
+    },
+    {
+      "i": 16,
+      "t": 82646,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/three-bridge/spider.scene.ts",
+      "bytes": 945
+    },
+    {
+      "i": 17,
+      "t": 82646,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 300
+    },
+    {
+      "i": 18,
+      "t": 96410,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10852
+    },
+    {
+      "i": 19,
+      "t": 102593,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/three-bridge/spider.scene.ts"
+    },
+    {
+      "i": 20,
+      "t": 113809,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11216
+    },
+    {
+      "i": 21,
+      "t": 121227,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 22,
+      "t": 126336,
+      "type": "finish"
+    },
+    {
+      "i": 23,
+      "t": 130975,
+      "type": "search",
+      "pattern": "interface AuraActorAnimationApi"
+    },
+    {
+      "i": 24,
+      "t": 133389,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/animation.d.ts",
+      "lines": 150
+    },
+    {
+      "i": 25,
+      "t": 138227,
+      "type": "search",
+      "pattern": "play\\(|setAnimationSpeed|timeScale|pause|speed"
+    },
+    {
+      "i": 26,
+      "t": 140874,
+      "type": "search",
+      "pattern": "interface AuraAnimationSpec"
+    },
+    {
+      "i": 27,
+      "t": 140874,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 28,
+      "t": 143262,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 29,
+      "t": 149756,
+      "type": "search",
+      "pattern": "key|press|--"
+    },
+    {
+      "i": 30,
+      "t": 155006,
+      "type": "search",
+      "pattern": "speed: 0|speed:0|frozen|freeze|pause the (clip|anim)"
+    },
+    {
+      "i": 31,
+      "t": 166429,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1747
+    },
+    {
+      "i": 32,
+      "t": 166868,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 33,
+      "t": 171141,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 183106,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11965
+    },
+    {
+      "i": 35,
+      "t": 190749,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 36,
+      "t": 190750,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 37,
+      "t": 201887,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11137
+    },
+    {
+      "i": 38,
+      "t": 206691,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 39,
+      "t": 212834,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 6143
+    },
+    {
+      "i": 40,
+      "t": 230487,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10843
+    },
+    {
+      "i": 41,
+      "t": 236263,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1372
+    },
+    {
+      "i": 42,
+      "t": 236648,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 43,
+      "t": 250087,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 11017
+    },
+    {
+      "i": 44,
+      "t": 255661,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [
+    {
+      "name": "spider",
+      "pass": true,
+      "ms": 425
+    }
+  ],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 391
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10852
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11216
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11965
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11137
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 6143
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10843
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 11017
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/three-bridge.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/animation.d.ts"
+  ],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Space now toggles the spider between walking and paused. Typecheck passes and the final render draws the spider without errors. I couldn't press Space in the headless render. Instead I tested the pause and resume path with a temporary timer, which I then removed.\n\n- **Mechanism:** the engine has no direct pause for a clip. So `src/main.ts` restarts the looping `spider_walk` clip at its current time, with speed 0 to pause and speed 1 to resume.\n- **Timer test:** the clip time stayed fixed at about 1.12 s for about a second while paused. After resume it advanced from about 1.12 s to about 1.56 s over the next 0.48 s of real time.\n- **Pause behaviour:** the legs and body freeze in their current pose, and pressing Space again continues from that same pose.\n- **Key handling:** the handler ignores key repeat, so holding Space doesn't flicker.\n- **State:** `window.__TASK_STATE__` is `{ walking: true }` at start and is replaced with the new value on every toggle.\n- **Render warning:** the final render still logs a low-texture `FRAME_EMPTY` warning, as the earlier renders did. The screenshot shows the spider clearly."
+}

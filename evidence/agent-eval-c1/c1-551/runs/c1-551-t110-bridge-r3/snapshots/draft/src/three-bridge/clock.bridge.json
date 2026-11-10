@@ -1,0 +1,79 @@
+{
+  "bridgeVersion": 1,
+  "name": "clock",
+  "generator": {
+    "path": "recipes/clock.mjs",
+    "sha256": "10730c8e59ad45874ed1b92b6f59367c5cc72b26ab45675c7ef3f87c9e73d73d",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "wood": "#6b3d1e",
+    "face": "#efe3c4",
+    "brass": "#c9a24a",
+    "includeMoving": false
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/clock.glb",
+    "sha256": "ff6298804c2ececaa84e82a636bcdb512cc44a30380b69b8d2ce03255c8cf6bc",
+    "bytes": 103736
+  },
+  "nodeIds": [
+    "floor_plane",
+    "wall_plane",
+    "skirting",
+    "clock",
+    "clock__plinth",
+    "clock__plinth_cap",
+    "clock__trunk_back",
+    "clock__trunk_side_l",
+    "clock__trunk_side_r",
+    "clock__rail_bottom",
+    "clock__rail_top",
+    "clock__glass_pane",
+    "clock__trim_bottom",
+    "clock__trim_top",
+    "clock__hood",
+    "clock__hood_cornice",
+    "clock__hood_crown",
+    "clock__finial",
+    "clock__bezel",
+    "clock__dial",
+    "clock__hour_mark_12",
+    "clock__hour_mark_1",
+    "clock__hour_mark_2",
+    "clock__hour_mark_3",
+    "clock__hour_mark_4",
+    "clock__hour_mark_5",
+    "clock__hour_mark_6",
+    "clock__hour_mark_7",
+    "clock__hour_mark_8",
+    "clock__hour_mark_9",
+    "clock__hour_mark_10",
+    "clock__hour_mark_11",
+    "clock__inner_glow",
+    "hemi",
+    "lamp",
+    "key"
+  ],
+  "materials": [
+    "floor",
+    "wall",
+    "dark_wood",
+    "wood",
+    "interior",
+    "glass",
+    "brass",
+    "face",
+    "ink"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 16,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

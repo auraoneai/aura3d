@@ -1,0 +1,552 @@
+import {
+  camera,
+  createAuraApp,
+  effects,
+  environments,
+  geometry,
+  group,
+  lights,
+  material,
+  primitives,
+  scene,
+  texture,
+  type AuraMaterialSpec
+} from "@aura3d/engine";
+
+type V3 = [number, number, number];
+
+declare global {
+  interface Window {
+    __TASK_STATE__?: { turntableAngleDeg: number; paintFinish: string; paintColor: "red" | "blue" | "black" };
+    __EVAL_READY__?: boolean;
+  }
+}
+
+const TURNTABLE_DEG_PER_SEC = 20;
+
+// ---------------------------------------------------------------------------
+// Procedural geometry
+// ---------------------------------------------------------------------------
+
+/** Rounded-box style signed power, used for the superellipse cross sections. */
+const spow = (v: number, e: number): number => Math.sign(v) * Math.pow(Math.abs(v), e);
+
+interface BodyShape {
+  length: number;
+  halfWidth: number;
+  halfHeight: number;
+  centerY: number;
+  centerX: number;
+  /** superellipse exponent of the cross section (2 = ellipse, higher = boxier) */
+  squareness: number;
+  /** taper exponents for front (+x) and rear (-x) */
+  frontP: number;
+  rearP: number;
+  /** vertical shift along the length, positive raises the front */
+  pitch: number;
+  /** uv tiling along length / around the section */
+  uvRepeat: [number, number];
+}
+
+const taper = (t: number, shape: BodyShape): number => {
+  const p = t >= 0 ? shape.frontP : shape.rearP;
+  return Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(t), p)));
+};
+
+/** Point on a lofted superellipse body. t in [-1, 1] along x, phi around the x axis. */
+const bodyPoint = (shape: BodyShape, t: number, phi: number): V3 => {
+  const s = taper(t, shape);
+  const c = Math.cos(phi);
+  const sn = Math.sin(phi);
+  const e = 2 / shape.squareness;
+  const x = shape.centerX + t * shape.length * 0.5;
+  // roof side is a little fuller than the floor side so the underside tucks up
+  const hv = sn > 0 ? 1 : 0.7;
+  const y = shape.centerY + shape.pitch * t + shape.halfHeight * Math.pow(s, 0.85) * spow(sn, e) * hv;
+  const z = shape.halfWidth * s * spow(c, e);
+  return [x, y, z];
+};
+
+const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a: V3, b: V3): V3 => [
+  a[1] * b[2] - a[2] * b[1],
+  a[2] * b[0] - a[0] * b[2],
+  a[0] * b[1] - a[1] * b[0]
+];
+const norm = (a: V3): V3 => {
+  const l = Math.hypot(a[0], a[1], a[2]) || 1;
+  return [a[0] / l, a[1] / l, a[2] / l];
+};
+
+const buildBody = (shape: BodyShape, nu = 96, nv = 64) => {
+  const positions = new Float32Array((nu + 1) * (nv + 1) * 3);
+  const normals = new Float32Array((nu + 1) * (nv + 1) * 3);
+  const uvs = new Float32Array((nu + 1) * (nv + 1) * 2);
+  const indices: number[] = [];
+  const lo = 0.004;
+  const hi = 0.996;
+  const du = 0.004;
+  const dv = 0.01;
+  const min: V3 = [1e9, 1e9, 1e9];
+  const max: V3 = [-1e9, -1e9, -1e9];
+  for (let j = 0; j <= nu; j += 1) {
+    // cosine spacing keeps the vertices dense near the rounded ends
+    const uu = lo + (hi - lo) * (0.5 - 0.5 * Math.cos((j / nu) * Math.PI));
+    const t = uu * 2 - 1;
+    for (let i = 0; i <= nv; i += 1) {
+      const phi = (i / nv) * Math.PI * 2;
+      const p = bodyPoint(shape, t, phi);
+      const tu = (t2: number) => bodyPoint(shape, Math.min(1 - lo * 2, Math.max(-1 + lo * 2, t2)), phi);
+      const dT = sub(tu(t + du), tu(t - du));
+      const dP = sub(bodyPoint(shape, t, phi + dv), bodyPoint(shape, t, phi - dv));
+      // dP x dT points outward for this parameterisation
+      const n = norm(cross(dT, dP));
+      const k = j * (nv + 1) + i;
+      positions.set(p, k * 3);
+      normals.set(n, k * 3);
+      uvs.set([uu * shape.uvRepeat[0], (i / nv) * shape.uvRepeat[1]], k * 2);
+      for (let a = 0; a < 3; a += 1) {
+        min[a] = Math.min(min[a]!, p[a]!);
+        max[a] = Math.max(max[a]!, p[a]!);
+      }
+      if (i < nv && j < nu) {
+        const v = k;
+        indices.push(v, v + nv + 1, v + 1, v + 1, v + nv + 1, v + nv + 2);
+      }
+    }
+  }
+  return geometry.define({ positions, normals, indices, uvs, bounds: { min, max } });
+};
+
+/** Round tube swept along a path of points (open or closed). */
+const buildTube = (path: V3[], radius: number, closed: boolean, sides = 10) => {
+  const n = path.length;
+  const positions = new Float32Array(n * (sides + 1) * 3);
+  const normals = new Float32Array(n * (sides + 1) * 3);
+  const indices: number[] = [];
+  const min: V3 = [1e9, 1e9, 1e9];
+  const max: V3 = [-1e9, -1e9, -1e9];
+  for (let a = 0; a < n; a += 1) {
+    const prev = path[closed ? (a + n - 1) % n : Math.max(0, a - 1)]!;
+    const next = path[closed ? (a + 1) % n : Math.min(n - 1, a + 1)]!;
+    const T = norm(sub(next, prev));
+    const ref: V3 = Math.abs(T[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const N = norm(cross(T, ref));
+    const B = cross(T, N);
+    for (let s = 0; s <= sides; s += 1) {
+      const ang = (s / sides) * Math.PI * 2;
+      const nx = N[0] * Math.cos(ang) + B[0] * Math.sin(ang);
+      const ny = N[1] * Math.cos(ang) + B[1] * Math.sin(ang);
+      const nz = N[2] * Math.cos(ang) + B[2] * Math.sin(ang);
+      const p: V3 = [path[a]![0] + nx * radius, path[a]![1] + ny * radius, path[a]![2] + nz * radius];
+      const k = a * (sides + 1) + s;
+      positions.set(p, k * 3);
+      normals.set([nx, ny, nz], k * 3);
+      for (let q = 0; q < 3; q += 1) {
+        min[q] = Math.min(min[q]!, p[q]!);
+        max[q] = Math.max(max[q]!, p[q]!);
+      }
+      const last = closed ? a < n : a < n - 1;
+      if (s < sides && last) {
+        const a2 = (a + 1) % n;
+        const k2 = a2 * (sides + 1) + s;
+        indices.push(k, k2, k + 1, k + 1, k2, k2 + 1);
+      }
+    }
+  }
+  return geometry.define({ positions, normals, indices, bounds: { min, max } });
+};
+
+// ---------------------------------------------------------------------------
+// Metallic flake normal map (generated in code)
+// ---------------------------------------------------------------------------
+
+const makeFlakeNormalMap = () => {
+  const size = 256;
+  const data = new Uint8Array(size * size * 4);
+  let seed = 1337;
+  const rnd = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  for (let i = 0; i < size * size; i += 1) {
+    let nx = (rnd() - 0.5) * 0.06;
+    let ny = (rnd() - 0.5) * 0.06;
+    if (rnd() < 0.55) {
+      // a metal flake: a randomly tilted facet
+      const a = rnd() * Math.PI * 2;
+      const tilt = 0.35 + rnd() * 0.65;
+      nx = Math.cos(a) * tilt;
+      ny = Math.sin(a) * tilt;
+    }
+    const nz = Math.sqrt(Math.max(0.0001, 1 - nx * nx - ny * ny));
+    data[i * 4] = Math.round((nx * 0.5 + 0.5) * 255);
+    data[i * 4 + 1] = Math.round((ny * 0.5 + 0.5) * 255);
+    data[i * 4 + 2] = Math.round((nz * 0.5 + 0.5) * 255);
+    data[i * 4 + 3] = 255;
+  }
+  const tex = texture.data({ width: size, height: size, data, format: "rgba8", colorSpace: "linear" });
+  tex.wrapS = "repeat";
+  tex.wrapT = "repeat";
+  tex.generateMipmaps = true;
+  tex.minFilter = "linear-mipmap-linear";
+  tex.magFilter = "linear";
+  tex.needsUpdate = true;
+  return tex;
+};
+
+// ---------------------------------------------------------------------------
+// Object definition
+// ---------------------------------------------------------------------------
+
+const bodyShape: BodyShape = {
+  length: 3.7,
+  halfWidth: 0.8,
+  halfHeight: 0.52,
+  centerY: 0.7,
+  centerX: 0,
+  squareness: 2.6,
+  frontP: 2.3,
+  rearP: 3.0,
+  pitch: -0.07,
+  uvRepeat: [10, 5]
+};
+
+const cabinShape: BodyShape = {
+  length: 1.75,
+  halfWidth: 0.6,
+  halfHeight: 0.4,
+  centerY: 1.1,
+  centerX: -0.22,
+  squareness: 2.4,
+  frontP: 2.0,
+  rearP: 2.4,
+  pitch: 0,
+  uvRepeat: [4, 3]
+};
+
+const flakeMap = makeFlakeNormalMap();
+
+type PaintColor = "red" | "blue" | "black";
+
+// Only the base colour (and its metallic weight) differs between finishes; clearcoat, flakes and the rest are shared.
+const PAINTS: Record<PaintColor, { color: string; metallic: number; label: string }> = {
+  red: { color: "#8a0415", metallic: 0.3, label: "Red" },
+  blue: { color: "#06226f", metallic: 0.5, label: "Blue" },
+  black: { color: "#040405", metallic: 0.2, label: "Black" }
+};
+
+const makePaint = (c: PaintColor): AuraMaterialSpec =>
+  material.physical({
+    name: `${c} car paint`,
+    color: PAINTS[c].color,
+    metallic: PAINTS[c].metallic,
+    roughness: 0.32,
+    clearcoat: 1,
+    clearcoatRoughness: 0.025,
+    envMapIntensity: 1.4,
+    normal: flakeMap,
+    normalScale: 0.22,
+    ior: 1.5
+  });
+
+const mirrorPaint = (m: AuraMaterialSpec): AuraMaterialSpec => ({ ...m, envMapIntensity: 0.6, doubleSided: true });
+
+const candyRed = makePaint("red");
+
+const blackGlass = material.physical({
+  name: "cabin glass",
+  color: "#030407",
+  metallic: 0,
+  roughness: 0.08,
+  clearcoat: 1,
+  clearcoatRoughness: 0.01,
+  envMapIntensity: 1.0
+});
+
+const chrome = material.pbr({ name: "chrome", color: "#e8edf5", metallic: 1, roughness: 0.04, envMapIntensity: 1.8 });
+const rubber = material.pbr({ name: "rubber", color: "#050506", metallic: 0, roughness: 0.95, envMapIntensity: 0.25 });
+
+const bodyGeo = buildBody(bodyShape);
+const cabinGeo = buildBody(cabinShape, 72, 56);
+
+// chrome belt-line strips along both flanks
+const beltPath = (side: 1 | -1): V3[] => {
+  const pts: V3[] = [];
+  for (let i = 0; i <= 60; i += 1) {
+    const t = -0.86 + (1.72 * i) / 60;
+    const p = bodyPoint(bodyShape, t, side > 0 ? 0 : Math.PI);
+    pts.push([p[0], p[1] + 0.005, p[2] * 1.004]);
+  }
+  return pts;
+};
+
+const sectionLoop = (shape: BodyShape, t: number, grow: number, phiFrom = 0, phiTo = Math.PI * 2, n = 72): V3[] => {
+  const pts: V3[] = [];
+  for (let i = 0; i <= n; i += 1) {
+    const phi = phiFrom + ((phiTo - phiFrom) * i) / n;
+    const p = bodyPoint(shape, t, phi);
+    const c: V3 = [shape.centerX + t * shape.length * 0.5, shape.centerY + shape.pitch * t, 0];
+    pts.push([p[0], c[1] + (p[1] - c[1]) * grow, p[2] * grow]);
+  }
+  return pts;
+};
+
+const stripFront = buildTube(sectionLoop(bodyShape, 0.8, 1.004, 0, Math.PI * 2, 80).slice(0, 80), 0.017, true);
+const stripRear = buildTube(sectionLoop(bodyShape, -0.8, 1.004, 0, Math.PI * 2, 80).slice(0, 80), 0.017, true);
+const beltL = buildTube(beltPath(1), 0.014, false);
+const beltR = buildTube(beltPath(-1), 0.014, false);
+// window frame: thin chrome line around the cabin's lower edge where glass meets paint
+const cabinFrame = buildTube(sectionLoop(cabinShape, 0.0, 1.003, 0, Math.PI, 60), 0.012, false);
+
+const frontLampT = (z: number) => Math.pow(1 - Math.pow(z / bodyShape.halfWidth, 2), 1 / bodyShape.frontP);
+const rearLampT = (z: number) => -Math.pow(1 - Math.pow(z / bodyShape.halfWidth, 2), 1 / bodyShape.rearP);
+
+const WHEEL_X = 1.12;
+const WHEEL_Z = 0.66;
+const WHEEL_R = 0.36;
+
+interface Mats {
+  paint: AuraMaterialSpec;
+  glass: AuraMaterialSpec;
+  chrome: AuraMaterialSpec;
+  rubber: AuraMaterialSpec;
+  lamp: AuraMaterialSpec;
+  tail: AuraMaterialSpec;
+}
+
+const wheelNodes = (m: Mats, sfx: string) => {
+  const chrome = m.chrome;
+  const rubber = m.rubber;
+  const out = [];
+  for (const sx of [1, -1]) {
+    for (const sz of [1, -1]) {
+      const px = sx * WHEEL_X;
+      const pz = sz * WHEEL_Z;
+      out.push(
+        primitives
+          .cylinder({ name: `tire-${sx}-${sz}${sfx}`, size: [WHEEL_R * 2, 0.26, WHEEL_R * 2], material: rubber })
+          .position(px, WHEEL_R, pz)
+          .rotate(Math.PI / 2, 0, 0)
+      );
+      out.push(
+        primitives
+          .cylinder({ name: `rim-${sx}-${sz}${sfx}`, size: [WHEEL_R * 1.0, 0.275, WHEEL_R * 1.0], material: chrome })
+          .position(px, WHEEL_R, pz)
+          .rotate(Math.PI / 2, 0, 0)
+      );
+      out.push(
+        primitives
+          .cylinder({ name: `hub-${sx}-${sz}${sfx}`, size: [WHEEL_R * 0.5, 0.285, WHEEL_R * 0.5], material: rubber })
+          .position(px, WHEEL_R, pz)
+          .rotate(Math.PI / 2, 0, 0)
+      );
+    }
+  }
+  return out;
+};
+
+const lampMat = material.pbr({ name: "headlamp", color: "#ffffff", emissive: "#dfeaff", emissiveIntensity: 2.2, roughness: 0.2 });
+const tailMat = material.pbr({ name: "taillamp", color: "#ff2030", emissive: "#ff1020", emissiveIntensity: 1.8, roughness: 0.2 });
+
+const lamps = (m: Mats, sfx: string) => {
+  const lampMat = m.lamp;
+  const tailMat = m.tail;
+  const out = [];
+  for (const sz of [1, -1]) {
+    const z = 0.46;
+    const tf = frontLampT(z);
+    const fp = bodyPoint(bodyShape, tf, 0);
+    out.push(
+      primitives
+        .sphere({ name: `head-${sz}${sfx}`, size: [0.2, 0.1, 0.2], material: lampMat })
+        .position(fp[0] - 0.03, fp[1] + 0.03, sz * z)
+    );
+    const tr = rearLampT(z);
+    const rp = bodyPoint(bodyShape, tr, 0);
+    out.push(
+      primitives
+        .sphere({ name: `tail-${sz}${sfx}`, size: [0.16, 0.07, 0.24], material: tailMat })
+        .position(rp[0] + 0.03, rp[1] + 0.06, sz * z)
+    );
+  }
+  return out;
+};
+
+// platform marks so the rotation is readable on the turntable
+const ticks = () => {
+  const out = [];
+  const n = 36;
+  for (let i = 0; i < n; i += 1) {
+    const a = (i / n) * Math.PI * 2;
+    const major = i % 9 === 0;
+    const r = 2.3;
+    out.push(
+      primitives
+        .box({
+          name: `tick-${i}`,
+          size: [major ? 0.2 : 0.09, 0.012, 0.025],
+          material: major
+            ? material.pbr({ color: "#c8d6ee", metallic: 1, roughness: 0.15 })
+            : material.pbr({ color: "#4a5262", metallic: 1, roughness: 0.25 })
+        })
+        .position(Math.cos(a) * r, 0.006, Math.sin(a) * r)
+        .rotate(0, -a, 0)
+    );
+  }
+  return out;
+};
+
+const carParts = (m: Mats, sfx: string) => [
+  geometry.custom(bodyGeo, { name: `body${sfx}`, material: m.paint }).runtime({ id: `car-body${sfx}`, mutable: true }),
+  geometry.custom(cabinGeo, { name: `cabin${sfx}`, material: m.glass }),
+  geometry.custom(stripFront, { name: `chrome bumper front${sfx}`, material: m.chrome }),
+  geometry.custom(stripRear, { name: `chrome bumper rear${sfx}`, material: m.chrome }),
+  geometry.custom(beltL, { name: `chrome belt L${sfx}`, material: m.chrome }),
+  geometry.custom(beltR, { name: `chrome belt R${sfx}`, material: m.chrome }),
+  geometry.custom(cabinFrame, { name: `chrome cabin frame${sfx}`, material: m.chrome }),
+  ...wheelNodes(m, sfx),
+  ...lamps(m, sfx)
+];
+
+const realMats: Mats = { paint: candyRed, glass: blackGlass, chrome, rubber, lamp: lampMat, tail: tailMat };
+const dbl = (s: AuraMaterialSpec): AuraMaterialSpec => ({ ...s, doubleSided: true });
+const mirrorMats: Mats = {
+  paint: mirrorPaint(candyRed),
+  glass: dbl({ ...blackGlass, envMapIntensity: 0.5 }),
+  chrome: dbl({ ...chrome, envMapIntensity: 0.4 }),
+  rubber: dbl(rubber),
+  lamp: dbl(lampMat),
+  tail: dbl(tailMat)
+};
+
+const carGroup = group(
+  "turntable-top",
+  [
+    ...carParts(realMats, ""),
+    primitives.cylinder({
+      name: "contact shadow",
+      size: [3.7, 0.004, 1.9],
+      material: material.pbr({ color: "#000000", opacity: 0.55, alphaMode: "blend", roughness: 1, envMapIntensity: 0 }),
+      castShadow: false
+    }).position(0, 0.004, 0),
+    ...ticks()
+  ],
+  { position: [0, 0, 0] }
+).runtime({
+  id: "turntable-top",
+  mutable: true
+});
+
+// mirrored copy below the glass platform top gives the faint floor reflection
+const mirrorGroup = group("turntable-mirror", carParts(mirrorMats, "-m"), { position: [0, -0.03, 0], scale: [1, -1, 1] }).runtime({
+  id: "turntable-mirror",
+  mutable: true
+});
+
+// ---------------------------------------------------------------------------
+// Scene
+// ---------------------------------------------------------------------------
+
+const ringPath = (radius: number, y: number, n = 120): V3[] => {
+  const pts: V3[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const a = (i / n) * Math.PI * 2;
+    pts.push([Math.cos(a) * radius, y, Math.sin(a) * radius]);
+  }
+  return pts;
+};
+const edgeGeo = buildTube(ringPath(2.52, -0.02), 0.04, true, 14);
+const ringLightGeo = buildTube(ringPath(2.52, -0.1), 0.035, true, 12);
+
+const app = createAuraApp("#app", {
+  scene: scene({ background: "#04050a" })
+    .add(environments.studio({ preset: "softbox", intensity: 0.7, background: false, rotation: 0.6 }))
+    // faint cool rim light from behind
+    .add(lights.directional({ name: "rim", position: [-3, 2.5, -5], target: [0, 0.6, 0], intensity: 1.4, color: "#9cc4ff" }))
+    .add(lights.directional({ name: "key", position: [3, 5, 4], target: [0, 0.4, 0], intensity: 0.25, color: "#fff4e8" }))
+    // ring light: glowing cool ring under the platform lip
+    .add(
+      geometry.custom(ringLightGeo, {
+        name: "ring light",
+        material: material.pbr({ color: "#bcd6ff", emissive: "#7fb2ff", emissiveIntensity: 1.4, roughness: 0.5 })
+      })
+    )
+    .add(geometry.custom(edgeGeo, { name: "platform chrome edge", material: chrome }))
+    // mirrored copy, seen through the glossy glass platform top
+    .add(mirrorGroup)
+    .add(
+      primitives.cylinder({
+        name: "platform top",
+        size: [5.04, 0.02, 5.04],
+        material: material.physical({
+          color: "#06080d",
+          metallic: 0,
+          roughness: 0.55,
+          specularIntensity: 0.35,
+          opacity: 0.8,
+          alphaMode: "blend",
+          clearcoat: 0,
+          clearcoatRoughness: 0.03,
+        }),
+        castShadow: false
+      }).position(0, -0.011, 0)
+    )
+    .add(carGroup)
+    .add(effects.bloom({ intensity: 0.25, threshold: 1.6, radius: 0.4 }))
+    .camera(camera.perspective({ position: [3.6, 1.45, 4.3], target: [0, 0.3, 0], fov: 34 }))
+});
+
+let paintColor: PaintColor = "red";
+const writeState = (deg: number) => {
+  window.__TASK_STATE__ = { turntableAngleDeg: deg, paintFinish: "clearcoat", paintColor };
+};
+writeState(0);
+
+const setPaint = (c: PaintColor) => {
+  paintColor = c;
+  const paint = makePaint(c);
+  try {
+    app.nodes.require("car-body").setMaterial(paint);
+    app.nodes.require("car-body-m").setMaterial(mirrorPaint(paint));
+  } catch (error) {
+    console.error("repaint failed", error);
+  }
+  for (const [key, btn] of buttons) btn.setAttribute("aria-pressed", String(key === c));
+};
+
+// DOM buttons below the canvas (outside it)
+const buttons = new Map<PaintColor, HTMLButtonElement>();
+const bar = document.createElement("div");
+bar.style.cssText = "display:flex;gap:8px;padding:8px;width:640px;box-sizing:border-box";
+for (const key of ["red", "blue", "black"] as const) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = PAINTS[key].label;
+  btn.id = `paint-${key}`;
+  btn.style.cssText = "padding:6px 16px;cursor:pointer;border:2px solid #555;border-radius:4px;background:#1a1c22;color:#fff;font:inherit";
+  btn.addEventListener("click", () => setPaint(key));
+  buttons.set(key, btn);
+  bar.appendChild(btn);
+}
+document.head.appendChild(
+  Object.assign(document.createElement("style"), { textContent: 'button[aria-pressed="true"]{border-color:#fff !important;background:#343846 !important}' })
+);
+document.body.appendChild(bar);
+buttons.get("red")?.setAttribute("aria-pressed", "true");
+
+let flagged = false;
+app.onFrame((f) => {
+  const deg = f.time * TURNTABLE_DEG_PER_SEC;
+  app.nodes.require("turntable-top").setRotation(0, (deg * Math.PI) / 180, 0);
+  app.nodes.require("turntable-mirror").setRotation(0, (deg * Math.PI) / 180, 0);
+  writeState(deg);
+  if (!flagged) {
+    flagged = true;
+    requestAnimationFrame(() => {
+      window.__EVAL_READY__ = true;
+    });
+  }
+});
+
+void app.ready();

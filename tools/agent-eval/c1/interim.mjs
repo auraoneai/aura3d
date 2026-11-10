@@ -114,7 +114,7 @@ async function main() {
     }
     if (appended && git) {
       try {
-        execFileSync("git", ["add", outFile, join(batchDir, "runs"), join(batchDir, "frames"), join(batchDir, "c1-score.json")], { cwd: REPO, stdio: "ignore" });
+        execFileSync("git", ["add", "-f", outFile, join(batchDir, "runs"), join(batchDir, "frames"), join(batchDir, "c1-score.json")], { cwd: REPO, stdio: "ignore" });
         execFileSync("git", ["commit", "-q", "-m", `agent-eval C1 interim: ${done.size} task replicate(s) complete in ${batch}\n\nCo-Authored-By: Claude <noreply@anthropic.com>`], { cwd: REPO, stdio: "ignore" });
         execFileSync("git", ["push", "-q", "-o", "ci.skip", "origin", `${branch}:refs/heads/${branch}`], { cwd: REPO, stdio: "ignore" });
       } catch (error) {

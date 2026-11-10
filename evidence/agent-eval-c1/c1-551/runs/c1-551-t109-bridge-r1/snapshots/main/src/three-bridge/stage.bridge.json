@@ -1,0 +1,37 @@
+{
+  "bridgeVersion": 1,
+  "name": "stage",
+  "generator": {
+    "path": "recipes/stage.mjs",
+    "sha256": "4fa5e38d6241c3b13a3667afac34314e8ea3f410b20151c88b3d7729e1e0b50a",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 2.4
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/stage.glb",
+    "sha256": "5d76818ee752a9e364683ea99108e6cf0951ff657b79964c15e80f7a027e4932",
+    "bytes": 261672
+  },
+  "nodeIds": [
+    "floor_bezel",
+    "chrome_rim",
+    "ring_light"
+  ],
+  "materials": [
+    "showroom_floor",
+    "bezel_chrome",
+    "ring_light"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 5,
+    "approximated": 1,
+    "unsupported": 0
+  }
+}

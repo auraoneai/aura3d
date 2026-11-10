@@ -1,0 +1,90 @@
+{
+  "bridgeVersion": 1,
+  "name": "showroom",
+  "generator": {
+    "path": "recipes/showroom.mjs",
+    "sha256": "9cc9269d5a90fe5248ec420d8697ea36583de16531dc8fe5f414d7a889a71b2f",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "paint": "#c4001d"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/showroom.glb",
+    "sha256": "d02f3b87486647a3c561ddd9b83a7407a4136a058b4add8381958856187a01eb",
+    "bytes": 1515824
+  },
+  "nodeIds": [
+    "turntable",
+    "turntable__car",
+    "turntable__car__body",
+    "turntable__car__cabin",
+    "turntable__car__glass",
+    "turntable__car__beltTrim",
+    "turntable__car__bumperFront",
+    "turntable__car__bumperRear",
+    "turntable__car__tire_fr",
+    "turntable__car__hub_fr",
+    "turntable__car__rimRing_fr",
+    "turntable__car__cap_fr",
+    "turntable__car__tire_fl",
+    "turntable__car__hub_fl",
+    "turntable__car__rimRing_fl",
+    "turntable__car__cap_fl",
+    "turntable__car__tire_rr",
+    "turntable__car__hub_rr",
+    "turntable__car__rimRing_rr",
+    "turntable__car__cap_rr",
+    "turntable__car__tire_rl",
+    "turntable__car__hub_rl",
+    "turntable__car__rimRing_rl",
+    "turntable__car__cap_rl",
+    "turntable__reflection",
+    "turntable__reflection__mirror_body",
+    "turntable__reflection__mirror_cabin",
+    "turntable__reflection__mirror_glass",
+    "turntable__reflection__mirror_beltTrim",
+    "turntable__reflection__mirror_bumperFront",
+    "turntable__reflection__mirror_bumperRear",
+    "turntable__reflection__mirror_tire_fr",
+    "turntable__reflection__mirror_hub_fr",
+    "turntable__reflection__mirror_rimRing_fr",
+    "turntable__reflection__mirror_cap_fr",
+    "turntable__reflection__mirror_tire_fl",
+    "turntable__reflection__mirror_hub_fl",
+    "turntable__reflection__mirror_rimRing_fl",
+    "turntable__reflection__mirror_cap_fl",
+    "turntable__reflection__mirror_tire_rr",
+    "turntable__reflection__mirror_hub_rr",
+    "turntable__reflection__mirror_rimRing_rr",
+    "turntable__reflection__mirror_cap_rr",
+    "turntable__reflection__mirror_tire_rl",
+    "turntable__reflection__mirror_hub_rl",
+    "turntable__reflection__mirror_rimRing_rl",
+    "turntable__reflection__mirror_cap_rl",
+    "turntable__floorDisc",
+    "turntable__platformWall",
+    "turntable__platformLip",
+    "turntable__ringLight"
+  ],
+  "materials": [
+    "paint",
+    "glass",
+    "chrome",
+    "rubber",
+    "rim",
+    "floor",
+    "platformEdge",
+    "ringLight"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 10,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

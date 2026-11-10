@@ -1,0 +1,40 @@
+{
+  "bridgeVersion": 1,
+  "name": "studio",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "4dec0f34f856a0d447adddeefcff6334116c8d13b57c5f83f90742d387854387",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.8,
+    "spacing": 2.2
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/studio.glb",
+    "sha256": "21a1a0733cda47e542fd688b83f6e4954e880fa5dc6450755179a14b790e96ab",
+    "bytes": 819308
+  },
+  "nodeIds": [
+    "cyclorama",
+    "glass",
+    "metal",
+    "fabric"
+  ],
+  "materials": [
+    "cyclorama",
+    "glass",
+    "metal",
+    "fabric"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 7,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

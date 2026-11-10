@@ -1,0 +1,35 @@
+{
+  "bridgeVersion": 1,
+  "name": "glass",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "f69b219f76bb92e6010211ad9569abea7a74fbc92f3b72c9ef217eace6b731b9",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.8,
+    "spacing": 2.2,
+    "part": "glass"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/glass.glb",
+    "sha256": "fef647eb67166b051b85a28803ac10ce3550bcd71d53112eb932321777764b11",
+    "bytes": 275728
+  },
+  "nodeIds": [
+    "glass"
+  ],
+  "materials": [
+    "glass"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 2,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

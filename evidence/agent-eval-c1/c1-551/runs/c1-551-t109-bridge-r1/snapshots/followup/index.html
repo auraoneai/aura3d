@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eval app</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }
+      #app { display: block; width: 640px; height: 360px; }
+      #paint-buttons { display: flex; gap: 8px; padding: 8px; }
+      #paint-buttons button { padding: 6px 18px; font: inherit; color: #fff; background: #1b1d23; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
+      #paint-buttons button[aria-pressed="true"] { border-color: #fff; background: #3a3d46; }
+    </style>
+  </head>
+  <body>
+    <canvas id="app" width="640" height="360"></canvas>
+    <div id="paint-buttons" role="group" aria-label="Paint colour">
+      <button type="button" data-paint="red" aria-pressed="true">Red</button>
+      <button type="button" data-paint="blue" aria-pressed="false">Blue</button>
+      <button type="button" data-paint="black" aria-pressed="false">Black</button>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

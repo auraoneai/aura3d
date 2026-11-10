@@ -1,0 +1,65 @@
+{
+  "bridgeVersion": 1,
+  "name": "car",
+  "generator": {
+    "path": "recipes/car.mjs",
+    "sha256": "33d4301457e7db60be436ecb5c4459ced677402880416ffadbbe59bd36d70312",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "paint": "#8e0616",
+    "length": 1.95,
+    "width": 0.86,
+    "height": 0.5
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/car.glb",
+    "sha256": "e06e7a78e325ab24f2b7ef4bb3bfdc2159f5232cdcd45a66f9e126188f4498d5",
+    "bytes": 1000200
+  },
+  "nodeIds": [
+    "car",
+    "car__body",
+    "car__cabin",
+    "car__trim_left",
+    "car__trim_right",
+    "car__headlamp_left",
+    "car__taillamp_left",
+    "car__headlamp_right",
+    "car__taillamp_right",
+    "car__wheel_fl",
+    "car__wheel_fl__tyre_fl",
+    "car__wheel_fl__rim_fl",
+    "car__wheel_fl__hub_fl",
+    "car__wheel_fr",
+    "car__wheel_fr__tyre_fr",
+    "car__wheel_fr__rim_fr",
+    "car__wheel_fr__hub_fr",
+    "car__wheel_rl",
+    "car__wheel_rl__tyre_rl",
+    "car__wheel_rl__rim_rl",
+    "car__wheel_rl__hub_rl",
+    "car__wheel_rr",
+    "car__wheel_rr__tyre_rr",
+    "car__wheel_rr__rim_rr",
+    "car__wheel_rr__hub_rr"
+  ],
+  "materials": [
+    "candy_paint",
+    "cabin_glass",
+    "chrome",
+    "headlamp",
+    "taillamp",
+    "rubber"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 11,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}
