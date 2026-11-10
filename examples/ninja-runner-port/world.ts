@@ -195,14 +195,15 @@ const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> =
 const enemyTint = (base: readonly [number, number, number, number]): Tint => ({ base, emissive: [0, 0, 0], strength: 0, roughness: 0.9, metallic: 0.2 });
 
 /**
- * The two meshy07 enemy rigs (owl caster, fox scout) ship a pale beige-grey base-colour atlas (mean saturation 0.22, value 0.53 to
- * 0.60, against 0.57 saturation on the hero), so under the evening key and the sky probe they bleached to a ghostly grey-white.
- * A multiply over that atlas gives them their robe and fur colours: deep violet for the caster, russet for the scout. The 4.6.2
- * soldier, brute and sage atlases are dark and keep the mild `ENEMY_TINT`.
+ * The two meshy07 enemy rigs (owl caster, fox scout) show their own authored texture colours: a plain white base multiply with no
+ * glow. An earlier pass multiplied them by a violet and a russet tint, which painted each one a single flat colour and hid the
+ * texture (the owner saw solid purple enemies). The bleaching those tints were meant to fix came from `TypedGLBActor.setTint`
+ * defaulting to a white emissive glow, which `enemyTint` already switches off. The 4.6.2 soldier, brute and sage atlases keep the
+ * mild `ENEMY_TINT`.
  */
 const MESHY07_TINT: Partial<Record<CharacterId, readonly [number, number, number, number]>> = {
-  caster: [0.5, 0.38, 0.85, 1],
-  scout: [0.95, 0.5, 0.22, 1]
+  caster: [1, 1, 1, 1],
+  scout: [1, 1, 1, 1]
 };
 const CLONE_TINT: Tint = { base: [0.6, 0.85, 1, 1], emissive: [0.18, 0.45, 1], strength: 0.55 };
 const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };

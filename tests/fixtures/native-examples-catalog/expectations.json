@@ -5555,7 +5555,7 @@
       "sourceDependencies": [
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "adc6f35983fdfe7cf5fe870aa066352e2c7ac5e1ba222fd11170f96c925b396e"
+          "sha256": "077034064a235a5992c347f98b7956bd8735a7cc8dd99772bf94e61a866b2231"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
@@ -5687,7 +5687,7 @@
         },
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "adc6f35983fdfe7cf5fe870aa066352e2c7ac5e1ba222fd11170f96c925b396e"
+          "sha256": "077034064a235a5992c347f98b7956bd8735a7cc8dd99772bf94e61a866b2231"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
