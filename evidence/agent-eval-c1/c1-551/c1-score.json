@@ -4795,5 +4795,126 @@
         }
       }
     }
+  },
+  "c1-551-t109-aura-r1": {
+    "runId": "c1-551-t109-aura-r1",
+    "arm": "aura",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 9167,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10180.8,
+          "jsKB": 7056.2,
+          "jsGzipKB": 2231.5,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 465,
+        "blank": false,
+        "frame": {
+          "lit": 0.711,
+          "meanLuma": 50.4,
+          "stdLuma": 60.7,
+          "motion": 17.81
+        },
+        "loaded": {
+          "totalKB": 5967.4,
+          "jsKB": 5967.4,
+          "requests": 59
+        },
+        "fps": 52.7,
+        "p95FrameMs": 33.4,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20.2,
+              "diff": 11.23144386574074
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 6957,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10182,
+          "jsKB": 7057.4,
+          "jsGzipKB": 2232.1,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 578,
+        "blank": false,
+        "frame": {
+          "lit": 0.713,
+          "meanLuma": 50.6,
+          "stdLuma": 60.7,
+          "motion": 17.68
+        },
+        "loaded": {
+          "totalKB": 5968.5,
+          "jsKB": 5968.5,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 0.41629774305555556,
+              "blueMinusRedAfter": 19.23548611111111
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20,
+              "diff": 11.114904513888888
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
   }
 }

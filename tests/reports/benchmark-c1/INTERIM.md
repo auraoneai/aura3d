@@ -31,3 +31,13 @@ Running medians over the 2 complete replicate(s) so far: aura n=2 turns 18 (task
 | bridge | finished/finished | 37 (32) | 2.50M | 14K | 324 | 5.14 | 11.4 | yes | 4/4 | 4/4 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t102-bridge-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t102-bridge-r2-main-2.png) |
 
 Running medians over the 3 complete replicate(s) so far: aura n=3 turns 20 (task 17) in 731K out 6K $1.52 main-all 100% fu-all 100% | three n=3 turns 7 (task 4) in 64K out 4K $0.17 main-all 100% fu-all 100% | bridge n=3 turns 33 (task 24) in 1.68M out 8K $3.42 main-all 100% fu-all 33%
+
+## Task 109 product replicate 1 (product viewer)
+
+| arm | end (task/follow-up) | turns (task) | input tokens | output tokens | wall s | list $ | Kiro credits | builds | main checks | follow-up checks | frames |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| aura | finished/finished | 46 (39) | 3.17M | 19K | 746 | 6.53 | 17.1 | yes | 4/4 | 5/5 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-aura-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-aura-r1-main-2.png) |
+| three | finished/finished | 9 (7) | 157K | 8K | 277 | 0.40 | 3.4 | yes | 4/4 | 5/5 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-three-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-three-r1-main-2.png) |
+| bridge | max_turns/max_turns | 55 (40) | 4.00M | 15K | 410 | 8.14 | 16.0 | yes | 4/4 | 4/5 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-bridge-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t109-bridge-r1-main-2.png) |
+
+Running medians over the 4 complete replicate(s) so far: aura n=4 turns 32 (task 27.5) in 1.83M out 11K $3.77 main-all 100% fu-all 100% | three n=4 turns 8 (task 5.5) in 111K out 6K $0.28 main-all 100% fu-all 100% | bridge n=4 turns 35 (task 28) in 2.09M out 11K $4.28 main-all 100% fu-all 25%
