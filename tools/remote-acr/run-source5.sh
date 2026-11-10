@@ -2,7 +2,7 @@
 # Aura3D 5.0 source pass on the 4.x ACR path (decision record item 1,
 # docs/prds/aura3d-native-code-complete.md). One `az acr build` of
 # Dockerfile.playwright from the committed candidate, then one `az acr run`
-# per stage (<= 1800 s each, <= 2 concurrent, ACR policy), reports merged into
+# per stage (<= 3600 s each, up to A3D_MAX_PARALLEL concurrent, default 15; owner 2026-11-09), reports merged into
 # tests/reports/native-5/<run>/source-report.json, image deleted afterwards.
 # The staged context carries .native-source-manifest.json (stagedSourceIdentity
 # schema, tools/remote-acr/source5-manifest.mjs). When packed-a runs, one
@@ -80,7 +80,7 @@ for first in packed-a packed-b1 packed-b2 $EXAMPLE_STAGES; do want_stage "$first
 for tok in $STAGES; do case "$tok" in packed-a|packed-b1|packed-b2|packed-c*) ;; *) ORDERED="$ORDERED $tok";; esac; done
 STAGES="${ORDERED# }"
 SAS_TTL_MINUTES="${SAS_TTL_MINUTES:-120}"
-MAX_PARALLEL=2
+MAX_PARALLEL="${A3D_MAX_PARALLEL:-15}"
 [[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$ ]] || { echo 'invalid RUN_ID' >&2; exit 2; }
 if [ "${BUILD:-1}" = 0 ]; then
   COMMIT="${IMAGE_COMMIT:?BUILD=0 requires IMAGE_COMMIT (the commit the reused image was built from)}"
