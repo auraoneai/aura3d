@@ -1,5 +1,5 @@
 /**
- * Orientation helpers. The engine composes a node's `rotation` as three.js "ZYX" Euler angles (R = Rz·Ry·Rx), so a
+ * Orientation helpers. The engine composes a node's `rotation` as intrinsic "ZYX" Euler angles (R = Rz·Ry·Rx), so a
  * tram pose built as R = Ry(yaw)·Rx(-pitch)·Rz(roll) is converted to those angles per part.
  */
 export type V3 = readonly [number, number, number];
@@ -22,7 +22,7 @@ export function applyMat3(m: Mat3, v: V3): V3 {
   return [m[0] * v[0] + m[1] * v[1] + m[2] * v[2], m[3] * v[0] + m[4] * v[1] + m[5] * v[2], m[6] * v[0] + m[7] * v[1] + m[8] * v[2]];
 }
 
-/** three.js `Euler.setFromRotationMatrix(m, "ZYX")`. */
+/** Matrix-to-Euler conversion (`R = Rz·Ry·Rx`). */
 export function matrixToEulerZYX(m: Mat3): V3 {
   const [m11, m12, , m21, m22, , m31, m32, m33] = m;
   const y = Math.asin(-Math.max(-1, Math.min(1, m31)));

@@ -10,6 +10,7 @@
  * missiles, which travel in view space, draw `effects.trail` ribbons.
  */
 import type { AuraAppEffects, AuraBurstOptions, AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
 import type { SimEvent } from "./sim";
 import { PALETTE } from "./look";
 
@@ -51,11 +52,12 @@ export const TD_VFX_PRESETS: Readonly<Record<TdVfxKind, AuraVfxEffectSpec>> = {
       { type: "emitter", preset: "streak", count: 18, color: [...SLAG], speed: [5, 9], life: [0.15, 0.35], size: [0.03, 0.06], spread: 0.45, gravity: -3 }
     ]
   },
-  // Coolant, shield and recharge pickups: the one place coolant cyan appears in the world.
+  // Coolant, shield and recharge pickups: the one place coolant cyan appears in the world, plus cryogenic CO2 mist.
   "td-coolant-burst": {
     name: "td-coolant-burst",
     layers: [
       { type: "emitter", preset: "pickup", count: 20, color: [...COOLANT], speed: [1.5, 3], life: [0.4, 0.8], size: [0.05, 0.11], gravity: 1.2 },
+      { type: "emitter", preset: "smoke", count: 14, color: [0.85, 0.96, 1.12], speed: [1.2, 2.6], life: [0.35, 0.7], size: [0.16, 0.34], gravity: 0.45 },
       { type: "light", color: PALETTE.coolantCyan, intensity: 6, range: 8, duration: 0.3 }
     ]
   },
@@ -136,6 +138,21 @@ export class VfxLedger {
     for (const kind of TD_VFX_KINDS) this.fired[kind] = 0;
     this.total = 0;
   }
+}
+
+let plasmaFlipbookAtlas: FlipbookAtlasSpec | null = null;
+let sparksFlipbookAtlas: FlipbookAtlasSpec | null = null;
+
+/** Procedural 8x4 plasma vent burst sprite-sheet (`createFlipbookAtlas("plasma")`) for thermal purges & overloads. */
+export function getPlasmaFlipbookAtlas(): FlipbookAtlasSpec {
+  plasmaFlipbookAtlas ??= createFlipbookAtlas("plasma", [92, 224, 255]);
+  return plasmaFlipbookAtlas;
+}
+
+/** Procedural 8x4 drift/wall-scrape spark sprite-sheet (`createFlipbookAtlas("sparks")`). */
+export function getSparksFlipbookAtlas(): FlipbookAtlasSpec {
+  sparksFlipbookAtlas ??= createFlipbookAtlas("sparks", [255, 168, 72]);
+  return sparksFlipbookAtlas;
 }
 
 /** World position of a burst anchor, from the drone position (x, y, z) and its lateral offset. */

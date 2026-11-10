@@ -206,25 +206,37 @@ struct InstancedVarying {
   @location(2) vTint: vec3<f32>,
 };`;
 
-/** GLOW_INSTANCED_VERTEX / ISLAND_INSTANCED_VERTEX (flag: FLAG_INSTANCED_VERTEX's flutter). */
-function instancedVertex(flag: boolean): string {
+/** GLOW_INSTANCED_VERTEX / FLAG_INSTANCED_VERTEX / ISLAND_INSTANCED_VERTEX. */
+function instancedVertex(kind: "glow" | "flag" | "island"): string {
+  const deform = kind === "flag"
+    ? `  let along = clamp(p.x + 0.5, 0.0, 1.0);
+  let isCloth = step(length(a_instanceMatrix2.xyz), 0.08);
+  let seed = a_instanceMatrix3.x * 0.37 + a_instanceMatrix3.z * 0.19;
+  let wave = sin(aura.u_flagTime * 6.2 + along * 5.2 + seed) * 0.13 + sin(aura.u_flagTime * 11.4 - along * 9.5 + seed * 1.7) * 0.045;
+  p.z = p.z + wave * along * isCloth;
+  p.y = p.y + cos(aura.u_flagTime * 5.4 + along * 4.1 + seed) * 0.03 * along * isCloth;`
+    : kind === "island"
+      ? `  let seed = a_instanceMatrix3.x * 0.031 + a_instanceMatrix3.z * 0.023;
+  let puff = sin(p.x * 3.1 + aura.u_cloudTime * 0.42 + seed) * 0.13 + cos(p.y * 2.7 - p.z * 2.9 + seed * 1.7) * 0.11 + sin((p.x + p.z) * 4.8 - aura.u_cloudTime * 0.28) * 0.05;
+  p = p + a_normal * puff * aura.u_cloudMode;`
+      : "";
+  const nrmExpr = kind === "island" ? "normalize(a_normal + p * 0.25 * aura.u_cloudMode)" : "a_normal";
   return stage([CLIP, INSTANCED_VARYING], /* wgsl */ `
 @vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, ${INSTANCE_INPUTS}) -> InstancedVarying {
   var out: InstancedVarying;
   let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
   var p = a_position;
-${flag ? `  let along = p.x + 0.5;
-  p.z = p.z + sin(aura.u_flagTime * 6.0 + along * 5.0 + a_instanceMatrix3.x * 0.37) * 0.12 * along;` : ""}
+${deform}
   let wp = aura.u_modelMatrix * instanceMatrix * vec4<f32>(p, 1.0);
   out.vWorld = wp.xyz;
-  out.vNormal = normalize((aura.u_modelMatrix * (instanceMatrix * vec4<f32>(a_normal, 0.0))).xyz);
+  out.vNormal = normalize((aura.u_modelMatrix * (instanceMatrix * vec4<f32>(${nrmExpr}, 0.0))).xyz);
   out.vTint = a_instanceColor.rgb;
   out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * wp);
   return out;
 }`);
 }
 
-export const GLOW_INSTANCED_VERTEX_WGSL = instancedVertex(false);
+export const GLOW_INSTANCED_VERTEX_WGSL = instancedVertex("glow");
 
 export const GLOW_INSTANCED_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */ `
 @fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTint: vec3<f32>) -> @location(0) vec4<f32> {
@@ -240,30 +252,65 @@ export const GLOW_INSTANCED_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */
   return vec4<f32>(col, a);
 }`);
 
-export const FLAG_INSTANCED_VERTEX_WGSL = instancedVertex(true);
+export const FLAG_INSTANCED_VERTEX_WGSL = instancedVertex("flag");
 
 export const FLAG_INSTANCED_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */ `
-@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTint: vec3<f32>) -> @location(0) vec4<f32> {
-  let V = normalize(aura.u_cameraPosition - vWorld);
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTint: vec3<f32>) -> @location(0) vec4<f32> {
+  let toCam = aura.u_cameraPosition - vWorld;
+  let camDist = length(toCam);
+  let nearClear = smoothstep(1.6, 4.8, camDist);
+  let dither = fract(52.9829189 * fract(dot(floor(fragCoord.xy), vec2<f32>(0.06711056, 0.00583715))));
+  if (nearClear < dither) { discard; }
+  let V = toCam / max(camDist, 1e-4);
   var N = normalize(vNormal);
   if (dot(N, V) < 0.0) { N = -N; }
-  let back = a3dPow(max(dot(-V, normalize(aura.u_flagSunDir)), 0.0), 2.0);
-  let col = vTint * (0.45 + 0.35 * max(N.y, 0.0)) + vTint * aura.u_flagSunColor * back * 1.4;
-  return vec4<f32>(mix(col, aura.u_flagFogColor, fogAmount(length(aura.u_cameraPosition - vWorld))), 1.0);
+  let L = normalize(aura.u_flagSunDir);
+  let back = a3dPow(max(dot(-V, L), 0.0), 2.0);
+  let sheen = a3dPow(max(dot(N, normalize(L + V)), 0.0), 28.0);
+  let col = vTint * (0.46 + 0.38 * max(N.y, 0.0) + 0.22 * max(dot(N, L), 0.0)) + vTint * aura.u_flagSunColor * back * 1.45 + aura.u_flagSunColor * sheen * 0.22;
+  return vec4<f32>(mix(col, aura.u_flagFogColor, fogAmount(camDist)), 1.0);
 }`);
 
-export const ISLAND_INSTANCED_VERTEX_WGSL = instancedVertex(false);
+export const ISLAND_INSTANCED_VERTEX_WGSL = instancedVertex("island");
 
-export const ISLAND_INSTANCED_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */ `
-@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTint: vec3<f32>) -> @location(0) vec4<f32> {
-  let V = normalize(aura.u_cameraPosition - vWorld);
+export const ISLAND_INSTANCED_FRAGMENT_WGSL = stage([MATH, CLOUD_NOISE, ATMOSPHERE], /* wgsl */ `
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTint: vec3<f32>) -> @location(0) vec4<f32> {
+  let toCam = aura.u_cameraPosition - vWorld;
+  let dist = length(toCam);
+  let V = toCam / max(dist, 1e-4);
   let N = normalize(vNormal);
   let L = normalize(aura.u_islandSunDir);
-  let lit = smoothstep(-0.35, 0.65, N.y) * (0.55 + 0.45 * max(dot(N, L), 0.0));
-  let rock = mix(aura.u_islandDark, aura.u_islandLit, lit);
-  let rim = a3dPow(1.0 - abs(dot(N, V)), 3.0) * a3dPow(max(dot(-V, L), 0.0), 2.0);
-  let col = rock + aura.u_islandSunColor * rim * 1.6;
-  let fog = max(fogAmount(length(aura.u_cameraPosition - vWorld)), vTint.r);
+  if (aura.u_cloudMode < 0.5) {
+    let lit = smoothstep(-0.35, 0.65, N.y) * (0.55 + 0.45 * max(dot(N, L), 0.0));
+    let rock = mix(aura.u_islandDark, mix(aura.u_islandLit, aura.u_cloudMid, 0.02), lit);
+    let rim = a3dPow(1.0 - abs(dot(N, V)), 3.0) * a3dPow(max(dot(-V, L), 0.0), 2.0);
+    let col = rock + aura.u_islandSunColor * rim * 1.6;
+    let fog = max(fogAmount(dist), vTint.r);
+    return vec4<f32>(mix(col, aura.u_islandFogColor, fog), 1.0);
+  }
+  let nearClear = smoothstep(5.0, 16.0, dist);
+  let dither = fract(52.9829189 * fract(dot(floor(fragCoord.xy), vec2<f32>(0.06711056, 0.00583715))));
+  if (nearClear < dither) { discard; }
+  let tuft = cfbm3(vWorld.xz * 0.042 + vec2<f32>(aura.u_cloudTime * 0.018, -aura.u_cloudTime * 0.009));
+  let Ns = normalize(N + vec3<f32>(tuft - 0.5, 0.18 * tuft, 0.5 - tuft) * 0.38);
+  let facing = clamp(abs(dot(Ns, V)), 0.0, 1.0);
+  let optDepth = mix(0.32, 1.85, facing) * (0.76 + 0.34 * tuft);
+  let beer = exp(-optDepth * 0.82);
+  let powder = 1.0 - exp(-optDepth * 2.15);
+  let beerPowder = 2.0 * beer * powder;
+  let cosTheta = clamp(dot(-V, L), -1.0, 1.0);
+  let g = 0.62;
+  let hg = (1.0 - g * g) / (4.0 * 3.14159265 * a3dPow(max(1.0 + g * g - 2.0 * g * cosTheta, 0.04), 1.5));
+  let crown = smoothstep(-0.52, 0.72, Ns.y + (tuft - 0.5) * 0.35);
+  let sunWrap = clamp(dot(Ns, L) * 0.5 + 0.5, 0.0, 1.0);
+  let lit = clamp(crown * (0.38 + 0.62 * sunWrap) * (0.78 + 0.36 * tuft), 0.0, 1.0);
+  var body = mix(aura.u_islandDark * 0.88, aura.u_cloudMid, smoothstep(0.06, 0.64, lit));
+  body = mix(body, aura.u_islandLit, smoothstep(0.45, 0.96, lit));
+  let rim = a3dPow(1.0 - facing, 2.1);
+  let silver = aura.u_islandSunColor * (min(hg, 2.6) * 0.34 + beerPowder * rim * 0.62) * (0.35 + 0.65 * sunWrap);
+  let bounce = mix(aura.u_islandFogColor, aura.u_islandSunColor, 0.32) * smoothstep(0.25, -0.75, Ns.y) * 0.24;
+  let col = body + silver + bounce;
+  let fog = clamp(max(fogAmount(dist * 0.88), vTint.r * 0.65), 0.0, 0.94);
   return vec4<f32>(mix(col, aura.u_islandFogColor, fog), 1.0);
 }`);
 
@@ -363,6 +410,7 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, NOISE, ATMOSPHERE_LIVE, SUN_SHADO
   let streak = n2(vec2<f32>(vCross.x * 1.9 + vCross.y * 0.7, s * 0.16));
   let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 2.0);
 
+  var rough = 0.52;
   var albedo: vec3<f32>;
   if (aura.u_lookMode < 0.5) {
     var plate = mix(aura.u_roadDark, aura.u_roadTop, 0.5 + 0.5 * tint);
@@ -374,18 +422,25 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, NOISE, ATMOSPHERE_LIVE, SUN_SHADO
     let film = vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
     albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
   } else {
-    let overlap = mix(1.0, 0.72 + 0.28 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
-    let plate = mix(aura.u_roadPearl * 0.86, aura.u_roadPearl, 0.5 + 0.5 * tint) * mix(0.82, 1.04, bevel) * overlap;
+    let bevelSlope = vec2<f32>(smoothstep(0.18, 0.0, f.x) - smoothstep(0.82, 1.0, f.x), smoothstep(0.18, 0.0, f.y) - smoothstep(0.82, 1.0, f.y)) * detail * mix(0.35, 1.0, top);
+    N = normalize(N + vec3<f32>(bevelSlope.x * 0.22, 0.0, bevelSlope.y * 0.22));
+    rough = mix(0.42, 0.88, clamp((1.0 - joint) * 0.72 + tint * 0.32, 0.0, 1.0));
+    let overlap = mix(1.0, 0.70 + 0.30 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
+    var plate = mix(aura.u_roadPearl * 0.84, aura.u_roadPearl * 1.03, 0.5 + 0.5 * tint) * mix(0.80, 1.06, bevel) * overlap;
+    let kerbMoss = smoothstep(2.85, 4.15, abs(vCross.x)) * (1.0 - 0.55 * joint) * top * detail;
+    plate = mix(plate, aura.u_roadJade * 0.86, kerbMoss * 0.55);
+    let bolster = smoothstep(3.82, 4.32, abs(vCross.x)) * (1.0 - smoothstep(4.55, 5.05, abs(vCross.x))) * (1.0 - smoothstep(0.45, 1.25, -vCross.y));
     let flank = smoothstep(0.0, 0.9, depth);
     var body = mix(aura.u_roadJade, aura.u_roadBelly, flank);
     let belly = smoothstep(0.55, 0.9, depth);
     let bellyRow = fract(s / 1.1);
-    body = body * mix(1.0, mix(0.7, 1.0, smoothstep(0.0, max(0.08, fwm * 2.0), min(bellyRow, 1.0 - bellyRow))), belly * detail);
-    body = body * (0.84 + 0.26 * streak) * mix(0.88, 1.0, bevel) * overlap;
+    body = body * mix(1.0, mix(0.72, 1.0, smoothstep(0.0, max(0.08, fwm * 2.0), min(bellyRow, 1.0 - bellyRow))), belly * detail);
+    body = body * (0.85 + 0.26 * streak) * mix(0.88, 1.0, bevel) * overlap;
     albedo = mix(body, plate, top);
-    albedo = mix(aura.u_roadJade * 0.55, albedo, joint);
+    albedo = mix(albedo, mix(aura.u_roadSpine, aura.u_roadJade * 1.35, 0.35), bolster * 0.42 * detail);
+    albedo = mix(aura.u_roadJade * 0.48, albedo, joint);
     let film = vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(0.0, 0.33, 0.67) + fres * 1.2 + tint * 0.8));
-    albedo = mix(albedo, albedo * film * 1.15, (0.12 + 0.3 * fres) * mix(0.5, 1.0, top) * detail);
+    albedo = mix(albedo, albedo * film * 1.16, (0.14 + 0.32 * fres) * mix(0.5, 1.0, top) * detail);
   }
 
   gToonShadow = a3dSunShadowAuto(vWorld, N);
@@ -412,17 +467,21 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, NOISE, ATMOSPHERE_LIVE, SUN_SHADO
     gateShade = gate;
   }
   var col = toon(albedo, N);
-  col = col + mix(vec3<f32>(1.0, 0.82, 0.9), aura.u_lookSunColor, aura.u_lookMode) * a3dPow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.16, aura.u_lookMode) * top;
+  col = col + mix(vec3<f32>(1.0, 0.82, 0.9), aura.u_lookSunColor, aura.u_lookMode) * a3dPow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.18, aura.u_lookMode) * top;
   let Rv = reflect(-V, N);
   let rs = max(dot(Rv, SUN_DIR), 0.0);
+  let gloss = clamp(1.0 - (rough - 0.42) / 0.46, 0.0, 1.0);
   let skyRefl = mix(aura.u_lookFogColor, aura.u_lookSunColor, a3dPow(rs, 4.0));
-  let plateMask = top * mix(0.35, 1.0, joint) * aura.u_lookMode;
-  col = mix(col, skyRefl, (0.1 + 0.38 * fres) * plateMask);
-  col = col + aura.u_lookSunColor * (a3dPow(rs, 40.0) * 0.6 + a3dPow(rs, 8.0) * 0.12) * plateMask;
+  let plateMask = top * mix(0.25, 1.0, joint) * aura.u_lookMode;
+  col = mix(col, skyRefl, (0.08 + 0.36 * fres) * (0.55 + 0.45 * gloss) * plateMask);
+  col = col + aura.u_lookSunColor * (a3dPow(rs, mix(18.0, 56.0, gloss)) * (0.32 + 0.44 * gloss) + a3dPow(rs, 8.0) * 0.12) * plateMask;
   let bodyMask = (1.0 - top) * (1.0 - smoothstep(0.45, 0.85, depth)) * aura.u_lookMode;
   let bodyRefl = mix(mix(aura.u_lookHemiSky, aura.u_lookFogColor, 0.5), aura.u_lookSunColor, a3dPow(rs, 3.0)) * mix(vec3<f32>(1.0), aura.u_roadJade * 1.8, 0.45);
-  col = mix(col, bodyRefl, (0.02 + 0.16 * fres) * bodyMask);
+  col = mix(col, bodyRefl, (0.03 + 0.18 * fres) * bodyMask);
   col = col + aura.u_lookSunColor * (a3dPow(rs, 24.0) * 0.55 + a3dPow(rs, 6.0) * 0.1) * bodyMask * mix(0.25, 1.0, gToonShadow);
+  let underBounce = smoothstep(0.20, 0.88, depth) * aura.u_lookMode;
+  let cloudGlow = mix(aura.u_lookFogColor, aura.u_lookSunColor, 0.38) * (0.34 + 0.20 * streak) + albedo * 0.48;
+  col = mix(col, max(col, cloudGlow), underBounce * 0.76);
   let shadeTint = mix(aura.u_lookHemiSky * 0.55, vec3<f32>(0.30, 0.26, 0.46), 0.5);
   col = mix(col, col * shadeTint, gateShade * 0.7 * aura.u_lookMode);
 
@@ -504,8 +563,9 @@ fn bladeTier(up: f32, s: f32, e: f32, kSeed: f32, ux: f32) -> vec2<f32> {
   a = a * mix(1.0, 0.62, up);
   a = a * smoothstep(0.985, 0.86, up);
   if (a < 0.015) { discard; }
+  let coreShimmer = 0.88 + 0.24 * sin(aura.u_auraTime * 9.0 + up * 11.0);
   var col = mix(aura.u_auraEdge, aura.u_auraMid, smoothstep(0.10, 0.55, across));
-  col = mix(col, aura.u_auraHot, smoothstep(0.62, 0.95, across) * aB);
+  col = mix(col, aura.u_auraHot * coreShimmer, smoothstep(0.62, 0.95, across) * aB);
   return vec4<f32>(col, min(a, 0.82));
 }`);
 
@@ -608,4 +668,78 @@ fn scriptSky(dir: vec3<f32>, sd: f32) -> vec3<f32> {
     }
   }
   return vec4<f32>(col, 1.0);
+}`);
+
+export const BOOST_GATE_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+struct BoostGateVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vUv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, @location(2) a_uv: vec2<f32>) -> BoostGateVarying {
+  var out: BoostGateVarying;
+  out.vUv = a_uv;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const BOOST_GATE_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */ `
+@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let toCam = aura.u_cameraPosition - vWorld;
+  let dist = length(toCam);
+  let nearClear = smoothstep(1.2, 3.6, dist);
+  let V = toCam / max(dist, 1e-4);
+  let N = normalize(vNormal);
+  let fresnel = a3dPow(1.0 - abs(dot(N, V)), 2.1);
+  let waveA = 0.5 + 0.5 * sin(vUv.x * 37.69911 - aura.u_gateTime * 4.2 + vUv.y * 6.2831853);
+  let waveB = 0.5 + 0.5 * cos(vUv.y * 25.13274 + aura.u_gateTime * 2.8);
+  let lattice = smoothstep(0.32, 0.94, waveA * 0.65 + waveB * 0.35);
+  let col = mix(aura.u_gateCore, aura.u_gateEdge, clamp(fresnel * 0.78 + lattice * 0.42, 0.0, 1.0)) * (1.25 + aura.u_gatePulse * 0.9 + fresnel * 1.35);
+  let alpha = clamp((0.20 + fresnel * 0.68 + lattice * 0.24) * (0.65 + 0.35 * aura.u_gatePulse), 0.0, 0.92) * nearClear * (1.0 - fogAmount(dist));
+  if (alpha < 0.01) { discard; }
+  return vec4<f32>(col, alpha);
+}`);
+
+export const FLIPBOOK_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+struct FlipbookVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+  @location(1) vWorld: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> FlipbookVarying {
+  var out: FlipbookVarying;
+  out.vUv = a_uv;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const FLIPBOOK_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE], /* wgsl */ `
+fn sampleStripLut16(lin: vec3<f32>) -> vec3<f32> {
+  let c = clamp(lin / (vec3<f32>(1.0) + lin), vec3<f32>(0.0), vec3<f32>(1.0));
+  let bSlice = c.b * 15.0;
+  let b0 = floor(bSlice);
+  let b1 = min(15.0, b0 + 1.0);
+  let bf = bSlice - b0;
+  let uBase = (c.r * 15.0 + 0.5) / 256.0;
+  let vCoord = (c.g * 15.0 + 0.5) / 16.0;
+  let s0 = textureSample(u_gradeLutTexture, u_gradeLutSampler, vec2<f32>(uBase + b0 / 16.0, vCoord)).rgb;
+  let s1 = textureSample(u_gradeLutTexture, u_gradeLutSampler, vec2<f32>(uBase + b1 / 16.0, vCoord)).rgb;
+  return mix(s0, s1, bf);
+}
+@fragment fn fs_main(@location(0) vUv: vec2<f32>, @location(1) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let idx = floor(clamp(aura.u_flipFrame, 0.0, aura.u_flipCols * aura.u_flipRows - 1.0));
+  let colIdx = a3dModF(idx, aura.u_flipCols);
+  let rowIdx = floor(idx / aura.u_flipCols);
+  let cellUv = vec2<f32>((colIdx + clamp(vUv.x, 0.02, 0.98)) / aura.u_flipCols, (rowIdx + clamp(1.0 - vUv.y, 0.02, 0.98)) / aura.u_flipRows);
+  let texel = textureSample(u_flipMapTexture, u_flipMapSampler, cellUv);
+  let base = texel.rgb * aura.u_flipTint;
+  let graded = mix(base, sampleStripLut16(base) * 1.45, aura.u_lutMix);
+  let dist = length(aura.u_cameraPosition - vWorld);
+  let a = texel.a * aura.u_flipAlpha * (1.0 - fogAmount(dist));
+  if (a < 0.008) { discard; }
+  return vec4<f32>(graded, a);
 }`);

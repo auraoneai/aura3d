@@ -14,9 +14,9 @@ import type { AuraAppEffects, AuraEffectInstanceHandle, AuraTrailHandle, AuraVec
 import { COURT_X, COURT_Z } from "./constants";
 import type { VenueBurstKind, VenueLook } from "./look";
 
-export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "win-confetti" | "beach-spray" | "grass-leaves";
+export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "felt-burst" | "win-confetti" | "beach-spray" | "grass-leaves";
 
-/** Registered effect kinds: one bounce burst per surface family, the out-call ring and the ace flash. */
+/** Registered effect kinds: one bounce burst per surface family, the out-call ring, sweet-spot felt burst, and ace flash. */
 export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> = {
   "clay-puff": {
     name: "clay-puff",
@@ -44,6 +44,13 @@ export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> 
     layers: [
       { type: "emitter", preset: "spark", count: 10, speed: 2.2, life: 0.35, size: 0.06, color: "#f2ff7a", additive: true, sprite: "spark-streak" },
       { type: "light", intensity: 2.5, range: 4, duration: 0.18, color: "#f2ff7a" }
+    ]
+  },
+  "felt-burst": {
+    name: "felt-burst",
+    layers: [
+      { type: "emitter", preset: "dust", count: 8, speed: 1.85, life: 0.28, gravity: -1.8, size: 0.045, spread: 0.75, drag: 2.8, direction: [0, 1, 0], color: "#e6ff5c", sprite: "dust-mote" },
+      { type: "emitter", preset: "spark", count: 5, speed: 2.6, life: 0.18, size: 0.038, color: "#f6ff9c", additive: true, sprite: "spark-streak" }
     ]
   },
   "beach-spray": {
@@ -89,17 +96,23 @@ export const MARK_CAPACITY = 96;
 export const BALL_TRAIL = { width: 0.07, life: 0.22, color: "#e6eb8d", widthOverSpeed: [3, 14] as [number, number] } as const;
 
 interface SimMark { readonly x: number; readonly y: number; readonly life: number }
+interface SimBallLike { readonly x: number; readonly y: number; readonly z?: number; readonly active?: boolean; readonly isServe?: boolean; readonly speedKph?: number }
 interface SimStateLike {
   readonly mode?: string;
   readonly phase?: string;
   readonly time?: number;
+  readonly rallyHits?: number;
+  readonly serveSequence?: number;
+  readonly lastShotSpeed?: number;
+  readonly lastShotPower?: boolean;
+  readonly ball?: SimBallLike;
   readonly marks?: readonly unknown[];
   readonly outFeedback?: unknown;
   readonly lastCall?: string;
   readonly score?: { readonly playerGames?: number; readonly aiGames?: number; readonly playerPoints?: number; readonly aiPoints?: number };
 }
 
-export interface SlamVfxEvents { bounces: number; outCalls: number; aces: number; marks: number; wins: number }
+export interface SlamVfxEvents { bounces: number; outCalls: number; aces: number; marks: number; wins: number; strikes: number }
 
 export interface SlamVfxController {
   /** Per frame: fires the bounce / out / ace effects the sim state implies. Allocation-light (one array per spawned effect). */
@@ -132,7 +145,9 @@ export function createSlamVfx(
   let lastAceKey = "";
   let lastGames = -1;
   let lastMarkPos: AuraVec3 = [0, MARK_Y, 0];
-  const events: SlamVfxEvents = { bounces: 0, outCalls: 0, aces: 0, marks: 0, wins: 0 };
+  let lastRallyHits = 0;
+  let lastServeSeq = -1;
+  const events: SlamVfxEvents = { bounces: 0, outCalls: 0, aces: 0, marks: 0, wins: 0, strikes: 0 };
   let celebrated = false;
   let ambientVenue = "";
   let nextAmbientAt = 0;
@@ -228,6 +243,23 @@ export function createSlamVfx(
           try { effects.burst("ace-flash", [lastMarkPos[0], 0.3, lastMarkPos[2]], { count: burstCount("ace-flash", false), camera: false }); } catch { /* unavailable */ }
         }
       }
+
+      // WP-01: Sweet-spot felt fuzz & micro-spark burst off the racket strings on crisp strikes and booming serves.
+      const hits = Number(state.rallyHits ?? 0);
+      const ball = state.ball;
+      const serveSeq = Number(state.serveSequence ?? -1);
+      const newRallyStrike = hits > lastRallyHits && hits > 0;
+      const newServeStrike = Boolean(ball?.isServe && ball.active && serveSeq >= 0 && serveSeq !== lastServeSeq);
+      if ((newRallyStrike || newServeStrike) && ball && Number.isFinite(ball.x) && Number.isFinite(ball.y) && state.mode === "playing") {
+        events.strikes += 1;
+        if (newServeStrike) lastServeSeq = serveSeq;
+        const speed = Math.max(Number(state.lastShotSpeed ?? 0), Number(ball.speedKph ?? 0));
+        if (live() && (state.lastShotPower || speed >= 95 || newServeStrike)) {
+          const hitPos: AuraVec3 = [ball.x * COURT_X, Math.max(0.55, Number(ball.z ?? 0.45) * 2.2), ball.y * COURT_Z];
+          try { effects.burst("felt-burst", hitPos, { count: burstCount("felt-burst", reducedMotion()), camera: false }); } catch { /* unavailable */ }
+        }
+      }
+      lastRallyHits = hits;
     },
     startTrail(target) {
       if (!effects || trail || !live()) return;

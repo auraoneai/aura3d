@@ -34,18 +34,19 @@ const css = `
 .fc-touch.fc-hidden { display: none; }
 .fc-touch-stick { position: absolute; left: calc(14px + env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   width: 132px; height: 132px; border-radius: 50%; pointer-events: auto; touch-action: none;
-  background: radial-gradient(circle, rgba(216,255,62,.10), rgba(5,12,10,.42)); border: 1px solid rgba(216,255,62,.38); }
+  background: radial-gradient(circle, rgba(216,255,62,.10), rgba(5,12,10,.46)); border: 1px solid rgba(216,255,62,.38); }
 .fc-touch-nub { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%;
-  background: rgba(216,255,62,.55); box-shadow: 0 0 14px rgba(216,255,62,.35); }
+  background: rgba(216,255,62,.58); box-shadow: 0 0 14px rgba(216,255,62,.35); }
 .fc-touch-pad { position: absolute; right: calc(10px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: grid; grid-template-columns: repeat(3, 52px); gap: 8px; pointer-events: none; }
-.fc-touch-btn { width: 52px; height: 52px; border-radius: 14px; pointer-events: auto; touch-action: none;
-  display: flex; align-items: center; justify-content: center; font: 700 12px "Whitney", sans-serif; letter-spacing: .04em;
-  color: #f3f0dc; background: rgba(5,12,10,.62); border: 1px solid rgba(243,240,220,.28); user-select: none; -webkit-user-select: none; }
-.fc-touch-btn[data-fc-touch="shoot"] { background: rgba(216,255,62,.78); color: #0b1f1c; border-color: #d8ff3e; }
-.fc-touch-btn[data-fc-touch="pass"] { background: rgba(125,252,255,.62); color: #04161a; border-color: #7dfcff; }
-.fc-touch-btn.down { transform: scale(.94); filter: brightness(1.25); }
-.fc-touch-top { position: absolute; right: calc(10px + env(safe-area-inset-right, 0px)); top: calc(var(--a3d-bar-space, 44px) + 92px); pointer-events: none; }
+.fc-touch-btn { min-width: 48px; min-height: 48px; width: 52px; height: 52px; border-radius: 14px; pointer-events: auto; touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+  font: 600 12px var(--font-ui, "Whitney", "Whitney Fallback", sans-serif); font-variant-numeric: tabular-nums; letter-spacing: .05em;
+  color: #f3f0dc; background: rgba(5,12,10,.68); border: 1px solid rgba(243,240,220,.28); user-select: none; -webkit-user-select: none; }
+.fc-touch-btn[data-fc-touch="shoot"] { background: rgba(216,255,62,.82); color: #0b1f1c; border-color: #d8ff3e; }
+.fc-touch-btn[data-fc-touch="pass"] { background: rgba(125,252,255,.68); color: #04161a; border-color: #7dfcff; }
+.fc-touch-btn.down { transform: scale(.94); filter: brightness(1.22); }
+.fc-touch-top { position: absolute; right: calc(10px + env(safe-area-inset-right, 0px)); top: calc(var(--a3d-bar-space, 44px) + 78px); pointer-events: none; }
 `;
 
 export function mountFcTouch(input: TouchSink, host: HTMLElement, opts: { coarse: () => boolean }): FcTouch {
@@ -106,7 +107,9 @@ export function mountFcTouch(input: TouchSink, host: HTMLElement, opts: { coarse
     const release = () => { if (!down) return; down = false; b.classList.remove("down"); input.touch.release(binding); };
     b.addEventListener("pointerdown", (e) => {
       down = true; b.classList.add("down"); b.setPointerCapture?.(e.pointerId); input.touch.press(binding); e.preventDefault();
-      (navigator as unknown as { vibrate?: (ms: number) => boolean }).vibrate?.(10);
+      if ((navigator as unknown as { userActivation?: { hasBeenActive?: boolean } }).userActivation?.hasBeenActive) {
+        (navigator as unknown as { vibrate?: (ms: number) => boolean }).vibrate?.(10);
+      }
     });
     b.addEventListener("pointerup", release);
     b.addEventListener("pointercancel", release);

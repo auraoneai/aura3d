@@ -2,28 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/fonts/local.css" />
     <title>Serpentine Sky Run</title>
     <style>
       :root {
         color-scheme: dark;
+        font-synthesis: none;
+        --a3d-bar-space: 0px;
         --ink: #fff7f1; --muted: #e6d6ee; --panel: rgba(38, 24, 58, 0.62); --panel-hi: rgba(52, 34, 78, 0.78); --line: rgba(255, 240, 246, 0.22);
         --warm: #ff8a5c; --warm-hi: #ffb08a; --spark: #6fd8ff; --gold: #ffd36e; --sky: #a8b4e8; --deep: #2a1b45;
       }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #f2c6de; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
+      html, body { margin: 0; height: 100%; background: #f2c6de; color: var(--ink); font: 400 13px/1.45 var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif); font-variant-numeric: tabular-nums; overflow: hidden; -webkit-font-smoothing: antialiased; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .num { font-variant-numeric: tabular-nums; }
       .meta { font-size: 12px; color: var(--muted); }
       h1, h2, p { margin: 0; }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--deep); background: linear-gradient(180deg, var(--warm-hi), var(--warm)); border: 0; border-radius: 6px; height: 32px; padding: 0 16px; cursor: pointer; box-shadow: 0 2px 10px rgba(255, 138, 92, 0.35); }
+      button { font: 500 13px/1 var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif); color: var(--deep); background: linear-gradient(180deg, var(--warm-hi), var(--warm)); border: 0; border-radius: 6px; height: 32px; padding: 0 16px; cursor: pointer; box-shadow: 0 2px 10px rgba(255, 138, 92, 0.35); }
       button.ghost { color: var(--ink); background: rgba(255, 255, 255, 0.12); box-shadow: none; border: 1px solid var(--line); }
       button:hover { filter: brightness(1.06); }
       button:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
-      kbd { display: inline-block; min-width: 24px; height: 24px; padding: 0 7px; margin: 0 2px; border-radius: 5px; border: 1px solid var(--line); border-bottom-width: 2px; background: rgba(255, 255, 255, 0.1); font: 500 12px/22px "Graphik Web", sans-serif; text-align: center; color: var(--ink); }
+      kbd { display: inline-block; min-width: 24px; height: 24px; padding: 0 7px; margin: 0 2px; border-radius: 5px; border: 1px solid var(--line); border-bottom-width: 2px; background: rgba(255, 255, 255, 0.1); font: 500 12px/22px var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif); text-align: center; color: var(--ink); }
 
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(8px); }
 
@@ -40,7 +41,8 @@
       .serpent-hud { --ink: #fbf3e4; --muted: #d9cfe8; --panel: rgba(28, 22, 64, 0.86); --panel-hi: rgba(28, 22, 64, 0.94); --line: rgba(242, 179, 61, 0.55);
         --gold: #f2b33d; --spark: #7fe0c4; --warm: #ff7a6b; --warm-hi: #ff9c8e; --deep: #1c1640; --a3g-font-display: "A3G Canela", "Canela", Georgia, serif; }
       .serpent-hud .card-hud, .serpent-hud .card { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(28, 22, 64, 0.9), inset 0 0 0 2px rgba(242, 179, 61, 0.18), 0 6px 20px rgba(12, 8, 32, 0.45); }
-      .serpent-hud .card h1, .serpent-hud .card h2, .serpent-hud #banner, .serpent-hud #count, .serpent-hud #side .big, .serpent-hud #side .score { font-family: var(--a3g-font-display); font-weight: 400; }
+      .serpent-hud .card h1, .serpent-hud .card h2, .serpent-hud #banner { font-family: var(--a3g-font-display); font-weight: 400; }
+      #km, #days, #score, #mult, #ki-num, #strain-num, .results-grid .value, #count, #best-title { font-family: var(--font-metric, "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif); font-weight: 500; font-variant-numeric: tabular-nums; }
       .serpent-hud #banner { color: var(--gold); letter-spacing: 0.06em; text-shadow: 0 2px 0 #1c1640, 0 0 2px #1c1640, 0 6px 18px rgba(12, 8, 32, 0.7); }
       .serpent-hud #sub, .serpent-hud #prompt, .serpent-hud #gust { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; color: var(--ink); }
       .serpent-hud #side .tag { background: var(--warm); color: #1c1640; border-radius: 2px; }
@@ -60,9 +62,9 @@
       .serpent-hud button.ghost, .serpent-hud #pause-btn, .serpent-hud #mute-btn { color: var(--ink); background: var(--panel); border: 1px solid var(--line); box-shadow: none; }
       .serpent-hud .overlay { background: radial-gradient(ellipse at 50% 40%, rgba(28, 22, 64, 0.35), rgba(12, 8, 32, 0.78)); }
       #drowsefx { background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(26, 14, 48, 0.92) 100%); }
-      .bar-row .mlabel { grid-column: 1 / -1; font-size: 11px; line-height: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: -2px; }
+      .bar-row .mlabel { grid-column: 1 / -1; font-size: 12px; line-height: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; margin-bottom: -1px; }
       #drowse-bar { background: linear-gradient(90deg, #9a8cff, #3a2a8a); }
-      #charges { grid-column: 1 / -1; font-size: 11px; line-height: 14px; color: var(--gold); letter-spacing: 0.06em; min-height: 14px; }
+      #charges { grid-column: 1 / -1; font-size: 12px; line-height: 15px; font-weight: 500; color: var(--gold); letter-spacing: 0.03em; min-height: 15px; }
       #progress .track { position: relative; }
       #best-mark { position: absolute; top: -3px; width: 2px; height: 10px; margin-left: -1px; background: #ffffff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.9); }
       #gust { position: absolute; top: 34%; left: 50%; transform: translateX(-50%); font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.1em; padding: 2px 12px; border-radius: 3px; background: rgba(22, 20, 56, 0.78); color: #bfeaff; }
@@ -131,13 +133,45 @@
       #loading .bar { margin-top: 12px; height: 6px; border-radius: 3px; background: rgba(34, 24, 70, 0.22); overflow: hidden; }
       #loading .bar i { display: block; height: 100%; width: 100%; border-radius: 3px; background: linear-gradient(90deg, #ff8a5c, #f2b33d); transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading, 0)); transition: transform 160ms ease-out; }
       @media (prefers-reduced-motion: reduce) { #loading .bar i { transition: none; } }
-      #touch { position: fixed; right: 12px; bottom: 12px; display: none; gap: 8px; z-index: 2; }
-      #touch button { height: 48px; min-width: 76px; padding: 0 14px; font-weight: 600; font-size: 14px; letter-spacing: 0.02em; }
-      #touch button.ghost { color: #ffffff; background: rgba(8, 14, 30, 0.82); border: 1.5px solid rgba(255, 255, 255, 0.7); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
+      #touch { position: fixed; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); display: none; gap: 8px; z-index: 2; }
+      #touch button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; min-width: 82px; padding: 0 14px; font-weight: 500; font-size: 13px; letter-spacing: 0.01em; border-radius: 8px; }
+      #touch button svg { width: 15px; height: 15px; flex: 0 0 auto; }
+      #touch button.ghost { color: #ffffff; background: rgba(8, 14, 30, 0.84); border: 1.5px solid rgba(255, 255, 255, 0.72); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
       #touch button.ghost:active { background: rgba(255, 255, 255, 0.28); }
-      @media (pointer: coarse) { #touch { display: flex; } }
-      @media (max-width: 640px) { #banner { font-size: 28px; } #progress { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 18px; transform: none; width: calc(100vw - 36px); } #progress { padding: 6px 10px; border-radius: 8px; background: rgba(34, 24, 70, 0.62); } #progress .rowp { color: var(--ink); } #progress .rowp .num { white-space: nowrap; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
-      @media (max-width: 640px) { #surge-chip { top: 156px; } #mute-btn { left: 66px; width: 42px; padding: 0; font-size: 0; } #mute-btn::before { content: "\266A"; font-size: 18px; } #mute-btn[aria-pressed="true"]::before { content: "\00D7"; } #prompt { bottom: 170px; white-space: normal; width: max-content; max-width: calc(100vw - 36px); text-align: center; } }
+      .touch-guide { display: none; font-size: 12px; line-height: 1.45; color: var(--ink); padding: 8px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); }
+      @media (pointer: coarse), (max-width: 760px) {
+        #touch { display: flex; }
+        #pause-btn { left: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); width: 48px; height: 48px; }
+        #mute-btn { left: 68px; bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); min-width: 48px; height: 48px; }
+        .runner { min-height: 48px; }
+        #start, #again, #resume, #restart { min-height: 44px; padding: 0 18px; }
+      }
+      @media (pointer: coarse) { .touch-guide { display: block; } }
+      @media (pointer: coarse) and (max-width: 640px) { .keys { display: none; } }
+      @media (max-width: 640px) {
+        #player { top: 10px; left: 10px; width: calc(100vw - 138px); max-width: 226px; padding: 7px 10px; grid-template-columns: 28px 1fr; gap: 2px 8px; }
+        #badge { width: 28px; height: 28px; }
+        #player .pname { display: none; }
+        .bar-row { grid-template-columns: 1fr 28px; gap: 6px; }
+        .meter { height: 6px; }
+        #charges:empty { display: none; }
+        #surge-chip { top: 90px; left: 10px; padding: 3px 9px; }
+        #side { top: 10px; right: 10px; width: 112px; gap: 5px; }
+        #side .card-hud { padding: 5px 8px; }
+        #side .big { font-size: 22px; line-height: 24px; }
+        #side .chip { display: none; }
+        #side .score { font-size: 18px; line-height: 20px; }
+        #progress { top: auto; left: 10px; right: 10px; width: auto; transform: none; bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); padding: 6px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); }
+        #progress .rowp { color: var(--ink); }
+        #progress .rowp .num { white-space: nowrap; }
+        #banner { top: 17%; font-size: 24px; line-height: 28px; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
+        #sub { top: calc(17% + 34px); max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
+        #mute-btn { width: 48px; padding: 0; font-size: 0; }
+        #prompt { bottom: calc(122px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); white-space: normal; width: max-content; max-width: calc(100vw - 24px); text-align: center; }
+        .card { padding: 16px; gap: 10px; }
+        .card h1 { font-size: 22px; line-height: 26px; }
+        .results-grid { grid-template-columns: repeat(2, 1fr); }
+      }
       .overlay:not(.hidden) ~ #touch { visibility: hidden; }
       .card { max-height: 92vh; overflow: auto; }
     </style>
@@ -155,6 +189,7 @@
         <p class="tag">One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reach the tail before the days run out.</p>
         <div class="meta">CHOOSE YOUR RUNNER <span>(<kbd>&larr;</kbd><kbd>&rarr;</kbd> to switch; looks only, the run is the same)</span></div>
         <div class="runners" id="runners"></div>
+        <div class="touch-guide">Swipe left / right: lane &middot; Tap: jump &middot; Swipe down: slide &middot; Hold while flying: steer</div>
         <div class="keys">
           <span><kbd>A</kbd><kbd>D</kbd> or <kbd>&larr;</kbd><kbd>&rarr;</kbd></span><span>change lane</span>
           <span><kbd>Space</kbd> <kbd>W</kbd></span><span>jump</span>
@@ -189,7 +224,11 @@
       </div>
     </section>
     <div id="count" class="hidden"></div>
-    <div id="touch"><button id="t-slide" type="button" class="ghost">&#9660; Slide</button><button id="t-fly" type="button" class="ghost">&#9650; Fly</button><button id="t-surge" type="button">&#9670; Surge</button></div>
+    <div id="touch">
+      <button id="t-slide" type="button" class="ghost"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg><span>Slide</span></button>
+      <button id="t-fly" type="button" class="ghost"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg><span>Fly</span></button>
+      <button id="t-surge" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l5 6-5 6-5-6 5-6z"/></svg><span>Surge</span></button>
+    </div>
     <div id="hud">
       <div id="player" class="card-hud">
         <div id="badge"></div>

@@ -203,5 +203,5 @@ export function floorStencil(def: FloorDef, label: string): StencilPose | null {
   if (!dir) return null;
   const [dx, dz, rz] = dir;
   const text = label.toUpperCase().replace(/[^A-Z0-9 -]/g, "").replace(/\s+/g, " ").trim();
-  return { text, position: [(sx + 0.5 + dx * 1.6) * CELL, 0.02, (sz + 0.5 + dz * 1.6) * CELL], rotation: [-Math.PI / 2, 0, rz] };
+  return { text, position: [(sx + 0.5 + dx * 1.6) * CELL, 0.036, (sz + 0.5 + dz * 1.6) * CELL], rotation: [-Math.PI / 2, 0, rz] };
 }

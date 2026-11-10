@@ -34,9 +34,9 @@ export const LAMP_SHADOW = { filter: "pcss", mapSize: 2048, lightSize: 0.8, soft
  * (rubric: shadows, ibl_reflections).
  */
 export const GROUNDING = {
-  contact: { intensity: 0.8, length: 0.32, thickness: 0.06 },
-  ao: { radius: 0.36, intensity: 0.55, density: 0.62 },
-  ssr: { intensity: 0.55, maxDistance: 9, roughness: 0.42, thickness: 0.35 }
+  contact: { intensity: 0.78, length: 0.22, thickness: 0.04 },
+  ao: { radius: 0.38, intensity: 0.65, density: 0.65, multiBounce: true },
+  ssr: { intensity: 0.62, maxDistance: 8, roughness: 0.2, thickness: 0.2 }
 } as const;
 
 /** Cool unshadowed bounce (DD47-L1): the old directional, now 0.25 from the far right of the room. */
@@ -85,17 +85,17 @@ export const BOARD_PROBE = {
 // Round 2: 0.74 -> 0.92 tall and a stronger cyan rim and glow; at 0.74 with a faint rim the dark-green dome vanished
 // into the green mask in the round-1 frames.
 export const COURIER_POD = {
-  scale: 0.484,
-  lift: -0.02 + 0.951 * 0.484,
-  coreHeight: 1.04,
-  /** Round 4: the Courier Studio glass bubble grows 0.34 -> 0.5 (judge: "a tiny pale cube that is hard to pick out"). */
-  shell: 0.5,
-  /** Round 3: the amber halo rings the pod's waist (marker around the body) instead of the hovering core. */
+  scale: 0.5,
+  lift: -0.02 + 0.951 * 0.5,
+  coreHeight: 1.06,
+  /** Sleek forward optic visor width on the courier prow (no opaque shell swallowing the Meshy pod). */
+  shell: 0.26,
+  /** Amber copper induction ring around the pod's waist. */
   haloHeight: 0.48,
-  halo: 0.9,
-  rim: { color: "#8ff8ff", power: 2, intensity: 1.2 },
+  halo: 0.88,
+  rim: { color: "#8ff8ff", power: 2, intensity: 1.35 },
   emissive: "#2fc8d8",
-  emissiveIntensity: 0.22
+  emissiveIntensity: 0.26
 } as const;
 
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
@@ -147,13 +147,14 @@ export const BASE_FOCUS_DISTANCE = Math.hypot(17.2, 13.8);
  */
 export const LUT_INTENSITY = 0.8;
 
-/** Lens stack (DD47-P2), shared by every board; per-board grade terms live in the rows. */
+/** Lens stack (DD47-P2 + WP-13 AgX jewel-box diorama), shared by every board; per-board grade terms live in the rows. */
 export const LENS = {
-  bloom: { intensity: 0.55, threshold: 0.92, radius: 0.42 },
-  vignette: { intensity: 0.2, smoothness: 0.7 },
-  chromaticAberration: 0.0012,
-  grain: 0.02,
-  toneMapping: "aces" as const
+  bloom: { intensity: 0.34, threshold: 0.9, radius: 0.42 },
+  vignette: { intensity: 0.18, smoothness: 0.72 },
+  chromaticAberration: 0.0009,
+  grain: 0.016,
+  exposure: 1.02,
+  toneMapping: "agx" as const
 } as const;
 
 export interface BoardLookRow {

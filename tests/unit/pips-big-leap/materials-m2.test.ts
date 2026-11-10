@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
 import { WORLD_IDS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
-import { CRYSTAL_OVERRIDES, LAVA_FRAGMENT_GLSL, LAVA_LOOK, SEED_OVERRIDES, hazardMaterial, lavaMaterial } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
+import { CRYSTAL_OVERRIDES, LAVA_FRAGMENT_GLSL, LAVA_FRAGMENT_WGSL, LAVA_LOOK, LAVA_VERTEX_WGSL, SEED_OVERRIDES, SURFACES, hazardMaterial, heroCapeMaterial, instancedSurface, lavaMaterial } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 
 type Node = {
   readonly kind: string;
@@ -24,13 +24,28 @@ const uniformsOf = (m: unknown): Record<string, { value: unknown }> | undefined 
 };
 
 describe("pips-big-leap materials (PBL-M2)", () => {
-  it("draws lava as a practical custom shader with HDR cracks that scroll", () => {
+  it("draws lava and the shoulder cape as dual-backend GLSL + WGSL shaders, and keeps instanced surfaces extension-free", () => {
     const m = lavaMaterial();
     expect(m.practical).toBe(true);
     expect(LAVA_LOOK.glowIntensity).toBeGreaterThan(1);
     expect(LAVA_FRAGMENT_GLSL).toMatch(/uTime \* flowSpeed/);
+    expect(LAVA_VERTEX_WGSL).toContain("a3dRasterPosition");
+    expect(LAVA_FRAGMENT_WGSL).toContain("aura.u_flowSpeed");
     expect(JSON.stringify(m)).toContain("flowSpeed");
     expect(hazardMaterial("lava")).toEqual(m);
+
+    const cape = heroCapeMaterial("#3f8cff", 1);
+    expect(JSON.stringify(cape)).toContain("a3dRasterPosition");
+    expect(JSON.stringify(cape)).toContain("capeColor");
+
+    for (const pair of Object.values(SURFACES)) {
+      for (const spec of [instancedSurface(pair.body), instancedSurface(pair.top)]) {
+        expect(spec.clearcoat ?? 0).toBe(0);
+        expect(spec.sheen ?? 0).toBe(0);
+        expect(spec.iridescence ?? 0).toBe(0);
+        expect(spec.anisotropy ?? 0).toBe(0);
+      }
+    }
   });
 
   it("slows the lava flow to 30% under reduced motion", () => {

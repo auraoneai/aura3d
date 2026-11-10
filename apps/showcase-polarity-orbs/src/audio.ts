@@ -3,7 +3,7 @@
  * the sim). Silent until the first user gesture unlocks it; mute persists in main.ts.
  */
 import { noteFrom } from "@aura3d/engine/audio";
-import { createGameSound, type GameSound, type GameSoundOptions, type SoundEvent } from "../../../examples/shared/runner-kit/index";
+import { createGameSound, type GameSound, type GameSoundOptions, type SoundEvent } from "../../../examples/shared/runner-kit/audio-kit";
 import type { GameState } from "./sim";
 
 export const BPM = 126;

@@ -6,13 +6,18 @@
  * engine author chunks (`a3d_lights`, `a3d_scene`; GU47 SO47-L1).
  * Sources use GLSL 300 es varyings and GLSL1 `attribute` for author attributes.
  */
-import { GIANT_POSITION, LOOKS } from "./art/look";
+import { EARTHRISE_POSITION, GIANT_POSITION, LOOKS } from "./art/look";
 
 const NOISE = /* glsl */ `
 float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
+}
+vec2 hash22(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx + p3.yz) * p3.zy);
 }
 float vnoise(vec2 p) {
   vec2 i = floor(p), f = fract(p);
@@ -23,6 +28,28 @@ float fbm(vec2 p) {
   float a = 0.5, s = 0.0;
   for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
   return s;
+}
+/** Voronoi lunar agglutinate cell: x = distance to nearest grain centre, y = cell id [0..1], zw = local offset. */
+vec4 regolithVoronoi(vec2 p) {
+  vec2 n = floor(p);
+  vec2 f = fract(p);
+  float bestD = 8.0;
+  float bestId = 0.0;
+  vec2 bestOff = vec2(0.0);
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 g = vec2(float(i), float(j));
+      vec2 rnd = hash22(n + g);
+      vec2 r = g + 0.15 + 0.7 * rnd - f;
+      float d = dot(r, r);
+      if (d < bestD) {
+        bestD = d;
+        bestId = hash21(n + g + vec2(19.3, 7.1));
+        bestOff = r;
+      }
+    }
+  }
+  return vec4(sqrt(bestD), bestId, bestOff);
 }
 `;
 
@@ -46,11 +73,14 @@ vec3 splitTone(vec3 c) {${gouache ? `
   c *= mix(vec3(0.84, 0.93, 1.22), vec3(1.10, 1.0, 0.84), w);` : ""}
   return c;
 }
-vec3 shade(vec3 albedo, vec3 N, vec3 emissive, vec3 world) {
+vec3 shadeRough(vec3 albedo, vec3 N, vec3 emissive, vec3 world, float rough) {
   vec3 V = normalize(cameraPosition - world);
-  vec3 direct = a3dDirect(N, V, albedo, 0.9, world);
+  vec3 direct = a3dDirect(N, V, albedo, rough, world);
   vec3 hemi = albedo * a3dHemiLight(N) * (HEMI_GAIN / 3.14159265);
   return splitTone(direct + hemi) + emissive;
+}
+vec3 shade(vec3 albedo, vec3 N, vec3 emissive, vec3 world) {
+  return shadeRough(albedo, N, emissive, world, 0.9);
 }
 /** Aerial perspective from the scene fog (exp2, the same colour and density the engine fogs the GLBs with). */
 vec3 haze(vec3 c, vec3 world) {
@@ -90,18 +120,22 @@ void main() {
 }`;
 
 /** GU47 phase 4: strength of the glazed racing line's sky / gas giant reflection (gouache). */
-export const TRACK_GLAZE = 0.9;
+export const TRACK_GLAZE = 0.94;
+export const EARTHRISE_RADIUS = 95;
 /** Cosine of the gas giant's angular radius seen from the orbit ring (520 m across, about 890 m out). */
 const GIANT_COS = Math.cos(Math.atan(LOOKS.gouache.planet.size / 2 / Math.hypot(GIANT_POSITION[0], GIANT_POSITION[2])));
+/** Cosine of the crescent Earthrise's angular radius seen from the orbit ring. */
+export const EARTHRISE_COS = Math.cos(Math.atan(EARTHRISE_RADIUS / Math.hypot(EARTHRISE_POSITION[0], EARTHRISE_POSITION[2])));
 
 /** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
 export const TRACK_MARK_WARP = 2.5;
 
-/** Track fragment; `gouache` adds the split tone, height mist and a deeper impasto relief (the signature brush texture). */
+/** Track fragment; `gouache` adds sintered regolith micro-sparkle, tire-glazed racing-line sheen, split tone & height mist. */
 export const trackFragment = (gouache: boolean): string => /* glsl */ `
 #define TRACK_MARK_WARP ${TRACK_MARK_WARP.toFixed(1)}
 #define GLAZE ${TRACK_GLAZE.toFixed(2)}
 #define GIANT_COS ${GIANT_COS.toFixed(4)}
+#define EARTHRISE_COS ${EARTHRISE_COS.toFixed(4)}
 in vec3 vWorld;
 in vec3 vNormal;
 in vec2 vUv;
@@ -146,35 +180,51 @@ void main() {
   albedo = mix(albedo, vec3(0.08, 0.36, 0.38), vein * 0.62);
   albedo *= vec3(0.80, 0.60, 0.52);
   float across = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);
-  albedo *= mix(0.5, 1.0, across);
-  // Impasto relief: screen-space bump from the streak height so the key light rakes across the brush marks.
+  albedo *= mix(0.5, 1.0, across);${gouache ? `
+  float line = smoothstep(0.15, 0.34, vUv.y) * smoothstep(0.85, 0.66, vUv.y);
+  float tireGroove = 0.88 + 0.12 * sin(vUv.y * 188.0 + fbm(wq.xz * 1.35) * 3.0);
+  float polish = line * mix(0.48, 1.0, smoothstep(0.40, 0.62, streak)) * tireGroove;
+  // Sintered racing groove compacts darker & warmer while dusty shoulders hold pale chalky regolith fines.
+  albedo = mix(albedo * 1.05, albedo * vec3(0.86, 0.84, 0.88), line * 0.65);` : ""}
+  // Impasto & regolith relief: screen-space bump from streak height so the 18-degree sun rakes across the surface.
   float h = bw.x * fbm(wq.yz * 2.2) + bw.y * fbm(wq.xz * 2.2) + bw.z * fbm(wq.xy * 2.2);
   vec3 dpx = dFdx(vWorld), dpy = dFdy(vWorld);
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
-  vec3 emissive = albedo * ${gouache ? "0.09" : "0.1"} + ${gouache ? "vec3(0.82, 0.52, 0.22)" : "vec3(0.18, 0.72, 0.66)"} * (1.0 - across) * 0.3;
-  vec3 lit = shade(albedo, N, emissive, vWorld);${gouache ? `
-  // GU47 phase 4 (rubric ibl_reflections 3: "fully matte, no environment reflection"): the racing line is glazed regolith,
-  // polished by the pack. It mirrors the painted sky (teal zenith, dark horizon), the banded peach gas giant as a disc
-  // and the low sun as a glint (shadowed), weighted by Schlick Fresnel, so the chase and grid views see the planet in the road.
+  vec3 emissive = albedo * ${gouache ? "0.085" : "0.1"} + ${gouache ? "vec3(0.82, 0.52, 0.22)" : "vec3(0.18, 0.72, 0.66)"} * (1.0 - across) * 0.3;${gouache ? `
+  float trackRough = mix(0.82, 0.24, polish);
+  vec3 lit = shadeRough(albedo, N, emissive, vWorld, trackRough);
+  // Tire-glazed racing-line reflection: sky dome, banded ochre gas giant, sunlit crescent Earthrise & grazing sun glint.
   vec3 Vg = normalize(cameraPosition - vWorld);
   vec3 Rg = reflect(-Vg, N);
   float fres = 0.04 + 0.96 * pow(1.0 - max(dot(N, Vg), 0.0), 5.0);
   vec3 toGiant = normalize(vec3(${GIANT_POSITION.map((v) => v.toFixed(1)).join(", ")}) - vWorld);
   float gd = dot(Rg, toGiant);
-  vec3 refl = mix(vec3(0.02, 0.05, 0.07), vec3(0.12, 0.33, 0.34), smoothstep(-0.05, 0.55, Rg.y));
+  vec3 toEarth = normalize(vec3(${EARTHRISE_POSITION.map((v) => v.toFixed(1)).join(", ")}) - vWorld);
+  float ed = dot(Rg, toEarth);
+  vec3 refl = mix(vec3(0.02, 0.05, 0.07), vec3(0.12, 0.35, 0.38), smoothstep(-0.05, 0.55, Rg.y));
   float giantBands = 0.85 + 0.15 * sin(Rg.y * 90.0);
   refl = mix(refl, vec3(0.98, 0.72, 0.54) * giantBands, smoothstep(GIANT_COS - 0.006, GIANT_COS + 0.006, gd));
-  refl += normalize(u_a3dSunColor + 1e-4) * pow(max(dot(Rg, normalize(u_a3dSunDirection)), 0.0), 260.0) * 5.0 * a3dSunShadowAuto(vWorld, N);
-  float line = smoothstep(0.16, 0.34, vUv.y) * smoothstep(0.84, 0.66, vUv.y);
-  float polish = line * mix(0.45, 1.0, smoothstep(0.42, 0.62, streak));
-  lit += refl * fres * polish * GLAZE;` : ""}
+  refl = mix(refl, vec3(0.46, 0.78, 1.0), smoothstep(EARTHRISE_COS - 0.005, EARTHRISE_COS + 0.005, ed) * 0.85);
+  vec3 sunDir = normalize(u_a3dSunDirection);
+  float sunVis = a3dSunShadowAuto(vWorld, N);
+  refl += normalize(u_a3dSunColor + 1e-4) * pow(max(dot(Rg, sunDir), 0.0), 260.0) * 5.0 * sunVis;
+  lit += refl * fres * polish * GLAZE;
+  // Voronoi lunar regolith glass-bead micro-sparkle (agglutinates glinting under grazing 18-degree sun on dusty shoulders).
+  vec4 cell = regolithVoronoi(vWorld.xz * 24.0 + vec2(vWorld.y * 11.0, vWorld.x * 3.0));
+  vec2 tilt2 = hash22(floor(vWorld.xz * 24.0) + vec2(cell.y * 37.0)) * 2.0 - 1.0;
+  vec3 nGrain = normalize(N + vec3(tilt2.x, 0.15, tilt2.y) * 0.44);
+  vec3 H = normalize(sunDir + Vg);
+  float beadMask = smoothstep(0.84, 0.97, cell.y) * (1.0 - smoothstep(0.08, 0.42, cell.x));
+  float sparkle = pow(max(dot(nGrain, H), 0.0), 512.0) * beadMask * (1.0 - line * 0.72) * sunVis;
+  lit += mix(vec3(1.0, 0.93, 0.82), vec3(0.76, 0.92, 1.0), cell.y) * sparkle * 4.6;` : `
+  vec3 lit = shade(albedo, N, emissive, vWorld);`}
   outColor = vec4(haze(lit, vWorld), 1.0);
 }`;
 export const TRACK_FRAGMENT = trackFragment(true);
 
-/** Opal / mineral surfaces: strata banding with an iridescent tint (the original's `Mf`). */
+/** Opal / mineral surfaces: lunar basalt & anorthosite height strata on cliffs, iridescent sheen on floating monoliths. */
 export const MINERAL_VERTEX = /* glsl */ `
 out vec3 vObject;
 out vec3 vNormal;
@@ -191,6 +241,7 @@ in vec3 vObject;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
+${gouache ? NOISE : ""}
 ${lighting(gouache)}
 void main() {
   float strata = sin(vObject.y * 3.6 + sin(vObject.z * 1.8) * 1.1 + sin(vObject.x * 2.1));
@@ -198,9 +249,32 @@ void main() {
   vec3 albedo = baseColor * (0.9 + 0.08 * strata + 0.02 * fine);
   if (opal > 0.5) albedo *= mix(vec3(0.64, 0.88, 1.0), vec3(1.0, 0.69, 0.86), strata * 0.5 + 0.5);
   vec3 N = normalize(vNormal);
-  if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
+  if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;${gouache ? `
+  float warp = fbm(vWorld.xz * 0.022 + vec2(vWorld.y * 0.035, 4.2));
+  float bandCoord = vWorld.y * 0.075 + warp * 1.65;
+  float layer = floor(bandCoord);
+  float within = bandCoord - layer;
+  float seam = smoothstep(0.0, 0.08, within) * (1.0 - smoothstep(0.92, 1.0, within));
+  float layerTone = fract(sin(layer * 12.9898 + 4.1414) * 43758.5453);
+  if (opal < 0.5) {
+    // Stratified crater-rim geology: mare basalt, iron breccia, highland anorthosite & slate-teal talus on flatter slopes.
+    vec3 basalt = baseColor * vec3(0.68, 0.66, 0.74);
+    vec3 anorthosite = baseColor * vec3(1.24, 1.18, 1.12);
+    vec3 breccia = baseColor * vec3(1.08, 0.84, 0.72);
+    vec3 rockBand = mix(basalt, anorthosite, smoothstep(0.2, 0.82, layerTone));
+    rockBand = mix(rockBand, breccia, smoothstep(0.55, 0.95, sin(layer * 2.3) * 0.5 + 0.5) * 0.55);
+    rockBand *= mix(0.62, 1.0, seam) * (0.92 + 0.16 * fbm(vWorld.xz * 0.18 + vec2(vWorld.y * 0.24, 0.0)));
+    float flatTalus = smoothstep(0.58, 0.88, abs(N.y));
+    albedo = mix(rockBand, baseColor * vec3(0.86, 0.84, 0.88), flatTalus * 0.55);
+  }
+  float cliffRelief = strata * 0.45 + warp * 0.55;
+  vec3 dpx = dFdx(vWorld), dpy = dFdy(vWorld);
+  vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
+  float det = dot(dpx, r1);
+  N = normalize(abs(det) * N - (opal > 0.5 ? 0.05 : 0.11) * sign(det) * (dFdx(cliffRelief) * r1 + dFdy(cliffRelief) * r2));` : ""}
   float glow = opal > 0.5 ? 0.17 : 0.025;
-  outColor = vec4(haze(shade(albedo, N, albedo * glow, vWorld), vWorld), 1.0);
+  float rough = ${gouache ? "(opal > 0.5 ? 0.34 : 0.84)" : "0.9"};
+  outColor = vec4(haze(shadeRough(albedo, N, albedo * glow, vWorld, rough), vWorld), 1.0);
 }`;
 export const MINERAL_FRAGMENT = mineralFragment(true);
 
@@ -400,4 +474,67 @@ void main() {
   float streak = smoothstep(0.12, 0.3, x) * (1.0 - smoothstep(0.65, 1.0, x)) * exp(-pow(y / width, 2.0));
   float a = max(blob, streak * 0.75) * shadowStrength;
   outColor = vec4(0.07, 0.04, 0.10, a);
+}`;
+
+/** Sunlit crescent Earthrise sphere above the crater horizon: sapphire oceans, emerald-ochre continents, cloud swirls & Rayleigh limb. */
+export const EARTHRISE_VERTEX = /* glsl */ `
+out vec3 vObject;
+out vec3 vNormal;
+out vec3 vWorld;
+void main() {
+  vObject = position;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const EARTHRISE_FRAGMENT = /* glsl */ `
+#include <a3d_scene>
+in vec3 vObject;
+in vec3 vNormal;
+in vec3 vWorld;
+out vec4 outColor;
+float eh31(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float en3(vec3 x) {
+  vec3 i = floor(x), f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(eh31(i), eh31(i + vec3(1, 0, 0)), f.x), mix(eh31(i + vec3(0, 1, 0)), eh31(i + vec3(1, 1, 0)), f.x), f.y),
+    mix(mix(eh31(i + vec3(0, 0, 1)), eh31(i + vec3(1, 0, 1)), f.x), mix(eh31(i + vec3(0, 1, 1)), eh31(i + vec3(1, 1, 1)), f.x), f.y),
+    f.z);
+}
+float efbm3(vec3 p) {
+  float a = 0.5, s = 0.0;
+  for (int i = 0; i < 5; i++) { s += a * en3(p); p = p * 2.04 + vec3(4.3, 1.9, 6.7); a *= 0.5; }
+  return s;
+}
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 dir = normalize(vObject);
+  vec3 sunDir = normalize(u_a3dSunDirection);
+  float ndotl = dot(N, sunDir);
+  float crescent = smoothstep(-0.08, 0.24, ndotl);
+  float continent = efbm3(dir * 2.6 + vec3(1.2, 3.4, 0.7));
+  float landMask = smoothstep(0.49, 0.56, continent);
+  float arid = smoothstep(0.46, 0.72, efbm3(dir * 5.2 + vec3(8.1, 0.5, 2.9)));
+  vec3 ocean = mix(vec3(0.03, 0.14, 0.36), vec3(0.08, 0.34, 0.62), smoothstep(-0.1, 0.65, ndotl));
+  vec3 land = mix(vec3(0.11, 0.34, 0.19), vec3(0.58, 0.46, 0.28), arid);
+  float polar = smoothstep(0.74, 0.92, abs(dir.y) + (continent - 0.5) * 0.18);
+  vec3 surface = mix(ocean, land, landMask);
+  surface = mix(surface, vec3(0.92, 0.95, 0.99), polar);
+  float swirl = efbm3(dir * 3.8 + vec3(continent * 1.3, 2.1, -1.4));
+  float clouds = smoothstep(0.47, 0.72, efbm3(dir * 6.4 + vec3(swirl * 1.8, -0.6, 3.1)));
+  surface = mix(surface, vec3(0.96, 0.98, 1.0), clouds * 0.78);
+  vec3 H = normalize(sunDir + V);
+  float seaGlint = pow(max(dot(N, H), 0.0), 42.0) * (1.0 - landMask) * (1.0 - clouds * 0.8) * crescent;
+  float limb = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+  vec3 day = surface * (0.18 + 1.35 * max(ndotl, 0.0)) + vec3(1.0, 0.95, 0.86) * seaGlint * 0.55;
+  vec3 night = surface * vec3(0.03, 0.05, 0.09) + vec3(0.02, 0.05, 0.11) * limb;
+  vec3 col = mix(night, day, crescent) + vec3(0.26, 0.62, 1.0) * limb * (0.22 + 0.95 * smoothstep(-0.22, 0.45, ndotl));
+  outColor = vec4(col * earthGain, 1.0);
 }`;

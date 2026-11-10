@@ -61,6 +61,14 @@ export interface ChaseInputs {
   readonly reducedMotion: boolean;
   /** HS-17 shot (default the chase). */
   readonly shot?: CameraShot;
+  /** WP-07 `createImpactRig` real-time FOV kick delta (degrees). */
+  readonly fovDeltaDeg?: number;
+  /** WP-07 `createImpactRig` real-time camera trauma offset `[x, y, z]`. */
+  readonly shakeOffset?: readonly [number, number, number];
+  /** WP-07 `createImpactRig` real-time camera trauma roll (radians). */
+  readonly shakeRoll?: number;
+  /** WP-07 normalized high-heat shudder above 85% core heat (`0..1`). */
+  readonly heatShudder?: number;
 }
 
 /** HS-17 framing: the chase, a countdown shot per digit (3, 2, 1), the results orbit, the title pose. */
@@ -152,8 +160,15 @@ export class ChaseCamera {
     this.kick += (wantKick - this.kick) * (1 - Math.exp(-dt / 0.3));
     this.trauma = Math.max(0, this.trauma - 1.6 * dt);
     const shake = input.reducedMotion ? 0 : this.trauma * this.trauma * 0.35;
-    const sx = shake * (Math.sin(this.time * 37.1) + 0.5 * Math.sin(this.time * 61.7));
-    const sy = shake * (Math.sin(this.time * 43.3 + 1.3) + 0.5 * Math.sin(this.time * 71.9));
+    const shudderAmp = input.reducedMotion ? 0 : Math.max(0, Math.min(1, input.heatShudder ?? 0)) * 0.055;
+    const sx = shake * (Math.sin(this.time * 37.1) + 0.5 * Math.sin(this.time * 61.7))
+      + shudderAmp * Math.sin(this.time * 92.4)
+      + (input.reducedMotion ? 0 : (input.shakeOffset?.[0] ?? 0));
+    const sy = shake * (Math.sin(this.time * 43.3 + 1.3) + 0.5 * Math.sin(this.time * 71.9))
+      + shudderAmp * Math.cos(this.time * 108.7)
+      + (input.reducedMotion ? 0 : (input.shakeOffset?.[1] ?? 0));
+    const fovImpact = input.reducedMotion ? 0 : (input.fovDeltaDeg ?? 0);
+    const rollImpact = input.reducedMotion ? 0 : (input.shakeRoll ?? 0);
     // Portrait phones get a wider vertical field of view so the road keeps its width on screen.
     const baseFov = input.aspect < 0.8 ? CHASE.portraitFov : CHASE.fov;
     const shot = input.shot ?? { kind: "chase" as const };
@@ -174,8 +189,8 @@ export class ChaseCamera {
     this.pose.target[0] = input.lookAt[0] * 0.85 + sx * 0.5;
     this.pose.target[1] = input.lookAt[1];
     this.pose.target[2] = input.lookAt[2];
-    this.pose.fov = baseFov + this.kick;
-    this.setRoll(this.roll);
+    this.pose.fov = baseFov + this.kick + fovImpact;
+    this.setRoll(this.roll + rollImpact);
     return this.pose;
   }
 

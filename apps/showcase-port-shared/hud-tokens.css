@@ -1,0 +1,197 @@
+/* ==========================================================================
+   AuraOne Licensed Game HUD Typography & Mobile Ergonomics Foundation
+   Self-hosted WOFF2 cuts from the licensed library (Whitney, DIN Pro,
+   Monument Grotesk Mono). Zero Google Fonts, Inter, Roboto, Geist, or
+   bare system font stacks. Zero synthetic bold/italic/small-caps.
+   ========================================================================== */
+
+:root {
+  font-synthesis: none;
+  font-synthesis-weight: none;
+  font-synthesis-style: none;
+  font-synthesis-small-caps: none;
+
+  --font-ui: "Whitney", "Whitney Fallback", "Graphik", sans-serif;
+  --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif;
+  --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
+
+  --hud-glass-bg: rgba(9, 13, 24, 0.78);
+  --hud-glass-strong: rgba(7, 10, 19, 0.9);
+  --hud-glass-border: rgba(255, 255, 255, 0.15);
+  --hud-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --hud-shadow: 0 10px 28px rgba(2, 6, 16, 0.42);
+  --hud-ink: #eef3fa;
+  --hud-muted: #a3b1c6;
+  --hud-touch-min: 44px;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./fonts/whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./fonts/whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./fonts/whitney-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./fonts/whitney-regular-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./fonts/whitney-semibold-italic.woff2") format("woff2");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("./fonts/dinpro-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("./fonts/dinpro-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "Monument Grotesk Mono";
+  src: url("./fonts/monument-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+  font-weight: 100 500;
+  font-style: normal;
+  size-adjust: 93.6%;
+  ascent-override: 102.6%;
+  descent-override: 25.6%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Helvetica Neue Bold"), local("Helvetica Bold");
+  font-weight: 600 900;
+  font-style: normal;
+  size-adjust: 87.9%;
+  ascent-override: 109.2%;
+  descent-override: 27.3%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+  font-weight: 100 450;
+  font-style: normal;
+  size-adjust: 93.9%;
+  ascent-override: 110.9%;
+  descent-override: 25.2%;
+  line-gap-override: 1.1%;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+  font-weight: 451 600;
+  font-style: normal;
+  size-adjust: 95.9%;
+  ascent-override: 108.6%;
+  descent-override: 24.7%;
+  line-gap-override: 1.0%;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "Monument Grotesk Mono Fallback";
+  src: local("Menlo"), local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("DejaVu Sans Mono");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 103.3%;
+  ascent-override: 103.8%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}
+
+/* Canonical AuraOne HUD utility classes */
+.hud-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.15;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.03em;
+  color: var(--hud-muted);
+}
+
+.hud-metric {
+  font-family: var(--font-metric);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--hud-ink);
+}
+
+.hud-tnum {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.hud-card {
+  background: var(--hud-glass-bg);
+  border: 1px solid var(--hud-glass-border);
+  box-shadow: var(--hud-glass-highlight), var(--hud-shadow);
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
+  border-radius: 10px;
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  .hud-touch-btn {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}

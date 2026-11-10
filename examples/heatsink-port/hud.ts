@@ -1,7 +1,7 @@
 /**
- * HUD model of the original HEATSINK (Time Trial): the same exponential smoothing of speed (k=9) and the four meters
- * (k=14), the same rounding and the same text formats, so the port's HUD text can be checked against the original's
- * recorded DOM values. Pure; `main.ts` writes the returned strings into the DOM.
+ * HUD model of Ion Circuit (Time Trial): exponential smoothing of speed (k=9) and the four meters (k=14),
+ * rounding and text formats verified against the recorded reference DOM values. Pure; `main.ts` writes
+ * the returned strings into the DOM.
  */
 import { CFG } from "./config";
 import { STRIKE } from "./operation";
@@ -39,6 +39,8 @@ export interface HudValues {
   objective: string;
   medal: string;
   gunLocked: boolean;
+  /** core reactor temperature readout in °C for the AuraOne ion telemetry cluster */
+  coreTemp: string;
 }
 
 /** "5:00" for the gold time limit */
@@ -110,7 +112,8 @@ export class HudModel {
       chain: race.ops.chain,
       objective: objectiveLine(race),
       medal: race.ops.medal,
-      gunLocked: p.gunLocked
+      gunLocked: p.gunLocked,
+      coreTemp: String(Math.round(320 + Math.min(1, Math.max(0, n.heat)) * 620))
     };
   }
 }

@@ -4,11 +4,11 @@
  */
 import type { material } from "@aura3d/engine";
 import {
-  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_FRAGMENT_GOUACHE, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
+  ATMOS_FRAGMENT, ATMOS_VERTEX, EARTHRISE_FRAGMENT, EARTHRISE_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_FRAGMENT_GOUACHE, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
   RIDER_SHADOW_FRAGMENT, RIDER_SHADOW_VERTEX, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
 } from "./shaders";
 import {
-  ATMOS_FRAGMENT_WGSL, ATMOS_VERTEX_WGSL, NEBULA_VERTEX_WGSL, OBJECT_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL, RIDER_SHADOW_FRAGMENT_WGSL,
+  ATMOS_FRAGMENT_WGSL, ATMOS_VERTEX_WGSL, EARTHRISE_FRAGMENT_WGSL, NEBULA_VERTEX_WGSL, OBJECT_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL, RIDER_SHADOW_FRAGMENT_WGSL,
   TRACK_VERTEX_WGSL, UV_VERTEX_WGSL, VEIL_FRAGMENT_WGSL, mineralFragmentWgsl, nebulaFragmentWgsl, solidFragmentWgsl, trackFragmentWgsl
 } from "./shaders-wgsl";
 import { POINT_QUAD_SHADERS } from "./point-quads";
@@ -113,6 +113,14 @@ export const atmosphereSpec = (color: Rgb): CustomSpec => ({
   blending: "additive"
 });
 
+/** Sunlit crescent Earthrise sphere suspended above the crater rim (paired GLSL + WGSL). */
+export const earthriseSpec = (gain = 1.0): CustomSpec => ({
+  glsl: { vertex: EARTHRISE_VERTEX, fragment: EARTHRISE_FRAGMENT },
+  wgsl: { vertex: OBJECT_VERTEX_WGSL, fragment: EARTHRISE_FRAGMENT_WGSL },
+  uniforms: { earthGain: { type: "f32", value: gain } },
+  side: "front"
+});
+
 /** GU47 phase 3: the soft rider shadow quad (gouache only). */
 export const riderShadowSpec = (strength = 0.7): CustomSpec => ({
   glsl: { vertex: RIDER_SHADOW_VERTEX, fragment: RIDER_SHADOW_FRAGMENT },
@@ -144,5 +152,6 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "sky", spec: skySpec() },
   { name: "sky-gouache", spec: skySpec(0, "gouache") },
   { name: "atmosphere", spec: atmosphereSpec([1, 0.7, 0.55]) },
+  { name: "earthrise", spec: earthriseSpec() },
   { name: "rider-shadow", spec: riderShadowSpec() }
 ];

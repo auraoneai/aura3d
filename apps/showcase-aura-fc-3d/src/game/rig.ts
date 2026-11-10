@@ -96,8 +96,8 @@ const idHash = (id: string): number => {
 
 /* ------------------------------------------------------------------ */
 
-/** FC47-M2 interim fabric term on shirts and shorts (sheen 0.45 target; rim until model overrides carry sheen). */
-export const KIT_FABRIC_RIM = { color: "#e8eef6", power: 4, intensity: 0.45 } as const;
+/** FC47-M2 interim fabric term on shirts and garment panels (micromesh floodlight sheen). */
+export const KIT_FABRIC_RIM = { color: "#eef4fc", power: 3.6, intensity: 0.45 } as const;
 
 /** Scene nodes for one athlete: the skinned body, its contact shadow and its team ring. */
 /** Blob-disc opacity under each athlete: 0.32 (4.6.2); the phase-4 hybrid path, where the key casts real shadows, 0.14. */
@@ -113,12 +113,11 @@ export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY, cas
       name: `${id}-body`,
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
       materialOverrides: [
-        // FC47-M2 interim: a soft fabric fresnel rim (0.45) stands in for sheen, which AuraModelMaterialOverride does not
-        // carry yet (handoff E-D); it catches the main-stand flood on shirt edges
-        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04, rim: KIT_FABRIC_RIM },
-        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0, rim: KIT_FABRIC_RIM },
-        { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.75, metallic: 0 },
-        { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0 }
+        // FC47-M2: soft fabric fresnel rim catches the main-stand floodlight on athletic micromesh kits
+        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.56, metallic: 0.04, rim: KIT_FABRIC_RIM },
+        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.64, metallic: 0.02, rim: KIT_FABRIC_RIM },
+        { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.72, metallic: 0, rim: { color: "#e4ecf6", power: 4.4, intensity: 0.25 } },
+        { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.54, metallic: 0, rim: { color: "#ffd8be", power: 4.8, intensity: 0.18 } }
       ]
     } as any)
       .position(0, 0, 0)

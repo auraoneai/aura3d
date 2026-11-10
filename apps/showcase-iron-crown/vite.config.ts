@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import type { Connect, Plugin } from "vite";
-import rootConfig from "../../vite.config";
+import rootConfig, { createSourceWorkerEntryPlugin } from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appDir, "..", "..");
@@ -50,6 +50,7 @@ const serveSharedAuraAssets: Plugin = {
 export default defineConfig({
   plugins: [...(rootConfig.plugins ?? []), serveSharedAuraAssets],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
+  worker: { format: "es", plugins: () => [createSourceWorkerEntryPlugin()] },
   optimizeDeps: rootConfig.optimizeDeps,
   // App-local public tree: the Meshy-imported catalog lives under
   // public/aura-assets (aura.assets.json outputDir), and public/packs is a

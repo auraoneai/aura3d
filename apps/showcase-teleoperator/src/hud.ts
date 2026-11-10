@@ -97,7 +97,7 @@ export function createHud(opts: { readonly onToggleStyle: () => void; readonly o
             <div class="tx-head"><div class="tg">${r.state === "boarding" ? "PICKING UP · KERB LOCKED" : `FARE ${Math.min(s.shift.faresDone + 1, SHIFT_FARES)} OF ${SHIFT_FARES} · PICKUP`}</div>${styleButton(s.style, r.state === "boarding")}</div>
             <div class="who"><i style="background:${fare.avatarColor}">${esc(fare.passenger[0]!)}</i><div><b>${esc(fare.passenger)}</b><small>“${esc(fare.quote)}”</small></div></div>
             <div class="leg"><span class="dot p"></span><div><b>${esc(fare.pickupName)}</b><small>${esc(fare.pickupStreet)}</small></div><em data-r="dist"></em></div>
-            <div class="leg"><span class="dot d"></span><div><b>${esc(fare.dropoffName)}</b><small>${fare.tripMiles.toFixed(1)} mi · fare ${usd(fare.fareUsd)} · par ${formatClock(fare.parSec)}</small></div><em style="color:#ffb347">DROP-OFF</em></div>`;
+            <div class="leg"><span class="dot d"></span><div><b>${esc(fare.dropoffName)}</b><small>${fare.tripMiles.toFixed(1)} mi · fare ${usd(fare.fareUsd)} · par ${formatClock(fare.parSec)}</small></div><span class="leg-tag">DROP-OFF</span></div>`;
           refs.cardDist = ref(card, "[data-r=dist]");
           say(r.state === "boarding" ? `Picking up ${fare.passenger}` : `New fare: ${fare.passenger} at ${fare.pickupName}`);
         }
@@ -240,7 +240,7 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, w: number, h: number,
   ctx.arc(bx, by, 11, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#061412";
-  ctx.font = '600 12px "DIN Pro", sans-serif';
+  ctx.font = '600 12px "Whitney", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(pickup ? "P" : "D", bx, by + 0.5);

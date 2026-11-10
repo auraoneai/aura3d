@@ -1,18 +1,19 @@
 /**
- * Polarity Orbs boot: loading bar → buildWorld → createAuraApp → bind → warm → fixed-step loop.
- * Splat shell pattern: drag steering with tap-to-flip discrimination (pointer up with |dx| < 8 px, or Space/Enter),
- * pause on P/Esc/hidden tab, adaptive DPR, QA hooks (`window.__AURA_POLARITY_ORBS__`), route-health snapshot and
- * localStorage best/mute/motion/howtoSeen under `splatSiblings.polarity-orbs.*` (guarded).
+ * Polarity Orbs boot: loading bar → buildWorld → createAuraApp (AgX HDR output) → bind → warm → fixed-step loop.
+ * Features multi-touch drag steering + dedicated right-thumb Flip button + tap-to-flip discrimination, real-time
+ * `createImpactRig` hit-stop & camera trauma, AuraOne licensed HUD (`hud-tokens.css`), adaptive DPR, and QA hooks.
  *
  * Query parameters: `seed=N`, `manual=1`, `autostart=1`, `autopilot=1`, `warmup=N`, `dpr=N`, `motion=reduced|full`.
  */
+import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
-import { drainPopups } from "../../../examples/shared/runner-kit/index";
+import { drainPopups } from "../../../examples/shared/runner-kit/popups";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { CONFIG, IDLE, PolarityOrbsSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
+import { createImpactRig } from "../../showcase-port-shared/feel";
+import { IDLE, PolarityOrbsSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
 import { CameraRig, createPolarityPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { LOOK } from "./look";
@@ -42,7 +43,7 @@ const canvas = $<HTMLCanvasElement>("app");
 const TAP_SLOP = 8;
 
 let sim = new PolarityOrbsSim(config.seed);
-let rig = new CameraRig(sim);
+const rig = new CameraRig(sim);
 const presenter = createPolarityPresenter(() => sim, rig);
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
@@ -61,7 +62,7 @@ let lastPhase: Phase = "splash";
 let keyDir = 0;
 let keyDragging = false;
 let paused = false;
-let symbols = false;
+let symbols = true;
 
 const store = {
   get(key: string): string | null { try { return localStorage.getItem(key); } catch { return null; } },
@@ -78,6 +79,9 @@ const storedMotion = config.motion || store.get(KEY_MOTION);
 let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" ? false : prefersReduced;
 rig.steady = reducedMotion;
 
+let impactRig = createImpactRig({ reducedMotion });
+let impactState = impactRig.step(0);
+
 const hud = new Hud();
 const howto = createHowtoDialog($("howto-screen"), $<HTMLButtonElement>("btn-howto-close"));
 document.body.classList.toggle("reduced-motion", reducedMotion);
@@ -93,7 +97,7 @@ function showResults(): void {
   $("stat-combo").textContent = String(o.bestCombo);
   $("stat-orbs").textContent = String(o.orbsCollected);
   $("stat-distance").textContent = `${Math.floor(o.distance).toLocaleString()} m`;
-  $("splash-best").textContent = `BEST ${best.toLocaleString()}`;
+  $("splash-best").textContent = `best ${best.toLocaleString()}`;
   const out = $("final-score");
   const paint = (shown: number, done: boolean): void => {
     out.textContent = shown.toLocaleString();
@@ -116,8 +120,6 @@ function updateHud(): void {
   hud.update(o, best);
   if (o.phase !== lastPhase) {
     if (o.phase === "gameOver") showResults();
-    // The burst disc floods the frame during "bursting"; once the results card is up, fade it so the
-    // translucent game-over screen shows the world behind it (presentation only).
     if (o.phase === "splash" || o.phase === "playing" || o.phase === "gameOver") fx?.clearReveal();
     if (o.phase !== "playing") $("popups").replaceChildren();
     sound.setIntensity(o.phase === "playing" || o.phase === "bursting" ? "play" : o.phase === "gameOver" ? "over" : "title");
@@ -150,6 +152,13 @@ function reactToFrame(): void {
     const flash = flashFor(event.sound, o.polarity);
     if (flash) fx.flash(flash.color, flashStrength(flash.strength, reducedMotion));
     if (event.sound === "burst") fx.reveal(o.polarity === 1 ? LOOK.red : LOOK.blue, reducedMotion);
+    if (!reducedMotion) {
+      if (event.sound === "flip") impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.4 });
+      else if (event.sound === "collect" && o.mult >= 3) impactRig.trigger({ trauma: 0.08, fovKickDeg: 0.65 });
+      else if (event.sound === "powerup" || event.sound === "milestone") impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.28, fovKickDeg: 2.6 });
+      else if (event.sound === "block" || event.sound === "wrong") impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.5, fovKickDeg: -2.2 });
+      else if (event.sound === "burst") impactRig.trigger({ freezeSeconds: 0.052, trauma: 0.65, fovKickDeg: 3.2 });
+    }
   }
   prevFrame = frame;
   fx.vignette(o.mult, o.rainbowTimer > 0, o.polarity === 1 ? LOOK.red : LOOK.blue, o.tick / 60, reducedMotion);
@@ -166,7 +175,10 @@ function render(live = false): void {
       ...(shown ? { shown } : {}),
       camera: rig.at(live ? loop.alpha : 1),
       reducedMotion,
-      symbols
+      symbols,
+      shakeOffset: live ? impactState.shakeOffset : [0, 0, 0],
+      shakeRoll: live ? impactState.shakeRoll : 0,
+      fovDeltaDeg: live ? impactState.fovDeltaDeg : 0
     });
     app.step(0);
   } catch (error) {
@@ -187,6 +199,7 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused,
   step() {
+    if (!config.manual && !pilot && !reducedMotion && impactState.frozen) return;
     if (keyDir !== 0 && sim.o.phase === "playing") {
       if (!keyDragging) { pending.down = true; keyDragging = true; }
       pending.dx += keyDir * 12;
@@ -199,6 +212,7 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    impactState = impactRig.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
     sampleQuality(frameSeconds);
@@ -233,14 +247,13 @@ async function boot(): Promise<void> {
   });
   loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
-  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "none", dither: false, ...lab.output },
+    output: { preset: "cinematic-film", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -262,7 +275,7 @@ async function boot(): Promise<void> {
   startButton.disabled = false;
   startButton.textContent = "PLAY NOW";
   startButton.removeAttribute("aria-busy");
-  $("splash-best").textContent = `BEST ${best.toLocaleString()}`;
+  $("splash-best").textContent = `best ${best.toLocaleString()}`;
   if (config.autostart) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
@@ -272,14 +285,24 @@ async function boot(): Promise<void> {
   updateHud();
 }
 
-/* ------------------------------------------------------------------ pointer input (tap vs drag) */
+/* ------------------------------------------------------------------ pointer input (multi-touch drag + flip button) */
 
+let steerPointerId: number | null = null;
 let lastX = 0;
 let downX = 0;
 let travel = 0;
 let dragging = false;
 /** True between pointerdown and pointerup on the canvas: released under the slop it becomes a polarity flip. */
 let tapCandidate = false;
+
+$<HTMLButtonElement>("btn-flip").addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  void sound.unlock();
+  if (config.manual || pilot || paused || howto.isOpen) return;
+  if (sim.o.phase === "playing") pending.tap = true;
+});
+
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
   if (config.manual || pilot) return;
@@ -287,27 +310,35 @@ addEventListener("pointerdown", (e) => {
   if (howto.isOpen || target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "gameOver" && target?.id !== "btn-restart") return;
   if (paused) return;
+  if (dragging && steerPointerId !== null && e.pointerId !== steerPointerId) {
+    // A second thumb tap on the canvas while steering triggers an instant polarity flip without breaking the drag.
+    if (sim.o.phase === "playing") pending.tap = true;
+    return;
+  }
   if (sim.o.phase === "splash") pending.start = true;
   else pending.down = true;
   dragging = true;
+  steerPointerId = e.pointerId;
   lastX = e.clientX;
   downX = e.clientX;
   travel = 0;
   tapCandidate = sim.o.phase === "playing" && !target?.closest?.("button");
   if (!target?.closest?.("button")) {
-    try { canvas.setPointerCapture?.(e.pointerId); } catch { /* the pointer is already gone */ }
+    try { canvas.setPointerCapture?.(e.pointerId); } catch { /* pointer already released */ }
   }
 });
 addEventListener("pointermove", (e) => {
-  if (config.manual || pilot || !dragging) return;
+  if (config.manual || pilot || !dragging || (steerPointerId !== null && e.pointerId !== steerPointerId)) return;
   const delta = e.clientX - lastX;
   pending.dx += delta;
   lastX = e.clientX;
   travel = Math.abs(e.clientX - downX);
 });
-const release = (): void => {
+const release = (e?: PointerEvent): void => {
   if (config.manual || pilot) return;
+  if (e && steerPointerId !== null && e.pointerId !== steerPointerId) return;
   dragging = false;
+  steerPointerId = null;
   pending.up = true;
   if (tapCandidate && travel < TAP_SLOP && sim.o.phase === "playing") pending.tap = true;
   tapCandidate = false;
@@ -320,6 +351,7 @@ function dropInput(): void {
   held.clear();
   keyDir = 0;
   tapCandidate = false;
+  steerPointerId = null;
   if (keyDragging || dragging) pending.up = true;
   keyDragging = false;
   dragging = false;
@@ -357,6 +389,8 @@ function paintSettings(): void {
   symbolToggle.checked = symbols;
   document.body.classList.toggle("reduced-motion", reducedMotion);
   rig.steady = reducedMotion;
+  impactRig = createImpactRig({ reducedMotion });
+  impactState = impactRig.step(0);
 }
 motionToggle.addEventListener("change", () => {
   reducedMotion = motionToggle.checked;
@@ -372,7 +406,7 @@ symbolToggle.addEventListener("change", () => {
 paintSettings();
 
 const muteButton = $<HTMLButtonElement>("btn-mute");
-const paintMute = (): void => { muteButton.setAttribute("aria-pressed", String(sound.muted)); muteButton.textContent = sound.muted ? "\u{1F507}" : "♪"; };
+const paintMute = (): void => { muteButton.setAttribute("aria-pressed", String(sound.muted)); };
 const toggleMute = (): void => { sound.setMuted(!sound.muted); store.set(KEY_MUTE, sound.muted ? "1" : "0"); paintMute(); };
 muteButton.addEventListener("click", toggleMute);
 paintMute();
@@ -381,14 +415,15 @@ function restart(): void {
   sim.begin();
   presenter.reset();
   rig.reset(sim);
+  impactRig.reset();
+  impactState = impactRig.step(0);
   hud.resetCache();
   prevFrame = null;
-  // Leave lastPhase at "gameOver" so updateHud sees the phase change: it clears the burst reveal and
-  // returns the music to "play" (setting it to "playing" here left the reveal over the scene after restart).
   fx?.clearReveal();
   $("splash-screen").classList.remove("visible");
   $("gameover-screen").classList.remove("visible");
   $("hud").classList.add("visible");
+  $("btn-flip").classList.add("visible");
 }
 
 /** Play from the title: the first time ever, show the rules and start the run when they are dismissed. */
@@ -448,11 +483,6 @@ addEventListener("keyup", (e) => {
 
 /* ------------------------------------------------------------------ capture scripts */
 
-/**
- * Capture-script DSL for `replay`: comma-separated `frame:flags` tokens where flags are
- * `start`/`s`, `down`/`d`, `up`/`u`, `tap`/`t` and `dx=<number>` (CSS px), e.g. `0:start, 24:d+dx=-60, 40:u`.
- * Frames without a token are idle. Deliberately tiny so specs can hand-write scripts.
- */
 export function parseScript(text: string): Input[] {
   const frames: Input[] = [];
   for (const raw of text.split(",")) {
@@ -512,7 +542,6 @@ const qa = installQaHooks("polarity-orbs", {
     updateHud();
     return snapshotState();
   },
-  /** Headless replay of a capture script on a fresh sim (no rendering): returns the trace rows. */
   replay(script: string | readonly Partial<Input>[], warmup = config.warmup, seed = config.seed) {
     let inputs: Input[];
     if (typeof script === "string") {
@@ -532,6 +561,8 @@ const qa = installQaHooks("polarity-orbs", {
     sim = new PolarityOrbsSim(seed);
     presenter.reset();
     rig.reset(sim);
+    impactRig.reset();
+    impactState = impactRig.step(0);
     hud.resetCache();
     steps = 0;
     nextPopupSeq = 0;
@@ -543,7 +574,6 @@ const qa = installQaHooks("polarity-orbs", {
   },
   extras: {
     get booted(): boolean { return ready; },
-    /** Drive n steps with the closed-loop autopilot; `mistakeRows` are the rows it refuses to flip on (death path). */
     runAutopilot(n: number, mistakeRows: number[] = []) {
       const driver = new Autopilot({ maxDx: 14, mistakeRows });
       for (let i = 0; i < n; i++) {

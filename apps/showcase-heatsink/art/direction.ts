@@ -36,12 +36,12 @@ export default defineArtDirection({
     reservedObjective: "#35d6ff"
   },
   lighting: {
-    // One PCSS 3-cascade key per circuit (MEGACITY #ffb070 sodium, DUSTFALL #ff9a4a burnt sun, VESPER #b9a4ff pre-dawn).
+    // One PCSS 2-cascade key per circuit (MEGACITY #ffb070 sodium, DUSTFALL #ff9a4a burnt sun, VESPER #b9a4ff pre-dawn).
     key: { type: "directional", colorTemperatureK: 3000, shadow: true },
     fill: "ibl",
     // Unshadowed: cyan counter-rim, drone headlight, gantry sodium points (VESPER trades one for the vent up-fill).
     practicals: 6,
-    environment: { hdri: "kloppenheim_02", background: "hdri" },
+    environment: { hdri: "kloppenheim_02", background: "sky" },
     exposureEV: 0.4
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.25], fovDeg: [62, 84], mobile: "both" },

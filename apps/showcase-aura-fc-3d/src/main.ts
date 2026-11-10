@@ -11,14 +11,15 @@
  */
 
 import {
-  createAuraApp, createGameAudio, game, installQaHooks, looks, material
+  createAuraApp, createGameAudio, game, installQaHooks, looks
 } from "@aura3d/engine";
 import {
-  createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
+  createFixedStepPresenter, createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
   createFxParticlePass,
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
@@ -117,18 +118,25 @@ function boot(): void {
     // Lab flags: `?worker=1` carries createWorkerRendererWorker; the renderer/output fragments merge over the look's renderer and the venue output
     // preset instead of being overwritten by them, so `?backend=` / `?gamut=` reach the engine.
     // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-    const { renderer: labRenderer, output: labOutput } = labAppOptions(lab, { backend: "auto" });
+    const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(lab, {
+      backend: "auto",
+      createWorker: createWorkerRendererWorker
+    });
     const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
-    // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
-    // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
-    // PRD D11: the 4.6.2 look path set no output preset; `?outputPreset=off` is the QA A/B for the GU47 path.
+    // FC47-P1 + WP-04: AgX HDR tone mapping + dithering across every stadium venue, preserving QA `?outputPreset=off`.
     const presetOutput = bootOriginal || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[bootVenue].post };
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
-      ...(lab.worker ? { worker: labAppOptions(lab, createWorkerRendererWorker).worker } : {}),
+      ...(labWorker ? { worker: labWorker } : {}),
       ...lookOptions,
       ...(labRenderer ? { renderer: { ...lookOptions.renderer, ...labRenderer } } : {}),
-      ...(presetOutput || labOutput ? { output: { ...lookOptions.output, ...presetOutput, ...labOutput } } : {}),
+      output: {
+        ...lookOptions.output,
+        toneMapping: "agx",
+        dither: true,
+        ...(presetOutput ?? {}),
+        ...(labOutput ?? {})
+      },
       qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {
@@ -240,7 +248,9 @@ function boot(): void {
     liveCount: () => 0
   } as any);
 
-  let hitStopUntil = 0;
+  const impactRig = createImpactRig({ reducedMotion });
+  let impactShakeOffset: readonly [number, number, number] = [0, 0, 0];
+  let impactFovDelta = 0;
   // QA: freeze the sim at a chosen fraction of the next kick swing and look at the kicker (see installQaHooks below)
   let qaFrozen = false;
   let qaTargetFrac: number | null = null;
@@ -304,7 +314,7 @@ function boot(): void {
     camera: (app as any)?.camera,
     session: {
       reducedMotion, reducedFlash,
-      hitStop: (seconds: number) => { hitStopUntil = performance.now() / 1000 + seconds; },
+      hitStop: (seconds: number) => { impactRig.trigger({ freezeSeconds: Math.min(seconds, 0.065) }); },
       slowMo: () => {}
     } as any,
     fx,
@@ -451,13 +461,17 @@ function boot(): void {
     }
     // FC-09: portrait phones keep the landscape shot's horizontal coverage (about 20 m of pitch on the broadcast rig)
     const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
-    const fit = fitCameraToAspect(cam.eye, cam.target, cam.fov, aspect);
+    const fit = fitCameraToAspect(cam.eye, cam.target, cam.fov + cam.fovKick, aspect);
     cam.shownEye = fit.eye; cam.shownFov = fit.fov;
     // FC47-C1: a shot change is a hard cut (the camera evidence reports cutThisFrame; temporal history resets), except
     // the rail's own landing on the gantry, which is continuous.
     const cut = cam.mode !== shownMode && !(shownMode === "intro" && cam.mode === "broadcast" && cam.modeT >= INTRO_RAIL_S);
     if (cam.mode !== shownMode) { if (cut) camCuts++; shownMode = cam.mode; hud.bars(cam.mode === "intro"); hud.replayTag(cam.mode === "replay"); }
-    (app as any).camera?.setPose?.({ position: fit.eye, target: cam.target, fov: fit.fov }, cut ? { cut: true } : undefined);
+    const posedEye: Vec3 = qaFrozen
+      ? fit.eye
+      : [fit.eye[0] + impactShakeOffset[0], fit.eye[1] + impactShakeOffset[1], fit.eye[2] + impactShakeOffset[2]];
+    const posedFov = qaFrozen ? fit.fov : clamp(fit.fov + impactFovDelta, 24, 78);
+    (app as any).camera?.setPose?.({ position: posedEye, target: cam.target, fov: posedFov }, cut ? { cut: true } : undefined);
   }
   function hasUserInput(): boolean {
     return inputFrame.move[0] !== 0 || inputFrame.move[1] !== 0 || inputFrame.passShort || inputFrame.passDriven || inputFrame.shootHeld || inputFrame.switchPlayer;
@@ -488,13 +502,74 @@ function boot(): void {
 
   let framesRendered = 0;
   let goalSide: -1 | 0 | 1 = 0;
+  let goalHitY = 1.4;
+  let goalHitZ = 0;
+  let turfBurst: { x: number; z: number; startAt: number } | null = null;
   let lastEvidenceAt = -1;
   let lastVenue = "";
   let lastPhaseForCrowd = "";
+  let lastSimPhase = "";
   let appReady = false;
   let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
   sim.setAutopilot(autopilot);
   sim.setAssist(params.get("assist") === "1");
+
+  type PresentedBall = MatchBallSlice;
+  interface MatchBallSlice {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+    readonly rotX: number;
+    readonly rotY: number;
+    readonly rotZ: number;
+  }
+  interface PresentedMatch {
+    readonly players: PlayerState[];
+    readonly ball: PresentedBall;
+  }
+  const lerpShortAngle = (a: number, b: number, t: number): number => {
+    let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
+    if (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  };
+  const presenter = createFixedStepPresenter<PresentedMatch>({
+    snapshot: () => ({
+      players: (sim.state.players as PlayerState[]).map((p) => ({ ...p })),
+      ball: {
+        x: sim.state.ball.x,
+        y: sim.state.ball.y,
+        z: sim.state.ball.z,
+        rotX: sim.state.ball.rotX ?? 0,
+        rotY: sim.state.ball.rotY ?? 0,
+        rotZ: sim.state.ball.rotZ ?? 0
+      }
+    }),
+    blend: (a, b, alpha) => {
+      if (a.players.length !== b.players.length) return b;
+      const bDist2 = (b.ball.x - a.ball.x) ** 2 + (b.ball.z - a.ball.z) ** 2;
+      const ball: PresentedBall = bDist2 > 20
+        ? b.ball
+        : {
+          x: lerp(a.ball.x, b.ball.x, alpha),
+          y: lerp(a.ball.y, b.ball.y, alpha),
+          z: lerp(a.ball.z, b.ball.z, alpha),
+          rotX: lerp(a.ball.rotX, b.ball.rotX, alpha),
+          rotY: lerp(a.ball.rotY, b.ball.rotY, alpha),
+          rotZ: lerp(a.ball.rotZ, b.ball.rotZ, alpha)
+        };
+      const players = b.players.map((pb, idx) => {
+        const pa = a.players[idx];
+        if (!pa || pa.id !== pb.id || (pb.x - pa.x) ** 2 + (pb.z - pa.z) ** 2 > 16) return pb;
+        return {
+          ...pb,
+          x: lerp(pa.x, pb.x, alpha),
+          z: lerp(pa.z, pb.z, alpha),
+          yaw: lerpShortAngle(pa.yaw, pb.yaw, alpha)
+        };
+      });
+      return { players, ball };
+    }
+  });
 
   const inputFrame: UserInputFrame = {
     move: [0, 0], sprint: false, passShort: false, passDriven: false,
@@ -540,15 +615,29 @@ function boot(): void {
         default: break;
       }
       switch (ev.type) {
-        case "shot": juiceFire("shot", { position: pos }); break;
-        case "pass": juiceFire("kick", { position: pos }); break;
+        case "shot":
+          juiceFire("shot", { position: pos });
+          turfBurst = { x: pos[0], z: pos[2], startAt: performance.now() / 1000 };
+          if ((sim.state.ball.lastKickPower ?? 0) >= 0.72) {
+            impactRig.trigger({ freezeSeconds: 0.055, trauma: shakeOff ? 0 : 0.26, fovKickDeg: 1.35 });
+          }
+          break;
+        case "pass":
+          juiceFire("kick", { position: pos });
+          if ((sim.state.ball.lastKickPower ?? 0) >= 0.65) {
+            turfBurst = { x: pos[0], z: pos[2], startAt: performance.now() / 1000 };
+          }
+          break;
         case "goal":
           juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("GOAL!", 2400, "goal");
+          impactRig.trigger({ freezeSeconds: 0.055, trauma: shakeOff ? 0 : 0.52, fovKickDeg: 2.1 });
           // FC47-H1 TV package: the goal lower third (scoring club, minute, score)
           if (ev.team !== undefined) hud.goalLowerThird(ev.team, sim.state);
           // FC-E2 authored goal feedback: confetti over the net that was scored, plus the net bulge, ring and scoreboard
           // flash driven from tickWorld
           goalSide = sim.state.ball.x >= 0 ? 1 : -1;
+          goalHitY = clamp(sim.state.ball.y, 0.35, 2.5);
+          goalHitZ = clamp(sim.state.ball.z, -3.5, 3.5);
           // FC47-C1: replay the run-up and strike while the sim holds its 3 s goal phase
           if (!replayOff && sim.state.phase === "goal") {
             const plan = replayBuf.plan();
@@ -558,12 +647,25 @@ function boot(): void {
           window.setTimeout(() => world.confetti?.setVisible(false), 2600);
           syncCrowd();
           break;
-        case "pen-goal": juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("SCORES!", 1800, "goal"); break;
+        case "pen-goal":
+          juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("SCORES!", 1800, "goal");
+          impactRig.trigger({ freezeSeconds: 0.055, trauma: shakeOff ? 0 : 0.48, fovKickDeg: 1.9 });
+          goalSide = 1;
+          goalHitY = clamp(sim.state.ball.y, 0.35, 2.5);
+          goalHitZ = clamp(sim.state.ball.z, -3.5, 3.5);
+          break;
         case "save": juiceFire("save", { position: pos }); break;
         case "pen-save": juiceFire("save", { position: pos }); hud.banner("SAVED!", 1600, "warn"); break;
         case "pen-miss": hud.banner("OFF TARGET", 1600, "warn"); break;
-        case "post": case "crossbar": juiceFire("post", { position: pos }); break;
-        case "tackle": juiceFire("tackle", { position: pos }); break;
+        case "post": case "crossbar":
+          juiceFire("post", { position: pos });
+          impactRig.trigger({ freezeSeconds: 0.035, trauma: shakeOff ? 0 : 0.25, fovKickDeg: 0.85 });
+          break;
+        case "tackle":
+          juiceFire("tackle", { position: pos });
+          turfBurst = { x: pos[0], z: pos[2], startAt: performance.now() / 1000 };
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: shakeOff ? 0 : 0.32, fovKickDeg: 0.7 });
+          break;
         case "skill": juiceFire("skill", { position: pos }); break;
         case "wall": juiceFire("wall", { position: pos }); break;
         case "halftime": hud.banner("HALF TIME", 2400); juiceFire("whistle"); break;
@@ -583,7 +685,10 @@ function boot(): void {
 
       input.update(dt);
       const now = performance.now() / 1000;
-      const frozen = hitStopUntil > now || qaFrozen;
+      const impact = impactRig.step(dt);
+      impactShakeOffset = impact.shakeOffset;
+      impactFovDelta = impact.fovDeltaDeg;
+      const frozen = impact.frozen || qaFrozen;
 
       // all input through app.input (keys, gamepad, touch buttons); the touch stick adds an analog vector
       const stick = touchControls.stick();
@@ -607,11 +712,16 @@ function boot(): void {
       // FC-18: fixed 1/60 s sim steps from an accumulator (at most 6 per frame; a long stall drops the rest), so a
       // 24 m/s strike moves 0.4 m per step at any frame rate and every match replays from (seed, inputs)
       const events: SimEvent[] = [];
+      if (sim.state.phase !== lastSimPhase && (sim.state.phase === "kickoff" || sim.state.phase === "shootout" || sim.state.phase === "idle")) {
+        presenter.reset();
+      }
+      lastSimPhase = sim.state.phase;
       if (appReady && !frozen) {
-        stepAcc = Math.min(stepAcc + dt, SIM_DT * 6);
+        stepAcc = Math.min(stepAcc + impact.simDt, SIM_DT * 6);
         while (stepAcc >= SIM_DT - 1e-9) {
           stepAcc -= SIM_DT;
           for (const ev of sim.step(SIM_DT, inputFrame)) events.push(ev);
+          presenter.afterStep();
           clearEdges();
         }
       }
@@ -629,9 +739,12 @@ function boot(): void {
         if (s.phase !== "goal" || replay.elapsed >= replay.plan.duration) replay = null;
         else replay.frame = replayBuf.sample(replay.plan, replay.elapsed);
       }
-      // what the renderer shows: the replayed snapshot during a goal replay, the live sim otherwise
-      const shownPlayers = (replay?.frame?.players ?? s.players) as PlayerState[];
-      const shownBall = replay?.frame?.ball ?? s.ball;
+      // 120/144 Hz smooth interpolation during live play (`createFixedStepPresenter`), exact replay/QA frame otherwise
+      const livePresented = !replay && !qaFrozen
+        ? presenter.present({ alpha: clamp(stepAcc / SIM_DT, 0, 1) }, appReady && !s.paused && !frozen)
+        : null;
+      const shownPlayers = (replay?.frame?.players ?? livePresented?.players ?? s.players) as PlayerState[];
+      const shownBall = replay?.frame?.ball ?? livePresented?.ball ?? s.ball;
       if (qaTargetFrac !== null && !qaFrozen) {
         const kicker = (s.players as PlayerState[]).find((p) => p.kickT > 0.02 && p.kickDur > 0.05);
         if (kicker && 1 - kicker.kickT / kicker.kickDur >= qaTargetFrac) { qaFrozen = true; qaTargetFrac = null; qaKickerId = kicker.id; }
@@ -700,12 +813,19 @@ function boot(): void {
       /* ---- ambient world tick ---- */
       if (appReady) {
         if (s.goalFlashT <= 0) goalSide = 0;
+        const activeTurfBurst = turfBurst && now - turfBurst.startAt < 0.56
+          ? { x: turfBurst.x, z: turfBurst.z, age: now - turfBurst.startAt }
+          : null;
+        if (!activeTurfBurst) turfBurst = null;
         tickWorld(world, t, {
           cheering: s.phase === "goal" || s.phase === "ended" && s.winner !== null,
           ripple: s.goalFlashT,
           goalSide,
+          hitY: goalHitY,
+          hitZ: goalHitZ,
           accent: VENUES[s.venue].accent,
-          hoarding: VENUES[s.venue].hoarding
+          hoarding: VENUES[s.venue].hoarding,
+          turfBurst: activeTurfBurst
         });
         if (s.phase !== lastPhaseForCrowd) { lastPhaseForCrowd = s.phase; syncCrowd(); }
       }
@@ -901,16 +1021,16 @@ function boot(): void {
       /** Freeze the sim when the next kick swing reaches `frac` (0..1) of its length; optionally frame the kicker. */
       freezeAtKick(frac: number, focus = true) { qaFrozen = false; qaTargetFrac = frac; qaKickerId = null; qaFocus = focus; },
       /** Let the sim run again and return the camera to the broadcast framing. */
-      resume() { qaFrozen = false; qaTargetFrac = null; qaFocus = false; },
+      resume() { qaFrozen = false; qaTargetFrac = null; qaFocus = false; impactRig.reset(); },
       /** Freeze the sim now and frame the fastest-moving athlete (a run-cycle filmstrip). */
       focusFastest() {
         const fastest = (sim.state.players as PlayerState[]).reduce((a, b) => (b.speed > a.speed ? b : a));
         qaKickerId = fastest.id; qaFocus = true; qaTargetFrac = null; qaFrozen = true;
       },
       /** Advance the (frozen) sim `n` fixed steps; the next rendered frame shows the result. */
-      step(n: number) { for (let i = 0; i < n; i++) consumeEvents(sim.step(1 / 60, inputFrame)); },
+      step(n: number) { for (let i = 0; i < n; i++) { consumeEvents(sim.step(1 / 60, inputFrame)); presenter.afterStep(); } },
       /** Freeze or release the sim without touching the camera (stepping with step() still works while frozen). */
-      freeze(on: boolean) { qaFrozen = on; if (!on) { qaTargetFrac = null; qaFocus = false; } },
+      freeze(on: boolean) { qaFrozen = on; if (!on) { qaTargetFrac = null; qaFocus = false; impactRig.reset(); } },
       /** Fire one juice event (fx, shake, punch) at a world position, as the sim would. */
       fireJuice(ev: string, at?: Vec3) { juiceFire(ev, { position: at ?? [sim.state.ball.x, 0.4, sim.state.ball.z] }); },
       /** Advance the whole app (effects, camera layers) `steps` fixed steps of `dt` seconds; samples particles and trauma per step. */

@@ -182,18 +182,18 @@ void main() {
   vec3 col = vTint;
   float ph = vPhase;
   if (k == 0) {
-    // grass tuft: five leaning blades of different heights
-    for (int i = 0; i < 6; i++) {
+    // grass tuft: seven gracefully curved highland blades with root-to-tip ambient occlusion
+    for (int i = 0; i < 7; i++) {
       float fi = float(i);
-      float cx = 0.1 + fi * 0.16 + (hash21(vec2(ph, fi)) - 0.5) * 0.12;
-      float h = 0.62 + 0.38 * hash21(vec2(fi, ph * 1.7));
-      float lean = (hash21(vec2(ph + 3.0, fi)) - 0.5) * 0.34;
+      float cx = 0.08 + fi * 0.14 + (hash21(vec2(ph, fi)) - 0.5) * 0.11;
+      float h = 0.60 + 0.40 * hash21(vec2(fi, ph * 1.7));
+      float lean = (hash21(vec2(ph + 3.0, fi)) - 0.5) * 0.38;
       float x = uv.x - cx - lean * uv.y * uv.y;
-      float wdt = 0.1 * (1.0 - uv.y / h);
-      float inside = step(uv.y, h) * (1.0 - smoothstep(wdt * 0.55, wdt, abs(x)));
-      if (inside > cover) { cover = inside; tone = fi * 0.16 + uv.y / h * 0.6; }
+      float wdt = 0.088 * (1.0 - uv.y / h);
+      float inside = step(uv.y, h) * (1.0 - smoothstep(wdt * 0.52, wdt, abs(x)));
+      if (inside > cover) { cover = inside; tone = fi * 0.14 + uv.y / h * 0.64; }
     }
-    col = vTint * (0.52 + 0.9 * tone * 0.8 + 0.25 * uv.y);
+    col = vTint * (0.46 + 0.88 * tone * 0.8 + 0.30 * uv.y);
   } else if (k == 1) {
     // flower: stem, two leaves and a five-petal head
     float stem = 1.0 - smoothstep(0.016, 0.03, abs(uv.x - 0.5 - 0.04 * sin(uv.y * 3.0 + ph)));
@@ -262,28 +262,42 @@ void main() {
     vec3 green = vec3(0.1, 0.28, 0.07);
     col = mix(green, vTint * (0.8 + 0.5 * hash21(cell)), within);
   } else {
-    // flowering shrub: dense leafy mound, darker underneath, speckled with blossom
-    vec2 d = (uv - vec2(0.5, 0.44)) * vec2(1.0, 1.12);
-    float ang = atan(d.y, d.x);
-    float edge = 0.46 + 0.05 * (vnoise(vec2(ang * 3.0, ph) * 2.0) - 0.5) * 2.0 + 0.035 * sin(ang * 13.0 + ph);
-    cover = 1.0 - smoothstep(edge - 0.045, edge, length(d));
-    float leaves = vnoise(uv * 22.0 + ph) * 0.6 + vnoise(uv * 9.0 + ph * 2.0) * 0.4;
-    float dapple = smoothstep(0.56, 0.82, vnoise(uv * 11.0 + ph * 3.0));
-    col = vTint * (0.45 + 0.5 * uv.y + 0.35 * leaves + 0.45 * dapple);
-    vec2 bc = floor(uv * 10.0);
-    float bh = hash21(bc + ph);
-    vec2 bf = fract(uv * 10.0) - 0.5;
-    float bloom = step(0.66, bh) * (1.0 - smoothstep(0.26, 0.4, length(bf))) * step(0.18, uv.y);
+    // highland heather & golden gorse sprig cluster: multi-stemmed fanning sprigs with organic blossom panicles
+    vec2 root = uv - vec2(0.5, 0.02);
+    float sprig = 0.0;
+    float bloomAmt = 0.0;
+    for (int i = 0; i < 6; i++) {
+      float fi = float(i);
+      float ang = -0.95 + fi * 0.38 + (hash21(vec2(ph, fi)) - 0.5) * 0.22;
+      vec2 dir = vec2(sin(ang), cos(ang));
+      float along = dot(root, dir);
+      float curve = (hash21(vec2(fi + 4.0, ph)) - 0.5) * 0.18 * along * along;
+      float across = abs(dot(root, vec2(dir.y, -dir.x)) - curve);
+      float len = 0.56 + 0.34 * hash21(vec2(fi, ph * 1.3));
+      float u = clamp(along / len, 0.0, 1.0);
+      float needles = 0.5 + 0.5 * sin(along * 42.0 + fi * 2.1);
+      float wdt = (0.048 * (1.0 - 0.65 * u) + 0.032 * needles * smoothstep(0.18, 0.85, u)) * step(0.0, along) * step(along, len);
+      float sMask = 1.0 - smoothstep(wdt * 0.55, wdt, across);
+      float panicle = smoothstep(0.46, 0.78, u) * (1.0 - smoothstep(0.92, 1.0, u)) * smoothstep(0.38, 0.72, vnoise(uv * 24.0 + vec2(ph + fi * 3.1)));
+      if (sMask > sprig) {
+        sprig = sMask;
+        tone = u;
+        bloomAmt = panicle;
+      }
+    }
+    cover = sprig;
+    float foliageVar = vnoise(uv * 19.0 + ph) * 0.6 + vnoise(uv * 7.0 + ph * 1.9) * 0.4;
+    col = vTint * (0.42 + 0.58 * tone + 0.28 * foliageVar);
     float pick = fract(ph * 1.7);
-    vec3 petal = pick < 0.34 ? vec3(0.92, 0.28, 0.4) : pick < 0.62 ? vec3(0.86, 0.16, 0.14) : pick < 0.82 ? vec3(0.97, 0.62, 0.7) : vec3(0.98, 0.86, 0.35);
-    col = mix(col, petal * (0.8 + 0.4 * bh), bloom);
+    vec3 blossom = pick < 0.38 ? vec3(0.66, 0.42, 0.74) : pick < 0.68 ? vec3(0.92, 0.72, 0.20) : pick < 0.86 ? vec3(0.86, 0.56, 0.68) : vec3(0.94, 0.88, 0.66);
+    col = mix(col, blossom * (0.82 + 0.32 * foliageVar), clamp(bloomAmt * 1.25, 0.0, 0.92));
   }
   if (cover < 0.5) discard;
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 n = normalize(vec3(0.0, 1.0, 0.0) + vec3((uv.x - 0.5) * 0.5, 0.0, 0.0));
   // a passing gust bends the blades over and shows their paler undersides: a light sheen that travels downwind
   col = mix(col, col * vec3(1.18, 1.16, 1.02) + vec3(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
-  vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
+  vec3 lit = lightSurface(col, n, 0.44 + 0.56 * uv.y, 0.62, 0.66, view, vWorld);
 #ifdef WIND_HERO_SHADOW
   lit *= 1.0 - heroContact(vWorld);
 #endif
@@ -356,36 +370,87 @@ in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
 ${COMMON}
+
+float groundHSea(vec2 p) {
+  float dx1 = p.x - 39.0, dz1 = p.y - 3.0;
+  float dx2 = p.x + 27.0, dz2 = p.y - 1.0;
+  return 0.3
+    + 0.58 * sin(0.06 * p.x)
+    + 0.32 * cos(0.17 * p.y + 0.04 * p.x)
+    + 1.45 * exp(-(dx1 * dx1 / 240.0 + dz1 * dz1 / 160.0))
+    + 1.15 * exp(-(dx2 * dx2 / 190.0 + dz2 * dz2 / 120.0));
+}
+
+float terrainShoreY(vec2 p) {
+  float h = groundHSea(p);
+  float s = smoothstep(8.0, 16.0, p.x);
+  float ss = -13.2 - 1.2 * (1.0 - s);
+  float sl = 2.6 + 9.0 * (1.0 - s);
+  float drop = 1.0 - smoothstep(ss - sl, ss, p.y);
+  h -= drop * (h + 2.15);
+  float side = smoothstep(54.0, 84.0, abs(p.x - 2.0));
+  float ridge = 7.5 * side * (0.7 + 0.3 * sin(0.23 * p.y + 0.4));
+  return h + ridge * (1.0 - drop);
+}
+
 void main() {
   vec2 p = vWorld.xz;
   float t = windTime;
-  vec2 q1 = p * 0.22 + vec2(t * 0.045, -t * 0.03);
-  vec2 q2 = p * 0.6 + vec2(-t * 0.07, t * 0.05);
-  float e = 0.05;
-  float a0 = vnoise(q1) * 0.65 + vnoise(q2) * 0.35;
-  float ax = vnoise(q1 + vec2(e, 0.0)) * 0.65 + vnoise(q2 + vec2(e, 0.0)) * 0.35;
-  float az = vnoise(q1 + vec2(0.0, e)) * 0.65 + vnoise(q2 + vec2(0.0, e)) * 0.35;
-  vec3 n = normalize(vec3(-(ax - a0) * 1.4, 1.0, -(az - a0) * 1.4));
+  // Exact signed depth below SEA_LEVEL (-0.55) matching terrain.ts, eliminating straight-line shore cuts
+  float bedY = terrainShoreY(p);
+  float waterDepth = max(0.0, -0.55 - bedY);
+  // Smooth 4-component Gerstner-inspired wave slope + fine capillary fbm (avoids posterized night noise ovals)
+  float ph1 = dot(p, vec2(0.86, -0.51)) * 0.62 - t * 0.78;
+  float ph2 = dot(p, vec2(-0.44, -0.90)) * 1.18 - t * 1.05;
+  float ph3 = dot(p, vec2(0.68, 0.73)) * 2.15 + t * 1.32;
+  float ph4 = dot(p, vec2(-0.91, 0.41)) * 3.40 - t * 1.68;
+  vec2 grad = vec2(0.86, -0.51) * (0.042 * cos(ph1))
+            + vec2(-0.44, -0.90) * (0.028 * cos(ph2))
+            + vec2(0.68, 0.73) * (0.015 * cos(ph3))
+            + vec2(-0.91, 0.41) * (0.009 * cos(ph4));
+  float cap0 = fbm(p * 1.15 + vec2(t * 0.14, -t * 0.11));
+  float capX = fbm(p * 1.15 + vec2(0.08 + t * 0.14, -t * 0.11));
+  float capZ = fbm(p * 1.15 + vec2(t * 0.14, 0.08 - t * 0.11));
+  grad += vec2(capX - cap0, capZ - cap0) * 0.34;
+
+  // Epilogue boat Kelvin V-wake trailing behind boat.glb when boatWake.w > 0
+  float wakeFoam = 0.0;
+  if (boatWake.w > 0.001) {
+    vec2 fwd = vec2(-sin(boatWake.z), -cos(boatWake.z));
+    vec2 right = vec2(fwd.y, -fwd.x);
+    vec2 rel = p - boatWake.xy;
+    float behind = -dot(rel, fwd);
+    float across = dot(rel, right);
+    if (behind > -1.2 && behind < 34.0) {
+      float bClamp = max(behind + 1.2, 0.0);
+      float armSpread = 0.34 * bClamp + 0.55;
+      float armDist = abs(abs(across) - armSpread);
+      float env = exp(-bClamp * 0.085) * smoothstep(-1.2, 0.8, behind) * boatWake.w;
+      float wakeWave = sin(armDist * 4.2 - t * 3.6 + bClamp * 0.55) * exp(-armDist * 1.15) * env;
+      grad += right * (sign(across) * wakeWave * 0.09);
+      wakeFoam = (exp(-armDist * 1.65) * (0.55 + 0.45 * sin(bClamp * 1.8 - t * 3.2)) + 0.45 * exp(-abs(across) * 1.8) * exp(-bClamp * 0.14)) * env;
+    }
+  }
+
+  float calmNearShore = smoothstep(0.0, 0.85, waterDepth);
+  vec3 n = normalize(vec3(-grad.x * (0.45 + 0.55 * calmNearShore), 1.0, -grad.y * (0.45 + 0.55 * calmNearShore)));
   vec3 view = normalize(cameraPosition - vWorld);
-  float s = smoothstep(8.0, 16.0, vWorld.x);
-  float shoreZ = -13.2 - 1.2 * (1.0 - s) - (2.6 + 9.0 * (1.0 - s)) * 0.6;
-  float off = vWorld.z - shoreZ;
-  float depth = smoothstep(0.0, 18.0, -off);
-  vec3 shallow = vec3(0.14, 0.72, 0.64);
-  vec3 deep = vec3(0.04, 0.45, 0.55);
-  vec3 col = mix(shallow, deep, pow(depth, 0.7));
-  float fres = 0.04 + 0.96 * pow(1.0 - max(dot(n, view), 0.0), 4.0);
+  float depth = smoothstep(0.0, 4.2, waterDepth);
+  vec3 amberShoal = vec3(0.24, 0.66, 0.58);
+  vec3 shallow = vec3(0.11, 0.62, 0.59);
+  vec3 deep = vec3(0.032, 0.38, 0.50);
+  vec3 col = mix(amberShoal, shallow, smoothstep(0.0, 0.75, waterDepth));
+  col = mix(col, deep, pow(depth, 0.72));
+  float fres = 0.035 + 0.965 * pow(1.0 - max(dot(n, view), 0.0), 4.2);
   vec3 refl = reflect(-view, n);
-  vec3 skyc = mix(vec3(0.6, 0.8, 0.86), vec3(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
-  col = mix(col, skyc, fres * 0.55);
-  // GU47 phase 4 (ibl_reflections): the far shore mirrored in the lake. The reflected ray is traced to the wooded far bank
-  // (z ~ -98, a treeline 6-12 m high), so the water under the far shore carries a rippled, lit-green reflection band.
+  vec3 skyc = mix(mix(skyCol, fogCol, 0.35), skyCol * vec3(0.52, 0.72, 1.08), clamp(refl.y * 1.65, 0.0, 1.0));
+  col = mix(col, skyc, fres * 0.58);
+  // GU47 phase 4 (ibl_reflections): the far shore mirrored in the lake.
 #ifdef SHORE_REFLECTION
   if (refl.z < -0.01) {
     float th = (-98.0 - vWorld.z) / refl.z;
     float hx = vWorld.x + refl.x * th;
     float hy = vWorld.y + refl.y * th;
-    // tree crowns every ~5 m (pines taller and darker), on a rolling bank
     float crown = abs(sin(hx * 0.62 + 1.7 * vnoise(vec2(hx * 0.11, 2.0))));
     float pineK = step(0.45, vnoise(vec2(hx * 0.21, 7.3)));
     float treeTop = -0.55 + 4.2 + 2.6 * vnoise(vec2(hx * 0.05, 1.3)) + crown * mix(2.2, 4.0, pineK);
@@ -397,15 +462,18 @@ void main() {
     col = mix(col, mix(shoreLit, deep * 0.6, 0.2), onShore * 0.72);
   }
 #endif
-  float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
-  float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
-  col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
-  // foam breathes along the shore
-  float breathe = 0.5 + 0.5 * sin(t * 1.1 + off * 1.6 + a0 * 6.0);
-  float foam = (1.0 - smoothstep(0.0, 2.4, off + 0.6 * breathe)) * step(-0.8, off) * (0.35 + 0.65 * breathe) * smoothstep(0.35, 0.7, vnoise(p * 1.6 + t * 0.2));
-  foam += (1.0 - smoothstep(0.0, 0.7, abs(off + 1.2 - 1.6 * breathe))) * 0.35 * step(0.0, off + 2.0);
-  col = mix(col, vec3(0.95, 0.97, 0.92), clamp(foam, 0.0, 0.85));
-  float alpha = mix(0.55, 0.97, smoothstep(-0.5, 3.5, -off + 1.0)) ;
+  float sunSpec = pow(max(dot(refl, sunDir), 0.0), 180.0) * 4.2 + pow(max(dot(refl, sunDir), 0.0), 28.0) * 0.16;
+  float sparkle = smoothstep(0.80, 0.985, vnoise(p * vec2(4.6, 8.2) + vec2(t * 0.55, -t * 0.38)));
+  col += sunCol * (sunSpec + sparkle * 0.16 * (1.0 - depth * 0.45)) * calmNearShore;
+  // Multi-band shoreline foam hugging the true beach & cliff contour
+  float lap = 0.5 + 0.5 * sin(t * 1.25 - waterDepth * 6.4 + cap0 * 4.2);
+  float lace = smoothstep(0.32, 0.72, vnoise(p * 1.85 + vec2(t * 0.18, -t * 0.12)));
+  float shoreFoam = (1.0 - smoothstep(0.02, 0.55, waterDepth)) * (0.42 + 0.58 * lap) * (0.45 + 0.55 * lace);
+  shoreFoam += (1.0 - smoothstep(0.0, 0.16, abs(waterDepth - (0.32 + 0.26 * lap)))) * 0.38 * lace;
+  float foam = clamp(shoreFoam + wakeFoam * 0.78, 0.0, 0.88);
+  vec3 foamTint = mix(vec3(0.94, 0.96, 0.92), mix(skyCol, sunCol, 0.35) + vec3(0.45), 0.35);
+  col = mix(col, foamTint, foam);
+  float alpha = smoothstep(0.0, 0.22, waterDepth) * mix(0.74, 0.98, smoothstep(0.0, 2.4, waterDepth));
   outColor = vec4(applyFog(col, vWorld, 1.0), alpha);
 }`;
 
@@ -549,8 +617,9 @@ void main() {
     albedo = vTint * tone * (0.82 + 0.3 * grain) * mix(0.55, 1.0, seam);
   } else if (k == 3) {
     float stain = vnoise(uv * 2.2 + 3.0) * 0.5 + vnoise(uv * 9.0) * 0.5;
-    albedo = vTint * (0.86 + 0.22 * stain);
-    wrap = 0.3;
+    float trowel = vnoise(vec2(uv.x * 5.2, uv.y * 1.4));
+    albedo = vTint * (0.84 + 0.22 * stain + 0.08 * (trowel - 0.5));
+    wrap = 0.32;
   } else if (k == 4) {
     float row = uv.y / 0.5;
     float r = floor(row);
@@ -560,13 +629,16 @@ void main() {
     float f = fract(row);
     float edge = smoothstep(0.0, 0.2, f) ;
     float side = smoothstep(0.0, 0.05, fract(col)) * (1.0 - smoothstep(0.95, 1.0, fract(col)));
-    float moss = smoothstep(0.62, 0.85, vnoise(uv * 1.7 + 5.0));
-    albedo = mix(vTint * tone, vec3(0.25, 0.36, 0.14), moss * 0.35) * mix(0.55, 1.0, edge) * mix(0.8, 1.0, side);
+    float moss = smoothstep(0.56, 0.84, vnoise(uv * 1.8 + 5.0));
+    albedo = mix(vTint * tone, vec3(0.24, 0.37, 0.14), moss * 0.42) * mix(0.55, 1.0, edge) * mix(0.8, 1.0, side);
     wrap = 0.2;
   } else if (k == 5) {
     float b = vnoise(wp.xz * 1.6 + wp.y * 1.1) * 0.6 + vnoise(wp.xz * 6.0 + wp.y * 4.0) * 0.4;
-    albedo = vTint * (0.68 + 0.5 * b);
-    wrap = 0.15;
+    float crevice = smoothstep(0.28, 0.62, b);
+    float mossPatch = smoothstep(0.48, 0.80, vnoise(wp.xz * 2.4 + vec2(3.7, 8.1))) * clamp(n.y * 0.85 + 0.25, 0.0, 1.0);
+    albedo = mix(vTint * (0.62 + 0.52 * b), vec3(0.22, 0.36, 0.13), mossPatch * 0.46);
+    ao = 0.78 + 0.22 * crevice;
+    wrap = 0.18;
   } else if (k == 6) {
     float plank = floor(wp.z * 1.85);
     float f = fract(wp.z * 1.85);
@@ -579,9 +651,11 @@ void main() {
     emissive = 0.22 * (0.7 + 0.3 * sin(wp.x * 3.0));
     spec = 0.5;
   } else if (k == 8) {
-    albedo = vTint;
-    spec = 1.0;
-    wrap = 0.1;
+    float brushRing = 0.88 + 0.12 * sin(wp.y * 68.0 + vnoise(wp.xz * 14.0) * 3.0);
+    float patina = smoothstep(0.58, 0.86, vnoise(wp.xz * 5.5 + wp.y * 3.2)) * (1.0 - clamp(abs(n.y), 0.0, 0.65));
+    albedo = mix(vTint * brushRing, vec3(0.24, 0.48, 0.41), patina * 0.38);
+    spec = mix(1.15, 0.35, patina);
+    wrap = 0.12;
   } else if (k == 9) {
     float weave = 0.9 + 0.1 * sin(uv.x * 90.0) * sin(uv.y * 90.0);
     float fold = vnoise(uv * 3.0);
@@ -781,4 +855,58 @@ void main() {
   float r = length(vUv - 0.5) * 2.0;
   float a = (1.0 - smoothstep(0.15, 1.0, r)) * shadowOpacity;
   outColor = vec4(0.06, 0.1, 0.03, a);
+}`;
+
+/* ---------------------------------------------------------------- catenary kite thread */
+
+export const THREAD_VERTEX = /* glsl */ `
+out vec2 vUv;
+out vec3 vWorld;
+${WIND_GLSL}
+void main() {
+  vUv = uv;
+  float s = uv.y;
+  float arch = 4.0 * s * (1.0 - s);
+  vec3 c = mix(threadAnchor, threadTip, s);
+  c.y -= threadSag * arch;
+  float bow = 0.22 * arch * (0.72 + 0.28 * sin(windTime * 2.1 + s * 3.14159));
+  c.xz += WIND_DIR * bow;
+  vec3 tang = normalize(threadTip - threadAnchor + vec3(0.0, -threadSag * 4.0 * (1.0 - 2.0 * s), 0.0) + vec3(WIND_DIR.x, 0.0, WIND_DIR.y) * (0.22 * 4.0 * (1.0 - 2.0 * s)));
+  vec3 toCam = normalize(cameraPosition - c);
+  vec3 side = cross(tang, toCam);
+  float sideLen = length(side);
+  side = sideLen > 1e-4 ? side / sideLen : vec3(1.0, 0.0, 0.0);
+  vec3 w = c + side * ((uv.x - 0.5) * 0.017);
+  vWorld = w;
+  gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
+}`;
+
+export const THREAD_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+in vec3 vWorld;
+out vec4 outColor;
+${COMMON}
+void main() {
+  float across = abs(vUv.x - 0.5) * 2.0;
+  float core = 1.0 - smoothstep(0.18, 1.0, across);
+  float ends = smoothstep(0.0, 0.05, vUv.y) * (1.0 - smoothstep(0.95, 1.0, vUv.y));
+  vec3 view = normalize(cameraPosition - vWorld);
+  vec3 linen = lightSurface(vec3(0.95, 0.90, 0.78), vec3(0.0, 1.0, 0.0), 1.0, 0.75, 0.55, view, vWorld);
+  float distFade = 1.0 - smoothstep(18.0, 42.0, distance(cameraPosition, vWorld));
+  float alpha = core * ends * distFade * 0.55;
+  outColor = vec4(applyFog(linen, vWorld, 1.0), alpha);
+}`;
+
+/* ---------------------------------------------------------------- bell harmonic ripple flipbook */
+
+export const RIPPLE_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float idx = floor(mod(max(0.0, windTime) * 16.0, 32.0));
+  float colIdx = mod(idx, 8.0);
+  float rowIdx = floor(idx / 8.0);
+  vec2 cellUv = vec2((colIdx + clamp(vUv.x, 0.03, 0.97)) / 8.0, (rowIdx + clamp(vUv.y, 0.03, 0.97)) / 4.0);
+  vec4 texel = texture(rippleMap, cellUv);
+  outColor = vec4(texel.rgb * 1.15, texel.a * rippleAlpha);
 }`;

@@ -1,7 +1,11 @@
 /** Glint Courier — circuit-board chase (PRD: docs/prd/dot-dash-3d.md). */
-import { game, installQaHooks } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen } from "./game/world";
+import { createFixedStepLoop, game, installQaHooks } from "@aura3d/engine";
+import { createFixedStepPresenter, createGame, sfxUrl } from "@aura3d/engine/game";
+import {
+  buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen,
+  CYBER_NEON_LUT, spawnSparkBurst, snapshotActors, blendActors
+} from "./game/world";
+import { BOARD_LOOKS, LENS } from "./game/look";
 import { registerVfxPack, VFX_KINDS, type VfxPrefs } from "./game/vfx";
 import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
@@ -10,6 +14,7 @@ import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -47,9 +52,15 @@ const inputOptions = {
 const g = createGame({
   id: "dot-dash-3d",
   target: "#app",
-  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=. WebGPU is the default (backend "auto", WebGL2 fallback kept;
-  // real-GPU check 2026-11-08: same frame, >= 0.9x the WebGL2 frame rate); `?backend=webgl2` forces WebGL2.
-  ...(() => { const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" }); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}) }; })(),
+  // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=. WebGPU is the default (backend "auto", WebGL2 fallback kept);
+  // AgX tone mapping + exposure 1.02 + dither prevent high-chroma emissive clipping.
+  ...(() => {
+    const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" });
+    return {
+      output: { toneMapping: LENS.toneMapping, exposure: LENS.exposure, dither: true, ...(output ?? {}) },
+      ...(renderer ? { renderer } : {})
+    };
+  })(),
   diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,
@@ -296,52 +307,117 @@ function killTrail(): void {
 
 let frames = 0;
 let lastMode = st.mode;
+let lastMaze = st.mazeId;
 let humDucked = false;
+let simClockMs = 0;
+
+const impactRig = createImpactRig();
+const proceduralSfx = createProceduralSfx();
+const presenter = createFixedStepPresenter({ snapshot: snapshotActors, blend: blendActors });
+
+function handleStepEvents(): void {
+  const ev = st.events;
+  if (ev.dot) {
+    g.sound?.cue("dot");
+    spawnSparkBurst(st.player.px, st.player.py, BOARD_LOOKS[st.mazeId].led, 0.68);
+  }
+  if (ev.orb) {
+    g.sound?.cue("orb");
+    g.juice?.fire("orb");
+    proceduralSfx.play("boost", 0.9);
+    impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.34, fovKickDeg: 2.8 });
+    spawnSparkBurst(st.player.px, st.player.py, "#ffb23e", 1.25);
+    fx(VFX_KINDS.surgeRing, st.player.px, st.player.py, 0.3);
+  }
+  if (ev.ghostEat) {
+    g.sound?.cue("ghost");
+    g.juice?.fire("ghost");
+    proceduralSfx.play("perfect", 1);
+    impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.44, fovKickDeg: 2.4 });
+    const eaten = st.ghosts.find((gh) => gh.id === ev.ghostEat!.ghost);
+    if (eaten) {
+      fx(VFX_KINDS.shortCircuit, eaten.px, eaten.py, 0.45);
+      spawnSparkBurst(eaten.px, eaten.py, "#5ff3ff", 1.35);
+    }
+    eventLog.push({ type: "ghost-eat", label: `${GHOST_LABEL[ev.ghostEat.ghost]} +${ev.ghostEat.points}` });
+  }
+  if (ev.fruit) {
+    fx(VFX_KINDS.solderSpark, st.player.px, st.player.py);
+    spawnSparkBurst(st.player.px, st.player.py, "#ffd27a", 1.15);
+    proceduralSfx.play("pickup", 0.85);
+    impactRig.trigger({ freezeSeconds: 0.025, trauma: 0.2, fovKickDeg: 1.6 });
+    g.sound?.cue("fruit");
+    g.juice?.fire("fruit");
+    eventLog.push({ type: "fruit", label: `${FRUIT_LABEL[ev.fruit.kind as FruitKind]} +${ev.fruit.points}` });
+  }
+  if (ev.fruitSpawn) g.sound?.cue("fruitSpawn");
+  if (ev.dash) {
+    g.sound?.cue("dash");
+    g.juice?.fire("dash");
+    proceduralSfx.play("whoosh", 0.7);
+    fx(VFX_KINDS.solderSpark, st.player.px, st.player.py, 0.3);
+  }
+  if (ev.ready) {
+    g.sound?.cue("ready");
+    presenter.reset();
+  }
+  if (ev.eyesHome) g.sound?.cue("eyes");
+  if (ev.death) {
+    g.sound?.cue("death");
+    g.juice?.fire("death");
+    proceduralSfx.play("impact", 1);
+    impactRig.trigger({ freezeSeconds: 0.085, trauma: 0.75, fovKickDeg: -2.2 });
+    killTrail();
+    if (vfxRegistered) fx(VFX_KINDS.blownFuse, st.player.px, st.player.py, 0.5);
+    else {
+      try {
+        app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 44, speed: 6.2, scale: 0.95, color: "#ff5a6e" });
+      } catch { /* effects optional */ }
+    }
+    eventLog.push({ type: "death", label: `caught @${st.score}` });
+  }
+  if (ev.clear) { g.sound?.cue("clear"); g.juice?.fire("clear"); }
+  if (ev.extraLife) { g.sound?.cue("orb"); eventLog.push({ type: "extra-life", label: `extra life @${st.score}` }); }
+  for (const p of ev.points) popScore(p.x, p.y, p.points);
+}
+
+const simLoop = createFixedStepLoop({
+  stepSeconds: 1 / 60,
+  minFrameSeconds: 0.0001,
+  maxFrameSeconds: 0.05,
+  step(stepSeconds) {
+    frame(stepSeconds, input);
+    keysPressed.clear();
+    handleStepEvents();
+    presenter.afterStep();
+  }
+});
 
 app.onFrame(({ dt }) => {
   if (!appReady) return;
   const d = Math.min(Math.max(dt, 1 / 240), 0.05);
   frames++;
 
-  if (!isPaused()) {
-    frame(d, input);
-    keysPressed.clear();
-    const ev = st.events;
-    // ---- sfx + juice on discrete events
-    if (ev.dot) g.sound?.cue("dot");
-    if (ev.orb) { g.sound?.cue("orb"); g.juice?.fire("orb"); fx(VFX_KINDS.surgeRing, st.player.px, st.player.py, 0.3); }
-    if (ev.ghostEat) {
-      g.sound?.cue("ghost"); g.juice?.fire("ghost");
-      const eaten = st.ghosts.find((gh) => gh.id === ev.ghostEat!.ghost);
-      if (eaten) fx(VFX_KINDS.shortCircuit, eaten.px, eaten.py, 0.45);
-      eventLog.push({ type: "ghost-eat", label: `${GHOST_LABEL[ev.ghostEat.ghost]} +${ev.ghostEat.points}` });
-    }
-    if (ev.fruit) { fx(VFX_KINDS.solderSpark, st.player.px, st.player.py); g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${FRUIT_LABEL[ev.fruit.kind as FruitKind]} +${ev.fruit.points}` }); }
-    if (ev.fruitSpawn) g.sound?.cue("fruitSpawn");
-    if (ev.dash) { g.sound?.cue("dash"); g.juice?.fire("dash"); fx(VFX_KINDS.solderSpark, st.player.px, st.player.py, 0.3); }
-    if (ev.ready) g.sound?.cue("ready");
-    if (ev.eyesHome) g.sound?.cue("eyes");
-    if (ev.death) {
-      g.sound?.cue("death"); g.juice?.fire("death");
-      killTrail();
-      if (vfxRegistered) fx(VFX_KINDS.blownFuse, st.player.px, st.player.py, 0.5);
-      else {
-        try {
-          app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 44, speed: 6.2, scale: 0.95, color: "#ff5a6e" });
-        } catch { /* effects optional */ }
-      }
-      eventLog.push({ type: "death", label: `caught @${st.score}` });
-    }
-    if (ev.clear) { g.sound?.cue("clear"); g.juice?.fire("clear"); }
-    if (ev.extraLife) { g.sound?.cue("orb"); eventLog.push({ type: "extra-life", label: `extra life @${st.score}` }); }
-    for (const p of ev.points) popScore(p.x, p.y, p.points);
+  // Advance real-time hit-stop & camera trauma on REAL frame `d`, never frozen simDt.
+  const feel = impactRig.step(d);
 
-    // player trail — attach during play, drop on death/title
+  if (!isPaused()) {
+    if (st.mazeId !== lastMaze) {
+      lastMaze = st.mazeId;
+      simLoop.resetAccumulator();
+      presenter.reset();
+    }
+    if (!feel.frozen && feel.simDt > 0) {
+      simClockMs += feel.simDt * 1000;
+      simLoop.tick(simClockMs);
+    }
+
     if (st.mode === "play") ensureTrail();
     else if (st.mode !== lastMode && trail) killTrail();
     if (trail && st.mode === "dying") killTrail();
 
-    syncVisuals(d);
+    const blended = presenter.present(simLoop, st.mode === "play" && !feel.frozen);
+    syncVisuals(d, blended, { shakeOffset: feel.shakeOffset, fovDeltaDeg: feel.fovDeltaDeg });
   }
   lastMode = st.mode;
 
@@ -359,6 +435,7 @@ app.onFrame(({ dt }) => {
     status: "live",
     frame: frames,
     paused: isPaused(),
+    lutSize: CYBER_NEON_LUT.size,
     ...evidenceExtra(),
     input: { actions: Object.keys(inputOptions.actions), buffered: true }
   };

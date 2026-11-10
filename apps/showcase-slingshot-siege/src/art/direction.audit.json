@@ -50,6 +50,34 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "sling_quarryCrane",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sling_greenhouseFrame",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sling_curtainWall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sling_crystalCrater",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "gullsiegeBridgeMeshy",
         "triangles": 0,
         "textures": 3,
@@ -64,23 +92,9 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "sling_rocksB",
+        "assetKey": "propConifer",
         "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "sling_rocksA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "sling_islandTrees",
-        "triangles": 0,
-        "textures": 0,
+        "textures": 1,
         "unlit": false,
         "overridesTextures": false
       },
@@ -92,13 +106,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "gullsiegeHeroGullMeshy",
         "triangles": 0,
         "textures": 3,
@@ -134,357 +141,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
@@ -625,216 +282,6 @@
       },
       {
         "assetKey": "gullsiegeHeroGullMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegePlanksMeshy",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
@@ -1031,14 +478,6 @@
         "practical": false
       },
       {
-        "node": "terrain-spheres",
-        "practical": false
-      },
-      {
-        "node": "dirt-path",
-        "practical": false
-      },
-      {
         "node": "grass-tufts",
         "practical": false
       },
@@ -1095,6 +534,20 @@
         "practical": false
       },
       {
+        "node": "coastal-limestone-cliffs",
+        "practical": false
+      },
+      {
+        "name": "carved driftwood fork",
+        "node": "sling-driftwood-yoke",
+        "practical": false
+      },
+      {
+        "name": "saddle leather pouch",
+        "node": "sling-pouch",
+        "practical": false
+      },
+      {
         "node": "sling-band-l",
         "practical": false
       },
@@ -1103,104 +556,164 @@
         "practical": false
       },
       {
+        "name": "ammo crest",
+        "node": "sling-ammo-crest",
+        "practical": false
+      },
+      {
+        "name": "chiseled limestone",
         "node": "v-blocks-wood",
         "practical": false
       },
       {
+        "name": "chiseled limestone",
         "node": "v-blocks-stone",
         "practical": false
       },
       {
+        "name": "chiseled limestone",
         "node": "v-blocks-glass",
         "practical": false
       },
       {
+        "name": "chiseled limestone",
         "node": "v-blocks-ice",
         "practical": false
       },
       {
+        "name": "chiseled limestone",
         "node": "v-blocks-obsidian",
         "practical": false
       },
       {
+        "name": "explosive keg band",
+        "node": "v-barrel-bands-pool",
+        "practical": false
+      },
+      {
         "node": "v-dot-0",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-1",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-2",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-3",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-4",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-5",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-6",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-7",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-8",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-9",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-10",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-11",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-12",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-13",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-14",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
       },
       {
         "node": "v-dot-15",
-        "emissiveIntensity": 1.8,
-        "practical": true
+        "practical": false
+      },
+      {
+        "node": "v-dot-16",
+        "practical": false
+      },
+      {
+        "node": "v-dot-17",
+        "practical": false
+      },
+      {
+        "node": "v-dot-18",
+        "practical": false
+      },
+      {
+        "node": "v-dot-19",
+        "practical": false
+      },
+      {
+        "node": "v-plume-0",
+        "practical": false
+      },
+      {
+        "node": "v-plume-1",
+        "practical": false
+      },
+      {
+        "node": "v-plume-2",
+        "practical": false
+      },
+      {
+        "node": "v-plume-3",
+        "practical": false
+      },
+      {
+        "node": "v-plume-4",
+        "practical": false
+      },
+      {
+        "node": "v-plume-5",
+        "practical": false
+      },
+      {
+        "node": "v-blast-0",
+        "practical": false
+      },
+      {
+        "node": "v-blast-1",
+        "practical": false
+      },
+      {
+        "node": "v-blast-2",
+        "practical": false
+      },
+      {
+        "node": "v-blast-3",
+        "practical": false
+      },
+      {
+        "name": "explosive keg band",
+        "node": "fg-barrel-bands",
+        "practical": false
       },
       {
         "node": "flag-poles",
@@ -1211,10 +724,12 @@
         "practical": false
       },
       {
+        "name": "studio metal",
         "node": "flag-finials",
         "practical": false
       },
       {
+        "name": "chiseled limestone",
         "node": "fortress-flag-bastion",
         "practical": false
       },

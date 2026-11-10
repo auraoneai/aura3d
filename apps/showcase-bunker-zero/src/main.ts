@@ -8,6 +8,7 @@
  * JSON evidence on window.__gameEvidence.
  */
 import "../../showcase-port-shared/quickbar.css";
+import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
@@ -26,7 +27,7 @@ import {
   betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
   outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
-import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
+import { formatTacticalFeed, VIEWMODEL_ASSET, viewmodelFraming, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
@@ -44,6 +45,13 @@ import {
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
+import {
+  bunkerDampSeepageMaterial,
+  bunkerExitLaserMaterial,
+  bunkerMuzzleFlipbookMaterial,
+  bunkerRicochetSparksMaterial,
+  bunkerWardenVentMaterial
+} from "./art/shaders";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
@@ -67,11 +75,8 @@ const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
 const DEFER_FLOOR_SURFACES = resolveQrFlags({ options: ["game"], url: location.href }).on("A3D_QR_COMPILER");
-/**
- * GU47 phase 2: the F6 moon shaft (S4 volumetric fog) is opt-in with `?godrays=1`. On software WebGL2 it drew no shaft and
- * washed the silo in pink beacon inscatter (fix run g11fix1, floor6 frame); the dark lamp haze reads better (PRD D11).
- */
-const BZ_GOD_RAYS = bootParams.get("godrays") === "1";
+/** WP-10: moonlit volumetric shaft down the Floor 6 silo hatch (`?godrays=0` opts out). */
+const BZ_GOD_RAYS = bootParams.get("godrays") !== "0";
 /** BZ-18: `?lut=0` turns the per-floor LUT off (the LUT on/off A/B); cosmetic only. */
 const LUT_ON = bootParams.get("lut") !== "0";
 const floorLut = (slot: number) => (LUT_ON ? lutOfSlot(slot) : null);
@@ -83,6 +88,7 @@ const EYE = 1.55;
 const FLOOR_SPAN = 0;
 const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
+const SPARK_CARD_POOL = 4;
 /** BZ-06: F2 standing water, and the wet-ground amount per floor slot (F2 flooded cellars, F6 the hatch rain). */
 // GU47 phase 3: #0b1714 read as a black hole in the floor (rubric round p3-r3); a lifted teal-grey keeps it wet and dark but a surface.
 const BZ_WATER = { color: "#22403b", roughness: 0.05 } as const;
@@ -106,11 +112,8 @@ const BZ_BLOB = { y: 0.008, opacity: 0.3, rings: [{ scale: 1 }, { scale: 0.62 },
 /** GU47 phase 4: decal tints. Round g11p4-r1 drew the scorches as white shapes (alpha from the map, white from the tint),
  *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
 const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
-const BZ_GLINT = { core: 0.5, coreOpacity: 0.22, halo: 0.2, haloOpacity: 0.07 } as const;
-/** GU47 phase 7 (e6 section 1): S3 reads `roughness` as the frame-wide surface roughness (full strength at 0.35 or less,
- *  zero at 0.5), not a cutoff; 0.5 made the pass inert (SSR_ROUGHNESS_GATED). 0.28 lets the wet concrete reflect; the
- *  trace is additive and fresnel-weighted, so intensity and reach come down to keep it a floor sheen, not wall noise. */
-const BZ_SSR = { intensity: 0.55, maxDistance: 10, roughness: 0.28, thickness: 0.3 } as const;
+/** WP-10: real damp concrete screen-space reflections replacing the fake floor glint quads. */
+const BZ_SSR = { intensity: 0.34, maxDistance: 16, roughness: 0.24, thickness: 0.22 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -228,12 +231,13 @@ function buildScene() {
     const faltInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const stripInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const ceilInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
-    const glintInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
-    const glintHalo: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const bulkheadInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const drainInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoNear: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoCeil: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoFar: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const pipeInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    let floodSumX = 0, floodSumZ = 0, floodCount = 0;
 
     for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
       const ch = rows[z][x];
@@ -247,15 +251,19 @@ function buildScene() {
         altCol.push(jitter(x, z));
       } else if (ch === ",") {
         faltInst.push({ position: [wx, 0.04, wz], scale: [CELL, 0.08, CELL] });
+        floodSumX += wx; floodSumZ += wz; floodCount++;
       }
-      // Ceiling work lights over open corridor cells.
-      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) {
-        ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
-        // GU47 phase 4: the lamp's mirror image on standing water and wet floors (rubric: the flood read as an opaque slab)
-        if (ch === "," && slot === 1 || (BZ_WETNESS[slot] ?? 0) > 0) {
-          const y = ch === "," ? 0.083 : 0.005;
-          glintInst.push({ position: [wx, y, wz], scale: [1.7, 0.002, 0.34] });
-          glintHalo.push({ position: [wx, y + 0.001, wz], scale: [2.6, 0.002, 1.1] });
+      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P") {
+        // Ceiling work lights over open corridor cells.
+        if ((x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) {
+          ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
+        }
+        // Gunmetal overhead structural I-beam ribs & grated floor drains (positive scales only).
+        if ((x * 5 + z * 9) % 11 === 0 && !underHatch(def, x, z)) {
+          bulkheadInst.push({ position: [wx, wallH - 0.045, wz], scale: [CELL * 0.94, 0.09, 0.14] });
+        }
+        if (ch !== "," && ch !== "D" && ch !== "E" && (x * 11 + z * 5) % 13 === 0) {
+          drainInst.push({ position: [wx, 0.007, wz], scale: [0.58, 0.014, 0.58] });
         }
       }
     }
@@ -329,8 +337,14 @@ function buildScene() {
     if (pipeInst.length) {
       nodes.push(primitives.cylinder({
         name: `f${slot} service pipes`, instances: pipeInst, receiveShadow: true,
-        material: material.pbr({ color: def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR, roughness: 0.38, metalness: 0.75 })
+        material: material.brushedMetal({ color: def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR, roughness: 0.34, metallic: 0.86 })
       }).runtime(staticNode(slot, "pipes")));
+    }
+    if (drainInst.length) {
+      nodes.push(primitives.box({
+        name: `f${slot} floor-drains`, instances: drainInst, castShadow: false, receiveShadow: true,
+        material: material.brushedMetal({ color: "#1e232a", roughness: 0.36, metallic: 0.88 })
+      }).runtime(staticNode(slot, "drains")));
     }
     // BZ-10: the floor's stencilled name on the floor ahead of the spawn (SDF text, +1 draw on its floor)
     const stencil = floorStencil(def, def.id === 90 ? "KILL HOUSE" : `B-${def.id + 1} ${def.name}`);
@@ -338,19 +352,33 @@ function buildScene() {
       nodes.push(text3D(stencil.text, {
         name: `f${slot} floor stencil`, size: 0.42, depth: 0.01, letterSpacing: 0.06, backend: "sdf", castShadow: false,
         material: material.pbr({ color: BZ_STENCIL_COLOR, roughness: 0.82, metalness: 0 })
-      }).position(stencil.position[0], stencil.position[1], stencil.position[2])
+      }).position(slot * FLOOR_SPAN + stencil.position[0], stencil.position[1], stencil.position[2])
         .rotate(stencil.rotation[0], stencil.rotation[1], stencil.rotation[2])
         .runtime(staticNode(slot, "stencil")) as unknown as AuraNodeBuilder<AuraSceneNode>);
     }
     if (def.id === 5) {
       // BZ-07: the olive steel collar lining the shaft and the night backdrop closing it (+2 draws on F6 only)
       nodes.push(
-        primitives.box({ name: `f${slot} hatch collar`, instances: hatchCollar(wallH), material: material.pbr({ color: HATCH_COLLAR.color, roughness: 0.6, metalness: 0.5 }) }).runtime(staticNode(slot, "hatch-collar")),
+        primitives.box({ name: `f${slot} hatch collar`, instances: hatchCollar(wallH), material: material.brushedMetal({ color: HATCH_COLLAR.color, roughness: 0.42, metallic: 0.82 }) }).runtime(staticNode(slot, "hatch-collar")),
         primitives.box({
           name: `f${slot} hatch night backdrop`, instances: [hatchBackdrop(wallH)], castShadow: false, receiveShadow: false,
           material: material.emissive({ color: HATCH_BACKDROP.color, emissive: HATCH_BACKDROP.emissive, emissiveIntensity: HATCH_BACKDROP.emissiveIntensity, roughness: 1 })
-        }).runtime(staticNode(slot, "hatch-backdrop"))
+        }).runtime(staticNode(slot, "hatch-backdrop")),
+        primitives.plane({
+          name: `f${slot} hatch rain seepage`, size: [8.4, 1, 8.4],
+          position: [slot * FLOOR_SPAN + 11.5 * CELL, 0.014, 9.5 * CELL],
+          castShadow: false, receiveShadow: false,
+          material: bunkerDampSeepageMaterial()
+        }).runtime(staticNode(slot, "damp-shimmer"))
       );
+    }
+    if (slot === 1 && floodCount > 0) {
+      nodes.push(primitives.plane({
+        name: `f${slot} cellar flood shimmer`, size: [8.6, 1, 5.6],
+        position: [floodSumX / floodCount, 0.084, floodSumZ / floodCount],
+        castShadow: false, receiveShadow: false,
+        material: bunkerDampSeepageMaterial()
+      }).runtime(staticNode(slot, "damp-shimmer")));
     }
     if (ceilInst.length) {
       nodes.push(primitives.box({
@@ -361,18 +389,6 @@ function buildScene() {
         castShadow: false,
         receiveShadow: false
       }).runtime(staticNode(slot, "work-lights")));
-    }
-    if (glintInst.length) {
-      nodes.push(
-        primitives.plane({
-          name: `f${slot} lamp glints`, instances: glintInst, castShadow: false, receiveShadow: false,
-          material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: BZ_GLINT.core, roughness: 0.1, opacity: BZ_GLINT.coreOpacity })
-        }).runtime(staticNode(slot, "glints")),
-        primitives.plane({
-          name: `f${slot} lamp glint halo`, instances: glintHalo, castShadow: false, receiveShadow: false,
-          material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: BZ_GLINT.halo, roughness: 0.1, opacity: BZ_GLINT.haloOpacity })
-        }).runtime(staticNode(slot, "glint-halo"))
-      );
     }
     if (faltInst.length) {
       nodes.push(mappedSurface(slot, "floor-alt", (maps) => primitives.box({
@@ -395,20 +411,35 @@ function buildScene() {
       const wx = cellX(slot, x), wz = cellCenter(z);
       const cast = castsShadowAt(def, x, z);
       switch (ch) {
-        case "D":
+        case "D": {
+          const facesZ = doorFacesZ(rows, x, z);
+          const jambOff = CELL * 0.47;
+          bulkheadInst.push(
+            { position: [wx + (facesZ ? -jambOff : 0), wallH / 2, wz + (facesZ ? 0 : -jambOff)], scale: facesZ ? [0.16, wallH, 0.34] : [0.34, wallH, 0.16] },
+            { position: [wx + (facesZ ? jambOff : 0), wallH / 2, wz + (facesZ ? 0 : jambOff)], scale: facesZ ? [0.16, wallH, 0.34] : [0.34, wallH, 0.16] },
+            { position: [wx, wallH - 0.1, wz], scale: facesZ ? [CELL, 0.2, 0.36] : [0.36, 0.2, CELL] }
+          );
           nodes.push(
-            // GU47 phase 4 (WP-36 bzBlastDoor): the game's own round blast door, hung on an olive steel leaf that fills the
-            // square opening; both ride the same slide (collision is the sim's door cell, unchanged)
+            // GU47 phase 4 (WP-36 bzBlastDoor): the game's own round blast door, hung on a hazard-accented clearcoat blast leaf
+            // with a studioGlass containment inspection visor; all three ride the same lateral slide.
             model(assets.bzBlastDoor, { castShadow: cast, name: `f${slot} door ${dI}`, targetHeight: wallH * 0.9 })
-              .position(wx, 0, wz).rotate(0, doorFacesZ(rows, x, z) ? 0 : Math.PI / 2, 0)
+              .position(wx, 0, wz).rotate(0, facesZ ? 0 : Math.PI / 2, 0)
               .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"])),
             primitives.box({
-              name: `f${slot} door leaf ${dI}`, castShadow: cast, size: doorFacesZ(rows, x, z) ? [CELL * 0.98, wallH, 0.22] : [0.22, wallH, CELL * 0.98],
-              position: [wx, wallH / 2, wz], material: material.pbr({ color: "#3d4230", roughness: 0.5, metalness: 0.6 })
-            }).runtime(slotNode(slot, `f${slot}-doorleaf-${x}-${z}`, ["door"]))
+              name: `f${slot} door leaf ${dI}`, castShadow: cast, size: facesZ ? [CELL * 0.98, wallH, 0.2] : [0.2, wallH, CELL * 0.98],
+              position: [wx, wallH / 2, wz],
+              material: material.clearcoatPaint({ color: "#c99718", roughness: 0.18, metallic: 0.22, clearcoat: 0.88, clearcoatRoughness: 0.08 })
+            }).runtime(slotNode(slot, `f${slot}-doorleaf-${x}-${z}`, ["door"])),
+            primitives.box({
+              name: `f${slot} door visor ${dI}`, castShadow: false, receiveShadow: false,
+              size: facesZ ? [0.88, 0.34, 0.24] : [0.24, 0.34, 0.88],
+              position: [wx, wallH * 0.62, wz],
+              material: material.studioGlass({ tint: "#9ad8eb", roughness: 0.04, thickness: 0.35, ior: 1.5 })
+            }).runtime(slotNode(slot, `f${slot}-doorvisor-${x}-${z}`, ["door"]))
           );
           dI++;
           break;
+        }
         case "P": {
           // push block — 3D Meshy reinforced bunker cover wall + glowing secret beacon
           const side = pushFace(rows, x, z);
@@ -430,6 +461,25 @@ function buildScene() {
         case "E": {
           const exitWall = wallFace(rows, x, z);
           const exitShutterH = Math.min(wallH * BZ_EXIT_SHUTTER.heightFrac, BZ_EXIT_SHUTTER.maxHeight);
+          const exitAlongZ = exitWall[1] !== 0;
+          bulkheadInst.push(
+            {
+              position: [
+                wx + exitWall[0] * (BZ_EXIT_SHUTTER.wallGap - 0.06) + (exitAlongZ ? -1.05 : 0),
+                exitShutterH / 2,
+                wz + exitWall[1] * (BZ_EXIT_SHUTTER.wallGap - 0.06) + (exitAlongZ ? 0 : -1.05)
+              ],
+              scale: exitAlongZ ? [0.16, exitShutterH, 0.24] : [0.24, exitShutterH, 0.16]
+            },
+            {
+              position: [
+                wx + exitWall[0] * (BZ_EXIT_SHUTTER.wallGap - 0.06) + (exitAlongZ ? 1.05 : 0),
+                exitShutterH / 2,
+                wz + exitWall[1] * (BZ_EXIT_SHUTTER.wallGap - 0.06) + (exitAlongZ ? 0 : 1.05)
+              ],
+              scale: exitAlongZ ? [0.16, exitShutterH, 0.24] : [0.24, exitShutterH, 0.16]
+            }
+          );
           nodes.push(
             // GU47 phase 9 (D2): the lift shutter (Poly Haven rollershutter_door, CC0) at the back of the exit cell under a caged
             // bulkhead lamp replaces the borrowed neon arch and pad beacon; presentation only (the exit cell is the sim's)
@@ -438,7 +488,19 @@ function buildScene() {
               .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exit")),
             model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} exitpost`, targetHeight: BZ_EXIT_SHUTTER.lampHeight })
               .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.lampGap, exitShutterH + 0.08, wz + exitWall[1] * BZ_EXIT_SHUTTER.lampGap)
-              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exitpost"))
+              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exitpost")),
+            primitives.box({
+              name: `f${slot} exit containment field`,
+              castShadow: false,
+              receiveShadow: false,
+              size: exitAlongZ ? [1.9, exitShutterH * 0.88, 0.03] : [0.03, exitShutterH * 0.88, 1.9],
+              position: [
+                wx + exitWall[0] * (BZ_EXIT_SHUTTER.wallGap - 0.14),
+                exitShutterH * 0.45,
+                wz + exitWall[1] * (BZ_EXIT_SHUTTER.wallGap - 0.14)
+              ],
+              material: bunkerExitLaserMaterial()
+            }).runtime(slotNode(slot, `f${slot}-exit-field`, ["exit-field"]))
           );
           break;
         }
@@ -582,6 +644,12 @@ function buildScene() {
         addBlob(slot, `f${slot}-summon-${i}`, slot * FLOOR_SPAN, 0, 0.5, false);
       }
     }
+    if (bulkheadInst.length) {
+      nodes.push(primitives.box({
+        name: `f${slot} bulkhead-ribs`, castShadow: false, receiveShadow: true, instances: bulkheadInst,
+        material: material.brushedMetal({ color: "#2d333b", roughness: 0.3, metallic: 0.9 })
+      }).runtime(staticNode(slot, "bulkhead-ribs")));
+    }
     if (columnInst.length) {
       nodes.push(
         mappedSurface(slot, "columns", (maps) => primitives.box({ name: `f${slot} columns`, castShadow: true, material: wallMat(maps), instances: columnInst })),
@@ -597,7 +665,10 @@ function buildScene() {
     }
   }
 
-  // ---- player rig: 3D Meshy viewmodels + muzzle flash + pooled FX ---------
+  // ---- player rig: 3D Meshy viewmodels + gloved tactical hands + muzzle flipbook + pooled FX ---------
+  const sleeveMat = material.fabric({ color: "#3b4228", roughness: 0.88, sheen: 0.28, sheenColor: "#78825a" });
+  const gloveMat = material.blackRubber({ color: "#191c20", roughness: 0.72 });
+  const cuffMat = material.brushedMetal({ color: "#2d333b", roughness: 0.28, metallic: 0.9 });
   nodes.push(
     model(assets[VIEWMODEL_ASSET.knife], { castShadow: false, name: "vm knife", targetMaxDimension: BZ_KNIFE_LENGTH })
       .position(0, 0, 0)
@@ -616,14 +687,46 @@ function buildScene() {
     model(assets[VIEWMODEL_ASSET.rocket], { castShadow: false, name: "vm rocket", targetHeight: 0.48 })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-rocket", { tags: ["viewmodel"] })),
+    // WP-10: olive combat sleeves, gunmetal wrist cuff, armored rubber gloves, and studioGlass reflex optic
+    primitives.capsule({ name: "vm sleeve right", castShadow: false, receiveShadow: false, size: [0.072, 0.24, 0.072], material: sleeveMat })
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-sleeve-r", { tags: ["viewmodel", "hand"] })),
+    primitives.cylinder({ name: "vm wrist cuff right", castShadow: false, receiveShadow: false, size: [0.076, 0.032, 0.076], material: cuffMat })
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-cuff-r", { tags: ["viewmodel", "hand"] })),
+    primitives.box({ name: "vm glove right", castShadow: false, receiveShadow: false, size: [0.066, 0.056, 0.088], material: gloveMat })
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-glove-r", { tags: ["viewmodel", "hand"] })),
+    primitives.capsule({ name: "vm sleeve left", castShadow: false, receiveShadow: false, size: [0.068, 0.24, 0.068], material: sleeveMat })
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-sleeve-l", { tags: ["viewmodel", "hand"] })),
+    primitives.box({ name: "vm glove left", castShadow: false, receiveShadow: false, size: [0.064, 0.054, 0.084], material: gloveMat })
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-glove-l", { tags: ["viewmodel", "hand"] })),
+    primitives.box({
+      name: "vm reflex optic", castShadow: false, receiveShadow: false, size: [0.034, 0.028, 0.008],
+      material: material.studioGlass({ tint: "#8fe6ff", roughness: 0.03, thickness: 0.18, ior: 1.52 })
+    }).position(-500, -60, -500).runtime(game.runtimeNode("vm-optic", { tags: ["viewmodel", "optic"] })),
     model(assets.corridorMuzzleFlameBurstMeshy, {
       name: "muzzle flash", material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 2.2, roughness: 0.3 })
     }).position(0, -50, 0).scale(0.14)
       .runtime(game.runtimeNode("muzzle-flash", { tags: ["vfx"] })),
-    // C27: the Iron Warden's vent glows while it is vulnerable
+    primitives.box({
+      name: "muzzle flipbook card", castShadow: false, receiveShadow: false, size: [0.34, 0.34, 0.012],
+      position: [0, -50, 0], material: bunkerMuzzleFlipbookMaterial()
+    }).runtime(game.runtimeNode("muzzle-card", { tags: ["vfx"] })),
+    effects.flipbook({
+      name: "muzzle sprite", sprite: "flame-loop", size: 0.32, frameRate: 36, intensity: 1.4, blend: "additive", position: [0, -50, 0]
+    }).runtime(game.runtimeNode("muzzle-sprite", { tags: ["vfx"] })) as unknown as AuraNodeBuilder<AuraSceneNode>,
+    // C27: the Iron Warden's vent glows + paired GLSL/WGSL containment aura while vulnerable
     lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 7, distance: 9, decay: 1.6, position: [0, -50, 0] })
-      .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
+      .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] })),
+    primitives.cylinder({
+      name: "warden vent containment field", castShadow: false, receiveShadow: false, size: [1.35, 2.3, 1.35],
+      position: [0, -50, 0], material: bunkerWardenVentMaterial()
+    }).runtime(game.runtimeNode("warden-vent-field", { tags: ["vfx"] }))
   );
+  for (let i = 0; i < SPARK_CARD_POOL; i++) {
+    nodes.push(primitives.box({
+      name: `ricochet spark card ${i}`, castShadow: false, receiveShadow: false, size: [0.38, 0.38, 0.014],
+      position: [0, -50, 0], material: bunkerRicochetSparksMaterial(i)
+    }).runtime(game.runtimeNode(`spark-card-${i}`, { tags: ["vfx"] })));
+  }
   // BZ-10: one shared pool of 12 floor decals (moved to the active floor by placeFloorDecals) and a ring of 12 bullet holes
   const decalTextures = createBunkerDecalTextures(defineAuraAssets);
   const bootDecals = floorDecals(floorDefOf(BOOT_SLOT));
@@ -653,31 +756,35 @@ function buildScene() {
     nodes.push(
       primitives.sphere({
         name: `enemy tracer ${i}`, size: [1, 1, 1], position: [0, -50, 0], castShadow: false, receiveShadow: false,
-        material: material.emissive({ color: "#ffe2a8", emissive: "#ff8a2a", emissiveIntensity: 7.5, roughness: 0.2 })
+        material: material.emissive({ color: "#ffe2a8", emissive: "#ff8a2a", emissiveIntensity: 5.2, roughness: 0.2 })
       }).runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] }))
     );
-  // BZ-03: impact sparks and explosion balls are the effect pack's bursts now (art/vfx.ts); no pooled flash nodes.
+  // BZ-03 / WP-10: elongated ballistic tracer streaks (`size: [1, 1, 1]` scaled to `[0.05..0.09, ..., 0.42..0.52]`, never 1.25 m beach-balls) + supersonic ribbon trails
   for (let i = 0; i < MAX_ROCKETS; i++)
     nodes.push(
-      model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 8.5 }) })
+      model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 6.5 }) })
         .position(0, -50, 0).scale(0.28)
         .runtime(game.runtimeNode(`rocket-${i}`, { tags: ["vfx"] })),
       primitives.sphere({
         name: `tracer ${i}`,
-        size: [0.14, 0.14, 0.46],
+        size: [1, 1, 1],
         position: [0, -50, 0],
-        material: material.emissive({ color: "#fff4b8", emissive: "#ffaa2a", emissiveIntensity: 9.0, roughness: 0.2 })
+        castShadow: false,
+        receiveShadow: false,
+        material: material.emissive({ color: "#fff4b8", emissive: "#ffaa2a", emissiveIntensity: 4.2, roughness: 0.2 })
       }).runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
     );
+  for (let i = 0; i < 4; i++) {
+    nodes.push(effects.trail({
+      name: `projectile trail ${i}`, target: `tracer-${i}`, color: "#ffb85c", intensity: 1.45, width: 0.085, maxPoints: 16, life: 0.16
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>);
+  }
 
-  // C24: no effects.contactShadows. The only shadow-casting light is the look's key above the sealed ceilings, so the mask
-  // changed nothing on screen (remote A/B g11-after-7: mean luma 74.98 with it, 74.99 without) and cost 52 draw calls (217 vs 165).
-  // BZ-02: dust haze at 30% of the lamp value per floor (re-applied by applyFloorLook). BZ-08: AO, bloom, grade,
-  // vignette and grain at the WP's numbers; ACES comes from createGame's output.
   return b.addMany(nodes)
     .add(effects.fog({ color: boot.fog.color, density: boot.fog.density }))
-    .add(effects.ambientOcclusion({ intensity: BZ_POST.ao.intensity, radius: BZ_POST.ao.radius }))
-    .add(effects.bloom({ threshold: BZ_POST.bloom.threshold, intensity: BZ_POST.bloom.intensity }))
+    .add(effects.contactShadows({ length: 0.25, thickness: 0.05, steps: 16, intensity: 0.75, lights: "shadowed" }))
+    .add(effects.ambientOcclusion({ intensity: BZ_POST.ao.intensity, radius: BZ_POST.ao.radius, multiBounce: true }))
+    .add(effects.cinematicBloom({ threshold: BZ_POST.bloom.threshold, intensity: BZ_POST.bloom.intensity, color: "#ffd59a", radius: 0.38, antiBlowout: true }))
     .add(effects.colorGrade({
       contrast: BZ_POST.grade.contrast, saturation: BZ_POST.grade.saturation,
       temperature: boot.grade.temperature, tint: boot.grade.tint,
@@ -687,11 +794,8 @@ function buildScene() {
     // BZ-18: chromatic aberration at rest 0, pulsed on heavy hits (S10; the engine drops it on Low)
     .add(effects.chromaticAberration({ intensity: 0 }))
     // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up), mounted only when the scene boots on F6.
-    // GU47 phase 2: a mounted volumetric-fog node replaces the scene fog's colour and density in the forward program and
-    // adds the dominant spot's inscatter on every floor (setEffectEnabled only drops the post pass), which washed F1-F5
-    // and the Kill House in pale lamp-coloured haze (recap2 frames). Off every other floor, the per-floor dark haze rules.
     .addMany(BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
-    // GU47 phase 4: the glossy floors and the F2 flood reflect the corridor (rubric ibl_reflections 3)
+    // WP-10: real damp concrete screen-space reflections
     .add(effects.screenSpaceReflections({ intensity: BZ_SSR.intensity, maxDistance: BZ_SSR.maxDistance, roughness: BZ_SSR.roughness, thickness: BZ_SSR.thickness }))
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
@@ -865,8 +969,8 @@ const mg = createGame({
     win: { punch: { fovDeg: 2.6, ms: 420 }, flash: { color: "#ffd76a", peak: 0.2, ms: 500 } }
   },
   qualityRebuild: { flags: ["game"] },
-  // BZ-08: ACES through the output, never a look preset (lane 521 exposure: art/look.ts BZ_OUTPUT_EXPOSURE).
-  output: { toneMapping: "aces", exposure: BZ_OUTPUT_EXPOSURE, ...labOptions.output },
+  // WP-10: AgX filmic output with dithering, never a look preset or ambient fill (art/look.ts BZ_OUTPUT_EXPOSURE).
+  output: { toneMapping: "agx", exposure: BZ_OUTPUT_EXPOSURE, dither: true, ...labOptions.output },
   ...(labOptions.renderer ? { renderer: labOptions.renderer } : {}),
   ...(labOptions.worker ? { worker: labOptions.worker } : {}),
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
@@ -877,6 +981,15 @@ const loading = createLoadingProgress({ shell: mg.shell });
 loading.set(0.05, "Loading Bunker Zero");
 mg.start();
 const feel = gameFeel.create({ app, time: app.time });
+const impactRig: ImpactRig = createImpactRig();
+let impactFrame: ReturnType<ImpactRig["step"]> = {
+  simDt: 1 / 60,
+  frozen: false,
+  fovDeltaDeg: 0,
+  shakeOffset: [0, 0, 0],
+  shakeRoll: 0
+};
+let recoilKick = 0;
 const cue = (id: CueId) => { void mg.sound?.cue(id); };
 
 // ---------------------------------------------------------------------------
@@ -906,6 +1019,14 @@ function setEnemyClip(id: string, node: NodeHandle, clip: string, speed: number)
   node.setAnimation({ clip, loop: true, speed });
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
+const vmHands = {
+  sleeveR: req("vm-sleeve-r"),
+  cuffR: req("vm-cuff-r"),
+  gloveR: req("vm-glove-r"),
+  sleeveL: req("vm-sleeve-l"),
+  gloveL: req("vm-glove-l"),
+  optic: req("vm-optic")
+};
 /**
  * GU47 phase 6: a viewmodel not in hand is parked far outside every floor instead of hidden. The machine gun, hidden
  * from boot until its pickup, never drew in any HUD frame although its handle was visible and in front of the camera
@@ -916,7 +1037,16 @@ function parkViewmodel(node: NodeHandle) {
   node.setVisible(true);
 }
 const muzzleFlash = req("muzzle-flash");
+const muzzleCard = req("muzzle-card");
+const muzzleSprite = req("muzzle-sprite");
 const ventLight = req("vent-light");
+const wardenVentField = req("warden-vent-field");
+const sparkCards = Array.from({ length: SPARK_CARD_POOL }, (_, i) => req(`spark-card-${i}`));
+const sparkCardState: { x: number; y: number; z: number; until: number }[] = Array.from(
+  { length: SPARK_CARD_POOL },
+  () => ({ x: 0, y: -50, z: 0, until: -1 })
+);
+let nextSparkCard = 0;
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 const enemyTracerNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`etracer-${i}`));
@@ -1103,15 +1233,31 @@ function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions 
   if (m === "killhouse") banner("KILL HOUSE", "clear the floor before the clock runs out");
   else banner(`FLOOR ${def.id + 1} — ${def.name.toUpperCase()}`, def.subtitle);
 }
-/** C18: every floor slot but the active one is hidden, static geometry included. */
+/** C18: every floor slot but the active one is hidden, static geometry included, and off-floor skeletal clips are paused. */
 function hideAllRuntime() {
   const slot = activeSlot();
   for (let s = 0; s < ALL_FLOORS.length; s++) {
     for (const id of SLOT_IDS[s]!) opt(id)?.setVisible(false);
+    if (s !== slot) {
+      for (const id of SLOT_IDS[s]!) {
+        if (id.includes("-en-") || id.includes("-summon-")) {
+          opt(id)?.setAnimation?.(undefined);
+          enemyAnimCache.delete(id);
+        }
+      }
+    }
     if (s === slot) for (const id of SLOT_STATIC_IDS[s]!) opt(id)?.setVisible(true);
   }
   for (const v of Object.values(vmNodes)) parkViewmodel(v);
+  for (const h of Object.values(vmHands)) parkViewmodel(h);
   muzzleFlash.setVisible(false);
+  muzzleCard.setVisible(false);
+  muzzleSprite.setVisible(false);
+  wardenVentField.setVisible(false);
+  for (let i = 0; i < SPARK_CARD_POOL; i++) {
+    sparkCardState[i]!.until = -1;
+    sparkCards[i]!.setVisible(false);
+  }
 }
 function bindFloor() {
   const slot = activeSlot();
@@ -1134,7 +1280,7 @@ const elHud = $<HTMLElement>("bz-hud"), elHp = $("bz-hp"), elArmor = $("bz-armor
   elVign = $("bz-vignette"), elBanner = $("bz-banner"), elTag = $("bz-floor-tag"), elFeed = $("bz-feed"),
   elCross = $("bz-crosshair"), elMenu = $("bz-menu"), elPause = $("bz-pause"), elResults = $("bz-results"),
   elIntro = $("bz-intro"), elMap = $<HTMLCanvasElement>("bz-map"), elVuln = $("bz-vulnerable"), elTouch = $("bz-touch"),
-  elArc = $("bz-damage-arc");
+  elArc = $("bz-damage-arc"), elCoords = document.getElementById("bz-coords");
 let bannerT = 0;
 function banner(big: string, small = "") {
   elBanner.textContent = big;
@@ -1146,7 +1292,7 @@ function banner(big: string, small = "") {
 }
 const FEED: { text: string; warn: boolean }[] = [];
 function feed(s: string, warn = false) {
-  FEED.push({ text: s, warn });
+  FEED.push({ text: formatTacticalFeed(s), warn });
   if (FEED.length > 6) FEED.shift();
   elFeed.replaceChildren(...FEED.map((f) => { const d = document.createElement("div"); d.className = `bz-tick${f.warn ? " warn" : ""}`; d.textContent = f.text; return d; }));
 }
@@ -1376,6 +1522,9 @@ function syncScenePose(inp: SimInput) {
   poseDt = lastPoseTime < 0 ? 1 : Math.min(0.1, Math.max(0, sim.state.time - lastPoseTime));
   lastPoseTime = sim.state.time;
   const motion = motionScale();
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+  const framing = viewmodelFraming(aspect, BZ_FOV);
+  const feelScale = qaFrozen || BOOT_FLOOR ? 0 : motion;
   // ---- camera: eye pose + shake + tactical flashlight tracking (C21: both scale down under reduced motion)
   const shake = (sim.state.shake + (p.hurtT > 0 ? 0.3 : 0)) * motion;
   const shakeYaw = shake * Math.sin(sim.state.time * 91) * 0.012;
@@ -1383,34 +1532,35 @@ function syncScenePose(inp: SimInput) {
   const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag * motion;
   const ox = sim.state.ox;
   const fx = Math.sin(p.yaw + shakeYaw), fz = -Math.cos(p.yaw + shakeYaw);
+  const impX = impactFrame.shakeOffset[0] * feelScale;
+  const impY = impactFrame.shakeOffset[1] * feelScale;
+  const impZ = impactFrame.shakeOffset[2] * feelScale;
   // BZ-16: death roll 12 deg (reduced motion: none); no sprint in the sim, so no sprint FOV
   if (p.alive) deadAt = -1; else if (deadAt < 0) deadAt = sim.state.time;
   const sinceDeath = deadAt < 0 ? 0 : sim.state.time - deadAt;
   app.camera?.setPose({
-    position: [p.x + ox, eyeY + p.pitch * 0.4, p.z],
-    target: [p.x + ox + fx, eyeY + Math.tan(p.pitch), p.z + fz],
-    roll: deathRoll(sinceDeath, reducedMotion()),
-    fov: BZ_FOV
+    position: [p.x + ox + impX, eyeY + p.pitch * 0.4 + impY, p.z + impZ],
+    target: [p.x + ox + impX + fx, eyeY + Math.tan(p.pitch) + impY, p.z + impZ + fz],
+    roll: deathRoll(sinceDeath, reducedMotion()) + impactFrame.shakeRoll * feelScale,
+    fov: framing.fov + impactFrame.fovDeltaDeg * feelScale
   });
   deathFadeLevel = deathFade(sinceDeath, reducedMotion());
   try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
   // BZ-01: the rig follows the camera (carried lamp, fixture pool, flicker, F6 beacon); cosmetic, never the sim's RNG
   lightRig.update({ x: p.x + ox, y: eyeY, z: p.z, fx, fz }, sim.state.time);
 
-  // ---- viewmodel (with crisp recoil kickback on fire)
+  // ---- viewmodel + gloved tactical hands (with Hor+ portrait framing & crisp recoil kickback on fire)
   const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag * motion;
   const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.06);
-  const recoil = muzzleFrac * 0.12;
+  const recoil = muzzleFrac * 0.12 + recoilKick * 0.045 * feelScale;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
-  // portrait screens see a narrow horizontal slice: pull the weapon toward the centre so it stays in frame (C12)
-  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
-  const side = 0.26 * Math.max(0.3, Math.min(1, aspect / 1.6));
+  const side = framing.side;
   // BZ-15: sway from the turn rate and a reload dip (both off under reduced motion)
   const [swayX, swayY] = viewmodelSway(inp.turn / Math.max(poseDt, 1 / 240), sim.state.time, moveMag, reducedMotion());
   const dip = reloadDip(p.reloading, p.weapon === "rocket" ? 1.4 : 1.1, reducedMotion());
-  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * (side + swayX);
-  const vmy = EYE - 0.3 + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
-  const vmz = p.z + fz * (0.62 - recoil) + rz * (side + swayX);
+  const vmx = p.x + ox + fx * (framing.forward - recoil) + rx * (side + swayX);
+  const vmy = EYE - framing.drop + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
+  const vmz = p.z + fz * (framing.forward - recoil) + rz * (side + swayX);
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
@@ -1418,26 +1568,75 @@ function syncScenePose(inp: SimInput) {
       node.setVisible(true);
     } else parkViewmodel(node);
   }
+  if (p.alive) {
+    // Gloved right forearm, gunmetal cuff, and armored grip enter from the lower-right wrist,
+    // staying outside the 1280x720 pistol reference region while grounding every weapon in hand.
+    const wristOffset = aspect < 0.85 ? 0.045 : 0.085;
+    const armFwd = framing.forward - 0.12 - recoil * 0.85;
+    const handFwd = framing.forward - 0.05 - recoil * 0.9;
+    const armSide = side + wristOffset + swayX;
+    const handSide = side + wristOffset * 0.72 + swayX;
+    vmHands.sleeveR.setPosition(p.x + ox + fx * armFwd + rx * armSide, vmy - 0.085, p.z + fz * armFwd + rz * armSide);
+    vmHands.sleeveR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
+    vmHands.sleeveR.setVisible(true);
+    vmHands.cuffR.setPosition(p.x + ox + fx * (armFwd + 0.045) + rx * (armSide - 0.014), vmy - 0.056, p.z + fz * (armFwd + 0.045) + rz * (armSide - 0.014));
+    vmHands.cuffR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
+    vmHands.cuffR.setVisible(true);
+    vmHands.gloveR.setPosition(p.x + ox + fx * handFwd + rx * handSide, vmy - 0.038, p.z + fz * handFwd + rz * handSide);
+    vmHands.gloveR.setRotation(-0.35 - recoil * 1.1, -p.yaw, -0.14);
+    vmHands.gloveR.setVisible(true);
+    if (p.weapon === "mg" || p.weapon === "rocket") {
+      const supFwd = framing.forward + 0.06 - recoil;
+      const supSide = side - 0.075 + swayX;
+      vmHands.sleeveL.setPosition(p.x + ox + fx * (supFwd - 0.1) + rx * (supSide - 0.055), vmy - 0.09, p.z + fz * (supFwd - 0.1) + rz * (supSide - 0.055));
+      vmHands.sleeveL.setRotation(-1.05, -p.yaw, 0.34);
+      vmHands.sleeveL.setVisible(true);
+      vmHands.gloveL.setPosition(p.x + ox + fx * supFwd + rx * supSide, vmy - 0.042, p.z + fz * supFwd + rz * supSide);
+      vmHands.gloveL.setRotation(-0.25, -p.yaw, 0.18);
+      vmHands.gloveL.setVisible(true);
+      vmHands.optic.setPosition(vmx + fx * 0.03, vmy + 0.088, vmz + fz * 0.03);
+      vmHands.optic.setRotation(-recoil * 1.2, -p.yaw, 0);
+      vmHands.optic.setVisible(true);
+    } else {
+      parkViewmodel(vmHands.sleeveL);
+      parkViewmodel(vmHands.gloveL);
+      parkViewmodel(vmHands.optic);
+    }
+  } else {
+    for (const h of Object.values(vmHands)) parkViewmodel(h);
+  }
 
-  // ---- muzzle flash; the room light of every shot is the bz-muzzle preset's transient light (BZ-03, fireVfx)
+  // ---- muzzle flash + dual-backend procedural flipbook sheet + additive sprite; transient light via fireVfx (BZ-03)
   if (sim.state.muzzle > 0) {
-    const mx = p.x + ox + fx * 0.95 + rx * 0.22, my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * 0.22;
+    const mx = p.x + ox + fx * 0.95 + rx * (side * 0.85), my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * (side * 0.85);
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
     // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
-    muzzleFlash.setScale(0.11 + fxRng() * 0.05);
+    const flashScale = 0.11 + fxRng() * 0.05;
+    muzzleFlash.setScale(flashScale);
     muzzleFlash.setVisible(true);
+    muzzleCard.setPosition(mx + fx * 0.04, my, mz + fz * 0.04);
+    muzzleCard.setRotation(0, -p.yaw, sim.state.time * 19);
+    muzzleCard.setScale(0.85 + flashScale * 2.4);
+    muzzleCard.setVisible(true);
+    muzzleSprite.setPosition(mx, my, mz);
+    muzzleSprite.setVisible(true);
     if (!muzzleWasLit) fireVfx("player-fire", [mx, my, mz]);
     muzzleWasLit = true;
   } else {
     muzzleFlash.setVisible(false);
     muzzleFlash.setPosition(0, -50, 0);
+    muzzleCard.setVisible(false);
+    muzzleCard.setPosition(0, -50, 0);
+    muzzleSprite.setVisible(false);
+    muzzleSprite.setPosition(0, -50, 0);
     muzzleWasLit = false;
   }
 
   // ---- enemies (skeletal animation + procedural stride cadence); nodes that do not exist are skipped (C1)
   const slot = activeSlot();
   let vulnerable: Enemy | null = null;
+  let bossAlive = false;
   for (const e of sim.state.enemies) {
     const ids = enemyIds(slot, e);
     const node = opt(ids.body);
@@ -1451,9 +1650,16 @@ function syncScenePose(inp: SimInput) {
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
         node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), 0);
         node.setVisible(true);
-      } else node.setVisible(false);
+      } else {
+        if (enemyAnimCache.has(ids.body)) {
+          enemyAnimCache.delete(ids.body);
+          node.setAnimation?.(undefined);
+        }
+        node.setVisible(false);
+      }
       continue;
     }
+    if (e.kind === "boss") bossAlive = true;
     let clip = "Idle_Loop";
     let speed = 1.0;
     let strideBob = Math.sin(sim.state.time * 3.2 + e.sx) * 0.015;
@@ -1495,9 +1701,22 @@ function syncScenePose(inp: SimInput) {
       eye.setVisible(true);
     }
   }
-  if (vulnerable) ventLight.setPosition(vulnerable.x + ox, 1.9, vulnerable.z);
-  else ventLight.setPosition(0, -50, 0);
+  if (vulnerable) {
+    ventLight.setPosition(vulnerable.x + ox, 1.9, vulnerable.z);
+    wardenVentField.setPosition(vulnerable.x + ox, 1.55, vulnerable.z);
+    wardenVentField.setRotation(0, sim.state.time * 1.4, 0);
+    wardenVentField.setVisible(true);
+  } else {
+    ventLight.setPosition(0, -50, 0);
+    wardenVentField.setPosition(0, -50, 0);
+    wardenVentField.setVisible(false);
+  }
   elVuln.hidden = !vulnerable;
+  const exitField = opt(`f${slot}-exit-field`);
+  if (exitField) {
+    const liftLocked = mode === "descent" && (!p.key || (slot === 5 && bossAlive));
+    exitField.setVisible(liftLocked);
+  }
 
   // ---- pickups (bob + spin)
   for (const pk of sim.state.pickups) {
@@ -1512,7 +1731,7 @@ function syncScenePose(inp: SimInput) {
     node.setVisible(true);
   }
 
-  // ---- doors (C15 sized them per floor height; BZ-15 slides them sideways)
+  // ---- doors (C15 sized them per floor height; BZ-15 slides them sideways with clearcoat leaf + studioGlass visor)
   for (const d of sim.state.doors) {
     const node = opt(`f${slot}-door-${d.cx}-${d.cz}`);
     if (!node) continue;
@@ -1524,6 +1743,9 @@ function syncScenePose(inp: SimInput) {
     const leaf = opt(`f${slot}-doorleaf-${d.cx}-${d.cz}`);
     leaf?.setPosition(cellX(slot, d.cx) + offX, SLOT_WALL_H[slot]! / 2, cellCenter(d.cz) + offZ);
     leaf?.setVisible(true);
+    const visor = opt(`f${slot}-doorvisor-${d.cx}-${d.cz}`);
+    visor?.setPosition(cellX(slot, d.cx) + offX, SLOT_WALL_H[slot]! * 0.62, cellCenter(d.cz) + offZ);
+    visor?.setVisible(true);
   }
 
   // ---- push-walls (block + crack cue slide together)
@@ -1549,7 +1771,7 @@ function syncScenePose(inp: SimInput) {
   }
   flushBlobs(slot);
 
-  // ---- 3D ammo projectiles (rockets + plasma/bullet bolts + glowing tracer cores)
+  // ---- 3D ammo projectiles (rockets + bullet bolts + sleek supersonic tracer streaks, never beach-balls)
   const rockets = sim.state.rockets;
   for (let i = 0; i < rocketNodes.length; i++) {
     if (i < rockets.length) {
@@ -1559,11 +1781,11 @@ function syncScenePose(inp: SimInput) {
       const isRocket = r.kind === "rocket" || r.fromEnemy;
       rocketNodes[i]!.setPosition(r.x + ox, ry, r.z);
       rocketNodes[i]!.setRotation(0, projYaw, r.t * 16);
-      rocketNodes[i]!.setScale(isRocket ? 0.36 : 0.28);
+      rocketNodes[i]!.setScale(isRocket ? 0.34 : 0.22);
       rocketNodes[i]!.setVisible(true);
       tracerNodes[i]!.setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
       tracerNodes[i]!.setRotation(0, projYaw, 0);
-      tracerNodes[i]!.setScale(isRocket ? [1.25, 1.25, 1.4] : [0.95, 0.95, 1.15]);
+      tracerNodes[i]!.setScale(isRocket ? [0.09, 0.09, 0.52] : [0.05, 0.05, 0.42]);
       tracerNodes[i]!.setVisible(true);
     } else {
       rocketNodes[i]!.setVisible(false);
@@ -1588,13 +1810,26 @@ function syncScenePose(inp: SimInput) {
       enemyTracerNodes[i]!.setVisible(false); enemyTracerNodes[i]!.setPosition(0, -50, 0);
     }
   }
-  // ---- BZ-03: blasts and impacts are one burst each, fired the first frame the sim record is seen
+  // ---- BZ-03: blasts and impacts are one burst each + procedural flipbook ricochet spark cards
   for (const e of sim.state.explosions) if (e.t < 0.55 && firstSight(e)) fireVfx("rocket-or-barrel-blast", [e.x + ox, 1.0, e.z]);
   for (const s of sim.state.shots) {
     if (s.t >= 0.25 || !firstSight(s)) continue;
     fireVfx("bullet-impact", [s.x + ox, 1.18, s.z]);
     fireVfx("wall-chip", [s.x + ox, 1.18, s.z]);
     addBulletHole(s.x, s.z);
+    const cardIdx = nextSparkCard++ % SPARK_CARD_POOL;
+    sparkCardState[cardIdx] = { x: s.x + ox - fx * 0.08, y: 1.18, z: s.z - fz * 0.08, until: sim.state.time + 0.14 };
+  }
+  for (let i = 0; i < SPARK_CARD_POOL; i++) {
+    const st = sparkCardState[i]!;
+    if (st.until > sim.state.time) {
+      sparkCards[i]!.setPosition(st.x, st.y, st.z);
+      sparkCards[i]!.setRotation(0, -p.yaw, i * 0.8);
+      sparkCards[i]!.setVisible(true);
+    } else {
+      sparkCards[i]!.setVisible(false);
+      sparkCards[i]!.setPosition(0, -50, 0);
+    }
   }
 }
 
@@ -1640,7 +1875,8 @@ function stepSim(dt: number, inp: SimInput) {
     return;
   }
   const useAuto = autoPilot;
-  const totalStepDt = Math.min(0.1, Math.max(1 / 240, dt));
+  const hitStopScale = impactFrame.frozen ? 0.08 : 1;
+  const totalStepDt = Math.min(0.1, Math.max(1 / 240, dt * hitStopScale));
   let remaining = totalStepDt;
   let firstSub = true;
   while (remaining > 1e-9) {
@@ -1722,6 +1958,10 @@ app.onFrame(({ dt }) => {
   const wallDt = Math.min(1, Math.max(0, (now - lastWall) / 1000));
   lastWall = now;
   const paused = isPaused();
+  const realStepDt = paused ? 0 : wallDt;
+  impactFrame = impactRig.step(realStepDt);
+  recoilKick *= Math.exp(-realStepDt * 12);
+  if (recoilKick < 0.002) recoilKick = 0;
   const inp = paused ? (gatherInput(dt), NO_INPUT) : gatherInput(dt);
   if (!qaFrozen && !paused && !campaignDone) stepSim(dt, inp);
   drain();
@@ -1741,19 +1981,48 @@ app.onFrame(({ dt }) => {
 function handleEvent(ev: string) {
   const [type, a, b] = ev.split(":");
   switch (type) {
-    case "fire": cue(a === "pistol" ? "pistol" : a === "mg" ? "mg" : a === "rocket" ? "rocket" : a === "dry" ? "dry" : "knife"); mg.juice?.fire("fire"); break;
+    case "fire":
+      cue(a === "pistol" ? "pistol" : a === "mg" ? "mg" : a === "rocket" ? "rocket" : a === "dry" ? "dry" : "knife");
+      mg.juice?.fire("fire");
+      if (a !== "dry") {
+        recoilKick = Math.min(1.5, recoilKick + (a === "rocket" ? 0.9 : a === "mg" ? 0.42 : 0.55));
+        impactRig.trigger({
+          trauma: a === "rocket" ? 0.34 : a === "mg" ? 0.12 : 0.16,
+          fovKickDeg: a === "rocket" ? 2.2 : 0.7
+        });
+      }
+      break;
     case "hit": cue("hit"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 90); break;
-    case "kill": cue("kill"); mg.juice?.fire("kill"); feed(`kill confirmed — ${a}`); break;
-    case "hurt": cue("hurt"); mg.juice?.fire("hurt"); if (Number(a) >= BZ_CA_PULSE.minDamage) caHitAt = performance.now(); break;
+    case "kill":
+      cue("kill");
+      mg.juice?.fire("kill");
+      recoilKick = Math.min(1.5, recoilKick + 0.32);
+      impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.22, fovKickDeg: 1.4 });
+      feed(`kill confirmed — ${a}`);
+      break;
+    case "hurt":
+      cue("hurt");
+      mg.juice?.fire("hurt");
+      recoilKick = Math.min(1.5, recoilKick + 0.4);
+      impactRig.trigger({ trauma: 0.45, fovKickDeg: -1.2 });
+      if (Number(a) >= BZ_CA_PULSE.minDamage) caHitAt = performance.now();
+      break;
     case "dog": cue("bite"); break;
     case "step": cue("step"); break;
-    case "secret": cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); eventVfx("push-wall"); break;
+    case "secret":
+      cue("secret");
+      mg.juice?.fire("secret");
+      recoilKick = Math.min(1.5, recoilKick + 0.25);
+      impactRig.trigger({ trauma: 0.24, fovKickDeg: 1.2 });
+      feed("push-wall revealed a secret");
+      eventVfx("push-wall");
+      break;
     case "pickup": cue(a === "key" ? "key" : a === "mg" || a === "rocket" ? "weapon" : "pickup"); feed(a === "key" ? "brass key secured" : `${a} collected`); eventVfx("pickup"); break;
     case "door": cue("door"); eventVfx("door-slide"); break;
     case "reload": cue("reload"); break;
     case "weapon": cue("switch"); break;
-    case "rocket": cue("boom"); break;
-    case "barrel": cue("boom"); mg.juice?.fire("fire"); break;
+    case "rocket": cue("boom"); recoilKick = Math.min(1.5, recoilKick + 0.5); impactRig.trigger({ freezeSeconds: 0.03, trauma: 0.42, fovKickDeg: 1.8 }); break;
+    case "barrel": cue("boom"); mg.juice?.fire("fire"); recoilKick = Math.min(1.5, recoilKick + 0.55); impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.48, fovKickDeg: 2.0 }); break;
     // C9: each Warden event has its own cue and line
     case "boss":
       if (a === "rocket") positional("launch", bossPos());
@@ -1797,6 +2066,7 @@ function shooterPos(kind: "guard" | "gunner"): [number, number, number] | null {
 
 // ---------------------------------------------------------------------------
 let lastHud = "";
+let lastCoordsKey = "";
 function renderHud() {
   const p = sim.state.player;
   const wpn = WEAPONS[p.weapon];
@@ -1809,7 +2079,8 @@ function renderHud() {
     elHp.textContent = String(Math.ceil(p.hp));
     elHp.classList.toggle("low", p.hp <= 30);
     elArmor.textContent = String(Math.ceil(p.armor));
-    elAmmo.textContent = p.reloading > 0 ? "RELOADING" : ammoStr;
+    elAmmo.textContent = p.reloading > 0 ? "Reloading" : ammoStr;
+    elAmmo.classList.toggle("text-mode", p.reloading > 0 || wpn.ammo === "none");
     elWeapon.textContent = weaponHudLabel(p.weapon);
     elScore.textContent = String(sim.state.score);
     elKills.textContent = `${sim.state.kills}/${sim.state.totalEnemies}`;
@@ -1825,6 +2096,14 @@ function renderHud() {
       small.textContent = `${p.key ? "key secured · the elevator is armed" : sim.state.floor.subtitle} · ${dogtag}`;
     }
     elTag.append(small);
+  }
+  if (elCoords) {
+    const cx = Math.max(0, cellOf(p.x)), cz = Math.max(0, cellOf(p.z));
+    const ckey = `${mode}:${floorIdx}:${cx}:${cz}`;
+    if (ckey !== lastCoordsKey) {
+      lastCoordsKey = ckey;
+      elCoords.textContent = `${mode === "killhouse" ? "KH" : `B${floorIdx + 1}`} · X${String(cx).padStart(2, "0")} Z${String(cz).padStart(2, "0")}`;
+    }
   }
   const vign = String(Math.max(p.hurtT * 1.6, p.alive && p.hp <= 30 ? 0.4 : 0, deathFadeLevel));
   // BZ-17: directional damage arc toward the shooter that hurt the player (last enemy shot), read-only

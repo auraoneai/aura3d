@@ -5,6 +5,7 @@ import { KeyboardInput } from "./input";
 import { Player } from "./player";
 import { Traffic } from "./traffic";
 import { FreewayWorld } from "./world";
+import "../../../showcase-port-shared/hud-tokens.css";
 import "./hud.css";
 
 export { RoadsterGame } from "./game";

@@ -7,48 +7,62 @@
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Lamplight Line</title>
     <style>
-      :root { color-scheme: dark; --ink: #f6efe1; --muted: #c4bcad; --panel: rgba(20, 24, 34, 0.72); --line: rgba(246, 239, 225, 0.18); --warm: #f2c14e; --coral: #e4572e; --jade: #6bc5a0; }
+      :root { color-scheme: dark; font-synthesis: none; --ink: #f6efe1; --muted: #c4bcad; --panel: rgba(16, 21, 33, 0.78); --line: rgba(246, 239, 225, 0.2); --warm: #f2c14e; --coral: #e4572e; --jade: #6bc5a0; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #0e1220; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      html, body { margin: 0; height: 100%; background: #0e1220; color: var(--ink); font: 400 13px/1.42 var(--font-ui); font-variant-numeric: tabular-nums; overflow: hidden; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .num { font-variant-numeric: tabular-nums; }
+      .metric-val, #speed, #results .grade, #results .grid .num { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; }
+      .line-badge { display: inline-block; margin-bottom: 2px; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(255, 199, 122, 0.42); background: rgba(11, 15, 26, 0.68); color: var(--warm); font: 400 12px/1.25 var(--font-mono); letter-spacing: 0.04em; }
+      .tele-row { margin: 1px 0 2px; }
+      #sched-delta[data-state="early"], #sched-delta[data-state="on"] { color: var(--jade); }
+      #sched-delta[data-state="late"] { color: var(--warm); }
       .meta { font-size: 12px; color: var(--muted); }
-      .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
-      #top { top: 12px; left: 12px; min-width: 240px; }
-      #top h1 { margin: 0 0 2px; font-size: 16px; font-weight: 500; }
-      #stats { top: 12px; right: 12px; text-align: right; }
-      #stats .big { font-size: 24px; font-weight: 600; }
+      .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(8px); }
+      #top { top: var(--a3d-bar-space, 12px); left: 12px; min-width: 220px; }
+      #top h1 { margin: 0 0 2px; font-size: 16px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.04em; }
+      #stats { top: var(--a3d-bar-space, 12px); right: 12px; text-align: right; }
+      #stats .big { font-size: 24px; font-weight: 500; line-height: 1.08; }
       #status { bottom: 64px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
       #riders { bottom: 116px; left: 12px; max-width: 360px; }
       #riders span { display: inline-block; margin: 0 8px 2px 0; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1220; z-index: 5; }
       .hidden { display: none !important; }
       kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font: inherit; font-size: 12px; color: var(--ink); }
-      #title, #results { position: fixed; inset: 0; display: grid; place-items: center; z-index: 4; background: radial-gradient(ellipse at center, rgba(14, 18, 32, 0.15), rgba(14, 18, 32, 0.72)); text-align: center; }
-      #title h2, #results h2 { margin: 0; font-size: 44px; font-weight: 500; letter-spacing: 0.01em; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
-      #title .sub, #results .sub { margin: 6px 0 22px; font-size: 14px; color: var(--muted); }
-      #title .start { color: var(--ink); font-family: inherit; display: inline-block; margin: 0 0 18px; padding: 8px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 14px; cursor: pointer; }
+      #title, #results { position: fixed; inset: 0; display: grid; place-items: center; z-index: 4; padding: var(--a3d-bar-space, 16px) 16px 20px; background: radial-gradient(ellipse at center, rgba(14, 18, 32, 0.2), rgba(14, 18, 32, 0.76)); text-align: center; }
+      #title > div { max-width: min(560px, calc(100vw - 24px)); padding: 24px 28px 20px; border-radius: 14px; border: 1px solid rgba(255, 199, 122, 0.34); background: rgba(12, 16, 28, 0.8); backdrop-filter: blur(10px); box-shadow: 0 18px 44px rgba(2, 6, 16, 0.52); }
+      #title h2, #results h2 { margin: 0; font-size: 40px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.04em; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.45); }
+      #title .sub, #results .sub { margin: 6px 0 20px; font-size: 14px; color: var(--muted); }
+      #title .start { color: var(--ink); font-family: inherit; font-weight: 500; display: inline-block; margin: 0 0 18px; padding: 8px 20px; border: 1px solid var(--warm); border-radius: 8px; background: rgba(255, 199, 122, 0.14); font-size: 14px; cursor: pointer; }
       #title .keys, #results .grid { display: grid; grid-template-columns: auto auto; gap: 4px 18px; justify-content: center; text-align: left; font-size: 12px; color: var(--muted); }
-      #results .grade { font-size: 64px; font-weight: 500; line-height: 1.1; }
+      #results .grade { font-size: 60px; font-weight: 500; line-height: 1.08; }
       #results .grid { font-size: 14px; color: var(--ink); margin-bottom: 18px; }
-      #toast { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; transition: opacity 0.4s; pointer-events: none; }
+      #toast { position: fixed; top: calc(var(--a3d-bar-space, 12px) + 64px); left: 50%; transform: translateX(-50%); z-index: 3; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; transition: opacity 0.4s; pointer-events: none; }
       #toast.off { opacity: 0; }
-      #prompt { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; max-width: min(520px, calc(100vw - 560px)); min-width: 220px; text-align: center; padding: 8px 16px; border: 1px solid var(--warm); border-radius: 8px; background: var(--panel); font-size: 15px; font-weight: 500; pointer-events: none; }
+      #prompt { position: fixed; top: var(--a3d-bar-space, 12px); left: 50%; transform: translateX(-50%); z-index: 3; max-width: min(500px, calc(100vw - 560px)); min-width: 220px; text-align: center; padding: 7px 14px; border: 1px solid var(--warm); border-radius: 8px; background: var(--panel); font-size: 14px; font-weight: 500; pointer-events: none; }
       #prompt .meta { display: block; margin-top: 2px; }
-      @media (max-width: 900px) { #prompt { top: 104px; max-width: calc(100vw - 24px); } #toast { top: 156px; } }
+      @media (max-width: 900px) { #prompt { top: calc(var(--a3d-bar-space, 12px) + 92px); max-width: calc(100vw - 24px); } #toast { top: calc(var(--a3d-bar-space, 12px) + 142px); } }
       .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
-      @media (max-width: 560px) {
-        #top { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; min-width: 0; }
+      @media (max-width: 760px) {
+        .panel { padding: 5px 8px; }
+        #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 52%; min-width: 0; }
+        #top h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #stats { top: calc(max(8px, env(safe-area-inset-top)) + 58px); left: 8px; right: 8px; text-align: left; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-        #stats .big { font-size: 20px; }
-        #stats { flex-wrap: wrap; }
-        #stats .lean-row { flex-basis: 100%; justify-content: flex-start; }
-        #prompt { top: calc(max(8px, env(safe-area-inset-top)) + 146px); }
-        #toast { top: calc(max(8px, env(safe-area-inset-top)) + 198px); }
-        #results .grade { font-size: 52px; }
-        #status { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-start; gap: 4px; }
-        #riders { bottom: 150px; left: 8px; max-width: calc(100vw - 16px); }
+        #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 50%; right: 8px; text-align: right; }
+        #stats .big { font-size: 18px; }
+        #stats > .meta.num:not(.tele-row):not(.lean-row) { display: none; }
+        #stats .lean-row { justify-content: flex-end; gap: 4px; margin-top: 2px; }
+        #lean { width: 72px; }
+        #prompt { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 64px); left: 8px; right: 8px; transform: none; max-width: none; min-width: 0; padding: 4px 10px; font-size: 13px; }
+        #prompt .meta { display: none; }
+        #toast { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 98px); }
+        #title > div { padding: 16px 14px 14px; }
+        #title h2 { font-size: 30px; }
+        #title .keys { display: none; }
+        #results .grade { font-size: 46px; }
+        #status { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); padding: 4px 8px; flex-direction: column; align-items: flex-start; gap: 2px; }
+        #riders { bottom: 136px; left: 8px; max-width: calc(100vw - 16px); padding: 4px 8px; }
+        #riders .rider { display: none; }
       }
       .lean-row { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 3px; }
       #lean { position: relative; display: inline-block; width: 120px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #e4572e 0 15%, #f2c14e 15% 27%, #9fd38a 27% 37%, #6bc5a0 37% 63%, #9fd38a 63% 73%, #f2c14e 73% 85%, #e4572e 85% 100%); opacity: 0.85; }
@@ -56,7 +70,7 @@
       #lean-crit { position: absolute; left: 0; bottom: -5px; height: 3px; width: 0; background: #e4572e; border-radius: 2px; }
       #lean[data-band="red"] { outline: 2px solid #e4572e; outline-offset: 1px; }
       #riders .rider em { font-style: normal; opacity: 0.8; }
-      #riders .dot { width: auto; height: auto; border-radius: 0; font-style: normal; font-size: 11px; }
+      #riders .dot { width: auto; height: auto; border-radius: 0; font-style: normal; font-size: 12px; }
       #riders .next-stop { color: var(--ink); margin-bottom: 2px; }
       .row-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 4px 0 10px; }
       .row-btns button, #title .start-alt { min-height: 44px; min-width: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
@@ -65,7 +79,7 @@
       #results .rule { max-width: 420px; margin: 0 auto 12px; }
       .touch { display: none; position: fixed; left: 8px; right: 8px; bottom: max(36px, calc(env(safe-area-inset-bottom) + 30px)); z-index: 3; justify-content: space-between; gap: 8px; pointer-events: none; }
       .touch .pair { display: flex; gap: 8px; pointer-events: auto; }
-      .touch button { min-width: 64px; min-height: 56px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(20, 24, 34, 0.78); color: var(--ink); font: 500 15px/1 "Graphik Web", sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+      .touch button { min-width: 64px; min-height: 56px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(20, 24, 34, 0.78); color: var(--ink); font: 500 15px/1 var(--font-ui); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
       .touch button.on { background: rgba(242, 193, 78, 0.35); border-color: var(--warm); }
       .touch button.go { min-width: 84px; border-color: var(--jade); }
       body.results-open #prompt, body.results-open #riders, body.results-open #status { display: none !important; }
@@ -73,9 +87,8 @@
       @media (pointer: coarse) {
         .touch { display: flex; }
         .kbd-hint { display: none; }
-        #status .meta { display: none; }
-        #status { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 66px); }
-        #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 118px); }
+        #status { display: none; }
+        #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 64px); }
       }
       html.hud-large .panel, html.hud-large #prompt, html.hud-large #toast { font-size: 16px; }
       html.hud-large .meta, html.hud-large kbd { font-size: 15px; }
@@ -85,13 +98,15 @@
   <body>
     <canvas id="world"></canvas>
     <div id="top" class="panel">
+      <span id="line-code" class="line-badge">LL-01</span>
       <h1 id="station">Mango Tide</h1>
       <div class="meta">Next: <span id="next">Folded Gardens</span> · <span id="clock">day</span></div>
     </div>
     <div id="stats" class="panel">
-      <div class="big num"><span id="speed">0</span> <span class="meta">km/h</span></div>
-      <div class="meta num">Aboard <span id="aboard">0</span> / 12 · Fares <span id="fares">0</span> · Tips <span id="tips">0</span> · Score <span id="score">0</span></div>
-      <div class="meta num lean-row"><span>Lean</span> <span id="lean" role="meter" aria-label="Lean" data-band="green"><i id="lean-dot"></i><b id="lean-crit"></b></span> <span>Streak &times;<span id="streak">1.00</span></span> <span>Lanterns <span id="lanterns" aria-label="Lanterns left">&#9679;&#9679;&#9679;</span></span></div>
+      <div class="big num"><span id="speed" class="metric-val">0</span> <span class="meta">km/h</span></div>
+      <div class="meta num tele-row">Stop <span id="stop-dist" class="metric-val">0</span>m · Sched <span id="sched-delta" class="metric-val" data-state="on">+0.0s</span></div>
+      <div class="meta num">Aboard <span id="aboard" class="metric-val">0</span> / 12 · Fares <span id="fares" class="metric-val">0</span> · Tips <span id="tips" class="metric-val">0</span> · Score <span id="score" class="metric-val">0</span></div>
+      <div class="meta num lean-row"><span>Lean</span> <span id="lean" role="meter" aria-label="Lean" data-band="green"><i id="lean-dot"></i><b id="lean-crit"></b></span> <span>Streak &times;<span id="streak" class="metric-val">1.00</span></span> <span>Lanterns <span id="lanterns" aria-label="Lanterns left">&#9679;&#9679;&#9679;</span></span></div>
     </div>
     <div id="riders" class="panel hidden"></div>
     <div id="status" class="panel">

@@ -2,115 +2,481 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Gridlock Courier</title>
     <style>
-      :root { color-scheme: dark; --ink: #fff6e6; --muted: #d8c9ad; --panel: rgba(38, 30, 26, 0.74); --line: rgba(255, 246, 230, 0.18); --warm: #ff9a2e; }
+      :root {
+        color-scheme: dark;
+        --ink: #f7f1e6;
+        --muted: rgba(239, 227, 207, 0.72);
+        --panel: rgba(20, 18, 22, 0.82);
+        --panel-strong: rgba(16, 15, 19, 0.9);
+        --line: rgba(247, 241, 230, 0.14);
+        --warm: #f5a623;
+        --teal: #22c3c9;
+        --danger: #ff6b57;
+      }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #261e1a; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #181518;
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.45;
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
-      h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15; }
-      .meta { font-size: 13px; color: var(--muted); }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
+      h1 { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+      .meta { font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+      button {
+        min-height: 44px;
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0.04em;
+        color: #181518;
+        background: linear-gradient(180deg, #ffbe4d, #f09819);
+        border: 1px solid rgba(255, 244, 214, 0.45);
+        border-radius: 8px;
+        padding: 12px 18px;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+      }
       button:disabled { opacity: 0.5; cursor: default; }
-      .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(38, 30, 26, 0.55); }
-      .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); }
-      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; width: min(420px, 90vw); display: grid; gap: 10px; }
-      #hud { position: fixed; inset: 0; pointer-events: none; }
-      #nitro { position: absolute; bottom: 26px; left: 26px; width: 250px; }
-      #nitro .label { font-size: 13px; letter-spacing: 2.5px; opacity: 0.9; margin-bottom: 7px; }
-      #nitro .track { height: 9px; border-radius: 6px; background: rgba(18, 18, 22, 0.55); overflow: hidden; }
-      #nitro-fill { height: 100%; width: 100%; border-radius: 6px; }
-      #speedbox { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); text-align: center; }
-      #speed { font-size: 44px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
-      #score-box { position: absolute; top: 18px; right: 22px; text-align: right; }
-      #score { font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
-      #streak, #drift { transition: opacity 0.2s; color: var(--warm); letter-spacing: 2px; font-size: 13px; }
-      #drift { color: #ffe08a; }
-      #clock { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
-      #job { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); font-size: 14px; letter-spacing: 1.5px; color: #9cefff; font-variant-numeric: tabular-nums; white-space: pre; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55); }
-      #clock.low, #job.low { color: #ff8a6a; }
-      #popups { position: absolute; left: 50%; top: 56%; width: 0; height: 0; }
-      .popup { position: absolute; left: 0; top: 0; transform: translate(-50%, 0); white-space: pre; font-size: 18px; font-weight: 600; letter-spacing: 1px; color: #ffe08a; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); animation: rise 1.05s ease-out forwards; }
-      .popup-job { color: #9cefff; font-size: 22px; }
-      .popup-miss { color: #ff8a6a; }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        padding: calc(var(--a3d-bar-space, 40px) + 12px) 16px 20px;
+        background: rgba(16, 14, 18, 0.56);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); height: 6px; border-radius: 999px; }
+      .panel {
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 20px;
+        width: min(430px, 92vw);
+        display: grid;
+        gap: 12px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48);
+      }
+      #hud { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+
+      /* Bottom-left boost / nitro pod */
+      #nitro {
+        position: absolute;
+        bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+        left: 22px;
+        width: 224px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #nitro .label, .chip-label {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      #nitro .label { margin-bottom: 6px; }
+      #nitro .track { height: 8px; border-radius: 999px; background: rgba(255, 246, 230, 0.12); overflow: hidden; }
+      #nitro-fill { height: 100%; width: 100%; border-radius: 999px; }
+
+      /* Speedometer pod: open bottom bezel cleanly separates needle hub from DIN Pro speed digits */
+      #speedbox {
+        position: absolute;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 8px 14px 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #speed {
+        font-family: var(--font-metric);
+        font-size: 36px;
+        font-weight: 500;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+      #speedbox .meta {
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        margin-top: 2px;
+      }
+
+      /* Top-right tips / score / drift combo pod — cleared below Aura3D top bar */
+      #score-box {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 10px);
+        right: 20px;
+        text-align: right;
+        padding: 8px 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #score-box .score-caption {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        line-height: 1;
+      }
+      #score {
+        font-family: var(--font-metric);
+        font-size: 28px;
+        font-weight: 500;
+        line-height: 1.08;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+      #streak {
+        transition: opacity 0.2s;
+        color: var(--warm);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+      }
+      #drift-row {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 5px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #drift {
+        font-family: var(--font-metric);
+        font-size: 15px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: #ffe08a;
+      }
+
+      /* Top-center shift countdown & dispatch ticket — cleared below Aura3D top bar */
+      #clock {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 5px 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-family: var(--font-metric);
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #job {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 48px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: #9cefff;
+        font-variant-numeric: tabular-nums;
+        white-space: pre;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+      }
+      #clock.low { color: var(--danger); border-color: rgba(255, 107, 87, 0.5); }
+      #job.low { color: var(--danger); }
+
+      #popups { position: absolute; left: 50%; top: 54%; width: 0; height: 0; }
+      .popup {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, 0);
+        white-space: pre;
+        font-family: var(--font-ui);
+        font-size: 17px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+        color: #ffe08a;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+        animation: rise 1.05s ease-out forwards;
+      }
+      .popup-job { color: #9cefff; font-size: 20px; }
+      .popup-miss { color: var(--danger); }
       .popup-star { color: #fff4c2; }
       .popup-heart { color: #ffb0c4; }
-      @keyframes rise { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -70px); } }
+      @keyframes rise { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -68px); } }
       @keyframes fade { from { opacity: 1; } to { opacity: 0; } }
       body.reduced-motion .popup { animation-name: fade; }
       @media (prefers-reduced-motion: reduce) { .popup { animation-name: fade; } }
-      #minimap { position: absolute; bottom: 20px; right: 20px; width: 160px; height: 160px; }
-      .title { background: linear-gradient(160deg, rgba(60, 40, 30, 0.86), rgba(30, 24, 22, 0.9)); width: min(520px, 92vw); padding: 22px 24px; gap: 14px; }
-      .title h1 { font-size: 34px; letter-spacing: 0.01em; }
-      .title .tag { color: var(--warm); letter-spacing: 3px; font-size: 13px; }
-      .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
-      kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 13px/1.3 "Graphik Web", sans-serif; }
-      #mute { position: absolute; top: 18px; left: 22px; font-size: 13px; letter-spacing: 1.5px; color: var(--muted); }
-      .results dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
-      .results dt { color: var(--muted); }
-      .results dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-      .results #r-score { font-size: 22px; font-weight: 600; }
+
+      /* Bottom-right zoomed GPS radar */
+      #minimap {
+        position: absolute;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        right: 20px;
+        width: 164px;
+        height: 164px;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 0 1.5px rgba(247, 241, 230, 0.22);
+      }
+
+      .title {
+        background: linear-gradient(160deg, rgba(32, 26, 28, 0.92), rgba(18, 16, 20, 0.96));
+        width: min(510px, 92vw);
+        padding: 22px 24px;
+        gap: 14px;
+      }
+      .title h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
+      .title .tag {
+        color: var(--teal);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
+      }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; align-items: center; }
+      kbd {
+        display: inline-block;
+        min-width: 26px;
+        text-align: center;
+        padding: 2px 7px;
+        border: 1px solid var(--line);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: rgba(255, 246, 230, 0.08);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+      #mute {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 12px);
+        left: 20px;
+        padding: 5px 10px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .results dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; align-items: baseline; }
+      .results dt { color: var(--muted); font-size: 13px; font-weight: 500; }
+      .results dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
+      .results #r-score { font-family: var(--font-metric); font-size: 24px; font-weight: 500; color: var(--warm); }
+      .results #r-best, .results #r-time { font-family: var(--font-metric); font-size: 16px; font-weight: 500; }
+
+      /* Touch ergonomics (>= 48x48px targets) */
       .touch-only { display: none; }
       body.touch .touch-only { display: grid; }
       body.touch .keys-only { display: none; }
       #touch { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
       #touch[hidden] { display: none; }
-      .tbtn { position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; display: grid; place-items: center; border-radius: 50%; background: rgba(38, 30, 26, 0.55); border: 2px solid rgba(255, 246, 230, 0.35); color: var(--ink); font: 600 13px/1 "Graphik Web", sans-serif; letter-spacing: 1px; }
-      .tbtn.on { background: rgba(255, 154, 46, 0.7); color: #261e1a; }
-      #t-steer { left: 16px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 150px; height: 150px; }
-      #t-knob { width: 62px; height: 62px; border-radius: 50%; background: rgba(255, 246, 230, 0.35); pointer-events: none; }
-      #t-gas { right: 16px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 86px; height: 86px; }
-      #t-brake { right: 112px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
-      #t-nitro { right: 27px; bottom: calc(164px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
-      #t-drift { right: 112px; bottom: calc(142px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
-      #t-pause, #t-mute { top: calc(10px + env(safe-area-inset-top, 0px)); height: 48px; border-radius: 10px; padding: 0 12px; }
-      #t-pause { left: 12px; width: 72px; }
-      #t-mute { left: 92px; width: 96px; }
-      body.touch #mute { display: none; }
-      body.touch #nitro { bottom: calc(240px + env(safe-area-inset-bottom, 0px)); }
-      body.touch #speedbox { left: auto; right: 16px; bottom: calc(240px + env(safe-area-inset-bottom, 0px)); transform: none; text-align: right; }
-      body.touch #job { top: 92px; }
-      body.touch #minimap { top: 120px; bottom: auto; right: 12px; width: 112px; height: 112px; }
-      @media (max-width: 640px) {
-        #score-box { top: 14px; right: 12px; }
-        #score { font-size: 22px; }
-        #minimap { top: 92px; bottom: auto; right: 12px; width: 92px; height: 92px; }
-        #nitro { left: 14px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: min(40vw, 160px); }
-        #speedbox { left: auto; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: none; text-align: right; }
-        #speed { font-size: 34px; }
-        #mute { top: 14px; left: 14px; }
-        #clock { top: 62px; font-size: 22px; }
-        #job { top: 92px; font-size: 13px; }
-        body.touch #clock { top: 64px; }
-        body.touch #job { top: 94px; left: 14px; transform: none; letter-spacing: 1px; }
-        body.touch #minimap { width: 96px; height: 96px; }
+      .tbtn {
+        position: absolute;
+        min-width: 48px;
+        min-height: 48px;
+        pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(20, 18, 22, 0.72);
+        border: 1.5px solid rgba(247, 241, 230, 0.34);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
-      /* GU47 GC-H1 dispatch HUD (shift look only: body.dispatch); fonts from /fonts/local.css */
+      .tbtn.on { background: rgba(34, 195, 201, 0.78); border-color: #9ff3f5; color: #101619; }
+      #t-steer { left: 14px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 138px; height: 138px; }
+      #t-knob { width: 56px; height: 56px; border-radius: 50%; background: rgba(247, 241, 230, 0.32); border: 1px solid rgba(247, 241, 230, 0.5); pointer-events: none; }
+      #t-gas { right: 14px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 82px; height: 82px; }
+      #t-brake { right: 106px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-nitro { right: 22px; bottom: calc(122px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-drift { right: 98px; bottom: calc(102px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-pause, #t-mute {
+        top: calc(var(--a3d-bar-space, 40px) + 8px);
+        height: 48px;
+        border-radius: 10px;
+        padding: 0 12px;
+      }
+      #t-pause { left: 12px; width: 68px; }
+      #t-mute { left: 86px; width: 88px; }
+      body.touch #mute { display: none; }
+      body.touch #nitro { left: 14px; bottom: calc(180px + env(safe-area-inset-bottom, 0px)); width: 156px; padding: 8px 10px; }
+      body.touch #speedbox { left: auto; right: 14px; bottom: calc(196px + env(safe-area-inset-bottom, 0px)); transform: none; }
+      body.touch #minimap { top: calc(var(--a3d-bar-space, 40px) + 114px); bottom: auto; right: 12px; width: 104px; height: 104px; }
+
+      /* GU47 GC-H1 dispatch HUD (shift look: body.dispatch) */
       #dial, #stamp { display: none; }
-      body.dispatch #dial { display: block; width: 112px; height: 112px; margin: 0 auto -58px; }
-      body.dispatch:not(.touch) #speedbox { bottom: 18px; } /* touch keeps its 240 px lift above the pads */
-      /* GU47 phase 3: on desktop the dial sits bottom-left, right of the nitro bar (26 + 250 px) and clear of the courier's bumper (touch and phones keep their own corner) */
-      @media (min-width: 641px) { body.dispatch:not(.touch) #speedbox { left: 300px; bottom: 18px; transform: none; } }
-      body.dispatch #speed { position: relative; font-size: 34px; }
-      body.dispatch #job { top: 52px; padding: 7px 14px 8px; min-width: 168px; text-align: center; color: #2b2f36; font: 400 14px/1.35 "TT Commons Pro Mono", "Graphik Web", monospace; letter-spacing: 1px; text-shadow: none; border-radius: 3px; background: radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); border-top: 2px dashed rgba(43, 47, 54, 0.35); }
+      body.dispatch #speedbox {
+        width: 144px;
+        height: 138px;
+        padding: 4px 6px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      body.dispatch #dial {
+        display: block;
+        width: 128px;
+        height: 128px;
+        flex: 0 0 auto;
+        margin: 0 auto -46px;
+      }
+      body.dispatch:not(.touch) #speedbox { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+      @media (min-width: 761px) {
+        body.dispatch:not(.touch) #speedbox { left: 262px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: none; }
+      }
+      body.dispatch #speed { position: relative; font-size: 26px; line-height: 1; }
+      body.dispatch #speedbox .meta { position: relative; font-size: 12px; line-height: 1.05; margin-top: 1px; }
+      body.dispatch #job {
+        top: calc(var(--a3d-bar-space, 40px) + 50px);
+        padding: 6px 14px 7px;
+        min-width: 168px;
+        text-align: center;
+        color: #1f242b;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.32;
+        letter-spacing: 0.04em;
+        text-shadow: none;
+        border-radius: 4px;
+        background:
+          radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat,
+          radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38);
+        border-top: 2px dashed rgba(31, 36, 43, 0.34);
+      }
       body.dispatch #job:empty { display: none; }
       body.dispatch #job.low { color: #b2321f; }
-      body.dispatch #stamp { position: absolute; top: 46px; left: 50%; display: block; opacity: 0; transform: translateX(-50%) rotate(-8deg); padding: 4px 12px; border: 3px solid #d9765f; border-radius: 4px; color: #d9765f; font: 600 22px/1.1 "Graphik Web", sans-serif; letter-spacing: 3px; background: rgba(239, 227, 207, 0.9); }
+      body.dispatch #stamp {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 46px);
+        left: 50%;
+        display: block;
+        opacity: 0;
+        transform: translateX(-50%) rotate(-8deg);
+        padding: 4px 12px;
+        border: 2.5px solid #d9765f;
+        border-radius: 4px;
+        color: #d9765f;
+        font-family: var(--font-ui);
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: 0.12em;
+        background: rgba(239, 227, 207, 0.94);
+      }
       body.dispatch #stamp.on { animation: stamp 1.3s ease-out forwards; }
       body.dispatch.reduced-motion #stamp.on { animation-name: stamp-fade; }
       @media (prefers-reduced-motion: reduce) { body.dispatch #stamp.on { animation-name: stamp-fade; } }
-      @keyframes stamp { 0% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1.7); } 14% { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1); } }
+      @keyframes stamp {
+        0% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1.65); }
+        14% { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); }
+        75% { opacity: 1; }
+        100% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1); }
+      }
       @keyframes stamp-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
-      body.dispatch #minimap { border-radius: 18px; box-shadow: 0 0 0 2px rgba(239, 227, 207, 0.55); }
-      @media (max-width: 640px) {
-        body.dispatch #job { top: 92px; left: 14px; transform: none; min-width: 0; font-size: 13px; }
-        body.dispatch #stamp { top: 88px; left: 14px; transform: rotate(-8deg); font-size: 18px; }
-        body.dispatch #dial { width: 84px; height: 84px; margin: 0 0 -44px auto; }
-        body.dispatch #speed { font-size: 28px; }
+      body.dispatch #minimap {
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(239, 227, 207, 0.52);
+      }
+
+      /* 390x844 mobile & coarse-pointer ergonomics */
+      @media (pointer: coarse), (max-width: 760px) {
+        button, .tbtn { min-width: 48px; min-height: 48px; }
+      }
+      @media (max-width: 760px) {
+        #score-box { top: calc(var(--a3d-bar-space, 40px) + 8px); right: 12px; padding: 6px 10px; }
+        #score { font-size: 22px; }
+        #mute { top: calc(var(--a3d-bar-space, 40px) + 8px); left: 12px; }
+        #clock { top: calc(var(--a3d-bar-space, 40px) + 62px); left: 12px; transform: none; font-size: 20px; padding: 4px 11px; }
+        #job, body.dispatch #job {
+          top: calc(var(--a3d-bar-space, 40px) + 100px);
+          left: 12px;
+          transform: none;
+          min-width: 0;
+          font-size: 12px;
+          padding: 5px 11px 6px;
+        }
+        body.dispatch #stamp { top: calc(var(--a3d-bar-space, 40px) + 98px); left: 12px; transform: rotate(-8deg); font-size: 16px; }
+        #minimap, body.touch #minimap {
+          top: calc(var(--a3d-bar-space, 40px) + 98px);
+          bottom: auto;
+          right: 12px;
+          width: 96px;
+          height: 96px;
+        }
+        #nitro { left: 12px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 152px; padding: 8px 10px; }
+        body.touch #nitro { left: 14px; bottom: calc(176px + env(safe-area-inset-bottom, 0px)); width: 146px; }
+        #speedbox, body.dispatch #speedbox {
+          left: auto;
+          right: 12px;
+          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          transform: none;
+          width: 112px;
+          height: 108px;
+          padding: 3px 4px 6px;
+        }
+        body.touch #speedbox, body.dispatch.touch #speedbox {
+          right: 12px;
+          bottom: calc(194px + env(safe-area-inset-bottom, 0px));
+        }
+        body.dispatch #dial { width: 98px; height: 98px; margin: 0 auto -35px; }
+        #speed, body.dispatch #speed { font-size: 22px; }
       }
     </style>
   </head>
@@ -118,10 +484,16 @@
     <canvas id="world"></canvas>
     <div id="hud">
       <div id="nitro"><div class="label">NITRO</div><div class="track"><div id="nitro-fill"></div></div></div>
-      <div id="speedbox"><canvas id="dial" width="112" height="112" aria-hidden="true"></canvas><div id="speed">0</div><div class="meta">KM/H</div></div>
-      <div id="score-box"><div id="score">0</div><div id="streak" style="opacity: 0">x0  STREAK</div><div id="drift" style="opacity: 0">DRIFT  0</div><div class="meta" id="count">0 / 174</div></div>
+      <div id="speedbox"><canvas id="dial" width="132" height="132" aria-hidden="true"></canvas><div id="speed">0</div><div class="meta">KM/H</div></div>
+      <div id="score-box">
+        <div class="score-caption">TIPS</div>
+        <div id="score">0</div>
+        <div id="streak" style="opacity: 0">x0  STREAK</div>
+        <div id="drift-row"><span class="chip-label">DRIFT</span><span id="drift" style="opacity: 0">+0</span></div>
+        <div class="meta" id="count">0 / 174</div>
+      </div>
       <canvas id="minimap" width="240" height="240"></canvas>
-      <div id="mute">Sound on (M)</div>
+      <div id="mute">SOUND ON (M)</div>
       <div id="clock">3:00</div>
       <div id="job"></div>
       <div id="stamp" role="status" aria-live="polite"></div>
@@ -138,46 +510,52 @@
     </div>
     <div id="splash" class="overlay">
       <div class="panel title">
-        <div class="tag">AN OPEN-CITY DRIVING GAME</div>
+        <div class="tag">GOLDEN-HOUR EXPRESS DISPATCH</div>
         <h1>Gridlock Courier</h1>
-        <div class="meta">A city of 225 blocks, 84 cars on the road and 174 pickups. You have a three-minute shift: drive each parcel to the glowing blue drop-off before its clock runs out, collect coins, stars and hearts to build a streak, and drift for bonus points.</div>
+        <div class="meta">A 225-block downtown grid, 84 avenue commuters and 174 bonus pickups. Run your three-minute rush shift: slide each parcel into the glowing teal drop-zone before its ticket expires, chain drift combos, and bank express tips.</div>
         <div class="keys meta keys-only">
-          <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>drive (arrow keys work too)</span>
-          <span><kbd>Space</kbd></span><span>drift</span>
-          <span><kbd>Shift</kbd></span><span>nitro</span>
-          <span><kbd>L</kbd> <kbd>M</kbd> <kbd>P</kbd></span><span>headlights, sound, pause</span>
+          <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>Drive &amp; steer (Arrow keys supported)</span>
+          <span><kbd>Space</kbd></span><span>Handbrake drift</span>
+          <span><kbd>Shift</kbd></span><span>Nitro surge</span>
+          <span><kbd>L</kbd> <kbd>M</kbd> <kbd>P</kbd></span><span>Headlights, sound, pause</span>
         </div>
         <div class="keys meta touch-only">
-          <span>Left pad</span><span>drag left or right to steer</span>
-          <span>GAS, BRAKE</span><span>hold to drive and brake</span>
-          <span>DRIFT, NITRO</span><span>hold while turning; burn the tank</span>
+          <span>Left pad</span><span>Drag left or right to steer</span>
+          <span>GAS, BRAKE</span><span>Hold to accelerate and reverse</span>
+          <span>DRIFT, NITRO</span><span>Hold through corners; burn boost</span>
         </div>
-        <div class="meta hidden" id="env-status">The sky lighting is still loading. You can start now.</div>
-        <button id="start" disabled>Start</button>
+        <div class="meta hidden" id="env-status">Warming avenue lighting — ready to launch.</div>
+        <button id="start" disabled>Start Shift</button>
       </div>
     </div>
     <div id="pause" class="overlay hidden">
       <div class="panel">
-        <h1>Paused</h1>
-        <div class="meta">The city waits. Press P or Esc, or tap Resume, to carry on.</div>
-        <button id="resume">Resume</button>
+        <h1>Shift Paused</h1>
+        <div class="meta">Dispatch timer held. Press P or Esc, or tap Resume, to continue your run.</div>
+        <button id="resume">Resume Shift</button>
       </div>
     </div>
     <div id="results" class="overlay hidden">
       <div class="panel results" role="dialog" aria-labelledby="r-title">
-        <h1 id="r-title">Shift over</h1>
+        <h1 id="r-title">Shift Complete</h1>
         <dl class="meta">
-          <dt>Score</dt><dd id="r-score">0</dd>
-          <dt>Best</dt><dd id="r-best">0</dd>
+          <dt>Total Tips</dt><dd id="r-score">0</dd>
+          <dt>Shift Best</dt><dd id="r-best">0</dd>
           <dt>Deliveries</dt><dd id="r-deliveries">0</dd>
           <dt>Pickups</dt><dd id="r-collected">0 / 174</dd>
-          <dt>Best streak</dt><dd id="r-streak">x0</dd>
-          <dt>Time</dt><dd id="r-time">0:00</dd>
+          <dt>Best Streak</dt><dd id="r-streak">x0</dd>
+          <dt>Shift Time</dt><dd id="r-time">0:00</dd>
         </dl>
-        <button id="restart">Drive another shift (R)</button>
+        <button id="restart">Run Next Shift (R)</button>
       </div>
     </div>
-    <div id="loading" class="overlay"><div class="panel"><h1 id="loading-title">Loading the city</h1><div class="aura3d-loading" id="loading-bar" role="progressbar" aria-labelledby="loading-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><div class="meta" id="loading-status">Building blocks, buildings and traffic.</div></div></div>
+    <div id="loading" class="overlay">
+      <div class="panel">
+        <h1 id="loading-title">Preparing Downtown Grid</h1>
+        <div class="aura3d-loading" id="loading-bar" role="progressbar" aria-labelledby="loading-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <div class="meta" id="loading-status">Building blocks, buildings and traffic.</div>
+      </div>
+    </div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 import { createCountedRng } from "@aura3d/engine";
-// Dot Dash 3D — grid model for ASCII-authored mazes.
+// Glint Courier — grid model for ASCII-authored mazes.
 //
 // Tile chars:
 //   '#' wall (blocks everyone)          ' ' corridor void (walkable, no dot)

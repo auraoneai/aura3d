@@ -71,8 +71,8 @@ describe("GU47 TT-L1: venue light table", () => {
     }
   });
 
-  it("?look=original keeps the 4.6.1 rig (ambient, hemisphere, directional, point)", () => {
-    expect(sceneNodes(undefined, "original").filter((n) => n.kind === "light").map((n) => n.light)).toEqual(["ambient", "hemisphere", "directional", "point"]);
+  it("?look=original keeps the 4.6.1 rig (dual hemisphere, directional, point — zero ambient flatten)", () => {
+    expect(sceneNodes(undefined, "original").filter((n) => n.kind === "light").map((n) => n.light)).toEqual(["hemisphere", "hemisphere", "directional", "point"]);
   });
 });
 
@@ -138,7 +138,7 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     const presets = VENUE_LOOK_ORDER.map((v) => venueRuntimePlan(VENUE_LOOKS[v]).output.preset);
     expect(presets).toEqual(["arena-fight", "daylight-outdoor", "cinematic-film", "daylight-outdoor", "cinematic-film", "space"]);
     expect(venueRuntimePlan(VENUE_LOOKS.desert).output.exposure).toBeCloseTo(1.1, 9);
-    expect(venueRuntimePlan(VENUE_LOOKS.moon).output.toneMapping).toBe("aces");
+    expect(venueRuntimePlan(VENUE_LOOKS.moon).output.toneMapping).toBe("agx");
     expect(venueRuntimePlan(VENUE_LOOKS.grass).output.toneMapping).toBe("agx");
   });
 
@@ -258,7 +258,7 @@ describe("GU47 TT-V1 / TT-V2: signature VFX controller", () => {
   it("registers one preset per surface family plus the out ring, the ace flash, the beach and grass ambient emitters and the win confetti", () => {
     const f = fakeEffects();
     expect(registerSlamVfx(f.effects as never)).toEqual(Object.keys(SLAM_VFX_PRESETS));
-    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash", "beach-spray", "grass-leaves", "win-confetti"]);
+    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash", "felt-burst", "beach-spray", "grass-leaves", "win-confetti"]);
   });
 
   it("a 6-bounce clay rally leaves 6 clay marks and 6 clay puffs in the venue particle colour; marks outlive the point", () => {

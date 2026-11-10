@@ -19,16 +19,17 @@ export const WIND_VFX_PRESETS: Readonly<Record<string, EffectSpec>> = {
   "wind-letter-flutter": {
     name: "wind-letter-flutter",
     layers: [
-      { type: "emitter", preset: "dust", count: 26, speed: [1.2, 2.6], life: [1.1, 1.9], gravity: -0.35, color: "#f4ead2", size: [0.06, 0.12], spread: 0.55, direction: DOWNWIND, drag: 0.6, additive: false, maxScreen: 0.04 },
-      { type: "emitter", preset: "pickup", count: 10, speed: [0.6, 1.4], life: [0.6, 1.0], gravity: 0.6, color: "#ffd9a0", intensity: 1.6, size: [0.04, 0.08], spread: 1, additive: true }
+      { type: "emitter", preset: "dust", count: 30, speed: [1.2, 2.7], life: [1.2, 2.0], gravity: -0.32, color: "#f6ebd4", size: [0.06, 0.12], spread: 0.55, direction: DOWNWIND, drag: 0.58, additive: false, maxScreen: 0.04 },
+      { type: "emitter", preset: "pickup", count: 14, speed: [0.65, 1.5], life: [0.7, 1.15], gravity: 0.55, color: "#ffdba4", intensity: 1.75, size: [0.04, 0.085], spread: 1, additive: true }
     ]
   },
   "wind-bell-ring": {
     name: "wind-bell-ring",
     layers: [
-      { type: "emitter", preset: "ring", count: 36, speed: [2.5, 4], life: [0.5, 0.9], gravity: 0, color: "#d9a441", intensity: 2.2, size: [0.05, 0.1], spread: 1, additive: true },
-      { type: "emitter", preset: "pickup", count: 18, speed: [0.8, 1.8], life: [0.9, 1.6], gravity: 0.4, color: "#ffe2b8", intensity: 1.8, size: [0.05, 0.1], spread: 1, direction: DOWNWIND, additive: true },
-      { type: "light", intensity: 6, range: 9, duration: 0.6, color: "#ffd38a" }
+      { type: "emitter", preset: "ring", count: 44, speed: [2.6, 4.4], life: [0.6, 1.05], gravity: 0, color: "#e5b24d", intensity: 2.35, size: [0.055, 0.11], spread: 1, additive: true },
+      { type: "emitter", preset: "pickup", count: 22, speed: [0.85, 1.9], life: [1.0, 1.75], gravity: 0.35, color: "#ffe6be", intensity: 1.9, size: [0.05, 0.1], spread: 1, direction: DOWNWIND, additive: true },
+      { type: "emitter", preset: "dust", count: 20, speed: [1.3, 2.8], life: [1.6, 2.6], gravity: -0.18, color: "#f2b8c2", size: [0.045, 0.09], spread: 0.65, direction: DOWNWIND, drag: 0.35, additive: false, maxScreen: 0.035 },
+      { type: "light", intensity: 6.5, range: 10, duration: 0.75, color: "#ffd78e" }
     ]
   },
   "wind-lantern-flare": {

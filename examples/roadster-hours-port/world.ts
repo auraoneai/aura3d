@@ -1,13 +1,15 @@
 /**
- * Roadster Hours world on the public `@aura3d/engine` surface only: a procedural sky dome, a footprint-filtered ocean,
- * rock cliffs, guardrails, the road ribbon, kickers and roofline shortcuts (`geometry.dynamic` + `material.custom`), relay
- * gates, data cells and hazards, the Roadster, and every traffic and lineup vehicle in `batched.mesh`es: generated (Meshy)
- * models as one textured batched mesh per model, the baked CC0 cars in per-material batched meshes and the box rigs as the
- * fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
+ * Saltwind Highway world on the public `@aura3d/engine` surface: a procedural sunset sky dome, a footprint-filtered ocean,
+ * stratified coastal cliffs, guardrails, the road ribbon, kickers and roofline shortcuts (`geometry.dynamic` + `material.custom`),
+ * relay gates, data cells and hazards, the sculpted classic GT roadster with 4 independent wheels, and every traffic and lineup
+ * vehicle in `batched.mesh`es (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D, type AuraApp
+  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D, type AuraApp, type AuraTrailOptions
 } from "@aura3d/engine";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
+import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { SALTWIND_LOOK, SALTWIND_PALETTE, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
 import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
@@ -20,8 +22,12 @@ import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from ".
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
-import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { beamSpec, blobFadeFor, blobSpec, citySpec, coveWaterSpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, strataSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyLodGeometry, meshyLodMaterial, meshyMaterial, meshySize } from "./meshy";
+import {
+  ROADSTER_FRONT_Z, ROADSTER_HALF_H, ROADSTER_HEIGHT, ROADSTER_HALF_L, ROADSTER_HALF_W, ROADSTER_REAR_Z, ROADSTER_TRACK_X, ROADSTER_WHEEL_RADIUS,
+  computeWheelWorldPose, getRoadsterRigGeometries, type RoadsterMesh
+} from "./roadsterRig";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
 import { createCameraDirector } from "./camera";
@@ -72,10 +78,12 @@ function strip(
   return m;
 }
 
-/** A9 lab flag (`?depth=reversed|logarithmic`, EXPERIMENTAL, default off): the showcase wrapper publishes the `camera({ depth })` fragment only when the flag is present. */
-const labCameraDepth = (): { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } =>
-  (globalThis as { __A3D_LAB_CAMERA_OPTIONS__?: { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } }).__A3D_LAB_CAMERA_OPTIONS__ ?? {};
+/** Lab camera depth (`?depth=reversed|logarithmic|standard`): defaults to `"reversed"` on GU47 (`?depth=standard` opts out). */
+const labCameraDepth = (defaultReversed: boolean): { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } =>
+  (globalThis as { __A3D_LAB_CAMERA_OPTIONS__?: { depth?: { mode: "reversed" | "logarithmic"; allowFallback: true } } }).__A3D_LAB_CAMERA_OPTIONS__
+  ?? labCameraOptions(readLabFlags(), defaultReversed ? "reversed" : undefined);
 const dyn = (m: MeshData) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
+const dynRig = (m: RoadsterMesh) => geometry.dynamic({ positions: m.positions, normals: m.normals, uvs: m.uvs, indices: m.indices });
 
 const inGap = (level: Level, s: number): boolean => level.gaps.some(([a, b]) => s > a && s < b);
 
@@ -450,6 +458,8 @@ export interface WorldRuntime {
   skipIntro(): void;
   startFinish(): void;
   shot(): ShotFrame | null;
+  /** Real-time visual hit-stop time scale (`1` normal, `< 1` during micro-freeze on close-pass/impact; never touches deterministic replay). */
+  hitStopScale?(): number;
 }
 
 export interface World {
@@ -544,7 +554,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const enabled = (flag: string): boolean => query.get(flag) !== "0";
   const builder: Scene = scene()
     .background(row ? row.fog.color : hexString(level.fog))
-    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000, ...labCameraDepth() }));
+    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000, ...labCameraDepth(row !== null) }));
   if (row) {
     // RH47-02/03: the look row's one shadowed key (the same sun the GLSL surfaces read) and its one unshadowed fill.
     const fillDir = directionFromAngles(row.fill.elevationDeg, row.fill.azimuthDeg);
@@ -565,8 +575,17 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   }
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
   if (enabled("post")) {
+    if (row) {
+      if (enabled("shadow")) builder.add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: row.id === "halo" ? 0.45 : 0.72 }));
+      builder
+        .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.58, radius: 0.9 }))
+        .add(effects.screenSpaceReflections({ name: "ssr", intensity: row.id === "halo" ? 0.72 : 0.58, maxDistance: 36, roughness: 0.22, thickness: 0.28 }))
+        .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: row.id === "halo" ? 0.16 : 0.34, decay: 0.95, samples: 48, color: row.sun.color }))
+        .add(effects.cinematicBloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }));
+    } else {
+      builder.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }));
+    }
     builder
-      .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }))
       .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation, ...(row ? { temperature: row.grade.temperature, tint: row.grade.tint, ...(enabled("lut") ? { lut: ROUTE_LUT_URL[row.id], lutIntensity: SALTWIND_LUT_INTENSITY } : {}) } : {}) }))
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));
@@ -625,7 +644,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const white = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.82, 0.8, 0.76], [0, 0, 0], 0, 0.6));
     const red = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.62, 0.08, 0.06], [0, 0, 0], 0, 0.55));
     // The rock is the island under either lighthouse; the seven procedural tiers only stand in for a missing model.
-    builder.add(primitives.sphere({ name: "lighthouse-rock", position: [base[0], 1, base[2]], size: [34, 18, 34], params: { widthSegments: 18, heightSegments: 10 }, material: material.custom(terrainSpec(look)) }));
+    builder.add(primitives.sphere({ name: "lighthouse-rock", position: [base[0], 1, base[2]], size: [34, 18, 34], params: { widthSegments: 18, heightSegments: 10 }, material: material.custom(row ? strataSpec(look) : terrainSpec(look)) }));
     const proceduralTower = !hasMeshy("lighthouse");
     const tier = (name: string, y: number, dia: number, h: number, mat: ReturnType<typeof material.custom>): void => {
       if (proceduralTower) builder.add(primitives.cylinder({ name: `lighthouse-${name}`, position: [base[0], y + h / 2, base[2]], size: [dia, h, dia], material: mat }));
@@ -639,14 +658,49 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     tier("cap", 66.4, 6.6, 2.4, red());
   }
 
-  /* ---- the player's car goes in first: textured materials upgrade one at a time in scene order, so the hero is textured before props and traffic ---- */
-  const meshyPlayer = hasMeshy("roadster");
-  if (meshyPlayer) {
+  /* ---- Hero Roadster goes in before scenery & traffic (`hero-first.test.ts`):
+   *      WP-25 sculpted symmetrical open-top GT roadster (`carPaint` crimson + `clearcoat` stripes + `brushedMetal` chrome +
+   *      4 independent `blackRubber` + `brushedMetal` wire-spoke wheels) on GU47; `?look=original` preserves the legacy fallback. ---- */
+  const heroSculpted = row !== null;
+  const meshyPlayer = !heroSculpted && hasMeshy("roadster");
+  const playerIds: string[] = [];
+  const wheelSpecs: { readonly id: string; readonly rimId: string; readonly offset: Vec3; readonly front: boolean }[] = [];
+  if (heroSculpted) {
+    const rig = getRoadsterRigGeometries();
+    const addChassisPart = (id: string, mesh: RoadsterMesh, mat: ReturnType<typeof material.carPaint>, castShadow: boolean): void => {
+      builder.add(geometry.custom(dynRig(mesh), { name: id, castShadow, material: mat }).runtime({ id }));
+      playerIds.push(id);
+    };
+    addChassisPart("car-body", rig.body, material.carPaint({ color: "#b81d24", roughness: 0.18, metallic: 0.68, clearcoat: 1.0, clearcoatRoughness: 0.05 }), true);
+    addChassisPart("car-stripes", rig.stripes, material.clearcoat({ color: "#f8fafc", roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }), false);
+    addChassisPart("car-chrome", rig.chrome, material.brushedMetal({ color: "#e5edf5", roughness: 0.14 }), true);
+    addChassisPart("car-cockpit", rig.cockpit, material.fabric({ color: "#1c1917", roughness: 0.78 }), false);
+    addChassisPart("car-glass", rig.glass, material.studioGlass({ tint: "#bfe6ff", opacity: 0.34 }), false);
+    addChassisPart("car-headlamps", rig.headlamps, material.glowingEmissive({ color: "#fff4d6", emissive: "#fff4d6", emissiveIntensity: 3.8 }), false);
+    addChassisPart("car-taillamps", rig.taillamps, material.glowingEmissive({ color: "#ff2030", emissive: "#ff2030", emissiveIntensity: 3.4 }), false);
+    const wheelY = ROADSTER_WHEEL_RADIUS - ROADSTER_HALF_H;
+    const wheelCorners = [
+      { tag: "fl", sx: -1, z: ROADSTER_FRONT_Z, front: true },
+      { tag: "fr", sx: 1, z: ROADSTER_FRONT_Z, front: true },
+      { tag: "rl", sx: -1, z: ROADSTER_REAR_Z, front: false },
+      { tag: "rr", sx: 1, z: ROADSTER_REAR_Z, front: false }
+    ] as const;
+    const tireMat = material.blackRubber({ color: "#101216", roughness: 0.9 });
+    const rimMat = material.brushedMetal({ color: "#e8eef5", roughness: 0.14 });
+    for (const w of wheelCorners) {
+      const id = `car-wheel-${w.tag}`;
+      const rimId = `car-rim-${w.tag}`;
+      builder.add(geometry.custom(dynRig(rig.wheelTire), { name: id, castShadow: true, material: tireMat }).runtime({ id }));
+      builder.add(geometry.custom(dynRig(w.sx < 0 ? rig.wheelRimLeft : rig.wheelRimRight), { name: rimId, castShadow: false, material: rimMat }).runtime({ id: rimId }));
+      wheelSpecs.push({ id, rimId, offset: [w.sx * ROADSTER_TRACK_X, wheelY, w.z], front: w.front });
+    }
+  } else if (meshyPlayer) {
     const data = meshyGeometry("roadster")!;
     builder.add(geometry.custom(
       geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
-      { name: "car-body", castShadow: true, material: meshyMaterial("roadster", row ? { roughness: 0.34, metallic: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.08 } : { roughness: 0.42, metallic: 0.18 }) }
+      { name: "car-body", castShadow: true, material: meshyMaterial("roadster", { roughness: 0.42, metallic: 0.18 }) }
     ).runtime({ id: "car-body" }));
+    playerIds.push("car-body");
   }
 
   /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; the procedural lighthouse and town above are only built when these are missing ---- */
@@ -756,16 +810,16 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       builder.add(instances.box({ name: "turbine-nacelles", transforms: towers.map((t) => ({ position: [t.position[0], t.position[1] + t.scale[1] / 2 + 1, t.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [5, 2.4, 2.4] as Vec3 })), material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
       for (const t of towers) turbineHubs.push([t.position[0] - 3, t.position[1] + t.scale[1] / 2 + 1, t.position[2]]);
       if (!meshyAt("sea-stack", "seastack", "sea-stacks", (p) => [p.size[1] * 0.85, p.size[1], p.size[1] * 0.85], { tint: "#f0e7d8", roughness: 0.92, metallic: 0, castShadow: false })) {
-        builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(terrainSpec(look)), castShadow: false }));
+        builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(strataSpec(look)), castShadow: false }));
       }
     } else if (look.style === "canyon") {
-      builder.add(instances.cylinder({ name: "mesas", transforms: place("mesa"), material: material.custom(terrainSpec(look)), castShadow: false }));
+      builder.add(instances.cylinder({ name: "mesas", transforms: place("mesa"), material: material.custom(strataSpec(look, 2.6, 0.62)), castShadow: false }));
       // the hoodoo model is a wide boulder (1.56 : 1), stretched into a spire; the arch keeps its own proportions (1.8 : 1 span to height)
       if (!meshyAt("hoodoo", "hoodoo", "hoodoos", (p) => [p.size[1] * 0.45, p.size[1] * 0.9, p.size[1] * 0.45], { tint: s.rockA, roughness: 0.95, metallic: 0 })) {
-        builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: pbr(s.rockA), castShadow: true }));
+        builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: material.custom(strataSpec(look, 3.8, 0.58)), castShadow: true }));
       }
       if (!meshyAt("arch", "arch", "arch", (p) => [p.size[0] / 1.8, p.size[0] / 1.8, p.size[0] / 1.8], { tint: s.rockA, roughness: 0.95, metallic: 0, castShadow: false })) {
-        builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: pbr(s.rockB), castShadow: false }));
+        builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: material.custom(strataSpec(look, 3.0, 0.54)), castShadow: false }));
       }
       builder.add(instances.cylinder({ name: "uplink-masts", transforms: place("uplink-mast"), material: pbr("#3a3b40", 0.5, 0.6), castShadow: false }));
     } else {
@@ -788,10 +842,14 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const rotorSlots = rotors ? turbineHubs.flatMap(() => Array.from({ length: ROTOR_BLADES }, () => rotors.addInstance(rotorGeo))) : [];
   if (rotors) builder.add(rotors);
 
-  /* ---- ocean ---- */
+  /* ---- ocean + shallow turquoise coastal cove shelf (`dualAnimatedWaterSpec`) ---- */
   const mid = roadPoint(level, level.length / 2, 0, 0);
   // RH47-06: Halo's plane is the city carpet under the skyway; the coast routes keep the sea (one program either way).
   builder.add(primitives.plane({ name: look.cityCarpet ? "city-carpet" : "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(look.cityCarpet ? citySpec(look) : waterSpec(look)) }));
+  if (row && look.style === "coast") {
+    const coveP = roadPoint(level, level.length * 0.45, look.seaSide * (width + 135), 0);
+    builder.add(primitives.plane({ name: "cove-shelf", position: [coveP[0], 0.06, coveP[2]], size: [260, 1, 920], material: material.custom(coveWaterSpec(look)), castShadow: false, receiveShadow: false }));
+  }
 
   /* ---- relay gates, data cells, hazards ---- */
   const gantry = gantryColours(look);
@@ -863,11 +921,21 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const groupHandles = new Map<CarGroup, { mesh: ReturnType<typeof batched.mesh>; geo: Map<CarKey, number> }>();
   const groupMaterial = (g: CarGroup) => {
     switch (g) {
-      case "paint": return material.carPaint({ color: "#ffffff", roughness: 0.3, metallic: 0.55 });
-      case "trim": return material.pbr({ color: "#16181d", roughness: 0.62, metallic: 0.35 });
-      case "glass": return material.pbr({ color: "#0a1119", roughness: 0.06, metallic: 0.95 });
-      case "head": return material.pbr({ color: "#fff6dc", roughness: 0.2, emissive: "#fff2c8", emissiveIntensity: 5 });
-      case "tail": return material.pbr({ color: "#4a0508", roughness: 0.3, emissive: "#ff1a10", emissiveIntensity: 4 });
+      case "paint": return row
+        ? material.carPaint({ color: "#ffffff", roughness: 0.22, metallic: 0.62, clearcoat: 0.92, clearcoatRoughness: 0.06 })
+        : material.carPaint({ color: "#ffffff", roughness: 0.3, metallic: 0.55 });
+      case "trim": return row
+        ? material.brushedMetal({ color: "#bcc6d2", roughness: 0.24 })
+        : material.pbr({ color: "#16181d", roughness: 0.62, metallic: 0.35 });
+      case "glass": return row
+        ? material.clearcoat({ color: "#0b131d", roughness: 0.05, clearcoat: 1.0, clearcoatRoughness: 0.03 })
+        : material.pbr({ color: "#0a1119", roughness: 0.06, metallic: 0.95 });
+      case "head": return row
+        ? material.glowingEmissive({ color: "#fff6dc", emissive: "#fff2c8", emissiveIntensity: 5 })
+        : material.pbr({ color: "#fff6dc", roughness: 0.2, emissive: "#fff2c8", emissiveIntensity: 5 });
+      case "tail": return row
+        ? material.glowingEmissive({ color: "#4a0508", emissive: "#ff1a10", emissiveIntensity: 4 })
+        : material.pbr({ color: "#4a0508", roughness: 0.3, emissive: "#ff1a10", emissiveIntensity: 4 });
     }
   };
   let geometryTotal = 0;
@@ -887,11 +955,12 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     groupHandles.set(g, { mesh, geo });
   }
   /* generated vehicles: one textured batched mesh per model (each model carries its own texture, one material per batched mesh) */
+  const meshyVehicleOpts = row ? { roughness: 0.28, metallic: 0.24, clearcoat: 0.84, clearcoatRoughness: 0.06 } : { roughness: 0.5, metallic: 0.12 };
   const meshyBatches = new Map<string, { mesh: ReturnType<typeof batched.mesh>; geo: number; far?: { mesh: ReturnType<typeof batched.mesh>; geo: number } }>();
   for (const key of meshyKeys) {
     const data = meshyGeometry(key)!;
     const count = defs.filter((d) => d.meshy === key).length;
-    const mesh = batched.mesh({ name: `vehicles-${key}`, maxInstances: count + 8, maxVertices: data.positions.length / 3 + 64, maxIndices: data.indices.length + 64, material: meshyMaterial(key, { roughness: 0.5, metallic: 0.12 }) });
+    const mesh = batched.mesh({ name: `vehicles-${key}`, maxInstances: count + 8, maxVertices: data.positions.length / 3 + 64, maxIndices: data.indices.length + 64, material: meshyMaterial(key, meshyVehicleOpts) });
     const geo = mesh.addGeometry(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }));
     builder.add(mesh);
     geometryTotal++;
@@ -899,7 +968,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const lod = lodOn ? meshyLodGeometry(key) : undefined;
     let far: { mesh: ReturnType<typeof batched.mesh>; geo: number } | undefined;
     if (lod) {
-      const farMesh = batched.mesh({ name: `vehicles-${key}-far`, maxInstances: count + 8, maxVertices: lod.positions.length / 3 + 64, maxIndices: lod.indices.length + 64, material: meshyLodMaterial(key, { roughness: 0.5, metallic: 0.12 }) });
+      const farMesh = batched.mesh({ name: `vehicles-${key}-far`, maxInstances: count + 8, maxVertices: lod.positions.length / 3 + 64, maxIndices: lod.indices.length + 64, material: meshyLodMaterial(key, meshyVehicleOpts) });
       far = { mesh: farMesh, geo: farMesh.addGeometry(geometry.dynamic({ positions: lod.positions, normals: lod.normals, uvs: lod.uvs, indices: lod.indices })) };
       // batched.mesh takes no castShadow option; the node's own flag is read by the batched emit (the state rides on batchedId)
       builder.add({ ...farMesh.toJSON(), castShadow: false } as never);
@@ -910,7 +979,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const rigDetail = new Map<VehicleDef, ReturnType<typeof rigParts>>();
   rigDefs.forEach((d, i) => rigDetail.set(d, rigParts(d.piece, pieceSpec(d.piece, d.variant)!.boxes, d.colour, CAB_COLOURS[i % CAB_COLOURS.length]!)));
   const rigPartTotal = [...rigDetail.values()].reduce((n, r) => n + r.parts.length, 0);
-  const rigs = batched.mesh({ name: "vehicles-rigs", maxInstances: rigPartTotal + 8, maxVertices: 64, maxIndices: 64, material: material.pbr({ color: "#ffffff", roughness: 0.52, metallic: 0.15 }) });
+  const rigs = batched.mesh({ name: "vehicles-rigs", maxInstances: rigPartTotal + 8, maxVertices: 64, maxIndices: 64, material: material.pbr({ color: "#ffffff", roughness: row ? 0.34 : 0.52, metallic: row ? 0.24 : 0.15 }) });
   const rigGeo = rigs.addGeometry("box");
   geometryTotal++;
   builder.add(rigs);
@@ -963,14 +1032,13 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const trafficSlots = trafficDefs.map((di) => slotsFor(defs[di]!));
   const slotTotal = [...lineupSlots, ...trafficSlots].reduce((n, s) => n + s.length, 0);
 
-  /* ---- the Roadster: baked sports car in five material groups ---- */
-  const nativeSize = meshyPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
-  const playerIds: string[] = [];
-  const playerHeight = nativeSize[1] * PLAYER_SCALE;
-  const playerPaint = material.carPaint({ color: "#232932", roughness: 0.26, metallic: 0.7 });
-  if (meshyPlayer) {
-    playerIds.push("car-body");
-  } else {
+  /* ---- Legacy fallback sports car (`?look=original` without Meshy) ---- */
+  const nativeSize: readonly [number, number, number] = heroSculpted
+    ? [ROADSTER_HALF_W * 2, ROADSTER_HEIGHT, ROADSTER_HALF_L * 2]
+    : meshyPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
+  const playerHeight = heroSculpted ? ROADSTER_HEIGHT : nativeSize[1] * PLAYER_SCALE;
+  if (!heroSculpted && !meshyPlayer) {
+    const playerPaint = material.carPaint({ color: "#232932", roughness: 0.26, metallic: 0.7 });
     for (const g of CAR_GROUPS) {
       const data = carGroup("sportsCar", g);
       if (!data) continue;
@@ -984,14 +1052,23 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- GU47 RH47-03: contact blob under the roadster (one plane, fades with ride height) ---- */
   if (row) {
-    builder.add(primitives.plane({ name: "car-blob", position: roadPoint(level, 0, 0, 0.04), size: [nativeSize[0] * PLAYER_SCALE * 1.5, 1, nativeSize[2] * PLAYER_SCALE * 1.25], material: material.custom(blobSpec(row ? 0.8 : 0.55)), castShadow: false, receiveShadow: false }).runtime({ id: "car-blob" }));
+    const blobW = heroSculpted ? ROADSTER_HALF_W * 2 * 1.45 : nativeSize[0] * PLAYER_SCALE * 1.5;
+    const blobL = heroSculpted ? ROADSTER_HALF_L * 2 * 1.22 : nativeSize[2] * PLAYER_SCALE * 1.25;
+    builder.add(primitives.plane({ name: "car-blob", position: roadPoint(level, 0, 0, 0.04), size: [blobW, 1, blobL], material: material.custom(blobSpec(row ? 0.8 : 0.55)), castShadow: false, receiveShadow: false }).runtime({ id: "car-blob" }));
   }
 
-  /* ---- headlight beams (additive cones, same transform as the car) and particle emitters ---- */
-  const lampX = (nativeSize[0] * PLAYER_SCALE) / 2 - 0.4, lampY = -playerHeight * 0.18, lampZ = -(nativeSize[2] * PLAYER_SCALE) / 2 + 0.1;
+  /* ---- headlight beams, twin cobalt-amber afterburner cones, tamed ground-hugging tire wisps & flipbook sparks ---- */
+  const lampX = heroSculpted ? 0.68 : (nativeSize[0] * PLAYER_SCALE) / 2 - 0.4;
+  const lampY = heroSculpted ? -0.02 : -playerHeight * 0.18;
+  const lampZ = heroSculpted ? -ROADSTER_HALF_L + 0.08 : -(nativeSize[2] * PLAYER_SCALE) / 2 + 0.1;
   const beamDir: Vec3 = [0, -0.05, -1];
   for (const sx of [-1, 1]) {
     builder.add(geometry.custom(dyn(beamCone([sx * lampX, lampY, lampZ], beamDir, 38, 4.2)), { name: `beam-${sx}`, material: material.custom(beamSpec(look.beam * 0.2)) }).runtime({ id: `beam-${sx}` }));
+    if (row) {
+      builder.add(geometry.custom(dyn(beamCone([sx * 0.44, -0.24, ROADSTER_HALF_L + 0.04], [0, 0.02, 1], 3.4, 0.22)), {
+        name: `boost-${sx}`, material: material.custom(beamSpec(1.85, [0.42, 0.78, 1.0])), castShadow: false
+      }).runtime({ id: `boost-${sx}` }));
+    }
   }
   const plumeGeometry = (count: number, salt: number) => {
     const p = new Float32Array(count * 3);
@@ -1001,15 +1078,32 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const dustColour = DUST_COLOUR[look.style] ?? [0.78, 0.76, 0.72];
   builder.add(geometry.custom(plumeGeometry(260, 1), {
     name: "plume-dust",
-    // GU47 phase 3: a thinner, smaller dust plume (the 6.5 m puffs hid the road behind the car in the mid-drive screen)
+    // WP-25: low ground-hugging tire-slip wisps on GU47 (never a murky grey blob blocking the roadster or speedometer)
     material: material.custom(plumeSpec(row
-      ? { color: dustColour, alpha: 0.4, life: [0.6, 1.2], size: [0.5, 2.0], width: 1.3, spread: 1.3, lift: 0.6, trail: 0.85, glow: 0, additive: false }
+      ? { color: dustColour, alpha: 0.24, life: [0.28, 0.55], size: [0.14, 0.42], width: 1.65, spread: 0.55, lift: 0.14, trail: 0.88, glow: 0, additive: false }
       : { color: dustColour, alpha: 1, life: [0.9, 1.9], size: [1.4, 6.5], width: 2.0, spread: 2.0, lift: 1.1, trail: 0.85, glow: 0, additive: false }))
   }).runtime({ id: "plume-dust" }));
   builder.add(geometry.custom(plumeGeometry(160, 2), {
     name: "plume-sparks",
     material: material.custom(plumeSpec({ color: [1, 0.62, 0.22], alpha: 1, life: [0.25, 0.6], size: [0.2, 0.06], width: 0.5, spread: 1.4, lift: 0.7, trail: 0.7, glow: 1, additive: true }))
   }).runtime({ id: "plume-sparks" }));
+  const flipbookSparksOn = row !== null && enabled("vfx");
+  if (flipbookSparksOn) {
+    const sparksAtlas = createFlipbookAtlas("sparks", [255, 206, 112]);
+    builder.add(effects.flipbook({
+      name: "scrape-sparks",
+      texture: sparksAtlas.texture as never,
+      spriteColumns: sparksAtlas.columns,
+      spriteRows: sparksAtlas.rows,
+      frameRate: 30,
+      size: 1.2,
+      blend: "additive",
+      color: "#ffd28a",
+      intensity: 1.35,
+      loop: true,
+      position: [0, -500, 0]
+    }).runtime({ id: "scrape-sparks" }));
+  }
 
   /* ---- GU47 RH47-12 signature: crosswind spray sheets off the sea-side cliff base (one points draw) ---- */
   const spray = spraySpec(look, width);
@@ -1035,17 +1129,21 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const chase = cameras.chase({ lag: { fov: 4 } });
       const director = createCameraDirector({ eyeRate: 9, lookRate: 12, fovRate: 4 });
       const scratch = new Float32Array(16);
-      if (!camCtl) throw new Error("roadster-hours-port: the app exposes no camera controller");
+      if (!camCtl) throw new Error("saltwind-highway: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
       const parts = playerIds.map((id) => node(id));
+      const wheels = wheelSpecs.map((w) => ({ tire: node(w.id), rim: node(w.rimId), offset: w.offset, front: w.front }));
       const sky = node("sky");
       const roadNode = node("road");
       const cells = level.cells.map((_c, i) => node(`cell-${i}`));
       const slope = (s: number): number => Math.sqrt(1 + roadProfile(level, s).dx ** 2);
-      const scaleVec: Vec3 = [nativeSize[0] * PLAYER_SCALE, nativeSize[1] * PLAYER_SCALE, nativeSize[2] * PLAYER_SCALE];
+      const scaleVec: Vec3 = heroSculpted ? [1, 1, 1] : [nativeSize[0] * PLAYER_SCALE, nativeSize[1] * PLAYER_SCALE, nativeSize[2] * PLAYER_SCALE];
       const beams = [-1, 1].map((sx) => node(`beam-${sx}`));
+      const boostBeams = row ? [-1, 1].map((sx) => node(`boost-${sx}`)) : [];
       const dust = node("plume-dust"), sparks = node("plume-sparks");
+      const scrapeFlipbook = flipbookSparksOn ? node("scrape-sparks") : null;
+      scrapeFlipbook?.setVisible(false);
       const blob = row ? node("car-blob") : null;
       const sprayNode = spray && enabled("spray") ? node("crosswind-spray") : null;
       // RH47-13: the preset pack (re-registered when reduced motion changes; reduced flash follows reduced motion)
@@ -1053,10 +1151,20 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       let fxKinds = registerSaltwindFx(vfx, row);
       let fxFired = 0, fxLast: string | null = null, skidClock = 0;
       let nitroTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      let tireTrailL: { stop(o?: { immediate?: boolean }): void } | null = null;
+      let tireTrailR: { stop(o?: { immediate?: boolean }): void } | null = null;
+      const TIRE_SCUFF_TRAIL: AuraTrailOptions = { width: 0.24, life: 0.38, color: "#191c22" };
       const shots = row ? createShotDirector({ seaSide: look.seaSide }) : null;
       let lastShot: ShotFrame | null = null;
       let reducedMotionOn = false;
       const lean = row ? createBodyLean() : null;
+      const impactRig = row ? createImpactRig() : null;
+      let hitStopTimeScale = 1;
+      let wheelSpin = 0;
+      let steerSmooth = 0;
+      let jounceY = 0;
+      let jounceVel = 0;
+      let impactSparkTimer = 0;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       const gateSigns = row ? level.gates.map((_g, i) => node(`gate-sign-${i}`)) : [];
@@ -1065,6 +1173,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
+      for (const w of wheels) { w.tire.setScale([1, 1, 1]); w.rim.setScale([1, 1, 1]); }
+      for (const boost of boostBeams) boost.setVisible(false);
       // phase 6 LOD: the near/far split of the scatter and the traffic, rebuilt from the camera position
       const lodNodes = lodScatter.map((set) => ({ set, near: node(set.near), far: node(set.far), mask: new Uint8Array(set.items.length).fill(2) }));
       const lodAt: Vec3 = [Number.NaN, 0, 0];
@@ -1124,7 +1234,25 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const chaseBack = row ? 6.6 : 8.5, eyeDrop = row ? -0.55 : 0, lookLift = row ? 0.1 : 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); signGate = 0; gateSigns.forEach((sign, k) => sign.setVisible(k === 0)); },
+        hitStopScale: () => hitStopTimeScale,
+        reset: () => {
+          placeLineup();
+          director.cut();
+          chase.reset();
+          shots?.play();
+          lean?.reset();
+          impactRig?.reset();
+          hitStopTimeScale = 1;
+          jounceY = 0;
+          jounceVel = 0;
+          impactSparkTimer = 0;
+          scrapeFlipbook?.setVisible(false);
+          for (const boost of boostBeams) boost.setVisible(false);
+          if (tireTrailL) { tireTrailL.stop({ immediate: true }); tireTrailL = null; }
+          if (tireTrailR) { tireTrailR.stop({ immediate: true }); tireTrailR = null; }
+          signGate = 0;
+          gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
+        },
         startIntro: () => shots?.startIntro(),
         skipIntro: () => shots?.skipIntro(),
         startFinish: () => shots?.startFinish(),
@@ -1132,6 +1260,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
         setReducedMotion: (on: boolean) => {
           reducedMotionOn = on;
+          if (on) { impactRig?.reset(); hitStopTimeScale = 1; jounceY = 0; jounceVel = 0; }
           lean?.setReducedMotion(on);
           director.setReducedMotion(on);
           shots?.setReducedMotion(on);
@@ -1151,15 +1280,56 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         },
         batching: () => ((app.diagnostics() as unknown as Record<string, unknown>)["renderer.batching"] as Record<string, unknown> | undefined) ?? null,
         update(run: Run, dt: number, time: number, aspect: number, events: readonly SimEvent[] = []): void {
+          const realDt = Math.min(Math.max(dt, 0), 0.1);
+          if (impactRig && !reducedMotionOn) {
+            for (const e of events) {
+              if (e.type === "closePass") impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.24, fovKickDeg: 4.2 });
+              else if (e.type === "nitro") impactRig.trigger({ trauma: 0.2, fovKickDeg: 4.6 });
+              else if (e.type === "impact") { impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.46, fovKickDeg: -2.0 }); impactSparkTimer = 0.26; }
+              else if (e.type === "land") jounceVel -= 2.4 * (typeof e.strength === "number" ? Math.max(0.35, e.strength) : 0.6);
+            }
+          }
+          const rigStep = impactRig && !reducedMotionOn ? impactRig.step(realDt) : null;
+          hitStopTimeScale = rigStep && realDt > 1e-5 ? Math.min(1, rigStep.simDt / realDt) : 1;
+          impactSparkTimer = Math.max(0, impactSparkTimer - realDt);
+          if (!reducedMotionOn && (Math.abs(jounceY) > 1e-4 || Math.abs(jounceVel) > 1e-4)) {
+            jounceVel += (-140 * jounceY - 18 * jounceVel) * realDt;
+            jounceY = Math.max(-0.14, Math.min(0.10, jounceY + jounceVel * realDt));
+          } else if (reducedMotionOn) {
+            jounceY = 0;
+            jounceVel = 0;
+          }
+
           const prof = roadProfile(level, run.s);
           const psi = -(prof.heading + run.theta) + run.spin;
           const pitch = run.flip;
-          const carP = roadPoint(level, run.s, run.l, run.h + playerHeight / 2 + 0.03);
+          const carBaseP = roadPoint(level, run.s, run.l, run.h + playerHeight / 2 + (heroSculpted ? 0.01 : 0.03));
+          const carP: Vec3 = [carBaseP[0], carBaseP[1] + jounceY, carBaseP[2]];
           const rollAngle = run.roll + prof.bank;
           const body = lean ? lean.step(run, dt) : { roll: 0, pitch: 0 };
-          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch + body.pitch, psi, rollAngle + body.roll); }
+          const chassisPitch = pitch + body.pitch;
+          const chassisRoll = rollAngle + body.roll;
+          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(chassisPitch, psi, chassisRoll); }
+          if (wheels.length) {
+            if (!reducedMotionOn) wheelSpin = (wheelSpin + (run.v * realDt) / ROADSTER_WHEEL_RADIUS) % (Math.PI * 200);
+            const targetSteer = Math.max(-1, Math.min(1, run.wheel));
+            steerSmooth += (targetSteer - steerSmooth) * (1 - Math.exp(-16 * realDt));
+            const frontSteerYaw = Math.max(-0.42, Math.min(0.42, -steerSmooth * 0.42));
+            // Wheels stay planted on the road (`carBaseP`, without chassis jounce dip) while spinning & steering
+            const wheelFrameEuler: Vec3 = [pitch, psi, rollAngle];
+            for (const w of wheels) {
+              const wPose = computeWheelWorldPose(carBaseP, wheelFrameEuler, w.offset, w.front ? frontSteerYaw : 0, wheelSpin);
+              w.tire.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
+              w.tire.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
+              w.rim.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
+              w.rim.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
+            }
+          }
           const racing = run.phase === "running" || run.phase === "countdown";
-          for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
+          const rolling = run.phase === "running";
+          const burning = rolling && (run.boosting || run.nitro > 0);
+          for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(chassisPitch, psi, chassisRoll); beam.setVisible(racing); }
+          for (const boost of boostBeams) { boost.setPosition(carP[0], carP[1], carP[2]); boost.setRotation(chassisPitch, psi, chassisRoll); boost.setVisible(burning); }
           if (rotors) {
             turbineHubs.forEach((hub, ti) => {
               for (let b = 0; b < ROTOR_BLADES; b++) rotors.setMatrixAt(rotorSlots[ti * ROTOR_BLADES + b]!, bladeMatrix(hub, rotorAngle(time, ti, reducedMotionOn) + (b * Math.PI * 2) / ROTOR_BLADES, scratch));
@@ -1179,18 +1349,26 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
             blob.setUniform?.("blobFade", blobFadeFor(run.h));
           }
           const trailDir: Vec3 = [Math.sin(psi), 0, Math.cos(psi)];
-          const rear = roadPoint(level, run.s - 2.1, run.l, run.h + 0.3);
-          const rolling = run.phase === "running";
-          const wantDust = rolling ? (run.grounded ? clampUnit((run.v - 6) / 60) * (run.drifting ? 1.9 : 0.95) : 0.5) : 0;
-          dustAmount += (wantDust - dustAmount) * Math.min(1, dt * 6);
+          const rear = roadPoint(level, run.s - 2.1, run.l, run.h + (row ? 0.08 : 0.3));
+          const slipActive = Math.abs(run.slip) > 0.14 || run.drifting || !run.grounded;
+          const wantDust = rolling
+            ? row
+              ? (slipActive ? (run.grounded ? clampUnit((run.v - 10) / 60) * (run.drifting ? 0.72 : 0.35) : 0.22) : 0)
+              : (run.grounded ? clampUnit((run.v - 6) / 60) * (run.drifting ? 1.9 : 0.95) : 0.5)
+            : 0;
+          dustAmount += (wantDust - dustAmount) * Math.min(1, dt * 8);
           dust.setUniform?.("ptPos", rear); dust.setUniform?.("ptBack", trailDir); dust.setUniform?.("ptSpeed", run.v); dust.setUniform?.("ptAmount", dustAmount);
-          const burning = rolling && (run.boosting || run.nitro > 0);
           const scraping = rolling && run.scraping;
-          const wantSparks = burning ? 1 : scraping ? 0.9 : 0;
+          const wantSparks = burning ? 1 : scraping ? 0.9 : impactSparkTimer > 0 ? 0.85 : 0;
           sparkAmount += (wantSparks - sparkAmount) * Math.min(1, dt * 12);
           const wall = roadPoint(level, run.s, run.l + (run.l >= 0 ? 1.1 : -1.1), run.h + 0.35);
-          const sparkAt = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
+          const sparkAt: Vec3 = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
           sparks.setUniform?.("ptPos", sparkAt); sparks.setUniform?.("ptBack", trailDir); sparks.setUniform?.("ptSpeed", run.v); sparks.setUniform?.("ptAmount", sparkAmount);
+          if (scrapeFlipbook) {
+            const showFlip = rolling && (scraping || impactSparkTimer > 0);
+            scrapeFlipbook.setVisible(showFlip);
+            if (showFlip) scrapeFlipbook.setPosition(sparkAt[0], sparkAt[1], sparkAt[2]);
+          }
           if (vfx && fxKinds.length) {
             for (const kind of fxForEvents(events)) { vfx.burst(kind, carP); fxFired++; fxLast = kind; }
             skidClock += dt;
@@ -1202,6 +1380,14 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
             const nitroOn = rolling && run.nitro > 0;
             if (nitroOn && !nitroTrail && playerIds[0]) nitroTrail = vfx.trail(playerIds[0], NITRO_TRAIL);
             else if (!nitroOn && nitroTrail) { nitroTrail.stop(); nitroTrail = null; }
+            const tireScuffOn = heroSculpted && rolling && run.grounded && (run.drifting || Math.abs(run.slip) > 0.16);
+            if (tireScuffOn && !tireTrailL) {
+              tireTrailL = vfx.trail("car-wheel-rl", TIRE_SCUFF_TRAIL);
+              tireTrailR = vfx.trail("car-wheel-rr", TIRE_SCUFF_TRAIL);
+            } else if (!tireScuffOn && (tireTrailL || tireTrailR)) {
+              tireTrailL?.stop(); tireTrailL = null;
+              tireTrailR?.stop(); tireTrailR = null;
+            }
           }
           for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
           if (gateSigns.length && run.nextGate !== signGate) {
@@ -1228,7 +1414,10 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           void time;
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);
-          const shake: [number, number, number] = [cam.shakeRight * inv, cam.shakeUp, cam.shakeRight * dx * inv];
+          const rigRight = rigStep ? rigStep.shakeOffset[0] : 0;
+          const rigUp = rigStep ? rigStep.shakeOffset[1] : 0;
+          const rigFov = rigStep ? rigStep.fovDeltaDeg : 0;
+          const shake: [number, number, number] = [(cam.shakeRight + rigRight) * inv, cam.shakeUp + rigUp, (cam.shakeRight + rigRight) * dx * inv];
           const shot = shots ? shots.step(dt, run, events) : null;
           lastShot = shot;
           if (shot && (shot.eye || shot.orbit) && shot.look) {
@@ -1240,7 +1429,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
             camCtl.setPose({ position: at, target, up: [0, 1, 0], fov: shot.fov ?? 58 }, { cut: true });
             return;
           }
-          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + rigFov + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
           lodStep(pose.eye); lodVehicles(pose.eye);
           camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });

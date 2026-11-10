@@ -55,46 +55,57 @@ const panelCss = `
 .fc-panel { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
   z-index: 50; pointer-events: auto;
   background: radial-gradient(90% 70% at 50% 30%, rgba(10,26,32,.55), rgba(4,10,14,.82));
-  backdrop-filter: blur(3px); font-family: "A3G Calibre","Whitney","Graphik",sans-serif; color: #f3f0dc; }
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+  font-variant-numeric: tabular-nums; color: #f3f0dc; }
+.fc-panel b { font-weight: 600; }
 .fc-card { width: min(680px, 92vw); max-height: 84vh; overflow: auto; border-radius: 18px;
   background: linear-gradient(180deg, rgba(10,22,30,.96), rgba(6,12,17,.96));
   border: 1px solid rgba(216,255,62,.32); padding: 26px 30px;
   box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); }
-.fc-card h1 { margin: 0; font-family: "DIN Pro",sans-serif; font-size: 38px;
-  letter-spacing: .1em; }
+.fc-card h1 { margin: 0; font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+  font-weight: 600; font-size: 36px; letter-spacing: .08em; }
 .fc-card h1 .fc3d { color: #d8ff3e; }
-.fc-card h2 { margin: 0 0 14px; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: #7dfcff; }
-.fc-card p.sub { margin: 4px 0 20px; opacity: .75; font-size: 13px; }
+.fc-card h2 { margin: 0 0 14px; font-weight: 600; font-size: 14px; font-variant-caps: all-small-caps;
+  letter-spacing: .16em; color: #7dfcff; }
+.fc-card p.sub { margin: 4px 0 20px; opacity: .78; font-size: 13px; }
 .fc-btnrow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .fc-btn { appearance: none; border: 1px solid rgba(243,240,220,.25); background: rgba(255,255,255,.07);
-  color: #f3f0dc; font: 600 14px "Whitney",sans-serif; padding: 11px 20px; border-radius: 10px;
+  color: #f3f0dc; font: 600 14px var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+  min-height: 44px; min-width: 44px; padding: 10px 20px; border-radius: 10px;
   cursor: pointer; letter-spacing: .04em; transition: transform .12s, background .15s, border-color .15s; }
 .fc-btn:hover { transform: translateY(-1px); border-color: #d8ff3e; }
 .fc-btn.primary { background: linear-gradient(135deg,#d8ff3e,#9be84e); color: #0b1f1c; border-color: #d8ff3e; }
 .fc-btn.cyan { background: linear-gradient(135deg,#7dfcff,#4db8ff); color: #08222b; border-color: #7dfcff; }
-.fc-btn.ghost { opacity: .8; }
+.fc-btn.ghost { opacity: .82; }
 .fc-clubs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
-.fc-clubchip { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px;
+.fc-clubchip { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 10px; border-radius: 9px;
   border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); cursor: pointer;
   font-size: 12px; font-weight: 600; }
 .fc-clubchip.sel { border-color: #d8ff3e; box-shadow: 0 0 0 1px #d8ff3e inset; }
-.fc-clubchip i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+.fc-clubchip i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; flex: 0 0 auto; }
 .fc-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px; }
-.fc-sw { width: 30px; height: 30px; border-radius: 8px; border: 2px solid rgba(255,255,255,.2); cursor: pointer; }
+.fc-sw { min-width: 44px; min-height: 44px; width: 44px; height: 44px; border-radius: 8px;
+  border: 2px solid rgba(255,255,255,.2); cursor: pointer; }
 .fc-sw.sel { border-color: #fff; box-shadow: 0 0 0 2px #d8ff3e; }
 .fc-cel-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.fc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0; }
+.fc-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; margin: 10px 0; }
 .fc-table th, .fc-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.1); }
-.fc-table th { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .65; }
-.fc-badge { display: inline-block; padding: 2px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 700;
-  letter-spacing: .1em; }
+.fc-table th { font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .12em; opacity: .72; }
+.fc-badge { display: inline-block; padding: 2px 9px; border-radius: 5px; font-size: 12px; font-weight: 600;
+  letter-spacing: .08em; }
 .fc-badge.win { background: rgba(216,255,62,.2); color: #d8ff3e; }
 .fc-badge.loss { background: rgba(255,59,48,.18); color: #ff9a3d; }
 .fc-badge.next { background: rgba(125,252,255,.16); color: #7dfcff; }
-.fc-result-score { font-family: "DIN Pro",sans-serif; font-size: 58px; font-weight: 800; letter-spacing: .08em;
-  margin: 8px 0 4px; }
-.fc-kbd { font-family: "Monument Grotesk Mono",monospace; font-size: 11px; opacity: .8; }
-.fc-kbd b { color: #d8ff3e; }
+.fc-result-score { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 56px; font-weight: 500;
+  font-variant-numeric: tabular-nums; letter-spacing: .06em; margin: 8px 0 4px; }
+.fc-kbd { font-family: var(--font-mono, "Monument Grotesk Mono", monospace); font-size: 12px; font-weight: 400; opacity: .82; }
+.fc-kbd b { color: #d8ff3e; font-weight: 500; }
+@media (pointer: coarse), (max-width: 760px) {
+  .fc-card { padding: 18px 16px; max-height: calc(100dvh - var(--a3d-bar-space, 44px) - 24px); margin-top: var(--a3d-bar-space, 44px); }
+  .fc-clubs { grid-template-columns: repeat(2, 1fr); }
+  .fc-btn, .fc-clubchip, .fc-sw { min-height: 44px; min-width: 44px; }
+}
 @media (prefers-reduced-motion: reduce) { .fc-btn { transition: none; } }
 `;
 

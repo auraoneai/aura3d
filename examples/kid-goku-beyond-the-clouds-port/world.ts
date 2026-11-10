@@ -1,8 +1,8 @@
 /**
- * Rendering for the Cloud Runner port: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
+ * Rendering for Cumulus Dash: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
  * ridges, lofted ground (textured PBR track and grass, banded sandstone cliffs), merged foliage, mesas and cloud banks,
- * a rigged GLB runner with skeletal animation, the sky cloud, star orbs, creatures, boulders, warning decals, pooled
- * particles and post (bloom, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
+ * a rigged GLB runner with skeletal animation, the sky cloud, sky pearls, creatures, boulders, warning decals, pooled
+ * particles and post (cinematic bloom, SSR, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
@@ -13,13 +13,14 @@ import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { appendGroundShadows, BOULDER_SHADOW, TREE_SHADOW } from "./groundShadows";
-import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
+import { ACTIVE, ballSpec, cloudSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
-import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
-import { Mesh, box, cylinder, hex } from "./mesh";
+import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, createSkyFlipbookAtlas, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { Mesh, box, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
@@ -101,14 +102,60 @@ export function buildCheckpointFlags(ch: Chapter): Mesh {
   m.computeNormals();
   return m;
 }
-/** The ride log: bark rings and pale cut ends (the log used the rock texture before). */
+/** The ride log: sculpted fluted cedar trunk with mossy dorsal bark, branch knots, and concentric sapwood/heartwood cut ends. */
 export function buildLog(): Mesh {
   const raw = new Mesh();
-  const ring = [hex("#6e4b2f"), hex("#82593a")];
-  for (let i = 0; i < 8; i++) raw.append(cylinder(14, 1.0, 1.0, 0.8, ring[i % 2]!, ring[(i + 1) % 2]!), [0, i * 0.8, 0]);
-  raw.append(cylinder(14, 0.9, 0.9, 0.02, hex("#d9b98a"), hex("#c9a273")), [0, 6.4, 0]);
-  raw.append(cylinder(14, 0.9, 0.9, 0.02, hex("#d9b98a"), hex("#c9a273")), [0, -0.02, 0]);
-  for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= 3.2;
+  const sides = 20, rings = 12, length = 6.44;
+  const darkBark = hex("#4a301c"), midBark = hex("#6e4b2f"), warmBark = hex("#8a5f3d"), mossBark = hex("#5b7037");
+  const sapwood = hex("#dfc294"), midWood = hex("#c59c69"), heartwood = hex("#8e6037");
+  const ringIdx: number[][] = [];
+  for (let r = 0; r <= rings; r++) {
+    const t = r / rings, y = t * length;
+    const flare = 1 + (r === 0 || r === rings ? 0.035 : -0.025 * Math.sin(t * Math.PI));
+    const row: number[] = [];
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2;
+      const flute = 1 + 0.058 * Math.sin(a * 5 + t * 5.2) + 0.032 * Math.cos(a * 9 - t * 3.8);
+      const rad = 0.96 * flare * flute;
+      const c = Math.cos(a), sn = Math.sin(a);
+      const furrow = 0.5 + 0.5 * Math.sin(a * 5 + t * 5.2);
+      const moss = Math.max(0, sn) * 0.42 * (0.45 + 0.55 * Math.cos(t * 7.5));
+      const baseBark = furrow > 0.55 ? mix3(midBark, warmBark, (furrow - 0.55) / 0.45) : mix3(darkBark, midBark, furrow / 0.55);
+      const col = mix3(baseBark, mossBark, moss);
+      row.push(raw.vertex([c * rad, y, sn * rad], [c, 0, sn], [i / sides * 3, t * 4], col));
+    }
+    ringIdx.push(row);
+  }
+  for (let r = 0; r < rings; r++) {
+    for (let i = 0; i < sides; i++) raw.quad(ringIdx[r]![i]!, ringIdx[r + 1]![i]!, ringIdx[r + 1]![i + 1]!, ringIdx[r]![i + 1]!);
+  }
+  for (const [endY, ny, flip] of [[0, -1, true], [length, 1, false]] as const) {
+    const center = raw.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartwood);
+    const r1: number[] = [], r2: number[] = [], r3: number[] = [];
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+      const wob = 1 + 0.03 * Math.sin(a * 5);
+      r1.push(raw.vertex([c * 0.34 * wob, endY, sn * 0.34 * wob], [0, ny, 0], [0.5 + c * 0.17, 0.5 + sn * 0.17], heartwood));
+      r2.push(raw.vertex([c * 0.66 * wob, endY, sn * 0.66 * wob], [0, ny, 0], [0.5 + c * 0.33, 0.5 + sn * 0.33], midWood));
+      r3.push(raw.vertex([c * 0.93 * wob, endY, sn * 0.93 * wob], [0, ny, 0], [0.5 + c * 0.46, 0.5 + sn * 0.46], sapwood));
+    }
+    for (let i = 0; i < sides; i++) {
+      if (flip) {
+        raw.tri(center, r1[i + 1]!, r1[i]!);
+        raw.quad(r1[i]!, r1[i + 1]!, r2[i + 1]!, r2[i]!);
+        raw.quad(r2[i]!, r2[i + 1]!, r3[i + 1]!, r3[i]!);
+      } else {
+        raw.tri(center, r1[i]!, r1[i + 1]!);
+        raw.quad(r1[i]!, r2[i]!, r2[i + 1]!, r1[i + 1]!);
+        raw.quad(r2[i]!, r3[i]!, r3[i + 1]!, r2[i + 1]!);
+      }
+    }
+  }
+  const knot = icosphere(0, darkBark, 0.1, () => 0.5, false);
+  raw.append(knot, [0.92, 1.85, 0.2], [0.22, 0.32, 0.26], 0.4);
+  raw.append(knot, [-0.88, 4.55, -0.24], [0.2, 0.28, 0.24], 2.1);
+  raw.computeNormals();
+  for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= length / 2;
   const logMesh = new Mesh();
   logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
   return logMesh;
@@ -159,7 +206,11 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     fogDensityScale: row.fog.lookScale,
     fog: { color: row.fog.color, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
-    post: { bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold } }
+    post: { bloom: false }
+  }));
+  out.push(effects.cinematicBloom({
+    name: "look bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold,
+    color: row.sun.color, radius: 0.42, antiBlowout: true, maxIntensity: 0.88, softKnee: 0.25, shoulder: 0.65
   }));
   out.push(effects.colorGrade({
     name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation,
@@ -169,10 +220,11 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     ...(row.grade.gain ? { gain: [...row.grade.gain] as [number, number, number] } : {})
   }));
   out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
-  out.push(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.9 }));
-  // CD-09: low god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
+  out.push(effects.contactShadows({ length: 0.34, thickness: 0.065, intensity: 0.92 }));
+  out.push(effects.screenSpaceReflections({ name: "puddle-ssr", intensity: 0.48, roughness: 0.22, maxDistance: 22, thickness: 0.25 }));
+  // CD-09: crepuscular god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
   // world.ts keeps on the sun direction from the camera every frame
-  out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.4, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
+  out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.46, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
   // CD-11: title/finale depth of field and glider motion blur; both start disabled at bind and art/post.ts switches them
   out.push(effects.depthOfField({ name: "title-dof", ...CUMULUS_DOF }));
   out.push(effects.motionBlur({ name: "glider-blur", ...CUMULUS_MOTION_BLUR }));
@@ -239,19 +291,19 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
-  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
-  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
-  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
+  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.1, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 1.12, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
+  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.72, mapScale: 0.9, rim: 0.16, sun: 1.2 })));
+  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.58, mapScale: 0.5, rim: 0.26 }), undefined, true));
   const scatter = buildScatter(ch);
-  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL.trees));
-  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL.bushes));
-  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL.rocks));
-  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL.flowers));
-  buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
+  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.36 }), undefined, false, CULL.trees));
+  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.32 }), undefined, false, CULL.bushes));
+  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.52, mapScale: 1.2, rim: 0.2 }), undefined, false, CULL.rocks));
+  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.5, rim: 0.14 }), undefined, false, CULL.flowers));
+  buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.22, sun: 1.0 })));
   const mesas = buildMesas(ch);
-  mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
+  mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.38, mapScale: 0.18, rim: 0.32 })));
   /* generated hero set pieces along the road: instanced, one draw each */
-  const place = (list: readonly { pos: V3; scale: number; yaw: number }[]) => list.map((p) => ({ position: p.pos, rotation: [0, p.yaw, 0] as V3, scale: p.scale }));
+  const place = (list: readonly { pos: V3; scale: number; yaw: number; pitch?: number; roll?: number }[]) => list.map((p) => ({ position: p.pos, rotation: [p.pitch ?? 0, p.yaw, p.roll ?? 0] as V3, scale: p.scale }));
   const heroSet = { targetHeight: 1, castShadow: true, receiveShadow: false, instancingAware: true } as const;
   /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind;
      the row sets the strength) */
@@ -271,7 +323,12 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
       triangles += shades.indices.length / 3; chunks++; drawNodes++;
     }
   }
-  buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
+  const cloudIds: string[] = [];
+  buildClouds(ch).forEach((m, i) => {
+    const cid = `clouds-${i}`;
+    cloudIds.push(cid);
+    addMesh(m, cid, ACTIVE_LOOK.id === "storm-washed" ? cloudSpec(0.36) : scenerySpec({ sun: 0.85, rim: 0.5 }), cid);
+  });
   /* CD-06 (GU47 WP-36): two Meshy storm towers rising out of the cloud sea beyond the cloud banks, one instanced draw
      (storm-washed row). Each stands on its rock base sunk below the valley plane, so only the cloud column shows. */
   if (ACTIVE_LOOK.id === "storm-washed") {
@@ -342,7 +399,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* CD-02 / GU47 phase 4: the soft contact quad under the runner on both rows (the low storm sun throws the cast shadow
      metres to the side, so the feet need their own contact; slightly lighter where the sun shadow is received) */
   b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
-  b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false }).runtime({ id: "sky-cloud" }));
+  b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false, ...(ACTIVE_LOOK.id === "storm-washed" ? { materialOverrides: [{ rim: { color: "#ffe2b8", power: 2.2, intensity: 0.85 } }] } : {}) }).runtime({ id: "sky-cloud" }));
   const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0.94, 0]);
@@ -366,16 +423,28 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   [...(rexCreature?.bites ?? []).map((s) => ({ s, kind: "bite" })), ...(rexCreature?.swipes ?? []).map((s) => ({ s, kind: "swipe" }))].sort((x, y) => x.s - y.s).forEach((_, i) => warn(`warn-rex-${i}`, false));
 
   b.add(geometry.custom(spritePoolGeometry(ORB_CAP, quads), { name: "orbs", material: material.custom(glowSpec(quads)) }).runtime({ id: "orbs" }));
+  if (ACTIVE_LOOK.id === "storm-washed") {
+    const dustAtlas = createSkyFlipbookAtlas("dust", [238, 245, 255]);
+    const sparkAtlas = createSkyFlipbookAtlas("sparks", [255, 198, 92]);
+    b.add(effects.flipbook({
+      name: "vfx-cloud-wake", texture: dustAtlas.texture as never, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
+      frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0]
+    }).runtime({ id: "vfx-cloud-wake" }));
+    b.add(effects.flipbook({
+      name: "vfx-orb-spark", texture: sparkAtlas.texture as never, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
+      frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0]
+    }).runtime({ id: "vfx-orb-spark" }));
+  }
   const fx = new Fx(quads);
   fx.addTo(b);
 
-  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }, cullables, quads) };
+  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }, cullables, quads, cloudIds) };
 }
 
 /* ------------------------------------------------------------------------------------- runtime */
-function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, cullables: readonly Cullable[], quads = false): WorldRuntime {
+function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, cullables: readonly Cullable[], quads = false, cloudIds: readonly string[] = []): WorldRuntime {
   const cam = app.camera;
-  if (!cam) throw new Error("cloud-runner port: the app exposes no camera controller");
+  if (!cam) throw new Error("cumulus-dash: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
   const hero = node("hero"), cloud = node("sky-cloud"), staff = node("staff"), sky = node("sky"), valley = node("valley");
@@ -398,6 +467,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let vfxMotion: boolean | null = null;
   let gliderTrail: { stop(): void } | null = null;
   const vfxFired: Record<string, number> = {};
+  const impactRig = createImpactRig({ reducedMotion: false });
+  const wakeFlipbook = cinematic ? app.nodes.get("vfx-cloud-wake") : undefined;
+  const sparkFlipbook = cinematic ? app.nodes.get("vfx-orb-spark") : undefined;
+  let wakeTimer = 0, sparkTimer = 0;
+  let sparkAnchor: V3 = [0, -1000, 0];
   const fallsLip = waterfallLip(ch);
   let sprayT = 0;
   /* CD-09 / CD-11: god rays, DOF and glider motion blur on High/Ultra only, never on a phone; the plan is re-evaluated every
@@ -475,23 +549,51 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     emitPresets(g, events, p);
     const chest: V3 = [p[0] + up[0] * 1.3, p[1] + up[1] * 1.3, p[2] + up[2] * 1.3];
     for (const e of events) {
-      if (e === "jump" || e === "land") fx.dust(p, up, e === "land" ? 7 : 5, "#e8d4a8", 0.9);
-      else if (e === "dismount") { fx.dust(p, up, 12, "#d9c08a", 1.3); fx.burst(p, up, "#ffe9a8", 10, 0.9); }
+      if (e === "jump" || e === "land") { fx.dust(p, up, e === "land" ? 7 : 5, "#e8d4a8", 0.9); wakeTimer = Math.max(wakeTimer, 0.36); }
+      else if (e === "dismount") { fx.dust(p, up, 12, "#d9c08a", 1.3); fx.burst(p, up, "#ffe9a8", 10, 0.9); wakeTimer = Math.max(wakeTimer, 0.55); }
       else if (e === "splash") { fx.dust(p, up, 10, "#d8f4ff", 1); fx.ring(at(s.s, s.lane, 0.1), up, "#d8f4ff", 0.8); }
       else if (e === "extend") fx.ring(p, up, "#ffe27a", 1);
-      else if (e === "launch" || e === "power-launch") { fx.burst(chest, up, "#fff3b0", 18, 1.3); fx.ring(p, up, "#fff3b0", 1.4); }
-      else if (e === "perfect") { fx.burst(chest, up, "#ffffff", 26, 1.7); fx.ring(p, up, "#ffffff", 2); }
+      else if (e === "launch" || e === "power-launch") {
+        fx.burst(chest, up, "#fff3b0", 18, 1.3); fx.ring(p, up, "#fff3b0", 1.4);
+        wakeTimer = Math.max(wakeTimer, 0.6);
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: e === "power-launch" ? 0.032 : 0.02, trauma: e === "power-launch" ? 0.26 : 0.18, fovKickDeg: e === "power-launch" ? 3.8 : 2.2 });
+        if (e === "power-launch") { sparkTimer = Math.max(sparkTimer, 0.45); sparkAnchor = chest; }
+      }
+      else if (e === "perfect") {
+        fx.burst(chest, up, "#ffffff", 26, 1.7); fx.ring(p, up, "#ffffff", 2);
+        sparkTimer = Math.max(sparkTimer, 0.5); sparkAnchor = chest;
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.24, fovKickDeg: 3.2 });
+      }
       else if (e === "strike") fx.burst([p[0] + f.forward[0] * 2, p[1] + 1.2, p[2] + f.forward[2] * 2], up, "#fff0b0", 12, 1.1);
-      else if (e === "strike-hit" || e === "duel-won") { fx.burst(chest, up, "#ffe27a", e === "duel-won" ? 40 : 22, e === "duel-won" ? 2.2 : 1.6); fx.ring(p, up, "#ffffff", e === "duel-won" ? 2.6 : 1.8); }
-      else if (e === "skypearl") { fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5); }
+      else if (e === "strike-hit" || e === "duel-won") {
+        fx.burst(chest, up, "#ffe27a", e === "duel-won" ? 40 : 22, e === "duel-won" ? 2.2 : 1.6); fx.ring(p, up, "#ffffff", e === "duel-won" ? 2.6 : 1.8);
+        sparkTimer = Math.max(sparkTimer, 0.52); sparkAnchor = chest;
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: e === "duel-won" ? 0.045 : 0.028, trauma: e === "duel-won" ? 0.34 : 0.22, fovKickDeg: e === "duel-won" ? 3.5 : 2.0 });
+      }
+      else if (e === "skypearl") {
+        fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5);
+        sparkTimer = Math.max(sparkTimer, 0.55); sparkAnchor = chest;
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.28, fovKickDeg: 3.0 });
+      }
       else if (e === "meat") fx.burst(chest, up, "#ffb98a", 18, 1.2);
       else if (e === "orb") fx.burst(chest, up, "#fff0b8", 3, 0.5);
-      else if (e === "checkpoint") fx.ring(p, up, "#ffe9a0", 1.6);
-      else if (e === "glider-ready") fx.ring(p, up, "#fff0a8", 1.3);
-      else if (e === "glider-call" || e === "glider-mount") { fx.burst(p, up, "#fff3c0", 22, 1.4); fx.ring(p, up, "#ffe6a0", 1.3); }
-      else if (e === "glider-end") fx.burst(p, up, "#fff3c0", 14, 1);
-      else if (e === "glider-knocked") fx.burst(chest, up, "#ffd9c8", 26, 1.6);
-      else if (e === "hit" || e === "boulder-hit" || e === "trex-bite" || e === "trex-swipe" || e === "ptera-grab") { fx.burst(chest, up, "#ffd0b0", 16, 1.5); fx.dust(p, up, 8, "#cdb78e", 1.1); }
+      else if (e === "checkpoint") {
+        fx.ring(p, up, "#ffe9a0", 1.6);
+        sparkTimer = Math.max(sparkTimer, 0.42); sparkAnchor = chest;
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.018, trauma: 0.16, fovKickDeg: 2.0 });
+      }
+      else if (e === "glider-ready") { fx.ring(p, up, "#fff0a8", 1.3); sparkTimer = Math.max(sparkTimer, 0.38); sparkAnchor = chest; }
+      else if (e === "glider-call" || e === "glider-mount") {
+        fx.burst(p, up, "#fff3c0", 22, 1.4); fx.ring(p, up, "#ffe6a0", 1.3);
+        wakeTimer = Math.max(wakeTimer, 0.65);
+        if (!g.reducedMotion && e === "glider-mount") impactRig.trigger({ freezeSeconds: 0.025, trauma: 0.2, fovKickDeg: 3.4 });
+      }
+      else if (e === "glider-end") { fx.burst(p, up, "#fff3c0", 14, 1); wakeTimer = Math.max(wakeTimer, 0.45); }
+      else if (e === "glider-knocked") { fx.burst(chest, up, "#ffd9c8", 26, 1.6); if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.38, fovKickDeg: -1.8 }); }
+      else if (e === "hit" || e === "boulder-hit" || e === "trex-bite" || e === "trex-swipe" || e === "ptera-grab") {
+        fx.burst(chest, up, "#ffd0b0", 16, 1.5); fx.dust(p, up, 8, "#cdb78e", 1.1);
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.4, fovKickDeg: -2.0 });
+      }
       else if (e === "respawn") fx.ring(p, up, "#ffffff", 1.6);
     }
   }
@@ -504,9 +606,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     get footsteps() { return footsteps; },
     post: () => ({ ...postStates }),
     vfx: () => ({ registered: vfxMotion !== null, fired: { ...vfxFired }, trail: gliderTrail !== null, liveCount: app.effects?.liveCount ?? 0 }),
-    cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); },
+    cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); impactRig.reset(); wakeTimer = 0; sparkTimer = 0; },
     update(g, dt, aspect, events) {
       clock += dt;
+      const feel = impactRig.step(dt);
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
       const n = s.glider, riding = n.active || n.call > 0;
       emitEvents(g, events);
@@ -595,6 +698,18 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
         wispT += dt;
         if (wispT > 0.07) { wispT = 0; fx.wisp([base[0] - f.forward[0] * 1.3, base[1] + 0.2, base[2] - f.forward[2] * 1.3], "#fff3c0", 0.8); }
+      }
+      if (wakeFlipbook) {
+        wakeTimer = Math.max(0, wakeTimer - dt);
+        const showWake = (riding || wakeTimer > 0) && phase === "playing" && !g.reducedMotion;
+        wakeFlipbook.setVisible(showWake);
+        if (showWake) wakeFlipbook.setPosition(pos[0] - f.forward[0] * 1.1, pos[1] + 0.35, pos[2] - f.forward[2] * 1.1);
+      }
+      if (sparkFlipbook) {
+        sparkTimer = Math.max(0, sparkTimer - dt);
+        const showSpark = sparkTimer > 0 && phase === "playing" && !g.reducedMotion;
+        sparkFlipbook.setVisible(showSpark);
+        if (showSpark) sparkFlipbook.setPosition(sparkAnchor[0], sparkAnchor[1], sparkAnchor[2]);
       }
 
       /* ---- staff over a gorge ---- */
@@ -818,10 +933,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         cam.fovKick?.set("launch", launchFovKick(sinceLaunch, g.reducedMotion), sinceLaunch < 0.4 ? 0.06 : 0.3);
       }
       lastImpact = g.impact;
+      const feelOn = cinematic && phase === "playing" && !g.reducedMotion;
       const pose = chase.step({
-        wantEye, wantLook, fovTarget: fov, cut,
+        wantEye, wantLook, fovTarget: fov + (feelOn ? feel.fovDeltaDeg : 0), cut,
         lag: { eye: phase === "playing" ? 14 : 5, look: phase === "playing" ? 14 : 5 },
-        shakeOffset: [Math.sin(clock * 83) * shake, Math.sin(clock * 71 + 1) * shake, Math.sin(clock * 97 + 2) * shake]
+        shakeOffset: feelOn
+          ? [feel.shakeOffset[0], feel.shakeOffset[1], feel.shakeOffset[2]]
+          : [Math.sin(clock * 83) * shake, Math.sin(clock * 71 + 1) * shake, Math.sin(clock * 97 + 2) * shake]
       }, dt);
       eye = [chase.pose.eye[0], chase.pose.eye[1], chase.pose.eye[2]];
       look = [chase.pose.look[0], chase.pose.look[1], chase.pose.look[2]];
@@ -852,9 +970,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       if (cinematic) { const d = ACTIVE_LOOK.scenery.sunDir; node(SUN_FLARE_ID).setPosition(shook[0] + d[0] * 2000, shook[1] + d[1] * 2000, shook[2] + d[2] * 2000); }
       // CD-17: two drift speeds (sky dome vs the cloud sea below); reduced motion slows both to 30%
       const drift = cinematic && g.reducedMotion ? 0.3 : 1;
+      const seaPhase = clock * ACTIVE_LOOK.cloudDrift.sea * drift;
       sky.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sky * drift);
       valley.setPosition(shook[0], f.point[1] - 43, shook[2]);
-      valley.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sea * drift);
+      valley.setUniform?.("cloudPhase", seaPhase);
+      if (cinematic) for (const cid of cloudIds) node(cid).setUniform?.("cloudPhase", seaPhase);
 
       fx.update(dt, app);
     }

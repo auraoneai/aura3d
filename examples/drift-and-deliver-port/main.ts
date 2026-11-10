@@ -1,22 +1,17 @@
 /**
- * Drift & Deliver on Aura3D: boot, fixed-step loop, input, HUD, scene and capture hooks.
+ * Gridlock Courier on Aura3D: boot, fixed-step loop, input, HUD, scene and capture hooks.
  *
- * The driving model lives in `sim.ts` (pure, line-for-line from the original), the city and pickups in
+ * The driving model lives in `sim.ts` (pure, deterministic), the city and pickups in
  * `world.ts`, the chase camera in `chase.ts`. This file renders them through the public `@aura3d/engine`
- * surface only. It also installs the original's QA surface (`__sim`, `__tp`, `__game`, `__gameEntities`,
- * `__dbg.nearSolids`) so the same capture runner that recorded the original can drive this port.
- *
- * Query parameters (all optional): `manual=1` (the sim only advances through `__sim` /
- * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`, `shift=N` (shift length in
- * seconds, default 180), `props=0` (street furniture without colliders).
- *
- * Collision: buildings are `hard` solids; lamps and signals are `post` solids; trees, pedestrians, hydrants and shelters
- * are `prop` solids. The original's QA surface (`__sim`, `__dbg.nearSolids`) keeps the building-only world the reference
- * capture was recorded against, so the recorded replay hashes are unchanged.
+ * surface only, and installs the deterministic QA surface (`__sim`, `__tp`, `__game`, `__gameEntities`,
+ * `__dbg.nearSolids`) for replay verification.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, text3D, type AuraApp, type AuraPhotometricProfile } from "@aura3d/engine";
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import "../../apps/showcase-port-shared/quickbar.css";
-import { createCameraClearance, createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { createCameraClearance, createFixedStepPresenter, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { blendPresentedInto, createPresented, type Presented } from "./presentation";
 import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
 import { furnitureSolids } from "./city";
@@ -26,7 +21,7 @@ import { drivingKey, keyAction } from "./input";
 import { setChaseFraming, setReducedMotion } from "./chase";
 import { parseAt, parseLook, phaseAt, todSeconds } from "./phases";
 import { SkidMarks, COURIER_TEAL } from "./fx";
-import { beaconMaterial, createShiftRuntime, padMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
+import { beaconMaterial, createShiftRuntime, padMaterial, ringMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
 import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
@@ -66,14 +61,14 @@ const config = {
   /** diagnostics switches: `ao=1` turns screen-space AO on, `env=0` drops the HDRI light, `shadow=0` drops the sun's shadows */
   /** `models=0` falls back to the code-built car shells (diagnostics) */
   models: params.get("models") !== "0",
-  ao: params.get("ao") === "1",
+  ao: params.get("ao") !== "0",
   env: params.get("env") !== "0",
   shadow: params.get("shadow") !== "0",
   fog: params.get("fog") !== "0",
   post: params.get("post") !== "0",
-  /** `aa=0` drops anti-aliasing only; `tm=aces|none|...` replaces the neutral tone-mapping operator */
+  /** `aa=0` drops anti-aliasing only; `tm=aces|neutral|none|...` overrides the default AgX tone-mapping operator */
   aa: params.get("aa") !== "0",
-  tm: params.get("tm") ?? "neutral",
+  tm: params.get("tm") ?? "agx",
   heal: params.get("heal") !== "0",
   /** `warm=0` skips the program warm-up so the first frames can miss draws (diagnostics for the first-frame regression spec) */
   warm: params.get("warm") !== "0",
@@ -87,7 +82,7 @@ const config = {
   sky: params.get("sky") !== "0",
   /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
   roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
-  exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
+  exposure: Number(params.get("exposure") ?? "1.45") || 1.45,
   sun: Number(params.get("sun") ?? "4.4") || 4.4,
   /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
   skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined,
@@ -103,8 +98,8 @@ const config = {
   at: parseAt(params.get("at")),
   /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */
   reducedFlash: params.get("flash") === "reduced",
-  /** 5.x A5 lab (EXPERIMENTAL, default off): `lights=ies` gives the headlight spot a measured IES low-beam profile */
-  ies: params.get("lights") === "ies"
+  /** Measured IES low-beam profile on the headlight spot (`?lights=0` opts out). */
+  ies: params.get("lights") !== "0"
 };
 const shiftLook = config.look === "shift";
 const skid = new SkidMarks();
@@ -208,18 +203,23 @@ function buildScene() {
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
     s.add(carModel("car-rig", "courier", true, look.shift ? "YXZ" : undefined));
+    if (look.shift) {
+      const wheelMat = material.brushedMetal({ color: "#d6dce4", roughness: 0.24, anisotropy: 0.65 });
+      for (const id of ["courier-wheel-fl", "courier-wheel-fr", "courier-wheel-rl", "courier-wheel-rr"] as const) {
+        s.add(primitives.cylinder({ name: id, size: [0.36, 0.06, 0.36], position: [car.x, -60, car.z], rotation: [0, 0, Math.PI / 2], material: wheelMat, castShadow: false, receiveShadow: false }).runtime({ id }));
+      }
+    }
   } else {
-    s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
+    s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#f2ac24", roughness: 0.22, metallic: 0.18, clearcoat: 0.95, clearcoatRoughness: 0.05, envMapIntensity: 1.4 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
     s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
     s.add(primitives.box({ name: "car-light-l", size: [0.4, 0.14, 0.1], position: [-0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-l" }));
     s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
   }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
-  // delivery drop-off: a glowing pad and a tall beacon you can see over the roofs (moved to each new job)
-  // GU47 WP-28 GC-V2 (shift look): the pillar and pad in reserved courier teal, a 1.6 m pillar plus an objective ring
+  // delivery drop-off: a glowing pad and a tall paired GLSL+WGSL energy-field beacon + objective ring in courier teal
   s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: look.shift ? padMaterial() : material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
   s.add(primitives.cylinder({ name: "dropoff-beacon", size: look.shift ? [1.6, 70, 1.6] : [0.9, 70, 0.9], position: [car.x, -60, car.z], material: look.shift ? beaconMaterial(row.beacon) : material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
-  if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: beaconMaterial(2.2), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
+  if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: ringMaterial(), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
   // GC-H2: three SDF district banners over the avenues (static, +6 draws)
   if (look.shift) for (const n of bannerNodes()) s.add(n);
   if (look.shift) {
@@ -268,6 +268,11 @@ const node = (id: string) => {
 const kmh = (): number => Math.round(3.6 * Math.abs(car.speed));
 const pickupState = () => ({ collected: game.collected, score: game.score, combo: car.combo, comboTimer: car.comboTimer, boost: car.boost });
 
+const impactRig = createImpactRig();
+let wasImpactDrifting = false;
+let wasImpactBoosting = false;
+let wheelSpin = 0;
+
 function simulateStep(input: Keys): void {
   stepCar(car, STEP, input, solidsNear(), FOOTPRINT);
   stepTraffic(traffic, STEP);
@@ -279,6 +284,13 @@ function simulateStep(input: Keys): void {
     if (struck) audio.thud();
     for (const e of picked) audio.chime(e.kind, ps.combo);
   }
+  if (!config.manual && game.phase === "playing") {
+    if (struck) impactRig.trigger({ freezeSeconds: 0.026, trauma: 0.42, fovKickDeg: -1.8 });
+    if (car.drifting && !wasImpactDrifting && Math.abs(car.speed) > 10) impactRig.trigger({ trauma: 0.15, fovKickDeg: 1.6 });
+    if (car.boosting && !wasImpactBoosting) impactRig.trigger({ trauma: 0.14, fovKickDeg: 2.5 });
+  }
+  wasImpactDrifting = car.drifting;
+  wasImpactBoosting = car.boosting;
   if (shiftRuntime && !config.manual) {
     if (struck) shiftRuntime.bump(car.x, car.z);
     for (const e of picked) shiftRuntime.pickup(e.kind, pickups[e.index]!.x, pickups[e.index]!.z);
@@ -295,7 +307,10 @@ function simulateStep(input: Keys): void {
 
 function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
-    if (!config.manual) shiftRuntime?.delivered(e.job.x, e.job.z);
+    if (!config.manual) {
+      shiftRuntime?.delivered(e.job.x, e.job.z);
+      impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.34, fovKickDeg: 3.4 });
+    }
     if (sideShotWanted(look.shift, shift.deliveries, config.manual, config.autostart, document.body.classList.contains("reduced-motion"))) sideShotTime = 0;
     game.score += e.score;
     if (shiftLook && !config.manual) slamStamp(hud.stamp, `DELIVERED  +${e.score}`);
@@ -309,7 +324,7 @@ function onShiftEvent(e: ShiftEvent): void {
   else if (e.kind === "over") endShift();
 }
 
-/** Presented states live in a ring of three preallocated buffers: the interpolator holds two, the third is written. */
+/** Presented states live in a ring of three preallocated buffers: the presenter holds two, the third is written. */
 const presentedRing = [createPresented(traffic.length), createPresented(traffic.length), createPresented(traffic.length)];
 let presentedSlot = 0;
 function presentedNow(): Presented {
@@ -322,8 +337,10 @@ function presentedNow(): Presented {
   return out;
 }
 const blended = createPresented(traffic.length);
-const presenter = createRenderInterpolator<Presented>((a, b, t) => blendPresentedInto(blended, a, b, t));
-presenter.reset(presentedNow());
+const presenter = createFixedStepPresenter<Presented>({
+  snapshot: presentedNow,
+  blend: (a, b, t) => blendPresentedInto(blended, a, b, t)
+});
 
 function simulate(steps: number, input: Keys = keys): void {
   for (let i = 0; i < steps; i++) simulateStep(input);
@@ -415,6 +432,7 @@ function placeNodes(dt: number, shown: Presented): void {
   const roll = -Math.max(-0.16, Math.min(0.16, view.steer * Math.min(1, Math.abs(view.speed) / 34) * 0.09 + 0.1 * view.lean));
   // GU47 WP-28 GC-AN1 (shift look): nose dips under braking, lifts under throttle, from the presented speed only
   const pitch = look.shift ? stepPitch(pitchState, view.speed, dt, document.body.classList.contains("reduced-motion")) : 0;
+  wheelSpin = (wheelSpin + (view.speed * dt) / 0.33) % (Math.PI * 2);
   const place = (id: string, ox: number, oy: number, oz: number, extra: [number, number, number] = [0, 0, 0]) => {
     const s = Math.sin(yaw);
     const c = Math.cos(yaw);
@@ -424,6 +442,13 @@ function placeNodes(dt: number, shown: Presented): void {
   };
   if (config.models) {
     place("car-rig", 0, 0, 0);
+    if (look.shift) {
+      const steerYaw = view.steer * 0.38;
+      place("courier-wheel-fl", -0.85, 0.33, 1.34, [wheelSpin, steerYaw, Math.PI / 2]);
+      place("courier-wheel-fr", 0.85, 0.33, 1.34, [wheelSpin, steerYaw, Math.PI / 2]);
+      place("courier-wheel-rl", -0.85, 0.33, -1.32, [wheelSpin, 0, Math.PI / 2]);
+      place("courier-wheel-rr", 0.85, 0.33, -1.32, [wheelSpin, 0, Math.PI / 2]);
+    }
   } else {
     place("car-paint", 0, 0, 0);
     place("car-detail", 0, 0, 0);
@@ -448,14 +473,23 @@ function placeNodes(dt: number, shown: Presented): void {
   stepChase(camState, { x: view.x, z: view.z, y: 0, heading: view.heading, speed: view.speed, boosting: car.boosting, shake: car.shake }, dt);
   // never put the eye inside a building at a corner (lesson M9)
   const eye = clearance.update(dt, { focus: [view.x, 1.4, view.z], eye: camState.eye, blocked: cameraBlocked });
-  shownEye = eye;
-  // GU47 WP-28 GC-C2: a 3 deg bank into a drift (shift look; 0 under reduced motion)
+  // Visual-only real-dt impact rig: trauma shake + roll + FOV kick (never touches fixed-step sim or replay)
+  const impact = impactRig.step(dt);
+  const hs = Math.sin(view.heading), hc = Math.cos(view.heading);
+  const shakenEye: [number, number, number] = [
+    eye[0] + impact.shakeOffset[0] * hc,
+    eye[1] + impact.shakeOffset[1],
+    eye[2] - impact.shakeOffset[0] * hs
+  ];
+  const finalEye = cameraBlocked(...shakenEye) ? eye : shakenEye;
+  shownEye = finalEye;
+  // GU47 WP-28 GC-C2: a 3 deg bank into a drift (shift look; 0 under reduced motion) + impact roll
   const wantBank = look.shift && car.drifting && !document.body.classList.contains("reduced-motion") ? -Math.sign(view.steer) * DRIFT_BANK : 0;
   bank += (wantBank - bank) * Math.min(1, dt * 4);
-  const hs = Math.sin(view.heading), hc = Math.cos(view.heading);
-  const up: [number, number, number] = [Math.sin(bank) * hc, Math.cos(bank), -Math.sin(bank) * hs];
-  if (look.shift) placeBoard(eye);
-  app!.camera!.setPose({ position: eye, target: [...camState.look], up, fov: camState.fov }, { cut: false });
+  const totalBank = bank + impact.shakeRoll;
+  const up: [number, number, number] = [Math.sin(totalBank) * hc, Math.cos(totalBank), -Math.sin(totalBank) * hs];
+  if (look.shift) placeBoard(finalEye);
+  app!.camera!.setPose({ position: finalEye, target: [...camState.look], up, fov: camState.fov + impact.fovDeltaDeg }, { cut: false });
 }
 
 /** GC-C1: the intro and the results orbit override the chase pose (camera only; a blocked eye falls back to chase). */
@@ -501,7 +535,7 @@ function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
     const live = !config.manual && game.phase === "playing";
-    const shown = live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow();
+    const shown = presenter.present({ alpha }, live);
     placeNodes(dt, shown);
     if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
     if (look.shift && game.phase !== "results") placeFlare(null);
@@ -549,6 +583,7 @@ for (let k = -8; k <= 7; k++) {
   const o = k * PITCH + 30;
   MINIMAP_GRID.push([o, -450, o, 506], [-450, o, 506, o]);
 }
+const RADAR_HALF = 195;
 function updateHud(): void {
   hud.nitro.style.width = `${Math.max(0, Math.min(100, 100 * car.boost))}%`;
   hud.nitro.style.background = car.boost < 0.22 ? "linear-gradient(90deg,#ff6a4a,#c0392b)" : "linear-gradient(90deg,#ffd27a,#ff8a2b)";
@@ -566,59 +601,78 @@ function updateHud(): void {
     hud.job.classList.toggle("low", job.timeLeft <= 10);
   } else hud.job.textContent = "";
   hud.drift.style.opacity = shift.drift > 0 ? "1" : "0";
-  hud.drift.textContent = `DRIFT  ${Math.round(shift.drift)}`;
+  hud.drift.parentElement?.style.setProperty("opacity", shift.drift > 0 ? "1" : "0");
+  hud.drift.textContent = `+${Math.round(shift.drift)}`;
   if (shiftLook) {
     const dial = hud.dial.getContext("2d");
     if (dial) drawDial(dial, hud.dial.width, kmh(), car.boost);
   }
   const ctx = hud.map.getContext("2d");
   if (!ctx) return;
+  // Player-centered ±195 m GPS radar window (6.5 x 6.5 avenues instead of 225 tiny blocks)
+  const rx0 = shiftLook ? Math.max(MINIMAP_BOUNDS[0], Math.min(MINIMAP_BOUNDS[2] - 2 * RADAR_HALF, car.x - RADAR_HALF)) : MINIMAP_BOUNDS[0];
+  const rz0 = shiftLook ? Math.max(MINIMAP_BOUNDS[1], Math.min(MINIMAP_BOUNDS[3] - 2 * RADAR_HALF, car.z - RADAR_HALF)) : MINIMAP_BOUNDS[1];
+  const radarBounds: [number, number, number, number] = shiftLook ? [rx0, rz0, rx0 + 2 * RADAR_HALF, rz0 + 2 * RADAR_HALF] : MINIMAP_BOUNDS;
   minimapCoins.length = 0;
-  for (const p of pickups) if (!p.taken && p.kind === "coin") minimapCoins.push([p.x, p.z]);
+  for (const p of pickups) {
+    if (!p.taken && p.kind === "coin" && p.x >= radarBounds[0] && p.x <= radarBounds[2] && p.z >= radarBounds[1] && p.z <= radarBounds[3]) {
+      minimapCoins.push([p.x, p.z]);
+    }
+  }
   drawCanvasMinimap(ctx, {
     size: 240,
-    bounds: MINIMAP_BOUNDS,
-    background: { fill: "rgba(38,30,26,.82)", radius: 18 },
+    bounds: radarBounds,
+    background: { fill: "rgba(22,19,20,.88)", radius: 18 },
     layers: [
       ...(shiftLook ? DISTRICT_LAYERS : []),
-      { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(255,226,175,.5)", width: 2.5 },
+      { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(245,224,186,.62)", width: shiftLook ? 4.2 : 2.5 },
       { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
-      { kind: "points", points: minimapCoins, fill: "#ffd15c", size: 2.8 }
+      { kind: "points", points: minimapCoins, fill: "#ffd15c", size: shiftLook ? 3.8 : 2.8 }
     ],
     marker: { x: car.x, z: car.z, heading: car.heading, fill: shiftLook ? COURIER_TEAL : "#ff9a2e" }
   });
-  // stars and hearts get their own shapes (a white diamond and a pink dot), the drop-off a cyan ring and an arrow
-  const mx = (x: number): number => ((x - MINIMAP_BOUNDS[0]) / (MINIMAP_BOUNDS[2] - MINIMAP_BOUNDS[0])) * 240;
-  const mz = (z: number): number => ((z - MINIMAP_BOUNDS[1]) / (MINIMAP_BOUNDS[3] - MINIMAP_BOUNDS[1])) * 240;
+  const mx = (x: number): number => ((x - radarBounds[0]) / (radarBounds[2] - radarBounds[0])) * 240;
+  const mz = (z: number): number => ((z - radarBounds[1]) / (radarBounds[3] - radarBounds[1])) * 240;
   for (const p of pickups) {
     if (p.taken || p.kind === "coin") continue;
     const x = mx(p.x), y = mz(p.z);
+    if (x < 8 || x > 232 || y < 8 || y > 232) continue;
     ctx.beginPath();
     if (p.kind === "star") {
       ctx.fillStyle = "#fff4c2";
-      ctx.moveTo(x, y - 5); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 4, y); ctx.closePath();
+      ctx.moveTo(x, y - 5.5); ctx.lineTo(x + 4.5, y); ctx.lineTo(x, y + 5.5); ctx.lineTo(x - 4.5, y); ctx.closePath();
     } else {
       ctx.fillStyle = "#ff7aa0";
-      ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+      ctx.arc(x, y, 4.2, 0, Math.PI * 2);
     }
     ctx.fill();
   }
   if (job) {
-    const jx = mx(job.x), jy = mz(job.z), cx = mx(car.x), cy = mz(car.z);
-    ctx.strokeStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
+    const rawJx = mx(job.x), rawJy = mz(job.z), cx = mx(car.x), cy = mz(car.z);
+    const dx = rawJx - cx, dy = rawJy - cy, len = Math.hypot(dx, dy);
+    const accent = shiftLook ? COURIER_TEAL : "#5ce1ff";
+    const inFrame = rawJx >= 14 && rawJx <= 226 && rawJy >= 14 && rawJy <= 226;
+    const bx = inFrame ? rawJx : Math.max(16, Math.min(224, cx + (dx / (len || 1)) * 98));
+    const by = inFrame ? rawJy : Math.max(16, Math.min(224, cy + (dy / (len || 1)) * 98));
+    ctx.strokeStyle = accent;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(jx, jy, 7, 0, Math.PI * 2);
+    ctx.arc(bx, by, inFrame ? 8 : 6.5, 0, Math.PI * 2);
     ctx.stroke();
-    const dx = jx - cx, dy = jy - cy, len = Math.hypot(dx, dy);
+    if (inFrame) {
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(bx, by, 13, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     if (len > 22) {
       const ux = dx / len, uy = dy / len;
-      const tipX = cx + ux * 20, tipY = cy + uy * 20;
-      ctx.fillStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
+      const tipX = cx + ux * 24, tipY = cy + uy * 24;
+      ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.moveTo(tipX, tipY);
-      ctx.lineTo(tipX - ux * 8 - uy * 5, tipY - uy * 8 + ux * 5);
-      ctx.lineTo(tipX - ux * 8 + uy * 5, tipY - uy * 8 - ux * 5);
+      ctx.lineTo(tipX - ux * 9 - uy * 5.5, tipY - uy * 9 + ux * 5.5);
+      ctx.lineTo(tipX - ux * 9 + uy * 5.5, tipY - uy * 9 - ux * 5.5);
       ctx.closePath();
       ctx.fill();
     }
@@ -739,8 +793,11 @@ function restart(): void {
   Object.assign(keys, NO_KEYS);
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   clearance.reset();
+  impactRig.reset();
+  wasImpactDrifting = false;
+  wasImpactBoosting = false;
   shiftRuntime?.reset();
-  presenter.reset(presentedNow());
+  presenter.reset();
   placeDropoff();
   $("results").classList.add("hidden");
   $("pause").classList.add("hidden");
@@ -780,6 +837,8 @@ qa.__diag = () => ({ solids: solids.length, bots: 0, traffic: traffic.length, pi
 qa.__tp = (x: number, z: number, heading?: number) => {
   teleport(car, x, z, heading);
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
+  presenter.reset();
+  impactRig.reset();
   syncQa();
 };
 qa.__sim = (steps: number, input: Partial<Keys> | undefined, dt?: number) => {
@@ -910,13 +969,14 @@ const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRe
 async function boot(): Promise<void> {
   mark("module");
   if (config.ies) iesProfile = (await import("./headlightProfile")).headlightProfile();
+  const cinemaWarmLut = createGradingLut("cinema-warm");
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
-    output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false, ...lab.output },
+    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.45 } } as Record<string, unknown>), ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: buildScene()
   });
@@ -967,7 +1027,7 @@ const loop = createFixedStepLoop({
       simulateStep(manualInput);
       followCamera(1);
     } else simulate(1);
-    presenter.push(presentedNow());
+    presenter.afterStep();
   }
 });
 

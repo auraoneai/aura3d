@@ -17,87 +17,35 @@
     <meta name="twitter:title" content="Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase" />
     <meta name="twitter:description" content="San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored…" />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/teleoperator@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Grid Dispatch","url":"https://aura3d.auraone.ai/apps/showcase-teleoperator/","description":"San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/teleoperator@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Grid Dispatch","url":"https://aura3d.auraone.ai/apps/showcase-teleoperator/","description":"San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/teleoperator@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
-      @font-face {
-        font-family: "Graphik";
-        src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "Graphik";
-        src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "Graphik";
-        src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
-        font-weight: 600;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "DIN Pro";
-        src: url("/fonts/din-pro/DINPro-Regular.woff") format("woff");
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "DIN Pro";
-        src: url("/fonts/din-pro/DINPro-Medium.woff") format("woff");
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "DIN Pro";
-        src: url("/fonts/din-pro/DINPro-Bold.woff") format("woff");
-        font-weight: 600;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: "TT Commons Pro Mono";
-        src: url("/fonts/tt-commons-mono/TT-Commons-Pro-Mono-Regular.woff2") format("woff2");
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-
       :root {
-        --font-ui: "Whitney", "Graphik", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-metric: "DIN Pro", "Whitney", "Graphik", sans-serif;
-        --font-code: "Monument Grotesk Mono", "TT Commons Pro Mono", ui-monospace, Menlo, monospace;
+        --font-code: var(--font-mono);
         --font: var(--font-ui);
         --disp: var(--font-metric);
-        --mono: var(--font-code);
+        --mono: var(--font-mono);
 
         --ink: #f3f4f1;
-        --ink-2: rgba(243, 244, 241, 0.76);
-        --ink-3: rgba(243, 244, 241, 0.54);
-        --dim: rgba(243, 244, 241, 0.68);
-        --glass: rgba(9, 12, 18, 0.76);
-        --glass-strong: rgba(8, 11, 16, 0.88);
+        --ink-2: rgba(243, 244, 241, 0.78);
+        --ink-3: rgba(243, 244, 241, 0.58);
+        --dim: rgba(243, 244, 241, 0.7);
+        --glass: rgba(9, 13, 20, 0.78);
+        --glass-strong: rgba(8, 11, 17, 0.9);
         --line: rgba(255, 255, 255, 0.12);
-        --line-strong: rgba(255, 255, 255, 0.24);
+        --line-strong: rgba(255, 255, 255, 0.22);
         --acc: #3fd6c6;
         --acc2: #ffb347;
         --nos: #43d17a;
         --ok: #43d17a;
         --warn: #ffb347;
         --bad: #ff5a4f;
-        --r-sm: 8px;
-        --r-md: 12px;
+        --r-sm: 6px;
+        --r-md: 10px;
         --r-pill: 999px;
-        --sh-1: 0 6px 20px rgba(0, 0, 0, 0.36);
-        --sh-2: 0 14px 40px rgba(0, 0, 0, 0.48);
-        --blur: blur(14px) saturate(1.25);
+        --sh-1: 0 6px 20px rgba(0, 0, 0, 0.38);
+        --sh-2: 0 14px 36px rgba(0, 0, 0, 0.5);
+        --blur: blur(14px) saturate(1.2);
       }
 
       * {
@@ -116,6 +64,7 @@
         font-size: 13px;
         line-height: 1.4;
         font-synthesis: none;
+        font-variant-numeric: tabular-nums;
         overflow: hidden;
         user-select: none;
         -webkit-user-select: none;
@@ -179,14 +128,15 @@
         color: var(--acc);
         font-family: var(--font-ui);
         font-weight: 600;
-        font-size: 11px;
-        letter-spacing: 0.04em;
+        font-size: 12px;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
       }
 
       #where .coords {
         margin-left: auto;
-        font-family: var(--font-code);
-        font-size: 11px;
+        font-family: var(--font-mono);
+        font-size: 12px;
         color: var(--ink-3);
         font-variant-numeric: tabular-nums;
       }
@@ -200,7 +150,8 @@
       }
 
       #where .x {
-        font-family: var(--font-code);
+        font-family: var(--font-ui);
+        font-weight: 500;
         font-size: 12px;
         color: var(--acc2);
       }
@@ -249,9 +200,10 @@
       .tx .tg {
         font-family: var(--font-ui);
         font-weight: 600;
-        font-size: 11px;
+        font-size: 12px;
+        font-variant-caps: all-small-caps;
         color: var(--acc);
-        letter-spacing: 0.04em;
+        letter-spacing: 0.05em;
       }
 
       .tx .style-toggle {
@@ -261,9 +213,9 @@
         color: var(--ink);
         font-family: var(--font-ui);
         font-weight: 500;
-        font-size: 11px;
-        height: 22px;
-        padding: 0 9px;
+        font-size: 12px;
+        height: 24px;
+        padding: 0 10px;
         border-radius: var(--r-pill);
         cursor: pointer;
         transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -336,10 +288,19 @@
       .tx .leg em {
         font-family: var(--font-metric);
         font-weight: 500;
-        font-size: 12px;
+        font-size: 13px;
         font-style: normal;
         color: var(--acc);
         font-variant-numeric: tabular-nums;
+      }
+
+      .tx .leg .leg-tag {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 12px;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
+        color: var(--acc2);
       }
 
       .tx .dot {
@@ -389,7 +350,7 @@
       }
 
       #taxiTrip .row small {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
       }
 
@@ -402,7 +363,7 @@
       }
 
       #taxiTrip .cf small {
-        font-size: 11px;
+        font-size: 12px;
         margin: 0;
         color: var(--ink-2);
       }
@@ -612,21 +573,21 @@
       #mpPanel .mpList li small {
         margin-left: auto;
         color: var(--dim);
-        font-family: var(--font-metric);
+        font-family: var(--font-ui);
         font-size: 12px;
         font-variant-numeric: tabular-nums;
       }
 
       #mpPanel .mpList li button {
-        height: 24px;
-        padding: 0 8px;
+        height: 28px;
+        padding: 0 10px;
         border-radius: 4px;
         border: 1px solid var(--acc);
         background: rgba(63, 214, 198, 0.12);
         color: var(--acc);
         font-family: var(--font-ui);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
         cursor: pointer;
       }
 
@@ -637,14 +598,14 @@
 
       #mpPanel .mpLink input {
         width: 100%;
-        height: 30px;
+        height: 32px;
         padding: 0 8px;
         border-radius: 6px;
         border: 1px solid var(--line-strong);
         background: rgba(0, 0, 0, 0.4);
         color: var(--ink);
-        font-family: var(--font-code);
-        font-size: 11px;
+        font-family: var(--font-mono);
+        font-size: 12px;
         margin-bottom: 8px;
       }
 
@@ -708,14 +669,14 @@
       .mpTag small {
         font-family: var(--font-ui);
         font-weight: 400;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-2);
       }
 
       .mpTag i {
         font-family: var(--font-metric);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
         font-style: normal;
         color: var(--acc2);
         font-variant-numeric: tabular-nums;
@@ -783,11 +744,11 @@
 
       #taxiHint {
         left: 50%;
-        bottom: 92px;
+        bottom: 122px;
         transform: translateX(-50%);
-        background: rgba(6, 10, 16, 0.82);
-        border: 1px solid rgba(63, 214, 198, 0.45);
-        padding: 5px 14px;
+        background: rgba(6, 10, 16, 0.86);
+        border: 1px solid rgba(63, 214, 198, 0.55);
+        padding: 6px 15px;
         border-radius: var(--r-pill);
         font-family: var(--font-ui);
         font-weight: 500;
@@ -904,12 +865,12 @@
       /* Bottom-Left Vector Minimap (#mini / #miniC) */
       #mini {
         left: 16px;
-        bottom: 92px;
+        bottom: 126px;
         width: 172px;
         height: 172px;
         border-radius: 50%;
         overflow: hidden;
-        background: rgba(8, 11, 16, 0.85);
+        background: rgba(8, 11, 16, 0.86);
         border: 2px solid rgba(255, 255, 255, 0.72);
         box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), var(--sh-2);
         pointer-events: auto;
@@ -926,7 +887,7 @@
       #teleopDock {
         position: fixed;
         left: 16px;
-        bottom: 14px;
+        bottom: 44px;
         z-index: 8;
         display: flex;
         flex-direction: column;
@@ -950,8 +911,11 @@
       }
 
       #teleopDock .dock-label {
-        font-family: var(--font-code);
-        font-size: 11px;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 12px;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
         color: var(--ink-3);
         margin-right: 3px;
       }
@@ -1070,7 +1034,7 @@
         fill: rgba(255, 255, 255, 0.82);
         font-family: var(--font-metric);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
         text-anchor: middle;
         dominant-baseline: central;
       }
@@ -1108,7 +1072,7 @@
       #dialC {
         position: absolute;
         left: 50%;
-        top: 51%;
+        top: 46%;
         transform: translate(-50%, -50%);
         text-align: center;
         line-height: 1;
@@ -1126,7 +1090,9 @@
       #unit {
         font-family: var(--font-ui);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.04em;
         color: var(--dim);
         margin-top: 4px;
         cursor: pointer;
@@ -1134,14 +1100,14 @@
 
       #gear {
         display: inline-block;
-        margin-top: 8px;
+        margin-top: 6px;
         min-width: 28px;
         padding: 3px 7px 2px;
         border-radius: 5px;
         background: rgba(255, 255, 255, 0.14);
         border: 1px solid rgba(255, 255, 255, 0.28);
-        font-family: var(--font-metric);
-        font-weight: 500;
+        font-family: var(--font-ui);
+        font-weight: 600;
         font-size: 15px;
         color: var(--ink);
       }
@@ -1155,7 +1121,7 @@
         gap: 5px;
         font-family: var(--font-ui);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
       }
 
       #aids button {
@@ -1213,11 +1179,18 @@
       #gmode {
         position: absolute;
         left: 50%;
-        top: 81%;
+        top: auto;
+        bottom: -6px;
         transform: translateX(-50%);
-        font-family: var(--font-code);
-        font-size: 10px;
-        color: var(--dim);
+        padding: 2px 8px;
+        border-radius: var(--r-pill);
+        background: rgba(8, 11, 17, 0.86);
+        border: 1px solid var(--line);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--ink-2);
+        white-space: nowrap;
+        letter-spacing: 0.03em;
       }
 
       /* Toast notification (#toast) */
@@ -1248,8 +1221,8 @@
       }
 
       #toast small {
-        font-family: var(--font-code);
-        font-size: 11px;
+        font-family: var(--font-mono);
+        font-size: 12px;
         color: var(--acc2);
       }
 
@@ -1268,31 +1241,31 @@
         #where { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; }
         #where .coords, #where #wX { display: none; }
         #topRightCluster { left: 8px; right: 8px; top: calc(62px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
-        /* Fare card and active trip: a compact bottom sheet (about 18% of the height), tap the title to collapse it to one line. */
+        /* Fare card and active trip: a compact sheet (18% of height), tap the title to collapse it to one line. */
         /* Fare card and trip sit under the earnings row, clear of the dial and the touch pads (C15). */
-        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 20vh; overflow: hidden; }
+        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
         #taxiCard.on, #taxiTrip.on { transform: none; }
-        #taxiCard.min, #taxiTrip.min { max-height: 34px; }
+        #taxiCard.min, #taxiTrip.min { max-height: 36px; }
         .tx .tx-head { margin-bottom: 4px; }
-        .tx .tx-head .tg { cursor: pointer; }
+        .tx .tx-head .tg { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
         .tx .tx-head .tg::after { content: " \25BE"; }
         .tx.min .tx-head .tg::after { content: " \25B4"; }
         .tx .who small, .tx .leg small, .tx .dst small, .tx .row small, .tx .cf small { display: none; }
         .tx .who { gap: 8px; }
         .tx .leg, .tx .dst { padding: 2px 0; }
-        #taxiPen { top: calc(108px + 20vh + 10px + env(safe-area-inset-top, 0px)); }
-        #taxiHint { top: calc(108px + 20vh + 64px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
+        #taxiPen { top: calc(108px + 18vh + 10px + env(safe-area-inset-top, 0px)); }
+        #taxiHint { top: calc(108px + 18vh + 60px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
         #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
         #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #menu { flex: 0 0 auto; gap: 4px; }
-        #menu button { padding: 0 9px; white-space: nowrap; min-height: 44px; }
-        #teleopDock button { height: 44px; }
+        #menu button { padding: 0 10px; white-space: nowrap; min-height: 44px; min-width: 44px; }
+        #teleopDock button { min-height: 44px; min-width: 44px; }
         #aids { display: none; }
         #mpCountLabel { display: none; }
         #mini { display: none; }
-        #hud { right: 6px; bottom: 6px; transform: scale(0.7); transform-origin: bottom right; }
+        #hud { right: 6px; bottom: 10px; transform: scale(0.7); transform-origin: bottom right; }
         #teleopDock { left: 8px; right: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 16px); padding: 4px 6px; gap: 4px; }
-        #dockToggle { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; }
+        #dockToggle { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 14px; }
         #teleopDock[data-collapsed="true"] .dock-row { display: none; }
         #teleopDock[data-collapsed="false"] { right: 8px; bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
         #teleopDock .dock-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -1306,10 +1279,9 @@
       .mpTag { appearance: none; font: inherit; }
       .mpTag.chip { padding: 2px 8px; gap: 0; opacity: 0.85; }
       .mpTag.chip small, .mpTag.chip i { display: none; }
-      .mpTag.chip b { font-size: 11px; }
+      .mpTag.chip b { font-size: 12px; }
       .tx .style-toggle[disabled] { opacity: 0.7; cursor: default; }
       .tx .who > div, .tx .leg > div, #taxiTrip .dst > div { min-width: 0; flex: 1 1 auto; }
-      #gmode { white-space: nowrap; font-size: 9px; letter-spacing: 0.02em; }
       #taxiTrip .row b.late, .late { color: var(--bad); font-style: normal; }
       #menu #muteBtn[aria-pressed="true"] { opacity: 0.7; }
       #results { left: 50%; top: 50%; transform: translate(-50%, -46%) scale(0.97); width: min(360px, 90vw); background: rgba(8, 12, 18, 0.95); border: 1px solid var(--line-strong); border-radius: var(--r-md); padding: 16px 18px; box-shadow: var(--sh-2); pointer-events: none; z-index: 12; }
@@ -1328,7 +1300,8 @@
       #opBezel .tr { right: 6px; top: 6px; border-right-width: 2px; border-top-width: 2px; }
       #opBezel .bl { left: 6px; bottom: 6px; border-left-width: 2px; border-bottom-width: 2px; }
       #opBezel .bri { right: 6px; bottom: 6px; border-right-width: 2px; border-bottom-width: 2px; }
-      #opBezel .strip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 3px 10px; border-radius: var(--r-sm); background: rgba(6, 10, 16, 0.72); color: #ebf2f6; font: 500 11px var(--font-metric); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #opBezel .strip { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 3px 12px; border-radius: var(--r-sm); background: rgba(6, 10, 16, 0.72); border: 1px solid rgba(235, 242, 246, 0.14); color: #ebf2f6; font: 400 12px var(--font-mono); letter-spacing: 0.05em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #opBezel .rec-lbl { font: 600 12px var(--font-ui); font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: #ff6b63; }
       #opBezel .rec { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
       #opBezel .rec.off { background: rgba(255, 59, 48, 0.25); }
       #opBezel .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
@@ -1336,7 +1309,7 @@
       #opBezel .bars i:nth-child(1) { height: 3px; } #opBezel .bars i:nth-child(2) { height: 5px; } #opBezel .bars i:nth-child(3) { height: 7px; } #opBezel .bars i:nth-child(4) { height: 10px; }
       #opBezel .bars[data-bars="3"] i:nth-child(4), #opBezel .bars[data-bars="2"] i:nth-child(n+3) { background: rgba(235, 242, 246, 0.25); }
       body.touch #opBezel .strip { display: none; }
-      @media (max-width: 760px) { #opBezel .strip { left: 8px; bottom: 8px; transform: none; gap: 6px; font-size: 10px; max-width: 200px; } #opBezel .br { width: 18px; height: 18px; } }
+      @media (max-width: 760px) { #opBezel .strip { left: 8px; bottom: 8px; transform: none; gap: 6px; font-size: 12px; max-width: calc(100vw - 170px); overflow: hidden; } #opBezel #bzLat { display: none; } #opBezel .br { width: 18px; height: 18px; } }
       /* GD-18: warnings are amber, objectives teal; rival tags are bracketed in feed white, not teal */
       #wrongWay { background: rgba(255, 179, 71, 0.92); border-color: var(--warn); color: #120c03; top: 38%; }
       #brakeCue { background: rgba(255, 179, 71, 0.92); color: #120c03; box-shadow: 0 0 16px 3px rgba(255, 179, 71, 0.45); }
@@ -1358,8 +1331,8 @@
       #touchPads .pad-brake { right: calc(252px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
       #touchPads .pad-throttle { right: calc(252px + env(safe-area-inset-right, 0px)); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); background: rgba(67, 209, 122, 0.35); }
       body.touch #mini { display: none; }
-      @media (pointer: coarse) {
-        #teleopDock button, #menu button, #mpPanel button, .tx .style-toggle { min-height: 44px; }
+      @media (pointer: coarse), (max-width: 760px) {
+        #teleopDock button, #dockToggle, #menu button, #mpPanel button, #mpPanel .mpX, #aids button, .tx .style-toggle, #results .resBtns button { min-height: 44px; min-width: 44px; }
         #unit { min-width: 63px; min-height: 63px; }
       }
       @media (max-width: 760px) {
@@ -1368,7 +1341,7 @@
         #touchPads .pad-right { left: calc(80px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
         #touchPads .pad-brake { right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
         #touchPads .pad-throttle { right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
-        body.touch #hud { right: 50%; bottom: 6px; transform: translateX(50%) scale(0.7); transform-origin: bottom center; }
+        body.touch #hud { right: 50%; bottom: 10px; transform: translateX(50%) scale(0.7); transform-origin: bottom center; }
         body.touch #teleopDock { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
         body.touch #teleopDock[data-collapsed="false"] { bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
       }
@@ -1386,8 +1359,8 @@
         gap: 10px;
         background: radial-gradient(circle at 50% 42%, #131c29 0%, #070b10 100%);
         color: #f8fafc;
-        font-family: var(--font-display, sans-serif);
-        letter-spacing: 0.14em;
+        font-family: var(--font-ui);
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         transition: opacity 0.25s ease;
       }
@@ -1402,8 +1375,8 @@
   <body class="play">
     <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Grid Dispatch — an Aura3D browser game</h1>
     <div id="boot" class="boot">
-      <div style="font-size:18px;font-weight:700;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
-      <div style="font-size:11px;opacity:0.78;">LOADING THE FLEET AND THE AVENUE...</div>
+      <div style="font-size:18px;font-weight:600;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
+      <div style="font-size:12px;font-weight:500;opacity:0.8;">INITIALIZING FLEET TELEMETRY &amp; CORRIDOR…</div>
       <div id="bootBar" class="boot-bar" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="bootFill"></i></div>
     </div>
     <div id="view">
@@ -1471,10 +1444,10 @@
       </div>
     </div>
 
-    <!-- GD-18 operator-console bezel: corner brackets, REC dot, camera label, feed clock and link bars -->
+    <!-- GD-18 operator-console bezel: corner brackets, REC dot, unit ID, camera label, link latency, feed clock and link bars -->
     <div class="ov" id="opBezel" aria-hidden="true">
       <i class="br tl"></i><i class="br tr"></i><i class="br bl"></i><i class="br bri"></i>
-      <div class="strip" id="bzStrip"><b class="rec" id="bzRec"></b><span>REC</span><span id="bzCam">CAM 1 · CHASE</span><span id="bzClock">19:42:00</span><span class="bars" id="bzBars" data-bars="4"><i></i><i></i><i></i><i></i></span></div>
+      <div class="strip" id="bzStrip"><b class="rec" id="bzRec"></b><span class="rec-lbl">REC</span><span id="bzUnit">AV-01</span><span id="bzCam">CAM 1 · CHASE</span><span id="bzLat">LAT 18ms</span><span id="bzClock">19:42:00</span><span class="bars" id="bzBars" data-bars="4"><i></i><i></i><i></i><i></i></span></div>
     </div>
 
     <!-- Floating rival tags -->

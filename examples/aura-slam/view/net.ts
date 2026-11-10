@@ -15,14 +15,15 @@
 import { game, geometry, material, type AuraAssetRef, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { COURT_X, NET_POST_X } from "./constants";
 import { slamTextureAssets } from "./assets";
+import { netMeshShaderSpec } from "./shaders";
 import { mergeBoxes } from "./statics";
 import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 
 export const NET_MESH_ID = "net-mesh";
 export const NET_TAPE_ID = "net-tape";
-/** Side of one net square (metres; a tennis net square is 3.5-4.5 cm). */
-export const NET_CELL = 0.045;
+/** Side of one net square (metres; WP-01 derivative-filtered 4.2 cm braided cord square). */
+export const NET_CELL = 0.042;
 /** Squares per side of the authored tile (`tools/gen-textures.mjs`). */
 export const NET_TILE_CELLS = 4;
 /** Mean alpha of the tile: what the net averages to once a square is smaller than a pixel. */
@@ -98,23 +99,28 @@ export function netMeshMaterial(texture: AuraAssetRef<"texture"> = slamTextureAs
   });
 }
 
+/** WP-01: Dual-backend (GLSL 3.00 + WGSL) derivative-antialiased 4.2 cm braided cord net shader material. */
+export function netMeshCustomMaterial(): AuraMaterialSpec {
+  return material.custom(netMeshShaderSpec({ cellCells: NET_TILE_CELLS }));
+}
+
 /** The World Tour net node (1 draw, no shadow: the 4.6.1 net cast none either). */
 export function buildNetMeshNode(): NodeInput {
   return geometry
-    .custom(netMeshGeometry(), { name: NET_MESH_ID, material: netMeshMaterial(), castShadow: false })
+    .custom(netMeshGeometry(), { name: NET_MESH_ID, material: netMeshCustomMaterial(), castShadow: false })
     .runtime(game.runtimeNode(NET_MESH_ID)) as unknown as NodeInput;
 }
 
 /**
- * TT-AN2: deform the existing mesh and its merged tape together, without adding draws or touching the simulation.
- * A rising netTouched flag is produced by both a tape graze and a net hit. The 0.3 s pulse peaks at 3 cm,
- * is pinned at the posts, and resets on reduced motion. Attribute uploads retain the original vertex counts.
+ * TT-AN2 + WP-01: deform the existing mesh and its merged tape together and drive the `uNetImpact` elastic
+ * ripple uniform on the paired GLSL+WGSL net shader without adding draws or touching the simulation.
  */
 export function createNetCordMotion(mesh: AuraRuntimeNodeHandle, tape: AuraRuntimeNodeHandle) {
   const meshBase = Float32Array.from((netMeshGeometry() as unknown as { positions: number[] }).positions);
   const tapeBase = Float32Array.from((mergeBoxes(netTapeParts()) as unknown as { positions: number[] }).positions);
   const meshPositions = meshBase.slice();
   const tapePositions = tapeBase.slice();
+  const uniformSink = mesh as AuraRuntimeNodeHandle & { setUniform?: (name: string, value: unknown) => void };
   let touched = false;
   let elapsed = Infinity;
   let hitX = 0;
@@ -148,10 +154,12 @@ export function createNetCordMotion(mesh: AuraRuntimeNodeHandle, tape: AuraRunti
         write(tapeBase, tapePositions, amount);
         mesh.updateAttribute?.("position", { array: meshPositions });
         tape.updateAttribute?.("position", { array: tapePositions });
+        uniformSink.setUniform?.("uNetImpact", [hitX, amount, elapsed, direction]);
         displaced = true;
       } else if (displaced) {
         mesh.updateAttribute?.("position", { array: meshBase });
         tape.updateAttribute?.("position", { array: tapeBase });
+        uniformSink.setUniform?.("uNetImpact", [0, 0, 0, 0]);
         displaced = false;
       }
     }

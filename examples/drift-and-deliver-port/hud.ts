@@ -1,7 +1,7 @@
 /**
- * GU47 WP-28 GC-H1: the dispatch HUD of the shift look (paper ticket card, DELIVERED stamp, analog speed dial and a
- * district-tinted minimap). Pure helpers plus two small DOM writers; `?look=original` never calls them, so the
- * 4.6.1 HUD stays as it was. Fonts come from `/fonts/local.css` only (Graphik Web, TT Commons Pro Mono).
+ * GU47 WP-28 GC-H1: the dispatch HUD of the shift look (ticket card, DELIVERED stamp, analog speed dial and a
+ * district-tinted GPS radar minimap). Pure helpers plus two small DOM writers; `?look=original` never calls them.
+ * Licensed AuraOne fonts come from `hud-tokens.css` and `/fonts/local.css` (Whitney, DIN Pro, Monument Grotesk Mono).
  */
 import { BLOCK_HALF, type Block, type District } from "./world";
 import { COURIER_TEAL } from "./fx";
@@ -54,45 +54,45 @@ export interface DialContext {
   fillStyle: string | CanvasGradient | CanvasPattern;
 }
 
-/** Analog dial: cream ticks every 20 km/h, a nitro arc in sodium, a courier-teal needle. */
+/** Analog dial: cream ticks every 20 km/h, a nitro arc in sodium, a courier-teal needle, with an open lower bezel for the DIN Pro speed readout. */
 export function drawDial(ctx: DialContext, size: number, kmh: number, boost: number): void {
   const c = size / 2;
-  const r = c - 6;
+  const r = c - 7;
   ctx.clearRect(0, 0, size, size);
   ctx.lineCap = "round";
   ctx.lineWidth = 6;
-  ctx.strokeStyle = "rgba(38,30,26,.62)";
+  ctx.strokeStyle = "rgba(22,19,20,.72)";
   ctx.beginPath();
   ctx.arc(c, c, r, DIAL_START, DIAL_START + DIAL_SWEEP);
   ctx.stroke();
   const b = Math.max(0, Math.min(1, boost));
   if (b > 0) {
     ctx.strokeStyle = b < 0.22 ? "#ff3b3b" : "#ffb347";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.arc(c, c, r + 1, DIAL_START, DIAL_START + DIAL_SWEEP * b);
+    ctx.arc(c, c, r + 1.5, DIAL_START, DIAL_START + DIAL_SWEEP * b);
     ctx.stroke();
   }
-  ctx.strokeStyle = "rgba(239,227,207,.9)";
+  ctx.strokeStyle = "rgba(239,227,207,.88)";
   for (let v = 0; v <= DIAL_MAX; v += 20) {
     const a = dialAngle(v);
-    const inner = v % 100 === 0 ? r - 14 : r - 9;
-    ctx.lineWidth = v % 100 === 0 ? 3 : 2;
+    const inner = v % 100 === 0 ? r - 12 : r - 7.5;
+    ctx.lineWidth = v % 100 === 0 ? 2.6 : 1.7;
     ctx.beginPath();
     ctx.moveTo(c + Math.cos(a) * inner, c + Math.sin(a) * inner);
-    ctx.lineTo(c + Math.cos(a) * (r - 3), c + Math.sin(a) * (r - 3));
+    ctx.lineTo(c + Math.cos(a) * (r - 2.5), c + Math.sin(a) * (r - 2.5));
     ctx.stroke();
   }
   const a = dialAngle(kmh);
   ctx.strokeStyle = COURIER_TEAL;
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 3.5;
   ctx.beginPath();
-  ctx.moveTo(c - Math.cos(a) * 8, c - Math.sin(a) * 8);
-  ctx.lineTo(c + Math.cos(a) * (r - 10), c + Math.sin(a) * (r - 10));
+  ctx.moveTo(c + Math.cos(a) * 6, c + Math.sin(a) * 6);
+  ctx.lineTo(c + Math.cos(a) * (r - 11), c + Math.sin(a) * (r - 11));
   ctx.stroke();
   ctx.fillStyle = "#efe3cf";
   ctx.beginPath();
-  ctx.arc(c, c, 5, 0, Math.PI * 2);
+  ctx.arc(c, c, 3.8, 0, Math.PI * 2);
   ctx.fill();
 }
 

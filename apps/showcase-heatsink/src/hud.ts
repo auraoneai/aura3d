@@ -65,7 +65,8 @@ export function createHud(doc: Document) {
     speed: $("h-speed"), ab: $("h-ab"), heat: $("h-heat"), shield: $("h-shield"), gun: $("h-gun"),
     lock: $("lock"), lockLabel: $("lock-label"), incoming: $("incoming"),
     msg: $("msg"), msgText: $("msg-text"), msgSub: $("msg-sub"), banner: $("banner"), hyper: $("hyper-status"),
-    autopilot: $("h-autopilot"), speedLines: $("speed-lines"), heatGlaze: $("heat-glaze"), damageGlaze: $("damage-glaze"), core: $("h-core"),
+    autopilot: $("h-autopilot"), speedLines: $("speed-lines"), heatGlaze: $("heat-glaze"), damageGlaze: $("damage-glaze"), core: $("h-core"), heatPct: $("h-heat-pct"),
+    setupToggle: $<HTMLButtonElement>("h-setup-toggle"), topBar: doc.querySelector<HTMLElement>(".aura3d-top-bar"),
     countdown: $("countdown"), results: $("results"), start: $("start"), boot: $("boot"),
     minimap: $<HTMLCanvasElement>("minimap"), app: $("app"), mute: doc.querySelector<HTMLElement>("[data-touch=mute]")
   };
@@ -155,10 +156,23 @@ export function createHud(doc: Document) {
           btn.addEventListener("click", () => { fn(btn); btn.blur(); });
         });
       };
-      bind("#drone-bar [data-drone]", (b) => cb.onDrone(b.dataset.drone as DroneId));
-      bind("#circuit-bar [data-circuit]", (b) => cb.onCircuit(b.dataset.circuit as CircuitId));
-      bind("#mode-bar [data-mode]", (b) => cb.onMode(b.dataset.mode as ModeId));
+      const closeCompactSetup = (): void => {
+        if (!el.topBar || !el.setupToggle) return;
+        toggle(el.topBar, "setup-open", false);
+        el.setupToggle.setAttribute("aria-expanded", "false");
+        text(el.setupToggle, "SETUP ▾");
+      };
+      bind("#drone-bar [data-drone]", (b) => { cb.onDrone(b.dataset.drone as DroneId); closeCompactSetup(); });
+      bind("#circuit-bar [data-circuit]", (b) => { cb.onCircuit(b.dataset.circuit as CircuitId); closeCompactSetup(); });
+      bind("#mode-bar [data-mode]", (b) => { cb.onMode(b.dataset.mode as ModeId); closeCompactSetup(); });
       bind("#h-restart", () => cb.onRestart());
+      bind("#h-setup-toggle", () => {
+        if (!el.topBar || !el.setupToggle) return;
+        const next = !el.topBar.classList.contains("setup-open");
+        toggle(el.topBar, "setup-open", next);
+        el.setupToggle.setAttribute("aria-expanded", next ? "true" : "false");
+        text(el.setupToggle, next ? "SETUP ▴" : "SETUP ▾");
+      });
       bind("#h-autopilot", () => cb.onAutopilot());
       bind("#results-restart", () => cb.onResultsRestart());
       bind("#results-drone", () => toggle($("results-garage"), "open", true));
@@ -291,6 +305,8 @@ export function createHud(doc: Document) {
       toggle(el.heat, "overheat", p.overheated);
       text(el.core, String(coreTemperatureC(p.heat)));
       toggle(el.core, "hot", p.heat >= 80);
+      text(el.heatPct, `${Math.round(Math.max(0, Math.min(100, p.heat)))}%`);
+      toggle(el.heatPct, "hot", p.heat >= 80);
       style(el.shield, "width", pct(p.shield));
       style(el.gun, "width", pct(p.gun));
       text(el.item, p.item ?? "— NONE —");

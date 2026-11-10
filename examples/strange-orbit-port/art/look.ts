@@ -67,43 +67,31 @@ export function lightPosition(elevationDeg: number, azimuthDeg: number, distance
  */
 export const GIANT_POSITION: Vec3 = [-880, 70, 120];
 
+/** Sunlit crescent Earthrise sphere suspended above the forward-east crater rim. */
+export const EARTHRISE_POSITION: Vec3 = [540, 152, 490];
+
 export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
   gouache: {
     id: "gouache",
-    timeOfDay: "permanent planet-rise, low white sun",
-    sky: "ink-teal dome with jade and terracotta dust + banded peach-terracotta gas giant (no moon), captured into the environment probe",
-    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
+    timeOfDay: "permanent planet-rise and crescent earthrise, low grazing rim sun",
+    sky: "ink-teal lunar sky with jade-terracotta nebula dust, banded ochre gas giant, and sunlit crescent Earthrise captured into the environment probe",
+    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff4e6", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
-    // GU47 phase 3 (rubric lighting 5 / shadows 3: "flat, even"): key 3.0 -> 3.5 with the hemisphere fill kept at 0.95 (0.75
-    // dropped the software-WebGL2 frame mean from 62.6 to 38.4 in g15p3-r2; 0.9 at +0.9 EV read 53.9 in g15p3-r5,
-    // 0.95 at +1.15 EV read 59.3 in g15p3-r7), so the
-    // low key models the riders and its shadow side reads.
-    hemisphere: { sky: "#cfd6cc", ground: "#2a3a48", intensity: 0.95 },
-    environment: { kind: "capture", intensity: 0.5 },
-    // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.0017 hazes
-    // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
-    fog: { color: "#2a4650", density: 0.0021, maxOpacity: 0.78, heightMist: 1 },
+    // Cool Earthshine from the crescent Earthrise overhead paired with shadowed iron-basalt regolith bounce.
+    hemisphere: { sky: "#76acff", ground: "#2a1c17", intensity: 0.88 },
+    environment: { kind: "capture", intensity: 0.56 },
+    // Crisp vacuum-edge crater basin mist so the 600-900 m stratified crater wall and spires separate cleanly in depth.
+    fog: { color: "#26414d", density: 0.0019, maxOpacity: 0.76, heightMist: 1 },
     post: {
-      // GU47 phase 3 (rubric post 4.5: "milky veil"): less bloom, more contrast.
-      bloom: { intensity: 0.22, threshold: 0.8, radius: 0.5 },
-      grade: { contrast: 1.2, saturation: 1.32 },
-      vignette: { intensity: 0.34, smoothness: 0.62 },
-      grain: { intensity: 0.035, size: 1.6 }
+      bloom: { intensity: 0.24, threshold: 0.82, radius: 0.46 },
+      grade: { contrast: 1.22, saturation: 1.3 },
+      vignette: { intensity: 0.3, smoothness: 0.64 },
+      grain: { intensity: 0.025, size: 1.5 }
     },
-    camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
-    // GU47 phase 3: no ring. The sibling judge matched Thermal Drift on "ringed planet in sky in both" (24 of 46
-    // trials different at best); the gouache giant is a banded peach disc with a moon instead (PRD 6.1 row G15: gas giant).
+    camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2.2 },
     planet: { position: GIANT_POSITION, size: 520, ring: false, moon: false },
-    // Phase 2 (software WebGL2 capture): the freeze frame read mean 32 (engine light-uniform and frame-camera bugs, fixed on
-    // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
-    // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the
-    // frame stays inside 60-110.
-    // 2026-11-10 (owner: "washed out"): on a real GPU the 18-degree key (3.5) at +1.3 EV put the lit GLB riders and fairings at
-    // roughly three times the light of the 4.6.1 look, where ACES clips every channel and the teal and suit colours go
-    // white-grey (the software-WebGL2 calibration above predates the engine light fixes). +0.9 EV with the probe at 0.5 and
-    // a stronger grade keeps the ground and sky shaders' dusk and gives the riders their colour back.
-    exposureEV: 0.9,
+    exposureEV: 0.88,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {

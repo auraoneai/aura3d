@@ -177,3 +177,87 @@ export const particleMesh = (): MeshData => boxMesh(DIMS.PARTICLE_SIZE, DIMS.PAR
 
 /** Contact shadow quad: 1.6 m, uses the kit shadow fragment. */
 export const shadowMesh = (): MeshData => groundQuad(DIMS.SHADOW_SIZE, DIMS.SHADOW_SIZE);
+
+/**
+ * Curved spherical front cap facing +z so the live player number hugs the clearcoat ball
+ * curvature like an embedded holographic inlay instead of a flat floating sticker quad.
+ */
+export function sphereCapMesh(radius = DIMS.BALL_RADIUS + 0.018, halfAngleRad = 0.72, segs = 18): MeshData {
+  const m = empty();
+  for (let iy = 0; iy <= segs; iy++) {
+    const v = iy / segs;
+    const ay = (v * 2 - 1) * halfAngleRad;
+    const cy = Math.cos(ay);
+    const sy = Math.sin(ay);
+    for (let ix = 0; ix <= segs; ix++) {
+      const u = ix / segs;
+      const ax = (u * 2 - 1) * halfAngleRad;
+      const nx = Math.sin(ax) * cy;
+      const ny = sy;
+      const nz = Math.cos(ax) * cy;
+      m.positions.push(radius * nx, radius * ny, radius * nz);
+      m.normals.push(nx, ny, nz);
+      m.uvs.push(u, v);
+    }
+  }
+  const row = segs + 1;
+  for (let iy = 0; iy < segs; iy++) {
+    for (let ix = 0; ix < segs; ix++) {
+      const a = iy * row + ix;
+      const b = a + 1;
+      const c = a + row;
+      const d = c + 1;
+      m.indices.push(a, b, d, a, d, c);
+    }
+  }
+  return m;
+}
+
+/**
+ * Beveled arcade portal stanchions: grounded flared plinths, multi-tier chamfered columns,
+ * corner gussets, and a crowned top lintel within the exact gate footprint.
+ */
+export const chamferedGateFrameMesh = (): MeshData => {
+  const half = DIMS.GATE_PANEL_W / 2;
+  const postH = DIMS.GATE_PANEL_H + DIMS.GATE_TOP_H;
+  const depth = DIMS.GATE_PANEL_D + 0.08;
+  return merge([
+    // Flared grounded stanchion plinths
+    boxMesh(DIMS.GATE_POST_W + 0.14, 0.18, depth + 0.12, -half, 0.09),
+    boxMesh(DIMS.GATE_POST_W + 0.14, 0.18, depth + 0.12, half, 0.09),
+    // Outer metallic column cores + inner chamfered energy rails
+    boxMesh(DIMS.GATE_POST_W + 0.04, postH, depth, -half, postH / 2),
+    boxMesh(DIMS.GATE_POST_W + 0.04, postH, depth, half, postH / 2),
+    boxMesh(0.07, DIMS.GATE_PANEL_H - 0.16, depth + 0.05, -half + 0.08, DIMS.GATE_PANEL_H / 2),
+    boxMesh(0.07, DIMS.GATE_PANEL_H - 0.16, depth + 0.05, half - 0.08, DIMS.GATE_PANEL_H / 2),
+    // Crowned top crossbar + stepped arch cap
+    boxMesh(DIMS.GATE_PANEL_W + DIMS.GATE_POST_W + 0.12, DIMS.GATE_TOP_H + 0.04, depth + 0.04, 0, DIMS.GATE_PANEL_H + DIMS.GATE_TOP_H / 2),
+    boxMesh(DIMS.GATE_PANEL_W * 0.64, 0.1, depth + 0.08, 0, DIMS.GATE_PANEL_H + DIMS.GATE_TOP_H + 0.06)
+  ]);
+};
+
+/**
+ * Segmented 3-course running-bond crystal-masonry boss wall (7.2 × 3.6 × 0.6 m envelope):
+ * recessed mortar core + bevelled crystal blocks so fissure veins glow between courses.
+ */
+export const segmentedWallMesh = (): MeshData => {
+  const parts: MeshData[] = [
+    // Recessed glowing mortar core slab
+    boxMesh(DIMS.WALL_W - 0.14, DIMS.WALL_H - 0.08, DIMS.WALL_D - 0.12, 0, DIMS.WALL_H / 2, 0)
+  ];
+  const rows = 3;
+  const rowH = DIMS.WALL_H / rows;
+  const gap = 0.07;
+  for (let r = 0; r < rows; r++) {
+    const cy = (r + 0.5) * rowH;
+    const bh = rowH - gap;
+    const cols = r % 2 === 0 ? 4 : 3;
+    const spanW = DIMS.WALL_W / cols;
+    for (let c = 0; c < cols; c++) {
+      const cx = -DIMS.WALL_W / 2 + (c + 0.5) * spanW;
+      const bw = spanW - gap;
+      parts.push(boxMesh(bw, bh, DIMS.WALL_D, cx, cy, 0));
+    }
+  }
+  return merge(parts);
+};

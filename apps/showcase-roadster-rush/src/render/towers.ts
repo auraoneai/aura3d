@@ -144,11 +144,14 @@ void main() {
   float finSun = a3dSaturate(dot(n, normalize(vec3(sunDirection.x, 0.0, sunDirection.z))) * 0.5 + 0.5);
   metal = mix(metal, body * 0.6 + a3dSrgbToLinear(sunTint) * 0.18 * finSun * sunGlint + sky * 0.12, fin);
   vec3 col = mix(glass, metal, frame * (1.0 - roof));
-  // roof: dark parapet top, a 1.6 m parapet band, a tangerine LED crown line that comes up toward dusk
+  // roof: dark parapet top, a 1.6 m parapet band, double illuminated penthouse crown bands and warm sky-lounge glow
   col = mix(col, body * 0.35, roof);
   float parapet = (1.0 - roof) * (1.0 - step(1.6, vTop));
   col = mix(col, metal * 0.8, parapet);
-  float crown = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  float crownUpper = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  float crownLower = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.28, abs(vTop - 5.4))) * 0.55;
+  float penthouseGlow = (1.0 - roof) * smoothstep(5.6, 2.2, vTop) * step(1.9, vTop) * (1.0 - frame) * 0.28;
+  float crown = crownUpper + crownLower + penthouseGlow;
   col += a3dSrgbToLinear(crownColor) * crown * crownGain;
   // the bases sink into the haze below the deck
   vec3 haze = a3dSrgbToLinear(hazeColor);
@@ -230,7 +233,10 @@ const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_COLOR], /* wgsl */ 
   col = mix(col, body * 0.35, roof);
   let parapet = (1.0 - roof) * (1.0 - step(1.6, vTop));
   col = mix(col, metal * 0.8, parapet);
-  let crown = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  let crownUpper = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  let crownLower = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.28, abs(vTop - 5.4))) * 0.55;
+  let penthouseGlow = (1.0 - roof) * smoothstep(5.6, 2.2, vTop) * step(1.9, vTop) * (1.0 - frameMask) * 0.28;
+  let crown = crownUpper + crownLower + penthouseGlow;
   col = col + a3dSrgbToLinear(aura.u_crownColor) * crown * aura.u_crownGain;
   let haze = a3dSrgbToLinear(aura.u_hazeColor);
   let floorHaze = 1.0 - smoothstep(-28.0, -6.0, vW.y);
@@ -267,4 +273,84 @@ export function towerGlassSpec(variant: TowerVariant): CustomSpec {
     // facade does its own cooler aerial perspective toward the row's haze colour instead
     fog: false
   };
+}
+
+export const TOWER_CROWN_CAPACITY = TOWER_ROWS * 2 * TOWERS_PER_ROW_SIDE;
+export const BAY_RIDGE_PEAKS = 24;
+
+export interface TowerCrownPart {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly sx: number;
+  readonly sy: number;
+  readonly sz: number;
+}
+
+/** Architectural rooftop crown setbacks, spires and aviation beacons derived deterministically from `towerLayout(pz)`. */
+export function towerCrownLayout(towers: readonly TowerInstance[]): {
+  readonly crowns: TowerCrownPart[];
+  readonly spires: TowerCrownPart[];
+  readonly beacons: TowerCrownPart[];
+} {
+  const crowns: TowerCrownPart[] = [];
+  const spires: TowerCrownPart[] = [];
+  const beacons: TowerCrownPart[] = [];
+  for (let i = 0; i < towers.length; i++) {
+    const t = towers[i]!;
+    const roofY = t.y + t.height * 0.5;
+    const crownH = t.variant === "blade" ? 4.8 : t.variant === "stepped" ? 6.2 : 3.6;
+    const inset = t.variant === "stepped" ? 0.68 : 0.76;
+    crowns.push({
+      x: t.x,
+      y: roofY + crownH * 0.5 - 0.2,
+      z: t.z,
+      yaw: t.yaw,
+      sx: t.width * inset,
+      sy: crownH,
+      sz: t.depth * inset
+    });
+    if (t.variant !== "slab" || i % 2 === 0) {
+      const spireH = t.variant === "blade" ? 13.5 : 9.5;
+      spires.push({
+        x: t.x,
+        y: roofY + crownH + spireH * 0.5 - 0.4,
+        z: t.z,
+        yaw: t.yaw,
+        sx: 0.42,
+        sy: spireH,
+        sz: 0.42
+      });
+      beacons.push({
+        x: t.x,
+        y: roofY + crownH + spireH - 0.3,
+        z: t.z,
+        yaw: 0,
+        sx: 1,
+        sy: 1,
+        sz: 1
+      });
+    }
+  }
+  return { crowns, spires, beacons };
+}
+
+/** Distant coastal headland / bay-ridge silhouette ring around the horizon perimeter so sky and ground never meet at a hard cut. */
+export function bayRidgeTransforms(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
+  const out: Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> = [];
+  const radius = 335;
+  for (let i = 0; i < BAY_RIDGE_PEAKS; i++) {
+    const a = (i / BAY_RIDGE_PEAKS) * Math.PI * 2;
+    const h0 = towerHash(i, 701);
+    const h1 = towerHash(i, 919);
+    const peakH = 26 + h0 * 38;
+    const spanW = 92 + h1 * 48;
+    out.push({
+      position: [Math.sin(a) * radius, HAZE_FLOOR_Y + peakH * 0.42, Math.cos(a) * radius - 90],
+      rotation: [0, a, 0],
+      scale: [spanW, peakH, 38 + h0 * 22]
+    });
+  }
+  return out;
 }

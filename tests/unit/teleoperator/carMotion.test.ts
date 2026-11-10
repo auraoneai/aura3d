@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { PITCH_SPRING, SIGNAL_COLORS, SIGNAL_FADE_S, createPitchSpring, signalFadeColor } from "../../../apps/showcase-teleoperator/src/carMotion";
+import {
+  PITCH_SPRING,
+  SIGNAL_COLORS,
+  SIGNAL_FADE_S,
+  conformalRearLampTransforms,
+  createPitchSpring,
+  roofSensorCrownPose,
+  signalFadeColor
+} from "../../../apps/showcase-teleoperator/src/carMotion";
+import { PLAYABLE_FLEET, PLAYABLE_IDS, fittedSize } from "../../../apps/showcase-teleoperator/src/rules";
 
 describe("grid dispatch GD-16 pitch spring and signal fade", () => {
   it("the body overshoots a braking dip, then settles on the sim pitch", () => {
@@ -32,5 +41,21 @@ describe("grid dispatch GD-16 pitch spring and signal fade", () => {
     expect(signalFadeColor(SIGNAL_COLORS[0], SIGNAL_COLORS[1], 0.12)).toBe(SIGNAL_COLORS[1]);
     const mid = signalFadeColor("#000000", "#ffffff", 0.06);
     expect(mid).toBe("#808080");
+  });
+
+  it("mounts rear LED lightbars flush on every hull body and keeps cruiser lamps below roof-mast height", () => {
+    for (const id of PLAYABLE_IDS) {
+      const spec = PLAYABLE_FLEET[id];
+      const sz = fittedSize(spec.bounds, spec.maxDim);
+      const lamps = conformalRearLampTransforms({ x: 0, y: 0, z: -20, pitch: 0.02, yaw: 0.12, roll: -0.02 }, sz, id);
+      expect(lamps).toHaveLength(2);
+      expect(lamps[0]!.position![0]).toBeLessThan(lamps[1]!.position![0]);
+      expect(lamps[0]!.position![1]).toBeGreaterThan(0.4);
+      expect(lamps[0]!.position![1]).toBeLessThan(1.1);
+    }
+    const cruiserSz = fittedSize(PLAYABLE_FLEET.cruiser.bounds, PLAYABLE_FLEET.cruiser.maxDim);
+    const spinA = roofSensorCrownPose({ x: 1, y: 0, z: -10, pitch: 0, yaw: 0, roll: 0 }, cruiserSz, "cruiser", 0.02, true)!;
+    const spinB = roofSensorCrownPose({ x: 1, y: 0, z: -10, pitch: 0, yaw: 0, roll: 0 }, cruiserSz, "cruiser", 0.05, true)!;
+    expect(spinA.laserRot[1]).not.toBeCloseTo(spinB.laserRot[1], 3);
   });
 });

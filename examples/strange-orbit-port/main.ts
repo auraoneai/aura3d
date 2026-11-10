@@ -1,5 +1,5 @@
 /**
- * Strange Orbit on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
+ * Craterline GP on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `race.ts` (pure); `world.ts` renders it through the
  * public engine surface.
  *
@@ -10,9 +10,11 @@
  * controls without waiting for a touch), `motion=reduced` (same as `prefers-reduced-motion: reduce`),
  * `look=original` (the 4.6.1 look; GU47), `env=neutral` (neutral room instead of the captured probe).
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { labAppOptions, labRenderWorker, parseLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { createOrbitAudio } from "./audio";
@@ -99,6 +101,10 @@ const hitStop = createHitStop();
 // Reduced motion (SO-E2): no camera shake and at most 30 ms of hit-stop; world.ts also damps the zero-G spin.
 const shake = createCameraShake(config.reducedMotion ? { maxOffset: 0, maxRoll: 0 } : { maxOffset: 0.5, maxRoll: 0.05 });
 const impactFeedback = createImpactFeedback({ hitStop, shake, cue: (_name, gain) => sound.cue("hit", gain), fullSpeed: 30, ...(config.reducedMotion ? { hitStopMs: [0, 30] as const } : {}) });
+const visualImpact = createImpactRig({ reducedMotion: config.reducedMotion });
+let lastFeelStep = visualImpact.step(0);
+let wasBoosting = false;
+let replaying = false;
 installOrbitUi(params, { difficulty: config.difficulty, rider: config.rider, mode: config.mode });
 const pbKey = bestKey(config.mode, config.difficulty, config.vehicle);
 /** The saved time-trial ghost this race runs against (SO-E3). */
@@ -204,6 +210,8 @@ function begin(): void {
   presenter.reset();
   checkpointOrder = [];
   runtime?.resetCamera();
+  visualImpact.reset();
+  wasBoosting = false;
   startCountdown(race);
   loop.resetAccumulator();
   lastPhase = "";
@@ -224,6 +232,12 @@ function handleEvents(events: readonly RaceEvent[]): void {
     }
     if (ev.text) { notice = touchWanted ? touchText(ev) : ev.text; noticeTime = 3; }
     runtime?.event(ev);
+    if (!replaying) {
+      if (ev.impact !== undefined) visualImpact.trigger({ trauma: Math.min(0.85, ev.impact / 35), fovKickDeg: -2.2 });
+      else if (ev.type === "land") visualImpact.trigger({ freezeSeconds: config.reducedMotion ? 0 : 0.022, trauma: 0.34, fovKickDeg: -1.8 });
+      else if (ev.type === "stunt") visualImpact.trigger({ freezeSeconds: config.reducedMotion ? 0 : 0.032, trauma: 0.48, fovKickDeg: 3.2 });
+      else if (ev.type === "gate") visualImpact.trigger({ trauma: 0.14, fovKickDeg: 1.6 });
+    }
     if (ev.impact !== undefined) {
       if (ev.normal) runtime?.impact(ev.normal);
       impactFeedback.handle({ colliderId: ev.colliderId ?? "", tag: undefined, point: ev.point ?? [0, 0, 0], normal: ev.normal ?? [0, 1, 0], speed: ev.impact, impulse: ev.impact });
@@ -319,11 +333,18 @@ function updateHud(dt: number): void {
     const order = race.rivals.length ? raceOrder(race) : [];
     const mine = order.findIndex((r) => r.id === 0);
     const ahead = mine > 0 ? order[mine - 1] : undefined;
+    const lastLap = race.lapTimes.length > 0 ? race.lapTimes[race.lapTimes.length - 1] : undefined;
+    const splitDelta = lastLap !== undefined && Number.isFinite(race.bestLap) ? lastLap - race.bestLap : undefined;
+    const splitLabel = splitDelta !== undefined ? `Δ${splitDelta <= 0 ? "" : "+"}${splitDelta.toFixed(2)}s` : undefined;
     gouacheHud.update({
       s: race.s,
       speedKmh: race.speed * 3.6,
       energy: race.energy,
       gapAhead: ahead ? Math.max(0, ahead.s - race.s) : null,
+      dust: race.dust,
+      gravityLabel: hud.gravity.textContent ?? "",
+      boosting: Boolean(race.boosting),
+      splitLabel,
       riders: [{ s: race.s, color: RIDERS[config.rider]!.color, you: true }, ...(race.mode === "trial" ? [] : race.rivals.map((r, i) => ({ s: r.s, color: GOUACHE_LIVERIES[i]!, you: false })))]
     });
   }
@@ -376,7 +397,11 @@ function render(dt: number, live = false): void {
   try {
     const shown = live ? viewOf(race, presenter.present(loop, true)) : race;
     const ghostPose = ghost.length && race.mode === "trial" && race.phase !== "menu" ? ghostAt(ghost, race.time) : null;
-    runtime.update(shown, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt), ghostPose);
+    const baseShake = shake.update(dt);
+    const combinedShake = dt > 0
+      ? { x: baseShake.x + lastFeelStep.shakeOffset[0], y: baseShake.y + lastFeelStep.shakeOffset[1], roll: baseShake.roll + lastFeelStep.shakeRoll, fovDelta: lastFeelStep.fovDeltaDeg }
+      : baseShake;
+    runtime.update(shown, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), combinedShake, ghostPose);
     bars.sync();
     app.step(0);
     frames++;
@@ -394,8 +419,12 @@ function tick(now: number): void {
   const dt = Math.min(0.08, t);
   lastTick = now;
   hitStop.update(dt);
+  lastFeelStep = visualImpact.step(dt);
   loop.tick(now);
   if (!ready) return;
+  const nowBoosting = race.phase === "racing" && Boolean(race.boosting);
+  if (nowBoosting && !wasBoosting) visualImpact.trigger({ trauma: 0.18, fovKickDeg: 2.8 });
+  wasBoosting = nowBoosting;
   renderTime += dt;
   sound.update({ speed: race.speed, boosting: Boolean(race.boosting), drafting: Boolean(race.drafting), flight: Boolean(race.flight), racing: race.phase === "racing" }, dt);
   hudTimer += dt;
@@ -464,7 +493,7 @@ const orbit = {
   get state() { return snapshot(); },
   get race() { return race; },
   begin,
-  menu() { race = newRace(); presenter.reset(); checkpointOrder = []; runtime?.resetCamera(); lastPhase = ""; },
+  menu() { race = newRace(); presenter.reset(); checkpointOrder = []; runtime?.resetCamera(); visualImpact.reset(); wasBoosting = false; lastPhase = ""; },
   set(patch: Partial<RaceState>) { Object.assign(race, patch); },
   pose(s: number, lane = 0) {
     race.s = s; race.lane = lane; race.lateral = 0; race.heading = 0; race.steerRate = 0;
@@ -490,21 +519,28 @@ function replayScript(text: string) {
   presenter.reset();
   checkpointOrder = [];
   runtime?.resetCamera();
+  visualImpact.reset();
+  wasBoosting = false;
   startCountdown(race);
   const checkpoints: { step: number; gate: number; lap: number }[] = [];
   const routeEvents: { step: number; text: string }[] = [];
   const lapSteps: number[] = [];
   let step = 0;
-  for (const input of decodeInputScript(text)) {
-    stepRace(race, input, STEP);
-    step++;
-    handleEvents(race.events);
-    for (const ev of race.events) {
-      if (ev.type === "gate" && typeof ev.gate === "number") checkpoints.push({ step, gate: ev.gate, lap: race.lap });
-      if (ev.type === "route" && ev.text) routeEvents.push({ step, text: ev.text });
-      if (ev.type === "lap") lapSteps.push(step);
+  replaying = true;
+  try {
+    for (const input of decodeInputScript(text)) {
+      stepRace(race, input, STEP);
+      step++;
+      handleEvents(race.events);
+      for (const ev of race.events) {
+        if (ev.type === "gate" && typeof ev.gate === "number") checkpoints.push({ step, gate: ev.gate, lap: race.lap });
+        if (ev.type === "route" && ev.text) routeEvents.push({ step, text: ev.text });
+        if (ev.type === "lap") lapSteps.push(step);
+      }
+      if (race.phase === "finished" || race.phase === "lost") break;
     }
-    if (race.phase === "finished" || race.phase === "lost") break;
+  } finally {
+    replaying = false;
   }
   updateHud(0);
   render(0);
@@ -639,7 +675,9 @@ async function boot(): Promise<void> {
     ...(lab.worker ? { worker: lab.worker } : {}),
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
-    output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },
+    output: config.look === "gouache"
+      ? { preset: "space", toneMapping: "agx", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: true, ...lab.output }
+      : { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },
     scene: world.scene
   });
   loadingBar.set(0.2, "Starting the renderer");

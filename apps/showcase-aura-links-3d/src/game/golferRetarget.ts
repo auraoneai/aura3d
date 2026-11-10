@@ -88,6 +88,29 @@ const qNormalize = (q: Quat): Quat => {
   const l = Math.hypot(q.x, q.y, q.z, q.w) || 1;
   return { x: q.x / l, y: q.y / l, z: q.z / l, w: q.w / l };
 };
+const qSlerp = (a: Quat, b: Quat, t: number): Quat => {
+  let dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+  const s = dot < 0 ? -1 : 1;
+  dot = Math.min(1, Math.abs(dot));
+  if (dot > 0.9995) {
+    return qNormalize({
+      x: a.x + (b.x * s - a.x) * t,
+      y: a.y + (b.y * s - a.y) * t,
+      z: a.z + (b.z * s - a.z) * t,
+      w: a.w + (b.w * s - a.w) * t
+    });
+  }
+  const theta = Math.acos(dot);
+  const sinT = Math.sin(theta) || 1;
+  const wa = Math.sin((1 - t) * theta) / sinT;
+  const wb = (Math.sin(t * theta) / sinT) * s;
+  return qNormalize({
+    x: a.x * wa + b.x * wb,
+    y: a.y * wa + b.y * wb,
+    z: a.z * wa + b.z * wb,
+    w: a.w * wa + b.w * wb
+  });
+};
 
 /** hand joint to palm point, from the forearm joint: the same direction, PALM_PAST_HAND longer */
 const palmFrom = (fore: string, hand: string): V3 => {
@@ -159,11 +182,16 @@ export interface MeshyBonePose {
  */
 export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">): Record<string, MeshyBonePose> {
   const world = new Map<string, Quat>();
+  const deltaOf = (name: string): Quat | undefined => {
+    if (name === "Spine01") return qSlerp(solved.deltas.spine, solved.deltas.chest, 0.18);
+    if (name === "neck") return qSlerp(solved.deltas.chest, solved.deltas.head, 0.5);
+    const key = MESHY_DRIVE[name];
+    return key ? solved.deltas[key] : undefined;
+  };
   const worldOf = (name: string): Quat => {
     const hit = world.get(name);
     if (hit) return hit;
-    const key = MESHY_DRIVE[name];
-    const delta = key ? solved.deltas[key] : undefined;
+    const delta = deltaOf(name);
     const w = qNormalize(delta ? qMul(delta, Q(name)) : Q(name));
     world.set(name, w);
     return w;

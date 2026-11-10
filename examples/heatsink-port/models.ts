@@ -1,5 +1,5 @@
 /**
- * Meshy-generated models for the HEATSINK port (own text prompts; see assets/ATTRIBUTION.md and PORTING-NOTES.md).
+ * Meshy-generated models for Ion Circuit (own text prompts; see assets/ATTRIBUTION.md and PORTING-NOTES.md).
  * Loaded through the production-safe path: same-origin pathname + sha256 hash, never an http(s) URL.
  */
 import { defineModelAssets, instances, model } from "@aura3d/engine";
@@ -59,23 +59,40 @@ export const droneHull = (set: ModelSet = MODELS, casts = false): NodeB =>
   model(set.drone, { name: "drone-hull", targetMaxDimension: DRONE_LENGTH, castShadow: casts, receiveShadow: false });
 
 /** GU47 WP-36 IC-13: the Meshy sentry drone as a strike target's core (twilight; presentation only, the hit radius is unchanged) */
-export const sentryModel = (id: number, size: number, set: ModelSet = MODELS): NodeB =>
-  model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: false, receiveShadow: false });
+export const sentryModel = (id: number, size: number, set: ModelSet = MODELS, casts = false): NodeB =>
+  model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: casts, receiveShadow: false });
 
 /** GU47 wave 2 IC-13: the Meshy heavy drone as the heavy strike target's core (twilight; presentation only, the hit radius is unchanged) */
-export const heavyModel = (id: number, size: number, set: ModelSet = MODELS): NodeB =>
-  model(set.ionHeavyDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: false, receiveShadow: false });
+export const heavyModel = (id: number, size: number, set: ModelSet = MODELS, casts = false): NodeB =>
+  model(set.ionHeavyDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: casts, receiveShadow: false });
 
-export const barrelModel = (i: number, set: ModelSet = MODELS): NodeB =>
-  model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: false, receiveShadow: false });
+export const barrelModel = (i: number, set: ModelSet = MODELS, casts = false): NodeB =>
+  model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: casts, receiveShadow: false });
 
 export const pickupModel = (i: number, shield: boolean, set: ModelSet = MODELS): NodeB =>
   model(shield ? set.pickupShield : set.pickupRepair, { name: `pickup-${i}`, targetHeight: shield ? 2.4 : 2.0, castShadow: false, receiveShadow: false });
 
 type Spot = { position: [number, number, number]; rotation: [number, number, number]; scale: number };
 
+const SHOULDER_OFFSETS = [0, 3, 10, 24, 50, 100] as const;
+const SHOULDER_DROPS = [-0.55, -0.75, -1.5, -3.2, -7.5, -17] as const;
+
+/** Exact shoulder height offset matching `buildShoulders` so flora sits flush on banked shoulders instead of floating. */
+function shoulderDrop(offset: number, s: number): number {
+  for (let j = 0; j < SHOULDER_OFFSETS.length - 1; j++) {
+    const a = SHOULDER_OFFSETS[j]!, b = SHOULDER_OFFSETS[j + 1]!;
+    if (offset <= b) {
+      const t = (offset - a) / (b - a);
+      const wobA = j >= 2 ? Math.sin(s * 0.013 + j * 1.9) * 0.9 + Math.sin(s * 0.041 + j) * 0.4 : 0;
+      const wobB = j + 1 >= 2 ? Math.sin(s * 0.013 + (j + 1) * 1.9) * 0.9 + Math.sin(s * 0.041 + (j + 1)) * 0.4 : 0;
+      return SHOULDER_DROPS[j]! + (SHOULDER_DROPS[j + 1]! - SHOULDER_DROPS[j]!) * t + wobA + (wobB - wobA) * t;
+    }
+  }
+  return SHOULDER_DROPS[SHOULDER_DROPS.length - 1]!;
+}
+
 /** Static scenery scattered beyond the guard rails: alien flora and ruin pieces. Deterministic (seeded), sim-independent. */
-export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS): NodeB[] {
+export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, casts = false): NodeB[] {
   const rng = seededRandom(seed);
   const f: Partial<Frame> = {};
   const caps: Spot[] = [], corals: Spot[] = [], ruins: Spot[] = [], arches: Spot[] = [];
@@ -84,10 +101,18 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS): 
     for (const side of [-1, 1] as const) {
       const pick = rng();
       if (pick > 0.78) continue;
-      const lat = side * (fr.hw + 11 + rng() * 22);
+      const offset = 11 + rng() * 22;
+      const lat = side * (fr.hw + offset);
       const x = fr.x + fr.rx * lat, z = fr.z + fr.rz * lat;
-      const y = fr.y + track.latY(s, lat) - 0.4;
-      const spot = { position: [x, y, z] as [number, number, number], rotation: [0, rng() * Math.PI * 2, 0] as [number, number, number], scale: 0.8 + rng() * 0.5 };
+      const edgeY = fr.y + track.latY(s, side * fr.hw);
+      const y = edgeY + shoulderDrop(offset, s) - 0.55;
+      const slopeTilt = side * Math.atan2(shoulderDrop(offset + 2, s) - shoulderDrop(offset - 2, s), 4) * 0.28;
+      const yaw = rng() * Math.PI * 2;
+      const spot = {
+        position: [x, y, z] as [number, number, number],
+        rotation: [Math.sin(yaw) * slopeTilt, yaw, -Math.cos(yaw) * slopeTilt] as [number, number, number],
+        scale: 0.8 + rng() * 0.5
+      };
       if (pick < 0.3) caps.push(spot);
       else if (pick < 0.6) corals.push(spot);
       else if (pick < 0.7) arches.push(spot);
@@ -101,7 +126,7 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS): 
       name,
       transforms: spots.map((p) => ({ position: p.position, rotation: p.rotation, scale: [p.scale, p.scale, p.scale] as [number, number, number] })),
       targetHeight: height,
-      castShadow: false
+      castShadow: casts
     }));
   };
   add("scenery-caps", set.plantCap, caps, 9);
@@ -112,7 +137,7 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS): 
 }
 
 /** two pylons per checkpoint gate, standing on the road edge (static transforms, one instanced draw class) */
-export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly [number, number, number], set: ModelSet = MODELS): NodeB[] {
+export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly [number, number, number], set: ModelSet = MODELS, casts = false): NodeB[] {
   const transforms: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
   const f: Partial<Frame> = {};
   for (const s of track.checkpoints) {
@@ -120,9 +145,9 @@ export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly
     const rot = rotationOf(fr);
     for (const side of [-1, 1] as const) {
       const lat = side * (fr.hw + 0.6);
-      transforms.push({ position: [fr.x + fr.rx * lat, fr.y, fr.z + fr.rz * lat], rotation: [rot[0], rot[1], rot[2]] });
+      transforms.push({ position: [fr.x + fr.rx * lat, fr.y + track.latY(s, side * fr.hw) - 0.25, fr.z + fr.rz * lat], rotation: [rot[0], rot[1], rot[2]] });
     }
   }
   if (transforms.length === 0) return [];
-  return [instances.model(set.pylon, { name: "gate-pylons", transforms, targetHeight: 22, castShadow: false })];
+  return [instances.model(set.pylon, { name: "gate-pylons", transforms, targetHeight: 22, castShadow: casts })];
 }

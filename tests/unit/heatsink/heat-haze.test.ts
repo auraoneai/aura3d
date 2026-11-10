@@ -9,6 +9,7 @@ import {
   HEAT_HAZE_GLSL,
   HEAT_HAZE_MAX_SOURCES,
   HEAT_HAZE_PASS,
+  HEAT_HAZE_WGSL,
   hazeQaCrops,
   hazeScalars,
   heatHazePass,
@@ -38,6 +39,8 @@ describe("heatsink heat haze pass", () => {
     }
     expect(HEAT_HAZE_GLSL).toContain("texture(u_color");
     expect(HEAT_HAZE_GLSL).toContain("outColor =");
+    expect(HEAT_HAZE_WGSL).toMatch(/@fragment\s+fn fs_main/);
+    expect(pass.fragment.wgsl).toBe(HEAT_HAZE_WGSL);
     expect(heatHazePass(look, false).enabled).toBe(false);
   });
 

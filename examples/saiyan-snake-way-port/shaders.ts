@@ -187,8 +187,12 @@ out vec3 vNormal;
 out vec3 vTint;
 void main() {
   vec3 p = position;
-  float along = p.x + 0.5;
-  p.z += sin(flagTime * 6.0 + along * 5.0 + instanceMatrix[3].x * 0.37) * 0.12 * along;
+  float along = clamp(p.x + 0.5, 0.0, 1.0);
+  float isCloth = step(length(instanceMatrix[2].xyz), 0.08);
+  float seed = instanceMatrix[3].x * 0.37 + instanceMatrix[3].z * 0.19;
+  float wave = sin(flagTime * 6.2 + along * 5.2 + seed) * 0.13 + sin(flagTime * 11.4 - along * 9.5 + seed * 1.7) * 0.045;
+  p.z += wave * along * isCloth;
+  p.y += cos(flagTime * 5.4 + along * 4.1 + seed) * 0.03 * along * isCloth;
   vec4 wp = modelMatrix * instanceMatrix * vec4(p, 1.0);
   vWorld = wp.xyz;
   vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
@@ -203,28 +207,37 @@ in vec3 vTint;
 out vec4 outColor;
 ${ATMOSPHERE}
 void main() {
-  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 toCam = cameraPosition - vWorld;
+  float camDist = length(toCam);
+  float nearClear = smoothstep(1.6, 4.8, camDist);
+  float dither = fract(52.9829189 * fract(dot(floor(gl_FragCoord.xy), vec2(0.06711056, 0.00583715))));
+  if (nearClear < dither) discard;
+  vec3 V = toCam / max(camDist, 1e-4);
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
-  float back = pow(max(dot(-V, normalize(flagSunDir)), 0.0), 2.0);
-  vec3 col = vTint * (0.45 + 0.35 * max(N.y, 0.0)) + vTint * flagSunColor * back * 1.4;
-  outColor = vec4(mix(col, flagFogColor, fogAmount(length(cameraPosition - vWorld))), 1.0);
+  vec3 L = normalize(flagSunDir);
+  float back = pow(max(dot(-V, L), 0.0), 2.0);
+  float sheen = pow(max(dot(N, normalize(L + V)), 0.0), 28.0);
+  vec3 col = vTint * (0.46 + 0.38 * max(N.y, 0.0) + 0.22 * max(dot(N, L), 0.0)) + vTint * flagSunColor * back * 1.45 + flagSunColor * sheen * 0.22;
+  outColor = vec4(mix(col, flagFogColor, fogAmount(camDist)), 1.0);
 }`;
 
 /**
- * GU47 SSR-11: floating spire islands in the mid and far parallax bands, one instanced draw per band (impostor-weight:
- * a 7-sided inverted cone). Lit tops toward the low sun, a dark under-deck, a hot sun rim on the silhouette edge, and
- * heavy fog so the far band reads as layered silhouettes against the colour-script sky. `vTint` (instance colour) lifts
- * the far band toward the fog.
+ * GU47 SSR-11 + WP-27: floating spire islands (`cloudMode < 0.5`) AND 3D subsurface-lit cumulus cloud billows (`cloudMode >= 0.5`)
+ * flanking the viaduct coils in one instanced draw. Uses Henyey-Greenstein forward silver-lining + Beer-Powder self-shadowing.
  */
 export const ISLAND_INSTANCED_VERTEX = /* glsl */ `
 out vec3 vWorld;
 out vec3 vNormal;
 out vec3 vTint;
 void main() {
-  vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vec3 p = position;
+  float seed = instanceMatrix[3].x * 0.031 + instanceMatrix[3].z * 0.023;
+  float puff = sin(p.x * 3.1 + cloudTime * 0.42 + seed) * 0.13 + cos(p.y * 2.7 - p.z * 2.9 + seed * 1.7) * 0.11 + sin((p.x + p.z) * 4.8 - cloudTime * 0.28) * 0.05;
+  p += normal * puff * cloudMode;
+  vec4 wp = modelMatrix * instanceMatrix * vec4(p, 1.0);
   vWorld = wp.xyz;
-  vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+  vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normalize(normal + p * 0.25 * cloudMode));
   vTint = instanceColor.rgb;
   gl_Position = projectionMatrix * viewMatrix * wp;
 }`;
@@ -234,17 +247,47 @@ in vec3 vWorld;
 in vec3 vNormal;
 in vec3 vTint;
 out vec4 outColor;
+${CLOUD_NOISE}
 ${ATMOSPHERE}
 void main() {
-  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 toCam = cameraPosition - vWorld;
+  float dist = length(toCam);
+  vec3 V = toCam / max(dist, 1e-4);
   vec3 N = normalize(vNormal);
   vec3 L = normalize(islandSunDir);
-  float lit = smoothstep(-0.35, 0.65, N.y) * (0.55 + 0.45 * max(dot(N, L), 0.0));
-  vec3 rock = mix(islandDark, islandLit, lit);
-  float rim = pow(1.0 - abs(dot(N, V)), 3.0) * pow(max(dot(-V, L), 0.0), 2.0);
-  vec3 col = rock + islandSunColor * rim * 1.6;
-  float fog = max(fogAmount(length(cameraPosition - vWorld)), vTint.r);
-  outColor = vec4(mix(col, islandFogColor, fog), 1.0);
+  if (cloudMode < 0.5) {
+    float lit = smoothstep(-0.35, 0.65, N.y) * (0.55 + 0.45 * max(dot(N, L), 0.0));
+    vec3 rock = mix(islandDark, mix(islandLit, cloudMid, 0.02), lit);
+    float rim = pow(1.0 - abs(dot(N, V)), 3.0) * pow(max(dot(-V, L), 0.0), 2.0);
+    vec3 col = rock + islandSunColor * rim * 1.6;
+    float fog = max(fogAmount(dist), vTint.r);
+    outColor = vec4(mix(col, islandFogColor, fog), 1.0);
+  } else {
+    float nearClear = smoothstep(5.0, 16.0, dist);
+    float dither = fract(52.9829189 * fract(dot(floor(gl_FragCoord.xy), vec2(0.06711056, 0.00583715))));
+    if (nearClear < dither) discard;
+    float tuft = cfbm3(vWorld.xz * 0.042 + vec2(cloudTime * 0.018, -cloudTime * 0.009));
+    vec3 Ns = normalize(N + vec3(tuft - 0.5, 0.18 * tuft, 0.5 - tuft) * 0.38);
+    float facing = clamp(abs(dot(Ns, V)), 0.0, 1.0);
+    float optDepth = mix(0.32, 1.85, facing) * (0.76 + 0.34 * tuft);
+    float beer = exp(-optDepth * 0.82);
+    float powder = 1.0 - exp(-optDepth * 2.15);
+    float beerPowder = 2.0 * beer * powder;
+    float cosTheta = clamp(dot(-V, L), -1.0, 1.0);
+    float g = 0.62;
+    float hg = (1.0 - g * g) / (4.0 * 3.14159265 * pow(max(1.0 + g * g - 2.0 * g * cosTheta, 0.04), 1.5));
+    float crown = smoothstep(-0.52, 0.72, Ns.y + (tuft - 0.5) * 0.35);
+    float sunWrap = clamp(dot(Ns, L) * 0.5 + 0.5, 0.0, 1.0);
+    float lit = clamp(crown * (0.38 + 0.62 * sunWrap) * (0.78 + 0.36 * tuft), 0.0, 1.0);
+    vec3 body = mix(islandDark * 0.88, cloudMid, smoothstep(0.06, 0.64, lit));
+    body = mix(body, islandLit, smoothstep(0.45, 0.96, lit));
+    float rim = pow(1.0 - facing, 2.1);
+    vec3 silver = islandSunColor * (min(hg, 2.6) * 0.34 + beerPowder * rim * 0.62) * (0.35 + 0.65 * sunWrap);
+    vec3 bounce = mix(islandFogColor, islandSunColor, 0.32) * smoothstep(0.25, -0.75, Ns.y) * 0.24;
+    vec3 col = body + silver + bounce;
+    float fog = clamp(max(fogAmount(dist * 0.88), vTint.r * 0.65), 0.0, 0.94);
+    outColor = vec4(mix(col, islandFogColor, fog), 1.0);
+  }
 }`;
 
 /** Flat additive colour for speed streaks and ki sparks. */
@@ -350,6 +393,7 @@ void main() {
   float streak = n2(vec2(vCross.x * 1.9 + vCross.y * 0.7, s * 0.16));
   float fres = pow(1.0 - max(dot(N, V), 0.0), 2.0);
 
+  float rough = 0.52;
   vec3 albedo;
   if (lookMode < 0.5) {
     // pre-GU47 road (exact)
@@ -362,22 +406,27 @@ void main() {
     vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
     albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
   } else {
-    // GU47 SSR-08: living serpent road. Overlapping scales (each plate darker toward its trailing edge), a pearl top
-    // over a jade flank ramp into indigo belly scales; per-stage tints come from the colour script.
-    float overlap = mix(1.0, 0.72 + 0.28 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
-    vec3 plate = mix(roadPearl * 0.86, roadPearl, 0.5 + 0.5 * tint) * mix(0.82, 1.04, bevel) * overlap;
+    // GU47 SSR-08 + WP-27: carved cyclopean jade-marble flagstones & sculpted dragon-scale bolsters with height-derived
+    // bevel normal relief, celadon moss in kerb crevices, gilded bolster ridge trim, and roughness variation (0.42..0.88).
+    vec2 bevelSlope = vec2(smoothstep(0.18, 0.0, f.x) - smoothstep(0.82, 1.0, f.x), smoothstep(0.18, 0.0, f.y) - smoothstep(0.82, 1.0, f.y)) * detail * mix(0.35, 1.0, top);
+    N = normalize(N + vec3(bevelSlope.x * 0.22, 0.0, bevelSlope.y * 0.22));
+    rough = mix(0.42, 0.88, clamp((1.0 - joint) * 0.72 + tint * 0.32, 0.0, 1.0));
+    float overlap = mix(1.0, 0.70 + 0.30 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
+    vec3 plate = mix(roadPearl * 0.84, roadPearl * 1.03, 0.5 + 0.5 * tint) * mix(0.80, 1.06, bevel) * overlap;
+    float kerbMoss = smoothstep(2.85, 4.15, abs(vCross.x)) * (1.0 - 0.55 * joint) * top * detail;
+    plate = mix(plate, roadJade * 0.86, kerbMoss * 0.55);
+    float bolster = smoothstep(3.82, 4.32, abs(vCross.x)) * (1.0 - smoothstep(4.55, 5.05, abs(vCross.x))) * (1.0 - smoothstep(0.45, 1.25, -vCross.y));
     float flank = smoothstep(0.0, 0.9, depth);
     vec3 body = mix(roadJade, roadBelly, flank);
-    // belly scales: wide transverse plates under the body
     float belly = smoothstep(0.55, 0.9, depth);
     float bellyRow = fract(s / 1.1);
-    body *= mix(1.0, mix(0.7, 1.0, smoothstep(0.0, max(0.08, fwm * 2.0), min(bellyRow, 1.0 - bellyRow))), belly * detail);
-    body *= (0.84 + 0.26 * streak) * mix(0.88, 1.0, bevel) * overlap;
+    body *= mix(1.0, mix(0.72, 1.0, smoothstep(0.0, max(0.08, fwm * 2.0), min(bellyRow, 1.0 - bellyRow))), belly * detail);
+    body *= (0.85 + 0.26 * streak) * mix(0.88, 1.0, bevel) * overlap;
     albedo = mix(body, plate, top);
-    albedo = mix(roadJade * 0.55, albedo, joint);
-    // view-angle pearl sheen: thin-film hue shift strongest at grazing angles on the plates
+    albedo = mix(albedo, mix(roadSpine, roadJade * 1.35, 0.35), bolster * 0.42 * detail);
+    albedo = mix(roadJade * 0.48, albedo, joint);
     vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 1.2 + tint * 0.8));
-    albedo = mix(albedo, albedo * film * 1.15, (0.12 + 0.3 * fres) * mix(0.5, 1.0, top) * detail);
+    albedo = mix(albedo, albedo * film * 1.16, (0.14 + 0.32 * fres) * mix(0.5, 1.0, top) * detail);
   }
 
   gToonShadow = a3dSunShadowAuto(vWorld, N);
@@ -407,24 +456,23 @@ void main() {
     gateShade = gate;
   }
   vec3 col = toon(albedo, N);
-  col += mix(vec3(1.0, 0.82, 0.9), lookSunColor, lookMode) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.16, lookMode) * top;
-  // GU47 phase 3 (rubric: reflections): the lacquered plates mirror the sky. A fresnel sky tint (fog colour warming toward
-  // the sun) and a sun glint lane on the road ahead, both kept off the grout lines; script mode only.
+  col += mix(vec3(1.0, 0.82, 0.9), lookSunColor, lookMode) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.18, lookMode) * top;
+  // GU47 phase 3 + WP-27: lacquered jade-marble plates mirror the sky with per-stone roughness variation
   vec3 Rv = reflect(-V, N);
   float rs = max(dot(Rv, SUN_DIR), 0.0);
+  float gloss = clamp(1.0 - (rough - 0.42) / 0.46, 0.0, 1.0);
   vec3 skyRefl = mix(lookFogColor, lookSunColor, pow(rs, 4.0));
-  float plateMask = top * mix(0.35, 1.0, joint) * lookMode;
-  col = mix(col, skyRefl, (0.1 + 0.38 * fres) * plateMask);
-  col += lookSunColor * (pow(rs, 40.0) * 0.6 + pow(rs, 8.0) * 0.12) * plateMask;
-  // GU47 phase 4 (rubric: reflections): the jade flanks are glossy lacquer too: a fresnel sky mirror, a sun streak and a
-  // horizon line from the hemisphere sky colour, fading into the matte belly; shadowed fragments keep only the sky term.
+  float plateMask = top * mix(0.25, 1.0, joint) * lookMode;
+  col = mix(col, skyRefl, (0.08 + 0.36 * fres) * (0.55 + 0.45 * gloss) * plateMask);
+  col += lookSunColor * (pow(rs, mix(18.0, 56.0, gloss)) * (0.32 + 0.44 * gloss) + pow(rs, 8.0) * 0.12) * plateMask;
+  // jade flanks glossy sheen + warm golden cloud-sea upward bounce erasing dark underside bend seams
   float bodyMask = (1.0 - top) * (1.0 - smoothstep(0.45, 0.85, depth)) * lookMode;
   vec3 bodyRefl = mix(mix(lookHemiSky, lookFogColor, 0.5), lookSunColor, pow(rs, 3.0)) * mix(vec3(1.0), roadJade * 1.8, 0.45);
-  col = mix(col, bodyRefl, (0.02 + 0.16 * fres) * bodyMask);
+  col = mix(col, bodyRefl, (0.03 + 0.18 * fres) * bodyMask);
   col += lookSunColor * (pow(rs, 24.0) * 0.55 + pow(rs, 6.0) * 0.1) * bodyMask * mix(0.25, 1.0, gToonShadow);
-  // GU47 phase 4 (rubric: shadows): the gate traces shade the finished colour, cool and violet like the stage hemisphere,
-  // reflections included. The shadow-map term stays in the toon band only: in the g17p4-r3 software WebGL2 frames it
-  // reported the whole road as shadowed under the low stage suns (no contrast to add), so the base keeps the phase-3 look.
+  float underBounce = smoothstep(0.20, 0.88, depth) * lookMode;
+  vec3 cloudGlow = mix(lookFogColor, lookSunColor, 0.38) * (0.34 + 0.20 * streak) + albedo * 0.48;
+  col = mix(col, max(col, cloudGlow), underBounce * 0.76);
   vec3 shadeTint = mix(lookHemiSky * 0.55, vec3(0.30, 0.26, 0.46), 0.5);
   col = mix(col, col * shadeTint, gateShade * 0.7 * lookMode);
 
@@ -507,8 +555,9 @@ void main(){
   a *= mix(1.0, 0.62, up);
   a *= smoothstep(0.985, 0.86, up);
   if (a < 0.015) discard;
+  float coreShimmer = 0.88 + 0.24 * sin(auraTime * 9.0 + up * 11.0);
   vec3 col = mix(auraEdge, auraMid, smoothstep(0.10, 0.55, across));
-  col = mix(col, auraHot, smoothstep(0.62, 0.95, across) * aB);
+  col = mix(col, auraHot * coreShimmer, smoothstep(0.62, 0.95, across) * aB);
   outColor = vec4(col, min(a, 0.82));
 }`;
 
@@ -621,4 +670,79 @@ void main() {
     }
   }
   outColor = vec4(col, 1.0);
+}`;
+
+/** WP-27: translucent Fresnel + scrolling celestial jade-gold harmonic boost/guardian gate arch ring shader. */
+export const BOOST_GATE_VERTEX = /* glsl */ `
+out vec3 vNormal;
+out vec3 vWorld;
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const BOOST_GATE_FRAGMENT = /* glsl */ `
+in vec3 vNormal;
+in vec3 vWorld;
+in vec2 vUv;
+out vec4 outColor;
+${ATMOSPHERE}
+void main() {
+  vec3 toCam = cameraPosition - vWorld;
+  float dist = length(toCam);
+  float nearClear = smoothstep(1.2, 3.6, dist);
+  vec3 V = toCam / max(dist, 1e-4);
+  vec3 N = normalize(vNormal);
+  float fresnel = pow(1.0 - abs(dot(N, V)), 2.1);
+  float waveA = 0.5 + 0.5 * sin(vUv.x * 37.69911 - gateTime * 4.2 + vUv.y * 6.2831853);
+  float waveB = 0.5 + 0.5 * cos(vUv.y * 25.13274 + gateTime * 2.8);
+  float lattice = smoothstep(0.32, 0.94, waveA * 0.65 + waveB * 0.35);
+  vec3 col = mix(gateCore, gateEdge, clamp(fresnel * 0.78 + lattice * 0.42, 0.0, 1.0)) * (1.25 + gatePulse * 0.9 + fresnel * 1.35);
+  float alpha = clamp((0.20 + fresnel * 0.68 + lattice * 0.24) * (0.65 + 0.35 * gatePulse), 0.0, 0.92) * nearClear * (1.0 - fogAmount(dist));
+  if (alpha < 0.01) discard;
+  outColor = vec4(col, alpha);
+}`;
+
+/** WP-27: dual-backend 8x4 sprite-sheet flipbook quad (`createFlipbookAtlas`) + `createGradingLut("cinema-warm")` 3D strip LUT. */
+export const FLIPBOOK_VERTEX = /* glsl */ `
+out vec2 vUv;
+out vec3 vWorld;
+void main() {
+  vUv = uv;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const FLIPBOOK_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+in vec3 vWorld;
+out vec4 outColor;
+${ATMOSPHERE}
+vec3 sampleStripLut16(vec3 lin) {
+  vec3 c = clamp(lin / (vec3(1.0) + lin), vec3(0.0), vec3(1.0));
+  float bSlice = c.b * 15.0;
+  float b0 = floor(bSlice);
+  float b1 = min(15.0, b0 + 1.0);
+  float bf = bSlice - b0;
+  float uBase = (c.r * 15.0 + 0.5) / 256.0;
+  float vCoord = (c.g * 15.0 + 0.5) / 16.0;
+  vec3 s0 = texture(gradeLut, vec2(uBase + b0 / 16.0, vCoord)).rgb;
+  vec3 s1 = texture(gradeLut, vec2(uBase + b1 / 16.0, vCoord)).rgb;
+  return mix(s0, s1, bf);
+}
+void main() {
+  float idx = floor(clamp(flipFrame, 0.0, flipCols * flipRows - 1.0));
+  float colIdx = mod(idx, flipCols);
+  float rowIdx = floor(idx / flipCols);
+  vec2 cellUv = vec2((colIdx + clamp(vUv.x, 0.02, 0.98)) / flipCols, (rowIdx + clamp(1.0 - vUv.y, 0.02, 0.98)) / flipRows);
+  vec4 texel = texture(flipMap, cellUv);
+  float dist = length(cameraPosition - vWorld);
+  float a = texel.a * flipAlpha * (1.0 - fogAmount(dist));
+  if (a < 0.008) discard;
+  vec3 base = texel.rgb * flipTint;
+  vec3 graded = mix(base, sampleStripLut16(base) * 1.45, lutMix);
+  outColor = vec4(graded, a);
 }`;

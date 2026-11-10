@@ -19,7 +19,9 @@ import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hu
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
+import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel.js";
 import { assets, BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
+import { heroCapeMaterial } from "./game/diorama.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";
 import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
 import { createBoss, damageBoss, stepBoss, type BossPhase, type BossState } from "./game/boss.js";
@@ -31,7 +33,7 @@ import { framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
-import { MINIATURE_LIFT, lookModeFromSearch, miniatureFramingFor, worldFromSearch, worldLookMode } from "./game/looks.js";
+import { lookModeFromSearch, miniatureFramingFor, worldFromSearch, worldLookMode, type MiniatureFraming } from "./game/looks.js";
 import { createDioramaPresentation, type QaCrop } from "./game/presentation.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -257,6 +259,8 @@ const presentation = createDioramaPresentation(app, {
 const input = pipsGame.input;
 const hud = createHud();
 const feel = gameFeel.create({ app, time: app.time });
+const impactRig: ImpactRig = createImpactRig({ reducedMotion: REDUCED_MOTION });
+let impactFrame: ReturnType<ImpactRig["step"]> = { simDt: 1 / 60, frozen: false, shakeOffset: [0, 0, 0], shakeRoll: 0, fovDeltaDeg: 0 };
 app.feel?.preset("platformer");
 
 const locomotion = createLocomotionKit({
@@ -315,6 +319,7 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
   const previousWorld = mountedWorld;
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
   resetCameraRig();
+  impactRig.reset();
   simLoop.resetAccumulator();
   inputLatch.clear();
   pipPresenter.reset();
@@ -436,9 +441,14 @@ function objectiveText(): string {
 }
 
 // C7: Pip's GLB has one baked material, so there is no cap mesh to tint; the
-// Studio offers the cape only, and the cape now shows at rest too.
+// Studio tints the cape with the dual-backend cloth shader in diorama mode.
 function applyStudioColors(): void {
-  node(nodeName.heroCape)?.setMaterial(material.pbr({ color: save.studio.cape, roughness: 0.6 }));
+  const worldDiorama = ensureWorld(run.world).built.presentation.mode === "diorama";
+  node(nodeName.heroCape)?.setMaterial(
+    worldDiorama
+      ? heroCapeMaterial(save.studio.cape, REDUCED_MOTION ? 0.3 : 1)
+      : material.pbr({ color: save.studio.cape, roughness: 0.6 })
+  );
 }
 
 // ------------------------------------------------------------- event sink
@@ -452,19 +462,20 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
   // GU47 WP-16 PBL-V1: presentation-only feedback (VFX, squash/stretch, camera); never feeds the sim.
   const fx = (): void => presentation.event(e, built, [run.player.x, run.player.y, run.player.z]);
   switch (e.kind) {
-    case "jump": cue("whoosh"); juice("jump"); fx(); break;
-    case "double-jump": cue("whoosh"); juice("double-jump"); fx(); break;
-    case "land": juice("land"); fx(); break;
+    case "jump": cue("whoosh"); juice("jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.08, fovKickDeg: 1.2 }); fx(); break;
+    case "double-jump": cue("whoosh"); juice("double-jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.1, fovKickDeg: 1.6 }); fx(); break;
+    case "land": juice("land"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.14, fovKickDeg: -0.9 }); fx(); break;
     case "glide-start": cue("whoosh"); break;
-    case "dive": cue("whoosh"); break;
+    case "dive": cue("whoosh"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.12, fovKickDeg: 2.0 }); break;
     case "pound": break;
-    case "pound-land": cue("thud"); juice("land"); fx(); break;
-    case "spring": cue("bounce"); juice("jump"); fx(); break;
+    case "pound-land": cue("thud"); juice("land"); impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.36, fovKickDeg: -2.2 }); fx(); break;
+    case "spring": cue("bounce"); juice("jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.16, fovKickDeg: 2.4 }); fx(); break;
     case "swim": cue("bounce"); break;
     case "hurt": case "boss-contact": {
       fx();
       hud.setHearts(run.player.hearts);
       juice("hurt");
+      impactRig.trigger({ freezeSeconds: 0.038, trauma: 0.42, fovKickDeg: -1.8 });
       cue("bumper");
       if (e.kind === "boss-contact" && run.boss && run.boss.phase !== "down") {
         node(nodeName.boss)?.setAnimation({ clip: BOSS_CLIPS.attack, loop: false });
@@ -507,7 +518,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       hud.setObjective(objectiveText());
       cue("power");
       juice("collect");
-      hud.toast(`☀ Sun-seed ${run.seeds.size}/${spec.seedGoal}`, 1.4);
+      hud.toast(`Sun-seed ${run.seeds.size}/${spec.seedGoal}`, 1.4);
       if (!run.gateUnlocked) {
         // C6: the lock icon goes only when the gate really opens.
         const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: Boolean(spec.boss), bossHp: run.bossHp });
@@ -556,6 +567,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
         run.bossFxT = 0.7;
       }
       juice("boss-hit");
+      impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.46, fovKickDeg: 2.6 });
       cue("thud");
       if (run.boss.hp <= 0) {
         const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: true, bossHp: 0 });
@@ -604,7 +616,7 @@ function completeWorld(): void {
     if (best === undefined || run.levelTime < best) {
       next = { ...next, bestTimes: { ...next.bestTimes, [run.world]: Math.round(run.levelTime * 10) / 10 } };
     }
-    medal = run.levelTime <= spec.medals.gold ? " 🥇 GOLD" : run.levelTime <= spec.medals.silver ? " 🥈 SILVER" : run.levelTime <= spec.medals.bronze ? " 🥉 BRONZE" : "";
+    medal = run.levelTime <= spec.medals.gold ? " · GOLD" : run.levelTime <= spec.medals.silver ? " · SILVER" : run.levelTime <= spec.medals.bronze ? " · BRONZE" : "";
   }
   save = saves.commit(next);
   run.save = save;
@@ -612,7 +624,7 @@ function completeWorld(): void {
   hud.showComplete(
     true,
     run.world === "academy" ? "GAUNTLET CLEARED!" : "SUN-GATE OPENED!",
-    `${spec.title} is bright again — ☀ ${run.seeds.size}/${spec.seedGoal} seeds, ${run.acornCount} acorns${medal}.`,
+    `${spec.title} is bright again — ${run.seeds.size}/${spec.seedGoal} seeds, ${run.acornCount} acorns${medal}.`,
     [
       `Time — ${run.levelTime.toFixed(1)}s`,
       `Sun-seeds — ${run.seeds.size}/${spec.seedGoal}`,
@@ -914,29 +926,38 @@ function driveAnimation(p: PlayerState, dt: number): void {
     hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
 
-  // Studio cape tracks the 1.25 m hero: it hangs low on his back while he
-  // moves and spreads out above him while he glides. Standing still it is
-  // hidden (the idle clip turns Pip toward the lens, where a back panel would
-  // cover his face).
+  // Studio cape tracks the 1.25 m hero: shoulder-pinned wool-felt mantle in diorama
+  // mode (flaring into a wing canopy while gliding), legacy back panel in original mode.
+  const built = ensureWorld(run.world).built;
+  const worldDiorama = built.presentation.mode === "diorama";
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
   const moving = Math.hypot(p.vx, p.vz) > 0.4 || !p.grounded;
   cape?.setVisible(p.state === "glide" || (moving && p.state !== "dead"));
   const gliding = p.state === "glide";
-  cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.96 : 0.42), p.z - fwdZ * (gliding ? 0.22 : 0.2));
-  cape?.setRotation(gliding ? 1.1 : 0.2, p.yaw, 0);
+  if (worldDiorama) {
+    const collarBack = gliding ? 0.08 : 0.06;
+    const collarY = p.y + (gliding ? 0.96 : 0.78);
+    const dynamicPitch = gliding
+      ? 1.18
+      : Math.max(0.14, Math.min(0.95, 0.24 + planar * 0.085 - p.vy * 0.048));
+    cape?.setPosition(p.x - fwdX * collarBack, collarY, p.z - fwdZ * collarBack);
+    cape?.setRotation(dynamicPitch, p.yaw, 0);
+  } else {
+    cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.96 : 0.42), p.z - fwdZ * (gliding ? 0.22 : 0.2));
+    cape?.setRotation(gliding ? 1.1 : 0.2, p.yaw, 0);
+  }
 
   // Smooth third-person follow camera behind Pip looking down the platformer
   // path. A trunk/boulder between Pip and the lens shortens the boom instead
   // of blacking out the frame; controls and camYaw are untouched.
   const camFwdX = Math.sin(p.camYaw);
   const camFwdZ = Math.cos(p.camYaw);
-  const built = ensureWorld(run.world).built;
+  const aspect = viewAspect();
   // C18: portrait screens get a wider vertical FOV and a longer boom. GU47 PBL-C2: the
-  // diorama look frames Pip from 1.7 m with fov 46 (the original keeps 2.25 m / 52).
-  const worldDiorama = built.presentation.mode === "diorama";
-  const framing = worldDiorama ? miniatureFramingFor(viewAspect()) : framingFor(viewAspect());
-  const camY = p.y + (worldDiorama ? MINIATURE_LIFT : 2.25);
+  // diorama look frames Pip from 1.7 m with fov 46 (portrait lifts slightly over plinth rim).
+  const framing = worldDiorama ? miniatureFramingFor(aspect) : framingFor(aspect);
+  const camY = p.y + (worldDiorama ? (framing as MiniatureFraming).lift : 2.25);
   const desiredX = p.x - camFwdX * framing.boom;
   const desiredZ = p.z - camFwdZ * framing.boom;
   const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
@@ -952,11 +973,13 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const boom = framing.boom * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
   // PBL-C1: a playing camera sequence (world fly-over, gate cut) owns the lens.
   if (presentation.cameraBusy()) return;
+  const [sx, sy, sz] = impactFrame.shakeOffset;
+  const targetLift = worldDiorama && aspect < 1 ? 0.72 : 0.55;
   app.camera?.setPose({
-    position: [p.x - camFwdX * boom, camY, p.z - camFwdZ * boom],
-    target: [p.x + camFwdX * 3.2, p.y + 0.55, p.z + camFwdZ * 3.2],
+    position: [p.x - camFwdX * boom + sx, camY + sy, p.z - camFwdZ * boom + sz],
+    target: [p.x + camFwdX * 3.2, p.y + targetLift, p.z + camFwdZ * 3.2],
     up: [0, 1, 0],
-    fov: framing.fov
+    fov: Math.max(30, Math.min(82, framing.fov + impactFrame.fovDeltaDeg))
   });
 }
 
@@ -1130,15 +1153,22 @@ const simLoop = createFixedStepLoop({
   stepSeconds: SIM_STEP_SECONDS,
   maxCatchUpSteps: 6,
   maxFrameSeconds: 0.1,
-  isActive: () => appReady && !run.paused && !overlayOpen() && !swapping,
+  isActive: () => appReady && !run.paused && !overlayOpen() && !swapping && !impactFrame.frozen,
   step: (seconds) => simStep(seconds),
   render: (frameSeconds) => present(frameSeconds)
 });
+
+let lastDisplayTimeMs = -1;
 
 app.onFrame(() => {
   if (!appReady) {
     return;
   }
+  const nowMs = performance.now();
+  const realDt = lastDisplayTimeMs < 0 ? 1 / 60 : Math.min(0.1, Math.max(0, (nowMs - lastDisplayTimeMs) / 1000));
+  lastDisplayTimeMs = nowMs;
+  // Tick impact hit-stop / trauma / FOV punch strictly on REAL frame dt (never frozen simDt).
+  impactFrame = impactRig.step(realDt);
   // Sample input once per display frame. createGame mounts touch but doesn't
   // tick it per frame; `update` exists on the concrete mount but not the
   // public TouchControls contract.
@@ -1160,8 +1190,10 @@ app.onFrame(() => {
       setAutopilot(false);
     }
   }
-  const steps = simLoop.tick(performance.now());
-  if (steps === 0 && (run.paused || overlayOpen())) {
+  const steps = simLoop.tick(nowMs);
+  if (steps === 0 && impactFrame.frozen && !run.paused && !overlayOpen() && !swapping) {
+    present(realDt);
+  } else if (steps === 0 && (run.paused || overlayOpen())) {
     // Keep the evidence global honest while the sim is suspended.
     inputLatch.clear();
     publishEvidence();
@@ -1325,6 +1357,15 @@ function present(frameSeconds: number): void {
   }, ensureWorld(run.world).built, node);
   feel.update(frameSeconds * 1000);
   hud.setTimer(run.levelTime, run.mode === "trial" ? spec.medals : undefined);
+  if (run.complete) {
+    hud.setGateCompass(null, false);
+  } else {
+    const gx = spec.gate.x - drawnPlayer.x;
+    const gz = spec.gate.z - drawnPlayer.z;
+    const worldAngle = Math.atan2(gx, gz);
+    const relBearing = worldAngle - drawnPlayer.camYaw;
+    hud.setGateCompass(relBearing, run.gateUnlocked);
+  }
   publishEvidence();
 }
 

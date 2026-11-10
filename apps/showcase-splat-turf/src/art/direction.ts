@@ -1,33 +1,31 @@
-// Splat Turf art direction (WP-4). Fantasy: a paint-world carnival — a white road you colour in at speed.
-// The look table is `../look.ts`; the signature effect is the persistent coverage map plus the solvent wipe wash.
+// Splat Turf art direction (WP-17). Fantasy: sunlit urban skate-arena / paint-world carnival causeway —
+// a warm gesso deck you coat in glossy clearcoat acrylic ink at speed.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "splat-turf",
-  // The catalog genre is "arcade"; GameGenre has no plain arcade member, so the art contract uses the
-  // nearest arcade family (same approach as slingshot-siege's golf-physics stand-in).
   genre: "maze-arcade",
-  fantasy: "Race a paint ball down a white carnival road, colouring every metre while solvent strips and eraser bots try to wipe your trail.",
+  fantasy: "Race a paint roller down a sunlit skate-park road, coating every metre in wet glossy ink while solvent strips and erasers wipe your trail.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [
     {
       file: "evidence/splat-turf/README.md",
-      source: "generic reference: street paint festivals (colour runs, pigment powder over white pavement)",
+      source: "generic reference: street paint festivals and sunlit skate-park bowls (glossy acrylic pigment over primed gesso concrete)",
       licence: "reference-only",
-      why: "Saturated rainbow trail paint over a bright white road, cycling hue every 25 m stretch so coverage reads at a glance"
+      why: "Saturated wet-clearcoat rainbow trail paint over a bright sunlit gesso road, cycling hue every 25 m stretch so coverage reads at a glance"
     },
     {
       file: "evidence/splat-turf/README.md",
-      source: "generic reference: carnival midway signage (plum ink lettering on cream enamel, gold bulb accents)",
+      source: "generic reference: broadcast sports territory meters and enamel signage (plum ink on cream paper, gold grade ticks)",
       licence: "reference-only",
-      why: "Plum ink HUD on cream paper chips with gold action buttons keeps every text pair above 4.5:1 against the busy paint world"
+      why: "Plum ink HUD on cream paper chips with gold action buttons and C/B/A/S territory ticks keeps every text pair above 4.5:1 against the sunlit world"
     },
     {
       file: "evidence/splat-turf/README.md",
-      source: "generic reference: watercolour wash-out techniques (solvent lifting fresh pigment off paper)",
+      source: "generic reference: watercolour & acrylic solvent wash-out techniques (solvent lifting fresh pigment off primed deck)",
       licence: "reference-only",
-      why: "The solvent wipe wash desaturates a lane strip back to white with a brief cyan screen wash, mirroring pigment lift"
+      why: "The solvent wipe wash lifts a lane strip back to primed gesso with a brief cyan wash, mirroring wet pigment lift"
     }
   ],
   palette: {
@@ -39,8 +37,8 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 5600, shadow: true },
     fill: "ibl",
     practicals: 0,
-    environment: { preset: "neutral", background: "sky" },
-    exposureEV: 0
+    environment: { preset: "softbox", background: "sky" },
+    exposureEV: 0.08
   },
   framing: { rig: "chase", subjectHeightFraction: [0.1, 0.3], fovDeg: [55, 80], mobile: "both" },
   assets: [],
@@ -59,12 +57,12 @@ export default defineArtDirection({
     { event: "finish", cue: "finish", variants: 1 },
     { event: "gameover", cue: "gameover", variants: 1 }
   ],
-  signatureEffect: "Paint-world carnival: a persistent per-cell coverage map rainbowing down a white road, with a cyan solvent wipe wash that lifts the trail back to white.",
+  signatureEffect: "Sunlit wet-ink skate-arena carnival: a persistent GPU splat coverage map with raised clearcoat meniscus highlights down a primed gesso road, plus a cyan solvent wipe wash that lifts pigment back to white.",
   criticalCategories: ["lighting", "environment_world", "vfx", "gameplay_readability"],
   tiers: {
     low: { particles: 90, shadowMap: 1024, cascades: 1, textureMax: 1024 },
-    medium: { particles: 90, shadowMap: 1024, cascades: 1, textureMax: 1024 },
-    high: { particles: 90, shadowMap: 2048, cascades: 1, textureMax: 1024 },
-    ultra: { particles: 90, shadowMap: 2048, cascades: 1, textureMax: 2048 }
+    medium: { particles: 90, shadowMap: 1024, cascades: 2, textureMax: 1024 },
+    high: { particles: 90, shadowMap: 2048, cascades: 2, textureMax: 2048 },
+    ultra: { particles: 90, shadowMap: 2048, cascades: 2, textureMax: 2048 }
   }
 });

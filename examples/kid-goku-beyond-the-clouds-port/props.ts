@@ -1,4 +1,4 @@
-/** Props for the Cloud Runner: sandstone mesas, cloud clumps, rocks and logs, rope bridges, gorge posts, the home hut. */
+/** Props for Cumulus Dash: sandstone mesas, cumulus cloud banks, rocks and logs, rope bridges, gorge posts, the home hut. */
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { Mesh, box, cylinder, hex, icosphere, mix3, mul3 } from "./mesh";
@@ -77,34 +77,36 @@ export function buildMesas(ch: Chapter): { meshes: Mesh[]; placements: MesaPlace
 export function buildClouds(ch: Chapter): Mesh[] {
   const out: Mesh[] = [];
   const rnd = seeded(31337);
-  const top = hex("#fffaf0"), under = hex("#a9bad4");
+  const top = hex("#fffbf2"), mid = hex("#e3ecf7"), under = hex("#8ca2c2");
   const puff = (): Mesh => {
-    const m = icosphere(2, top, 0.1, rnd, true);
+    const m = icosphere(2, top, 0.13, rnd, true);
     for (let i = 0; i < m.vertexCount; i++) {
-      const y = m.positions[i * 3 + 1]!;
-      const c = mix3(under, top, smooth(-0.35, 0.55, y));
+      const x = m.positions[i * 3]!, y = m.positions[i * 3 + 1]!, z = m.positions[i * 3 + 2]!;
+      const rim = Math.min(1, Math.hypot(x, z));
+      const cBase = y < 0.05 ? mix3(under, mid, smooth(-0.36, 0.05, y)) : mix3(mid, top, smooth(0.05, 0.68, y));
+      const c = mix3(cBase, top, rim * 0.22 * smooth(-0.1, 0.5, y));
       m.colors[i * 4] = c[0]; m.colors[i * 4 + 1] = c[1]; m.colors[i * 4 + 2] = c[2];
     }
     return m;
   };
-  const protos = [puff(), puff(), puff()];
+  const protos = [puff(), puff(), puff(), puff()];
   for (let c0 = -80; c0 < ch.length + 200; c0 += CHUNK * 2) {
     const chunk = new Mesh();
-    for (let s = c0; s < c0 + CHUNK * 2; s += 22 + rnd() * 34) {
+    for (let s = c0; s < c0 + CHUNK * 2; s += 19 + rnd() * 28) {
       const f = frameAt(s);
       const side = rnd() < 0.5 ? -1 : 1;
       const layer = rnd();
-      // low banks of cloud under the ridge, some mid-height drifts, a few high ones
-      const lat = side * (layer < 0.45 ? 58 + rnd() * 120 : 70 + rnd() * 290);
-      const y = f.point[1] + (layer < 0.45 ? -26 - rnd() * 40 : layer < 0.7 ? -6 + rnd() * 20 : 40 + rnd() * 60);
+      // multi-altitude cumulus sea: dense low chasm banks, mid-canyon drifts, and sunlit anvil crowns
+      const lat = side * (layer < 0.5 ? 46 + rnd() * 125 : layer < 0.78 ? 64 + rnd() * 210 : 85 + rnd() * 280);
+      const y = f.point[1] + (layer < 0.5 ? -24 - rnd() * 34 : layer < 0.78 ? -8 + rnd() * 22 : 38 + rnd() * 62);
       const p = at(s, lat, 0);
-      const size = (layer >= 0.7 ? 26 : 14) + rnd() * 26;
+      const size = (layer >= 0.78 ? 28 : layer < 0.5 ? 18 : 15) + rnd() * 26;
       const n = 6 + Math.floor(rnd() * 6);
       for (let k = 0; k < n; k++) {
         const t = (k / (n - 1) - 0.5) * 2;
-        const px = p[0] + t * size * 1.1 + (rnd() - 0.5) * size * 0.3, pz = p[2] + (rnd() - 0.5) * size * 0.7;
-        const pr = size * (0.55 + 0.45 * (1 - Math.abs(t))) * (0.7 + rnd() * 0.5);
-        chunk.append(protos[Math.floor(rnd() * 3)]!, [px, y + (1 - Math.abs(t)) * pr * 0.3, pz], [pr, pr * 0.62, pr], rnd() * 6.28);
+        const px = p[0] + t * size * 1.12 + (rnd() - 0.5) * size * 0.34, pz = p[2] + (rnd() - 0.5) * size * 0.76;
+        const pr = size * (0.56 + 0.44 * (1 - Math.abs(t))) * (0.72 + rnd() * 0.48);
+        chunk.append(protos[Math.floor(rnd() * protos.length)]!, [px, y + (1 - Math.abs(t)) * pr * 0.34, pz], [pr * 1.08, pr * 0.64, pr * 1.04], rnd() * 6.28);
       }
     }
     if (chunk.indices.length) out.push(chunk);
@@ -113,17 +115,58 @@ export function buildClouds(ch: Chapter): Mesh[] {
 }
 
 /* ---------------------------------------------------------------- obstacles: rocks and logs from the verified layout */
+function sculptedLogUnit(): Mesh {
+  const m = new Mesh();
+  const sides = 16, rings = 6;
+  const darkBark = hex("#4c311c"), warmBark = hex("#7a5131"), mossBark = hex("#586d35");
+  const sapwood = hex("#dfc192"), heartwood = hex("#9d6d42");
+  const ringIdx: number[][] = [];
+  for (let r = 0; r <= rings; r++) {
+    const t = r / rings;
+    const taper = 1 + (r === 0 || r === rings ? 0.05 : -0.03 * Math.sin(t * Math.PI));
+    const row: number[] = [];
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2;
+      const flute = 1 + 0.055 * Math.sin(a * 5 + t * 4.2) + 0.03 * Math.cos(a * 9 - t * 3.1);
+      const rad = 0.5 * taper * flute;
+      const c = Math.cos(a), sn = Math.sin(a);
+      const furrow = 0.5 + 0.5 * Math.sin(a * 5 + t * 4.2);
+      const moss = Math.max(0, -c) * 0.45 * (0.5 + 0.5 * Math.sin(t * 6.2));
+      const barkCol = mix3(mix3(darkBark, warmBark, furrow), mossBark, moss);
+      row.push(m.vertex([c * rad, t, sn * rad], [c, 0, sn], [i / sides * 2, t * 2], barkCol));
+    }
+    ringIdx.push(row);
+  }
+  for (let r = 0; r < rings; r++) {
+    for (let i = 0; i < sides; i++) m.quad(ringIdx[r]![i]!, ringIdx[r + 1]![i]!, ringIdx[r + 1]![i + 1]!, ringIdx[r]![i + 1]!);
+  }
+  for (const [endY, ny, flip] of [[0, -1, true], [1, 1, false]] as const) {
+    const center = m.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartwood);
+    const midRing: number[] = [], outerRing: number[] = [];
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+      midRing.push(m.vertex([c * 0.27, endY, sn * 0.27], [0, ny, 0], [0.5 + c * 0.25, 0.5 + sn * 0.25], mix3(heartwood, sapwood, 0.45)));
+      outerRing.push(m.vertex([c * 0.46, endY, sn * 0.46], [0, ny, 0], [0.5 + c * 0.45, 0.5 + sn * 0.45], sapwood));
+    }
+    for (let i = 0; i < sides; i++) {
+      if (flip) {
+        m.tri(center, midRing[i + 1]!, midRing[i]!);
+        m.quad(midRing[i]!, midRing[i + 1]!, outerRing[i + 1]!, outerRing[i]!);
+      } else {
+        m.tri(center, midRing[i]!, midRing[i + 1]!);
+        m.quad(midRing[i]!, outerRing[i]!, outerRing[i + 1]!, midRing[i + 1]!);
+      }
+    }
+  }
+  m.computeNormals();
+  return m;
+}
+
 export function buildObstacles(ch: Chapter): Mesh[] {
   const out: Mesh[] = [];
   const rnd = seeded(808);
   const rockProto = [0, 1, 2].map((i) => icosphere(1, mix3(hex("#b8a07a"), hex("#8a7658"), i / 2), 0.2, seeded(60 + i), true));
-  const logProto = (() => {
-    const m = cylinder(10, 0.5, 0.5, 1, hex("#7a5232"), hex("#7a5232"));
-    const ring = cylinder(10, 0.34, 0.34, 0.02, hex("#c79a64"), hex("#c79a64"));
-    m.append(ring, [0, 1, 0], 1, 0, 0);
-    m.append(ring, [0, -0.0, 0], 1, 0, 0);
-    return m;
-  })();
+  const logProto = sculptedLogUnit();
   const obstacles = layoutObstacles(ch, 0);
   const byChunk = new Map<number, Mesh>();
   for (const o of obstacles) {

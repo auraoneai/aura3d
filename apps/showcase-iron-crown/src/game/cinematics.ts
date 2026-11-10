@@ -39,7 +39,48 @@ export interface CinematicShot {
  * little higher (0.78 m, was 0.72), so the pair reads taller in frame. The FOV kick on dash and special is the feel
  * preset's punch (main.ts feel table: dash 1.1 deg, special 2.6 deg). Bounding-box share is measured in phase 2.
  */
-export const FIGHT_LENS = { fov: 40, lift: 0.6, aim: 0.78 } as const;
+export const FIGHT_LENS = { fov: 43, lift: 0.68, aim: 0.84 } as const;
+
+export interface FightCameraFrameInput {
+  readonly baseEye: AuraVec3;
+  readonly baseTarget: AuraVec3;
+  readonly p1: AuraVec3;
+  readonly p2: AuraVec3;
+  /** Viewport width / height (e.g. ~0.46 on 390x844 portrait, ~1.78 on 16:9 desktop). */
+  readonly aspect: number;
+  readonly fovKickDeg?: number;
+}
+
+/**
+ * WP-09 live fight framing: tracks vertical jump height (`max(p1.y, p2.y)`) so airborne fighters never clip
+ * behind the top HUD bar, and widens/pulls back cleanly on narrow portrait viewports (`390x844`).
+ */
+export function fightCameraFrame(input: FightCameraFrameInput): {
+  readonly position: AuraVec3;
+  readonly target: AuraVec3;
+  readonly fov: number;
+} {
+  const maxJumpY = Math.max(0, input.p1[1], input.p2[1]);
+  const pairSpan = Math.abs(input.p1[0] - input.p2[0]);
+  const safeAspect = Number.isFinite(input.aspect) && input.aspect > 0.2 ? input.aspect : 16 / 9;
+  const portraitRatio = Math.max(0, 0.92 - safeAspect);
+  const portraitPullback = portraitRatio > 0
+    ? Math.min(3.5, portraitRatio * 4.4 + Math.max(0, pairSpan - 2.2) * 0.42)
+    : 0;
+  const jumpPullback = Math.min(1.35, maxJumpY * 0.65);
+  const portraitFovBoost = portraitRatio > 0 ? Math.min(8, portraitRatio * 15.5) : 0;
+
+  const eyeY = Math.min(input.baseEye[1], FIGHT_LENS.lift + 0.92) + maxJumpY * 0.48 + portraitRatio * 0.22;
+  const aimY = Math.max(input.baseTarget[1], FIGHT_LENS.aim) + maxJumpY * 0.72 + portraitRatio * 0.08;
+  const eyeZ = input.baseEye[2] + jumpPullback + portraitPullback;
+  const fov = Math.max(30, Math.min(62, FIGHT_LENS.fov + portraitFovBoost + (input.fovKickDeg ?? 0)));
+
+  return {
+    position: [input.baseEye[0], eyeY, eyeZ],
+    target: [input.baseTarget[0], aimY, input.baseTarget[2]],
+    fov
+  };
+}
 
 /** Shot starts inside the 1.35 s intro (seconds). */
 export const INTRO_SHOTS = { dolly: 0, p1: 0.55, p2: 0.95 } as const;

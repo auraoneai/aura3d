@@ -1,16 +1,22 @@
 /**
- * Cross Hop critter and vehicle materials (GU47 WP-24 CH47-08). The 4.6 build painted every critter with one cream
- * material (`CRITTER_MAT`), which wiped the Meshy textures; the diorama look keeps each GLB's own maps and adds a
- * per-surface override: a soft rim on furry and feathered critters (the sheen stand-in: model overrides carry no
- * sheen field, see the lane report), clearcoat on the robot, astronaut and golden frogs and on the toy vehicles.
+ * Cross Hop critter and vehicle materials (GU47 WP-24 CH47-08 + WP-14 10/10 diorama pass).
+ * Keeps each GLB's authored textures intact (`replaceTextures` unset) and layers tactile
+ * fur/feather Fresnel rims, ceramic/metal clearcoats, `material.clearcoatPaint` toy-car gloss,
+ * and an athletic crouched rest stance on humanoid frog rigs.
  */
-import type { AuraModelMaterialOverride } from "@aura3d/engine";
+import { material, type AuraModelMaterialOverride } from "@aura3d/engine";
+
+export interface CritterNodeTransform {
+  readonly position?: readonly [number, number, number];
+  readonly rotation?: readonly [number, number, number];
+  readonly scale?: number | readonly [number, number, number];
+}
 
 export type CritterSurface = "fur" | "feather" | "skin" | "shell" | "lacquer" | "metal";
 
 /** Surface per critter asset key (spectators, the player and the hawk). */
 export const CRITTER_SURFACE: Readonly<Record<string, CritterSurface>> = {
-  hop: "fur",
+  hop: "skin",
   chick: "feather",
   turtle: "shell",
   bun: "fur",
@@ -26,21 +32,63 @@ export const CRITTER_SURFACE: Readonly<Record<string, CritterSurface>> = {
   rescuePod: "lacquer"
 };
 
-const RIM_FUR = { color: "#fff1df", power: 2.4, intensity: 0.55 } as const;
-const RIM_FEATHER = { color: "#fff6e0", power: 2.8, intensity: 0.45 } as const;
+const RIM_FUR = { color: "#fff3e2", power: 2.4, intensity: 0.52 } as const;
+const RIM_FEATHER = { color: "#fff7e4", power: 2.7, intensity: 0.46 } as const;
+const RIM_AMPHIBIAN = { color: "#e8fff3", power: 3.1, intensity: 0.34 } as const;
 
 /** Model material overrides for a critter key; [] keeps the GLB as authored. Never replaces textures. */
 export function critterOverrides(assetKey: string): readonly AuraModelMaterialOverride[] {
   switch (CRITTER_SURFACE[assetKey]) {
-    case "fur": return [{ rim: RIM_FUR, roughness: 0.85 }];
-    case "feather": return [{ rim: RIM_FEATHER, roughness: 0.8 }];
-    case "shell": return [{ clearcoat: 0.35, clearcoatRoughness: 0.4 }];
-    case "lacquer": return [{ clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.2 }];
-    case "metal": return [{ clearcoat: 0.6, clearcoatRoughness: 0.15, envMapIntensity: 1.3 }];
-    case "skin": return [{ clearcoat: 0.25, clearcoatRoughness: 0.5 }];
-    default: return [];
+    case "fur":
+      return [{ rim: RIM_FUR, roughness: 0.84, envMapIntensity: 0.72 }];
+    case "feather":
+      return [{ rim: RIM_FEATHER, roughness: 0.78, envMapIntensity: 0.78 }];
+    case "shell":
+      return [{ clearcoat: 0.58, clearcoatRoughness: 0.22, roughness: 0.42, envMapIntensity: 1.05 }];
+    case "lacquer":
+      return [{ clearcoat: 1, clearcoatRoughness: 0.06, roughness: 0.18, envMapIntensity: 1.32 }];
+    case "metal":
+      return [{ clearcoat: 0.78, clearcoatRoughness: 0.12, roughness: 0.22, envMapIntensity: 1.42 }];
+    case "skin":
+      return [{ rim: RIM_AMPHIBIAN, clearcoat: 0.42, clearcoatRoughness: 0.28, roughness: 0.48, envMapIntensity: 0.95 }];
+    default:
+      return [];
   }
 }
 
-/** Lacquered toy vehicles (CH47-07/08): glossy clearcoat over the authored paint. */
-export const VEHICLE_OVERRIDES: readonly AuraModelMaterialOverride[] = [{ clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.15 }];
+const TOY_CLEARCOAT_PAINT = material.clearcoatPaint({
+  color: "#ffffff",
+  roughness: 0.12,
+  clearcoat: 1,
+  clearcoatRoughness: 0.035,
+  envMapIntensity: 1.38
+});
+
+/** Lacquered toy vehicles (WP-14): `material.clearcoatPaint` gloss over each GLB's authored bodywork paint. */
+export const VEHICLE_OVERRIDES: readonly AuraModelMaterialOverride[] = [{
+  clearcoat: TOY_CLEARCOAT_PAINT.clearcoat ?? 1,
+  clearcoatRoughness: TOY_CLEARCOAT_PAINT.clearcoatRoughness ?? 0.035,
+  roughness: TOY_CLEARCOAT_PAINT.roughness ?? 0.12,
+  envMapIntensity: TOY_CLEARCOAT_PAINT.envMapIntensity ?? 1.38
+}];
+
+/**
+ * Athletic crouched amphibian rest transforms for humanoid-rigged frog critters (`hop`, `roboFrog`, `astroFrog`,
+ * `knightToad`, `goldenHop`) so their default bind posture reads poised to spring rather than stiffly upright.
+ */
+const AMPHIBIAN_CROUCH: Readonly<Record<string, CritterNodeTransform>> = {
+  Hips: { rotation: [0.16, 0, 0] },
+  Spine: { rotation: [0.14, 0, 0] },
+  LeftUpLeg: { rotation: [-0.36, 0, -0.06] },
+  RightUpLeg: { rotation: [-0.36, 0, 0.06] },
+  LeftLeg: { rotation: [0.44, 0, 0] },
+  RightLeg: { rotation: [0.44, 0, 0] },
+  LeftArm: { rotation: [0.22, 0, 0.12] },
+  RightArm: { rotation: [0.22, 0, -0.12] }
+};
+
+const AMPHIBIAN_KEYS = new Set(["hop", "roboFrog", "astroFrog", "knightToad", "goldenHop"]);
+
+export function critterNodeTransforms(assetKey: string): Readonly<Record<string, CritterNodeTransform>> | undefined {
+  return AMPHIBIAN_KEYS.has(assetKey) ? AMPHIBIAN_CROUCH : undefined;
+}

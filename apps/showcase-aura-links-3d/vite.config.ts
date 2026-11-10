@@ -12,6 +12,7 @@ export default defineConfig({
   plugins: rootConfig.plugins ?? [],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
   optimizeDeps: rootConfig.optimizeDeps,
+  worker: rootConfig.worker ?? { format: "es" },
   // Root public tree serves the shared catalog (/aura-assets, /packs) in dev
   // and preview; the route-local public/ dir is layered by the remote-capture
   // serve step (tools/remote-capture.sh copies apps/<route>/public/*).

@@ -398,6 +398,30 @@ export function buildArches(track: Track, every = 240): { body: MeshData; neon: 
   return { body, neon };
 }
 
+/** Double-sided holographic race telemetry banners suspended beneath each gantry arch crossbeam. */
+export function buildGantryBanners(track: Track, every = 240): MeshData {
+  const m = emptyMesh();
+  for (let s = 120; s < track.length - 60; s += every) {
+    const fr = track.frame(s);
+    const halfSpan = fr.hw * 0.76;
+    const cy = fr.y - 2 + 10.35;
+    const hh = 0.88;
+    const v0 = m.positions.length / 3;
+    const lx = fr.x - fr.rx * halfSpan, lz = fr.z - fr.rz * halfSpan;
+    const rx = fr.x + fr.rx * halfSpan, rz = fr.z + fr.rz * halfSpan;
+    m.positions.push(
+      lx, cy - hh, lz,
+      rx, cy - hh, rz,
+      rx, cy + hh, rz,
+      lx, cy + hh, lz
+    );
+    for (let k = 0; k < 4; k++) m.normals.push(-fr.tx, 0, -fr.tz);
+    m.uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
+    m.indices.push(v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3);
+  }
+  return m;
+}
+
 /** Floating dark crystal shards (stretched bipyramids) hanging above the valley on both sides of the course. */
 export function buildShards(track: Track, seed = 311): MeshData {
   const rng = seededRandom(seed);

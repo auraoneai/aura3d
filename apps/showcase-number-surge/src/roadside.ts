@@ -7,17 +7,24 @@
  * scroll distance and time: no simulation state, no gameplay random stream. Pieces are never hidden; outside their
  * window they are parked at scale 0.001.
  */
-import { model, type AuraApp, type scene } from "@aura3d/engine";
+import { instances, type AuraApp, type AuraTransformSpec, type scene } from "@aura3d/engine";
 import { assets } from "./aura-model-assets";
 import { SCENERY } from "./scenery";
 
 type Scene = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
-type Kind = "nsNeonPalm" | "nsPinkPalm" | "nsNumeralSeven" | "nsFloatingDice";
+export type RoadsideKind = "nsNeonPalm" | "nsPinkPalm" | "nsNumeralSeven" | "nsFloatingDice";
+
+export const ROADSIDE_KINDS: readonly RoadsideKind[] = [
+  "nsNeonPalm",
+  "nsPinkPalm",
+  "nsNumeralSeven",
+  "nsFloatingDice"
+] as const;
 
 export interface RoadsidePiece {
   readonly id: string;
-  readonly kind: Kind;
+  readonly kind: RoadsideKind;
   readonly side: -1 | 1;
   readonly x: number;
   /** Base height: fitted models are grounded on their lowest point. */
@@ -25,40 +32,50 @@ export interface RoadsidePiece {
   readonly z0: number;
   readonly height: number;
   readonly yaw: number;
-  readonly tint: readonly { color: string; colorMode: "multiply"; emissive: string; emissiveIntensity: number }[];
+  readonly color: string;
+  readonly tint: readonly { color: string; colorMode: "multiply"; roughness: number; metallic: number; emissive: string; emissiveIntensity: number }[];
 }
 
 export const ROADSIDE_SPAN = 180;
 const NEAR = 10;
 const FAR = NEAR - ROADSIDE_SPAN;
 
+const BASE_HEIGHT: Record<RoadsideKind, number> = {
+  nsNeonPalm: 15,
+  nsPinkPalm: 15,
+  nsNumeralSeven: 18,
+  nsFloatingDice: 1.6
+};
+
 const neon = (color: string, emissive: string, emissiveIntensity: number) =>
-  [{ color, colorMode: "multiply" as const, emissive, emissiveIntensity }];
-const CYAN_PALM = neon("#a8f6ff", "#3ef2ff", 0.32);
-const PINK_PALM = neon("#ffb8f0", "#ff4fd8", 0.34);
-const MAGENTA_SEVEN = neon("#ffc4f2", "#ff4fd8", 0.55);
-const CYAN_SEVEN = neon("#bff8ff", "#3ef2ff", 0.5);
-const DICE = neon("#ffffff", "#3a1f72", 0.22);
+  [{ color, colorMode: "multiply" as const, roughness: 0.16, metallic: 0.14, emissive, emissiveIntensity }];
+const CYAN_PALM = neon("#a8f6ff", "#3ef2ff", 0.34);
+const PINK_PALM = neon("#ffb8f0", "#ff4fd8", 0.36);
+const SEVEN_LACQUER = neon("#ffffff", "#c878ff", 0.42);
+const DICE_LACQUER = neon("#f4f7ff", "#4a2890", 0.24);
 
 const palm = (i: number, kind: "nsNeonPalm" | "nsPinkPalm", side: -1 | 1): RoadsidePiece => ({
-  id: `roadside-palm-${i}`, kind, side,
+  id: `roadside-palm-${i}`,
+  kind,
+  side,
   x: 10.5 + ((i * 3) % 4) * 0.6,
   y: SCENERY.floorY,
   z0: i * 30,
   height: 15 + ((i * 5) % 3) * 0.8,
   yaw: i * 1.7,
+  color: "#ffffff",
   tint: kind === "nsNeonPalm" ? CYAN_PALM : PINK_PALM
 });
 
-/** Six palms (one every 30 m, alternating sides), two numeral sevens, three dice. */
+/** Six palms (one every 30 m, alternating sides), two numeral sevens, three dice — batched into 4 GPU-instanced draws. */
 export const ROADSIDE: readonly RoadsidePiece[] = [
   palm(0, "nsNeonPalm", -1), palm(1, "nsPinkPalm", 1), palm(2, "nsPinkPalm", -1),
   palm(3, "nsNeonPalm", 1), palm(4, "nsNeonPalm", -1), palm(5, "nsPinkPalm", 1),
-  { id: "roadside-seven-0", kind: "nsNumeralSeven", side: -1, x: 20, y: SCENERY.floorY, z0: 45, height: 18, yaw: 0.42, tint: MAGENTA_SEVEN },
-  { id: "roadside-seven-1", kind: "nsNumeralSeven", side: 1, x: 20, y: SCENERY.floorY, z0: 135, height: 18, yaw: -0.42, tint: CYAN_SEVEN },
-  { id: "roadside-dice-0", kind: "nsFloatingDice", side: 1, x: 7.8, y: 8.2, z0: 18, height: 1.6, yaw: 0.3, tint: DICE },
-  { id: "roadside-dice-1", kind: "nsFloatingDice", side: -1, x: 8.2, y: 9.0, z0: 78, height: 1.6, yaw: 2.1, tint: DICE },
-  { id: "roadside-dice-2", kind: "nsFloatingDice", side: 1, x: 8.6, y: 8.6, z0: 138, height: 1.6, yaw: 4.0, tint: DICE }
+  { id: "roadside-seven-0", kind: "nsNumeralSeven", side: -1, x: 20, y: SCENERY.floorY, z0: 45, height: 18, yaw: 0.42, color: "#ffc4f2", tint: SEVEN_LACQUER },
+  { id: "roadside-seven-1", kind: "nsNumeralSeven", side: 1, x: 20, y: SCENERY.floorY, z0: 135, height: 18, yaw: -0.42, color: "#bff8ff", tint: SEVEN_LACQUER },
+  { id: "roadside-dice-0", kind: "nsFloatingDice", side: 1, x: 7.8, y: 8.2, z0: 18, height: 1.6, yaw: 0.3, color: "#eaf6ff", tint: DICE_LACQUER },
+  { id: "roadside-dice-1", kind: "nsFloatingDice", side: -1, x: 8.2, y: 9.0, z0: 78, height: 1.6, yaw: 2.1, color: "#ffd8f4", tint: DICE_LACQUER },
+  { id: "roadside-dice-2", kind: "nsFloatingDice", side: 1, x: 8.6, y: 8.6, z0: 138, height: 1.6, yaw: 4.0, color: "#fff1b8", tint: DICE_LACQUER }
 ];
 
 const smooth = (t: number): number => {
@@ -77,20 +94,46 @@ export function roadsidePose(p: RoadsidePiece, travelled: number, time: number) 
   return { x: p.side * p.x, y, z, yaw, roll, scale: Math.max(0.001, fade) };
 }
 
+function transformFor(p: RoadsidePiece, travelled: number, time: number): AuraTransformSpec {
+  const pose = roadsidePose(p, travelled, time);
+  const s = Math.max(0.001, pose.scale * (p.height / BASE_HEIGHT[p.kind]));
+  return {
+    position: [pose.x, pose.y, pose.z],
+    rotation: [0, pose.yaw, pose.roll],
+    scale: s
+  };
+}
+
 export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHandle): { update(travelled: number, time: number): void } } {
-  for (const p of ROADSIDE) {
-    builder.add(model(assets[p.kind], {
-      name: p.id, targetHeight: p.height, role: "setDressing", castShadow: false, receiveShadow: false, materialOverrides: p.tint
-    }).runtime({ id: p.id }));
-  }
+  const groups = ROADSIDE_KINDS.map((kind) => {
+    const id = `roadside-${kind}`;
+    const members = ROADSIDE.filter((p) => p.kind === kind);
+    const colors = members.map((p) => p.color);
+    builder.add(
+      instances.model(assets[kind], {
+        name: id,
+        targetHeight: BASE_HEIGHT[kind],
+        role: "setDressing",
+        castShadow: false,
+        receiveShadow: false,
+        materialOverrides: members[0]!.tint,
+        transforms: members.map((p) => transformFor(p, 0, 0)),
+        colors
+      }).runtime({ id })
+    );
+    return { id, members, colors, scratch: new Array<AuraTransformSpec>(members.length) };
+  });
+
   return {
     bind(node) {
-      for (const p of ROADSIDE) node(p.id);
+      for (const g of groups) node(g.id);
       return {
         update(travelled, time) {
-          for (const p of ROADSIDE) {
-            const pose = roadsidePose(p, travelled, time);
-            node(p.id).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, pose.roll).setScale(pose.scale);
+          for (const g of groups) {
+            for (let i = 0; i < g.members.length; i++) {
+              g.scratch[i] = transformFor(g.members[i]!, travelled, time);
+            }
+            node(g.id).setInstances(g.scratch, g.colors);
           }
         }
       };

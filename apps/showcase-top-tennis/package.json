@@ -3,7 +3,7 @@
   "version": "5.0.1",
   "private": true,
   "type": "module",
-  "description": "Aura3D 1:1 3D port of Top Tennis (toptennisgame.com) — deterministic ball flight, 2-bone IK articulated athletes, 6 courts, singles matches, smash practice, and 32-player tour.",
+  "description": "Aura Slam 3D — Championship 3D tennis on Aura3D with deterministic ball flight, 2-bone IK articulated athletes, 6 courts, singles matches, smash practice, and 32-player tour.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

@@ -17,14 +17,16 @@
     <meta name="twitter:title" content="IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase" />
     <meta name="twitter:description" content="2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo…" />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/iron-crown@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Iron Crown","url":"https://aura3d.auraone.ai/apps/showcase-iron-crown/","description":"2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo…","genre":"Action and combat","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/iron-crown@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Iron Crown","url":"https://aura3d.auraone.ai/apps/showcase-iron-crown/","description":"2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo…","genre":"Action and combat","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/iron-crown@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="preload" href="./fonts/whitney-regular.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./fonts/whitney-medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/dinpro-medium.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./fonts/fonts.css" />
     <style>
       :root {
         color-scheme: dark;
-        font-family: var(--font-ui, "Whitney", sans-serif);
+        font-family: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+        font-variant-numeric: tabular-nums;
         --ic-gold: #ffd76a;
         --ic-red: #ff4f46;
         --ic-ink: #0c0d12;
@@ -58,7 +60,12 @@
         --a3d-dim: #c7cde2;
       }
       .ic-modes { display: contents; }
-      .aura3d-top-bar .ic-modes > button { flex: 0 0 auto; }
+      .aura3d-top-bar .ic-modes > button,
+      .aura3d-top-bar > button,
+      .aura3d-top-bar > .a3d-credit {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
       .ic-setup {
         position: fixed;
         top: var(--a3d-bar-space);
@@ -82,22 +89,25 @@
       }
       .ic-picker { display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
       .ic-group-label {
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 600;
-        letter-spacing: 0.22em;
-        color: #8f97af;
-        text-transform: uppercase;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
+        color: #9aa3bd;
       }
-      .ic-venues { display: flex; flex-wrap: wrap; gap: 4px; }
+      .ic-venues { display: flex; flex-wrap: wrap; gap: 5px; }
       .ic-venues button, .ic-fighters button {
         font-family: inherit;
         font-weight: 500;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.04);
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.05);
         color: #c7cde2;
-        padding: 4px 8px;
+        padding: 5px 10px;
+        min-height: 32px;
         border-radius: 7px;
-        font-size: 11.5px;
+        font-size: 12px;
         cursor: pointer;
         white-space: nowrap;
       }
@@ -105,9 +115,9 @@
       .ic-venues button[aria-pressed="true"], .ic-fighters button[aria-pressed="true"] {
         border-color: var(--ic-gold);
         color: var(--ic-gold);
-        background: rgba(255, 215, 106, 0.12);
+        background: rgba(255, 215, 106, 0.14);
       }
-      .ic-fighters { display: flex; flex-wrap: wrap; gap: 4px; }
+      .ic-fighters { display: flex; flex-wrap: wrap; gap: 5px; }
       .aura3d-controls-hint {
         margin: 0;
         font-size: 12px;
@@ -143,10 +153,17 @@
         background: #14161f; color: #f0c9c4; font-size: 14px; line-height: 1.6; padding: 24px; z-index: 90;
       }
       #render-error.on { display: grid; }
-      @media (max-width: 720px) {
-        .ic-row { gap: 5px 8px; }
+      @media (pointer: coarse), (max-width: 760px) {
+        .ic-row { gap: 6px 8px; }
         .ic-group-label { display: none; }
         .ic-row-select { padding-top: 4px; }
+        .ic-venues button, .ic-fighters button {
+          min-height: 44px;
+          min-width: 44px;
+          padding: 8px 12px;
+          font-size: 13px;
+        }
+        .aura3d-top-bar > .a3d-credit { display: none; }
       }
     </style>
   </head>
@@ -208,12 +225,24 @@
         <div id="fight-hud" aria-live="polite">
           <div class="fh-top">
             <section class="fh-plate fh-plate-p1">
-              <div class="fh-name-row">
-                <div class="fh-name" id="fh-name-p1">KENJI</div>
-                <div class="fh-pips" id="fh-pips-p1"><i></i><i></i></div>
+              <div class="fh-plate-inner">
+                <div class="fh-portrait" id="fh-portrait-p1" aria-hidden="true"></div>
+                <div class="fh-plate-bars">
+                  <div class="fh-name-row">
+                    <div class="fh-name" id="fh-name-p1">KENJI</div>
+                    <div class="fh-meta-right">
+                      <span class="fh-hp-val" id="fh-hp-val-p1">100</span>
+                      <div class="fh-pips" id="fh-pips-p1"><i></i><i></i></div>
+                    </div>
+                  </div>
+                  <div class="fh-health"><div class="fh-health-fill" id="fh-health-p1"></div><div class="fh-health-chip" id="fh-health-chip-p1"></div></div>
+                  <div class="fh-meter-row">
+                    <span class="fh-meter-tag">SUPER</span>
+                    <div class="fh-meter"><div class="fh-meter-fill" id="fh-meter-p1"></div></div>
+                    <span class="fh-meter-txt" id="fh-meter-txt-p1">MAX</span>
+                  </div>
+                </div>
               </div>
-              <div class="fh-health"><div class="fh-health-fill" id="fh-health-p1"></div><div class="fh-health-chip" id="fh-health-chip-p1"></div></div>
-              <div class="fh-meter"><div class="fh-meter-fill" id="fh-meter-p1"></div><span class="fh-meter-tag">SUPER</span><span class="fh-meter-txt" id="fh-meter-txt-p1"></span></div>
             </section>
             <section class="fh-clock">
               <div class="fh-round" id="fh-round">ROUND 1</div>
@@ -221,12 +250,24 @@
               <div class="fh-clock-label">CLOCK</div>
             </section>
             <section class="fh-plate fh-plate-p2">
-              <div class="fh-name-row">
-                <div class="fh-name" id="fh-name-p2">RIVAL</div>
-                <div class="fh-pips fh-pips-right" id="fh-pips-p2"><i></i><i></i></div>
+              <div class="fh-plate-inner">
+                <div class="fh-plate-bars">
+                  <div class="fh-name-row">
+                    <div class="fh-name" id="fh-name-p2">RIVAL</div>
+                    <div class="fh-meta-right">
+                      <div class="fh-pips fh-pips-right" id="fh-pips-p2"><i></i><i></i></div>
+                      <span class="fh-hp-val" id="fh-hp-val-p2">100</span>
+                    </div>
+                  </div>
+                  <div class="fh-health fh-health-right"><div class="fh-health-fill" id="fh-health-p2"></div><div class="fh-health-chip" id="fh-health-chip-p2"></div></div>
+                  <div class="fh-meter-row fh-meter-row-right">
+                    <span class="fh-meter-txt" id="fh-meter-txt-p2">MAX</span>
+                    <div class="fh-meter fh-meter-right"><div class="fh-meter-fill" id="fh-meter-p2"></div></div>
+                    <span class="fh-meter-tag">SUPER</span>
+                  </div>
+                </div>
+                <div class="fh-portrait fh-portrait-p2" id="fh-portrait-p2" aria-hidden="true"></div>
               </div>
-              <div class="fh-health fh-health-right"><div class="fh-health-fill" id="fh-health-p2"></div><div class="fh-health-chip" id="fh-health-chip-p2"></div></div>
-              <div class="fh-meter fh-meter-right"><div class="fh-meter-fill" id="fh-meter-p2"></div><span class="fh-meter-tag">SUPER</span><span class="fh-meter-txt" id="fh-meter-txt-p2"></span></div>
             </section>
           </div>
 

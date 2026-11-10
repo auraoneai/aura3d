@@ -38,6 +38,89 @@ export const LIVE_CAM = {
 /** FOV kick on a made basket (degrees, decays with the existing camera punch). */
 export const MAKE_FOV_KICK = 3;
 
+export interface ViewportFocus {
+  readonly holder: V3;
+  readonly ball: V3;
+  readonly rim: V3;
+  readonly shotNow: boolean;
+}
+
+/** Project a world point into NDC `[-1..1, -1..1, depth]` for a perspective camera pose (null if behind eye). */
+export function projectPointToNdc(point: V3, pose: CameraPose, aspect: number): [number, number, number] | null {
+  const fx = pose.target[0] - pose.eye[0];
+  const fy = pose.target[1] - pose.eye[1];
+  const fz = pose.target[2] - pose.eye[2];
+  const fl = Math.hypot(fx, fy, fz) || 1;
+  const fwdX = fx / fl, fwdY = fy / fl, fwdZ = fz / fl;
+  // right = normalize(cross(fwd, up=[0,1,0])) = normalize([-fwdZ, 0, fwdX]) wait: fwd x up = (fy*0 - fz*1, fz*0 - fx*0, fx*1 - fy*0) = (-fwdZ, 0, fwdX)
+  const rl = Math.hypot(-fwdZ, fwdX) || 1;
+  const rx = -fwdZ / rl, ry = 0, rz = fwdX / rl;
+  // camUp = cross(right, fwd)
+  const ux = ry * fwdZ - rz * fwdY;
+  const uy = rz * fwdX - rx * fwdZ;
+  const uz = rx * fwdY - ry * fwdX;
+
+  const dx = point[0] - pose.eye[0];
+  const dy = point[1] - pose.eye[1];
+  const dz = point[2] - pose.eye[2];
+  const camZ = dx * fwdX + dy * fwdY + dz * fwdZ;
+  if (camZ <= 0.1) return null;
+  const camX = dx * rx + dy * ry + dz * rz;
+  const camY = dx * ux + dy * uy + dz * uz;
+  const tanHalfV = Math.tan((pose.fov * Math.PI) / 360);
+  const tanHalfH = tanHalfV * Math.max(aspect, 0.25);
+  return [camX / (camZ * tanHalfH), camY / (camZ * tanHalfV), camZ];
+}
+
+/**
+ * Aspect-aware live broadcast framing:
+ *   - Landscape (`aspect >= 0.95`, e.g. `1280x720`): preserves `want` untouched (`LIVE_CAM` long-lens sideline chase).
+ *   - Portrait (`aspect < 0.95`, e.g. `390x844` -> `0.462`): blends to an elevated top-of-key / 3/4 broadcast pose with
+ *     widened vertical FOV so the ballhandler, on-ball defender, and active rim `[0, 3.05, 0]` always remain inside the
+ *     central play frustum clear of top scoreboard and bottom touch controls.
+ */
+export function frameCameraForAspect(want: CameraPose, aspect: number, focus: ViewportFocus): CameraPose {
+  if (!Number.isFinite(aspect) || aspect >= 0.95) return want;
+  const w = Math.max(0, Math.min(1, (0.95 - aspect) / 0.45));
+  const subj = focus.shotNow ? focus.ball : focus.holder;
+  const rim = focus.rim;
+  const portraitFov = Math.min(58, Math.max(46, 26 / Math.max(aspect, 0.45)));
+  const tanHalfV = Math.tan((portraitFov * Math.PI) / 360);
+  const tanHalfH = tanHalfV * Math.max(aspect, 0.35);
+
+  const midX = subj[0] * 0.52 + rim[0] * 0.48;
+  const midZ = subj[2] * 0.48 + rim[2] * 0.52;
+  const midY = focus.shotNow
+    ? Math.max(2.05, Math.min(3.1, (subj[1] + rim[1]) * 0.5))
+    : 1.88;
+
+  // Keep a subtle 3/4 angle aligned with the subject's side so dribble hand & ball never occlude each other,
+  // while pulling back far enough that lateral separation fits comfortably inside 68% of the narrow horizontal cone.
+  const spanX = Math.abs(subj[0] - rim[0]) + 2.5;
+  const neededDist = Math.min(20.5, Math.max(11.8, (spanX * 0.5) / Math.max(tanHalfH * 0.68, 0.12)));
+  const sideBias = subj[0] * 0.55 + (subj[0] >= 0 ? 1.35 : -1.35);
+  const portraitEye: V3 = [
+    Math.max(-8.8, Math.min(8.8, midX + sideBias * 0.45)),
+    focus.shotNow ? 4.8 : 5.35,
+    Math.max(subj[2] + 7.4, midZ + neededDist * 0.86, 13.8)
+  ];
+  const portraitTarget: V3 = [midX, midY, midZ];
+
+  return {
+    eye: [
+      want.eye[0] + (portraitEye[0] - want.eye[0]) * w,
+      want.eye[1] + (portraitEye[1] - want.eye[1]) * w,
+      want.eye[2] + (portraitEye[2] - want.eye[2]) * w
+    ],
+    target: [
+      want.target[0] + (portraitTarget[0] - want.target[0]) * w,
+      want.target[1] + (portraitTarget[1] - want.target[1]) * w,
+      want.target[2] + (portraitTarget[2] - want.target[2]) * w
+    ],
+    fov: want.fov + (portraitFov - want.fov) * w
+  };
+}
+
 /**
  * Per-court fly-in rails: four eyes from high and wide down to the broadcast spot behind the sideline, looking at the
  * court centre. Every eye stays at least 3 m from the court's poles (rucker floods, shanghai lamps, venice palms) and the

@@ -197,22 +197,29 @@ const LEGS: Rgb = [0.4, 0.42, 0.48];
 export const SPECTATOR_BODY_POSES: readonly AuraCustomGeometrySpec[] = [
   (() => {
     const out: Buffers = { p: [], n: [], c: [], i: [] };
-    pushTaperedPrism(out, 0, -0.01, 0, 0.5, 0.15, 0.2, 0.1, 0.11, WHITE);
-    for (const side of [-1, 1]) pushTaperedPrism(out, side * 0.235, 0.0, 0.14, 0.47, 0.045, 0.05, 0.05, 0.055, WHITE, 6);
-    for (const side of [-1, 1]) pushEllipsoid(out, [side * 0.085, 0.07, 0.26], [0.075, 0.07, 0.2], () => LEGS, 8, 5);
-    pushBox(out, [-0.15, -0.42, 0.36], [0.15, 0.0, 0.48], all([0.36, 0.38, 0.44]));
+    // Tapered upper torso + rib/shoulder flare + V-collar accent.
+    pushTaperedPrism(out, 0, -0.015, 0.02, 0.49, 0.145, 0.205, 0.095, 0.115, WHITE, 8);
+    pushTaperedPrism(out, 0, -0.01, 0.48, 0.54, 0.11, 0.075, 0.085, 0.068, [0.92, 0.92, 0.94], 6);
+    // Rounded deltoid shoulder caps + relaxed upper arms + forearms resting forward on lap.
+    for (const side of [-1, 1]) {
+      pushEllipsoid(out, [side * 0.21, 0.44, -0.01], [0.058, 0.055, 0.058], () => WHITE, 6, 4);
+      pushTaperedPrism(out, side * 0.225, 0.01, 0.19, 0.43, 0.042, 0.048, 0.045, 0.052, WHITE, 6);
+      pushEllipsoid(out, [side * 0.175, 0.16, 0.13], [0.038, 0.036, 0.11], () => [0.86, 0.72, 0.62], 6, 4);
+      pushEllipsoid(out, [side * 0.088, 0.07, 0.25], [0.076, 0.068, 0.195], () => LEGS, 6, 4);
+    }
+    pushBox(out, [-0.145, -0.4, 0.35], [0.145, 0.02, 0.46], all([0.34, 0.36, 0.43]));
     return finish(out);
   })()
 ];
 
 /**
- * Head (origin at its centre, facing +Z): skin-white face, hair over the top and back. GU47 phase 4: a low-poly ellipsoid
- * (10 x 7, smooth normals) replaces the two boxes, so the head's yaw still reads (hair behind, face in front) without the voxel cube.
+ * Head (origin at its centre, facing +Z): sculpted cranium + neck base, skin-white face front, hair cap over crown and back.
  */
 export const SPECTATOR_HEAD_POSES: readonly AuraCustomGeometrySpec[] = [
   (() => {
     const out: Buffers = { p: [], n: [], c: [], i: [] };
-    pushEllipsoid(out, [0, 0, 0], [0.1, 0.125, 0.105], (ny, nz) => (ny > 0.45 || nz < -0.25 ? HAIR : WHITE));
+    pushEllipsoid(out, [0, 0.005, 0], [0.1, 0.125, 0.105], (ny, nz) => (ny > 0.42 || nz < -0.22 ? HAIR : WHITE), 12, 8);
+    pushTaperedPrism(out, 0, -0.012, -0.14, -0.06, 0.048, 0.044, 0.048, 0.044, WHITE, 6);
     return finish(out);
   })()
 ];

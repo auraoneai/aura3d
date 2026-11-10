@@ -1,9 +1,7 @@
 /**
- * GD-19 street dressing (GU47 WP-14): SDF street-name signs that match the HUD `where` panel, parked cars on the cross
- * streets, and trolley catenary over the avenue. Pure layout tables; scene.ts mounts the nodes and main.ts recycles them
- * on the intersection and lamp strides. Presentation only: nothing here is in the sim (D8), so the parked cars sit on the
- * cross streets between the kerb and the building fronts, outside every lane the player or the traffic can reach (the player is clamped to |x| <= 9.2).
- * GU47(WP-36): bus shelters, hydrants, news boxes and catenary poles are Meshy street furniture (asset needs).
+ * GD-19 street dressing (GU47 WP-14 / WP-08): SDF street-name blades mounted cleanly on curbside signal mast arms
+ * (never clipping into building walls), sculpted multi-canopy urban street trees, parked cars on the cross streets,
+ * and trolley catenary over the avenue. Pure layout tables; scene.ts mounts the nodes and main.ts recycles them.
  */
 import type { GridAssetKey } from "./aura-assets";
 
@@ -32,10 +30,19 @@ export function crossStreetName(district: number): string {
 /**
  * Sign nodes: two per district (intersections are 92 m apart and a district is 160 m, so at most two visible crossings
  * share a district). Node id `sf-sign-<district>-<slot>`.
+ * Hung beneath the right-hand curbside signal mast arm (`x = 7.55 m`, well clear of the `19.5 m` building facades).
  */
 export const SIGN_SLOTS = 2;
 export const signNodeId = (district: number, slot: number): string => `sf-sign-${district}-${slot}`;
-export const SIGN = { size: 0.42, plate: [2.9, 0.62, 0.06] as [number, number, number], x: 9.2, y: 5.4, dz: -9.05, plateColor: "#1f5a3a", textColor: "#f4f7f2" } as const;
+export const SIGN = {
+  size: 0.28,
+  plate: [2.15, 0.44, 0.05] as [number, number, number],
+  x: 7.55,
+  y: 6.08,
+  dz: -9.12,
+  plateColor: "#194d33",
+  textColor: "#f4f7f2"
+} as const;
 
 /** Which sign node stands at each intersection: `[nodeId, intersectionWorldZ]`, in the order given. */
 export function signAssignments(intersectionZs: readonly number[]): [string, number][] {
@@ -73,3 +80,14 @@ export function parkedLayout(poolIndex: number, intersectionZs: readonly number[
  * every lamp pair (pole to pole). One instanced node each (+2 draws).
  */
 export const CATENARY = { wiresX: [-3.6, -3.0, 3.0, 3.6] as const, wireY: 5.9, wire: [0.025, 0.025, 420] as [number, number, number], span: [22.4, 0.03, 0.03] as [number, number, number], spanY: 6.0 } as const;
+
+/**
+ * Multi-lobe sculpted London-plane street tree canopy clusters `[dx, dy, dz, sx, sy, sz]` (positive scales only so GPU
+ * instancing stays in 1 draw call; replaces single sphere-on-stick lollipops on both pavements).
+ */
+export const TREE_CROWN_LOBES: ReadonlyArray<readonly [number, number, number, number, number, number]> = [
+  [0, 4.15, 0, 1.05, 0.72, 1.08],
+  [-0.68, 3.65, 0.42, 0.78, 0.58, 0.82],
+  [0.64, 3.78, -0.46, 0.82, 0.62, 0.78],
+  [0.12, 4.72, 0.18, 0.7, 0.52, 0.72]
+];

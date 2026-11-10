@@ -80,18 +80,17 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "forest", at: 1900, timeOfDay: "sunset",
     key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffb57a", intensity: 3.4 },
     environmentIntensity: 1.3,
-    fog: { color: "#c9a294", density: 0.0019 },
-    sky: { zenith: "#40559f", horizon: "#f4ac86", glow: "#ff9c62", cloud: "#fbcab0", stars: 0, moon: 0 },
+    fog: { color: "#b69896", density: 0.0019 },
+    sky: { zenith: "#2d448a", horizon: "#f0a684", glow: "#ff9c62", cloud: "#f7c4ac", stars: 0.06, moon: 0.2 },
     lanterns: 0.8, ink: 1
   },
   {
     id: "gate", at: 2500, timeOfDay: "sunset afterglow",
-    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa468", intensity: 3.3 },
+    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa874", intensity: 3.3 },
     environmentIntensity: 1.35,
-    // GU47 phase 6: a gold afterglow instead of the magenta-pink one (judges g20p6g2: "pink sky clashes with the
-    // orange rocks, garish").
-    fog: { color: "#cdb3a0", density: 0.0018 },
-    sky: { zenith: "#3d5aa8", horizon: "#f6c08a", glow: "#ffb066", cloud: "#fde0bc", stars: 0.12, moon: 0 },
+    // GU47 phase 6: a gold afterglow under an indigo-moonlit zenith instead of magenta-pink.
+    fog: { color: "#b8a6a4", density: 0.0018 },
+    sky: { zenith: "#223874", horizon: "#eeaa82", glow: "#ffb066", cloud: "#f8d4b4", stars: 0.34, moon: 0.65 },
     lanterns: 1, ink: 1
   }
 ];
@@ -244,17 +243,16 @@ export const KEY_GAIN = 1.4;
  * Output exposure of the evening look (aces). GU47 phase 3: back to 1, the 4.6.2 value; the light rig (a higher sun and
  * a stronger sky fill) carries the brightness instead, so the authored sky dome renders at its own values.
  */
-export const EVENING_EXPOSURE = 1.0;
+export const EVENING_EXPOSURE = 1.04;
 
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
-  toneMapping: "aces" as const,
-  // Phase-2 second pass: 0.55 over 0.85 washed the brighter village white (g20p2r4); phase 3: threshold 1.4 so the
-  // sunlit cobbles do not bloom into a veil (g20p3-r1).
-  bloom: { intensity: 0.3, threshold: 1.4, radius: 0.4 },
-  grade: { contrast: 1.16, saturation: 1.22 },
-  vignette: { intensity: 0.14, smoothness: 0.8 },
-  grain: { intensity: 0.025 },
+  toneMapping: "agx" as const,
+  // WP-23: AgX highlight roll-off + cinematicBloom thresholded so warm paper lanterns and spirit flames glow cleanly.
+  bloom: { intensity: 0.38, threshold: 0.86, radius: 0.42 },
+  grade: { contrast: 1.15, saturation: 1.2 },
+  vignette: { intensity: 0.14, smoothness: 0.82 },
+  grain: { intensity: 0.02 },
   outline: { color: PALETTE.ink, width: 1, threshold: 0.3 }
 };
 
@@ -293,10 +291,11 @@ export function nearestLanterns(sorted: readonly { readonly s: number }[], s: nu
  * Material patches only: the same instanced layers draw them (+0 draws). `?look=original` keeps the old specs.
  */
 export const EVENING_SURFACES: Readonly<Record<string, { readonly roughness: number; readonly clearcoat: number; readonly clearcoatRoughness: number }>> = {
-  roofs: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
-  hips: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
-  capcones: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
-  rocks: { roughness: 0.62, clearcoat: 0.3, clearcoatRoughness: 0.35 }
+  roofs: { roughness: 0.22, clearcoat: 0.88, clearcoatRoughness: 0.08 },
+  hips: { roughness: 0.22, clearcoat: 0.88, clearcoatRoughness: 0.08 },
+  capcones: { roughness: 0.24, clearcoat: 0.85, clearcoatRoughness: 0.09 },
+  trim: { roughness: 0.34, clearcoat: 0.72, clearcoatRoughness: 0.12 },
+  rocks: { roughness: 0.48, clearcoat: 0.42, clearcoatRoughness: 0.22 }
 };
 
 /**
@@ -306,9 +305,9 @@ export const EVENING_SURFACES: Readonly<Record<string, { readonly roughness: num
  */
 export type LanternGlow = "day" | "dusk" | "night";
 export const LANTERN_GLOW: Readonly<Record<LanternGlow, { readonly emissive: string; readonly intensity: number }>> = {
-  day: { emissive: "#e09a5a", intensity: 0.45 },
-  dusk: { emissive: PALETTE.lanternAmber, intensity: 1.3 },
-  night: { emissive: PALETTE.lanternAmber, intensity: 2.2 }
+  day: { emissive: "#e89c54", intensity: 0.55 },
+  dusk: { emissive: PALETTE.lanternAmber, intensity: 1.55 },
+  night: { emissive: PALETTE.lanternAmber, intensity: 2.55 }
 };
 
 /** Glow group of a lantern standing at course distance `s`. */

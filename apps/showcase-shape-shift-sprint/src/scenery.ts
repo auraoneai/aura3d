@@ -1,28 +1,41 @@
 /**
- * Shape Shift Sprint scenery (presentation only): "Toybox Skyway". The cream road is a sky bridge on candy
- * pillars above a sea of cloud, with floating toy islands (grass caps on rock undersides, giant sphere / cube /
- * pyramid toys, lollipop trees, shape-sorter arches and turret towers) drifting past in three parallax layers,
- * a painted sky dome with a warm horizon, sun glow and drifting cloud bands, and distance fog on every surface.
+ * Shape Shift Sprint scenery & paired GLSL 300 es + WGSL custom materials (presentation only): "Toybox Skyway".
+ * The cream road is a glossy clearcoat sky bridge on candy pillars above a sea of cloud, with floating toy islands
+ * drifting past in three parallax layers, a 6-world milestone sky dome with drifting clouds and sun shafts, an
+ * iridescent thin-film Fresnel shield bubble, a hover hydro-glow cushion, and an 8x4 plasma morph flipbook burst.
  *
  * Everything here is a pure function of the simulation's `scroll` and `elapsed`; it never reads or advances the
- * gameplay RNG, never touches collision, scoring or timing, and draws with game-local `material.custom` programs.
+ * gameplay RNG, never touches collision, scoring or timing, and keeps 100% WebGPU + WebGL2 dual-shader parity.
  */
 import { geometry, material } from "@aura3d/engine";
 import { hexToLinear, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
+import type { FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
+import { sampleToyboxWorld } from "./look";
 import { boxMesh, coneMesh, groundQuad, mergeMeshes, sphereMesh, ROAD_DIMS } from "./meshes";
 import {
-  CONTACT_FRAGMENT_WGSL, CONTACT_VERTEX_WGSL, DRIFT_VERTEX_WGSL, RING_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, toyFragmentWgsl, toyVertexWgsl
+  CONTACT_FRAGMENT_WGSL,
+  CONTACT_VERTEX_WGSL,
+  DRIFT_VERTEX_WGSL,
+  HYDRO_FRAGMENT_WGSL,
+  PLASMA_FRAGMENT_WGSL,
+  RING_FRAGMENT_WGSL,
+  SHIELD_FRAGMENT_WGSL,
+  SHIELD_VERTEX_WGSL,
+  SKY_FRAGMENT_WGSL,
+  SKY_VERTEX_WGSL,
+  toyFragmentWgsl,
+  toyVertexWgsl
 } from "./scenery-wgsl";
 
 /* ------------------------------------------------------------------ palette */
 
 export const SCENERY = {
-  /** Fog colour = the sky's horizon so far surfaces melt into it. */
-  fog: "#f8d6bd",
+  /** Fog colour = World 0's sky horizon so far surfaces melt into it. */
+  fog: "#f8d8c0",
   /** Fog colour for surfaces far below the road (the cloud sea haze). */
-  fogLow: "#d9d0ef",
+  fogLow: "#dad1f0",
   fogStart: 40,
-  fogDensity: 0.0085,
+  fogDensity: 0.0082,
   grass: ["#7cc95a", "#5fb34e", "#9bd86a"],
   rockTop: "#d9a47a",
   rockMid: "#b9785a",
@@ -39,12 +52,13 @@ export const SCENERY = {
 } as const;
 
 const L = (hex: string): Rgb => hexToLinear(hex);
+const WORLD_0 = sampleToyboxWorld(0);
 
 /* ------------------------------------------------------------------ shaders */
 
 const SHOULDER = /* glsl */ `
 vec3 shoulder(vec3 c) {
-  const float k = 0.82;
+  const float k = 0.85;
   vec3 over = max(c - k, vec3(0.0));
   return min(c, vec3(k)) + (1.0 - k) * (1.0 - exp(-over / (1.0 - k)));
 }`;
@@ -63,9 +77,9 @@ void main() {
 }`;
 
 /**
- * Toybox toon: the runner-kit's soft two-band ramp and hemisphere, re-aimed with a warm key from behind the camera,
- * a cool front fill, a warm-white fresnel rim (rounded toy plastic), and exponential distance fog that also hazes
- * anything far below the road into the cloud sea. Colours are linear; the engine encodes to sRGB on output.
+ * Glossy Toybox Lacquer + Toon: soft two-band hemisphere ramp + crisp dual-lobe clearcoat specular highlight
+ * tinted by the active Toybox World's `sunTint`, subtle surface micro-grain, warm Fresnel vinyl rim, and
+ * height-aware cloud-sea distance fog.
  */
 const FRAGMENT = (tone: boolean, stripes = false): string => /* glsl */ `
 in vec3 vNormal;
@@ -77,24 +91,30 @@ ${SHOULDER}
 float ramp(float d) {
   float c = d * 0.5 + 0.5;
   float fw = fwidth(c) * 0.5;
-  return mix(0.52, 1.0, smoothstep(0.66 - fw, 0.66 + fw, c));
+  return mix(0.54, 1.0, smoothstep(0.64 - fw, 0.64 + fw, c));
 }
 void main() {
   vec3 N = normalize(vNormal);
   vec3 toCam = cameraPosition - vWorld;
   if (dot(N, toCam) < 0.0) N = -N;
   vec3 V = normalize(toCam);
-  vec3 base = baseColor${tone ? " * vTone" : ""};
+  float uvGrain = 1.0 + (sin(vUv.x * 37.699) * cos(vUv.y * 25.132)) * 0.014 * clearcoat;
+  vec3 base = baseColor${tone ? " * vTone" : ""} * uvGrain;
 ${stripes ? "  base = mix(stripeA, stripeB, step(0.5, fract(vWorld.z / stripePeriod)));" : ""}
-  vec3 skyC = vec3(0.86, 0.93, 1.0);
-  vec3 groundC = vec3(0.36, 0.30, 0.46);
-  vec3 hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.36;
+  vec3 skyC = vec3(0.88, 0.94, 1.0);
+  vec3 groundC = vec3(0.38, 0.32, 0.48);
+  vec3 hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.38;
   vec3 L1 = normalize(vec3(5.0, 11.0, 7.5));
   vec3 L2 = normalize(vec3(-7.0, 6.0, -6.0));
-  vec3 lit = hemi + vec3(0.66, 0.56, 0.42) * ramp(dot(N, L1)) + vec3(0.13, 0.18, 0.32) * ramp(dot(N, L2));
+  vec3 keyLight = vec3(0.68, 0.60, 0.48) * sunTint;
+  vec3 lit = hemi + keyLight * ramp(dot(N, L1)) + vec3(0.14, 0.19, 0.33) * ramp(dot(N, L2));
   vec3 c = shoulder(base * lit);
+  vec3 H = normalize(L1 + V);
+  float ndh = max(dot(N, H), 0.0);
+  float coatSpec = (pow(ndh, 68.0) * 0.44 + pow(ndh, 16.0) * 0.12) * clearcoat;
+  c += sunTint * coatSpec;
   float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
-  c += vec3(1.0, 0.86, 0.72) * rim * rimStrength;
+  c += mix(vec3(1.0, 0.88, 0.76), sunTint, 0.45) * rim * rimStrength;
   c += emissive;
   float d = length(toCam);
   float f = 1.0 - exp(-max(d - fogStart, 0.0) * fogDensity);
@@ -109,12 +129,13 @@ export interface ToyToonOptions {
   readonly stripes?: readonly [Rgb, Rgb, number];
   readonly emissive?: Rgb;
   readonly rim?: number;
+  readonly clearcoat?: number;
   readonly tone?: boolean;
   /** Surfaces that must stay crisp at gameplay distance (walls, road) can push the fog start out. */
   readonly fogStart?: number;
 }
 
-/** The game's lit surface program (road, walls, player, tokens, particles and all scenery). */
+/** The game's lit lacquer/toon surface program (road, walls, rims, tokens, particles and backdrop scenery). */
 export function toyToonSpec(base: Rgb, options: ToyToonOptions = {}): CustomSpec {
   const tone = options.tone ?? false;
   return {
@@ -123,10 +144,12 @@ export function toyToonSpec(base: Rgb, options: ToyToonOptions = {}): CustomSpec
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...(options.emissive ?? [0, 0, 0])] },
+      sunTint: { type: "color3", value: [...WORLD_0.sunTint] },
       alpha: { type: "f32", value: 1 },
       rimStrength: { type: "f32", value: options.rim ?? 0.22 },
-      fogColor: { type: "color3", value: [...L(SCENERY.fog)] },
-      fogLow: { type: "color3", value: [...L(SCENERY.fogLow)] },
+      clearcoat: { type: "f32", value: options.clearcoat ?? 0.36 },
+      fogColor: { type: "color3", value: [...WORLD_0.fog] },
+      fogLow: { type: "color3", value: [...WORLD_0.fogLow] },
       fogStart: { type: "f32", value: options.fogStart ?? SCENERY.fogStart },
       fogDensity: { type: "f32", value: SCENERY.fogDensity },
       ...(options.stripes ? {
@@ -147,9 +170,9 @@ void main() {
 }`;
 
 /**
- * Painted day sky: deep zenith blue to a peach horizon, a warm sun glow low over the road's far left, two bands of
- * soft value-noise cloud that drift slowly with uTime, and a lavender-white haze below the horizon that matches the
- * cloud-sea fog.
+ * Painted 6-World Toybox sky dome: zenith/mid/low/horizon uniforms smoothly blend across milestones,
+ * with a warm sun glow low over the road's far left, two bands of soft FBM cloud drifting on uTime,
+ * and a cloud-sea haze below the horizon.
  */
 const SKY_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
@@ -170,16 +193,13 @@ float fbm(vec2 p) {
 void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
   float y = dir.y;
-  vec3 zenith = vec3(0.090, 0.330, 0.760);
-  vec3 mid = vec3(0.300, 0.620, 0.900);
-  vec3 low = vec3(0.700, 0.820, 0.920);
   vec3 horizon = fogColor;
-  vec3 c = mix(horizon, low, smoothstep(0.0, 0.10, y));
-  c = mix(c, mid, smoothstep(0.08, 0.32, y));
-  c = mix(c, zenith, smoothstep(0.30, 0.85, y));
+  vec3 c = mix(horizon, lowColor, smoothstep(0.0, 0.10, y));
+  c = mix(c, midColor, smoothstep(0.08, 0.34, y));
+  c = mix(c, zenithColor, smoothstep(0.30, 0.86, y));
   vec3 sun = normalize(vec3(-0.55, 0.16, -0.82));
   float s = max(dot(dir, sun), 0.0);
-  c += vec3(1.0, 0.62, 0.34) * (pow(s, 6.0) * 0.28 + pow(s, 48.0) * 0.45) + vec3(1.0, 0.95, 0.85) * pow(s, 900.0) * 3.0;
+  c += sunTint * vec3(1.0, 0.66, 0.40) * (pow(s, 6.0) * 0.28 + pow(s, 48.0) * 0.45) + sunTint * pow(s, 900.0) * 2.6;
   float az = atan(dir.x, -dir.z);
   float t = uTime * 0.004;
   vec2 q = vec2(az * 3.2 + t, y * 13.0);
@@ -187,7 +207,7 @@ void main() {
   float cl = smoothstep(0.50, 0.78, fbm(q) * 0.85 + fbm(q * 2.7 + 3.1) * 0.3) * band;
   float hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.32, 0.5, y);
   float cl2 = smoothstep(0.58, 0.8, fbm(vec2(az * 2.0 - t * 1.6, y * 5.0) + 11.0)) * hi * 0.7;
-  vec3 cloudLit = mix(vec3(0.93, 0.89, 0.97), vec3(1.0, 0.97, 0.92), smoothstep(0.0, 0.3, y));
+  vec3 cloudLit = mix(vec3(0.93, 0.89, 0.97), sunTint, smoothstep(0.0, 0.3, y));
   c = mix(c, cloudLit + vec3(1.0, 0.7, 0.45) * pow(s, 4.0) * 0.35, cl * 0.92);
   c = mix(c, vec3(0.97, 0.97, 1.0), cl2);
   c = mix(c, fogLow, smoothstep(0.0, -0.18, y));
@@ -199,8 +219,12 @@ export function toySkySpec(): CustomSpec {
     glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
     wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
     uniforms: {
-      fogColor: { type: "color3", value: [...L(SCENERY.fog)] },
-      fogLow: { type: "color3", value: [...L(SCENERY.fogLow)] }
+      zenithColor: { type: "color3", value: [...WORLD_0.zenith] },
+      midColor: { type: "color3", value: [...WORLD_0.mid] },
+      lowColor: { type: "color3", value: [...WORLD_0.low] },
+      fogColor: { type: "color3", value: [...WORLD_0.fog] },
+      fogLow: { type: "color3", value: [...WORLD_0.fogLow] },
+      sunTint: { type: "color3", value: [...WORLD_0.sunTint] }
     },
     side: "double",
     depthWrite: false
@@ -251,6 +275,126 @@ export function contactSpec(alpha = 0.32): CustomSpec {
     glsl: { vertex: CONTACT_VERTEX, fragment: CONTACT_FRAGMENT },
     wgsl: { vertex: CONTACT_VERTEX_WGSL, fragment: CONTACT_FRAGMENT_WGSL },
     uniforms: { baseColor: { type: "color3", value: [0.09, 0.06, 0.16] }, alpha: { type: "f32", value: alpha } },
+    transparent: true,
+    depthWrite: false,
+    side: "double"
+  };
+}
+
+const SHIELD_VERTEX = /* glsl */ `
+out vec3 vNormal;
+out vec3 vWorld;
+void main() {
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+const SHIELD_FRAGMENT = /* glsl */ `
+in vec3 vNormal;
+in vec3 vWorld;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  float ndv = clamp(abs(dot(N, V)), 0.0, 1.0);
+  float fresnel = pow(1.0 - ndv, 3.4);
+  float phase = (1.0 - ndv) * 7.5 + uTime * 1.8 + N.y * 2.2;
+  vec3 film = vec3(
+    0.5 + 0.5 * sin(phase),
+    0.5 + 0.5 * sin(phase + 2.094),
+    0.5 + 0.5 * sin(phase + 4.188)
+  );
+  vec3 L = normalize(vec3(5.0, 11.0, 7.5));
+  vec3 H = normalize(L + V);
+  float glint = pow(max(dot(N, H), 0.0), 56.0);
+  vec3 col = mix(baseColor, film, 0.42 * fresnel) + vec3(1.0, 0.98, 0.94) * glint * 0.9;
+  float outAlpha = clamp(alpha * (0.04 + 1.45 * fresnel) + glint * 0.55, 0.0, 0.9);
+  outColor = vec4(col, outAlpha);
+}`;
+
+/** Thin-film iridescent Fresnel soap/glass shield bubble keeping the inner form colour crisp. */
+export function bubbleShieldSpec(base: Rgb, alpha = 0.52): CustomSpec {
+  return {
+    glsl: { vertex: SHIELD_VERTEX, fragment: SHIELD_FRAGMENT },
+    wgsl: { vertex: SHIELD_VERTEX_WGSL, fragment: SHIELD_FRAGMENT_WGSL },
+    uniforms: {
+      baseColor: { type: "color3", value: [...base] },
+      alpha: { type: "f32", value: alpha }
+    },
+    transparent: true,
+    depthWrite: false,
+    side: "front"
+  };
+}
+
+const HYDRO_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  vec2 p = (vUv - 0.5) * 2.0;
+  float d = length(p);
+  float pulse = 0.5 + 0.5 * sin(uTime * 7.0 - d * 6.5);
+  float outerRing = smoothstep(0.58, 0.76, d) * (1.0 - smoothstep(0.84, 1.0, d));
+  float innerCore = pow(clamp(1.0 - d, 0.0, 1.0), 2.1) * (0.34 + 0.16 * pulse);
+  float wake = clamp(p.y * 0.5 + 0.5, 0.0, 1.0) * (1.0 - smoothstep(0.0, 0.95, d)) * 0.22;
+  vec3 col = mix(baseColor, accentColor, outerRing * 0.65 + pulse * 0.2);
+  float a = clamp(alpha * (outerRing * 0.95 + innerCore + wake), 0.0, 0.92);
+  outColor = vec4(col, a);
+}`;
+
+/** Hover-cushion hydro-glow ring beneath cube/cone forms (and speed streaks). */
+export function hydroGlowSpec(base: Rgb, accent: Rgb, alpha = 0.62): CustomSpec {
+  return {
+    glsl: { vertex: CONTACT_VERTEX, fragment: HYDRO_FRAGMENT },
+    wgsl: { vertex: CONTACT_VERTEX_WGSL, fragment: HYDRO_FRAGMENT_WGSL },
+    uniforms: {
+      baseColor: { type: "color3", value: [...base] },
+      accentColor: { type: "color3", value: [...accent] },
+      alpha: { type: "f32", value: alpha }
+    },
+    transparent: true,
+    depthWrite: false,
+    side: "double"
+  };
+}
+
+const PLASMA_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+vec3 srgbToLin3(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+vec4 samplePlasmaCell(float idx, vec2 uv) {
+  float col = mod(idx, 8.0);
+  float row = floor(idx / 8.0);
+  vec2 cellUv = (vec2(col, row) + clamp(uv, 0.02, 0.98)) / vec2(8.0, 4.0);
+  return texture(plasmaAtlas, cellUv);
+}
+void main() {
+  float p = clamp(progress, 0.0, 0.999);
+  float f = p * 31.0;
+  float f0 = floor(f);
+  float f1 = min(31.0, f0 + 1.0);
+  vec4 s0 = samplePlasmaCell(f0, vUv);
+  vec4 s1 = samplePlasmaCell(f1, vUv);
+  vec4 texel = mix(s0, s1, fract(f));
+  float fade = 1.0 - smoothstep(0.76, 1.0, p);
+  vec3 col = srgbToLin3(texel.rgb) * tintColor * gain;
+  outColor = vec4(col, texel.a * fade);
+}`;
+
+/** Paired GLSL + WGSL 8x4 sprite-sheet flipbook burst shader sampling `createFlipbookAtlas("plasma")`. */
+export function morphPlasmaSpec(atlas: FlipbookAtlasSpec, tint: Rgb = [1, 1, 1]): CustomSpec {
+  return {
+    glsl: { vertex: CONTACT_VERTEX, fragment: PLASMA_FRAGMENT },
+    wgsl: { vertex: CONTACT_VERTEX_WGSL, fragment: PLASMA_FRAGMENT_WGSL },
+    uniforms: {
+      plasmaAtlas: { type: "texture2d", value: atlas.texture },
+      tintColor: { type: "color3", value: [...tint] },
+      progress: { type: "f32", value: 0 },
+      gain: { type: "f32", value: 1.85 }
+    },
     transparent: true,
     depthWrite: false,
     side: "double"
@@ -535,7 +679,6 @@ export function skirtMesh(): MeshData {
 /** Contact band in front of each wall cell foot (uv.y 0 at the wall). */
 export function wallContactMesh(width: number, depth: number): MeshData {
   const q = groundQuad(width, depth, 0, depth / 2);
-  // groundQuad uv: (0,0) at -x,-z ... (1,1) at +x,+z; -z edge is the wall side, so uv.y already runs 0 -> 1 away from it.
   return q;
 }
 
@@ -604,11 +747,6 @@ export function pieceZ(p: ScenePiece, t: number): number {
 
 /* ------------------------------------------------------------------ Meshy backdrop dressing */
 
-/**
- * Meshy toy models (typed `model(assets.x)`, mounted in world.ts) drifting with the island layers: toy castle
- * islands just outside the near layer's procedural islands, and tall toy block towers rising out of the cloud sea
- * in the mid layer. All sit at |x| >= 24, far outside the road (half width 3.7), and never cast shadows.
- */
 export interface MeshyPiece {
   readonly id: string;
   readonly kind: "toyCastleIsland" | "toyBlockTower";
@@ -650,8 +788,7 @@ export function meshyPose(p: MeshyPiece, t: number, reduced: boolean) {
 
 /**
  * Drift vertex program: every piece of a layer lives in one static mesh (no runtime node, so nothing is snapshotted or
- * uploaded per frame). Per-vertex `drift` = (z0, speed, span, far) and `anchor` = (x, y, bob phase, bob amplitude); the
- * GPU wraps each piece along z on uTime, bobs it, and grows it in over the first 24 units after it re-enters far away.
+ * uploaded per frame). Per-vertex `drift` = (z0, speed, span, far) and `anchor` = (x, y, bob phase, bob amplitude).
  */
 const DRIFT_VERTEX = /* glsl */ `
 in vec3 tone;
@@ -676,7 +813,7 @@ void main() {
 }`;
 
 export function driftSpec(rim: number): CustomSpec {
-  const base = toyToonSpec([1, 1, 1], { tone: true, rim });
+  const base = toyToonSpec([1, 1, 1], { tone: true, rim, clearcoat: 0.24 });
   return { ...base, glsl: { vertex: DRIFT_VERTEX, fragment: base.glsl!.fragment }, wgsl: { vertex: DRIFT_VERTEX_WGSL, fragment: base.wgsl!.fragment } } as CustomSpec;
 }
 
@@ -713,7 +850,7 @@ export const PILLAR_SPACING = 26;
 export const PILLAR_COUNT = 9;
 export const SEA_TILE = { w: 360, d: 120, count: 3, y: -21 } as const;
 
-/** Every scenery program (for the GLSL compile test). */
+/** Every scenery program (for the GLSL compile and WGSL twin tests). */
 export function sceneryProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
     { name: "toy-sky", spec: toySkySpec() },

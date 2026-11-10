@@ -93,16 +93,14 @@ export function createTouchInput(): TouchInput {
 const CSS = /* css */ `
 #touch-controls { position: fixed; inset: 0; z-index: 4; pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 #touch-controls.hidden { display: none; }
-#touch-steer { position: absolute; left: 0; bottom: 0; width: 58%; height: 62%; pointer-events: auto; touch-action: none; }
-#touch-steer .hint { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 96px); font: 500 12px/1.3 "Graphik Web", sans-serif; color: rgba(244, 234, 214, 0.62); pointer-events: none; }
-#touch-steer .knob { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; border: 2px solid rgba(243, 230, 203, 0.55); background: rgba(243, 230, 203, 0.12); pointer-events: none; display: none; }
+#touch-steer { position: absolute; left: 0; bottom: var(--a3d-bar-space, 0px); width: 58%; height: 54%; pointer-events: auto; touch-action: none; }
+#touch-steer .hint { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 56px); font: 500 12px/1.3 var(--font-ui); color: rgba(238, 243, 250, 0.68); pointer-events: none; }
+#touch-steer .knob { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; border: 2px solid rgba(243, 228, 198, 0.58); background: rgba(243, 228, 198, 0.14); pointer-events: none; display: none; }
 #touch-steer.held .knob { display: block; }
-#touch-buttons { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 92px); display: grid; grid-template-columns: repeat(2, ${TOUCH_BUTTON_PX}px); gap: 10px; pointer-events: none; }
-#touch-buttons button { width: ${TOUCH_BUTTON_PX}px; height: ${TOUCH_BUTTON_PX}px; padding: 0; border-radius: 50%; font: 500 12px/1 "Graphik Web", sans-serif; color: #f4ead6; background: rgba(11, 28, 34, 0.62); border: 1px solid rgba(160, 222, 214, 0.38); pointer-events: auto; touch-action: none; }
-#touch-buttons button.down { background: rgba(243, 230, 203, 0.36); color: #14201f; }
-#touch-buttons button[data-touch="boost"] { border-color: rgba(240, 165, 107, 0.7); }
-/* keep the race notice clear of the buttons and the steer hint */
-body.touch-on #notice { bottom: calc(max(12px, env(safe-area-inset-bottom)) + 236px); max-width: 86vw; }
+#touch-buttons { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: calc(var(--a3d-bar-space, 0px) + max(12px, env(safe-area-inset-bottom)) + 52px); display: grid; grid-template-columns: repeat(2, ${TOUCH_BUTTON_PX}px); gap: 10px; pointer-events: none; }
+#touch-buttons button { width: ${TOUCH_BUTTON_PX}px; height: ${TOUCH_BUTTON_PX}px; min-width: 44px; min-height: 44px; padding: 0; border-radius: 50%; font: 500 12px/1 var(--font-ui); color: #eef3fa; background: rgba(9, 13, 24, 0.76); border: 1px solid rgba(127, 224, 207, 0.42); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: auto; touch-action: none; }
+#touch-buttons button.down { background: rgba(243, 228, 198, 0.36); color: #101622; }
+#touch-buttons button[data-touch="boost"] { border-color: rgba(240, 165, 107, 0.78); }
 `;
 
 export interface MountedTouchControls {

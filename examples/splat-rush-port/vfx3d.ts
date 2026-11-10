@@ -5,6 +5,7 @@
  * the simulation and its random stream never see them. Reduced motion halves the particle count (PRD §6.3).
  */
 import type { AuraAppEffects, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
 import type { GameSound } from "./audio";
 import { GATE_COLORS } from "./look";
 
@@ -12,19 +13,28 @@ export const PAINT_SPLASH = "paint-splash";
 export const PAINT_SPLASH_RING = "paint-splash-ring";
 export const PAINT_MOTE = "paint-mote";
 
-/** Wet paint drops thrown up and out, falling back under gravity (no camera layer: the game keeps its own shake). */
+/** Procedural 8x4 (32-frame) glossy ink-lobe flipbook sheet for chroma gate bursts (`world.ts`). */
+let cachedInkFlipbook: FlipbookAtlasSpec | null = null;
+export function createInkFlipbook(): FlipbookAtlasSpec {
+  cachedInkFlipbook ??= createFlipbookAtlas("ink", [255, 255, 255]);
+  return cachedInkFlipbook;
+}
+
+/** Wet paint drops + animated splash sheet thrown up and out, falling back under gravity (no camera layer: the game keeps its own shake). */
 export const PAINT_SPLASH_SPEC: AuraVfxEffectSpec = {
   name: PAINT_SPLASH,
   layers: [
-    { type: "emitter", count: 18, speed: 5.5, life: 0.55, gravity: -14, size: 0.16, spread: 0.85, direction: [0, 1, 0.35], drag: 1.2, blend: "alpha" }
+    { type: "emitter", count: 18, speed: 5.8, life: 0.56, gravity: -14, size: 0.17, spread: 0.85, direction: [0, 1, 0.35], drag: 1.2, blend: "alpha" },
+    { type: "emitter", count: 6, speed: 3.4, life: 0.42, gravity: -8, size: 0.34, spread: 0.9, direction: [0, 0.85, 0.25], drag: 1.8, blend: "alpha", sprite: "splash" }
   ]
 };
 
-/** Second, flatter ring for PERFECT (fires 60 ms after the first splash). */
+/** Second, flatter chroma ring for PERFECT (fires 60 ms after the first splash). */
 export const PAINT_SPLASH_RING_SPEC: AuraVfxEffectSpec = {
   name: PAINT_SPLASH_RING,
   layers: [
-    { type: "emitter", count: 14, speed: 7.5, life: 0.4, gravity: -6, size: 0.12, spread: 1, direction: [0, 0.25, 0], drag: 2, blend: "alpha", at: 0.06 }
+    { type: "emitter", count: 14, speed: 7.8, life: 0.42, gravity: -6, size: 0.13, spread: 1, direction: [0, 0.25, 0], drag: 2, blend: "alpha", at: 0.06 },
+    { type: "emitter", count: 5, speed: 5.2, life: 0.36, gravity: -4, size: 0.3, spread: 1, direction: [0, 0.3, 0], drag: 2.2, blend: "alpha", sprite: "splash", at: 0.05 }
   ]
 };
 

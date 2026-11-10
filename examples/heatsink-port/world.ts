@@ -1,14 +1,15 @@
 /**
- * HEATSINK world on the public `@aura3d/engine` surface: road ribbon (`geometry.dynamic` + author attributes +
- * `material.custom`), split-lane dividers, rock massifs, neon crystals, aurora sky dome, checkpoint veils, boost pads,
- * pickups, barrels, the player drone (primitives), exhaust points, chase camera, bloom and vignette. The original's
- * GLB/texture assets are re-created procedurally; see PORTING-NOTES.md.
+ * Ion Circuit world on the public `@aura3d/engine` surface: carbon-anodized mag-lev road ribbon (`geometry.dynamic` +
+ * author attributes + `material.custom`), split-lane dividers, rock massifs, neon crystals, seamless 3D aurora sky dome,
+ * checkpoint veils, cooling/boost pads, holographic gantry banners, pickups, barrels, articulated player ion craft,
+ * plasma flipbooks, chase camera, SSR, contact shadows, AgX bloom and vignette.
  */
 import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { CFG } from "./config";
-import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
-import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
+import { buildArches, buildDividers, buildGantryBanners, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
+import { PLASMA_ATLAS, SPARKS_ATLAS, beaconSpec, blobSpec, flipbookBurstSpec, hologramBannerSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
 import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, ION_IDLE, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
@@ -19,6 +20,7 @@ import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orie
 import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
 import { Operation, STRIKE } from "./operation";
+import { stepCraftArticulation, type CraftArticulationState } from "./presentation";
 import { seededRandom } from "./rng";
 import { pointQuadArrays, quadUpdater } from "./point-quads";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
@@ -67,6 +69,13 @@ const BLOB_CORNERS: readonly (readonly [number, number])[] = [[-1, -1], [-1, 1],
 const BOLTS = STRIKE.boltPool;
 const BOLT_LENGTH = CFG.weapons.length;
 const BOLT_HALF_WIDTH = 0.22;
+const SPARK_CARDS = 6;
+/** local-frame (forward x, up y, side z) offsets for twilight craft airbrakes, counter-rotating rotors, nozzles & plumes */
+const FLAP_OFFSETS: readonly (readonly [number, number, number])[] = [[-0.55, 0.42, -0.78], [-0.55, 0.42, 0.78]];
+const NOZZLE_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.05, 0.14, -0.44], [-2.05, 0.14, 0.44]];
+const ROTOR_OFFSETS: readonly (readonly [number, number, number])[] = [[0.92, 0.26, -1.16], [0.92, 0.26, 1.16], [-0.96, 0.26, -1.16], [-0.96, 0.26, 1.16]];
+const ROTOR_DIRS: readonly [1, -1, -1, 1] = [1, -1, -1, 1];
+const PLUME_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.58, 0.14, -0.44], [-2.58, 0.14, 0.44]];
 /** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
 const FRAMING = { dist: 7.6, height: 2.0 };
 /**
@@ -173,12 +182,15 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(buildShoulders(track, high ? 6 : 10)), { name: "plains", material: material.custom(terrainSpec(1e6, [1.15, 1.2, 1.2])) }).runtime({ id: fogTracked("plains", "plains") }));
   const rails = buildRails(track);
   /* GU47 phase 5 (sibling distinctness): twilight rails are dark magenta ion barriers, not pale highway guard pipes */
-  const railSpec = look.wake.enabled ? solidSpec(hexLinear("#3a1838"), hexLinear("#ff4fc8"), 0.55) : solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08);
+  const railSpec = look.wake.enabled ? solidSpec(hexLinear("#261230"), hexLinear("#ff4fc8"), 0.82) : solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08);
   b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(railSpec) }).runtime({ id: fogTracked("rails", "rails") }));
-  b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#2a5a62"), hexLinear("#60f4ff"), 1.7)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
+  b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#225660"), hexLinear("#54f4ff"), 2.0)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
   const arches = buildArches(track);
   b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
   b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
+  if (look.wake.enabled) {
+    b.add(geometry.custom(dynamicFrom(buildGantryBanners(track)), { name: "gantry-banners", material: material.custom(hologramBannerSpec([0.24, 0.90, 1.0], 1.65)), castShadow: false }).runtime({ id: "gantry-banners" }));
+  }
   b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(look.wake.enabled ? solidSpec(hexLinear("#1e1a34"), hexLinear("#6a48e0"), 0.55) : solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
   /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
@@ -211,7 +223,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
   if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
   if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
-  for (const n of sceneryNodes(track, undefined, models)) b.add(n);
+  for (const n of sceneryNodes(track, undefined, models, false)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
   track.checkpoints.forEach((s, i) => {
@@ -220,7 +232,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")), castShadow: false }).runtime({ id: `gate-veil-${i}` }));
   });
 
-  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0), models)) b.add(n);
+  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0), models, look.key.droneCasts)) b.add(n);
 
   /* boost pads */
   track.boostPads.forEach((p, i) => {
@@ -233,7 +245,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(pickupModel(i, shield, models).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
   });
   track.barrels.forEach((_, i) => {
-    b.add(barrelModel(i, models).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
+    b.add(barrelModel(i, models, look.key.droneCasts).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
   });
 
   /*
@@ -248,10 +260,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
     b.add((heavy
       ? look.assets.heavyModel
-        ? heavyModel(t.id, r * 1.9, models)
+        ? heavyModel(t.id, r * 1.9, models, look.key.droneCasts)
         : primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
       : look.assets.sentryModel
-        ? sentryModel(t.id, r * 2.1, models)
+        ? sentryModel(t.id, r * 2.1, models, look.key.droneCasts)
         : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
     b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
     if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 1.75, 0.3, 0.3], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear("#ff7a3a"), 2.6)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
@@ -268,7 +280,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
   b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds }), { name: "drone-blob", material: material.custom(blobSpec()), castShadow: false }).runtime({ id: "drone-blob" }));
 
-  /* player drone */
+  /* player drone + twilight carPaint vector airbrakes, brushedMetal counter-rotating rotors & twin ion nozzles */
   for (const part of DRONE_PARTS) {
     if (part.model) { b.add(droneHull(models, look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
@@ -279,6 +291,25 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
         ? primitives.cylinder({ name: part.id, size: part.size as [number, number, number], material: mat })
         : primitives.sphere({ name: part.id, size: part.size as number, material: mat });
     b.add(handle.runtime({ id: fogTracked(part.id, part.id) }));
+  }
+  if (look.wake.enabled) {
+    const flapPaint = material.carPaint({ color: "#c86228", roughness: 0.2, metallic: 0.72, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.65 });
+    const rotorMetal = material.brushedMetal({ color: "#d6e2ee", roughness: 0.2, anisotropy: 0.88, envMapIntensity: 1.65 });
+    const nozzleGlow = material.neon({ color: "#0a1826", emissive: "#40e0ff", emissiveIntensity: 2.6, practical: true });
+    for (let i = 0; i < 2; i++) {
+      b.add(primitives.box({ name: `drone-flap-${i}`, size: [0.84, 0.052, 0.42], material: flapPaint, castShadow: false }).runtime({ id: `drone-flap-${i}` }));
+      b.add(primitives.cylinder({ name: `drone-nozzle-${i}`, size: [0.15, 0.17, 0.26], material: nozzleGlow, castShadow: false }).runtime({ id: `drone-nozzle-${i}` }));
+    }
+    for (let i = 0; i < 4; i++) {
+      b.add(primitives.box({ name: `drone-rotor-${i}`, size: [1.04, 0.026, 0.14], material: rotorMetal, castShadow: false }).runtime({ id: `drone-rotor-${i}` }));
+    }
+    const billboardGeo = () => geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds });
+    for (let i = 0; i < 2; i++) {
+      b.add(geometry.custom(billboardGeo(), { name: `ion-plume-${i}`, material: material.custom(flipbookBurstSpec(PLASMA_ATLAS, [0.32, 0.92, 1.0], 1.85)), castShadow: false }).runtime({ id: `ion-plume-${i}` }));
+    }
+    for (let i = 0; i < SPARK_CARDS; i++) {
+      b.add(geometry.custom(billboardGeo(), { name: `spark-card-${i}`, material: material.custom(flipbookBurstSpec(SPARKS_ATLAS, [1.0, 0.74, 0.28], 2.1)), castShadow: false }).runtime({ id: `spark-card-${i}` }));
+    }
   }
 
   /* speed streaks: a dynamic strip of camera-facing quads, rebuilt every frame */
@@ -316,14 +347,16 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   const g = look.grade;
   const split = g.temperature !== 0 || g.tint !== 0 || g.shadows !== 1 || g.highlights !== 1;
   b.add(effects.colorGrade({ name: "grade", exposure: g.exposure, contrast: g.contrast, saturation: g.saturation, ...(split ? { temperature: g.temperature, tint: g.tint, shadows: [...(typeof g.shadows === "number" ? [g.shadows, g.shadows, g.shadows] : g.shadows)] as [number, number, number], highlights: [...(typeof g.highlights === "number" ? [g.highlights, g.highlights, g.highlights] : g.highlights)] as [number, number, number] } : {}) }));
-  /* IC-08 / IC-07: the twilight post stack; Low drops AO, motion blur, god rays, grain and CA (lowTier); original mounts none */
+  /* IC-08 / IC-07: the twilight post stack; Low drops AO, SSR, contact shadows, motion blur, god rays, grain and CA (lowTier); original mounts none */
   if (look.post.vignette !== null) b.add(effects.vignette({ name: "vignette", intensity: look.post.vignette }));
   else b.add(effects.vignette({ name: "vignette" }));
-  if (look.post.ao) b.add(effects.ambientOcclusion({ name: "gtao", intensity: 0.8, radius: 1.6 }));
+  if (look.post.ao) b.add(effects.ambientOcclusion({ name: "gtao", intensity: 0.74, radius: 1.25, multiBounce: true }));
+  if (look.post.contactShadows) b.add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: 0.68 }));
+  if (look.post.ssr !== null && look.post.ssr !== undefined) b.add(effects.screenSpaceReflections({ name: "ssr", intensity: look.post.ssr, maxDistance: 36, roughness: 0.18, thickness: 0.28 }));
   if (look.post.motionBlur !== null) b.add(effects.motionBlur({ name: "motion blur", intensity: look.post.motionBlur, samples: 8 }));
   if (look.post.chromaticAberration !== null) b.add(effects.chromaticAberration({ name: "chromatic aberration", intensity: look.post.chromaticAberration }));
   if (look.post.grain !== null) b.add(effects.filmGrain({ name: "film grain", intensity: look.post.grain }));
-  if (look.post.godRays !== null) b.add(effects.volumetricFog({ name: "god rays", density: 0.08, intensity: look.post.godRays, color: "#ffb7a0", godRayDensity: look.post.godRays }));
+  if (look.post.godRays !== null) b.add(effects.godRays({ name: "god rays", source: "sun", intensity: look.post.godRays, decay: 0.95, samples: 48, color: "#ffb88c" }));
 
   /* IC-07 sun lens flare, kept on the shader sun's direction from the eye each frame (twilight High only; frustum occlusion) */
   if (look.post.lensFlare !== null) {
@@ -371,6 +404,41 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const cameraController: NonNullable<typeof cam> = cam;
   const chase = cameras.chase();
   const shake = createCameraShake({ maxOffset: 0.55, maxRoll: 0.02 });
+  const impactRig = createImpactRig({ reducedMotion: false });
+  const craftArticulation: CraftArticulationState = { rotorAngle: 0, flapPitch: 0, flapRoll: 0 };
+  let prevAbActive = false;
+  let prevCrashes = 0;
+  let railGrazeCooldown = 0;
+  const plumeGeo = [new Float32Array(12), new Float32Array(12)] as const;
+  const plumeTintHot = [1.0, 0.62, 0.22];
+  const plumeTintCool = [0.28, 0.92, 1.0];
+  const sparkGeo = Array.from({ length: SPARK_CARDS }, () => new Float32Array(12));
+  const sparkAge = new Float32Array(SPARK_CARDS).fill(1);
+  const sparkPos = new Float32Array(SPARK_CARDS * 3);
+  const sparkVel = new Float32Array(SPARK_CARDS * 3);
+  const sparkRadius = new Float32Array(SPARK_CARDS).fill(1.6);
+  const sparkTint = Array.from({ length: SPARK_CARDS }, () => [1.0, 0.74, 0.28]);
+  let sparkHead = 0;
+
+  function spawnSparkCard(x: number, y: number, z: number, vx: number, vy: number, vz: number, radius: number, r: number, g: number, bl: number): void {
+    if (!twilight) return;
+    const idx = sparkHead++ % SPARK_CARDS;
+    sparkAge[idx] = 0;
+    sparkPos[idx * 3] = x; sparkPos[idx * 3 + 1] = y; sparkPos[idx * 3 + 2] = z;
+    sparkVel[idx * 3] = vx; sparkVel[idx * 3 + 1] = vy; sparkVel[idx * 3 + 2] = vz;
+    sparkRadius[idx] = radius * vfxScale(motion.reduced);
+    const t = sparkTint[idx]!;
+    t[0] = r; t[1] = g; t[2] = bl;
+  }
+
+  function writeBillboardQuad(out: Float32Array, cx: number, cy: number, cz: number, rx: number, ry: number, rz: number, ux: number, uy: number, uz: number, halfW: number, halfH: number): void {
+    const rwx = rx * halfW, rwy = ry * halfW, rwz = rz * halfW;
+    const uhx = ux * halfH, uhy = uy * halfH, uhz = uz * halfH;
+    out[0] = cx - rwx - uhx; out[1] = cy - rwy - uhy; out[2] = cz - rwz - uhz;
+    out[3] = cx + rwx - uhx; out[4] = cy + rwy - uhy; out[5] = cz + rwz - uhz;
+    out[6] = cx + rwx + uhx; out[7] = cy + rwy + uhy; out[8] = cz + rwz + uhz;
+    out[9] = cx - rwx + uhx; out[10] = cy - rwy + uhy; out[11] = cz - rwz + uhz;
+  }
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => {
     let h = handles.get(id);
@@ -487,7 +555,69 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }
 
+    const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
+    if (twilight) {
+      const art = stepCraftArticulation(
+        craftArticulation,
+        dt,
+        speed01,
+        p.abActive || p.burstT > 0 || p.rjActive,
+        Math.abs(p.steerVal) > 0.45,
+        p.steerVal
+      );
+      for (let i = 0; i < 2; i++) {
+        const fh = node(`drone-flap-${i}`);
+        fh.setVisible(!p.crashed);
+        if (!p.crashed) {
+          const [ox, oy, oz] = FLAP_OFFSETS[i]!;
+          fh.setPosition(p.position.x + R[0] * ox + R[1] * oy + R[2] * oz, p.position.y + R[3] * ox + R[4] * oy + R[5] * oz, p.position.z + R[6] * ox + R[7] * oy + R[8] * oz);
+          const pitch = art.flapPitch + (i === 0 ? -art.flapRoll : art.flapRoll);
+          const bank = (i === 0 ? -0.14 : 0.14) - p.steerVal * 0.16;
+          const fe = matrixToEulerZYX(multiplyMat3(R, multiplyMat3(axisRotation("z", pitch), axisRotation("x", bank))));
+          fh.setRotation(fe[0], fe[1], fe[2]);
+        }
+        const nh = node(`drone-nozzle-${i}`);
+        nh.setVisible(!p.crashed);
+        if (!p.crashed) {
+          const [nx, ny, nz] = NOZZLE_OFFSETS[i]!;
+          nh.setPosition(p.position.x + R[0] * nx + R[1] * ny + R[2] * nz, p.position.y + R[3] * nx + R[4] * ny + R[5] * nz, p.position.z + R[6] * nx + R[7] * ny + R[8] * nz);
+          const ne = matrixToEulerZYX(multiplyMat3(R, axisRotation("z", Math.PI / 2)));
+          nh.setRotation(ne[0], ne[1], ne[2]);
+          nh.setScale(art.nozzleScale);
+        }
+      }
+      for (let i = 0; i < 4; i++) {
+        const rh = node(`drone-rotor-${i}`);
+        rh.setVisible(!p.crashed);
+        if (!p.crashed) {
+          const [rx0, ry0, rz0] = ROTOR_OFFSETS[i]!;
+          rh.setPosition(p.position.x + R[0] * rx0 + R[1] * ry0 + R[2] * rz0, p.position.y + R[3] * rx0 + R[4] * ry0 + R[5] * rz0, p.position.z + R[6] * rx0 + R[7] * ry0 + R[8] * rz0);
+          const re = matrixToEulerZYX(multiplyMat3(R, axisRotation("y", craftArticulation.rotorAngle * ROTOR_DIRS[i]! + i * 0.785)));
+          rh.setRotation(re[0], re[1], re[2]);
+        }
+      }
+      if (p.abActive && !prevAbActive && !p.crashed && !motion.reduced) impactRig.trigger({ trauma: 0.18, fovKickDeg: 3.0 });
+      prevAbActive = p.abActive;
+      if (p.crashes > prevCrashes) {
+        if (!motion.reduced) impactRig.trigger({ trauma: 0.85, fovKickDeg: -3.2 });
+        spawnSparkCard(p.position.x, p.position.y + 0.4, p.position.z, 0, 2.6, 0, 3.6, 1.0, 0.48, 0.16);
+      }
+      prevCrashes = p.crashes;
+      if (!p.crashed && p.v > 25 && Math.abs(p.x) > fr.hw * 0.86) {
+        railGrazeCooldown -= dt;
+        if (railGrazeCooldown <= 0) {
+          railGrazeCooldown = 0.09;
+          const side = p.x >= 0 ? 1 : -1;
+          spawnSparkCard(p.position.x + fr.rx * side * 1.45, p.position.y + 0.12, p.position.z + fr.rz * side * 1.45, -fr.tx * p.v * 0.18, 2.2, -fr.tz * p.v * 0.18, 1.75, 1.0, 0.78, 0.32);
+          if (!motion.reduced) impactRig.trigger({ trauma: 0.08, fovKickDeg: 0.45 });
+        }
+      } else {
+        railGrazeCooldown = 0;
+      }
+    }
+
     /* camera */
+    const impact = impactRig.step(dt);
     const hd = Math.cos(p.theta), hs = Math.sin(p.theta);
     const dirX = fr.tx * hd + fr.rx * hs, dirZ = fr.tz * hd + fr.rz * hs;
     if (!rigReady) { rig[0] = dirX; rig[1] = dirZ; rigReady = true; }
@@ -501,15 +631,15 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     const c = CFG.camera;
     eye[0] = p.position.x - fx * FRAMING.dist; eye[1] = p.position.y + FRAMING.height; eye[2] = p.position.z - fz * FRAMING.dist;
     look[0] = p.position.x + fx * c.lookAhead; look[1] = p.position.y + 0.8; look[2] = p.position.z + fz * c.lookAhead;
-    const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
-    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0) + afterburnerKick(row, p.abActive);
-    const fovBase = c.fovBase + (motion.reduced ? Math.min(REDUCED_FOV_KICK, kick) : kick);
-    chaseIn.fovTarget = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
+    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0) + afterburnerKick(row, p.abActive) + (twilight && !motion.reduced ? impact.fovDeltaDeg : 0);
+    const fovBase = Math.max(c.fovBase - 4, c.fovBase + (motion.reduced ? Math.min(REDUCED_FOV_KICK, kick) : kick));
+    chaseIn.fovTarget = Math.min(c.fovMax + 4, aspect < 0.85 ? fovBase + 8 : fovBase);
     const pose = chase.step(chaseIn, dt);
     const sh = shake.update(dt);
-    const shx = motion.reduced ? 0 : sh.x, shy = motion.reduced ? 0 : sh.y;
+    const shx = motion.reduced ? 0 : sh.x + (twilight ? impact.shakeOffset[0] : 0);
+    const shy = motion.reduced ? 0 : sh.y + (twilight ? impact.shakeOffset[1] : 0);
     /* IC-22 bank roll: the up vector tilts about the heading with the steer (±6 deg cap); none on reduced motion or ?look=original */
-    const roll = motion.reduced ? 0 : bankRoll(row, p.steerVal, speed01);
+    const roll = motion.reduced ? 0 : bankRoll(row, p.steerVal, speed01) + (twilight ? impact.shakeRoll : 0);
     rollNow += (roll - rollNow) * (1 - Math.exp(-dt * 5));
     const up: [number, number, number] = [-fz * Math.sin(rollNow), Math.cos(rollNow), fx * Math.sin(rollNow)];
     /* IC-22 countdown sweep into the chase pose and the finish orbit (twilight, full motion, not manual) */
@@ -566,8 +696,19 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* checkpoint, pad pulses from the sim's events */
     for (; seen < race.events.length; seen++) {
       const e = race.events[seen]!;
-      if (e.type === "checkpoint") { const i = track.checkpoints.indexOf(e.detail as number); if (i >= 0) gatePulse[i] = 1; engineBurst(HEATSINK_VFX.checkpoint, p.position.x, p.position.y + 1, p.position.z); }
-      if (e.type === "boostPad") { const i = track.boostPads.findIndex((q) => q.s === e.detail); if (i >= 0) padPulse[i] = 1; engineBurst(HEATSINK_VFX.boost, p.position.x, p.position.y, p.position.z); }
+      if (e.type === "checkpoint") {
+        const i = track.checkpoints.indexOf(e.detail as number);
+        if (i >= 0) gatePulse[i] = 1;
+        engineBurst(HEATSINK_VFX.checkpoint, p.position.x, p.position.y + 1, p.position.z);
+        if (twilight && !motion.reduced) impactRig.trigger({ trauma: 0.1, fovKickDeg: 1.4 });
+      }
+      if (e.type === "boostPad") {
+        const i = track.boostPads.findIndex((q) => q.s === e.detail);
+        if (i >= 0) padPulse[i] = 1;
+        engineBurst(HEATSINK_VFX.boost, p.position.x, p.position.y, p.position.z);
+        if (twilight && !motion.reduced) impactRig.trigger({ trauma: 0.28, fovKickDeg: 4.2 });
+        spawnSparkCard(p.position.x, p.position.y + 0.2, p.position.z, -fx * 6, 1.8, -fz * 6, 2.5, 0.35, 0.95, 1.0);
+      }
     }
     if (seen > race.events.length) seen = race.events.length;
     for (let i = 0; i < gatePulse.length; i++) { gatePulse[i] = Math.max(0, gatePulse[i]! - dt * 0.8); node(`gate-veil-${i}`).setUniform?.("veilPulse", gatePulse[i]!); }
@@ -594,13 +735,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       h.setPosition(w.x, w.y, w.z);
     }
 
-    /* contact shadow: on the road under the drone, wider and fainter the higher it hovers (HP-08) */
+    /* contact shadow: original look uses drone-blob; twilight uses smooth road shader contact + effects.contactShadows */
     {
       const blob = node("drone-blob");
       const ground = fr.y + track.latY(p.s, p.x);
       const gap = Math.max(0, p.position.y - ground);
-      blob.setVisible(!p.crashed && gap < 40);
-      if (!p.crashed && gap < 40) {
+      const showBlob = !twilight && !p.crashed && gap < 40;
+      blob.setVisible(showBlob);
+      if (showBlob) {
         const half = 2.1 + gap * 0.12;
         const fade = Math.max(0, Math.min(1, 1 - (gap - CFG.vehicle.hover) / 14));
         const sx = fr.tx, sz = fr.tz, rx = fr.rx, rz = fr.rz;
@@ -623,9 +765,22 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       for (; opsSeen < ops.events.length; opsSeen++) {
         const ev = ops.events[opsSeen]!;
         if (!ev.world) continue;
-        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); engineBurst(HEATSINK_VFX.hit, ev.world.x, ev.world.y, ev.world.z); }
-        else if (ev.type === "kill") { if (!motion.reduced) shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z); }
-        else if (ev.type === "barrel") { if (!motion.reduced) shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); engineBurst(HEATSINK_VFX.barrel, ev.world.x, ev.world.y, ev.world.z); }
+        if (ev.type === "hit") {
+          targetFlash[ev.detail as number] = 1;
+          burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9);
+          engineBurst(HEATSINK_VFX.hit, ev.world.x, ev.world.y, ev.world.z);
+          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 1.6, 0, 1.9, 1.0, 0.86, 0.36);
+        } else if (ev.type === "kill") {
+          if (!motion.reduced) { shake.add(0.45); if (twilight) impactRig.trigger({ trauma: 0.42, fovKickDeg: 2.2 }); }
+          burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22);
+          engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z);
+          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 2.5, 0, 3.2, 1.0, 0.56, 0.18);
+        } else if (ev.type === "barrel") {
+          if (!motion.reduced) { shake.add(0.8); if (twilight) impactRig.trigger({ trauma: 0.72, fovKickDeg: 3.6 }); }
+          burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30);
+          engineBurst(HEATSINK_VFX.barrel, ev.world.x, ev.world.y, ev.world.z);
+          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 3.2, 0, 4.4, 1.0, 0.64, 0.2);
+        }
       }
       for (const t of ops.targets) {
         const core = node(`target-${t.id}`), ring = node(`target-ring-${t.id}`), hp = node(`target-hp-${t.id}`);
@@ -795,6 +950,52 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     ex.updateAttribute?.("size", { array: size, offset: 0 });
     ex.updateAttribute?.("fade", { array: fade, offset: 0 });
     ex.updateAttribute?.("tint", { array: tint, offset: 0 });
+
+    /* WP-22 plasma nozzle plumes & rail/impact spark flipbook billboards */
+    if (twilight) {
+      let cdx = dLook[0] - dEye[0], cdy = dLook[1] - dEye[1], cdz = dLook[2] - dEye[2];
+      const clen = Math.hypot(cdx, cdy, cdz) || 1;
+      cdx /= clen; cdy /= clen; cdz /= clen;
+      let crx = cdz, crz = -cdx;
+      const crlen = Math.hypot(crx, crz) || 1;
+      crx /= crlen; crz /= crlen;
+      const cux = -crz * cdy, cuy = crz * cdx - crx * cdz, cuz = crx * cdy;
+
+      const hotPlume = p.abActive || p.burstT > 0;
+      const plumeVisible = !p.crashed && p.v > 2;
+      const plumeHalf = (0.36 + 0.34 * speed01 + (hotPlume ? 0.28 : 0)) * vfxScale(motion.reduced);
+      for (let i = 0; i < 2; i++) {
+        const pn = node(`ion-plume-${i}`);
+        pn.setVisible(plumeVisible);
+        if (!plumeVisible) continue;
+        const [px0, py0, pz0] = PLUME_OFFSETS[i]!;
+        const wx = p.position.x + R[0] * px0 + R[1] * py0 + R[2] * pz0;
+        const wy = p.position.y + R[3] * px0 + R[4] * py0 + R[5] * pz0;
+        const wz = p.position.z + R[6] * px0 + R[7] * py0 + R[8] * pz0;
+        writeBillboardQuad(plumeGeo[i]!, wx, wy, wz, crx, 0, crz, cux, cuy, cuz, plumeHalf, plumeHalf * 0.88);
+        pn.updateAttribute?.("position", { array: plumeGeo[i]!, offset: 0 });
+        pn.setUniform?.("flipProgress", (time * (hotPlume ? 24 : 15) + i * 0.5) % 0.999);
+        pn.setUniform?.("flipTint", hotPlume ? plumeTintHot : plumeTintCool);
+        pn.setUniform?.("flipGain", hotPlume ? 2.5 : 1.5 + 0.8 * speed01);
+      }
+
+      for (let i = 0; i < SPARK_CARDS; i++) {
+        const sn = node(`spark-card-${i}`);
+        if (sparkAge[i]! >= 1) { sn.setVisible(false); continue; }
+        sparkAge[i]! += dt / 0.36;
+        if (sparkAge[i]! >= 1) { sn.setVisible(false); continue; }
+        sn.setVisible(true);
+        sparkPos[i * 3]! += sparkVel[i * 3]! * dt;
+        sparkPos[i * 3 + 1]! += sparkVel[i * 3 + 1]! * dt;
+        sparkPos[i * 3 + 2]! += sparkVel[i * 3 + 2]! * dt;
+        const rNow = sparkRadius[i]! * (0.65 + 0.65 * sparkAge[i]!);
+        writeBillboardQuad(sparkGeo[i]!, sparkPos[i * 3]!, sparkPos[i * 3 + 1]!, sparkPos[i * 3 + 2]!, crx, 0, crz, cux, cuy, cuz, rNow, rNow);
+        sn.updateAttribute?.("position", { array: sparkGeo[i]!, offset: 0 });
+        sn.setUniform?.("flipProgress", sparkAge[i]!);
+        sn.setUniform?.("flipTint", sparkTint[i]!);
+        sn.setUniform?.("flipGain", 2.3);
+      }
+    }
     void hud;
   }
 
@@ -809,6 +1010,15 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     fogReady = false;
     poolSlot0 = -2;
     droneGlowHot = -1;
+    prevAbActive = false;
+    prevCrashes = 0;
+    railGrazeCooldown = 0;
+    impactRig.reset();
+    craftArticulation.rotorAngle = 0;
+    craftArticulation.flapPitch = 0;
+    craftArticulation.flapRoll = 0;
+    sparkAge.fill(1);
+    sparkHead = 0;
     wake?.clear();
     if (spores) spores.tinted = false;
     seen = 0;

@@ -9,6 +9,13 @@
  * reflecting ponds per hole (the largest), GU47 High tier only; the other ponds, Low and `?look=original` keep the 4.6.2
  * water cylinder.
  */
+import {
+  WGSL_CLIP,
+  WGSL_ENVIRONMENT_FOG,
+  WGSL_MATH,
+  WGSL_NOISE,
+  wgslStage
+} from "../../../showcase-port-shared/wgsl-twins";
 import { pondGeometry } from "./courses";
 import type { CourseTheme, HoleSpec, HoleTerrain } from "./types";
 
@@ -135,16 +142,55 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
+const LAVA_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct LavaVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vW: vec3<f32>,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>
+) -> LavaVarying {
+  var out: LavaVarying;
+  out.vW = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+const LAVA_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_ENVIRONMENT_FOG], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vW: vec3<f32>,
+  @builtin(position) fragCoord: vec4<f32>
+) -> @location(0) vec4<f32> {
+  let t = aura.u_time * aura.u_lavaFlow;
+  let p = vW.xz * 0.45;
+  let n1 = a3dValueNoise2(p + vec2<f32>(t, 0.6 * t));
+  let n2 = a3dValueNoise2(p * 2.3 - vec2<f32>(0.7 * t, 1.1 * t) + vec2<f32>(17.0));
+  let n = 0.62 * n1 + 0.38 * n2;
+  let crack = smoothstep(0.38, 0.5, n) * (1.0 - smoothstep(0.5, 0.64, n));
+  let crust = smoothstep(0.55, 0.85, n);
+  let hot = aura.u_lavaHot;
+  let col = mix(hot * 1.4, aura.u_lavaCrust, crust) + hot * crack * 1.6;
+  let fogged = a3dApplyEnvironmentFog(col, vW, fragCoord.xy);
+  return vec4<f32>(fogged, 1.0);
+}`);
+
 export interface LavaUniforms {
   readonly lavaHot: { readonly type: "vec3"; readonly value: readonly [number, number, number] };
   readonly lavaCrust: { readonly type: "vec3"; readonly value: readonly [number, number, number] };
   readonly lavaFlow: { readonly type: "f32"; readonly value: number };
 }
 
-/** The `material.custom` spec of Cinder Rim's lava pools (linear colours). */
-export function lavaSpec(reducedMotion: boolean): { glsl: { vertex: string; fragment: string }; uniforms: LavaUniforms; fog: true; castShadow: false } {
+/** The `material.custom` spec of Cinder Rim's lava pools (linear colours, paired GLSL + WGSL). */
+export function lavaSpec(reducedMotion: boolean): {
+  glsl: { vertex: string; fragment: string };
+  wgsl: { vertex: string; fragment: string };
+  uniforms: LavaUniforms;
+  fog: true;
+  castShadow: false;
+} {
   return {
     glsl: { vertex: LAVA_VERTEX, fragment: LAVA_FRAGMENT },
+    wgsl: { vertex: LAVA_VERTEX_WGSL, fragment: LAVA_FRAGMENT_WGSL },
     uniforms: {
       lavaHot: { type: "vec3", value: [1.0, 0.36, 0.06] },
       lavaCrust: { type: "vec3", value: [0.09, 0.035, 0.02] },

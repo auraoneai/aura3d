@@ -4,8 +4,15 @@
  * paper. Screen-anchored on purpose: paper does not move with the camera. Off on Low and under `?look=original`.
  */
 import { effects } from "@aura3d/engine";
+import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 
 export const PAPER_STRENGTH = 0.04;
+
+let cachedWarmLut: ReturnType<typeof createGradingLut> | null = null;
+/** Shared cinema-warm 3D LUT strip for highland golden-hour reference grading. */
+export function warmGradingLut() {
+  return (cachedWarmLut ??= createGradingLut("cinema-warm"));
+}
 
 export const PAPER_GLSL = /* glsl */ `uniform float u_paper;
 uniform vec2 u_paperScale;
@@ -15,6 +22,10 @@ float paperNoise(vec2 p) {
   f = f * f * (3.0 - 2.0 * f);
   return mix(mix(paperHash(i), paperHash(i + vec2(1.0, 0.0)), f.x), mix(paperHash(i + vec2(0.0, 1.0)), paperHash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+float cinemaCurve(float x, float p) {
+  float v = clamp(x, 0.0, 1.0);
+  return v < 0.5 ? 0.5 * pow(max(2.0 * v, 1e-4), p) : 1.0 - 0.5 * pow(max(2.0 * (1.0 - v), 1e-4), p);
+}
 void main() {
   vec4 c = texture(u_color, v_uv);
   vec2 p = v_uv * u_paperScale;
@@ -22,9 +33,15 @@ void main() {
   float fibre = paperNoise(vec2(p.x * 0.35 + p.y * 0.08, p.y * 2.6)) - 0.5;
   float grain = paperNoise(p * 1.7) * 0.6 + paperNoise(p * 4.3) * 0.4 - 0.5;
   float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+  vec3 warm = vec3(
+    cinemaCurve(c.r * 1.02 + 0.012 * l, 1.05),
+    cinemaCurve(c.g * 1.0 + 0.003 * l, 1.04),
+    cinemaCurve(c.b * 0.97 + 0.016 * (1.0 - l), 1.05)
+  );
+  vec3 graded = mix(c.rgb, warm, 0.3);
   float mid = smoothstep(0.04, 0.3, l) * (1.0 - smoothstep(0.75, 0.98, l));
   float k = 1.0 + u_paper * mid * (fibre * 0.9 + grain * 1.3);
-  outColor = vec4(c.rgb * k, c.a);
+  outColor = vec4(graded * k, c.a);
 }`;
 
 /**
@@ -44,6 +61,11 @@ fn paperNoise(p: vec2<f32>) -> f32 {
   f = f * f * (vec2<f32>(3.0) - 2.0 * f);
   return mix(mix(paperHash(i), paperHash(i + vec2<f32>(1.0, 0.0)), f.x), mix(paperHash(i + vec2<f32>(0.0, 1.0)), paperHash(i + vec2<f32>(1.0, 1.0)), f.x), f.y);
 }
+fn cinemaCurve(x: f32, p: f32) -> f32 {
+  let v = clamp(x, 0.0, 1.0);
+  if (v < 0.5) { return 0.5 * pow(max(2.0 * v, 1e-4), p); }
+  return 1.0 - 0.5 * pow(max(2.0 * (1.0 - v), 1e-4), p);
+}
 @fragment fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
   let c = textureSample(u_color, paperSampler, uv);
   let strength = paper.values[1].x;
@@ -51,9 +73,15 @@ fn paperNoise(p: vec2<f32>) -> f32 {
   let fibre = paperNoise(vec2<f32>(p.x * 0.35 + p.y * 0.08, p.y * 2.6)) - 0.5;
   let grain = paperNoise(p * 1.7) * 0.6 + paperNoise(p * 4.3) * 0.4 - 0.5;
   let l = dot(c.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let warm = vec3<f32>(
+    cinemaCurve(c.r * 1.02 + 0.012 * l, 1.05),
+    cinemaCurve(c.g * 1.0 + 0.003 * l, 1.04),
+    cinemaCurve(c.b * 0.97 + 0.016 * (1.0 - l), 1.05)
+  );
+  let graded = mix(c.rgb, warm, 0.3);
   let mid = smoothstep(0.04, 0.3, l) * (1.0 - smoothstep(0.75, 0.98, l));
   let k = 1.0 + strength * mid * (fibre * 0.9 + grain * 1.3);
-  return vec4<f32>(c.rgb * k, c.a);
+  return vec4<f32>(graded * k, c.a);
 }`;
 
 /** Name of the registered pass: `app.post.setPassUniform` addresses it by this. */

@@ -15,7 +15,6 @@ type PipsSharedAssetDefinitions = {
   readonly "gullsiegeWindmillMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "heatsinkArch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "heatsinkBoostPad": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "heatsinkDroneNighthawk": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "helperChar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonStreetLampProp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "propBoulder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -1205,47 +1204,6 @@ export const sharedAssets: AuraAssetMap<PipsSharedAssetDefinitions> = defineAura
           3.1,
           0.24,
           4.1
-        ]
-      },
-      "nodeNames": [],
-      "dependencies": [],
-      "quality": "approved",
-      "role": "unknown"
-    },
-  },
-  "heatsinkDroneNighthawk": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkDroneNighthawk.8113ba27.glb",
-    hash: "sha256-8113ba2745e8838c72e10159c0c86c654de4b7b7abf64d1b2160bd51dd121f88",
-    bounds: [
-      6.04,
-      2.53,
-      5.72
-    ],
-    sizeBytes: 629432,
-    metadata: {
-      "animations": [],
-      "animationClips": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": []
-      },
-      "humanoid": false,
-      "humanoidStatus": "unknown",
-      "humanoidConfidence": "low",
-      "morphTargets": [],
-      "sourcePath": "public/aura-assets/heatsinkDroneNighthawk.8113ba27.glb",
-      "boundsMetadata": {
-        "min": [
-          -3.02,
-          -1.025,
-          -2.65
-        ],
-        "max": [
-          3.02,
-          1.505,
-          3.07
         ]
       },
       "nodeNames": [],

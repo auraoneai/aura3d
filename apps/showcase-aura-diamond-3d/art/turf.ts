@@ -120,10 +120,13 @@ export function bladeNormalTexels(size = 256, seed = 0x6a55, strength = 0.42): T
   return { size, data };
 }
 
-/** Pebbled clay: round bumps from a coarse noise gradient plus a fine grain. */
+/** Pebbled raked clay: drag-screen rake grooves plus round clay bumps and fine mineral grain. */
 export function clayNormalTexels(size = 256, seed = 0xc1a7, strength = 0.35): TexelBlock {
   const data = new Uint8ClampedArray(size * size * 4);
-  const h = (u: number, v: number): number => 0.7 * tiledNoise(u, v, 24, seed) + 0.3 * tiledNoise(u, v, 96, seed + 7);
+  const h = (u: number, v: number): number =>
+    0.58 * tiledNoise(u, v, 24, seed) +
+    0.26 * tiledNoise(u, v, 96, seed + 7) +
+    0.16 * (0.5 + 0.5 * Math.sin((v * 14 + 0.12 * tiledNoise(u, v, 8, seed + 3)) * Math.PI * 2));
   const e = 1 / size;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -133,6 +136,31 @@ export function clayNormalTexels(size = 256, seed = 0xc1a7, strength = 0.35): Te
       const dy = (h(u, v + e) - h(u, v - e)) * size * 0.04;
       const l = Math.hypot(dx, dy, 1);
       writeNormal(data, (y * size + x) * 4, Math.max(-strength, Math.min(strength, -dx / l)), Math.max(-strength, Math.min(strength, -dy / l)));
+    }
+  }
+  return { size, data };
+}
+
+/**
+ * Damp-vs-dry infield clay roughness map (linear RGBA8, green/red channels matched for PBR roughnessMap):
+ * watered drag-screen lanes drop toward 0.52 roughness while loose chalky dust rises toward 0.94.
+ */
+export function clayRoughnessTexels(size = 256, seed = 0xc1d9): TexelBlock {
+  const data = new Uint8ClampedArray(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = (x + 0.5) / size;
+      const v = (y + 0.5) / size;
+      const dampPatch = tiledNoise(u, v, 6, seed);
+      const rake = 0.5 + 0.5 * Math.sin((v * 14 + 0.1 * dampPatch) * Math.PI * 2);
+      const fine = tiledNoise(u, v, 48, seed + 11) - 0.5;
+      const r01 = Math.max(0.46, Math.min(0.96, 0.52 + 0.34 * dampPatch + 0.08 * rake + 0.08 * fine));
+      const byte = Math.round(r01 * 255);
+      const i = (y * size + x) * 4;
+      data[i] = byte;
+      data[i + 1] = byte;
+      data[i + 2] = byte;
+      data[i + 3] = 255;
     }
   }
   return { size, data };

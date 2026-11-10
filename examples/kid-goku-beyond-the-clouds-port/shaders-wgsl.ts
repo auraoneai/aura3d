@@ -1,7 +1,7 @@
 /**
- * A3/W6: WGSL twins of every Cloud Runner `material.custom` program, for the WebGPU backend. Each body follows its GLSL
+ * A3/W6: WGSL twins of every Cumulus Dash `material.custom` program, for the WebGPU backend. Each body follows its GLSL
  * original in shaders.ts line for line (the adapter's safe `pow` is `a3dPow`, GLSL `mod` is `a3dMod`, `atan(y, x)` is
- * `atan2`); WebGL2 keeps drawing the GLSL, so the default pixels are unchanged.
+ * `atan2`); WebGL2 keeps drawing the GLSL, so both backends stay in lockstep.
  *
  * Vertex inputs sit at the locations the geometry streams carry on WebGPU: position 0, normal 1, uv 2, then the author
  * attributes in name order from the custom pool (3, 5, 6): scenery `tone` 3; quad sprites `aAlpha` 3, `aSize` 5, `tone` 6.
@@ -172,10 +172,19 @@ export const VALLEY_FRAGMENT_WGSL = [HEADER, COMMON, /* wgsl */ `
   let p = vW.xz * 0.012;
   let n = fbm(p);
   let m = fbm(p * 3.1 + vec2<f32>(7.0));
-  var canopy = mix(vec3<f32>(0.16, 0.34, 0.14), vec3<f32>(0.34, 0.5, 0.2), n);
-  canopy = mix(canopy, vec3<f32>(0.5, 0.52, 0.3), smoothstep(0.6, 0.8, m) * 0.5);
-  let cloudShadow = smoothstep(0.55, 0.75, fbm(p * 0.45 + vec2<f32>(aura.u_cloudPhase * 0.01, 0.0)));
-  canopy = canopy * (1.0 - 0.28 * cloudShadow);
+  let ridgeNoise = fbm(p * 1.75 - vec2<f32>(4.2));
+  let deepPine = vec3<f32>(0.11, 0.25, 0.13);
+  let sunlitMeadow = vec3<f32>(0.35, 0.5, 0.22);
+  let sandstoneTalus = vec3<f32>(0.48, 0.37, 0.25);
+  var canopy = mix(deepPine, sunlitMeadow, smoothstep(0.28, 0.76, n));
+  canopy = mix(canopy, sandstoneTalus, smoothstep(0.62, 0.84, m) * 0.45);
+  let riverMeander = abs(fract(p.x * 0.32 + sin(p.y * 1.4) * 0.22 + ridgeNoise * 0.18) - 0.5);
+  let riverMask = smoothstep(0.022, 0.006, riverMeander);
+  canopy = mix(canopy, mix(vec3<f32>(0.24, 0.48, 0.62), aura.u_hazeColor * 1.08, 0.45), riverMask * 0.78);
+  let mist = smoothstep(0.56, 0.82, fbm(p * 0.85 + vec2<f32>(aura.u_cloudPhase * 0.014, -aura.u_cloudPhase * 0.006)));
+  let cloudShadow = smoothstep(0.52, 0.74, fbm(p * 0.45 + vec2<f32>(aura.u_cloudPhase * 0.01, 0.0)));
+  canopy = canopy * (1.0 - 0.32 * cloudShadow);
+  canopy = mix(canopy, mix(aura.u_hazeColor, vec3<f32>(0.9, 0.94, 0.98), 0.35), mist * 0.38);
   let dist = length(vW - aura.u_cameraPosition);
   let f = 1.0 - exp(-a3dPow(dist * aura.u_fogDensity, 2.0));
   return vec4<f32>(mix(canopy, aura.u_hazeColor, clamp(f, 0.0, 1.0)), 1.0);
@@ -203,17 +212,24 @@ export const PUDDLE_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
 @fragment fn fs_main(@location(0) vW: vec3<f32>, @location(1) vUv: vec2<f32>) -> @location(0) vec4<f32> {
   let c = vUv * 2.0 - vec2<f32>(1.0);
   let r = length(c);
-  let edge = smoothstep(1.0, 0.72, r + (vn(vUv * 9.0) - 0.5) * 0.18);
+  let edgeNoise = (vn(vUv * 9.0) - 0.5) * 0.18 + (vn(vUv * 21.0 + vec2<f32>(3.1)) - 0.5) * 0.07;
+  let edge = smoothstep(1.0, 0.68, r + edgeNoise);
+  let dampRim = smoothstep(1.04, 0.86, r + edgeNoise) * (1.0 - smoothstep(0.84, 0.62, r + edgeNoise));
   let v = normalize(aura.u_cameraPosition - vW);
-  let rip = vec2<f32>(vn(vW.xz * 3.1 + vec2<f32>(aura.u_tClock * 0.6)), vn(vW.zx * 2.7 - vec2<f32>(aura.u_tClock * 0.5))) - vec2<f32>(0.5);
-  let n = normalize(vec3<f32>(rip.x * 0.08, 1.0, rip.y * 0.08));
+  let rip1 = vec2<f32>(vn(vW.xz * 3.1 + vec2<f32>(aura.u_tClock * 0.6)), vn(vW.zx * 2.7 - vec2<f32>(aura.u_tClock * 0.5))) - vec2<f32>(0.5);
+  let rip2 = vec2<f32>(vn(vW.xz * 7.4 - vec2<f32>(aura.u_tClock * 0.9)), vn(vW.zx * 6.8 + vec2<f32>(aura.u_tClock * 0.75))) - vec2<f32>(0.5);
+  let rip = rip1 * 0.72 + rip2 * 0.28;
+  let n = normalize(vec3<f32>(rip.x * 0.075, 1.0, rip.y * 0.075));
   let rf = reflect(-v, n);
-  let fres = 0.25 + 0.75 * a3dPow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
-  let sky = mix(aura.u_skyHorizon, aura.u_skyTop, smoothstep(0.0, 0.6, rf.y));
-  var col = sky * 0.9 + vec3<f32>(1.0, 0.92, 0.78) * a3dPow(max(dot(rf, aura.u_sunDir), 0.0), 220.0) * 3.0;
+  let fres = 0.28 + 0.72 * a3dPow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
+  let cloudMirror = smoothstep(0.54, 0.78, fbm(rf.xz / (max(rf.y, 0.0) + 0.22) * 1.4 + vec2<f32>(aura.u_tClock * 0.01, 0.0)));
+  var sky = mix(aura.u_skyHorizon, aura.u_skyTop, smoothstep(0.0, 0.62, rf.y));
+  sky = mix(sky, mix(aura.u_skyHorizon, vec3<f32>(0.96, 0.97, 1.0), 0.7), cloudMirror * 0.55);
+  var col = sky * 0.92 + vec3<f32>(1.0, 0.92, 0.78) * a3dPow(max(dot(rf, aura.u_sunDir), 0.0), 210.0) * 2.6;
+  col = mix(col, vec3<f32>(0.24, 0.17, 0.12), dampRim * 0.42);
   let dist = length(vW - aura.u_cameraPosition);
   col = mix(col, aura.u_hazeColor, clamp(1.0 - exp(-a3dPow(dist * aura.u_fogDensity, 2.0)), 0.0, 1.0));
-  return vec4<f32>(col, edge * mix(0.45, 0.92, fres));
+  return vec4<f32>(col, max(edge * mix(0.48, 0.93, fres), dampRim * 0.32));
 }`);
 
 export const WATER_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
@@ -496,17 +512,67 @@ export const SCENERY_SHADOWED_FRAGMENT_WGSL = stage(COMMON, SCENERY_ALBEDO, SUN_
   let sunVis = a3dSunShadow(vW, n, aura.u_sunDirW);
   lit = lit * mix(aura.u_shadowFloor, 1.0, sunVis);
   let hemi = mix(aura.u_groundFill, aura.u_skyFill, n.y * 0.5 + 0.5);
-  var col = albedo * (aura.u_sunColor * lit * aura.u_sunStrength + hemi + a3dEnvDiffuse(n) * aura.u_iblDiffuse);
+  let celStep = smoothstep(0.18, 0.52, lit);
+  let shapedLit = mix(lit, 0.24 + 0.76 * celStep, 0.26);
+  var col = albedo * (aura.u_sunColor * shapedLit * aura.u_sunStrength + hemi + a3dEnvDiffuse(n) * aura.u_iblDiffuse);
   let vdir = normalize(aura.u_cameraPosition - vW);
   let ndv = clamp(dot(n, vdir), 0.0, 1.0);
   let fres = 0.04 + 0.96 * a3dPow(1.0 - ndv, 5.0);
   col = col + a3dEnvSpecular(reflect(-vdir, n), aura.u_iblRoughness) * fres * aura.u_iblSpec * mix(0.5, 1.0, sunVis);
-  let rim = a3dPow(1.0 - ndv, 2.6);
-  col = col + aura.u_rimColor * rim * aura.u_rimStrength * (0.4 + 0.6 * max(n.y, 0.0));
+  let rim = a3dPow(1.0 - ndv, 2.5);
+  let sunBack = 0.65 + 0.65 * clamp(dot(-vdir, aura.u_sunDirW), 0.0, 1.0);
+  col = col + aura.u_rimColor * rim * aura.u_rimStrength * (0.42 + 0.58 * max(n.y, 0.0)) * sunBack;
   let dist = length(vW - aura.u_cameraPosition);
   let f = 1.0 - exp(-a3dPow(dist * aura.u_fogDensity, 2.0));
   col = mix(col, aura.u_hazeColor, clamp(f, 0.0, 1.0));
   return vec4<f32>(col, aura.u_opacity);
+}`);
+
+export const CLOUD_SSS_VERTEX_WGSL = stage(CLIP, COMMON, /* wgsl */ `
+struct CloudVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) tone: vec3<f32>,
+  @location(1) n: vec3<f32>,
+  @location(2) w: vec3<f32>,
+  @location(3) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, @location(2) a_uv: vec2<f32>, @location(3) tone: vec3<f32>) -> CloudVarying {
+  var out: CloudVarying;
+  out.tone = tone;
+  out.uv = a_uv;
+  let w0 = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  let billow = (vn(w0.xz * 0.045 + vec2<f32>(aura.u_cloudPhase * 0.14, aura.u_cloudPhase * 0.08)) - 0.5) * aura.u_billowAmp;
+  let p = a_position + a_normal * billow;
+  out.n = normalize((aura.u_modelMatrix * vec4<f32>(a_normal, 0.0)).xyz);
+  out.w = (aura.u_modelMatrix * vec4<f32>(p, 1.0)).xyz;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(p, 1.0));
+  return out;
+}`);
+
+export const CLOUD_SSS_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
+@fragment fn fs_main(@builtin(front_facing) frontFacing: bool, @location(0) vTone: vec3<f32>, @location(1) vN: vec3<f32>, @location(2) vW: vec3<f32>, @location(3) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  var n0 = normalize(vN);
+  if (!frontFacing) { n0 = -n0; }
+  let fluff = fbm(vW.xz * 0.065 + vUv * 1.4 + vec2<f32>(aura.u_cloudPhase * 0.04, -aura.u_cloudPhase * 0.02));
+  let n = normalize(n0 + vec3<f32>((fluff - 0.5) * 0.28, (fluff - 0.45) * 0.16, (0.5 - fluff) * 0.24));
+  let vdir = normalize(aura.u_cameraPosition - vW);
+  let ndv = clamp(dot(n, vdir), 0.0, 1.0);
+  let ndl = dot(n, aura.u_sunDirW);
+  let wrap = clamp(ndl * 0.58 + 0.42, 0.0, 1.0);
+  let powder = 1.0 - exp(-max(0.08, 1.0 - ndv) * 3.4);
+  let cosTheta = clamp(dot(-vdir, aura.u_sunDirW), -1.0, 1.0);
+  let g = 0.62;
+  let hg = (1.0 - g * g) / (4.0 * 3.14159265 * a3dPow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
+  let forwardScatter = min(hg * 1.45, 2.1) * (0.3 + 0.7 * a3dPow(1.0 - ndv, 1.7));
+  let trough = smoothstep(-0.45, 0.55, n.y) * (0.78 + 0.22 * fluff);
+  let baseShade = mix(aura.u_cloudShade * 0.76, aura.u_cloudLight, clamp(wrap * 0.72 + trough * 0.36, 0.0, 1.0));
+  var col = baseShade * mix(vec3<f32>(0.92, 0.95, 1.0), vTone, 0.45);
+  col = col + aura.u_sunColor * (max(ndl, 0.0) * 0.36 + forwardScatter * powder * 0.58);
+  col = col + aura.u_rimColor * a3dPow(1.0 - ndv, 2.5) * 0.34 * (0.35 + 0.65 * max(n.y, 0.0));
+  let dist = length(vW - aura.u_cameraPosition);
+  let f = 1.0 - exp(-a3dPow(dist * aura.u_fogDensity, 2.0));
+  col = mix(col, aura.u_hazeColor, clamp(f, 0.0, 1.0));
+  return vec4<f32>(col, 1.0);
 }`);
 
 /** WARN_VERTEX (warning decals and the soft contact shadows). */

@@ -91,8 +91,7 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
     nodes.push(look);
   }
   nodes.push(
-    lights.ambient({ name: "siege-ambient", color: "#dce8f8", intensity: 0.2 }),
-    lights.hemisphere({ name: "siege-hemi", skyColor: "#68a8e8", groundColor: "#3a5a34", intensity: 0.4, position: [0, 18, 0] }),
+    lights.hemisphere({ name: "siege-hemi", skyColor: "#68a8e8", groundColor: "#3a5a34", intensity: 0.48, position: [0, 18, 0] }),
     lights.directional({ name: "siege-sun", color: "#ffe6bd", intensity: 0.85, position: [-10, 24, 16] }),
     // Cool rim from behind separates the fort, rocks, and trees from the water band.
     lights.directional({ name: "siege-rim", color: "#bfe0ff", intensity: 0.5, position: [12, 9, -16] }),

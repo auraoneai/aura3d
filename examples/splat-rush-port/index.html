@@ -4,111 +4,139 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="../../apps/showcase-port-shared/hud-tokens.css" />
     <title>Splat</title>
     <style>
-      html, body { margin: 0; height: 100%; background: #0b0b0d; overflow: hidden; }
+      @font-face {
+        font-family: 'Splat Display';
+        src: url('../../apps/showcase-port-shared/fonts/whitney-semibold.woff2') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      html, body { margin: 0; height: 100%; background: #0b0b0d; overflow: hidden; font-synthesis: none; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; user-select: none; outline: none; }
-      .game-ui { font-family: 'Splat Display', 'Trebuchet MS', system-ui, sans-serif; font-synthesis: none; user-select: none; }
-      .hud-text { paint-order: stroke fill; font-size: clamp(22px, 5.4vh, 34px); font-weight: 900; color: #fdf0e0; -webkit-text-stroke: 2px #333; text-shadow: 3px 3px 0 #333, 0 4px 10px rgba(0,0,0,0.3); letter-spacing: 1px; }
-      .btn { padding: clamp(8px, 2vh, 15px) 50px; font-size: clamp(22px, 5vh, 32px); font-weight: 900; font-family: inherit; background: linear-gradient(180deg, #f0433a, #d93a32); color: #fdf0e0; border: 4px solid #333; border-radius: 40px; cursor: pointer; text-transform: uppercase; box-shadow: 0 8px 0 #333, 0 15px 20px rgba(0,0,0,0.3); text-shadow: 2px 2px 0 #333; }
-      .life-icon { width: clamp(24px, 6vh, 34px); height: clamp(24px, 6vh, 34px); background: radial-gradient(circle at 70% 30%, #ff8a80 0 18%, #f0433a 45%, #c42a24 100%); border-radius: 50% 50% 50% 10%; transform: rotate(-45deg); display: inline-block; margin: 0 8px; border: 3px solid #4a1612; box-shadow: 2px 3px 0 rgba(51,51,51,0.55); position: relative; overflow: hidden; }
-      .life-lost { background: #888; filter: grayscale(100%); opacity: 0.5; transform: rotate(-45deg) scale(0.8); box-shadow: 0 0 0 #333; }
-      .popup-text { paint-order: stroke fill; position: relative; white-space: nowrap; line-height: 1.05; animation: popup-rise 0.95s cubic-bezier(0.2,0.8,0.3,1) forwards; font-size: clamp(22px, min(8vh, 7.5vw), 48px); font-weight: 900; color: #fff; -webkit-text-stroke: 2px #333; text-shadow: 4px 4px 0 #333; pointer-events: none; z-index: 20; transform: translate(-50%, -50%); font-family: 'Splat Display', system-ui, sans-serif; }
-      @keyframes popup-rise { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 18% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); } 35% { transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -150%) scale(1); } }
-      .btn-gold { background: linear-gradient(180deg, #f9c647, #e0a32a); color: #fdf0e0; }
-      .pu { display: inline-flex; align-items: center; font-weight: 900; font-size: 16px; color: #fff; -webkit-text-stroke: 1px #333; padding: 6px 14px; border-radius: 100px; border: 2px solid #333; box-shadow: 0 3px 0 #333; white-space: nowrap; margin: 0 6px; }
-      .pu-rainbow { background: linear-gradient(90deg, #f0433a, #f9c647, #5ecaf0, #b868e8); }
-      .pu-shield { background: #5ecaf0; }
-      .pu-x2 { background: #f9c647; }
-      .overlay-card { background: #fdf0e0; border: 6px solid #333; border-radius: 30px; padding: clamp(14px, 4.5vh, 50px) 40px; max-height: 92vh; box-sizing: border-box; box-shadow: 12px 12px 0 rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; max-width: 500px; }
+      .game-ui { font-family: var(--font-ui); font-synthesis: none; user-select: none; }
+      .hud-kicker { font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; opacity: 0.78; margin-right: 6px; }
+      .hud-num { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+      .hud-unit { font-family: var(--font-ui); font-size: 12px; font-weight: 500; opacity: 0.85; margin-left: 1px; }
+      .hud-svg, .pu-svg, .steer-svg { display: inline-block; vertical-align: -2px; flex: none; }
+      .hud-text { paint-order: stroke fill; font-size: clamp(20px, 4.4vh, 28px); font-weight: 600; color: #fdf0e0; -webkit-text-stroke: 1.5px #333; text-shadow: 2px 2px 0 #333, 0 4px 10px rgba(0,0,0,0.28); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+      .btn { padding: clamp(10px, 2vh, 13px) 36px; min-height: 44px; font-size: clamp(17px, 3vh, 21px); font-weight: 600; font-family: inherit; background: linear-gradient(180deg, #f0433a, #d93a32); color: #fdf0e0; border: 2.5px solid #333; border-radius: 999px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 0 #333, 0 10px 20px rgba(0,0,0,0.26); text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
+      .life-icon { width: clamp(22px, 4.6vh, 30px); height: clamp(22px, 4.6vh, 30px); background: radial-gradient(circle at 70% 30%, #ff8a80 0 18%, #f0433a 45%, #c42a24 100%); border-radius: 50% 50% 50% 12%; transform: rotate(-45deg); display: inline-block; margin: 0 6px; border: 2.5px solid #4a1612; box-shadow: 2px 3px 0 rgba(51,51,51,0.45); position: relative; overflow: hidden; }
+      .life-lost { background: #888; filter: grayscale(100%); opacity: 0.45; transform: rotate(-45deg) scale(0.82); box-shadow: none; }
+      .popup-text { paint-order: stroke fill; position: relative; white-space: nowrap; line-height: 1.05; animation: popup-rise 0.95s cubic-bezier(0.2,0.8,0.3,1) forwards; font-size: clamp(20px, min(6.6vh, 6.6vw), 38px); font-weight: 600; color: #fff; -webkit-text-stroke: 1.5px #333; text-shadow: 2px 3px 0 #333; pointer-events: none; z-index: 20; transform: translate(-50%, -50%); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+      @keyframes popup-rise { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 18% { opacity: 1; transform: translate(-50%, -50%) scale(1.14); } 35% { transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -150%) scale(1); } }
+      .btn-gold { background: linear-gradient(180deg, #f9c647, #e0a32a); color: #3b1f3f; text-shadow: none; }
+      .pu { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-size: 13px; color: #fff; padding: 6px 13px; border-radius: 100px; border: 2px solid #3b1f3f; box-shadow: 0 3px 0 rgba(42,18,46,0.65); white-space: nowrap; margin: 0 5px; font-variant-numeric: tabular-nums; }
+      .pu-rainbow { background: linear-gradient(90deg, #f0433a, #f9c647, #5ecaf0, #b868e8); text-shadow: 0 1px 2px rgba(24,10,28,0.55); }
+      .pu-shield { background: #5ecaf0; color: #26142b; }
+      .pu-x2 { background: #f9c647; color: #26142b; }
+      .overlay-card { background: rgba(253, 240, 224, 0.94); border: 3px solid #333; border-radius: 20px; padding: clamp(18px, 3.6vh, 30px) clamp(20px, 4vw, 30px); max-height: 90vh; box-sizing: border-box; box-shadow: 0 18px 42px rgba(18,10,26,0.34), 0 4px 0 #333; display: flex; flex-direction: column; align-items: center; max-width: 368px; backdrop-filter: blur(14px) saturate(135%); -webkit-backdrop-filter: blur(14px) saturate(135%); }
       .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; text-align: center; }
       .hidden { display: none !important; }
-      /* C3: the controls sit above the "Built with Aura3D" credit (left 8, bottom 8, up to two lines on a phone) */
-      .icon-btn { position: fixed; left: calc(16px + env(safe-area-inset-left)); bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 12; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #333; background: #fdf0e0; box-shadow: 0 4px 0 #333; font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
-      .icon-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #333; }
+      /* C3: controls clear the Aura3D bar space at the bottom-left */
+      .icon-btn { position: fixed; left: calc(16px + env(safe-area-inset-left)); bottom: max(56px, calc(var(--a3d-bar-space, 48px) + 8px + env(safe-area-inset-bottom))); z-index: 12; width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid #333; background: rgba(253, 240, 224, 0.94); color: #3b1f3f; box-shadow: 0 3px 0 #333; font-size: 18px; line-height: 1; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
+      .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
       #btn-pause { left: calc(70px + env(safe-area-inset-left)); }
-      .settings { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: clamp(6px, 1.6vh, 12px) 0 0; }
-      .toggle { font-weight: 800; font-size: 13px; line-height: 1; font-family: inherit; color: #333; background: #fff; border: 2px solid #333; border-radius: 100px; padding: 7px 12px; cursor: pointer; box-shadow: 0 2px 0 #333; }
-      .toggle[aria-pressed="true"] { background: #f9c647; }
-      #final-stats { font-size: clamp(14px, 2.6vh, 18px); font-weight: 800; color: #555; margin: 0 0 clamp(8px, 2vh, 16px); }
-      .go-best { display: inline-block; margin-top: 8px; font-size: 24px; color: #b868e8; -webkit-text-stroke: 0; }
+      .settings { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: clamp(8px, 1.6vh, 12px) 0 0; }
+      .toggle { font-weight: 500; font-size: 12px; line-height: 1; font-family: inherit; color: #333; background: rgba(255,255,255,0.92); border: 1.5px solid #333; border-radius: 100px; padding: 8px 13px; min-height: 36px; cursor: pointer; box-shadow: 0 2px 0 rgba(51,51,51,0.55); }
+      .toggle[aria-pressed="true"] { background: #f9c647; font-weight: 600; }
+      #final-stats { font-size: 13px; font-weight: 500; color: #4a3350; margin: 0 0 14px; font-variant-numeric: tabular-nums; }
+      .go-best { display: inline-block; margin-top: 6px; font-size: 17px; font-weight: 600; color: #8c3ec0; -webkit-text-stroke: 0; }
       @media (max-height: 420px) { .hint { display: none; } }
-      .hint { font-size: 14px; font-weight: 800; color: #555; margin: 14px 0 0; }
-      #splash-best { font-size: 22px; font-weight: 900; color: #333; margin: 0 0 14px; min-height: 26px; }
-      @media (max-width: 520px) {
-        .overlay-card { width: calc(100vw - 28px); max-width: calc(100vw - 28px); padding-left: 16px; padding-right: 16px; border-width: 5px; box-shadow: 8px 8px 0 rgba(0,0,0,0.2); }
-        .overlay-card h1 { font-size: min(13vw, 64px) !important; }
+      .hint { font-size: 12px; font-weight: 500; line-height: 1.4; color: #523b58; margin: 10px 0 0; }
+      #splash-best { font-size: 15px; font-weight: 600; color: #3b1f3f; margin: 0 0 10px; min-height: 20px; font-variant-numeric: tabular-nums; }
+      .splash-copy { font-size: 14px; font-weight: 500; line-height: 1.45; color: #3b1f3f; margin: 0 0 10px; }
+      .splash-legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 2px; }
+      .legend-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(59, 31, 63, 0.08); border: 1px solid rgba(59, 31, 63, 0.2); font-size: 12px; font-weight: 500; color: #3b1f3f; }
+      #steer-cue { position: fixed; left: 50%; bottom: max(108px, calc(var(--a3d-bar-space, 48px) + 58px + env(safe-area-inset-bottom))); transform: translateX(-50%); z-index: 5; pointer-events: none; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(253, 240, 224, 0.92); border: 1.5px solid rgba(59, 31, 63, 0.65); box-shadow: 0 6px 18px rgba(24, 10, 30, 0.2); color: #3b1f3f; font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; transition: opacity 260ms ease, transform 260ms ease; }
+      #steer-cue[data-hidden="true"] { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      @media (pointer: coarse), (max-width: 760px) {
+        .overlay-card { width: calc(100vw - 28px); max-width: 356px; padding-left: 18px; padding-right: 18px; }
+        .toggle, .btn, .icon-btn { min-height: 44px; min-width: 44px; touch-action: manipulation; }
         #hud-lives { flex: none; white-space: nowrap; }
-        #hud-score { white-space: nowrap; font-size: clamp(18px, 5.2vw, 26px); }
-        #hud-combo { top: calc(72px + env(safe-area-inset-top)) !important; }
-        .icon-btn { bottom: calc(64px + env(safe-area-inset-bottom)); }
-        #hud-powerups { bottom: calc(118px + env(safe-area-inset-bottom)) !important; }
+        #hud-score { white-space: nowrap; font-size: clamp(16px, 4.6vw, 22px); }
+        #hud-combo { top: calc(68px + env(safe-area-inset-top)) !important; font-size: 16px !important; padding: 4px 10px !important; }
+        #hud-tube { width: 76px !important; }
+        .icon-btn { bottom: max(60px, calc(var(--a3d-bar-space, 48px) + 12px + env(safe-area-inset-bottom))); }
+        #hud-powerups { bottom: max(116px, calc(var(--a3d-bar-space, 48px) + 66px + env(safe-area-inset-bottom))) !important; }
       }
-      /* A1 (5.0.3): readiness bar under PLAY NOW, driven by apps/showcase-port-shared/loading-progress; fades out when the first frame is ready */
-      .load-bar { --aura3d-loading: 0; position: relative; width: min(260px, 60%); height: 8px; margin: clamp(6px,1.6vh,12px) auto 0; border-radius: 4px; overflow: hidden; background: rgba(51,51,51,0.22); border: 2px solid #333; box-sizing: content-box; }
+      /* A1 (5.0.3): readiness bar under PLAY NOW, driven by examples/shared/loading-progress; fades out when ready */
+      .load-bar { --aura3d-loading: 0; position: relative; width: min(240px, 64%); height: 6px; margin: clamp(6px,1.6vh,10px) auto 0; border-radius: 4px; overflow: hidden; background: rgba(59,31,63,0.16); border: 1.5px solid #3b1f3f; box-sizing: content-box; }
       .load-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: #f0433a; transition: transform 160ms linear; }
       .load-bar[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 120ms; }
       #btn-start[aria-busy="true"] { opacity: 0.72; }
-      @media (prefers-reduced-motion: reduce) { .load-bar::after, .load-bar[data-complete="true"] { transition: none; } }
+      @media (prefers-reduced-motion: reduce) { .load-bar::after, .load-bar[data-complete="true"], #steer-cue, #hud-tube-fill { transition: none; } }
       /* GU47 CR-H1 paint-world HUD, carnival look only (body.look-carnival; ?look=original keeps everything above).
-       * Licensed GT Walsheim Bold only (no system or Trebuchet fallback); plum ink on cream paper chips. */
+       * Licensed AuraOne Whitney + DIN Pro faces only; plum ink on frosted cream studio chips. */
       .paint-only { display: none; }
       .look-carnival .paint-only { display: flex; }
-      .look-carnival.game-ui, .look-carnival .popup-text, .look-carnival .btn, .look-carnival .toggle { font-family: 'Splat Display'; }
-      .look-carnival .hud-text { color: #3b1f3f; -webkit-text-stroke: 0; text-shadow: none; background: #fdf0e0; padding: 4px 16px 6px; border-radius: 14px 20px 12px 22px / 18px 12px 20px 14px; box-shadow: 3px 4px 0 #3b1f3f; border: 3px solid #3b1f3f; }
-      .look-carnival #hud-combo { background: #fdf0e0; color: #3b1f3f !important; }
+      .look-carnival.game-ui, .look-carnival .popup-text, .look-carnival .btn, .look-carnival .toggle { font-family: 'Splat Display', var(--font-ui); }
+      .look-carnival .hud-text { display: inline-flex; align-items: baseline; color: #3b1f3f; -webkit-text-stroke: 0; text-shadow: none; background: rgba(253, 240, 224, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 14px 6px; border-radius: 12px; box-shadow: 0 4px 14px rgba(34, 14, 42, 0.18), 2px 3px 0 #3b1f3f; border: 2px solid #3b1f3f; }
+      .look-carnival #hud-combo { gap: 6px; background: rgba(253, 240, 224, 0.94); color: #3b1f3f !important; }
       .look-carnival .life-icon { border-color: #3b1f3f; }
-      .look-carnival .popup-text { -webkit-text-stroke: 2px #3b1f3f; text-shadow: 3px 3px 0 #3b1f3f; padding: 6px 22px 10px; background: radial-gradient(ellipse 60% 48% at 50% 55%, rgba(253,240,224,0.92) 0 62%, rgba(253,240,224,0) 64%), radial-gradient(ellipse 52% 38% at 28% 50%, rgba(253,240,224,0.85) 0 60%, rgba(253,240,224,0) 62%); }
-      .look-carnival .overlay-card { color: #3b1f3f; border: 4px solid #3b1f3f; border-radius: 22px 34px 18px 40px / 30px 18px 36px 22px; box-shadow: 10px 12px 0 rgba(59,31,63,0.35); background: radial-gradient(circle at 20% 15%, rgba(243,169,107,0.10), rgba(0,0,0,0) 40%), #fdf0e0;
-        -webkit-mask: radial-gradient(circle 5px at 50% 0, #0000 98%, #000) top/14px 51% repeat-x, radial-gradient(circle 5px at 50% 100%, #0000 98%, #000) bottom/14px 51% repeat-x;
-        mask: radial-gradient(circle 5px at 50% 0, #0000 98%, #000) top/14px 51% repeat-x, radial-gradient(circle 5px at 50% 100%, #0000 98%, #000) bottom/14px 51% repeat-x; }
-      .look-carnival .btn { border-color: #3b1f3f; box-shadow: 0 8px 0 #3b1f3f, 0 15px 20px rgba(59,31,63,0.3); text-shadow: 2px 2px 0 #3b1f3f; }
-      .look-carnival .icon-btn { border-color: #3b1f3f; box-shadow: 0 4px 0 #3b1f3f; }
-      .look-carnival .toggle { color: #3b1f3f; border-color: #3b1f3f; box-shadow: 0 2px 0 #3b1f3f; }
+      .look-carnival .popup-text { -webkit-text-stroke: 1.5px #3b1f3f; text-shadow: 2px 3px 0 #3b1f3f; padding: 6px 20px 8px; background: radial-gradient(ellipse 60% 48% at 50% 55%, rgba(253,240,224,0.92) 0 62%, rgba(253,240,224,0) 64%); }
+      .look-carnival .overlay-card { color: #3b1f3f; border: 2.5px solid rgba(59, 31, 63, 0.92); border-radius: 20px; box-shadow: 0 18px 42px rgba(22, 10, 30, 0.34), 0 4px 0 #3b1f3f; background: radial-gradient(circle at 20% 15%, rgba(243,169,107,0.12), rgba(0,0,0,0) 44%), rgba(253, 240, 224, 0.92); }
+      .look-carnival .btn { border-color: #3b1f3f; box-shadow: 0 4px 0 #3b1f3f, 0 10px 20px rgba(59,31,63,0.24); text-shadow: 0 1px 1px rgba(42,16,46,0.35); }
+      .look-carnival .icon-btn { border-color: #3b1f3f; box-shadow: 0 3px 0 #3b1f3f; }
+      .look-carnival .toggle { color: #3b1f3f; border-color: #3b1f3f; box-shadow: 0 2px 0 rgba(59,31,63,0.45); }
       .look-carnival .hint, .look-carnival #final-stats, .look-carnival #splash-best { color: #3b1f3f; }
-      .look-carnival #splash-screen { background: linear-gradient(180deg, rgba(31,74,99,0.55), rgba(232,121,138,0.45) 60%, rgba(243,169,107,0.55)) !important; }
-      .look-carnival #gameover-screen { background: linear-gradient(180deg, rgba(59,31,63,0.82), rgba(240,67,58,0.78)) !important; }
-      #hud-paint { position: fixed; top: calc(clamp(52px, 10vh, 78px) + env(safe-area-inset-top)); left: calc(20px + env(safe-area-inset-left)); z-index: 5; pointer-events: none; align-items: center; gap: 10px; }
-      #hud-swatch { width: 34px; height: 34px; border: 3px solid #3b1f3f; border-radius: 46% 54% 42% 58% / 52% 44% 56% 48%; box-shadow: 2px 3px 0 #3b1f3f; }
-      #hud-tube { position: relative; width: 120px; height: 18px; background: #fdf0e0; border: 3px solid #3b1f3f; border-radius: 4px 10px 10px 4px; box-shadow: 2px 3px 0 #3b1f3f; overflow: hidden; }
-      #hud-tube::after { content: ""; position: absolute; right: -9px; top: 3px; width: 6px; height: 6px; background: #3b1f3f; }
-      #hud-tube-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 9px 9px 0; transition: width 0.18s ease-out; }
-      /* GU47 phase 3: on a phone the combo chip ran over the paint tube (390 px: tube to ~205 px, chip from ~140 px); a shorter tube and a smaller chip keep a gap */
-      @media (max-width: 520px) { #hud-tube { width: 72px; } .look-carnival #hud-combo { font-size: 18px !important; padding: 3px 10px 4px; } }
+      .look-carnival #splash-screen { background: linear-gradient(180deg, rgba(31,74,99,0.42), rgba(232,121,138,0.34) 60%, rgba(243,169,107,0.42)) !important; }
+      .look-carnival #gameover-screen { background: linear-gradient(180deg, rgba(59,31,63,0.72), rgba(240,67,58,0.68)) !important; }
+      #hud-paint { position: fixed; top: calc(clamp(54px, 9.6vh, 76px) + env(safe-area-inset-top)); left: calc(20px + env(safe-area-inset-left)); z-index: 5; pointer-events: none; align-items: center; gap: 10px; }
+      #hud-swatch { width: 34px; height: 34px; border: 2.5px solid #3b1f3f; border-radius: 46% 54% 42% 58% / 52% 44% 56% 48%; box-shadow: 2px 3px 0 #3b1f3f; display: flex; align-items: center; justify-content: center; color: #fdf0e0; font-size: 14px; font-weight: 600; text-shadow: 0 1px 2px rgba(28,10,32,0.72); }
+      #hud-tube { position: relative; width: 118px; height: 16px; background: rgba(253, 240, 224, 0.94); border: 2.5px solid #3b1f3f; border-radius: 5px 10px 10px 5px; box-shadow: 2px 3px 0 #3b1f3f; overflow: hidden; }
+      #hud-tube-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 8px 8px 0; transition: width 0.18s ease-out; }
       #bars-top, #bars-bottom { position: fixed; left: 0; right: 0; height: 9vh; background: #2a1530; z-index: 4; pointer-events: none; transform: scaleY(0); }
       #bars-top { top: 0; transform-origin: top; }
       #bars-bottom { bottom: 0; transform-origin: bottom; }
-      @media (prefers-reduced-motion: reduce) { #hud-tube-fill { transition: none; } }
     </style>
   </head>
   <body class="game-ui">
     <canvas id="world" tabindex="0"></canvas>
-    <button id="btn-mute" class="icon-btn no-steer" type="button" aria-label="Toggle sound (M)" aria-pressed="false">&#x1F50A;</button>
-    <button id="btn-pause" class="icon-btn no-steer" type="button" aria-label="Pause (P or Esc)">&#x23F8;&#xFE0E;</button>
-    <div id="hud" style="position:fixed;top:0;left:0;right:0;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 20px max(20px,env(safe-area-inset-left));display:flex;justify-content:space-between;pointer-events:none;z-index:5">
+    <button id="btn-mute" class="icon-btn no-steer" type="button" aria-label="Toggle sound (M)" aria-pressed="false">
+      <svg class="hud-svg" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.8H6.6L10.8 4.4V15.6L6.6 12.2H3.5Z"/><path d="M13.5 7.4C14.5 8.4 14.5 11.6 13.5 12.6"/><path d="M15.6 5.4C17.4 7.3 17.4 12.7 15.6 14.6"/></svg>
+    </button>
+    <button id="btn-pause" class="icon-btn no-steer" type="button" aria-label="Pause (P or Esc)">
+      <svg class="hud-svg" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M7.2 5V15"/><path d="M12.8 5V15"/></svg>
+    </button>
+    <div id="hud" style="position:fixed;top:0;left:0;right:0;padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 18px max(20px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:5">
       <div id="hud-lives"></div>
-      <div id="hud-score" class="hud-text">SCORE: 0</div>
-      <div id="hud-combo" class="hud-text" style="position:absolute;top:clamp(44px,9.5vh,70px);right:20px;color:#f9c647;font-size:clamp(20px,4.6vh,30px);display:none"></div>
+      <div id="hud-score" class="hud-text"><span class="hud-kicker">Score</span><span class="hud-num">0</span></div>
+      <div id="hud-combo" class="hud-text" style="position:absolute;top:clamp(54px,9.6vh,76px);right:20px;color:#f9c647;font-size:clamp(16px,3.4vh,22px);display:none"></div>
     </div>
     <div id="bars-top" class="paint-only" aria-hidden="true"></div><div id="bars-bottom" class="paint-only" aria-hidden="true"></div>
-    <div id="hud-paint" class="paint-only" aria-hidden="true"><div id="hud-swatch"></div><div id="hud-tube"><div id="hud-tube-fill"></div></div></div>
-    <div id="hud-powerups" style="position:fixed;bottom:calc(40px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none"></div>
+    <div id="hud-paint" class="paint-only" aria-hidden="true"><div id="hud-swatch">&#x25CF;</div><div id="hud-tube"><div id="hud-tube-fill"></div></div></div>
+    <div id="steer-cue" class="paint-only" aria-hidden="true" data-hidden="true">
+      <svg class="steer-svg" viewBox="0 0 28 14" width="24" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 2.5L2 7L6.5 11.5"/><path d="M21.5 2.5L26 7L21.5 11.5"/><path d="M4 7H24" stroke-dasharray="2.5 2.5"/></svg>
+      <span>Drag left or right to steer</span>
+    </div>
+    <div id="hud-powerups" style="position:fixed;bottom:max(64px,calc(var(--a3d-bar-space,48px) + 16px + env(safe-area-inset-bottom)));left:50%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none"></div>
     <div id="popups" style="position:fixed;inset:0;pointer-events:none;z-index:15;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;padding-top:clamp(120px,16vh,200px);box-sizing:border-box"></div>
-    <div id="splash-screen" class="overlay" style="background:rgba(94,202,240,0.8)">
+    <div id="splash-screen" class="overlay" style="background:rgba(94,202,240,0.68)">
       <div class="overlay-card">
-        <h1 style="paint-order:stroke fill;font-size:clamp(34px,11vh,72px);margin:0 0 clamp(6px,2vh,15px);color:#f0433a;-webkit-text-stroke:clamp(2px,0.6vh,4px) #333;text-shadow:clamp(3px,0.9vh,6px) clamp(3px,0.9vh,6px) 0 #333;line-height:1.1">SPLAT</h1>
-        <p style="font-size:clamp(14px,2.8vh,20px);margin:0 0 clamp(8px,2.5vh,20px);color:#333;font-weight:800">Drag left/right to steer.<br />Match colors for combos &amp; big scores.<br />Grab 🌈 Rainbow · 🛡 Shield · ✦ 2x · 🎨 Switch!</p>
+        <h1 style="font-size:clamp(32px,7.5vh,48px);font-weight:600;letter-spacing:0.04em;margin:0 0 8px;color:#f0433a;line-height:1.05">SPLAT</h1>
+        <p class="splash-copy">
+          Drag across lanes to match glossy pigment gates &amp; chain streak multipliers.
+          <span class="splash-legend">
+            <span class="legend-chip"><svg class="pu-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.2 11.8A5.8 5.8 0 0 1 13.8 11.8"/><path d="M4.4 11.8A3.6 3.6 0 0 1 11.6 11.8"/><path d="M6.6 11.8A1.4 1.4 0 0 1 9.4 11.8"/></svg>Rainbow</span>
+            <span class="legend-chip"><svg class="pu-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.1L13 4.1V7.8C13 10.9 10.9 13.1 8 14.1C5.1 13.1 3 10.9 3 7.8V4.1L8 2.1Z"/></svg>Shield</span>
+            <span class="legend-chip"><svg class="pu-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2L9.6 6.4L14 8L9.6 9.6L8 14L6.4 9.6L2 8L6.4 6.4Z"/></svg>2&times; Score</span>
+            <span class="legend-chip"><svg class="pu-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><circle cx="6.2" cy="6.6" r="0.9" fill="currentColor"/><circle cx="9.8" cy="6.6" r="0.9" fill="currentColor"/><circle cx="8" cy="10.2" r="0.9" fill="currentColor"/></svg>Switch</span>
+          </span>
+        </p>
         <div id="splash-best"></div>
         <button id="btn-start" class="btn">PLAY NOW</button>
         <div id="load-bar" class="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div class="settings no-steer"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
-        <p class="hint">Mouse or touch: drag &middot; Keyboard: Space to start, &larr; &rarr; or A / D to steer, C symbols, P pause, M mute</p>
+        <p class="hint">Drag or &larr; &rarr; / A D to steer &middot; Space start &middot; C symbols &middot; P pause &middot; M mute</p>
       </div>
     </div>
     <div id="gameover-screen" class="overlay hidden" style="background:#f0433a">
       <div class="overlay-card">
-        <h1 style="paint-order:stroke fill;font-size:clamp(34px,10vh,64px);margin:0 0 clamp(6px,2vh,10px);color:#f0433a;-webkit-text-stroke:clamp(2px,0.6vh,4px) #333;text-shadow:clamp(3px,0.8vh,5px) clamp(3px,0.8vh,5px) 0 #333">SPLAT!</h1>
-        <p id="final-score" style="font-size:clamp(22px,5vh,32px);font-weight:900;margin:0 0 clamp(6px,1.5vh,10px);color:#333"></p>
+        <h1 style="font-size:clamp(30px,7vh,44px);font-weight:600;letter-spacing:0.04em;margin:0 0 8px;color:#f0433a">SPLAT!</h1>
+        <p id="final-score" style="font-size:clamp(20px,4.4vh,28px);font-weight:600;margin:0 0 8px;color:#3b1f3f"></p>
         <p id="final-stats"></p>
         <button id="btn-restart" class="btn btn-gold">PLAY AGAIN</button>
         <p class="hint">Space or Enter to play again</p>
@@ -116,7 +144,7 @@
     </div>
     <div id="pause-screen" class="overlay hidden no-steer" style="background:rgba(11,16,32,0.45)">
       <div class="overlay-card">
-        <h1 style="paint-order:stroke fill;font-size:clamp(30px,8vh,56px);margin:0 0 clamp(6px,2vh,14px);color:#5ecaf0;-webkit-text-stroke:clamp(2px,0.5vh,3px) #333;text-shadow:4px 4px 0 #333">PAUSED</h1>
+        <h1 style="font-size:clamp(28px,6.5vh,40px);font-weight:600;letter-spacing:0.04em;margin:0 0 12px;color:#3b1f3f">PAUSED</h1>
         <button id="btn-resume" class="btn">RESUME</button>
         <div class="settings"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
         <p class="hint">P or Esc to resume</p>

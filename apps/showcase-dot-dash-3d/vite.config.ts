@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
-import rootConfig from "../../vite.config";
+import rootConfig, { createSourceWorkerEntryPlugin } from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appDir, "..", "..");
@@ -11,6 +11,7 @@ const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.
 export default defineConfig({
   plugins: rootConfig.plugins ?? [],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
+  worker: { format: "es", plugins: () => [createSourceWorkerEntryPlugin()] },
   optimizeDeps: rootConfig.optimizeDeps,
   publicDir: path.resolve(appDir, "public"),
   server: {

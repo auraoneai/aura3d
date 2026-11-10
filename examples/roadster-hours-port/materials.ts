@@ -1,14 +1,15 @@
 /** `material.custom` specs for the port's surfaces, apart from the scene so a unit test can compile exactly what the app draws. */
 import type { material } from "@aura3d/engine";
+import { dualAnimatedWaterSpec } from "../../apps/showcase-port-shared/dual-shaders";
 import type { Look } from "./look";
 import { DETAIL_ASSETS, DETAIL_TILES } from "./art/detail";
 import { SPRAY_FRAGMENT, SPRAY_VERTEX, SPRAY_WINDOW, sprayAmount, sprayWind } from "./art/spray";
 import {
-  BEAM_FRAGMENT, BEAM_VERTEX, BLOB_FRAGMENT, CITY_FRAGMENT, PLUME_FRAGMENT, PLUME_VERTEX, RAMP_FRAGMENT, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, TERRAIN_FRAGMENT, TERRAIN_VERTEX, TOWER_FRAGMENT, TOWN_FRAGMENT, TOWN_VERTEX, WATER_FRAGMENT, WATER_VERTEX
+  BEAM_FRAGMENT, BEAM_VERTEX, BLOB_FRAGMENT, CITY_FRAGMENT, PLUME_FRAGMENT, PLUME_VERTEX, RAMP_FRAGMENT, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STRATA_FRAGMENT, TERRAIN_FRAGMENT, TERRAIN_VERTEX, TOWER_FRAGMENT, TOWN_FRAGMENT, TOWN_VERTEX, WATER_FRAGMENT, WATER_VERTEX
 } from "./shaders";
 import {
   BEAM_FRAGMENT_WGSL, BEAM_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, CITY_FRAGMENT_WGSL, PLUME_FRAGMENT_WGSL, PLUME_VERTEX_WGSL, RAMP_FRAGMENT_WGSL, ROAD_FRAGMENT_WGSL,
-  ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SOLID_FRAGMENT_WGSL, SPRAY_FRAGMENT_WGSL, SPRAY_VERTEX_WGSL, SURFACE_VERTEX_WGSL, TERRAIN_FRAGMENT_WGSL, TOWER_FRAGMENT_WGSL,
+  ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SOLID_FRAGMENT_WGSL, SPRAY_FRAGMENT_WGSL, SPRAY_VERTEX_WGSL, STRATA_FRAGMENT_WGSL, SURFACE_VERTEX_WGSL, TERRAIN_FRAGMENT_WGSL, TOWER_FRAGMENT_WGSL,
   TOWN_FRAGMENT_WGSL, WATER_FRAGMENT_WGSL, WORLD_VERTEX_WGSL
 } from "./shaders-wgsl";
 
@@ -57,6 +58,18 @@ export const waterSpec = (look: Look): CustomSpec => ({
   side: "double"
 });
 
+/** Cove shallow-shelf accent using the shared `dualAnimatedWaterSpec` helper (paired GLSL + WGSL). */
+export const coveWaterSpec = (look: Look): CustomSpec =>
+  dualAnimatedWaterSpec({
+    deepColor: look.deepWater,
+    shallowColor: look.shallowWater,
+    foamColor: [0.94, 0.96, 0.98],
+    sunDir: look.sunDir,
+    waveScale: 0.24,
+    waveSpeed: 1.15,
+    opacity: 0.88
+  });
+
 /** GU47 RH47-06: Halo's city carpet below the skyway (same plane and vertex stage as the water). */
 export const citySpec = (look: Look, gain = 1): CustomSpec => ({
   glsl: { vertex: WATER_VERTEX, fragment: CITY_FRAGMENT },
@@ -96,6 +109,19 @@ export const terrainSpec = (look: Look): CustomSpec => ({
   side: "double"
 });
 
+/** Paired GLSL + WGSL sedimentary limestone/sandstone strata rock material for cliffs, sea-stacks, mesas & headlands. */
+export const strataSpec = (look: Look, scale = 3.2, seam = 0.55): CustomSpec => ({
+  receiveShadow: true,
+  glsl: { vertex: TERRAIN_VERTEX, fragment: STRATA_FRAGMENT },
+  wgsl: { vertex: SURFACE_VERTEX_WGSL, fragment: STRATA_FRAGMENT_WGSL },
+  uniforms: {
+    rockA: c3(look.rockA), rockB: c3(look.rockB), grass: c3(look.grass), sand: c3(look.sand),
+    strataScale: f32(scale), strataSeam: f32(seam),
+    ...atmosphereUniforms(look)
+  },
+  side: "double"
+});
+
 export const towerSpec = (look: Look): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: TOWER_FRAGMENT },
@@ -104,10 +130,10 @@ export const towerSpec = (look: Look): CustomSpec => ({
   side: "double"
 });
 
-export const beamSpec = (gain: number): CustomSpec => ({
+export const beamSpec = (gain: number, color: Rgb = [1, 0.93, 0.78]): CustomSpec => ({
   glsl: { vertex: BEAM_VERTEX, fragment: BEAM_FRAGMENT },
   wgsl: { vertex: BEAM_VERTEX_WGSL, fragment: BEAM_FRAGMENT_WGSL },
-  uniforms: { beamColor: c3([1, 0.93, 0.78]), beamGain: f32(gain) },
+  uniforms: { beamColor: c3(color), beamGain: f32(gain) },
   side: "double",
   transparent: true,
   depthWrite: false,
@@ -203,6 +229,8 @@ export const allProgramSpecs = (look: Look): readonly { readonly name: string; r
   { name: "city", spec: citySpec(look) },
   { name: "sky", spec: skySpec(look) },
   { name: "terrain", spec: terrainSpec(look) },
+  { name: "strata", spec: strataSpec(look) },
+  { name: "cove-water", spec: coveWaterSpec(look) },
   { name: "solid", spec: solidSpec(look, [0.6, 0.6, 0.65], [0.1, 0.8, 0.9], 0) },
   { name: "solid-glow", spec: solidSpec(look, [0.2, 0.8, 0.9], [0.2, 0.9, 1.0], 1.4) },
   { name: "tower", spec: towerSpec(look) },

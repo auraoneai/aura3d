@@ -3,11 +3,12 @@
  * app draws with. Lighting values come from the Vesper Heights `lighting` block.
  */
 import type { material } from "@aura3d/engine";
+import { createFlipbookAtlas, createGradingLut, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
 import { LOOKS, type HeatsinkLookRow } from "./art/look";
 import { VESPER } from "./map";
 import { POINT_QUAD_SHADERS } from "./point-quads";
-import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, BEACON_FRAGMENT, BEACON_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
-import { BEACON_FRAGMENT_WGSL, BEACON_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL, STREAK_FRAGMENT_WGSL, TERRAIN_FRAGMENT_WGSL, UV_VERTEX_WGSL, VEIL_FRAGMENT_WGSL, VEIL_VERTEX_WGSL, WAKE_FRAGMENT_WGSL, WAKE_VERTEX_WGSL } from "./shaders-wgsl";
+import { BLOB_FRAGMENT, BLOB_VERTEX, FLIPBOOK_FRAGMENT, HOLO_FRAGMENT, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, BEACON_FRAGMENT, BEACON_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
+import { BEACON_FRAGMENT_WGSL, BEACON_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, FLIPBOOK_FRAGMENT_WGSL, HOLO_FRAGMENT_WGSL, ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL, STREAK_FRAGMENT_WGSL, TERRAIN_FRAGMENT_WGSL, UV_VERTEX_WGSL, VEIL_FRAGMENT_WGSL, VEIL_VERTEX_WGSL, WAKE_FRAGMENT_WGSL, WAKE_VERTEX_WGSL } from "./shaders-wgsl";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -200,6 +201,42 @@ export const beaconSpec = (): CustomSpec => ({
   side: "double"
 });
 
+/** Procedural 16^3 cyber-neon strip LUT and 8x4 RGBA8 flipbooks (plasma exhaust & rail sparks). */
+export const CYBER_NEON_LUT = createGradingLut("cyber-neon", 16);
+export const PLASMA_ATLAS: FlipbookAtlasSpec = createFlipbookAtlas("plasma", [72, 226, 255]);
+export const SPARKS_ATLAS: FlipbookAtlasSpec = createFlipbookAtlas("sparks", [255, 178, 72]);
+
+/** Holographic race gantry banner graded through `CYBER_NEON_LUT`. */
+export const hologramBannerSpec = (color: Rgb = [0.25, 0.88, 1.0], gain = 1.65): CustomSpec => ({
+  glsl: { vertex: STREAK_VERTEX, fragment: HOLO_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: HOLO_FRAGMENT_WGSL },
+  uniforms: {
+    lutMap: { type: "texture2d", value: CYBER_NEON_LUT.texture },
+    bannerColor: { type: "color3", value: [...color] },
+    bannerGain: { type: "f32", value: gain }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
+  side: "double"
+});
+
+/** Dual-backend 8x4 sprite-sheet flipbook burst shader sampling `PLASMA_ATLAS` or `SPARKS_ATLAS`. */
+export const flipbookBurstSpec = (atlas: FlipbookAtlasSpec = PLASMA_ATLAS, tint: Rgb = [1, 1, 1], gain = 1.75): CustomSpec => ({
+  glsl: { vertex: STREAK_VERTEX, fragment: FLIPBOOK_FRAGMENT },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: FLIPBOOK_FRAGMENT_WGSL },
+  uniforms: {
+    atlasMap: { type: "texture2d", value: atlas.texture },
+    flipTint: { type: "color3", value: [...tint] },
+    flipGain: { type: "f32", value: gain },
+    flipProgress: { type: "f32", value: 0.25 }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
+  side: "double"
+});
+
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   ...withShading(LOOKS.twilight, () => [{ name: "road-twilight", spec: roadSpec() }, { name: "sky-twilight", spec: skySpec() }, { name: "terrain-twilight", spec: terrainSpec(80) }]),
   { name: "road", spec: roadSpec() },
@@ -215,6 +252,9 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "points-quads", spec: pointsSpec(true) },
   { name: "blob", spec: blobSpec() },
   { name: "wake", spec: wakeSpec() },
+  { name: "hologram-banner", spec: hologramBannerSpec() },
+  { name: "flipbook-plasma", spec: flipbookBurstSpec(PLASMA_ATLAS) },
+  { name: "flipbook-sparks", spec: flipbookBurstSpec(SPARKS_ATLAS) },
   ...withShading(LOOKS.twilight, () => [{ name: "beacon-twilight", spec: beaconSpec() }])
 ];
 

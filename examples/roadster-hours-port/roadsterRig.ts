@@ -1,0 +1,619 @@
+/**
+ * WP-25 Hero Rig: Sculpted, strictly symmetrical open-top classic coastal grand-touring roadster.
+ *
+ * Replaces the lumpy single-mesh merged blob with separated PBR material groups and 4 independent
+ * wheel/knuckle assemblies that spin with road speed and front-steer up to +-24 degrees:
+ *   - `body`      : Metallic crimson GT coachwork (`material.carPaint`), sculpted pontoon fenders, hood bulge, side coves & ducktail
+ *   - `stripes`   : Twin white lacquer racing stripes (`material.clearcoat`) hugging the hood & rear deck
+ *   - `chrome`    : Twin hoop rollbars, oval slatted front grille, side exhaust pipes, bullet mirrors & split rear bumperettes (`material.brushedMetal`)
+ *   - `cockpit`   : Recessed dark leather tub, twin bucket seats, dash cowl, steering wheel & driver silhouette (`material.fabric`)
+ *   - `glass`     : Raked wrap-around speedster windscreen (`material.studioGlass`)
+ *   - `headlamps` : Twin round classic endurance headlamps (`material.glowingEmissive`)
+ *   - `taillamps` : Quad circular ruby-red brake/afterburner lenses (`material.glowingEmissive`)
+ *   - `wheelTire` / `wheelRim` : Rounded-shoulder radial tire (`material.blackRubber`) + deep-dish wire-spoke chrome rim (`material.brushedMetal`)
+ *
+ * Local coordinate convention matches `world.ts`:
+ *   +X = right, +Y = up (origin at chassis centre `playerHeight / 2` above road contact), -Z = forward, +Z = rear.
+ */
+
+export interface RoadsterMesh {
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly uvs: Float32Array;
+  readonly indices: Uint32Array;
+}
+
+interface Builder {
+  positions: number[];
+  normals: number[];
+  uvs: number[];
+  indices: number[];
+}
+
+type V3 = readonly [number, number, number];
+
+const newBuilder = (): Builder => ({ positions: [], normals: [], uvs: [], indices: [] });
+
+function toRoadsterMesh(b: Builder): RoadsterMesh {
+  return {
+    positions: Float32Array.from(b.positions),
+    normals: Float32Array.from(b.normals),
+    uvs: Float32Array.from(b.uvs),
+    indices: Uint32Array.from(b.indices)
+  };
+}
+
+function norm3(x: number, y: number, z: number): V3 {
+  const l = Math.hypot(x, y, z) || 1;
+  return [x / l, y / l, z / l];
+}
+
+function addQuad(b: Builder, p0: V3, p1: V3, p2: V3, p3: V3, uvScale = 1): void {
+  const ux = p1[0] - p0[0], uy = p1[1] - p0[1], uz = p1[2] - p0[2];
+  const vx = p3[0] - p0[0], vy = p3[1] - p0[1], vz = p3[2] - p0[2];
+  const n = norm3(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx);
+  const base = b.positions.length / 3;
+  const pts = [p0, p1, p2, p3] as const;
+  const uvs = [[0, 0], [uvScale, 0], [uvScale, uvScale], [0, uvScale]] as const;
+  for (let i = 0; i < 4; i++) {
+    b.positions.push(pts[i]![0], pts[i]![1], pts[i]![2]);
+    b.normals.push(n[0], n[1], n[2]);
+    b.uvs.push(uvs[i]![0], uvs[i]![1]);
+  }
+  b.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+}
+
+function addBox(b: Builder, cx: number, cy: number, cz: number, hx: number, hy: number, hz: number): void {
+  const x0 = cx - hx, x1 = cx + hx, y0 = cy - hy, y1 = cy + hy, z0 = cz - hz, z1 = cz + hz;
+  addQuad(b, [x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
+  addQuad(b, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]);
+  addQuad(b, [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0]);
+  addQuad(b, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+  addQuad(b, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+  addQuad(b, [x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
+}
+
+/** Smooth-shaded cylinder/frustum along an arbitrary axis `a -> c`. */
+function addTube(b: Builder, a: V3, c: V3, r0: number, r1: number, segs: number, caps = true): void {
+  const dx = c[0] - a[0], dy = c[1] - a[1], dz = c[2] - a[2];
+  const len = Math.hypot(dx, dy, dz) || 1;
+  const ax: V3 = [dx / len, dy / len, dz / len];
+  const ref: V3 = Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const ux = ref[1] * ax[2] - ref[2] * ax[1], uy = ref[2] * ax[0] - ref[0] * ax[2], uz = ref[0] * ax[1] - ref[1] * ax[0];
+  const u = norm3(ux, uy, uz);
+  const v = norm3(ax[1] * u[2] - ax[2] * u[1], ax[2] * u[0] - ax[0] * u[2], ax[0] * u[1] - ax[1] * u[0]);
+  const base = b.positions.length / 3;
+  const slope = (r0 - r1) / len;
+  for (let ring = 0; ring <= 1; ring++) {
+    const p = ring === 0 ? a : c;
+    const r = ring === 0 ? r0 : r1;
+    for (let s = 0; s <= segs; s++) {
+      const th = (s / segs) * Math.PI * 2;
+      const cs = Math.cos(th), sn = Math.sin(th);
+      const rx = u[0] * cs + v[0] * sn, ry = u[1] * cs + v[1] * sn, rz = u[2] * cs + v[2] * sn;
+      const n = norm3(rx + ax[0] * slope, ry + ax[1] * slope, rz + ax[2] * slope);
+      b.positions.push(p[0] + rx * r, p[1] + ry * r, p[2] + rz * r);
+      b.normals.push(n[0], n[1], n[2]);
+      b.uvs.push(s / segs, ring);
+    }
+  }
+  const stride = segs + 1;
+  for (let s = 0; s < segs; s++) {
+    const i0 = base + s, i1 = i0 + 1, i2 = i0 + stride, i3 = i2 + 1;
+    b.indices.push(i0, i2, i1, i1, i2, i3);
+  }
+  if (caps) {
+    for (const [endP, r, sign] of [[a, r0, -1], [c, r1, 1]] as const) {
+      if (r <= 1e-4) continue;
+      const centerIdx = b.positions.length / 3;
+      b.positions.push(endP[0], endP[1], endP[2]);
+      b.normals.push(ax[0] * sign, ax[1] * sign, ax[2] * sign);
+      b.uvs.push(0.5, 0.5);
+      for (let s = 0; s <= segs; s++) {
+        const th = (s / segs) * Math.PI * 2;
+        const cs = Math.cos(th), sn = Math.sin(th);
+        const rx = u[0] * cs + v[0] * sn, ry = u[1] * cs + v[1] * sn, rz = u[2] * cs + v[2] * sn;
+        b.positions.push(endP[0] + rx * r, endP[1] + ry * r, endP[2] + rz * r);
+        b.normals.push(ax[0] * sign, ax[1] * sign, ax[2] * sign);
+        b.uvs.push(0.5 + cs * 0.5, 0.5 + sn * 0.5);
+      }
+      for (let s = 0; s < segs; s++) {
+        const p0 = centerIdx + 1 + s, p1 = p0 + 1;
+        if (sign > 0) b.indices.push(centerIdx, p0, p1);
+        else b.indices.push(centerIdx, p1, p0);
+      }
+    }
+  }
+}
+
+/** Smooth-shaded ellipsoid / dome for helmets, headlamps and bullet mirrors. */
+function addEllipsoid(b: Builder, c: V3, r: V3, uSegs = 14, vSegs = 10, hemiOnly = false): void {
+  const base = b.positions.length / 3;
+  for (let iv = 0; iv <= vSegs; iv++) {
+    const phi = (iv / vSegs) * (hemiOnly ? Math.PI * 0.5 : Math.PI);
+    const sp = Math.sin(phi), cp = Math.cos(phi);
+    for (let iu = 0; iu <= uSegs; iu++) {
+      const th = (iu / uSegs) * Math.PI * 2;
+      const ct = Math.cos(th), st = Math.sin(th);
+      const nx = sp * ct, ny = cp, nz = sp * st;
+      b.positions.push(c[0] + nx * r[0], c[1] + ny * r[1], c[2] + nz * r[2]);
+      const n = norm3(nx / (r[0] || 1), ny / (r[1] || 1), nz / (r[2] || 1));
+      b.normals.push(n[0], n[1], n[2]);
+      b.uvs.push(iu / uSegs, iv / vSegs);
+    }
+  }
+  const stride = uSegs + 1;
+  for (let iv = 0; iv < vSegs; iv++) {
+    for (let iu = 0; iu < uSegs; iu++) {
+      const a = base + iv * stride + iu, d = a + stride;
+      b.indices.push(a, d, a + 1, a + 1, d, d + 1);
+    }
+  }
+}
+
+/** Smooth-shaded U-hoop in XY plane at Z (`rollbar`). */
+function addRollHoop(b: Builder, cx: number, baseY: number, z: number, halfW: number, height: number, tubeR: number): void {
+  const path: V3[] = [];
+  const arcSteps = 10;
+  path.push([cx - halfW, baseY, z]);
+  for (let i = 0; i <= arcSteps; i++) {
+    const th = Math.PI - (i / arcSteps) * Math.PI;
+    path.push([cx + Math.cos(th) * halfW, baseY + height - halfW + Math.sin(th) * halfW, z - i * (1 - i / arcSteps) * 0.02]);
+  }
+  path.push([cx + halfW, baseY, z]);
+  for (let i = 0; i < path.length - 1; i++) {
+    addTube(b, path[i]!, path[i + 1]!, tubeR, tubeR, 10, i === 0 || i === path.length - 2);
+  }
+}
+
+/* ---- Roadster proportions in world metres ---- */
+export const ROADSTER_HALF_W = 0.98;
+export const ROADSTER_HEIGHT = 1.24;
+export const ROADSTER_HALF_H = ROADSTER_HEIGHT * 0.5; // chassis origin sits at +0.62 m above road contact
+export const ROADSTER_HALF_L = 2.22;
+export const ROADSTER_WHEEL_RADIUS = 0.35;
+export const ROADSTER_WHEEL_WIDTH = 0.27;
+export const ROADSTER_TRACK_X = 0.87;
+export const ROADSTER_FRONT_Z = -1.36;
+export const ROADSTER_REAR_Z = 1.34;
+
+export interface RoadsterStation {
+  readonly z: number;
+  readonly halfW: number;
+  readonly skirtY: number;
+  readonly beltY: number;
+  readonly shoulderW: number;
+  readonly crownY: number;
+  readonly wellCut: number;
+  readonly cockpitCut: number;
+}
+
+const STATIONS: readonly RoadsterStation[] = [
+  // Classic pinched oval GT nose -> front pontoon fenders -> long hood -> open cockpit -> rear haunches -> Kammback ducktail
+  { z: -2.22, halfW: 0.58, skirtY: -0.26, beltY: -0.10, shoulderW: 0.44, crownY: -0.05, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -2.04, halfW: 0.82, skirtY: -0.32, beltY: -0.02, shoulderW: 0.68, crownY: 0.05, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -1.72, halfW: 0.96, skirtY: -0.34, beltY: 0.09, shoulderW: 0.84, crownY: 0.14, wellCut: 0.55, cockpitCut: 0.0 },
+  { z: -1.36, halfW: 1.00, skirtY: -0.20, beltY: 0.15, shoulderW: 0.88, crownY: 0.19, wellCut: 1.0, cockpitCut: 0.0 },
+  { z: -0.98, halfW: 0.97, skirtY: -0.35, beltY: 0.13, shoulderW: 0.84, crownY: 0.21, wellCut: 0.45, cockpitCut: 0.0 },
+  { z: -0.58, halfW: 0.93, skirtY: -0.39, beltY: 0.13, shoulderW: 0.80, crownY: 0.22, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -0.34, halfW: 0.92, skirtY: -0.40, beltY: 0.12, shoulderW: 0.79, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.88 },
+  { z: 0.10, halfW: 0.91, skirtY: -0.40, beltY: 0.10, shoulderW: 0.78, crownY: 0.14, wellCut: 0.0, cockpitCut: 1.0 },
+  { z: 0.56, halfW: 0.94, skirtY: -0.39, beltY: 0.14, shoulderW: 0.82, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.85 },
+  { z: 0.86, halfW: 0.99, skirtY: -0.34, beltY: 0.20, shoulderW: 0.86, crownY: 0.25, wellCut: 0.42, cockpitCut: 0.0 },
+  { z: 1.34, halfW: 1.02, skirtY: -0.19, beltY: 0.23, shoulderW: 0.89, crownY: 0.27, wellCut: 1.0, cockpitCut: 0.0 },
+  { z: 1.74, halfW: 0.97, skirtY: -0.31, beltY: 0.20, shoulderW: 0.84, crownY: 0.25, wellCut: 0.48, cockpitCut: 0.0 },
+  { z: 2.04, halfW: 0.88, skirtY: -0.28, beltY: 0.19, shoulderW: 0.76, crownY: 0.29, wellCut: 0.0, cockpitCut: 0.0 }, // subtle ducktail kick
+  { z: 2.20, halfW: 0.78, skirtY: -0.23, beltY: 0.13, shoulderW: 0.68, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.0 }
+];
+
+/** Cross-section profile from -X to +X (13 points across, strictly symmetrical). */
+function stationRing(s: RoadsterStation): V3[] {
+  const z = s.z;
+  const skirtY = s.skirtY + s.wellCut * 0.16;
+  const coveIn = (1 - s.wellCut) * 0.04;
+  const fenderPeakY = s.beltY + s.wellCut * 0.055;
+  const hoodBulge = z < -0.5 && z > -1.95 ? 0.042 * Math.sin(((z + 1.95) / 1.45) * Math.PI) : 0;
+  const centerY = s.cockpitCut > 0 ? s.crownY - 0.34 * s.cockpitCut : s.crownY + hoodBulge;
+  const innerRimY = s.cockpitCut > 0 ? s.crownY - 0.31 * s.cockpitCut : s.crownY + hoodBulge * 0.65;
+  const rimW = 0.56;
+  const halfPts: readonly [number, number][] = [
+    [0.0, centerY],
+    [0.24, innerRimY],
+    [rimW, s.cockpitCut > 0 ? s.beltY + 0.02 : s.crownY * 0.96],
+    [s.shoulderW, fenderPeakY],
+    [s.halfW - coveIn * 0.3, (fenderPeakY + skirtY) * 0.58],
+    [s.halfW - coveIn, skirtY + 0.05],
+    [s.halfW * 0.78, -0.41 + s.wellCut * 0.14]
+  ];
+  const full: V3[] = [];
+  for (let i = halfPts.length - 1; i >= 1; i--) full.push([-halfPts[i]![0], halfPts[i]![1], z]);
+  for (let i = 0; i < halfPts.length; i++) full.push([halfPts[i]![0], halfPts[i]![1], z]);
+  return full;
+}
+
+function buildBodyMesh(): RoadsterMesh {
+  const rows = STATIONS.length;
+  const rings = STATIONS.map(stationRing);
+  const cols = rings[0]!.length;
+  const positions: number[] = [];
+  const uvs: number[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const p = rings[r]![c]!;
+      positions.push(p[0], p[1], p[2]);
+      uvs.push(c / (cols - 1), r / (rows - 1));
+    }
+  }
+  // Smooth vertex normals across the lofted coachwork
+  const normals = new Array<number>(positions.length).fill(0);
+  const at = (r: number, c: number): V3 => {
+    const i = (r * cols + c) * 3;
+    return [positions[i]!, positions[i + 1]!, positions[i + 2]!];
+  };
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const pL = at(r, Math.max(0, c - 1)), pR = at(r, Math.min(cols - 1, c + 1));
+      const pF = at(Math.max(0, r - 1), c), pB = at(Math.min(rows - 1, r + 1), c);
+      const dx: V3 = [pR[0] - pL[0], pR[1] - pL[1], pR[2] - pL[2]];
+      const dz: V3 = [pB[0] - pF[0], pB[1] - pF[1], pB[2] - pF[2]];
+      // +X cross +Z = -Y, so +Z cross +X = +Y (outward top normal!)
+      const n = norm3(dz[1] * dx[2] - dz[2] * dx[1], dz[2] * dx[0] - dz[0] * dx[2], dz[0] * dx[1] - dz[1] * dx[0]);
+      const i = (r * cols + c) * 3;
+      normals[i] = n[0]; normals[i + 1] = n[1]; normals[i + 2] = n[2];
+    }
+  }
+  const indices: number[] = [];
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const a = r * cols + c, b = a + 1, d = a + cols, e = d + 1;
+      indices.push(a, d, b, b, d, e);
+    }
+  }
+  const builder: Builder = { positions, normals, uvs, indices };
+  // Close nose & Kammback tail panels + flat aerodynamic undertray
+  const frontRing = rings[0]!, rearRing = rings[rows - 1]!;
+  const fCenter = builder.positions.length / 3;
+  builder.positions.push(0, -0.19, STATIONS[0]!.z - 0.03);
+  builder.normals.push(0, 0, -1);
+  builder.uvs.push(0.5, 0.5);
+  for (let c = 0; c < cols; c++) {
+    const p = frontRing[c]!;
+    builder.positions.push(p[0], p[1], p[2]);
+    builder.normals.push(0, 0.08, -0.996);
+    builder.uvs.push(c / (cols - 1), 0);
+  }
+  for (let c = 0; c < cols - 1; c++) builder.indices.push(fCenter, fCenter + 1 + c + 1, fCenter + 1 + c);
+
+  const rCenter = builder.positions.length / 3;
+  builder.positions.push(0, -0.03, STATIONS[rows - 1]!.z + 0.02);
+  builder.normals.push(0, 0, 1);
+  builder.uvs.push(0.5, 0.5);
+  for (let c = 0; c < cols; c++) {
+    const p = rearRing[c]!;
+    builder.positions.push(p[0], p[1], p[2]);
+    builder.normals.push(0, 0.05, 0.998);
+    builder.uvs.push(c / (cols - 1), 1);
+  }
+  for (let c = 0; c < cols - 1; c++) builder.indices.push(rCenter, rCenter + 1 + c, rCenter + 1 + c + 1);
+
+  // Sculpted twin headrest fairings (classic GT speedster humps behind driver & passenger)
+  for (const sx of [-1, 1] as const) {
+    addEllipsoid(builder, [sx * 0.36, 0.24, 0.88], [0.17, 0.14, 0.42], 12, 8, true);
+  }
+  // Underbody belly pan & rear diffuser fins
+  addBox(builder, 0, -0.40, 0.0, 0.68, 0.03, 1.92);
+  for (const fx of [-0.42, -0.14, 0.14, 0.42]) {
+    addBox(builder, fx, -0.34, 2.02, 0.018, 0.07, 0.22);
+  }
+  return toRoadsterMesh(builder);
+}
+
+function buildStripesMesh(): RoadsterMesh {
+  const b = newBuilder();
+  const lift = 0.008;
+  const stripeHalfW = 0.085;
+  const stripeCenterX = 0.135;
+  const hoodStations = STATIONS.filter((s) => s.z <= -0.55);
+  const deckStations = STATIONS.filter((s) => s.z >= 0.82);
+  for (const group of [hoodStations, deckStations]) {
+    for (const sx of [-1, 1] as const) {
+      const xIn = sx * (stripeCenterX - stripeHalfW);
+      const xOut = sx * (stripeCenterX + stripeHalfW);
+      for (let i = 0; i < group.length - 1; i++) {
+        const s0 = group[i]!, s1 = group[i + 1]!;
+        const bulge0 = s0.z < -0.5 && s0.z > -1.95 ? 0.042 * Math.sin(((s0.z + 1.95) / 1.45) * Math.PI) : 0;
+        const bulge1 = s1.z < -0.5 && s1.z > -1.95 ? 0.042 * Math.sin(((s1.z + 1.95) / 1.45) * Math.PI) : 0;
+        const y0 = s0.crownY + bulge0 * 0.82 + lift;
+        const y1 = s1.crownY + bulge1 * 0.82 + lift;
+        if (sx < 0) addQuad(b, [xOut, y0, s0.z], [xOut, y1, s1.z], [xIn, y1, s1.z], [xIn, y0, s0.z]);
+        else addQuad(b, [xIn, y0, s0.z], [xIn, y1, s1.z], [xOut, y1, s1.z], [xOut, y0, s0.z]);
+      }
+    }
+  }
+  return toRoadsterMesh(b);
+}
+
+function buildChromeMesh(): RoadsterMesh {
+  const b = newBuilder();
+  // Twin classic chrome rollbar hoops behind the seats
+  for (const sx of [-1, 1] as const) {
+    addRollHoop(b, sx * 0.36, 0.14, 0.62, 0.16, 0.36, 0.026);
+    // Diagonal rollbar brace strut
+    addTube(b, [sx * 0.36, 0.46, 0.62], [sx * 0.36, 0.21, 0.98], 0.018, 0.018, 8, false);
+  }
+  // Classic oval GT front grille bezel + horizontal chrome slats
+  const gZ = -2.23, gY = -0.18, gW = 0.44, gH = 0.105;
+  const gSegs = 20;
+  for (let i = 0; i < gSegs; i++) {
+    const a0 = (i / gSegs) * Math.PI * 2, a1 = ((i + 1) / gSegs) * Math.PI * 2;
+    addTube(b, [Math.cos(a0) * gW, gY + Math.sin(a0) * gH, gZ], [Math.cos(a1) * gW, gY + Math.sin(a1) * gH, gZ], 0.018, 0.018, 8, false);
+  }
+  for (const dy of [-0.045, 0, 0.045]) {
+    addTube(b, [-gW * 0.88, gY + dy, gZ + 0.01], [gW * 0.88, gY + dy, gZ + 0.01], 0.009, 0.009, 6, false);
+  }
+  // Twin sculpted side-exhaust pipes + quad rear tailpipe tips
+  for (const sx of [-1, 1] as const) {
+    addTube(b, [sx * 0.94, -0.36, -0.78], [sx * 0.94, -0.36, 0.82], 0.036, 0.038, 10, true);
+    addTube(b, [sx * 0.50, -0.24, 2.14], [sx * 0.50, -0.24, 2.29], 0.042, 0.046, 12, true);
+    addTube(b, [sx * 0.38, -0.24, 2.14], [sx * 0.38, -0.24, 2.28], 0.038, 0.042, 12, true);
+    // Bullet fender racing mirrors
+    addEllipsoid(b, [sx * 0.86, 0.24, -0.56], [0.055, 0.048, 0.11], 10, 8);
+    addTube(b, [sx * 0.82, 0.15, -0.55], [sx * 0.86, 0.23, -0.56], 0.014, 0.012, 6, false);
+    // Split classic rear chrome bumperettes & headlamp bezels
+    addTube(b, [sx * 0.44, -0.14, 2.23], [sx * 0.76, -0.14, 2.19], 0.028, 0.026, 10, true);
+    addTube(b, [sx * 0.68, 0.02, -2.13], [sx * 0.68, 0.02, -2.04], 0.125, 0.132, 16, false);
+  }
+  // Chrome windscreen frame top header rail + fuel filler cap
+  addTube(b, [-0.68, 0.41, -0.28], [0.68, 0.41, -0.28], 0.015, 0.015, 8, true);
+  addTube(b, [-0.80, 0.14, -0.52], [-0.68, 0.41, -0.28], 0.015, 0.014, 8, false);
+  addTube(b, [0.80, 0.14, -0.52], [0.68, 0.41, -0.28], 0.015, 0.014, 8, false);
+  addTube(b, [0.58, 0.24, 1.02], [0.58, 0.265, 1.02], 0.055, 0.052, 12, true);
+  return toRoadsterMesh(b);
+}
+
+function buildCockpitMesh(): RoadsterMesh {
+  const b = newBuilder();
+  // Dark recessed leather cabin floor, transmission tunnel & rear bulkhead
+  addBox(b, 0, -0.24, 0.10, 0.62, 0.04, 0.52);
+  addBox(b, 0, -0.12, 0.10, 0.11, 0.10, 0.50);
+  addBox(b, 0, 0.02, 0.58, 0.64, 0.22, 0.05);
+  // Sculpted dashboard cowl
+  addBox(b, 0, 0.08, -0.44, 0.64, 0.11, 0.14);
+  // Twin bucket seats (driver on left -X, passenger on right +X)
+  for (const sx of [-1, 1] as const) {
+    const cx = sx * 0.36;
+    addBox(b, cx, -0.16, 0.20, 0.20, 0.05, 0.22); // seat cushion
+    addBox(b, cx, 0.08, 0.44, 0.19, 0.24, 0.05);  // seat backrest
+    addBox(b, cx, 0.28, 0.49, 0.11, 0.09, 0.045); // headrest pad
+  }
+  // Classic 3-spoke steering wheel & column on left (-0.36)
+  const swX = -0.36, swY = 0.16, swZ = -0.24;
+  addTube(b, [swX, 0.08, -0.42], [swX, swY, swZ], 0.022, 0.020, 8, true);
+  const swSegs = 16, swR = 0.135;
+  for (let i = 0; i < swSegs; i++) {
+    const a0 = (i / swSegs) * Math.PI * 2, a1 = ((i + 1) / swSegs) * Math.PI * 2;
+    const p0: V3 = [swX + Math.cos(a0) * swR, swY + Math.sin(a0) * swR * 0.92, swZ - Math.sin(a0) * swR * 0.38];
+    const p1: V3 = [swX + Math.cos(a1) * swR, swY + Math.sin(a1) * swR * 0.92, swZ - Math.sin(a1) * swR * 0.38];
+    addTube(b, p0, p1, 0.013, 0.013, 6, false);
+  }
+  // Driver torso & classic open-face touring helmet silhouette
+  addEllipsoid(b, [-0.36, 0.10, 0.30], [0.17, 0.22, 0.13], 12, 8);
+  addEllipsoid(b, [-0.36, 0.38, 0.32], [0.115, 0.125, 0.12], 14, 10);
+  // Dark recessed front grille mesh backing
+  addBox(b, 0, -0.18, -2.21, 0.41, 0.09, 0.015);
+  return toRoadsterMesh(b);
+}
+
+function buildGlassMesh(): RoadsterMesh {
+  const b = newBuilder();
+  // Raked wrap-around speedster windscreen (5 curved panels, double-faced via thin front/back shell)
+  const panels = 6;
+  for (let i = 0; i < panels; i++) {
+    const t0 = i / panels - 0.5, t1 = (i + 1) / panels - 0.5;
+    const x0 = t0 * 1.56, x1 = t1 * 1.56;
+    const curve0 = (1 - 4 * t0 * t0), curve1 = (1 - 4 * t1 * t1);
+    const bZ0 = -0.50 - curve0 * 0.16, bZ1 = -0.50 - curve1 * 0.16;
+    const tZ0 = -0.26 - curve0 * 0.08, tZ1 = -0.26 - curve1 * 0.08;
+    const bY0 = 0.14 + curve0 * 0.08, bY1 = 0.14 + curve1 * 0.08;
+    const tY0 = 0.37 + curve0 * 0.04, tY1 = 0.37 + curve1 * 0.04;
+    const tx0 = x0 * 0.87, tx1 = x1 * 0.87;
+    addQuad(b, [x0, bY0, bZ0], [x1, bY1, bZ1], [tx1, tY1, tZ1], [tx0, tY0, tZ0]);
+    addQuad(b, [tx0, tY0, tZ0 + 0.006], [tx1, tY1, tZ1 + 0.006], [x1, bY1, bZ1 + 0.006], [x0, bY0, bZ0 + 0.006]);
+  }
+  return toRoadsterMesh(b);
+}
+
+function buildHeadlampsMesh(): RoadsterMesh {
+  const b = newBuilder();
+  for (const sx of [-1, 1] as const) {
+    addEllipsoid(b, [sx * 0.68, 0.02, -2.12], [0.108, 0.108, 0.055], 14, 8);
+    // Amber/warm fog driving lamps flanking the oval grille
+    addEllipsoid(b, [sx * 0.49, -0.17, -2.21], [0.052, 0.052, 0.03], 10, 6);
+  }
+  return toRoadsterMesh(b);
+}
+
+function buildTaillampsMesh(): RoadsterMesh {
+  const b = newBuilder();
+  // Quad circular ruby-red GT brake / afterburner lenses
+  for (const sx of [-1, 1] as const) {
+    for (const xOff of [0.64, 0.47]) {
+      addTube(b, [sx * xOff, 0.09, 2.18], [sx * xOff, 0.09, 2.23], 0.068, 0.062, 14, true);
+    }
+  }
+  return toRoadsterMesh(b);
+}
+
+/** Smooth rounded-shoulder radial tire centred at `(0, 0, 0)` with axle along X. */
+function buildWheelTireMesh(): RoadsterMesh {
+  const b = newBuilder();
+  const rOuter = ROADSTER_WHEEL_RADIUS;
+  const rRim = rOuter * 0.60;
+  const hw = ROADSTER_WHEEL_WIDTH * 0.5;
+  // Cross-section around the tire carcass (inner bead -> sidewall -> rounded shoulder -> tread -> outer shoulder -> sidewall -> bead)
+  const profile: readonly [number, number][] = [
+    [-hw * 0.82, rRim],
+    [-hw, rRim + (rOuter - rRim) * 0.48],
+    [-hw * 0.92, rOuter * 0.95],
+    [-hw * 0.45, rOuter],
+    [hw * 0.45, rOuter],
+    [hw * 0.92, rOuter * 0.95],
+    [hw, rRim + (rOuter - rRim) * 0.48],
+    [hw * 0.82, rRim]
+  ];
+  const segs = 24;
+  const rows = profile.length;
+  const base = b.positions.length / 3;
+  for (let r = 0; r < rows; r++) {
+    const [x, rad] = profile[r]!;
+    const prev = profile[Math.max(0, r - 1)]!, next = profile[Math.min(rows - 1, r + 1)]!;
+    const tx = next[0] - prev[0], tr = next[1] - prev[1];
+    // Outward normal in (x, rad) plane: (+tr, -tx) -> Wait: from -hw to +hw, rad goes up then down; (+tr, -tx) at top (tx>0, tr=0) gives (0, -1), so outward is (-tr, tx)!
+    const nx2 = -tr, nr2 = tx;
+    for (let s = 0; s <= segs; s++) {
+      const th = (s / segs) * Math.PI * 2;
+      const cs = Math.cos(th), sn = Math.sin(th);
+      b.positions.push(x, cs * rad, sn * rad);
+      const n = norm3(nx2, cs * nr2, sn * nr2);
+      b.normals.push(n[0], n[1], n[2]);
+      b.uvs.push(s / segs, r / (rows - 1));
+    }
+  }
+  const stride = segs + 1;
+  for (let r = 0; r < rows - 1; r++) {
+    for (let s = 0; s < segs; s++) {
+      const a = base + r * stride + s, d = a + stride;
+      b.indices.push(a, a + 1, d, a + 1, d + 1, d);
+    }
+  }
+  return toRoadsterMesh(b);
+}
+
+/** Deep-dish chrome rim, 10 classic GT wire spokes & central knock-off spinner (`outSign` = `-1` left wheel, `+1` right wheel; positive determinant!). */
+function buildWheelRimMesh(outSign: -1 | 1): RoadsterMesh {
+  const b = newBuilder();
+  const rRim = ROADSTER_WHEEL_RADIUS * 0.61;
+  const hw = ROADSTER_WHEEL_WIDTH * 0.42;
+  // Stepped deep-dish barrel + dark brake drum hub
+  addTube(b, [-hw * outSign, 0, 0], [hw * outSign, 0, 0], rRim, rRim * 0.96, 20, true);
+  // Central knock-off hub + 2-ear spinner
+  addTube(b, [outSign * hw * 0.15, 0, 0], [outSign * hw * 1.02, 0, 0], 0.068, 0.042, 12, true);
+  addBox(b, outSign * hw * 0.92, 0, 0, 0.014, 0.095, 0.022);
+  // 10 crisp wire/turbine spokes from hub to outer rim lip
+  const spokes = 10;
+  for (let i = 0; i < spokes; i++) {
+    const th = (i / spokes) * Math.PI * 2;
+    const y = Math.cos(th) * (rRim * 0.93), z = Math.sin(th) * (rRim * 0.93);
+    const hubX = outSign * hw * ((i & 1) === 0 ? 0.68 : 0.25);
+    const rimX = outSign * hw * 0.86;
+    addTube(b, [hubX, Math.cos(th) * 0.055, Math.sin(th) * 0.055], [rimX, y, z], 0.013, 0.011, 6, false);
+  }
+  return toRoadsterMesh(b);
+}
+
+export interface RoadsterRigGeometries {
+  readonly body: RoadsterMesh;
+  readonly stripes: RoadsterMesh;
+  readonly chrome: RoadsterMesh;
+  readonly cockpit: RoadsterMesh;
+  readonly glass: RoadsterMesh;
+  readonly headlamps: RoadsterMesh;
+  readonly taillamps: RoadsterMesh;
+  readonly wheelTire: RoadsterMesh;
+  readonly wheelRimLeft: RoadsterMesh;
+  readonly wheelRimRight: RoadsterMesh;
+}
+
+let cachedRig: RoadsterRigGeometries | null = null;
+
+export function getRoadsterRigGeometries(): RoadsterRigGeometries {
+  if (!cachedRig) {
+    cachedRig = {
+      body: buildBodyMesh(),
+      stripes: buildStripesMesh(),
+      chrome: buildChromeMesh(),
+      cockpit: buildCockpitMesh(),
+      glass: buildGlassMesh(),
+      headlamps: buildHeadlampsMesh(),
+      taillamps: buildTaillampsMesh(),
+      wheelTire: buildWheelTireMesh(),
+      wheelRimLeft: buildWheelRimMesh(-1),
+      wheelRimRight: buildWheelRimMesh(1)
+    };
+  }
+  return cachedRig;
+}
+
+/* ---- Exact Quaternion / Euler composition for independent spinning + steering wheels ---- */
+
+type Quat = readonly [number, number, number, number]; // [x, y, z, w]
+
+/** Aura3D default Euler order `"XYZ"`: `R = Rx(rx) * Ry(ry) * Rz(rz)`. */
+function quatFromEulerXYZ(rx: number, ry: number, rz: number): Quat {
+  const cx = Math.cos(rx * 0.5), sx = Math.sin(rx * 0.5);
+  const cy = Math.cos(ry * 0.5), sy = Math.sin(ry * 0.5);
+  const cz = Math.cos(rz * 0.5), sz = Math.sin(rz * 0.5);
+  return [
+    sx * cy * cz + cx * sy * sz,
+    cx * sy * cz - sx * cy * sz,
+    cx * cy * sz + sx * sy * cz,
+    cx * cy * cz - sx * sy * sz
+  ];
+}
+
+function quatMul(a: Quat, b: Quat): Quat {
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  ];
+}
+
+function quatRotateVec(q: Quat, v: V3): [number, number, number] {
+  const qx = q[0], qy = q[1], qz = q[2], qw = q[3];
+  const tx = 2 * (qy * v[2] - qz * v[1]);
+  const ty = 2 * (qz * v[0] - qx * v[2]);
+  const tz = 2 * (qx * v[1] - qy * v[0]);
+  return [
+    v[0] + qw * tx + (qy * tz - qz * ty),
+    v[1] + qw * ty + (qz * tx - qx * tz),
+    v[2] + qw * tz + (qx * ty - qy * tx)
+  ];
+}
+
+function eulerXYZFromQuat(q: Quat): [number, number, number] {
+  const [x, y, z, w] = q;
+  const r02 = 2 * (x * z + w * y);
+  const ry = Math.asin(Math.max(-1, Math.min(1, r02)));
+  if (Math.abs(r02) < 0.999999) {
+    const rx = Math.atan2(-2 * (y * z - w * x), 1 - 2 * (x * x + y * y));
+    const rz = Math.atan2(-2 * (x * y - w * z), 1 - 2 * (y * y + z * z));
+    return [rx, ry, rz];
+  }
+  const rx = Math.atan2(2 * (y * z + w * x), 1 - 2 * (x * x + z * z));
+  return [rx, ry, 0];
+}
+
+/**
+ * Computes world position and XYZ Euler rotation for one wheel given chassis world pose `(carPos, pitch, yaw, roll)`,
+ * wheel local offset `localOffset`, steering yaw `steerYaw` (around chassis +Y) and rolling pitch `spinAngle` (around knuckle +X).
+ */
+export function computeWheelWorldPose(
+  carPos: V3,
+  chassisEuler: V3,
+  localOffset: V3,
+  steerYaw: number,
+  spinAngle: number
+): { readonly position: [number, number, number]; readonly rotation: [number, number, number] } {
+  const qChassis = quatFromEulerXYZ(chassisEuler[0], chassisEuler[1], chassisEuler[2]);
+  const off = quatRotateVec(qChassis, localOffset);
+  // First steer around local Y, then spin around axle X (`forward = -Z`, so forward roll rotates around -X -> `-spinAngle`)
+  const qSteer = quatFromEulerXYZ(0, steerYaw, 0);
+  const qSpin = quatFromEulerXYZ(-spinAngle, 0, 0);
+  const qWorld = quatMul(qChassis, quatMul(qSteer, qSpin));
+  return {
+    position: [carPos[0] + off[0], carPos[1] + off[1], carPos[2] + off[2]],
+    rotation: eulerXYZFromQuat(qWorld)
+  };
+}

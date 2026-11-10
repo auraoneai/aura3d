@@ -63,6 +63,7 @@ import {
   courtPracticalNodes,
   courtSkyNodes,
   courtWeatherNodes,
+  courtOverheadBeamNodes,
   courtSurroundNodes,
   courtBleacherNodes,
   courtRibNodes,
@@ -72,8 +73,11 @@ import {
   COURT_FLOOR_FINISH
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
+import { createImpactRig } from "../../showcase-port-shared/feel";
+import { createFlipbookAtlas, createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
@@ -84,14 +88,15 @@ import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLa
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
+import { dualCourtSurfaceSpec, dualFlipbookBurstSpec, dualSwishNetSpec } from "./hoopsShaders";
 import { SprayTags } from "./sprayTags";
 import { LIVE_FAN_IDLE, LIVE_FAN_IDS, courtCrowdNodes } from "./crowd";
-import { courtSetPieceNodes } from "./setPieces";
+import { backboardTrimNodes, courtEnclosureNodes, courtSetPieceNodes, courtsideTableNodes } from "./setPieces";
 import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
-import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
+import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, frameCameraForAspect, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
 import {
   CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
   deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
@@ -208,16 +213,40 @@ const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
 const BOARD_Y1 = 3.9;
 const shotStats = { released: 0, made: 0, rimImpacts: 0, boardImpacts: 0, rimRolls: 0, swishes: 0, bankShots: 0 };
+const hoopsGradingLut = createGradingLut("cinema-warm", 16);
+hoopsGradingLut.texture.wrapS = "clamp";
+hoopsGradingLut.texture.wrapT = "clamp";
+hoopsGradingLut.texture.minFilter = "linear";
+hoopsGradingLut.texture.magFilter = "linear";
+const rimSparksAtlas = createFlipbookAtlas("sparks", [255, 206, 108]);
+rimSparksAtlas.texture.wrapS = "clamp";
+rimSparksAtlas.texture.wrapT = "clamp";
+rimSparksAtlas.texture.minFilter = "linear";
+rimSparksAtlas.texture.magFilter = "linear";
+const impactRig = createImpactRig({
+  reducedMotion: typeof window !== "undefined" && (new URLSearchParams(window.location.search).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false))
+});
+let lastImpactStep = impactRig.step(0);
+let rimSparksT = 0;
+let rimSparksStrength = 1;
+function triggerRimSparks(strength = 1): void {
+  if (LOOK_ORIGINAL || reducedFlash) return;
+  rimSparksT = 0.42;
+  rimSparksStrength = strength;
+}
 const hoopWorld = createHoopWorld({ rim: RIM, boardFaceZ: BOARD_Z + 0.06, boardHalfW: BOARD_HALF_W, boardY0: BOARD_Y0, boardY1: BOARD_Y1 }, (impact) => {
   if (impact.tag === "rim") {
     shotStats.rimImpacts += 1;
     ball.hitRim = true;
     juiceFire("rim", { position: impact.point });
     rimShake = Math.min(1, impact.speed / 6);
+    impactRig.trigger({ freezeSeconds: 0.016, trauma: 0.22, fovKickDeg: 1.1 });
+    triggerRimSparks(0.78);
   } else if (impact.tag === "board") {
     shotStats.boardImpacts += 1;
     ball.hitBoard = true;
     juiceFire("bank", { position: impact.point });
+    impactRig.trigger({ freezeSeconds: 0, trauma: 0.12, fovKickDeg: 0.6 });
   }
 });
 const ARC_R = 6.75; // street "two" line
@@ -627,18 +656,39 @@ function pushEvent(type: string, label: string, severity: "info" | "success" | "
  * ------------------------------------------------------------------ */
 function buildCourtSurfaces(v: VenueSpec): any[] {
   const nodes: any[] = [];
-  // GU47 phase 4: per-court floor finish (COURT_FLOOR_FINISH) on the new look; ?look=original keeps the 4.6 0.86 / 0.8.
+  // GU47 phase 4 + WP-02: multi-lobe physical & custom GLSL+WGSL court floor finishes; ?look=original keeps 4.6.
   const finish = LOOK_ORIGINAL ? { roughness: 0.86, paintRoughness: 0.8 } : COURT_FLOOR_FINISH[v.id];
-  const lineMat = material.pbr({ color: v.line, roughness: 0.6, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 });
+  const lineMat = LOOK_ORIGINAL
+    ? material.pbr({ color: v.line, roughness: 0.6, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 })
+    : material.lacquer({ color: v.line, roughness: 0.3, ...(v.night ? { emissive: v.line, emissiveIntensity: 0.46 } : {}) } as any);
   const line = (name: string, w: number, l: number, x: number, z: number) =>
     primitives.box({ name, size: [w, 0.02, l], material: lineMat }).position(x, 0.012, z);
 
+  const rig = COURT_RIGS[v.id];
+  const elRad = (Math.max(rig.sun.elevationDeg, 12) * Math.PI) / 180;
+  const azRad = (rig.sun.azimuthDeg * Math.PI) / 180;
+  const sunDir: [number, number, number] = [Math.sin(azRad) * Math.cos(elRad), Math.sin(elRad), Math.cos(azRad) * Math.cos(elRad)];
+  const surfaceKind: 0 | 1 | 2 = v.id === "shanghai" ? 2 : (v.id === "orbit" || v.id === "manila") ? 0 : 1;
+  const floorMat = LOOK_ORIGINAL
+    ? material.pbr({ color: v.floor, roughness: finish.roughness })
+    : material.custom(dualCourtSurfaceSpec({
+      baseHex: v.floor,
+      accentHex: v.paint,
+      surfaceKind,
+      roughness: finish.roughness,
+      puddleStrength: rig.surface.puddles,
+      sunDir
+    }));
+  const keyMat = LOOK_ORIGINAL
+    ? material.pbr({ color: v.paint, roughness: finish.paintRoughness })
+    : material.physical({ color: v.paint, roughness: finish.paintRoughness, clearcoat: v.id === "shanghai" ? 0.82 : 0.44, clearcoatRoughness: 0.22 });
+
   nodes.push(
     // Apron + playable floor + painted key + center disc (size = XYZ scale on unit geometry)
-    primitives.plane({ name: "court-apron", size: [36, 1, 30], material: material.pbr({ color: v.apron, roughness: 0.94 }) }).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
-    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: material.pbr({ color: v.floor, roughness: finish.roughness }) }).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
-    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: material.pbr({ color: v.paint, roughness: finish.paintRoughness }) }).position(0, 0.005, 1.05),
-    primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) }).position(0, 0.006, 6.4)
+    primitives.plane({ name: "court-apron", size: [36, 1, 30], material: LOOK_ORIGINAL ? material.pbr({ color: v.apron, roughness: 0.94 }) : material.physical({ color: v.apron, roughness: v.id === "shanghai" ? 0.36 : 0.88 }) }).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
+    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: floorMat, receiveShadow: true } as any).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
+    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: keyMat, receiveShadow: true } as any).position(0, 0.005, 1.05),
+    primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: LOOK_ORIGINAL ? material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) : material.lacquer({ color: v.paint, roughness: 0.34, opacity: 0.9 }) }).position(0, 0.006, 6.4)
   );
 
   // Lines: boundaries, key edges, free-throw circle, 2pt arc
@@ -702,10 +752,32 @@ function buildHoopNodes(): any[] {
     })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
-    // Net: two stacked tori + skirt planes for ripple feedback
-    primitives.torus({ name: "net-top", size: [0.47, 0.47, 0.35], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.1, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-top")),
-    primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom")),
-    primitives.cylinder({ name: "net-skirt", size: [0.34, 0.34, 0.34], material: material.pbr({ color: "#e8e8e0", roughness: 0.7, opacity: 0.22 }) }).position(0, RIM[1] - 0.24, 0).runtime(game.runtimeNode("net-skirt")),
+    ...(!LOOK_ORIGINAL ? backboardTrimNodes(BOARD_Z, RIM[1]) : []),
+    // Net: braided collar + paired GLSL+WGSL vertex-whipping diamond swish net on new look (?look=original keeps 4.6 primitives)
+    primitives.torus({
+      name: "net-top",
+      size: [0.47, 0.47, LOOK_ORIGINAL ? 0.35 : 0.22],
+      material: LOOK_ORIGINAL ? material.pbr({ color: "#e8e8e0", roughness: 0.7 }) : material.brushedMetal({ color: "#cfd5dc", roughness: 0.34 })
+    }).position(0, RIM[1] - (LOOK_ORIGINAL ? 0.1 : 0.03), 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-top")),
+    ...(LOOK_ORIGINAL
+      ? [primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom"))]
+      : []),
+    primitives.cylinder({
+      name: "net-skirt",
+      size: LOOK_ORIGINAL ? [0.34, 0.34, 0.34] : [0.45, 0.44, 0.45],
+      material: LOOK_ORIGINAL
+        ? material.pbr({ color: "#e8e8e0", roughness: 0.7, opacity: 0.22 })
+        : material.custom(dualSwishNetSpec(venue.id === "rucker"))
+    }).position(0, RIM[1] - 0.24, 0).runtime(game.runtimeNode("net-skirt")),
+    ...(!LOOK_ORIGINAL
+      ? [
+        primitives.plane({
+          name: "rim-sparks-card",
+          size: [1.18, 1, 1.18],
+          material: material.custom(dualFlipbookBurstSpec(rimSparksAtlas, true))
+        }).position(RIM[0], RIM[1] - 0.08, RIM[2]).scale(HIDDEN).runtime(game.runtimeNode("rim-sparks-card"))
+      ]
+      : []),
     // Quiet warm rim light in place of the old oversized emissive saucer.
     primitives.torus({ name: "rim-halo", size: [0.58, 0.58, 0.16], material: material.emissive({ color: "#5a2f14", emissive: "#ff8a3d", emissiveIntensity: 0.35, opacity: 0.28 }) }).position(0, RIM[1] + 0.015, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("rim-halo"))
   ];
@@ -757,9 +829,21 @@ function teamKit(team: TeamId): Kit {
 }
 
 function athleteOverrides(kit: Kit): any[] {
-  const flat = (target: RegExp, color: string, roughness: number) => ({ target, color, colorMode: "replace", replaceTextures: true, roughness, metallic: 0 });
-  // -kit carries jersey and socks (one colour), -shorts the shorts; -body (skin, hair, face, kicks) keeps its palette texture
-  return [flat(/-kit$/, kit.jersey, 0.68), flat(/-shorts$/, kit.shorts, 0.72)];
+  const micromesh = (target: RegExp, color: string, roughness: number) => ({
+    target,
+    color,
+    colorMode: "replace",
+    replaceTextures: true,
+    roughness,
+    metallic: 0,
+    ...(LOOK_ORIGINAL ? {} : { sheen: 0.42, sheenColor: "#f7f5ef", sheenRoughness: 0.54 })
+  });
+  // -kit carries breathable micromesh jersey & socks, -shorts the shorts; -body keeps skin/face/sneaker palette maps with subtle satin sheen
+  return [
+    micromesh(/-kit$/, kit.jersey, 0.66),
+    micromesh(/-shorts$/, kit.shorts, 0.7),
+    ...(LOOK_ORIGINAL ? [] : [{ target: /-body$/, roughness: 0.52, metallic: 0, clearcoat: 0.14, clearcoatRoughness: 0.38 }])
+  ];
 }
 
 /* H47-PF1: on the new look the ground markers and drill cones are pooled instanced nodes (markerPools.ts): 10 shadow discs,
@@ -938,8 +1022,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_RIGS[v.id].surround ? COURT_Z0 - 3.2 : COURT_Z1 + 1.3));
   // GU47 phase 3: ground to the horizon (a deck disc on Orbit) under the grounded courts.
   if (!LOOK_ORIGINAL) nodes.push(...courtSurroundNodes(COURT_RIGS[v.id]));
-  // GU47 wave 2 (H47-A2): the court's Meshy set-pieces (Rucker mural wall, Venice lifeguard tower, Manila roofs, Shanghai containers).
+  // GU47 wave 2 (H47-A2) + WP-02: 360° streetball enclosures, courtside scorer's table, benches & Meshy set-pieces.
   if (!LOOK_ORIGINAL) {
+    nodes.push(...courtEnclosureNodes(v.id));
+    nodes.push(...courtsideTableNodes());
     nodes.push(...courtSetPieceNodes(v.id, {
       mural: assets.aura_hoops_3d_blacktopMuralWall,
       lifeguardTower: assets.aura_hoops_3d_blacktopLifeguardTower,
@@ -949,10 +1035,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }));
   }
 
-  // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
+  // Courtside dressing shared by all courts: ball rack and championship trophy (elevated on the 0.78 m scorer's table on new look)
   nodes.push(
     model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
-    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case"))
+    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, LOOK_ORIGINAL ? 0 : 0.78, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")) // fit-grounding: ok (rests on the 0.78 m scorer's table)
   );
 
   // Court wear decals
@@ -997,21 +1083,22 @@ function buildScene(v: VenueSpec): any {
     const rig = COURT_RIGS[v.id];
     s.background(rig.fog.color).addMany(courtLookNodes(rig, { ao: QA_AO !== "0" }));
     // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
-    // emissive lamp heads they belong to (one instanced draw per court, two at Manila).
-    s.addMany(courtPracticalNodes(rig, IES_LAB ? sodiumFloodProfile() : undefined)).addMany(courtLampNodes(rig));
-    // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
+    // emissive lamp heads they belong to (one instanced draw per court, two at Manila), plus volumetric flood shafts.
+    const useIes = initialParams.get("ies") !== "0" || IES_LAB;
+    s.addMany(courtPracticalNodes(rig, useIes ? sodiumFloodProfile() : undefined)).addMany(courtLampNodes(rig)).addMany(courtOverheadBeamNodes(rig));
+    // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain and
     // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
     s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION).filter((n) => !(QA_NO_RAIN && /rain/.test(String((n as { name?: unknown }).name ?? ""))))).addMany(courtLightningNodes(rig));
     // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
     if (realWater()) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
-    // GU47 phase 4: screen-space reflections on the glossy floors (Manila, Shanghai, Orbit).
+    // GU47 phase 4 + WP-02: screen-space reflections on glossy court floors.
     s.addMany(courtReflectionNodes(rig));
   }
   s
-    // GU47 phase 4: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
-    .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.9, length: 0.42, thickness: 0.06, lights: "shadowed" }))
+    // GU47 phase 4 + WP-02: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
+    .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.88, length: 0.42, thickness: 0.07, steps: 12, lights: "shadowed" } as any))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))
@@ -1049,11 +1136,21 @@ const IES_LAB = readIesLabFlag();
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
+  const baseLookOpts = looks.appOptions(venue.look) as { renderer?: object; output?: object };
+  const defaultHoopsOutput = LOOK_ORIGINAL
+    ? baseLookOpts.output
+    : {
+      preset: COURT_RIGS[venue.id].post,
+      toneMapping: "agx" as const,
+      exposure: 1.02,
+      dither: true,
+      lut: { texture: hoopsGradingLut.texture, size: hoopsGradingLut.size, intensity: 0.28 }
+    };
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
-    ...looks.appOptions(venue.look),
-    ...(labRenderer || IES_LAB ? { renderer: { ...(looks.appOptions(venue.look) as { renderer?: object }).renderer, ...(labRenderer ?? {}), ...(IES_LAB ? { photometricProfiles: true } : {}) } } : {}),
-    ...(labOutput ? { output: labOutput } : {}),
+    ...baseLookOpts,
+    renderer: { ...(baseLookOpts.renderer ?? {}), photometricProfiles: true, ...(labRenderer ?? {}) },
+    output: { ...(defaultHoopsOutput ?? {}), ...(labOutput ?? {}) },
     ...(labWorker ? { worker: labWorker } : {}),
     qualityRebuild: { flags: ["game"] },
     diagnostics: false
@@ -1081,6 +1178,7 @@ let rimNode: AnyHandle;
 let netTop: AnyHandle;
 let netBottom: AnyHandle;
 let netSkirt: AnyHandle;
+let rimSparksCard: AnyHandle;
 let scoreboardGlow: AnyHandle;
 let planetEarth: AnyHandle;
 let trailNodes: AnyHandle[] = [];
@@ -1274,6 +1372,7 @@ function resolveHandles(): void {
   netTop = req("net-top");
   netBottom = req("net-bottom");
   netSkirt = req("net-skirt");
+  rimSparksCard = LOOK_ORIGINAL ? undefined : req("rim-sparks-card");
   scoreboardGlow = req("scoreboard-glow");
   planetEarth = req("planet-earth");
   lightningNode = LOOK_ORIGINAL ? undefined : auraApp.nodes.get(LIGHTNING_NODE_ID) as AnyHandle;
@@ -2091,6 +2190,7 @@ function releaseShot(a: AthleteState, quality: number, meterT = game_.shotMeter.
       ball.lastTouch = def.team;
       game_.stats[def.team].blocks += 1;
       juiceFire("block", { position: [ball.x, ball.y, ball.z] });
+      impactRig.trigger({ freezeSeconds: 0.036, trauma: 0.32, fovKickDeg: 2.0 });
       pushEvent("block", "REJECTED", "warning");
       setClip(def, "Contest", 1.35);
     }
@@ -2162,6 +2262,7 @@ function rejectDunk(a: AthleteState, def: AthleteState): void {
   game_.phase = "live";
   game_.stats[def.team].blocks += 1;
   juiceFire("block", { position: [a.x, 2.6, a.z] });
+  impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.38, fovKickDeg: 2.2 });
   showBanner("REJECTED", 1.1);
   pushEvent("block", `REJECTED — ${def.team === "home" ? "your stop" : "cpu stop"}`, def.team === "home" ? "success" : "warning");
 }
@@ -2181,6 +2282,8 @@ function finishDunk(a: AthleteState): void {
   }
   netPulse = 1;
   rimShake = 1;
+  impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.52, fovKickDeg: 3.6 });
+  triggerRimSparks(1.25);
   pushEvent("dunk", `${a.dunkKind || "dunk"} — ${a.team === "home" ? game_.homeSquad.name : game_.awaySquad.name}`, "success");
   if (game_.mode === "dunklab") {
     game_.lab.score += a.dunkKind === "POWER JAM" ? 2 : 4;
@@ -2258,6 +2361,8 @@ function stepBallSim(dt: number): void {
       else shotStats.rimRolls += 1;
       netPulse = 1;
       game_.jam = clamp(game_.jam + (swish ? 0.2 : 0.12), 0, 1);
+      impactRig.trigger({ freezeSeconds: swish ? 0.028 : 0.016, trauma: swish ? 0.16 : 0.1, fovKickDeg: swish ? MAKE_FOV_KICK : 1.5 });
+      triggerRimSparks(swish ? 1.05 : 0.72);
       if (swish) { juiceFire("swish", { position: [RIM[0], RIM[1] - 0.2, RIM[2]] }); }
       else { cue("swish"); }
       const scorer = athletes[ball.shooter];
@@ -2801,6 +2906,7 @@ function stepPlayerControl(dt: number): void {
         const lat = me.yaw + Math.PI / 2;
         me.vx += Math.sin(lat) * 4.6; me.vz += Math.cos(lat) * 4.6;
         juiceFire("juke", { position: [me.x, 1, me.z] });
+        if (!LOOK_ORIGINAL) hoopsBurst("blacktop-dust", [me.x, 0.04, me.z], 1.15);
         setClip(me, "Attack", 1.45);
         me.actionUntil = game_.time + 0.42;
         if (def && d < 1.7 && rng() < 0.6) {
@@ -2825,6 +2931,7 @@ function stepPlayerControl(dt: number): void {
           game_.jam = clamp(game_.jam + 0.04, 0, 1);
         } else pushEvent("juke", "hesitation", "info");
         juiceFire("juke", { position: [me.x, 1, me.z] });
+        if (!LOOK_ORIGINAL) hoopsBurst("blacktop-dust", [me.x, 0.04, me.z], 0.95);
       }
     }
     if (pressed("pass", "KeyE")) {
@@ -3372,6 +3479,8 @@ function updateCamera(dt: number): void {
     // in profile. During a shot the ball becomes the focus so the flight stays
     // framed instead of leaving the tighter view.
     const shotNow = game_.phase === "shot" || game_.phase === "score";
+    const hx = holder?.x ?? ball.x;
+    const hz = Math.max(holder?.z ?? ball.z, ball.z);
     if (shotNow) {
       // H47-C1: long-lens shot cam on the new look (fov 34, 2 m lower, farther out); ?look=original keeps 4.6.
       const so = LOOK_ORIGINAL ? [7.6, 4.9, 5.2] : LIVE_CAM.shot.offset;
@@ -3381,8 +3490,6 @@ function updateCamera(dt: number): void {
         fov: (LOOK_ORIGINAL ? 44 : LIVE_CAM.shot.fov) + cam.punch
       };
     } else {
-      const hx = holder?.x ?? ball.x;
-      const hz = Math.max(holder?.z ?? ball.z, ball.z);
       want = QA_CAM_FRONT && holder
         // measurement: a close, elevated view from in front of the handler on the dribbling-hand side (hand over ball)
         ? (() => {
@@ -3398,6 +3505,18 @@ function updateCamera(dt: number): void {
             target: [hx + LIVE_CAM.chase.targetOffset[0], LIVE_CAM.chase.targetOffset[1], hz + LIVE_CAM.chase.targetOffset[2]],
             fov: LIVE_CAM.chase.fov + cam.punch
           };
+    }
+    if (!LOOK_ORIGINAL && !QA_CAM_FRONT && !QA_CAM_WIDE && !QA_CAM_FREE) {
+      const appEl = typeof document !== "undefined" ? document.getElementById("app") : null;
+      const aspect = appEl && appEl.clientHeight > 0
+        ? appEl.clientWidth / appEl.clientHeight
+        : (typeof window !== "undefined" && window.innerHeight > 0 ? window.innerWidth / window.innerHeight : 16 / 9);
+      want = frameCameraForAspect(want, aspect, {
+        holder: [hx, 1.0, hz],
+        ball: [ball.x, ball.y, ball.z],
+        rim: [RIM[0], RIM[1], RIM[2]],
+        shotNow
+      });
     }
   }
   // The low chase eye (handler + (5.6, 3.0, 4.2)) can look straight through a courtside pole: the Rucker floodlight at
@@ -3533,8 +3652,13 @@ let lastPublishedPhase = "";
  */
 const drawnPose: { eye: Vec3; target: Vec3; fov: number } = { eye: [...cam.eye] as Vec3, target: [...cam.target] as Vec3, fov: cam.fov };
 function drawCameraPose(eye: readonly number[], target: readonly number[], fov: number): void {
-  drawnPose.eye = [eye[0]!, eye[1]!, eye[2]!]; drawnPose.target = [target[0]!, target[1]!, target[2]!]; drawnPose.fov = fov;
-  try { (auraApp as any).camera?.setPose?.({ position: eye, target, fov }); } catch { /* camera ext optional */ }
+  const sx = broadcast.active || LOOK_ORIGINAL ? 0 : lastImpactStep.shakeOffset[0];
+  const sy = broadcast.active || LOOK_ORIGINAL ? 0 : lastImpactStep.shakeOffset[1];
+  const df = broadcast.active || LOOK_ORIGINAL ? 0 : lastImpactStep.fovDeltaDeg;
+  drawnPose.eye = [eye[0]! + sx, eye[1]! + sy, eye[2]!];
+  drawnPose.target = [target[0]! + sx * 0.35, target[1]! + sy * 0.35, target[2]!];
+  drawnPose.fov = fov + df;
+  try { (auraApp as any).camera?.setPose?.({ position: drawnPose.eye, target: drawnPose.target, fov: drawnPose.fov }); } catch { /* camera ext optional */ }
 }
 /** QA crops for E-I's luma capture: feet of the controlled athlete, the ball, the rim, the court floor and the lamp. */
 function publishQaCrops(): void {
@@ -3638,8 +3762,10 @@ function publishEvidence(force = false): void {
  *  Main loop                                                          *
  * ------------------------------------------------------------------ */
 function frame(dtRaw: number): void {
-  const frozen = hitStop.active;
+  const wasHitStop = hitStop.active;
   hitStop.update(dtRaw);
+  lastImpactStep = impactRig.step(dtRaw);
+  const frozen = wasHitStop || lastImpactStep.frozen;
   const dt = frozen ? 0 : clamp(QA_DT > 0 ? QA_DT : dtRaw, 1 / 240, 0.05);
   game_.time += dt;
   if (game_.phase === "live" || game_.phase === "shot") game_.matchT += dt;
@@ -3838,11 +3964,30 @@ function frame(dtRaw: number): void {
       h.setPosition(pt[0], pt[1], pt[2]).setScale([s, s, s]).setVisible(true);
     } else h?.setScale(HIDDEN).setVisible(false);
   }
-  // Rim/net feedback
+  // Rim/net feedback + vertex-whipping swish net + flipbook rim sparks
   const netS = 1 + Math.max(0, netPulse) * 0.4;
   netTop?.setScale([netS, netS, netS]);
   netBottom?.setScale([1 + Math.max(0, netPulse) * 0.8, 1 + Math.max(0, netPulse) * 0.8, 1]);
-  netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
+  if (LOOK_ORIGINAL) {
+    netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
+  } else {
+    netSkirt?.setScale([1, 1, 1]);
+    try { (netSkirt as any)?.setUniform?.("swishState", [Math.max(0, netPulse), game_.time]); } catch { /* custom uniform best-effort */ }
+  }
+  if (rimSparksCard) {
+    if (rimSparksT > 0) {
+      rimSparksT = Math.max(0, rimSparksT - Math.min(Math.max(dtRaw, 0), 0.1));
+      const progress = 1 - rimSparksT / 0.42;
+      const frameIdx = Math.min(31, Math.floor(progress * 32));
+      const fade = Math.min(1, rimSparksT * 5.2);
+      const yawToCam = Math.atan2(cam.eye[0] - RIM[0], cam.eye[2] - RIM[2]);
+      const s = (0.95 + progress * 0.45) * rimSparksStrength;
+      rimSparksCard.setPosition(RIM[0], RIM[1] - 0.12, RIM[2]).setRotation(Math.PI / 2, yawToCam, 0).setScale([s, 1, s]).setVisible(true);
+      try { (rimSparksCard as any).setUniform?.("burstState", [frameIdx, fade, 1.55 * rimSparksStrength, 0]); } catch { /* custom uniform best-effort */ }
+    } else {
+      rimSparksCard.setScale(HIDDEN).setVisible(false);
+    }
+  }
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
   rimNode?.setPosition(RIM[0] + (fxRng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
   if (backboardNode) {

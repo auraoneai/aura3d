@@ -4,6 +4,9 @@
  */
 import { hexToLinear, sunDirection, type Rgb } from "../../../examples/shared/runner-kit/index";
 import type { SkyStop } from "../../../examples/shared/runner-kit/index";
+import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
+
+export const BROADCAST_CRISP_LUT = createGradingLut("broadcast-crisp");
 
 export const PALETTE = {
   skyZenith: "#0d0b2e",

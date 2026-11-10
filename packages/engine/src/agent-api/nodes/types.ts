@@ -3013,6 +3013,8 @@ export interface AuraAttributeUpdate {
   readonly array: AuraCustomVertexAttributeData;
   /** Element offset into the attribute (default 0). */
   readonly offset?: number;
+  /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+  readonly skipBoundsRefresh?: boolean;
 }
 
 // ── SG-09 / SR-04 handle + spec members (L7) ───────────────────────────────

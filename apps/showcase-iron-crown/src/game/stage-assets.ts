@@ -642,21 +642,17 @@ export const stageAssets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "sourcePath": "artifacts/meshy/clash-dragon-statue/model.glb",
         "license": "Meshy paid private generation terms",
         "licenseName": "Meshy paid private generation terms",
         "licenseUrl": "https://www.meshy.ai/terms",
-        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account under the current Meshy terms.",
         "sourceFamily": "meshy",
         "retrievedAt": "2026-10-14T20:41:04.404Z",
-        "evidence": [
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
-          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
-        ],
+        "evidence": [],
         "checkedAt": "2026-10-14T20:41:04.404Z"
       },
-      "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+      "sourcePath": "artifacts/meshy/clash-dragon-statue/model.glb",
       "outputPath": "public/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
@@ -697,7 +693,7 @@ export const stageAssets = defineAuraAssets({
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for turboHeroRaceCarMeshy."
+          "Normalized +Z forward and grounded min-Y=0."
         ]
       },
       "nodeNames": [
@@ -711,13 +707,7 @@ export const stageAssets = defineAuraAssets({
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/clashDragonStatueMeshy.thumb.svg",
       "quality": "production",
-      "role": "primaryVehicle",
-      "renderedProbe": {
-        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
-        "kind": "manual-inspection",
-        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
-        "checkedAt": "2026-10-14T21:02:59.667Z"
-      }
+      "role": "primaryWorld"
     },
   },
   "courierNeonStorefrontMeshy": {
@@ -780,21 +770,17 @@ export const stageAssets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "sourcePath": "artifacts/meshy/courier-neon-storefront/model.glb",
         "license": "Meshy paid private generation terms",
         "licenseName": "Meshy paid private generation terms",
         "licenseUrl": "https://www.meshy.ai/terms",
-        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account under the current Meshy terms.",
         "sourceFamily": "meshy",
         "retrievedAt": "2026-10-14T20:41:04.404Z",
-        "evidence": [
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
-          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
-        ],
+        "evidence": [],
         "checkedAt": "2026-10-14T20:41:04.404Z"
       },
-      "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+      "sourcePath": "artifacts/meshy/courier-neon-storefront/model.glb",
       "outputPath": "public/aura-assets/courierNeonStorefrontMeshy.efb0a37b.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
@@ -835,7 +821,7 @@ export const stageAssets = defineAuraAssets({
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for turboHeroRaceCarMeshy."
+          "Normalized +Z forward and grounded min-Y=0."
         ]
       },
       "nodeNames": [
@@ -849,13 +835,7 @@ export const stageAssets = defineAuraAssets({
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierNeonStorefrontMeshy.thumb.svg",
       "quality": "production",
-      "role": "primaryVehicle",
-      "renderedProbe": {
-        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
-        "kind": "manual-inspection",
-        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
-        "checkedAt": "2026-10-14T21:02:59.667Z"
-      }
+      "role": "primaryWorld"
     },
   },
   "gullsiegeGatehouseMeshy": {

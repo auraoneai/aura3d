@@ -169,7 +169,10 @@ export function buildCourseRig(course: CourseSpec, hole: HoleSpec, terrain: Hole
     );
   }
 
-  nodes.push(effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 12, lights: "sun" }).toJSON());
+  nodes.push(effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 16, lights: "sun" }).toJSON());
+  if (tier === "high") {
+    nodes.push(effects.ambientOcclusion({ name: "course ambient occlusion", intensity: 0.48, radius: 0.75 }).toJSON());
+  }
 
   // Post beyond the preset (LINKS-04): the game's blanket vignette is gone; each course carries its own (or none).
   if (row.vignette) nodes.push(effects.vignette({ name: "course vignette", intensity: row.vignette.intensity, smoothness: 0.72, roundness: 0.92, color: row.vignette.color }).toJSON());

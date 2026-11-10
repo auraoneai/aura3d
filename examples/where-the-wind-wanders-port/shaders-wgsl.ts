@@ -275,17 +275,17 @@ fn seg(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, r0: f32, r1: f32) -> f32 {
   var col = vTint;
   let ph = vPhase;
   if (k == 0) {
-    for (var i = 0; i < 6; i = i + 1) {
+    for (var i = 0; i < 7; i = i + 1) {
       let fi = f32(i);
-      let cx = 0.1 + fi * 0.16 + (hash21(vec2<f32>(ph, fi)) - 0.5) * 0.12;
-      let h = 0.62 + 0.38 * hash21(vec2<f32>(fi, ph * 1.7));
-      let lean = (hash21(vec2<f32>(ph + 3.0, fi)) - 0.5) * 0.34;
+      let cx = 0.08 + fi * 0.14 + (hash21(vec2<f32>(ph, fi)) - 0.5) * 0.11;
+      let h = 0.60 + 0.40 * hash21(vec2<f32>(fi, ph * 1.7));
+      let lean = (hash21(vec2<f32>(ph + 3.0, fi)) - 0.5) * 0.38;
       let x = uv.x - cx - lean * uv.y * uv.y;
-      let wdt = 0.1 * (1.0 - uv.y / h);
-      let inside = step(uv.y, h) * (1.0 - smoothstep(wdt * 0.55, wdt, abs(x)));
-      if (inside > cover) { cover = inside; tone = fi * 0.16 + uv.y / h * 0.6; }
+      let wdt = 0.088 * (1.0 - uv.y / h);
+      let inside = step(uv.y, h) * (1.0 - smoothstep(wdt * 0.52, wdt, abs(x)));
+      if (inside > cover) { cover = inside; tone = fi * 0.14 + uv.y / h * 0.64; }
     }
-    col = vTint * (0.52 + 0.9 * tone * 0.8 + 0.25 * uv.y);
+    col = vTint * (0.46 + 0.88 * tone * 0.8 + 0.30 * uv.y);
   } else if (k == 1) {
     var stem = 1.0 - smoothstep(0.016, 0.03, abs(uv.x - 0.5 - 0.04 * sin(uv.y * 3.0 + ph)));
     stem = stem * step(uv.y, 0.64);
@@ -349,26 +349,40 @@ fn seg(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, r0: f32, r1: f32) -> f32 {
     let green = vec3<f32>(0.1, 0.28, 0.07);
     col = mix(green, vTint * (0.8 + 0.5 * hash21(cell)), within);
   } else {
-    let d = (uv - vec2<f32>(0.5, 0.44)) * vec2<f32>(1.0, 1.12);
-    let ang = atan2(d.y, d.x);
-    let edge = 0.46 + 0.05 * (vnoise(vec2<f32>(ang * 3.0, ph) * 2.0) - 0.5) * 2.0 + 0.035 * sin(ang * 13.0 + ph);
-    cover = 1.0 - smoothstep(edge - 0.045, edge, length(d));
-    let leaves = vnoise(uv * 22.0 + vec2<f32>(ph)) * 0.6 + vnoise(uv * 9.0 + vec2<f32>(ph * 2.0)) * 0.4;
-    let dapple = smoothstep(0.56, 0.82, vnoise(uv * 11.0 + vec2<f32>(ph * 3.0)));
-    col = vTint * (0.45 + 0.5 * uv.y + 0.35 * leaves + 0.45 * dapple);
-    let bc = floor(uv * 10.0);
-    let bh = hash21(bc + vec2<f32>(ph));
-    let bf = fract(uv * 10.0) - vec2<f32>(0.5);
-    let bloom = step(0.66, bh) * (1.0 - smoothstep(0.26, 0.4, length(bf))) * step(0.18, uv.y);
+    let root = uv - vec2<f32>(0.5, 0.02);
+    var sprig = 0.0;
+    var bloomAmt = 0.0;
+    for (var i = 0; i < 6; i = i + 1) {
+      let fi = f32(i);
+      let ang = -0.95 + fi * 0.38 + (hash21(vec2<f32>(ph, fi)) - 0.5) * 0.22;
+      let dir = vec2<f32>(sin(ang), cos(ang));
+      let along = dot(root, dir);
+      let curve = (hash21(vec2<f32>(fi + 4.0, ph)) - 0.5) * 0.18 * along * along;
+      let across = abs(dot(root, vec2<f32>(dir.y, -dir.x)) - curve);
+      let len = 0.56 + 0.34 * hash21(vec2<f32>(fi, ph * 1.3));
+      let u = clamp(along / len, 0.0, 1.0);
+      let needles = 0.5 + 0.5 * sin(along * 42.0 + fi * 2.1);
+      let wdt = (0.048 * (1.0 - 0.65 * u) + 0.032 * needles * smoothstep(0.18, 0.85, u)) * step(0.0, along) * step(along, len);
+      let sMask = 1.0 - smoothstep(wdt * 0.55, wdt, across);
+      let panicle = smoothstep(0.46, 0.78, u) * (1.0 - smoothstep(0.92, 1.0, u)) * smoothstep(0.38, 0.72, vnoise(uv * 24.0 + vec2<f32>(ph + fi * 3.1)));
+      if (sMask > sprig) {
+        sprig = sMask;
+        tone = u;
+        bloomAmt = panicle;
+      }
+    }
+    cover = sprig;
+    let foliageVar = vnoise(uv * 19.0 + vec2<f32>(ph)) * 0.6 + vnoise(uv * 7.0 + vec2<f32>(ph * 1.9)) * 0.4;
+    col = vTint * (0.42 + 0.58 * tone + 0.28 * foliageVar);
     let pick = fract(ph * 1.7);
-    let petal = select(select(select(vec3<f32>(0.98, 0.86, 0.35), vec3<f32>(0.97, 0.62, 0.7), pick < 0.82), vec3<f32>(0.86, 0.16, 0.14), pick < 0.62), vec3<f32>(0.92, 0.28, 0.4), pick < 0.34);
-    col = mix(col, petal * (0.8 + 0.4 * bh), bloom);
+    let blossom = select(select(select(vec3<f32>(0.94, 0.88, 0.66), vec3<f32>(0.86, 0.56, 0.68), pick < 0.86), vec3<f32>(0.92, 0.72, 0.20), pick < 0.68), vec3<f32>(0.66, 0.42, 0.74), pick < 0.38);
+    col = mix(col, blossom * (0.82 + 0.32 * foliageVar), clamp(bloomAmt * 1.25, 0.0, 0.92));
   }
   if (cover < 0.5) { discard; }
   let view = normalize(aura.u_cameraPosition - vWorld);
   let n = normalize(vec3<f32>(0.0, 1.0, 0.0) + vec3<f32>((uv.x - 0.5) * 0.5, 0.0, 0.0));
   col = mix(col, col * vec3<f32>(1.18, 1.16, 1.02) + vec3<f32>(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
-  var lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
+  var lit = lightSurface(col, n, 0.44 + 0.56 * uv.y, 0.62, 0.66, view, vWorld);
 ${receive ? "  lit = lit * (1.0 - heroContact(vWorld));" : ""}
   return vec4<f32>(applyFog(lit, vWorld, 1.0), 1.0);
 }`);
@@ -447,37 +461,91 @@ const SHORE_REFLECTION = /* wgsl */ `
 /** `SEA_FRAGMENT` (shoreReflection: `SHORE_REFLECTION`). */
 export function seaFragmentWgsl(shoreReflection: boolean): string {
   return stage([common()], /* wgsl */ `
+fn groundHSea(p: vec2<f32>) -> f32 {
+  let dx1 = p.x - 39.0;
+  let dz1 = p.y - 3.0;
+  let dx2 = p.x + 27.0;
+  let dz2 = p.y - 1.0;
+  return 0.3
+    + 0.58 * sin(0.06 * p.x)
+    + 0.32 * cos(0.17 * p.y + 0.04 * p.x)
+    + 1.45 * exp(-(dx1 * dx1 / 240.0 + dz1 * dz1 / 160.0))
+    + 1.15 * exp(-(dx2 * dx2 / 190.0 + dz2 * dz2 / 120.0));
+}
+
+fn terrainShoreY(p: vec2<f32>) -> f32 {
+  var h = groundHSea(p);
+  let s = smoothstep(8.0, 16.0, p.x);
+  let ss = -13.2 - 1.2 * (1.0 - s);
+  let sl = 2.6 + 9.0 * (1.0 - s);
+  let drop = 1.0 - smoothstep(ss - sl, ss, p.y);
+  h = h - drop * (h + 2.15);
+  let side = smoothstep(54.0, 84.0, abs(p.x - 2.0));
+  let ridge = 7.5 * side * (0.7 + 0.3 * sin(0.23 * p.y + 0.4));
+  return h + ridge * (1.0 - drop);
+}
+
 @fragment fn fs_main(@location(2) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let p = vWorld.xz;
   let t = aura.u_windTime;
-  let q1 = p * 0.22 + vec2<f32>(t * 0.045, -t * 0.03);
-  let q2 = p * 0.6 + vec2<f32>(-t * 0.07, t * 0.05);
-  let e = 0.05;
-  let a0 = vnoise(q1) * 0.65 + vnoise(q2) * 0.35;
-  let ax = vnoise(q1 + vec2<f32>(e, 0.0)) * 0.65 + vnoise(q2 + vec2<f32>(e, 0.0)) * 0.35;
-  let az = vnoise(q1 + vec2<f32>(0.0, e)) * 0.65 + vnoise(q2 + vec2<f32>(0.0, e)) * 0.35;
-  let n = normalize(vec3<f32>(-(ax - a0) * 1.4, 1.0, -(az - a0) * 1.4));
+  let bedY = terrainShoreY(p);
+  let waterDepth = max(0.0, -0.55 - bedY);
+  let ph1 = dot(p, vec2<f32>(0.86, -0.51)) * 0.62 - t * 0.78;
+  let ph2 = dot(p, vec2<f32>(-0.44, -0.90)) * 1.18 - t * 1.05;
+  let ph3 = dot(p, vec2<f32>(0.68, 0.73)) * 2.15 + t * 1.32;
+  let ph4 = dot(p, vec2<f32>(-0.91, 0.41)) * 3.40 - t * 1.68;
+  var grad = vec2<f32>(0.86, -0.51) * (0.042 * cos(ph1))
+           + vec2<f32>(-0.44, -0.90) * (0.028 * cos(ph2))
+           + vec2<f32>(0.68, 0.73) * (0.015 * cos(ph3))
+           + vec2<f32>(-0.91, 0.41) * (0.009 * cos(ph4));
+  let cap0 = fbm(p * 1.15 + vec2<f32>(t * 0.14, -t * 0.11));
+  let capX = fbm(p * 1.15 + vec2<f32>(0.08 + t * 0.14, -t * 0.11));
+  let capZ = fbm(p * 1.15 + vec2<f32>(t * 0.14, 0.08 - t * 0.11));
+  grad = grad + vec2<f32>(capX - cap0, capZ - cap0) * 0.34;
+
+  var wakeFoam = 0.0;
+  if (aura.u_boatWake.w > 0.001) {
+    let fwd = vec2<f32>(-sin(aura.u_boatWake.z), -cos(aura.u_boatWake.z));
+    let right = vec2<f32>(fwd.y, -fwd.x);
+    let rel = p - aura.u_boatWake.xy;
+    let behind = -dot(rel, fwd);
+    let across = dot(rel, right);
+    if (behind > -1.2 && behind < 34.0) {
+      let bClamp = max(behind + 1.2, 0.0);
+      let armSpread = 0.34 * bClamp + 0.55;
+      let armDist = abs(abs(across) - armSpread);
+      let env = exp(-bClamp * 0.085) * smoothstep(-1.2, 0.8, behind) * aura.u_boatWake.w;
+      let wakeWave = sin(armDist * 4.2 - t * 3.6 + bClamp * 0.55) * exp(-armDist * 1.15) * env;
+      grad = grad + right * (sign(across) * wakeWave * 0.09);
+      wakeFoam = (exp(-armDist * 1.65) * (0.55 + 0.45 * sin(bClamp * 1.8 - t * 3.2)) + 0.45 * exp(-abs(across) * 1.8) * exp(-bClamp * 0.14)) * env;
+    }
+  }
+
+  let calmNearShore = smoothstep(0.0, 0.85, waterDepth);
+  let n = normalize(vec3<f32>(-grad.x * (0.45 + 0.55 * calmNearShore), 1.0, -grad.y * (0.45 + 0.55 * calmNearShore)));
   let view = normalize(aura.u_cameraPosition - vWorld);
-  let s = smoothstep(8.0, 16.0, vWorld.x);
-  let shoreZ = -13.2 - 1.2 * (1.0 - s) - (2.6 + 9.0 * (1.0 - s)) * 0.6;
-  let off = vWorld.z - shoreZ;
-  let depth = smoothstep(0.0, 18.0, -off);
-  let shallow = vec3<f32>(0.14, 0.72, 0.64);
-  let deep = vec3<f32>(0.04, 0.45, 0.55);
-  var col = mix(shallow, deep, a3dPow(depth, 0.7));
-  let fres = 0.04 + 0.96 * a3dPow(1.0 - max(dot(n, view), 0.0), 4.0);
+  let depth = smoothstep(0.0, 4.2, waterDepth);
+  let amberShoal = vec3<f32>(0.24, 0.66, 0.58);
+  let shallow = vec3<f32>(0.11, 0.62, 0.59);
+  let deep = vec3<f32>(0.032, 0.38, 0.50);
+  var col = mix(amberShoal, shallow, smoothstep(0.0, 0.75, waterDepth));
+  col = mix(col, deep, a3dPow(depth, 0.72));
+  let fres = 0.035 + 0.965 * a3dPow(1.0 - max(dot(n, view), 0.0), 4.2);
   let refl = reflect(-view, n);
-  let skyc = mix(vec3<f32>(0.6, 0.8, 0.86), vec3<f32>(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
-  col = mix(col, skyc, fres * 0.55);
+  let skyc = mix(mix(aura.u_skyCol, aura.u_fogCol, 0.35), aura.u_skyCol * vec3<f32>(0.52, 0.72, 1.08), clamp(refl.y * 1.65, 0.0, 1.0));
+  col = mix(col, skyc, fres * 0.58);
 ${shoreReflection ? SHORE_REFLECTION : ""}
-  let glint = a3dPow(max(dot(refl, aura.u_sunDir), 0.0), 140.0) * 5.0;
-  let tw = smoothstep(0.78, 0.98, vnoise(p * vec2<f32>(5.0, 9.0) + vec2<f32>(t * 0.6, t * 0.4)));
-  col = col + aura.u_sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
-  let breathe = 0.5 + 0.5 * sin(t * 1.1 + off * 1.6 + a0 * 6.0);
-  var foam = (1.0 - smoothstep(0.0, 2.4, off + 0.6 * breathe)) * step(-0.8, off) * (0.35 + 0.65 * breathe) * smoothstep(0.35, 0.7, vnoise(p * 1.6 + vec2<f32>(t * 0.2)));
-  foam = foam + (1.0 - smoothstep(0.0, 0.7, abs(off + 1.2 - 1.6 * breathe))) * 0.35 * step(0.0, off + 2.0);
-  col = mix(col, vec3<f32>(0.95, 0.97, 0.92), clamp(foam, 0.0, 0.85));
-  let alpha = mix(0.55, 0.97, smoothstep(-0.5, 3.5, -off + 1.0));
+  let sunSpec = a3dPow(max(dot(refl, aura.u_sunDir), 0.0), 180.0) * 4.2 + a3dPow(max(dot(refl, aura.u_sunDir), 0.0), 28.0) * 0.16;
+  let sparkle = smoothstep(0.80, 0.985, vnoise(p * vec2<f32>(4.6, 8.2) + vec2<f32>(t * 0.55, -t * 0.38)));
+  col = col + aura.u_sunCol * (sunSpec + sparkle * 0.16 * (1.0 - depth * 0.45)) * calmNearShore;
+  let lap = 0.5 + 0.5 * sin(t * 1.25 - waterDepth * 6.4 + cap0 * 4.2);
+  let lace = smoothstep(0.32, 0.72, vnoise(p * 1.85 + vec2<f32>(t * 0.18, -t * 0.12)));
+  var shoreFoam = (1.0 - smoothstep(0.02, 0.55, waterDepth)) * (0.42 + 0.58 * lap) * (0.45 + 0.55 * lace);
+  shoreFoam = shoreFoam + (1.0 - smoothstep(0.0, 0.16, abs(waterDepth - (0.32 + 0.26 * lap)))) * 0.38 * lace;
+  let foam = clamp(shoreFoam + wakeFoam * 0.78, 0.0, 0.88);
+  let foamTint = mix(vec3<f32>(0.94, 0.96, 0.92), mix(aura.u_skyCol, aura.u_sunCol, 0.35) + vec3<f32>(0.45), 0.35);
+  col = mix(col, foamTint, foam);
+  let alpha = smoothstep(0.0, 0.22, waterDepth) * mix(0.74, 0.98, smoothstep(0.0, 2.4, waterDepth));
   return vec4<f32>(applyFog(col, vWorld, 1.0), alpha);
 }`);
 }
@@ -650,8 +718,9 @@ export function propFragmentWgsl(receive: boolean): string {
     albedo = vTint * tone * (0.82 + 0.3 * grain) * mix(0.55, 1.0, seam);
   } else if (k == 3) {
     let stain = vnoise(uv * 2.2 + vec2<f32>(3.0)) * 0.5 + vnoise(uv * 9.0) * 0.5;
-    albedo = vTint * (0.86 + 0.22 * stain);
-    wrap = 0.3;
+    let trowel = vnoise(vec2<f32>(uv.x * 5.2, uv.y * 1.4));
+    albedo = vTint * (0.84 + 0.22 * stain + 0.08 * (trowel - 0.5));
+    wrap = 0.32;
   } else if (k == 4) {
     let row = uv.y / 0.5;
     let r = floor(row);
@@ -661,13 +730,16 @@ export function propFragmentWgsl(receive: boolean): string {
     let fr = fract(row);
     let edge = smoothstep(0.0, 0.2, fr);
     let side = smoothstep(0.0, 0.05, fract(colx)) * (1.0 - smoothstep(0.95, 1.0, fract(colx)));
-    let moss = smoothstep(0.62, 0.85, vnoise(uv * 1.7 + vec2<f32>(5.0)));
-    albedo = mix(vTint * tone, vec3<f32>(0.25, 0.36, 0.14), moss * 0.35) * mix(0.55, 1.0, edge) * mix(0.8, 1.0, side);
+    let moss = smoothstep(0.56, 0.84, vnoise(uv * 1.8 + vec2<f32>(5.0)));
+    albedo = mix(vTint * tone, vec3<f32>(0.24, 0.37, 0.14), moss * 0.42) * mix(0.55, 1.0, edge) * mix(0.8, 1.0, side);
     wrap = 0.2;
   } else if (k == 5) {
     let b = vnoise(wp.xz * 1.6 + vec2<f32>(wp.y * 1.1)) * 0.6 + vnoise(wp.xz * 6.0 + vec2<f32>(wp.y * 4.0)) * 0.4;
-    albedo = vTint * (0.68 + 0.5 * b);
-    wrap = 0.15;
+    let crevice = smoothstep(0.28, 0.62, b);
+    let mossPatch = smoothstep(0.48, 0.80, vnoise(wp.xz * 2.4 + vec2<f32>(3.7, 8.1))) * clamp(n.y * 0.85 + 0.25, 0.0, 1.0);
+    albedo = mix(vTint * (0.62 + 0.52 * b), vec3<f32>(0.22, 0.36, 0.13), mossPatch * 0.46);
+    ao = 0.78 + 0.22 * crevice;
+    wrap = 0.18;
   } else if (k == 6) {
     let plank = floor(wp.z * 1.85);
     let fr = fract(wp.z * 1.85);
@@ -680,9 +752,11 @@ export function propFragmentWgsl(receive: boolean): string {
     emissive = 0.22 * (0.7 + 0.3 * sin(wp.x * 3.0));
     spec = 0.5;
   } else if (k == 8) {
-    albedo = vTint;
-    spec = 1.0;
-    wrap = 0.1;
+    let brushRing = 0.88 + 0.12 * sin(wp.y * 68.0 + vnoise(wp.xz * 14.0) * 3.0);
+    let patina = smoothstep(0.58, 0.86, vnoise(wp.xz * 5.5 + vec2<f32>(wp.y * 3.2))) * (1.0 - clamp(abs(n.y), 0.0, 0.65));
+    albedo = mix(vTint * brushRing, vec3<f32>(0.24, 0.48, 0.41), patina * 0.38);
+    spec = mix(1.15, 0.35, patina);
+    wrap = 0.12;
   } else if (k == 9) {
     let weave = 0.9 + 0.1 * sin(uv.x * 90.0) * sin(uv.y * 90.0);
     let fold = vnoise(uv * 3.0);
@@ -840,4 +914,58 @@ export const BLOB_FRAGMENT_WGSL = stage([], /* wgsl */ `
   let r = length(vUv - vec2<f32>(0.5)) * 2.0;
   let a = (1.0 - smoothstep(0.15, 1.0, r)) * aura.u_shadowOpacity;
   return vec4<f32>(0.06, 0.1, 0.03, a);
+}`);
+
+/* ---------------------------------------------------------------- catenary kite thread */
+
+export const THREAD_VERTEX_WGSL = stage([CLIP, WIND_CONSTANTS], /* wgsl */ `
+struct ThreadVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+  @location(1) vWorld: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> ThreadVarying {
+  var out: ThreadVarying;
+  out.vUv = a_uv;
+  let s = a_uv.y;
+  let arch = 4.0 * s * (1.0 - s);
+  var c = mix(aura.u_threadAnchor, aura.u_threadTip, s);
+  c.y = c.y - aura.u_threadSag * arch + a_position.z * 0.0;
+  let bow = 0.22 * arch * (0.72 + 0.28 * sin(aura.u_windTime * 2.1 + s * 3.14159));
+  let wd = WIND_DIR * bow;
+  c.x = c.x + wd.x;
+  c.z = c.z + wd.y;
+  let tang = normalize(aura.u_threadTip - aura.u_threadAnchor + vec3<f32>(0.0, -aura.u_threadSag * 4.0 * (1.0 - 2.0 * s), 0.0) + vec3<f32>(WIND_DIR.x, 0.0, WIND_DIR.y) * (0.22 * 4.0 * (1.0 - 2.0 * s)));
+  let toCam = normalize(aura.u_cameraPosition - c);
+  let rawSide = cross(tang, toCam);
+  let sideLen = length(rawSide);
+  let side = select(vec3<f32>(1.0, 0.0, 0.0), rawSide / max(sideLen, 1e-4), sideLen > 1e-4);
+  let w = c + side * ((a_uv.x - 0.5) * 0.017);
+  out.vWorld = w;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * vec4<f32>(w, 1.0));
+  return out;
+}`);
+
+export const THREAD_FRAGMENT_WGSL = stage([common()], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>, @location(1) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let across = abs(vUv.x - 0.5) * 2.0;
+  let core = 1.0 - smoothstep(0.18, 1.0, across);
+  let ends = smoothstep(0.0, 0.05, vUv.y) * (1.0 - smoothstep(0.95, 1.0, vUv.y));
+  let view = normalize(aura.u_cameraPosition - vWorld);
+  let linen = lightSurface(vec3<f32>(0.95, 0.90, 0.78), vec3<f32>(0.0, 1.0, 0.0), 1.0, 0.75, 0.55, view, vWorld);
+  let distFade = 1.0 - smoothstep(18.0, 42.0, distance(aura.u_cameraPosition, vWorld));
+  let alpha = core * ends * distFade * 0.55;
+  return vec4<f32>(applyFog(linen, vWorld, 1.0), alpha);
+}`);
+
+/* ---------------------------------------------------------------- bell harmonic ripple flipbook */
+
+export const RIPPLE_FRAGMENT_WGSL = stage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let idx = floor((max(0.0, aura.u_windTime) * 16.0) % 32.0);
+  let colIdx = idx % 8.0;
+  let rowIdx = floor(idx / 8.0);
+  let cellUv = vec2<f32>((colIdx + clamp(vUv.x, 0.03, 0.97)) / 8.0, (rowIdx + clamp(vUv.y, 0.03, 0.97)) / 4.0);
+  let texel = textureSample(u_rippleMapTexture, u_rippleMapSampler, cellUv);
+  return vec4<f32>(texel.rgb * 1.15, texel.a * aura.u_rippleAlpha);
 }`);

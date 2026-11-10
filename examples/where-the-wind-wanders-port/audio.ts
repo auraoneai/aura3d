@@ -192,10 +192,15 @@ export function createAudio(enabled: boolean): WindAudio {
     bell() {
       if (!ctx || muted) return;
       const base = 196;
-      const partials = [1, 2.0, 2.76, 5.4, 8.93];
+      const partials = [0.5, 1, 2.0, 2.42, 3.0, 5.4, 8.93];
       for (let strike = 0; strike < 3; strike++) {
         const t = ctx.currentTime + strike * 1.9;
-        partials.forEach((r, i) => tone(base * r, t, 0.16 / (1 + i * 0.9), 3.6 / (1 + i * 0.35), "sine", (i % 2 ? 0.2 : -0.2)));
+        partials.forEach((r, i) => {
+          const isHum = i === 0;
+          const peak = isHum ? 0.095 : 0.165 / (1 + (i - 1) * 0.85);
+          const dec = isHum ? 4.8 : 3.8 / (1 + (i - 1) * 0.32);
+          tone(base * r, t, peak, dec, "sine", isHum ? 0 : (i % 2 ? 0.22 : -0.22));
+        });
       }
     },
     setPaused(value) {

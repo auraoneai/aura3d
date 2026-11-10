@@ -1,10 +1,8 @@
 /**
- * Drift & Deliver port: the visual layer. Lit PBR city (facade textures with metric UVs, shopfronts, awnings, tiered
- * crowns), a painted road tile, parks, street furniture, a skyline ring, low-poly cars, an HDRI-lit sun with cascaded
- * shadows, exp2 haze, AO, bloom, grade and vignette. Simulation state is read, never written.
- *
- * Public `@aura3d/engine` surface only. The original's textures, models and audio are not used: facades, roads and
- * cars are painted or built in code; the sky HDRI is CC0 (Poly Haven, see assets/ATTRIBUTION.md).
+ * Gridlock Courier: the visual layer. Lit PBR city (facade textures with metric UVs, glossy shopfronts, awnings, tiered
+ * crowns), wet-asphalt road tile with SSR, parks, street furniture, skyline ring, clearcoat cars, HDRI-lit sun with
+ * cascaded shadows + contact shadows, exp2 haze, GTAO, cinematic bloom, AgX + cinema-warm 3D LUT and vignette.
+ * Simulation state is read, never written.
  */
 import type { AuraPhotometricProfile } from "@aura3d/engine";
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
@@ -298,7 +296,8 @@ export interface LookOptions {
  * 0.5 (1.2 smeared the warm sky over the asphalt).
  */
 export const SHIFT_ENV_TINT = "#c2d2f0";
-export const SHIFT_ROAD_ENV = 0.5;
+export const SHIFT_ROAD_ENV = 0.68;
+export const CINEMA_WARM_LUT_URL = new URL("./assets/luts/cinema-warm.cube", import.meta.url).pathname;
 
 /** GU47 WP-28 GC-L2: the shift look's key shadow per tier (High: 3 cascades over 220 m, PCSS; Low: 1 cascade, PCF). */
 export function shiftShadow(quality: "high" | "low") {
@@ -366,22 +365,16 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     for (let i = 0; i < SODIUM_POOL; i++) b.add(lights.point({ name: `sodium-${i}`, position: [at.x, -40, at.z], color: SODIUM_COLOR, intensity: 0, distance: SODIUM_RANGE }).runtime({ id: `sodium-${i}` }));
     b.add(lights.spot({ name: "headlight", position: [at.x, HEADLIGHT.y, at.z + HEADLIGHT.ahead], target: [at.x, 0, at.z + 20], color: HEADLIGHT.color, intensity: 0, distance: HEADLIGHT.distance, angle: (HEADLIGHT.angleDeg * Math.PI) / 180, penumbra: HEADLIGHT.penumbra, ...(opts.headlightProfile ? { photometricProfile: opts.headlightProfile } : {}) }).runtime({ id: "headlight" }));
     if (opts.fog) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
-    if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
-    // GC-L3: contact shadows under cars, posts and props (High only; PRD §6.4 drops them on Low)
-    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.6, thickness: 0.5, steps: 16, intensity: 1, lights: "sun" }));
+    if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao", intensity: 0.62, radius: 0.85 }));
+    // GC-L3: crisp contact shadows under cars, tires, posts and grounded street props (High tier)
+    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.42, thickness: 0.14, steps: 16, intensity: 0.9, lights: "sun" }));
     if (opts.post) {
-      b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.35 }));
-      b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));
-      b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
+      b.add(effects.cinematicBloom({ intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.38, color: "#ffdcab", maxIntensity: 0.88 }));
+      b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, lut: CINEMA_WARM_LUT_URL, lutIntensity: 0.45 }));
+      b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.72 }));
       if (high) {
-        // GC-P1 grain on High. GU47 phase 2: SSR, motion blur and the GC-S5 volumetric god rays are switched off in
-        // this look: on software WebGL2 the volumetric pass hazed every phase into a flat beige wall (it stayed in the
-        // forward fog even with the post stage disabled), and SSR / motion blur softened the street against the 4.6.2
-        // frame. `GOD_RAYS` stays exported for the identity sheet; nothing adds it.
+        b.add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.56, maxDistance: 28, roughness: 0.24, thickness: 0.28 }));
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
-        // Blind-panel fix pass: the GC-P3 tilt-shift band is off. The game idles on its title screen (where the band was
-        // enabled), so it blurred the car and the facades in every judged frame and the panel picked the crisp 4.6.2
-        // frame. `TILT` stays exported for the identity sheet.
       }
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }
@@ -425,7 +418,17 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // ---- the city itself ----
   const facadeMat = (key: string) => facadeMaterial(tex, key, row && shift ? row.windows : 0.6);
   const facadeNodes: { id: string; key: string }[] = [];
-  const shopMat = material.pbr({ color: "#ffffff", roughness: 0.7, texture: asRef(tex.shop.albedo), emissiveMap: tex.shop.emissive, emissive: "#ffffff", emissiveIntensity: 0.7, textureAnisotropy: 8 });
+  const shopMat = material.pbr({
+    color: "#ffffff",
+    roughness: shift ? 0.22 : 0.7,
+    metallic: shift ? 0.08 : 0,
+    ...(shift ? { clearcoat: 0.88, clearcoatRoughness: 0.06, envMapIntensity: 1.28 } : {}),
+    texture: asRef(tex.shop.albedo),
+    emissiveMap: tex.shop.emissive,
+    emissive: "#ffffff",
+    emissiveIntensity: 0.7,
+    textureAnisotropy: 8
+  });
   const solidMat = material.pbr({ color: "#ffffff", roughness: 0.78, texture: asRef(paletteTex) });
   for (const chunk of city.chunks) {
     for (const [key, m] of Object.entries(chunk.meshes)) {
@@ -445,7 +448,22 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 
   // ---- generated prop models: near-field lamps, signals, trees, hydrants, shelters and the landmarks ----
   // GC-L2: in the shift look the near-field lamps, signals, shelters and landmarks cast into the raking sun
-  if (propPlan) for (const n of propNodes(propPlan, shift)) b.add(n);
+  if (propPlan) {
+    for (const n of propNodes(propPlan, shift)) b.add(n);
+    const shelters = propPlan.placements.get("shelter");
+    if (shift && shelters && shelters.length > 0) {
+      b.add(
+        instances.box({
+          name: "storefront-glass",
+          size: [3.4, 2.05, 0.05],
+          material: material.studioGlass({ tint: "#dff4fa", roughness: 0.06 }),
+          transforms: shelters.map((t) => ({ position: [t.position[0], t.position[1] + 1.15, t.position[2]] as [number, number, number], rotation: t.rotation })),
+          castShadow: false,
+          receiveShadow: false
+        })
+      );
+    }
+  }
 
   // ---- traffic: paint + detail shells per kind, wheels and hubs ----
   const modelTraffic: TrafficGroup[] = [];
@@ -461,7 +479,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
     const cars = world.traffic.map((_, i) => i).filter((i) => i % CAR_KINDS.length === CAR_KINDS.indexOf(kind));
     const shell = shells.get(kind)!;
-    const paint = instances.mesh(geo(shell.paint, `${kind}-paint`), material.carPaint({ color: "#ffffff", roughness: 0.4, metallic: 0.2, clearcoat: 0.4, envMapIntensity: 0.45 }), cars.length);
+    const paint = instances.mesh(geo(shell.paint, `${kind}-paint`), material.carPaint({ color: "#ffffff", roughness: 0.28, metallic: 0.16, clearcoat: 0.88, clearcoatRoughness: 0.07, envMapIntensity: 1.32 }), cars.length);
     const detail = instances.mesh(geo(shell.detail, `${kind}-detail`), material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: asRef(paletteTex) }), cars.length);
     cars.forEach((carIndex, n) => paint.setColorAt(n, PAINTS[(carIndex * 5 + CAR_KINDS.indexOf(kind)) % PAINTS.length] as string));
     b.add(paint).add(detail);

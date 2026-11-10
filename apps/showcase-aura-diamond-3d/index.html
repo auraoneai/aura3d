@@ -17,16 +17,16 @@
     <meta name="twitter:title" content="Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase" />
     <meta name="twitter:description" content="Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/aura-diamond-3d@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Diamond 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/","description":"Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-diamond-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Diamond 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/","description":"Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-diamond-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/fonts/aura-fonts.css" />
     <style>
       :root {
         --bg: #0d1020;
         --ink: #f2eee3;
-        --muted: #9aa0b4;
-        --faint: #4a4f63;
-        --rule: rgba(242, 238, 227, 0.14);
+        --muted: #a6b0c3;
+        --faint: #6c768d;
+        --rule: rgba(242, 238, 227, 0.16);
         --chalk: #f5f1e4;
         --amber: #ffb03a;
         --cyan: #35d6ff;
@@ -34,9 +34,9 @@
         --clay: #a8593a;
         --danger: #ff5252;
         --ok: #5be37d;
-        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+        --font-display: var(--font-metric, "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif);
+        --font-sans: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+        --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
       }
 
       *,
@@ -45,6 +45,13 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+      }
+
+      html {
+        font-synthesis: none;
+        font-synthesis-weight: none;
+        font-synthesis-style: none;
+        font-synthesis-small-caps: none;
       }
 
       html,
@@ -114,15 +121,17 @@
         z-index: 45;
         padding: 5px 14px;
         border-radius: 999px;
-        background: rgba(10, 12, 24, 0.84);
+        background: rgba(9, 13, 24, 0.88);
         border: 1px solid var(--rule);
-        color: #e8e2cf;
-        font-family: var(--font-mono);
+        color: #eef3fa;
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.03em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
         pointer-events: none;
         white-space: nowrap;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
       }
 
       /* ============ HUD ============ */
@@ -131,7 +140,8 @@
         inset: 0;
         pointer-events: none;
         z-index: 30;
-        font-family: var(--font-mono);
+        font-family: var(--font-sans);
+        font-variant-numeric: tabular-nums;
         opacity: 0;
         transition: opacity 0.3s;
       }
@@ -146,50 +156,66 @@
         left: 16px;
         display: flex;
         flex-direction: column;
-        gap: 7px;
+        gap: 6px;
       }
 
       .hud-mode-tag {
         align-self: flex-start;
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.22em;
-        padding: 3px 9px;
-        background: rgba(255, 176, 58, 0.16);
-        border-left: 2px solid var(--amber);
-        color: var(--amber);
-        text-transform: uppercase;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        padding: 3px 10px;
+        background: rgba(9, 13, 24, 0.9);
+        border: 1px solid rgba(255, 176, 58, 0.55);
+        border-left: 3px solid var(--amber);
+        border-radius: 4px;
+        color: #ffd166;
+        box-shadow: 0 6px 18px rgba(2, 6, 16, 0.42);
       }
 
       /* Linescore */
       .hud-linescore {
-        background: rgba(10, 12, 24, 0.72);
-        border: 1px solid var(--rule);
-        backdrop-filter: blur(8px);
+        background: rgba(9, 13, 24, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(2, 6, 16, 0.42);
+        backdrop-filter: blur(10px);
         border-collapse: collapse;
       }
 
       .hud-linescore th,
       .hud-linescore td {
-        font-family: var(--font-mono);
-        font-size: 12px;
+        font-family: var(--font-display);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
+        font-weight: 500;
         padding: 4px 8px;
         text-align: center;
         color: var(--muted);
-        border-bottom: 1px solid rgba(242, 238, 227, 0.07);
-        min-width: 22px;
+        border-bottom: 1px solid rgba(242, 238, 227, 0.08);
+        min-width: 24px;
       }
 
       .hud-linescore th {
-        color: var(--faint);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        color: var(--muted);
         font-size: 12px;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.05em;
+        background: rgba(255, 255, 255, 0.03);
       }
 
       .hud-linescore td.tname {
+        font-family: var(--font-sans);
+        font-size: 12px;
         text-align: left;
         color: var(--ink);
-        font-weight: 700;
-        letter-spacing: 0.05em;
+        font-weight: 600;
+        letter-spacing: 0.03em;
         max-width: 110px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -197,15 +223,16 @@
       }
 
       .hud-linescore td.cur {
-        color: var(--amber);
-        font-weight: 700;
-        background: rgba(255, 176, 58, 0.12);
+        color: #ffd166;
+        font-weight: 500;
+        background: rgba(255, 176, 58, 0.16);
       }
 
       .hud-linescore td.runs {
         color: var(--ink);
-        font-weight: 700;
+        font-weight: 500;
         border-left: 1px solid var(--rule);
+        background: rgba(255, 255, 255, 0.04);
       }
 
       .hud-linescore tr.batting td.tname::after {
@@ -216,14 +243,16 @@
       /* Count / outs / bases row */
       .hud-status-row {
         display: flex;
-        gap: 7px;
+        gap: 6px;
         align-items: stretch;
       }
 
       .hud-chip {
-        background: rgba(10, 12, 24, 0.72);
-        border: 1px solid var(--rule);
-        backdrop-filter: blur(8px);
+        background: rgba(9, 13, 24, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 6px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 22px rgba(2, 6, 16, 0.4);
+        backdrop-filter: blur(10px);
         padding: 5px 10px;
         display: flex;
         flex-direction: column;
@@ -231,18 +260,33 @@
       }
 
       .hud-chip .k {
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.16em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
         color: var(--muted);
-        text-transform: uppercase;
       }
 
       .hud-chip .v {
         font-family: var(--font-display);
-        font-size: 18px;
-        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        font-size: 19px;
+        font-weight: 500;
         color: var(--ink);
         line-height: 1.1;
+      }
+
+      #h-matchup {
+        font-family: var(--font-sans);
+        font-weight: 600;
+      }
+
+      #h-pitcher-rep {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-variant-caps: normal;
+        letter-spacing: 0.02em;
       }
 
       .hud-count-dots {
@@ -312,10 +356,10 @@
         top: 15px;
       }
 
-      /* Pitch read chip (top center-left) */
+      /* Pitch read chip (top center) */
       .hud-pitch-read {
         position: absolute;
-        top: 14px;
+        top: calc(var(--a3d-bar-space) + 6px);
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -325,14 +369,18 @@
       }
 
       .hud-pitch-read .chip {
-        background: rgba(10, 12, 24, 0.78);
-        border: 1px solid var(--rule);
+        background: rgba(9, 13, 24, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.16);
         border-top: 2px solid var(--cyan);
+        border-radius: 5px;
         padding: 5px 14px;
-        font-size: 12px;
-        letter-spacing: 0.14em;
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
         color: var(--cyan);
-        text-transform: uppercase;
+        box-shadow: 0 8px 22px rgba(2, 6, 16, 0.42);
         opacity: 0;
         transition: opacity 0.18s;
       }
@@ -360,7 +408,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
         opacity: 0;
         transition: opacity 0.2s;
       }
@@ -370,10 +418,11 @@
       }
 
       .hud-contact .grade {
-        font-family: var(--font-display);
-        font-size: 26px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
+        font-family: var(--font-sans);
+        font-size: 24px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         text-shadow: 0 2px 16px rgba(0, 0, 0, 0.85);
       }
 
@@ -383,12 +432,78 @@
       .hud-contact .grade.late { color: #ff9f47; }
       .hud-contact .grade.whiff { color: var(--danger); }
 
-      .hud-contact .data {
+      .hud-contact .ct-metrics {
+        display: none;
+        align-items: stretch;
+        background: rgba(9, 13, 24, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 6px;
+        box-shadow: 0 10px 26px rgba(2, 6, 16, 0.48);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+      }
+
+      .hud-contact.has-metrics .ct-metrics {
+        display: flex;
+      }
+
+      .hud-contact.has-metrics #h-contact-data {
+        display: none;
+      }
+
+      .hud-contact .ct-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 4px 12px 5px;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .hud-contact .ct-cell:last-child {
+        border-right: none;
+      }
+
+      .hud-contact .ct-k {
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.12em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
         color: var(--muted);
-        background: rgba(10, 12, 24, 0.7);
-        padding: 2px 10px;
+        line-height: 1.1;
+      }
+
+      .hud-contact .ct-v {
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+        line-height: 1.15;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
+      }
+
+      .hud-contact .ct-v small {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        color: var(--muted);
+      }
+
+      .hud-contact .data {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
+        color: var(--ink);
+        background: rgba(9, 13, 24, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 4px;
+        padding: 3px 10px;
       }
 
       /* Strike-zone aim diagram (pitching) */
@@ -482,7 +597,7 @@
       /* Derby / lab score cards (right side) */
       .hud-lab-card {
         position: absolute;
-        top: 60px;
+        top: calc(var(--a3d-bar-space) + 8px);
         right: 16px;
         display: none;
         flex-direction: column;
@@ -496,21 +611,32 @@
 
       .hud-lab-card .big {
         font-family: var(--font-display);
-        font-size: 42px;
-        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        font-size: 40px;
+        font-weight: 500;
         line-height: 0.95;
         color: var(--amber);
         text-shadow: 0 2px 16px rgba(0, 0, 0, 0.8);
       }
 
       .hud-lab-card .row {
-        background: rgba(10, 12, 24, 0.72);
-        border: 1px solid var(--rule);
+        background: rgba(9, 13, 24, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 5px;
         padding: 4px 12px;
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.12em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
         color: var(--ink);
-        text-transform: uppercase;
+      }
+
+      .hud-lab-card .row span {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-variant-caps: normal;
       }
 
       /* Catch prompt */
@@ -519,10 +645,11 @@
         top: 38%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-family: var(--font-display);
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: 0.2em;
+        font-family: var(--font-sans);
+        font-size: 22px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.12em;
         color: var(--cyan);
         text-shadow: 0 0 18px rgba(53, 214, 255, 0.8), 0 2px 12px rgba(0, 0, 0, 0.9);
         opacity: 0;
@@ -555,34 +682,39 @@
       }
 
       .hud-center-msg .big {
-        font-family: var(--font-display);
-        font-size: 40px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
+        font-family: var(--font-sans);
+        font-size: 38px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
         color: var(--ink);
         text-shadow: 0 2px 20px rgba(0, 0, 0, 0.85);
       }
 
       .hud-center-msg .small {
-        font-size: 12px;
-        letter-spacing: 0.24em;
-        color: var(--amber);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.12em;
+        color: #ffd166;
         margin-top: 3px;
-        text-transform: uppercase;
       }
 
       .hud-banner {
         position: absolute;
-        top: 112px;
+        top: calc(var(--a3d-bar-space) + 46px);
         left: 50%;
         transform: translateX(-50%);
-        font-size: 12px;
-        letter-spacing: 0.24em;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         padding: 4px 16px;
-        background: rgba(10, 12, 24, 0.8);
+        background: rgba(9, 13, 24, 0.9);
         border-top: 1px solid var(--amber);
         border-bottom: 1px solid var(--amber);
-        color: var(--amber);
+        color: #ffd166;
         opacity: 0;
         transition: opacity 0.18s;
         white-space: nowrap;
@@ -606,12 +738,14 @@
       }
 
       .tick {
-        font-family: var(--font-mono);
+        font-family: var(--font-sans);
         font-size: 12px; /* GU47 DIA-H1: in-play HUD text >= 12 px */
-        letter-spacing: 0.04em;
-        color: #cfd2c8;
-        background: rgba(10, 12, 24, 0.74);
-        border-left: 2px solid rgba(255, 176, 58, 0.5);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+        color: #dce3ee;
+        background: rgba(9, 13, 24, 0.84);
+        border-left: 2px solid rgba(255, 176, 58, 0.65);
         padding: 3px 10px;
         border-radius: 3px;
         opacity: 0;
@@ -661,15 +795,15 @@
       .menu-inner {
         width: min(920px, calc(100vw - 36px));
         margin: auto;
-        padding: 34px 0 40px;
+        padding: calc(var(--a3d-bar-space) + 18px) 0 40px;
       }
 
       .menu-title {
-        font-family: var(--font-display);
-        font-size: clamp(38px, 6vw, 62px);
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        line-height: 0.95;
+        font-family: var(--font-sans);
+        font-size: clamp(36px, 5.5vw, 56px);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        line-height: 0.98;
         color: var(--chalk);
         text-shadow: 0 4px 30px rgba(255, 176, 58, 0.22);
       }
@@ -681,17 +815,18 @@
 
       .menu-sub {
         margin-top: 8px;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        letter-spacing: 0.2em;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
-        text-transform: uppercase;
       }
 
       .menu-grid {
-        margin-top: 26px;
+        margin-top: 24px;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(164px, 1fr));
         gap: 10px;
       }
 
@@ -699,7 +834,7 @@
         appearance: none;
         text-align: left;
         border: 1px solid var(--rule);
-        background: linear-gradient(180deg, rgba(26, 30, 52, 0.85), rgba(14, 16, 30, 0.88));
+        background: linear-gradient(180deg, rgba(22, 27, 48, 0.88), rgba(11, 14, 26, 0.92));
         color: var(--ink);
         padding: 14px 14px 12px;
         border-radius: 10px;
@@ -715,43 +850,45 @@
 
       .mode-card.active {
         border-color: var(--amber);
-        background: linear-gradient(180deg, rgba(255, 176, 58, 0.16), rgba(20, 22, 40, 0.9));
+        background: linear-gradient(180deg, rgba(255, 176, 58, 0.16), rgba(18, 21, 38, 0.92));
         box-shadow: 0 0 0 1px rgba(255, 176, 58, 0.35), 0 8px 26px rgba(255, 176, 58, 0.14);
       }
 
       .mode-card .mc-k {
-        font-family: var(--font-mono);
-        font-size: 9.5px;
-        letter-spacing: 0.22em;
-        color: var(--amber);
-        text-transform: uppercase;
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        color: #ffd166;
       }
 
       .mode-card .mc-t {
-        font-family: var(--font-display);
-        font-size: 19px;
-        font-weight: 700;
-        margin-top: 4px;
-        letter-spacing: 0.04em;
+        font-family: var(--font-sans);
+        font-size: 17px;
+        font-weight: 600;
+        margin-top: 3px;
+        letter-spacing: 0.01em;
       }
 
       .mode-card .mc-d {
         font-size: 12px;
         color: var(--muted);
         margin-top: 5px;
-        line-height: 1.35;
+        line-height: 1.38;
       }
 
       .menu-section {
-        margin-top: 22px;
+        margin-top: 20px;
       }
 
       .menu-section > .k {
-        font-family: var(--font-mono);
+        font-family: var(--font-sans);
         font-size: 12px;
-        letter-spacing: 0.22em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
-        text-transform: uppercase;
         margin-bottom: 8px;
       }
 
@@ -766,9 +903,11 @@
         border: 1px solid var(--rule);
         background: rgba(255, 255, 255, 0.06);
         color: var(--ink);
-        font-family: var(--font-mono);
-        font-size: 12px;
-        padding: 6px 12px;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 14px;
+        min-height: 34px;
         border-radius: 8px;
         cursor: pointer;
         transition: border-color 0.14s, background 0.14s, color 0.14s;
@@ -782,7 +921,7 @@
         background: linear-gradient(135deg, var(--amber), #ffcf6e);
         border-color: var(--amber);
         color: #221503;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .club-grid {
@@ -795,7 +934,7 @@
         appearance: none;
         text-align: left;
         border: 1px solid var(--rule);
-        background: rgba(16, 19, 36, 0.8);
+        background: rgba(14, 18, 34, 0.84);
         color: var(--ink);
         padding: 10px 12px;
         border-radius: 9px;
@@ -813,10 +952,10 @@
       }
 
       .club-card .cc-name {
-        font-family: var(--font-display);
-        font-size: 15px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
         display: flex;
         align-items: center;
         gap: 7px;
@@ -830,24 +969,24 @@
       }
 
       .club-card .cc-tag {
-        font-size: 10.5px;
+        font-size: 12px;
         color: var(--muted);
         margin-top: 3px;
       }
 
       .club-card .cc-rep {
         font-family: var(--font-mono);
-        font-size: 9.5px;
-        color: var(--faint);
+        font-size: 12px;
+        color: var(--muted);
         margin-top: 4px;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.02em;
       }
 
       /* Bracket panel */
       #bracket-panel {
         margin-top: 18px;
         border: 1px solid var(--rule);
-        background: rgba(10, 12, 24, 0.66);
+        background: rgba(9, 13, 24, 0.78);
         border-radius: 10px;
         padding: 12px 14px;
         display: none;
@@ -868,10 +1007,12 @@
       }
 
       #bracket-panel .bp-round .r-name {
-        font-family: var(--font-mono);
-        font-size: 9.5px;
-        letter-spacing: 0.18em;
-        color: var(--amber);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        color: #ffd166;
         margin-bottom: 6px;
       }
 
@@ -885,7 +1026,7 @@
 
       #bracket-panel .bp-game .w {
         color: var(--ok);
-        font-weight: 700;
+        font-weight: 600;
       }
 
       #bracket-panel .bp-game.me {
@@ -898,8 +1039,8 @@
 
       /* Studio swatches */
       .swatch {
-        width: 26px;
-        height: 26px;
+        width: 32px;
+        height: 32px;
         border-radius: 7px;
         border: 2px solid transparent;
         cursor: pointer;
@@ -922,14 +1063,14 @@
         border: none;
         background: linear-gradient(135deg, var(--amber), #ffcf6e);
         color: #221503;
-        font-family: var(--font-display);
-        font-size: 17px;
-        font-weight: 800;
-        letter-spacing: 0.1em;
+        font-family: var(--font-sans);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         padding: 13px 34px;
+        min-height: 46px;
         border-radius: 12px;
         cursor: pointer;
-        text-transform: uppercase;
         box-shadow: 0 8px 28px rgba(255, 176, 58, 0.35);
         transition: transform 0.14s, box-shadow 0.15s;
       }
@@ -944,9 +1085,11 @@
         border: 1px solid var(--rule);
         background: transparent;
         color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 12px;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 500;
         padding: 12px 18px;
+        min-height: 46px;
         border-radius: 12px;
         cursor: pointer;
       }
@@ -958,10 +1101,10 @@
 
       .menu-footnote {
         margin-top: 18px;
-        font-family: var(--font-mono);
+        font-family: var(--font-sans);
         font-size: 12px;
-        color: var(--faint);
-        letter-spacing: 0.08em;
+        color: var(--muted);
+        letter-spacing: 0.02em;
       }
 
       /* Game-over card inside menu */
@@ -969,7 +1112,7 @@
         display: none;
         margin-top: 22px;
         border: 1px solid rgba(255, 176, 58, 0.4);
-        background: rgba(26, 20, 8, 0.55);
+        background: rgba(20, 16, 8, 0.72);
         border-radius: 10px;
         padding: 14px 16px;
       }
@@ -979,56 +1122,216 @@
       }
 
       #gameover-card .go-title {
-        font-family: var(--font-display);
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
+        font-family: var(--font-sans);
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         color: var(--amber);
       }
 
       #gameover-card .go-line {
-        font-family: var(--font-mono);
-        font-size: 12px;
+        font-family: var(--font-sans);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
         color: var(--ink);
         margin-top: 6px;
       }
 
-      @media (max-width: 760px) {
+      /* Dedicated mobile touch batting/pitching deck (390x844 coarse ergonomics) */
+      .hud-touch-deck {
+        display: none;
+      }
+
+      .touch-pad {
+        position: relative;
+        width: 112px;
+        height: 112px;
+        border-radius: 14px;
+        background: rgba(9, 13, 24, 0.78);
+        border: 1.5px solid rgba(255, 176, 58, 0.48);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 24px rgba(2, 6, 16, 0.48);
+        backdrop-filter: blur(8px);
+        pointer-events: auto;
+        touch-action: none;
+      }
+
+      .touch-grid-h,
+      .touch-grid-v {
+        position: absolute;
+        background: rgba(242, 238, 227, 0.14);
+        pointer-events: none;
+      }
+
+      .touch-grid-h {
+        left: 14px;
+        right: 14px;
+        top: 50%;
+        height: 1px;
+      }
+
+      .touch-grid-v {
+        top: 14px;
+        bottom: 14px;
+        left: 50%;
+        width: 1px;
+      }
+
+      .touch-dot {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--amber);
+        background: rgba(255, 176, 58, 0.3);
+        box-shadow: 0 0 10px rgba(255, 176, 58, 0.75);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      .touch-pad-lbl {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 5px;
+        text-align: center;
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
+        color: #ffd166;
+        pointer-events: none;
+      }
+
+      .touch-action {
+        appearance: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        min-width: 118px;
+        min-height: 60px;
+        padding: 8px 18px;
+        border-radius: 14px;
+        border: 1.5px solid rgba(255, 207, 110, 0.85);
+        background: linear-gradient(145deg, rgba(255, 176, 58, 0.96), rgba(226, 132, 20, 0.94));
+        color: #1d1203;
+        box-shadow: 0 10px 26px rgba(2, 6, 16, 0.5), 0 0 18px rgba(255, 176, 58, 0.32);
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: manipulation;
+      }
+
+      .touch-action:active {
+        transform: scale(0.96);
+      }
+
+      .touch-act-main {
+        font-family: var(--font-sans);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        line-height: 1.05;
+      }
+
+      .touch-act-sub {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
+        color: rgba(29, 18, 3, 0.82);
+        line-height: 1.05;
+      }
+
+      @media (pointer: coarse), (max-width: 760px) {
         .aura3d-controls-hint {
           display: none;
         }
+        .hud-touch-deck.show {
+          position: fixed;
+          left: 14px;
+          right: 14px;
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          z-index: 32;
+          pointer-events: none;
+        }
+        .hud-pitch-pad {
+          bottom: calc(134px + env(safe-area-inset-bottom, 0px));
+        }
+        .hud-pitch-pad button {
+          min-width: 56px;
+          min-height: 48px;
+        }
+        .hud-meter {
+          bottom: calc(138px + env(safe-area-inset-bottom, 0px));
+        }
+        .hud-zone {
+          bottom: calc(192px + env(safe-area-inset-bottom, 0px));
+        }
+        .hud-contact {
+          bottom: calc(188px + env(safe-area-inset-bottom, 0px));
+        }
+        #event-ticker {
+          left: 14px;
+          bottom: calc(136px + env(safe-area-inset-bottom, 0px));
+          max-width: 236px;
+        }
         .hud-center-msg {
-          top: calc(var(--a3d-bar-space) + 190px);
+          top: calc(var(--a3d-bar-space) + 186px);
           width: max-content;
           max-width: calc(100vw - 24px);
         }
         .hud-center-msg .big {
-          font-size: 26px;
+          font-size: 25px;
           white-space: nowrap;
         }
         .hud-center-msg .small {
           font-size: 12px;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.1em;
         }
         .hud-top-left {
-          transform: scale(0.85);
-          transform-origin: top left;
+          left: 12px;
+          gap: 5px;
+        }
+        #h-matchup-chip {
+          display: none;
+        }
+        .pill {
+          min-height: 44px;
+          min-width: 44px;
+          padding: 9px 14px;
+        }
+        .swatch {
+          width: 44px;
+          height: 44px;
+        }
+        .mode-card,
+        .club-card,
+        .big-play,
+        .ghost-btn {
+          min-height: 48px;
         }
       }
       /* Timing feedback after each swing (C22): early/late bar, -155..+155 ms. */
-      .hud-timing { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; letter-spacing: 0.08em; }
+      .hud-timing { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-family: var(--font-sans); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.06em; }
       .hud-timing .track { position: relative; width: 140px; height: 8px; background: rgba(245, 241, 228, 0.18); border-radius: 4px; }
       .hud-timing .mid { position: absolute; left: 50%; top: -3px; width: 2px; height: 14px; background: rgba(245, 241, 228, 0.7); }
       .hud-timing .needle { position: absolute; top: -4px; width: 4px; height: 16px; margin-left: -2px; background: #ffb03a; border-radius: 2px; }
       /* On-screen pitch buttons (C9): pitch selection and Bullpen Lab on touch screens. */
       .hud-pitch-pad { position: fixed; left: 50%; bottom: 112px; transform: translateX(-50%); display: none; gap: 8px; z-index: 31; pointer-events: auto; }
       .hud-pitch-pad.show { display: flex; }
-      .hud-pitch-pad button { min-width: 52px; min-height: 44px; font: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; color: #f5f1e4; background: rgba(13, 18, 28, 0.82); border: 1px solid rgba(245, 241, 228, 0.35); border-radius: 8px; }
-      .hud-pitch-pad button.active { border-color: #ffb03a; color: #ffb03a; }
-      .go-box { margin: 8px auto 0; border-collapse: collapse; font-size: 13px; }
-      .go-box th, .go-box td { padding: 2px 8px; text-align: center; }
-      .go-box td.tname { text-align: left; font-weight: 700; }
-      .go-bests { opacity: 0.8; font-size: 12px; }
+      .hud-pitch-pad button { min-width: 54px; min-height: 44px; font-family: var(--font-mono); font-size: 13px; font-weight: 400; letter-spacing: 0.04em; color: #f5f1e4; background: rgba(9, 13, 24, 0.88); border: 1px solid rgba(245, 241, 228, 0.35); border-radius: 8px; cursor: pointer; }
+      .hud-pitch-pad button.active { border-color: #ffb03a; color: #ffd166; background: rgba(255, 176, 58, 0.16); }
+      .go-box { margin: 8px auto 0; border-collapse: collapse; font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 500; }
+      .go-box th, .go-box td { padding: 3px 8px; text-align: center; }
+      .go-box th { font-family: var(--font-sans); font-size: 12px; font-variant-caps: all-small-caps; color: var(--muted); }
+      .go-box td.tname { font-family: var(--font-sans); text-align: left; font-weight: 600; }
+      .go-bests { opacity: 0.88; font-size: 12px; }
       .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     </style>
   </head>
@@ -1111,9 +1414,14 @@
 
       <div class="hud-contact" id="h-contact">
         <div class="grade" id="h-contact-grade">PERFECT</div>
+        <div class="ct-metrics" id="h-ct-metrics">
+          <div class="ct-cell"><span class="ct-k">exit velo</span><span class="ct-v"><span id="h-ct-ev">—</span><small>mph</small></span></div>
+          <div class="ct-cell"><span class="ct-k">launch</span><span class="ct-v" id="h-ct-la">—</span></div>
+          <div class="ct-cell"><span class="ct-k">est. dist</span><span class="ct-v"><span id="h-ct-dist">—</span><small>ft</small></span></div>
+        </div>
         <div class="data" id="h-contact-data">102.4 MPH · 28° · 412 FT</div>
         <div class="hud-timing" id="h-timing" aria-hidden="true">
-          <span class="lab">EARLY</span><span class="track"><i class="mid"></i><i class="needle" id="h-timing-needle"></i></span><span class="lab">LATE</span>
+          <span class="lab">early</span><span class="track"><i class="mid"></i><i class="needle" id="h-timing-needle"></i></span><span class="lab">late</span>
         </div>
         <div class="data" id="h-timing-ms"></div>
       </div>
@@ -1123,6 +1431,19 @@
         <button type="button" data-pitch-idx="1">CB</button>
         <button type="button" data-pitch-idx="2">SL</button>
         <button type="button" data-pitch-idx="3">CH</button>
+      </div>
+
+      <div class="hud-touch-deck" id="h-touch-deck" role="group" aria-label="Touch batting and pitching controls">
+        <div class="touch-pad" id="h-touch-pad" role="slider" aria-label="PCI and pitch aim zone">
+          <span class="touch-grid-h" aria-hidden="true"></span>
+          <span class="touch-grid-v" aria-hidden="true"></span>
+          <span class="touch-dot" id="h-touch-dot" style="left:50%;top:50%"></span>
+          <span class="touch-pad-lbl" id="h-touch-pad-lbl">pci zone</span>
+        </div>
+        <button type="button" class="touch-action" id="h-touch-action">
+          <span class="touch-act-main" id="h-touch-act-main">SWING</span>
+          <span class="touch-act-sub" id="h-touch-act-sub">contact</span>
+        </button>
       </div>
 
       <div class="hud-catch-prompt" id="h-catch-prompt">◉ SPACE — CATCH</div>

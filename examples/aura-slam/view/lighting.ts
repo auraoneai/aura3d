@@ -15,11 +15,11 @@ export function viewTuning(): { cascades?: 1 | 2 | 3 | 4 | "auto" } {
   return c >= 1 && c <= 4 ? { cascades: c as 1 | 2 | 3 | 4 } : { cascades: 1 };
 }
 
-/** `?look=original`: today's four-light rig, values verbatim from the 4.6.1 scene. */
+/** `?look=original`: legacy four-light rig without `lights.ambient` (dual hemisphere + directional + point). */
 export function originalSceneLights() {
   const tune = viewTuning();
   return [
-    lights.ambient({ color: "#dce8f2", intensity: 0.62 }),
+    lights.hemisphere({ skyColor: "#dce8f2", groundColor: "#b8c8d4", intensity: 0.62 }),
     lights.hemisphere({ skyColor: "#eef6ff", groundColor: "#4d6358", intensity: 0.72 }),
     lights.directional({ color: "#fff6e5", intensity: 1.95, position: [14, 24, 12], shadow: tune.cascades === "auto" ? true : { cascades: tune.cascades ?? 1 } }),
     lights.point({ color: "#d8ff3e", intensity: 1.4, position: [0, 11, 0], distance: 42 })

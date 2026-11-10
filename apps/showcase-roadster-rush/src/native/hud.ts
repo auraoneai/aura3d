@@ -1,6 +1,16 @@
 import type { InputKey } from "./constants";
 import type { GameHud } from "./game";
-import { AIR_LOW, HUD_ICONS, airRungsLit, clusterMarkup, speedoPercent, type HudIconKey } from "./hudCluster";
+import {
+  AIR_LOW,
+  CONTROL_ICONS,
+  HUD_ICONS,
+  airRungsLit,
+  clusterMarkup,
+  engineTelemetry,
+  formatRunClock,
+  speedoPercent,
+  type HudIconKey
+} from "./hudCluster";
 
 export interface HudCallbacks {
   onStart?(): void;
@@ -11,7 +21,7 @@ export interface HudCallbacks {
   onInject?(action: InputKey, down: boolean): void;
 }
 
-const POWERUP_NAMES: Record<string, string> = { rocket: "Rocket", shield: "Shield", magnet: "Magnet", multiplier: "×2" };
+const POWERUP_NAMES: Record<string, string> = { rocket: "rocket", shield: "shield", magnet: "magnet", multiplier: "×2" };
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", html = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -20,7 +30,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", html 
   return node;
 }
 
-/** DOM heads-up display for Apex Overdrive: score card, air meter, power-ups, trick popups, pause and wreck cards, touch pads. */
+/** DOM heads-up display for Apex Overdrive: telemetry cluster, air ladder, power-ups, trick popups, pause/wreck cards, touch pads. */
 export class RoadsterHud implements GameHud {
   private root: HTMLElement;
   private cb: HudCallbacks;
@@ -36,11 +46,16 @@ export class RoadsterHud implements GameHud {
   private boltsEl!: HTMLElement;
   private puWrap!: HTMLElement;
   private popWrap!: HTMLElement;
+  private objectiveEl!: HTMLElement;
+  private objectiveTimer: ReturnType<typeof setTimeout> | null = null;
   private pause!: HTMLElement;
   private over!: HTMLElement;
   private muteBtn!: HTMLButtonElement;
   private title!: HTMLElement;
   private speedEl!: HTMLElement;
+  private gearEl!: HTMLElement;
+  private rpmEl!: HTMLElement;
+  private timeEl!: HTMLElement;
   private mileFill!: HTMLElement;
   private mileLabel!: HTMLElement;
   private srEl!: HTMLElement;
@@ -49,7 +64,8 @@ export class RoadsterHud implements GameHud {
   private srLast = 0;
   private touchy = false;
   private pu = new Map<string, { node: HTMLElement; bar: HTMLElement }>();
-  private last = { score: -1, dist: -1, bolts: -1, mult: -1, speed: -1, mile: -1 };
+  private last = { score: -1, dist: -1, bolts: -1, mult: -1, speed: -1, mile: -1, gear: -1, rpm: -1, tenths: -1 };
+  private runStartedMs = 0;
   private popups = 0;
 
   constructor(root: HTMLElement, callbacks: HudCallbacks = {}) {
@@ -68,15 +84,16 @@ export class RoadsterHud implements GameHud {
       "rr-run",
       `<div class="rr-left">
         <div class="rr-card rr-score-card">
-          <div class="rr-head"><span class="rr-micro">Score</span><span class="rr-mult">×1</span></div>
+          <div class="rr-head"><span class="rr-micro">score</span><span class="rr-mult">×1</span></div>
           <div class="rr-score">0</div>
           <div class="rr-sub"><span class="rr-dist">0</span><span class="rr-micro">m</span></div>
           <div class="rr-combo"><i></i></div>
           ${clusterMarkup()}
-          <div class="rr-mile"><span class="rr-micro">Next</span><span class="rr-mile-label rr-micro">1 km</span><div class="rr-mile-track"><div class="rr-mile-fill"></div></div></div>
+          <div class="rr-mile"><span class="rr-micro">next</span><span class="rr-mile-label rr-micro">1 km</span><div class="rr-mile-track"><div class="rr-mile-fill"></div></div></div>
         </div>
         <div class="rr-powerups"></div>
       </div>
+      <div class="rr-objective rr-hidden" aria-hidden="true">hit carrier ramps · collect bolts · survive sky traffic</div>
       <div class="rr-popups" aria-hidden="true"></div>
       <div class="rr-sr" role="status" aria-live="polite"></div>`
     );
@@ -89,45 +106,50 @@ export class RoadsterHud implements GameHud {
     this.rungs = Array.from(run.querySelectorAll<HTMLElement>(".rr-rung"));
     this.gaugeValue = run.querySelector(".rr-gauge-value")!;
     this.puWrap = run.querySelector(".rr-powerups")!;
+    this.objectiveEl = run.querySelector(".rr-objective")!;
     this.popWrap = run.querySelector(".rr-popups")!;
     this.srEl = run.querySelector(".rr-sr")!;
     this.speedEl = run.querySelector(".rr-speed")!;
+    this.gearEl = run.querySelector(".rr-gear-val")!;
+    this.rpmEl = run.querySelector(".rr-rpm-val")!;
+    this.timeEl = run.querySelector(".rr-time-val")!;
     this.mileFill = run.querySelector(".rr-mile-fill")!;
     this.mileLabel = run.querySelector(".rr-mile-label")!;
 
     const right = el("div", "rr-right");
-    const pauseBtn = el("button", "rr-icon-btn", "II");
+    const pauseBtn = el("button", "rr-icon-btn", CONTROL_ICONS.pause);
     pauseBtn.type = "button";
     pauseBtn.setAttribute("aria-label", "Pause game");
     pauseBtn.addEventListener("pointerup", (e) => {
       e.stopPropagation();
       this.cb.onPause?.();
     });
-    this.muteBtn = el("button", "rr-icon-btn", "♪");
+    this.muteBtn = el("button", "rr-icon-btn", CONTROL_ICONS.soundOn);
     this.muteBtn.type = "button";
     this.muteBtn.setAttribute("aria-label", "Toggle sound");
     this.muteBtn.addEventListener("pointerup", (e) => {
       e.stopPropagation();
       this.setMuted(this.cb.onToggleMute ? this.cb.onToggleMute() : false);
     });
-    const bolts = el("div", "rr-card rr-bolts", `<span class="rr-micro">Bolts</span><b class="rr-bolts-value">0</b>`);
+    const bolts = el("div", "rr-card rr-bolts", `<span class="rr-micro">bolts</span><b class="rr-bolts-value">0</b>`);
     this.boltsEl = bolts.querySelector(".rr-bolts-value")!;
     right.append(pauseBtn, this.muteBtn, bolts);
     root.appendChild(right);
 
     const controls = this.touchy
-      ? `<li><b>◀ ▶</b> change lane</li><li><b>Fly</b> hold to hop and fly</li><li><b>Roll L / R</b> barrel roll, dodges anything</li><li><b>Boost</b> and <b>Dive</b> hold</li>`
-      : `<li><b>A / D</b> or arrows: change lane</li><li><b>Space</b> or <b>W</b>: hop, hold to fly</li><li><b>Q / E</b>: barrel roll, dodges anything</li><li><b>Shift</b> boost, <b>S</b> dive, <b>P</b> pause</li>`;
+      ? `<li><b>Steer L / R</b> weave through highway traffic</li><li><b>Fly</b> hold to hop and ride the sky lane</li><li><b>Roll L / R</b> cold-gas barrel roll dodges threats</li><li><b>Boost</b> overdrive surge · <b>Dive</b> slam to deck</li>`
+      : `<li><b>A / D</b> or arrows: weave across 5 highway lanes</li><li><b>Space</b> or <b>W</b>: hop onto truck roofs, hold to fly</li><li><b>Q / E</b>: cold-gas barrel roll dodges threats</li><li><b>Shift</b> boost, <b>S</b> dive, <b>P</b> pause</li>`;
     this.title = el(
       "div",
       "rr-layer rr-title rr-hidden",
       `<div class="rr-card rr-dialog rr-title-card">
+        <div class="rr-kicker">sunset sky-lane interceptor</div>
         <h2>Apex Overdrive</h2>
-        <p>Weave through the evening freeway, hop onto truck roofs and fly the sky lane on cold-gas thrusters. Every metre scores, tricks and bolts multiply it. One crash ends the run.</p>
+        <p>Weave through coastal sunset traffic, launch off carrier ramps and fly the elevated sky lane on cold-gas thrusters. Every metre scores; bolts and stunts build your multiplier.</p>
         <ul class="rr-controls">${controls}</ul>
         <div class="rr-best title-best"></div>
-        <button type="button" class="rr-btn title-start">Start</button>
-        <small>${this.touchy ? "Tap Start" : "Press Space or Enter"}</small>
+        <button type="button" class="rr-btn title-start">Launch Run</button>
+        <small>${this.touchy ? "Tap anywhere to launch" : "Press Space or Enter to launch"}</small>
       </div>`
     );
     const start = (e: Event): void => {
@@ -135,14 +157,13 @@ export class RoadsterHud implements GameHud {
       e.stopPropagation();
       this.cb.onStart?.();
     };
-    // the whole card layer starts the run, so a tap anywhere on a phone works
     this.title.addEventListener("click", start);
     root.appendChild(this.title);
 
     this.pause = el(
       "div",
       "rr-layer rr-hidden",
-      `<div class="rr-card rr-dialog"><h2>Paused</h2><p>The traffic will wait.</p><button type="button" class="rr-btn">Resume</button><small>${this.touchy ? "Tap Resume" : "Press P to resume"}</small></div>`
+      `<div class="rr-card rr-dialog"><h2>Paused</h2><p>Freeway telemetry holding.</p><button type="button" class="rr-btn">Resume</button><small>${this.touchy ? "Tap Resume" : "Press P to resume"}</small></div>`
     );
     this.pause.querySelector(".rr-btn")!.addEventListener("click", () => this.cb.onResume?.());
     root.appendChild(this.pause);
@@ -154,12 +175,12 @@ export class RoadsterHud implements GameHud {
         <h2>Wrecked!</h2>
         <div class="rr-big go-score">0</div>
         <div class="rr-best go-best"></div>
-        <div class="rr-new go-new rr-hidden">New best</div>
+        <div class="rr-new go-new rr-hidden">new best</div>
         <div class="rr-best go-assisted rr-hidden">Assisted run: the best score is not saved</div>
         <div class="rr-stats">
-          <div><b class="go-dist">0</b><span>Distance m</span></div>
-          <div><b class="go-bolts">0</b><span>Bolts</span></div>
-          <div><b class="go-combo">0</b><span>Best combo</span></div>
+          <div><b class="go-dist">0</b><span>distance m</span></div>
+          <div><b class="go-bolts">0</b><span>bolts</span></div>
+          <div><b class="go-combo">0</b><span>best combo</span></div>
         </div>
         <button type="button" class="rr-btn go-retry">Retry</button>
         <small>${this.touchy ? "Tap Retry to go again" : "Space to go again"}</small>
@@ -175,12 +196,19 @@ export class RoadsterHud implements GameHud {
       "div",
       "rr-touch",
       `<div class="rr-touch-left">
-        <button type="button" data-a="rollLeft">Roll L</button>
-        <div><button type="button" data-a="left">◀</button><button type="button" data-a="right">▶</button></div>
+        <button type="button" data-a="rollLeft" aria-label="Barrel roll left">${CONTROL_ICONS.rollLeft}<span>roll l</span></button>
+        <div class="rr-touch-row">
+          <button type="button" data-a="left" aria-label="Steer left">${CONTROL_ICONS.steerLeft}<span>left</span></button>
+          <button type="button" data-a="right" aria-label="Steer right">${CONTROL_ICONS.steerRight}<span>right</span></button>
+        </div>
       </div>
       <div class="rr-touch-right">
-        <div><button type="button" data-a="rollRight">Roll R</button><button type="button" data-a="boost" data-hold="1">Boost</button><button type="button" data-a="dive" data-hold="1">Dive</button></div>
-        <button type="button" data-a="thrust" data-hold="1" class="rr-fly">Fly</button>
+        <div class="rr-touch-row">
+          <button type="button" data-a="rollRight" aria-label="Barrel roll right">${CONTROL_ICONS.rollRight}<span>roll r</span></button>
+          <button type="button" data-a="boost" data-hold="1" aria-label="Hold boost">${CONTROL_ICONS.boost}<span>boost</span></button>
+          <button type="button" data-a="dive" data-hold="1" aria-label="Hold dive">${CONTROL_ICONS.dive}<span>dive</span></button>
+        </div>
+        <button type="button" data-a="thrust" data-hold="1" class="rr-fly" aria-label="Hold to hop and fly">${CONTROL_ICONS.fly}<span>fly</span></button>
       </div>`
     );
     touch.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
@@ -206,13 +234,25 @@ export class RoadsterHud implements GameHud {
     if (this.touchy) root.classList.add("rr-touchy");
   }
 
+  private flashObjective(): void {
+    this.runStartedMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+    this.last.tenths = -1;
+    this.objectiveEl.classList.remove("rr-hidden");
+    if (this.objectiveTimer) clearTimeout(this.objectiveTimer);
+    this.objectiveTimer = setTimeout(() => {
+      this.objectiveEl.classList.add("rr-hidden");
+      this.objectiveTimer = null;
+    }, 3400);
+  }
+
   setMuted(muted: boolean): void {
     this.muteBtn.classList.toggle("rr-off", muted);
-    this.muteBtn.textContent = muted ? "×" : "♪";
+    this.muteBtn.innerHTML = muted ? CONTROL_ICONS.soundOff : CONTROL_ICONS.soundOn;
   }
 
   showRun(): void {
     this.root.classList.remove("rr-idle");
+    this.flashObjective();
   }
   showTitle(best = 0): void {
     this.root.classList.add("rr-idle");
@@ -222,6 +262,7 @@ export class RoadsterHud implements GameHud {
   hideTitle(): void {
     this.root.classList.remove("rr-idle");
     this.title.classList.add("rr-hidden");
+    this.flashObjective();
   }
   showPause(visible: boolean): void {
     this.pause.classList.toggle("rr-hidden", !visible);
@@ -297,8 +338,25 @@ export class RoadsterHud implements GameHud {
     if (speed !== this.last.speed) {
       this.last.speed = speed;
       this.speedEl.textContent = String(speed);
-      // AO-H2: the arc speedometer's value (pathLength 100, so the dash is the share of full scale)
       (this.gaugeValue as SVGElement | HTMLElement).style.strokeDasharray = `${Math.max(0.5, speedoPercent(speed))} 100`;
+      const tele = engineTelemetry(speed);
+      if (tele.gear !== this.last.gear) {
+        this.last.gear = tele.gear;
+        this.gearEl.textContent = String(tele.gear);
+      }
+      if (tele.rpm !== this.last.rpm) {
+        this.last.rpm = tele.rpm;
+        this.rpmEl.textContent = tele.rpm.toLocaleString();
+      }
+    }
+    const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if (this.runStartedMs === 0) this.runStartedMs = nowMs;
+    const elapsedSec = state.distance <= 0 ? 0 : Math.max(0, (nowMs - this.runStartedMs) / 1000);
+    if (state.distance <= 0.5 && this.last.dist <= 0) this.runStartedMs = nowMs;
+    const tenths = Math.floor(elapsedSec * 10);
+    if (tenths !== this.last.tenths) {
+      this.last.tenths = tenths;
+      this.timeEl.textContent = formatRunClock(elapsedSec);
     }
     if (state.nextMilestone !== undefined) {
       if (state.nextMilestone !== this.last.mile) {
@@ -310,7 +368,6 @@ export class RoadsterHud implements GameHud {
     }
     this.comboFill.style.transform = `scaleX(${Math.max(0, Math.min(1, state.comboT))})`;
     const air = Math.max(0, Math.min(1, state.air / state.airMax));
-    // AO-H2: the AIR ladder lights its rungs from the bottom; tangerine at or below 20%
     const lit = airRungsLit(air);
     if (lit !== this.lastRungs) {
       this.lastRungs = lit;
@@ -323,7 +380,7 @@ export class RoadsterHud implements GameHud {
       if (remaining > 0) {
         if (!entry) {
           const icon = kind in HUD_ICONS ? HUD_ICONS[kind as HudIconKey] : "";
-          const node = el("div", `rr-pu rr-pu-${kind}`, `${icon}<span>${POWERUP_NAMES[kind] ?? kind}</span><div><i></i></div>`);
+          const node = el("div", `rr-pu rr-pu-${kind}`, `${icon}<span class="rr-micro">${POWERUP_NAMES[kind] ?? kind}</span><div><i></i></div>`);
           this.puWrap.appendChild(node);
           entry = { node, bar: node.querySelector("i")! };
           this.pu.set(kind, entry);

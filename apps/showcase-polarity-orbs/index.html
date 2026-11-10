@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#1a0f1e">
+    <meta name="theme-color" content="#121324">
     <title>Polarity Orbs — Aura3D Arcade Polarity Collector</title>
     <meta name="description" content="Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -18,32 +18,31 @@
     <meta name="twitter:title" content="Polarity Orbs — Aura3D Arcade Polarity Collector" />
     <meta name="twitter:description" content="Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/polarity-orbs@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Polarity Orbs","url":"https://aura3d.auraone.ai/apps/showcase-polarity-orbs/","description":"Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow…","genre":"Arcade and exploration","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/polarity-orbs@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Polarity Orbs","url":"https://aura3d.auraone.ai/apps/showcase-polarity-orbs/","description":"Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow…","genre":"Arcade and exploration","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/polarity-orbs@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <style>
-      @font-face {
-        font-family: "GT Walsheim";
-        src: url("/aura-assets/GT-Walsheim-Bold.woff2") format("woff2");
-        font-weight: 700;
-        font-style: normal;
-        font-display: swap;
-      }
       :root {
-        --ink: #fff4ec;
-        --paper: #241226;
-        --red: #ff5a4e;
-        --blue: #4ea8ff;
+        --ink: #f6f7ff;
+        --paper: #121324;
+        --red: #ff5468;
+        --blue: #38bdf8;
         --gold: #ffd24e;
+        --mint: #7ef0c8;
+        --purple: #c79bff;
+        --glass-bg: rgba(14, 17, 34, 0.76);
+        --glass-border: rgba(246, 247, 255, 0.16);
         --safe-top: env(safe-area-inset-top, 0px);
         --safe-bottom: env(safe-area-inset-bottom, 0px);
         --safe-left: env(safe-area-inset-left, 0px);
         --safe-right: env(safe-area-inset-right, 0px);
       }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      * { box-sizing: border-box; margin: 0; padding: 0; font-synthesis: none; }
       html, body { height: 100%; overflow: hidden; background: var(--paper); }
       body {
-        font-family: "GT Walsheim", sans-serif;
-        font-weight: 700;
+        font-family: var(--font-ui);
+        font-weight: 500;
         color: var(--ink);
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
         -webkit-user-select: none;
         user-select: none;
         touch-action: none;
@@ -61,182 +60,506 @@
         justify-content: space-between;
         pointer-events: none;
         font-variant-numeric: tabular-nums;
+        z-index: 25;
       }
       #hud.visible { display: flex; }
-      .hud-left { display: flex; flex-direction: column; gap: 4px; }
-      #hud-score { font-size: 34px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,0.45); }
-      #hud-best { font-size: 13px; opacity: 0.92; text-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+
+      .hud-left {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
+      }
+      #hud-score {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 36px;
+        line-height: 0.96;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      #hud-best {
+        font-family: var(--font-ui);
+        font-weight: 500;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        font-variant-caps: all-small-caps;
+        opacity: 0.88;
+      }
+      .combo-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+      }
       #combo-tube {
-        width: 120px; height: 8px; border-radius: 4px;
-        background: rgba(0,0,0,0.45); overflow: hidden; margin-top: 4px;
+        width: 108px;
+        height: 7px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        overflow: hidden;
       }
-      #combo-fill { height: 100%; width: 0%; background: var(--gold); border-radius: 4px; transition: width 120ms linear; }
-      #hud-mult { font-size: 13px; color: var(--gold); text-shadow: 0 1px 0 rgba(0,0,0,0.5); }
-      .hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-      #polarity-icon {
-        width: 44px; height: 44px; border-radius: 50%;
-        border: 3px solid var(--ink);
-        background: var(--red);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 20px; color: #241226;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      #combo-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--red), var(--gold));
+        border-radius: 999px;
+        transition: width 120ms linear;
       }
-      #polarity-icon.blue { background: var(--blue); }
-      #lives { display: flex; gap: 5px; }
+      #hud-mult {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 1;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+      }
+      #polarity-charge {
+        font-family: var(--font-metric);
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 1;
+        color: rgba(246, 247, 255, 0.78);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .hud-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+      }
+      .polarity-cluster {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px 6px 12px;
+        border-radius: 999px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+      }
+      #lives { display: flex; gap: 5px; align-items: center; }
       .life-pip {
-        width: 12px; height: 12px; border-radius: 50%;
-        background: var(--red); border: 2px solid var(--ink);
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--red);
+        border: 1.5px solid var(--ink);
+        box-shadow: 0 0 8px rgba(255, 84, 104, 0.55);
       }
-      .life-pip.lost { background: transparent; opacity: 0.45; }
-      #powerup-badges { display: flex; gap: 4px; font-size: 11px; }
+      .life-pip.lost { background: transparent; opacity: 0.35; box-shadow: none; }
+      #polarity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid rgba(246, 247, 255, 0.9);
+        background: radial-gradient(circle at 32% 28%, #ff9aa6 0%, var(--red) 58%, #981d34 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 22px;
+        line-height: 1;
+        color: var(--paper);
+        box-shadow: 0 0 16px rgba(255, 84, 104, 0.45);
+      }
+      #polarity-icon.blue {
+        background: radial-gradient(circle at 32% 28%, #bae8ff 0%, var(--blue) 58%, #10558a 100%);
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+      }
+
+      #powerup-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 5px;
+      }
       .badge {
-        padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,0.55);
-        color: var(--ink); display: none;
+        position: relative;
+        overflow: hidden;
+        padding: 4px 9px 6px;
+        border-radius: 8px;
+        background: rgba(14, 17, 34, 0.84);
+        border: 1px solid rgba(246, 247, 255, 0.18);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        font-variant-caps: all-small-caps;
+        display: none;
       }
-      .badge.on { display: inline-block; }
+      .badge::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 2.5px;
+        width: var(--buff-pct, 100%);
+        background: var(--buff-color, var(--gold));
+        transition: width 90ms linear;
+      }
+      #badge-rainbow { --buff-color: var(--gold); color: var(--gold); }
+      #badge-shield { --buff-color: var(--mint); color: var(--mint); }
+      #badge-x2 { --buff-color: var(--gold); color: var(--gold); }
+      #badge-magnet { --buff-color: var(--purple); color: var(--purple); }
+      .badge.on { display: inline-flex; align-items: center; }
+
+      /* Dedicated polarity-flip thumb button + utility corner buttons (`>= 44x44px` everywhere) */
+      #btn-flip {
+        position: fixed;
+        right: calc(12px + var(--safe-right));
+        bottom: calc(68px + var(--safe-bottom) + var(--a3d-bar-space, 0px));
+        min-width: 68px;
+        height: 56px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 2px solid var(--red);
+        background: rgba(18, 19, 36, 0.86);
+        backdrop-filter: blur(10px);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        font-variant-caps: all-small-caps;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        cursor: pointer;
+        z-index: 30;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42), 0 0 16px rgba(255, 84, 104, 0.28);
+      }
+      #btn-flip.visible { display: inline-flex; }
+      #btn-flip.blue {
+        border-color: var(--blue);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42), 0 0 16px rgba(56, 189, 248, 0.28);
+      }
+      #btn-flip:active { transform: scale(0.95); }
+      #btn-flip .flip-pole {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1;
+        color: var(--red);
+      }
+      #btn-flip.blue .flip-pole { color: var(--blue); }
 
       #corner-buttons {
         position: fixed;
-        bottom: calc(12px + var(--safe-bottom));
+        bottom: calc(12px + var(--safe-bottom) + var(--a3d-bar-space, 0px));
         right: calc(12px + var(--safe-right));
-        display: flex; gap: 8px; z-index: 30;
+        display: flex;
+        gap: 8px;
+        z-index: 30;
       }
       #corner-buttons button {
-        font-family: inherit; font-weight: 700; font-size: 15px;
-        width: 44px; height: 44px; border-radius: 50%;
-        border: 2px solid var(--ink); background: rgba(36,18,38,0.8); color: var(--ink);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 14px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(246, 247, 255, 0.34);
+        background: rgba(18, 19, 36, 0.84);
+        backdrop-filter: blur(8px);
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
       }
+      #corner-buttons button svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #btn-mute .icon-off { display: none; }
+      #btn-mute[aria-pressed="true"] .icon-on { display: none; }
+      #btn-mute[aria-pressed="true"] .icon-off { display: block; color: var(--red); }
 
       #popups {
-        position: fixed; left: 50%; top: 26%;
+        position: fixed;
+        left: 50%;
+        top: 25%;
         transform: translateX(-50%);
-        display: flex; flex-direction: column; align-items: center; gap: 2px;
-        pointer-events: none; z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        pointer-events: none;
+        z-index: 20;
       }
       .popup {
-        font-size: 22px; text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: 0.02em;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
         animation: popup-rise 900ms ease-out forwards;
       }
+      .popup.big { font-size: 24px; }
       @keyframes popup-rise {
-        0% { opacity: 0; transform: translateY(10px) scale(0.8); }
-        15% { opacity: 1; transform: translateY(0) scale(1.05); }
-        100% { opacity: 0; transform: translateY(-46px) scale(1); }
+        0% { opacity: 0; transform: translateY(10px) scale(0.85); }
+        15% { opacity: 1; transform: translateY(0) scale(1.04); }
+        100% { opacity: 0; transform: translateY(-44px) scale(1); }
       }
 
       .screen {
-        position: fixed; inset: 0; z-index: 40;
-        display: none; flex-direction: column; align-items: center; justify-content: center;
-        gap: 14px; text-align: center;
-        padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(20px + var(--safe-left));
-        background: rgba(26,15,30,0.82);
-        backdrop-filter: blur(3px);
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        text-align: center;
+        padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom) + var(--a3d-bar-space, 0px)) calc(20px + var(--safe-left));
+        background: rgba(14, 15, 30, 0.8);
+        backdrop-filter: blur(4px);
       }
       .screen.visible { display: flex; }
-      .screen h1 { font-size: clamp(34px, 7vw, 58px); letter-spacing: 1px; }
+      .screen h1 {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: clamp(32px, 6.8vw, 54px);
+        letter-spacing: 0.04em;
+      }
       .screen h1 .red { color: var(--red); }
       .screen h1 .blue { color: var(--blue); }
-      .screen p { font-size: 16px; max-width: 420px; line-height: 1.45; }
+      .screen p { font-size: 16px; font-weight: 400; max-width: 420px; line-height: 1.45; }
       .big-btn {
-        font-family: inherit; font-weight: 700; font-size: 21px;
-        padding: 14px 40px; border-radius: 999px; border: none;
-        background: var(--gold); color: #241226; cursor: pointer;
-        box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 17px;
+        letter-spacing: 0.06em;
+        min-height: 48px;
+        padding: 13px 38px;
+        border-radius: 999px;
+        border: none;
+        background: var(--gold);
+        color: var(--paper);
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.38);
       }
       .big-btn[aria-busy="true"] { opacity: 0.6; cursor: progress; }
       #load-bar {
-        width: min(280px, 70vw); height: 10px; border-radius: 5px;
-        background: rgba(255,255,255,0.18); overflow: hidden;
+        width: min(280px, 70vw);
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        overflow: hidden;
       }
-      #load-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--red), var(--blue)); transition: width 120ms linear; }
-      #load-label { font-size: 12px; opacity: 0.85; }
-      .settings { display: flex; gap: 16px; font-size: 13px; }
-      .settings label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
-      .hint { font-size: 12px; opacity: 0.8; }
-      #splash-best { color: var(--gold); font-size: 15px; }
+      #load-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--red), var(--blue));
+        transition: width 120ms linear;
+      }
+      #load-label { font-size: 12px; font-weight: 500; opacity: 0.86; }
+      .settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; font-size: 13px; font-weight: 500; }
+      .settings label { display: flex; gap: 7px; align-items: center; min-height: 44px; padding: 0 6px; cursor: pointer; }
+      .settings input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); }
+      .hint { font-size: 12px; font-weight: 400; opacity: 0.82; }
+      #splash-best {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        color: var(--gold);
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        font-variant-caps: all-small-caps;
+      }
 
-      #final-score { font-size: 52px; color: var(--gold); font-variant-numeric: tabular-nums; }
-      .stats { display: grid; grid-template-columns: auto auto; gap: 4px 18px; font-size: 15px; }
-      .stats dt { opacity: 0.85; text-align: right; }
-      .stats dd { font-variant-numeric: tabular-nums; text-align: left; }
-      /* Lighter splash veil so the 3D orb field reads behind the title (0.82 left an almost empty dark backdrop). */
-      #splash-screen { background: radial-gradient(ellipse at 50% 45%, rgba(26,15,30,0.62) 0%, rgba(26,15,30,0.38) 70%); backdrop-filter: blur(1.5px); }
-      #splash-screen h1, #splash-screen p, #splash-screen .settings, #splash-screen .hint, #splash-screen #load-label { text-shadow: 0 2px 6px rgba(0,0,0,0.55); }
-      #gameover-screen { background: radial-gradient(ellipse at 50% 45%, rgba(40,14,30,0.78) 0%, rgba(40,14,30,0.5) 75%); backdrop-filter: blur(2px); }
+      #final-score {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 54px;
+        line-height: 1;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+      }
+      .stats { display: grid; grid-template-columns: auto auto; gap: 6px 18px; font-size: 14px; }
+      .stats dt { font-weight: 500; opacity: 0.84; text-align: right; }
+      .stats dd {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+        text-align: left;
+      }
+      #splash-screen {
+        background: radial-gradient(ellipse at 50% 45%, rgba(16, 18, 36, 0.58) 0%, rgba(12, 14, 28, 0.34) 72%);
+        backdrop-filter: blur(1.5px);
+      }
+      #splash-screen h1, #splash-screen p, #splash-screen .settings, #splash-screen .hint, #splash-screen #load-label {
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      }
+      #gameover-screen {
+        background: radial-gradient(ellipse at 50% 45%, rgba(20, 16, 36, 0.82) 0%, rgba(14, 16, 30, 0.56) 75%);
+        backdrop-filter: blur(3px);
+      }
       #render-error {
-        position: fixed; inset: 0; z-index: 60; display: none;
-        align-items: center; justify-content: center; text-align: center;
-        background: var(--paper); padding: 24px; font-size: 16px; line-height: 1.5;
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--paper);
+        padding: 24px;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.5;
       }
       #render-error.visible { display: flex; }
 
-
-      /* How to play: a scrollable card over the world; same font, ink, paper and gold as the rest of the UI. */
       .ghost-btn {
-        font-family: inherit; font-weight: 700; font-size: 15px;
-        min-height: 44px; padding: 10px 22px; border-radius: 999px;
-        border: 2px solid var(--ink); background: rgba(36,18,38,0.72); color: var(--ink); cursor: pointer;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.05em;
+        min-height: 48px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(246, 247, 255, 0.45);
+        background: rgba(18, 19, 36, 0.74);
+        color: var(--ink);
+        cursor: pointer;
       }
-      .ghost-btn:focus-visible, .big-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+      .ghost-btn:focus-visible, .big-btn:focus-visible, #btn-flip:focus-visible, #corner-buttons button:focus-visible {
+        outline: 2.5px solid var(--gold);
+        outline-offset: 3px;
+      }
       #howto-screen {
-        z-index: 50; justify-content: center;
-        background: rgba(20,10,24,0.66); backdrop-filter: blur(2px);
+        z-index: 50;
+        justify-content: center;
+        background: rgba(10, 12, 24, 0.72);
+        backdrop-filter: blur(4px);
       }
       .howto-card {
-        width: min(760px, 100%); max-height: 100%;
-        display: flex; flex-direction: column;
-        background: rgba(36,18,38,0.94); border: 2px solid rgba(255,244,236,0.28);
-        border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-        text-align: left; overflow: hidden;
+        width: min(760px, 100%);
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: rgba(18, 20, 38, 0.95);
+        border: 1px solid rgba(246, 247, 255, 0.22);
+        border-radius: 18px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+        text-align: left;
+        overflow: hidden;
       }
       .howto-body {
-        overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
-        padding: 20px 22px 8px; display: flex; flex-direction: column; gap: 14px;
-        -webkit-user-select: text; user-select: text;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        padding: 20px 22px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        -webkit-user-select: text;
+        user-select: text;
       }
-      .howto-body h2#howto-title { font-size: clamp(26px, 4.4vw, 34px); letter-spacing: 1px; }
+      .howto-body h2#howto-title { font-size: clamp(24px, 4.2vw, 32px); font-weight: 600; letter-spacing: 0.03em; }
       .howto-body h2 .red { color: var(--red); }
       .howto-body h2 .blue { color: var(--blue); }
-      .howto-body p.howto-goal { font-size: 16px; line-height: 1.45; max-width: none; }
+      .howto-body p.howto-goal { font-size: 15px; font-weight: 400; line-height: 1.45; max-width: none; }
       .howto-body h3 {
-        font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--gold);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        font-variant-caps: all-small-caps;
+        color: var(--gold);
         margin-bottom: 6px;
       }
       .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
       .howto-body h3.howto-section { margin-bottom: -8px; color: var(--ink); }
-      .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.35; }
+      .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 400; line-height: 1.38; }
       .howto-list li { display: flex; align-items: flex-start; gap: 9px; }
       .howto-list .keys { flex: none; display: inline-flex; gap: 4px; flex-wrap: wrap; }
-      /* Key-chip lists line their descriptions up in one column. */
       .howto-list.keyed { display: grid; grid-template-columns: max-content 1fr; gap: 7px 10px; }
       .howto-list.keyed li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; gap: inherit; align-items: start; }
       kbd {
-        font-family: inherit; font-weight: 700; font-size: 12px; line-height: 1;
-        display: inline-block; min-width: 24px; padding: 5px 7px; text-align: center;
-        border-radius: 6px; background: var(--ink); color: var(--paper);
-        box-shadow: 0 2px 0 rgba(0,0,0,0.45);
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 1;
+        display: inline-block;
+        min-width: 24px;
+        padding: 5px 7px;
+        text-align: center;
+        border-radius: 6px;
+        background: rgba(246, 247, 255, 0.92);
+        color: var(--paper);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
       }
       .swatch {
-        flex: none; width: 22px; height: 22px; border-radius: 50%; margin-top: -2px;
-        border: 2px solid var(--ink); display: inline-flex; align-items: center; justify-content: center;
-        font-size: 13px; color: var(--paper);
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        margin-top: -2px;
+        border: 1.5px solid var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--paper);
       }
-      .swatch.gem { border-radius: 4px; transform: rotate(45deg) scale(0.82); }
-      .swatch.gem > span { transform: rotate(-45deg); font-size: 10px; }
+      .swatch.gem { border-radius: 4px; transform: rotate(45deg) scale(0.86); }
+      .swatch.gem > span { transform: rotate(-45deg); font-size: 12px; line-height: 1; }
       .swatch.red { background: var(--red); }
       .swatch.blue { background: var(--blue); }
       .swatch.gold { background: var(--gold); }
-      .swatch.mint { background: #7ef0c8; }
-      .swatch.purple { background: #c79bff; }
-      .swatch.life { width: 14px; height: 14px; margin-top: 2px; background: var(--red); }
-      .howto-list b { color: var(--gold); font-weight: 700; }
+      .swatch.mint { background: var(--mint); }
+      .swatch.purple { background: var(--purple); }
+      .swatch.life { width: 14px; height: 14px; margin-top: 3px; background: var(--red); }
+      .howto-list b { color: var(--gold); font-weight: 600; }
       .howto-foot {
-        flex: none; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
-        padding: 12px 18px 16px; border-top: 1px solid rgba(255,244,236,0.16);
+        flex: none;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 12px 18px 16px;
+        border-top: 1px solid rgba(246, 247, 255, 0.14);
       }
-      .howto-foot .big-btn { min-height: 48px; padding: 12px 34px; font-size: 19px; }
+      .howto-foot .big-btn { min-height: 48px; padding: 12px 34px; font-size: 16px; }
       .howto-foot .hint { align-self: center; }
       .screen-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+
+      @media (pointer: coarse), (max-width: 760px) {
+        #hud-score { font-size: 30px; }
+        .hud-left { padding: 8px 12px; }
+        #combo-tube { width: 84px; }
+        #btn-flip {
+          min-width: 84px;
+          height: 60px;
+          padding: 0 18px;
+          font-size: 14px;
+        }
+        #corner-buttons button {
+          width: 46px;
+          height: 46px;
+        }
+      }
       @media (max-width: 560px) {
         .howto-cols { grid-template-columns: 1fr; }
         .howto-body { padding: 16px 16px 6px; gap: 12px; }
@@ -249,10 +572,10 @@
 
       @media (prefers-reduced-motion: reduce) {
         .popup { animation: none; opacity: 1; }
-        #combo-fill, #load-fill { transition: none; }
+        #combo-fill, #load-fill, .badge::after { transition: none; }
       }
       body.reduced-motion .popup { animation: none; opacity: 1; }
-      body.reduced-motion #combo-fill, body.reduced-motion #load-fill { transition: none; }
+      body.reduced-motion #combo-fill, body.reduced-motion #load-fill, body.reduced-motion .badge::after { transition: none; }
     </style>
   </head>
   <body>
@@ -261,35 +584,61 @@
     <div id="hud" aria-live="polite">
       <div class="hud-left">
         <div id="hud-score">0</div>
-        <div id="hud-best">BEST 0</div>
-        <div id="combo-tube"><div id="combo-fill"></div></div>
-        <div id="hud-mult">x1</div>
+        <div id="hud-best">best 0</div>
+        <div class="combo-row">
+          <div id="combo-tube"><div id="combo-fill"></div></div>
+          <div id="hud-mult">x1</div>
+          <div id="polarity-charge">0%</div>
+        </div>
       </div>
       <div class="hud-right">
-        <div id="polarity-icon" aria-label="Current polarity: red">+</div>
-        <div id="lives" aria-label="Lives">
-          <span class="life-pip"></span><span class="life-pip"></span><span class="life-pip"></span>
+        <div class="polarity-cluster">
+          <div id="lives" aria-label="Lives">
+            <span class="life-pip"></span><span class="life-pip"></span><span class="life-pip"></span>
+          </div>
+          <div id="polarity-icon" aria-label="Current polarity: red">+</div>
         </div>
         <div id="powerup-badges">
-          <span class="badge" id="badge-rainbow">RAINBOW</span>
-          <span class="badge" id="badge-shield">SHIELD</span>
+          <span class="badge" id="badge-rainbow">rainbow</span>
+          <span class="badge" id="badge-shield">shield</span>
           <span class="badge" id="badge-x2">x2</span>
-          <span class="badge" id="badge-magnet">MAGNET</span>
+          <span class="badge" id="badge-magnet">magnet</span>
         </div>
       </div>
     </div>
 
     <div id="popups"></div>
 
+    <button type="button" id="btn-flip" class="no-steer" aria-label="Flip polarity">
+      <span class="flip-pole" id="flip-pole-glyph">+</span>
+      <span>flip</span>
+    </button>
+
     <div id="corner-buttons" class="no-steer">
-      <button type="button" id="btn-mute" aria-label="Toggle sound">♪</button>
-      <button type="button" id="btn-pause" aria-label="Pause game">II</button>
+      <button type="button" id="btn-mute" aria-label="Toggle sound" aria-pressed="false">
+        <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+          <path d="M18.8 5.8a9 9 0 0 1 0 12.4"></path>
+        </svg>
+        <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="22" y1="9" x2="16" y2="15"></line>
+          <line x1="16" y1="9" x2="22" y2="15"></line>
+        </svg>
+      </button>
+      <button type="button" id="btn-pause" aria-label="Pause game">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="6" y="5" width="4" height="14" rx="1"></rect>
+          <rect x="14" y="5" width="4" height="14" rx="1"></rect>
+        </svg>
+      </button>
     </div>
 
     <div id="splash-screen" class="screen visible no-steer">
       <h1>POLARITY <span class="red">O</span><span class="blue">R</span>BS</h1>
-      <p>Drag to steer. Tap to flip polarity. Collect your colour, dodge the rest!</p>
-      <div id="splash-best">BEST 0</div>
+      <p>Drag to steer. Tap or press Flip to switch magnetic polarity. Absorb matching orbs, dodge the rest.</p>
+      <div id="splash-best">best 0</div>
       <div class="screen-btns">
         <button type="button" id="btn-start" class="big-btn" aria-busy="true">PLAY NOW</button>
         <button type="button" id="btn-howto" class="ghost-btn" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
@@ -300,9 +649,9 @@
       <div id="load-label">Warming up…</div>
       <div class="settings">
         <label><input type="checkbox" id="toggle-motion"> Reduced motion</label>
-        <label><input type="checkbox" id="toggle-symbols"> Polarity symbols</label>
+        <label><input type="checkbox" id="toggle-symbols" checked> Polarity symbols</label>
       </div>
-      <div class="hint">Drag / ← → steer · Tap / Space flip · M mute · P pause</div>
+      <div class="hint">Drag / ← → steer · Tap / Flip / Space switch polarity · M mute · P pause</div>
     </div>
 
     <div id="gameover-screen" class="screen no-steer">
@@ -327,7 +676,6 @@
       <div class="hint">P / Esc to resume</div>
     </div>
 
-
     <div id="howto-screen" class="screen no-steer" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal" hidden>
       <div class="howto-card">
         <div class="howto-body" tabindex="-1">
@@ -339,7 +687,7 @@
             <section aria-labelledby="howto-kb">
               <h3 id="howto-kb">Keyboard</h3>
               <ul class="howto-list keyed">
-                <li><span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>A</kbd><kbd>D</kbd></span><span>Steer left / right across the three lanes</span></li>
+                <li><span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>A</kbd><kbd>D</kbd></span><span>Steer left / right across the 3 lanes</span></li>
                 <li><span class="keys"><kbd>Space</kbd><kbd>Enter</kbd></span><span>Flip polarity (red ↔ blue), no cooldown; on the title and results screens they start a run or play again</span></li>
                 <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume</span></li>
                 <li><span class="keys"><kbd>M</kbd></span><span>Sound on / off</span></li>
@@ -349,9 +697,9 @@
               <h3 id="howto-touch">Touch &amp; mouse</h3>
               <ul class="howto-list keyed">
                 <li><span class="keys"><kbd>Drag</kbd></span><span>Slide sideways to steer</span></li>
-                <li><span class="keys"><kbd>Tap</kbd></span><span>Tap or click without moving to flip polarity</span></li>
+                <li><span class="keys"><kbd>Tap</kbd><kbd>Flip</kbd></span><span>Tap without moving or press the bottom-right Flip button to switch polarity</span></li>
                 <li><span class="keys"><kbd>PLAY NOW</kbd></span><span>Start a run, or PLAY AGAIN after one</span></li>
-                <li><span class="keys"><kbd>II</kbd><kbd>♪</kbd></span><span>Pause and sound buttons</span></li>
+                <li><span class="keys"><kbd>Pause</kbd><kbd>Mute</kbd></span><span>Pause and sound buttons</span></li>
               </ul>
             </section>
           </div>
@@ -359,7 +707,7 @@
           <section aria-labelledby="howto-track">
             <h3 id="howto-track">On the track</h3>
             <ul class="howto-list">
-              <li><span class="swatch red" aria-hidden="true">+</span><span class="swatch blue" aria-hidden="true">−</span><span>Rows of three orbs. Each row counts the orb nearest to you, so you always hit one: your colour scores, the other colour costs a life.</span></li>
+              <li><span class="swatch red" aria-hidden="true">+</span><span class="swatch blue" aria-hidden="true">−</span><span>Rows of 3 orbs. Each row counts the orb nearest to you, so you always hit one: your colour scores, the other colour costs a life.</span></li>
               <li><span class="swatch blue" aria-hidden="true">−</span><span>A row that is all one colour is always the colour you are <em>not</em> when it appears: flip before you reach it.</span></li>
               <li><span class="swatch gem gold" aria-hidden="true"><span>★</span></span><span><b>Rainbow</b> (gold gem): for 5 s every orb turns gold and counts as your colour.</span></li>
               <li><span class="swatch gem mint" aria-hidden="true"><span>◆</span></span><span><b>Shield</b> (mint gem): blocks your next wrong-colour orb, no life lost.</span></li>
@@ -381,7 +729,7 @@
           <section aria-labelledby="howto-lives">
             <h3 id="howto-lives">Lives &amp; the end of a run</h3>
             <ul class="howto-list">
-              <li><span class="swatch life" aria-hidden="true"></span><span>You start with 3 lives. A wrong-colour orb takes one, resets your combo to x1 and shrinks your orb. Lose all three and the run ends.</span></li>
+              <li><span class="swatch life" aria-hidden="true"></span><span>You start with 3 lives. A wrong-colour orb takes one, resets your combo to x1 and shrinks your orb. Lose all 3 and the run ends.</span></li>
             </ul>
           </section>
 
@@ -401,7 +749,7 @@
     </div>
 
     <div id="render-error" role="alert">
-      <p>Polarity Orbs needs WebGL2. Your browser or device could not start the renderer — try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+      <p>Polarity Orbs needs WebGPU or WebGL2. Your browser or device could not start the renderer — try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
     </div>
 
     <script type="module" src="./src/main.ts"></script>

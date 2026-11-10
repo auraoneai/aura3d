@@ -1,5 +1,5 @@
 /**
- * Last Train audio: a synth on the shared `AudioContextManager` (the repo allows exactly one owner of an AudioContext).
+ * Lamplight Line audio: a synth on the shared `AudioContextManager` (the repo allows exactly one owner of an AudioContext).
  * Everything is generated: wind and rail rumble as filtered noise that follow speed, wheel clacks at the joint spacing, a
  * flange squeal when the tram leans hard, rain hiss, a slow pad that thins at night, and one short cue per event. Nothing is
  * sampled or loaded, and `Math.random` is never touched (the simulation's random stream is untouched), so noise uses an LCG.
@@ -189,5 +189,26 @@ export class TrainSound {
   cue(cue: Cue): void {
     if (!this.ctx) return;
     this.bank.play(cue);
+  }
+
+  /** Presentation-only brass station-bell precision stop chime (leaves `CUES` untouched for synth equivalence tests). */
+  playPrecisionChime(): void {
+    const ctx = this.ctx, master = this.master;
+    if (!ctx || !master || this.muted) return;
+    const notes: readonly [number, number, number][] = [[1046.5, 0, 0.075], [1567.98, 0.08, 0.065], [2093.0, 0.17, 0.055]];
+    for (const [freq, delay, peak] of notes) {
+      const at = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, at);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(peak, at + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.52);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(at);
+      osc.stop(at + 0.56);
+    }
   }
 }

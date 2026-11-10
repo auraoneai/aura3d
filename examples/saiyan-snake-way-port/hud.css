@@ -1,0 +1,259 @@
+/* ==========================================================================
+   WP-27 Serpentine Sky Run — AuraOne Licensed HUD Typography & 390x844 Layout
+   Shared by the example entry and the Vite bundle so both standalone and
+   showcase routes render Whitney + DIN Pro + >= 48px touch targets.
+   ========================================================================== */
+
+html {
+  font-synthesis: none;
+  --a3d-bar-space: 0px;
+}
+
+html, body {
+  font: 400 13px/1.45 var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font: 500 13px/1 var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+  letter-spacing: 0;
+}
+
+kbd {
+  font: 500 12px/22px var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+}
+
+/* Standalone numeric KPIs strictly on DIN Pro (--font-metric) */
+#km,
+#days,
+#score,
+#mult,
+#ki-num,
+#strain-num,
+.results-grid .value,
+#count,
+#best-title,
+.serpent-hud #side .big,
+.serpent-hud #side .score,
+.serpent-hud #count {
+  font-family: var(--font-metric, "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* 12px hard floor on dense meter labels & charge readouts; weights 400/500/600 only */
+.bar-row .mlabel {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+#charges {
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+#banner,
+#sub {
+  transition: opacity 0.24s ease-out;
+}
+
+/* Crisp inline SVG layout inside touch action buttons */
+#touch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  min-width: 82px;
+  padding: 0 14px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  border-radius: 8px;
+}
+
+#touch button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.touch-guide {
+  display: none;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+}
+
+/* >= 44x44px touch targets & safe-area clearance on coarse / mobile viewports */
+@media (pointer: coarse), (max-width: 760px) {
+  #touch {
+    display: flex;
+    right: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+  }
+  #pause-btn {
+    left: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    width: 48px;
+    height: 48px;
+  }
+  #mute-btn {
+    left: 68px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    min-width: 48px;
+    height: 48px;
+  }
+  .runner {
+    min-height: 48px;
+  }
+  #start,
+  #again,
+  #resume,
+  #restart {
+    min-height: 44px;
+    padding: 0 18px;
+  }
+}
+
+@media (pointer: coarse) {
+  .touch-guide {
+    display: block;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 640px) {
+  .keys {
+    display: none;
+  }
+}
+
+/* Un-crowded 390x844 mobile portrait top telemetry strip (<= 86px tall) */
+@media (max-width: 640px) {
+  #player {
+    top: 10px;
+    left: 10px;
+    width: calc(100vw - 138px);
+    max-width: 226px;
+    padding: 7px 10px;
+    grid-template-columns: 28px 1fr;
+    gap: 2px 8px;
+  }
+  #badge {
+    width: 28px;
+    height: 28px;
+  }
+  #player .pname {
+    display: none;
+  }
+  .bar-row {
+    grid-template-columns: 1fr 28px;
+    gap: 6px;
+  }
+  .meter {
+    height: 6px;
+  }
+  #charges:empty {
+    display: none;
+  }
+  #surge-chip {
+    top: 90px;
+    left: 10px;
+    padding: 3px 9px;
+  }
+  #side {
+    top: 10px;
+    right: 10px;
+    width: 112px;
+    gap: 5px;
+  }
+  #side .card-hud {
+    padding: 5px 8px;
+  }
+  #side .big {
+    font-size: 22px;
+    line-height: 24px;
+  }
+  #side .chip {
+    display: none;
+  }
+  #side .score {
+    font-size: 18px;
+    line-height: 20px;
+  }
+  #progress {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    transform: none;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  #banner {
+    top: 17%;
+    font-size: 24px;
+    line-height: 28px;
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #sub {
+    top: calc(17% + 34px);
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #prompt {
+    bottom: calc(122px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    max-width: calc(100vw - 24px);
+    white-space: normal;
+    text-align: center;
+  }
+  #toast {
+    left: 12px;
+    bottom: calc(154px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+  }
+  #mute-btn {
+    width: 48px;
+    padding: 0;
+    font-size: 0;
+  }
+  #mute-btn::before {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0 auto;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/%3E%3Cpath d='M15.54 8.46a5 5 0 0 1 0 7.07'/%3E%3Cpath d='M19.07 4.93a10 10 0 0 1 0 14.14'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/%3E%3Cpath d='M15.54 8.46a5 5 0 0 1 0 7.07'/%3E%3Cpath d='M19.07 4.93a10 10 0 0 1 0 14.14'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  #mute-btn[aria-pressed="true"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/%3E%3Cline x1='23' y1='9' x2='17' y2='15'/%3E%3Cline x1='17' y1='9' x2='23' y2='15'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/%3E%3Cline x1='23' y1='9' x2='17' y2='15'/%3E%3Cline x1='17' y1='9' x2='23' y2='15'/%3E%3C/svg%3E");
+  }
+  .card {
+    padding: 16px;
+    gap: 10px;
+  }
+  .card h1 {
+    font-size: 22px;
+    line-height: 26px;
+  }
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  INTRO_SECONDS, LIVE_CAM, REPLAY_RATE, REPLAY_SECONDS, REPLAY_SOURCE_SECONDS, ReplayRing, createBroadcast, introRail, railPose, replayPose, replaySourceTime
+  INTRO_SECONDS, LIVE_CAM, REPLAY_RATE, REPLAY_SECONDS, REPLAY_SOURCE_SECONDS, ReplayRing, createBroadcast, frameCameraForAspect, introRail, projectPointToNdc, railPose, replayPose, replaySourceTime, type V3
 } from "../../../apps/showcase-aura-hoops-3d/src/broadcast";
 import { COURT_IDS } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
 
@@ -115,5 +115,32 @@ describe("Aura Hoops broadcast camera (H47-C1 / H47-P2)", () => {
     expect(LIVE_CAM.shot.offset[1]).toBeCloseTo(4.9 - 2, 6);
     expect(MAIN).toMatch(/cue\("fireIgnite"\);\s*jamDunkPending = true;/);
     expect(MAIN.match(/broadcast\.startReplay\(\)/g)).toHaveLength(1);
+  });
+
+  it("frames both the ballhandler and the active rim inside 390x844 portrait without changing 1280x720 landscape", () => {
+    const rim: V3 = [0, 3.05, 0];
+    const spots: V3[] = [
+      [0, 1.0, 8.6],
+      [-6.2, 1.0, 5.4],
+      [6.2, 1.0, 5.4],
+      [1.2, 1.0, 2.2]
+    ];
+    for (const holder of spots) {
+      const base = {
+        eye: [holder[0] + LIVE_CAM.chase.offset[0], LIVE_CAM.chase.offset[1], holder[2] + LIVE_CAM.chase.offset[2]] as V3,
+        target: [holder[0] + LIVE_CAM.chase.targetOffset[0], LIVE_CAM.chase.targetOffset[1], holder[2] + LIVE_CAM.chase.targetOffset[2]] as V3,
+        fov: LIVE_CAM.chase.fov
+      };
+      expect(frameCameraForAspect(base, 1280 / 720, { holder, ball: holder, rim })).toBe(base);
+      const portrait = frameCameraForAspect(base, 390 / 844, { holder, ball: holder, rim });
+      const hNdc = projectPointToNdc(holder, portrait, 390 / 844);
+      const rNdc = projectPointToNdc(rim, portrait, 390 / 844);
+      expect(hNdc).not.toBeNull();
+      expect(rNdc).not.toBeNull();
+      expect(Math.abs(hNdc![0])).toBeLessThanOrEqual(0.85);
+      expect(Math.abs(hNdc![1])).toBeLessThanOrEqual(0.75);
+      expect(Math.abs(rNdc![0])).toBeLessThanOrEqual(0.85);
+      expect(Math.abs(rNdc![1])).toBeLessThanOrEqual(0.75);
+    }
   });
 });

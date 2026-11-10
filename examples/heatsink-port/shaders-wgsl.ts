@@ -50,6 +50,36 @@ fn fbm(p0: vec2<f32>) -> f32 {
   for (var i = 0; i < 4; i = i + 1) { s = s + a * vnoise(p); p = p * 2.03 + vec2<f32>(17.1); a = a * 0.5; }
   return s;
 }
+fn hash31(p0: vec3<f32>) -> f32 {
+  var p = fract(p0 * vec3<f32>(127.1, 311.7, 74.7));
+  p = p + vec3<f32>(dot(p, p.yzx + vec3<f32>(33.33)));
+  return fract((p.x + p.y) * p.z);
+}
+fn vnoise3(p: vec3<f32>) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (vec3<f32>(3.0) - 2.0 * f);
+  let n000 = hash31(i);
+  let n100 = hash31(i + vec3<f32>(1.0, 0.0, 0.0));
+  let n010 = hash31(i + vec3<f32>(0.0, 1.0, 0.0));
+  let n110 = hash31(i + vec3<f32>(1.0, 1.0, 0.0));
+  let n001 = hash31(i + vec3<f32>(0.0, 0.0, 1.0));
+  let n101 = hash31(i + vec3<f32>(1.0, 0.0, 1.0));
+  let n011 = hash31(i + vec3<f32>(0.0, 1.0, 1.0));
+  let n111 = hash31(i + vec3<f32>(1.0, 1.0, 1.0));
+  return mix(
+    mix(mix(n000, n100, u.x), mix(n010, n110, u.x), u.y),
+    mix(mix(n001, n101, u.x), mix(n011, n111, u.x), u.y),
+    u.z
+  );
+}
+fn fbm3(p0: vec3<f32>) -> f32 {
+  var a = 0.5;
+  var s = 0.0;
+  var p = p0;
+  for (var i = 0; i < 4; i = i + 1) { s = s + a * vnoise3(p); p = p * 2.03 + vec3<f32>(17.1, 9.7, 23.4); a = a * 0.5; }
+  return s;
+}
 fn applyFog(color: vec3<f32>, world: vec3<f32>) -> vec3<f32> {
   let vd = normalize(world - aura.u_cameraPosition);
   let sunward = a3dPow(max(dot(normalize(vec3<f32>(vd.x, 0.0, vd.z) + vec3<f32>(1e-4, 0.0, 0.0)), normalize(vec3<f32>(aura.u_sunDir.x, 0.0, aura.u_sunDir.z))), 0.0), 3.0);
@@ -165,7 +195,14 @@ export const ROAD_FRAGMENT_WGSL = stage(COMMON, SHADOW, /* wgsl */ `
   let seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
   let pulse = 0.5 + 0.5 * sin(s * 0.09 - aura.u_time * aura.u_ionSpeed * 0.09);
   let glint = a3dPow(max(dot(Rv, normalize(aura.u_sunDir)), 0.0), 18.0);
-  color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3<f32>(0.9, 0.42, 0.12) * glint * 0.4, aura.u_glass);
+  let carbonWeave = 0.92 + 0.08 * (sin(u * 140.0) * sin(s * 14.0));
+  let chDist = abs(abs(u) - 0.36);
+  let conduitSlot = 1.0 - smoothstep(0.008, 0.024, chDist);
+  let conduitLip = 1.0 - smoothstep(0.0, 0.012, abs(chDist - 0.026));
+  let chevFlow = fract(s * 0.11 - chDist * 7.0 - aura.u_time * (1.6 + aura.u_ionSpeed * 0.04));
+  let conduitChev = smoothstep(0.10, 0.24, chevFlow) * (1.0 - smoothstep(0.54, 0.70, chevFlow));
+  color = mix(color, color * 0.30 * carbonWeave + mirror * (0.095 + 0.44 * fres) + vec3<f32>(0.9, 0.42, 0.12) * glint * 0.42, aura.u_glass);
+  color = color * (1.0 - 0.34 * conduitSlot * aura.u_glass);
   color = color * (1.0 - aura.u_glassShadow * (1.0 - gSun) * aura.u_glass);
   let dc = vWorld - aura.u_contact.xyz;
   let t2 = normalize(aura.u_contactDir.xz + vec2<f32>(1e-4, 0.0));
@@ -175,6 +212,8 @@ export const ROAD_FRAGMENT_WGSL = stage(COMMON, SHADOW, /* wgsl */ `
   let beaconRefl = exp(-bs * bs / 18.0) * exp(-a3dPow((abs(u) - 0.88) / 0.05, 2.0));
   let curbRefl = exp(-a3dPow((abs(u) - 0.88) / 0.06, 2.0)) * (0.55 + 0.45 * fres);
   color = color + (vRoad * beaconRefl * 0.9 + neon * curbRefl * 0.10) * aura.u_neonReflect;
+  color = color + vec3<f32>(0.45, 0.72, 0.95) * conduitLip * (0.10 + 0.32 * glint) * aura.u_glass;
+  color = color + mix(vec3<f32>(0.06, 0.86, 1.0), vRoad, 0.22) * conduitSlot * (0.28 + 0.72 * conduitChev) * aura.u_veinHdr * 0.52 * aura.u_glass;
   color = color + mix(vRoad, vec3<f32>(0.22, 0.5, 0.95), 0.85 * aura.u_glass) * seam * 0.12 * aura.u_seams;
   color = color + mix(vec3<f32>(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * aura.u_veinHdr * (0.6 + 0.6 * pulse) * aura.u_glass;
   color = color + vec3<f32>(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
@@ -230,13 +269,22 @@ struct VeilVarying {
 
 export const VEIL_FRAGMENT_WGSL = stage(/* wgsl */ `
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>, @location(1) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let _w = vWorld;
   let c = vUv * 2.0 - vec2<f32>(1.0);
-  let band = select(
-    (1.0 - smoothstep(0.0, 1.0, abs(c.x))) * (0.25 + 0.15 * sin(aura.u_time * 4.0 + c.y * 9.0)),
-    (1.0 - smoothstep(0.55, 1.0, max(abs(c.x), abs(c.y)))) * (0.45 + 0.25 * sin(aura.u_time * 6.0 - c.y * 5.0)),
-    aura.u_veilMode > 0.5);
-  let a = band * (0.5 + aura.u_veilPulse);
-  return vec4<f32>(aura.u_veilColor * a, a);
+  let edgeBox = max(abs(c.x), abs(c.y));
+  let gateFrame = smoothstep(0.68, 0.88, edgeBox) * (1.0 - smoothstep(0.92, 1.0, edgeBox));
+  let gateScan = (1.0 - smoothstep(0.55, 1.0, edgeBox)) * (0.28 + 0.22 * sin(aura.u_time * 6.0 - c.y * 7.0 + sin(c.x * 4.0) * 0.5));
+  let gateBand = gateFrame * 0.95 + gateScan * 0.72;
+  let chevFlow = fract(vUv.y * 3.0 - abs(c.x) * 0.82 - aura.u_time * 2.8);
+  let padChev = smoothstep(0.10, 0.24, chevFlow) * (1.0 - smoothstep(0.52, 0.68, chevFlow)) * (1.0 - smoothstep(0.68, 0.86, abs(c.x)));
+  let padRail = smoothstep(0.74, 0.82, abs(c.x)) * (1.0 - smoothstep(0.92, 1.0, abs(c.x)));
+  let padScan = 0.84 + 0.16 * sin(vUv.y * 44.0 - aura.u_time * 12.0);
+  let padEnds = 1.0 - smoothstep(0.86, 1.0, abs(c.y));
+  let padBand = (padChev * 0.85 + padRail * 1.15 + (1.0 - smoothstep(0.0, 0.92, abs(c.x))) * 0.16) * padScan * padEnds;
+  let band = select(padBand, gateBand, aura.u_veilMode > 0.5);
+  let a = band * (0.55 + aura.u_veilPulse * 1.15);
+  let hotCore = mix(aura.u_veilColor, vec3<f32>(0.92, 0.98, 1.0), clamp(padChev * 0.45 * (1.0 - aura.u_veilMode), 0.0, 1.0));
+  return vec4<f32>(hotCore * a, min(a, 1.0));
 }`);
 
 export const SKY_VERTEX_WGSL = stage(CLIP, /* wgsl */ `
@@ -255,33 +303,36 @@ export const SKY_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
 @fragment fn fs_main(@location(0) vDir: vec3<f32>) -> @location(0) vec4<f32> {
   let d = normalize(vDir);
   let h = d.y;
-  let az = atan2(d.z, d.x);
+  let dHor = normalize(vec2<f32>(d.x, d.z) + vec2<f32>(1e-5, 0.0));
   let zen = vec3<f32>(0.012, 0.030, 0.090);
   let mid = vec3<f32>(0.022, 0.120, 0.175);
   let hor = vec3<f32>(0.150, 0.420, 0.450);
   var sky = select(mix(hor, vec3<f32>(0.07, 0.20, 0.24), smoothstep(0.0, 0.25, -h)), mix(hor, mix(mid, zen, smoothstep(0.12, 0.8, h)), smoothstep(0.0, 0.34, h)), h > 0.0);
   let sd = normalize(aura.u_sunDir);
-  let sunAz = cos(az - atan2(sd.z, sd.x)) * 0.5 + 0.5;
+  let sHor = normalize(vec2<f32>(sd.x, sd.z) + vec2<f32>(1e-5, 0.0));
+  let sunAz = dot(dHor, sHor) * 0.5 + 0.5;
   let bandW = a3dPow(sunAz, 2.2) * (1.0 - smoothstep(0.0, 0.32, h)) * smoothstep(-0.06, 0.02, h);
   let band = mix(aura.u_bandLow, aura.u_bandHigh, smoothstep(0.0, 0.2, h));
-  var twSky = mix(vec3<f32>(0.05, 0.16, 0.18), mix(vec3<f32>(0.03, 0.11, 0.15), vec3<f32>(0.01, 0.025, 0.07), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
-  twSky = twSky + band * bandW * 0.95 + vec3<f32>(0.04, 0.06, 0.10) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
+  var twSky = mix(vec3<f32>(0.038, 0.145, 0.172), mix(vec3<f32>(0.022, 0.092, 0.142), vec3<f32>(0.008, 0.018, 0.058), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
+  twSky = twSky + band * bandW * 0.98 + vec3<f32>(0.036, 0.058, 0.102) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
   sky = mix(sky, twSky, aura.u_twilight);
-  let cl = fbm(vec2<f32>(az * 2.4 + aura.u_time * 0.008, h * 6.0));
+  let cl = fbm3(vec3<f32>(d.x * 2.8 + aura.u_time * 0.012, h * 6.5, d.z * 2.8 - aura.u_time * 0.009));
   let cmask = smoothstep(0.0, 0.16, h) * (1.0 - smoothstep(0.22, 0.65, h));
-  sky = sky + vec3<f32>(0.30, 0.34, 0.44) * a3dPow(smoothstep(0.42, 0.9, cl), 1.4) * cmask * 0.55;
-  let c1 = 0.30 + 0.10 * sin(az * 1.6 + 0.8) + 0.04 * sin(az * 5.0);
-  let c2 = 0.47 + 0.08 * sin(az * 2.1 + 3.1);
+  sky = sky + vec3<f32>(0.28, 0.34, 0.46) * a3dPow(smoothstep(0.42, 0.9, cl), 1.4) * cmask * 0.52;
+  let c1 = 0.30 + 0.09 * (dHor.x * 0.7 + dHor.y * 0.71) + 0.05 * (2.0 * dHor.x * dHor.y) + 0.03 * sin(dHor.x * 3.1 - dHor.y * 2.7);
+  let c2 = 0.47 + 0.08 * (dHor.x * dHor.x - dHor.y * dHor.y) + 0.035 * sin(dHor.y * 2.9 + dHor.x * 1.8);
   let r1 = exp(-(((h - c1) / 0.05) * ((h - c1) / 0.05)));
   let r2 = exp(-(((h - c2) / 0.07) * ((h - c2) / 0.07)));
-  let tex = 0.40 + 0.60 * fbm(vec2<f32>(az * 7.0, h * 14.0 + aura.u_time * 0.03));
-  let aur = (vec3<f32>(0.60, 0.24, 0.85) * r1 * tex * 1.0 + vec3<f32>(0.12, 0.80, 0.68) * r2 * tex * 0.8 + vec3<f32>(0.2, 0.75, 0.65) * r1 * 0.14) * aura.u_auroraGain;
+  let tex = 0.38 + 0.62 * fbm3(vec3<f32>(d.x * 8.5, h * 14.0 + aura.u_time * 0.035, d.z * 8.5));
+  let aur = (vec3<f32>(0.62, 0.24, 0.88) * r1 * tex * 1.02 + vec3<f32>(0.10, 0.84, 0.74) * r2 * tex * 0.84 + vec3<f32>(0.18, 0.78, 0.68) * r1 * 0.15) * aura.u_auroraGain;
   let pd = normalize(aura.u_planetDir);
   let pr = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), pd));
   let pu = cross(pd, pr);
   let pp = vec2<f32>(dot(d, pr), dot(d, pu)) / (0.17 * aura.u_planetScale);
   let facing = step(0.0, dot(d, pd));
-  let disk = (1.0 - smoothstep(0.96, 1.0, length(pp))) * facing;
+  let pRad = length(pp);
+  let disk = (1.0 - smoothstep(0.96, 1.0, pRad)) * facing;
+  let planetHalo = (1.0 - smoothstep(0.98, 1.28, pRad)) * smoothstep(0.86, 0.99, pRad) * facing * aura.u_twilight;
   let q = mat2x2<f32>(0.94, -0.34, 0.34, 0.94) * pp;
   let ringR = length(vec2<f32>(q.x, q.y * 3.4));
   let ring = (1.0 - smoothstep(0.0, 0.16, abs(ringR - 1.85))) * facing * (1.0 - disk * 0.6);
@@ -289,13 +340,15 @@ export const SKY_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
   let crescent = mix(1.0, 0.25 + 1.4 * smoothstep(-0.2, 0.7, dot(pp, sunP)), aura.u_twilight);
   let ringShadow = mix(1.0, 1.0 - 0.7 * step(q.y, 0.0) * (1.0 - smoothstep(0.7, 1.05, abs(q.x))), aura.u_twilight);
   let pLo = mix(vec3<f32>(0.12, 0.08, 0.22), vec3<f32>(0.14, 0.04, 0.10), aura.u_twilight);
-  let pHi = mix(vec3<f32>(0.50, 0.34, 0.52), vec3<f32>(0.62, 0.24, 0.38), aura.u_twilight);
-  let ringC = mix(vec3<f32>(0.55, 0.50, 0.62), vec3<f32>(0.78, 0.52, 0.28), aura.u_twilight);
-  let planet = mix(pLo, pHi, fbm(pp * 3.0 + vec2<f32>(4.0))) * disk * 0.95 * crescent * (1.0 + 0.45 * aura.u_twilight) + ringC * ring * 0.55 * ringShadow * (1.0 + 0.35 * aura.u_twilight);
+  let pHi = mix(vec3<f32>(0.50, 0.34, 0.52), vec3<f32>(0.64, 0.24, 0.40), aura.u_twilight);
+  let ringC = mix(vec3<f32>(0.55, 0.50, 0.62), vec3<f32>(0.80, 0.54, 0.28), aura.u_twilight);
+  let planet = mix(pLo, pHi, fbm(pp * 3.0 + vec2<f32>(4.0))) * disk * 0.95 * crescent * (1.0 + 0.45 * aura.u_twilight)
+    + ringC * ring * 0.56 * ringShadow * (1.0 + 0.35 * aura.u_twilight)
+    + vec3<f32>(0.32, 0.62, 0.92) * planetHalo * 0.32;
   let moonMask = 1.0 - smoothstep(0.022, 0.026, acos(clamp(dot(d, normalize(aura.u_moonDir)), -1.0, 1.0)));
   let sun = a3dPow(max(dot(d, normalize(aura.u_sunDir)), 0.0), 160.0);
-  let g = floor(d.xz * 700.0 + vec2<f32>(d.y * 300.0));
-  let star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h) * (1.0 - aura.u_twilight * 0.5 * (0.5 + 0.5 * sin(aura.u_time * 3.0 + hash21(g + vec2<f32>(7.0)) * 40.0)));
+  let sg = floor(d * 520.0);
+  let star = step(0.9986, hash31(sg)) * smoothstep(0.1, 0.4, h) * (1.0 - aura.u_twilight * 0.45 * (0.5 + 0.5 * sin(aura.u_time * 3.0 + hash31(sg + vec3<f32>(7.0)) * 40.0)));
   let behind = mix(sky + aur, sky * 0.35, disk * aura.u_twilight * 0.85);
   let color = behind + planet + vec3<f32>(1.0, 1.1, 1.5) * moonMask + aura.u_sunColor * sun * 0.3 + vec3<f32>(star) * 0.9 + aura.u_glowColor * 0.08 * (1.0 - abs(h));
   return vec4<f32>(color, 1.0);
@@ -422,4 +475,54 @@ export const BEACON_FRAGMENT_WGSL = stage(COMMON, /* wgsl */ `
   let band = smoothstep(0.62, 0.7, vUv.y);
   color = color + vBeacon * band * aura.u_beaconGlow * (0.8 + 0.2 * sin(aura.u_time * 3.0 + vWorld.x * 0.05));
   return vec4<f32>(applyFog(color, vWorld), 1.0);
+}`);
+
+export const HOLO_FRAGMENT_WGSL = stage(/* wgsl */ `
+fn applyLut16(c: vec3<f32>) -> vec3<f32> {
+  let cl = clamp(c, vec3<f32>(0.0), vec3<f32>(1.0));
+  let bSlice = cl.b * 15.0;
+  let b0 = floor(bSlice);
+  let b1 = min(15.0, b0 + 1.0);
+  let uv0 = vec2<f32>((b0 * 16.0 + cl.r * 15.0 + 0.5) / 256.0, (cl.g * 15.0 + 0.5) / 16.0);
+  let uv1 = vec2<f32>((b1 * 16.0 + cl.r * 15.0 + 0.5) / 256.0, (cl.g * 15.0 + 0.5) / 16.0);
+  return mix(
+    textureSampleLevel(u_lutMapTexture, u_lutMapSampler, uv0, 0.0).rgb,
+    textureSampleLevel(u_lutMapTexture, u_lutMapSampler, uv1, 0.0).rgb,
+    fract(bSlice)
+  );
+}
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let c = vUv * 2.0 - vec2<f32>(1.0);
+  let edge = max(abs(c.x), abs(c.y));
+  let frame = smoothstep(0.76, 0.90, edge) * (1.0 - smoothstep(0.92, 1.0, edge));
+  let chevFlow = fract(vUv.x * 6.0 - abs(c.y) * 0.65 - aura.u_time * 1.4);
+  let chev = smoothstep(0.18, 0.34, chevFlow) * (1.0 - smoothstep(0.54, 0.72, chevFlow)) * (1.0 - smoothstep(0.62, 0.88, abs(c.y)));
+  let scan = 0.80 + 0.20 * sin(vUv.y * 56.0 + aura.u_time * 8.0);
+  let a = (frame * 0.95 + chev * 0.65 + 0.14 * (1.0 - smoothstep(0.0, 0.94, edge))) * scan;
+  let raw = clamp(aura.u_bannerColor * (0.65 + 0.75 * chev) + vec3<f32>(0.12, 0.36, 0.55) * frame, vec3<f32>(0.0), vec3<f32>(1.0));
+  let graded = applyLut16(raw) * aura.u_bannerGain;
+  return vec4<f32>(graded * a, min(a, 1.0));
+}`);
+
+export const FLIPBOOK_FRAGMENT_WGSL = stage(POW, /* wgsl */ `
+fn srgbToLin3(c: vec3<f32>) -> vec3<f32> {
+  let lo = c / 12.92;
+  let hi = vec3<f32>(a3dPow((c.x + 0.055) / 1.055, 2.4), a3dPow((c.y + 0.055) / 1.055, 2.4), a3dPow((c.z + 0.055) / 1.055, 2.4));
+  return select(hi, lo, c <= vec3<f32>(0.04045));
+}
+fn sampleFlip(idx: f32, uv: vec2<f32>) -> vec4<f32> {
+  let col = idx - floor(idx / 8.0) * 8.0;
+  let row = floor(idx / 8.0);
+  let cellUv = (vec2<f32>(col, row) + clamp(uv, vec2<f32>(0.02), vec2<f32>(0.98))) / vec2<f32>(8.0, 4.0);
+  return textureSampleLevel(u_atlasMapTexture, u_atlasMapSampler, cellUv, 0.0);
+}
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let p = clamp(aura.u_flipProgress, 0.0, 0.999);
+  let f = p * 31.0;
+  let f0 = floor(f);
+  let f1 = min(31.0, f0 + 1.0);
+  let texel = mix(sampleFlip(f0, vUv), sampleFlip(f1, vUv), fract(f));
+  let alpha = texel.a * (1.0 - smoothstep(0.76, 1.0, p));
+  let col = srgbToLin3(texel.rgb) * aura.u_flipTint * aura.u_flipGain;
+  return vec4<f32>(col * alpha, alpha);
 }`);

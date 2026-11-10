@@ -1,9 +1,9 @@
 /**
- * Strange Orbit world on the public `@aura3d/engine` surface only: the painted
- * track ribbon (`geometry.dynamic` + author attributes + `material.custom`), opal
- * islands, ramps, loops, checkpoint veils, crystals, meteors, stardust and star
- * points (`topology: "points"`), six riders and the chase camera. Visual assets
- * the original fetched as remote GLB/PNG files are re-created procedurally.
+ * Craterline GP world on the public `@aura3d/engine` surface: sintered lunar-regolith
+ * track ribbon (`geometry.dynamic` + author attributes + paired GLSL/WGSL `material.custom`),
+ * stratified basalt/anorthosite crater rim, terrain-grounded instanced lunar boulders,
+ * sunlit crescent Earthrise + banded ochre gas giant, multi-lobe clearcoat/chrome/studioGlass
+ * rovers with articulated cornering poses, low-G regolith dust plumes, and chase camera.
  */
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
@@ -28,15 +28,17 @@ import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
-import { atmosphereSpec, mineralSpec, pointQuadSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { atmosphereSpec, earthriseSpec, mineralSpec, pointQuadSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { EARTHRISE_RADIUS } from "./shaders";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
-import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
+import { EARTHRISE_POSITION, LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
+import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 
 export { lehmer };
 
@@ -133,13 +135,6 @@ function mixHex(a: string, b: string, t: number): string {
 
 const euler = (m: Mat3): [number, number, number] => [...matrixToEulerZYX(m)];
 
-interface PartSpec {
-  readonly id: string;
-  readonly offset: readonly [number, number, number];
-  /** Local rotation applied after the rider basis. */
-  readonly local: Mat3;
-}
-
 export const RIVAL_COLORS: readonly (readonly [string, string])[] = [
   ["#6aa8c9", "#efd7a0"], ["#d6a24b", "#4e697b"], ["#8d7bc4", "#f0dcb4"], ["#6fbf8e", "#d86a43"], ["#c96a6a", "#ead8a0"]
 ];
@@ -155,7 +150,7 @@ const PLANET_SPIN = 0.01;
 
 /** SO47-W2: beacon lamp glow steps (rest, then the leader pulse); quantised so the material is rewritten only on a step. */
 export const BEACON_GLOW: readonly number[] = [2.2, 2.8, 3.5, 4.2];
-const beaconLampMaterial = (glow: number) => material.pbr({ color: "#ecb75f", emissive: "#ecb75f", emissiveIntensity: glow, roughness: 0.5, metallic: 0, practical: true });
+const beaconLampMaterial = (glow: number) => material.glowingEmissive({ color: "#f2b857", emissive: "#f2b857", emissiveIntensity: glow, roughness: 0.18, practical: true });
 
 /** SO47-W2: metres between amber beacon posts. */
 export const BEACON_SPACING = 40;
@@ -173,6 +168,14 @@ export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
+interface PartSpec {
+  readonly id: string;
+  readonly kind: string;
+  readonly offset: readonly [number, number, number];
+  /** Local rotation applied after the rider basis. */
+  readonly local: Mat3;
+}
+
 interface Riderrig {
   readonly root: string;
   readonly parts: readonly PartSpec[];
@@ -181,17 +184,53 @@ interface Riderrig {
 /** Local yaw that turns each Meshy rider model so its forward points along the rig's +X. */
 const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", Math.PI), skate: axisRotation("y", Math.PI / 2) };
 
-function riderRig(index: number, vehicle: Vehicle): Riderrig {
+function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
   const root = `rider-${index}`;
-  if (MESHY_ENABLED) {
-    // `model()` grounds a model: its origin is the bottom centre of the bounds, so the rig origin is the ground contact.
-    return { root, parts: [{ id: `${root}-model`, offset: [0, 0, 0], local: MODEL_YAW[vehicle] }] };
-  }
   const wheel = multiplyMat3(IDENTITY, axisRotation("x", Math.PI / 2));
   const lean = axisRotation("z", -0.45);
   const acrossSide = axisRotation("x", Math.PI / 2); // cylinder axis Y -> Z
-  const alongForward = axisRotation("z", Math.PI / 2); // cylinder axis Y -> X
-  const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, offset, local });
+  const alongForward = axisRotation("z", Math.PI / 2); // cylinder/cone axis +Y -> -X (aft exhaust)
+  const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, kind, offset, local });
+  if (MESHY_ENABLED) {
+    // `model()` grounds a model at bottom-centre (`parts[0]` stays `rider-i-model`); gouache attaches multi-lobe
+    // anodized carPaint keel, spinning chrome wheel hubs, chrome thruster bells, Mach-diamond plasma cones,
+    // matte fabric aero collar, and a reflective gold-iridium studioGlass astronaut visor.
+    if (look !== "gouache") {
+      return { root, parts: [part("model", [0, 0, 0], MODEL_YAW[vehicle])] };
+    }
+    if (vehicle === "skate") {
+      return {
+        root,
+        parts: [
+          part("model", [0, 0, 0], MODEL_YAW.skate),
+          part("fairing", [0.02, 0.13, 0]),
+          part("wheelF", [0.33, 0.09, 0], wheel),
+          part("wheelR", [-0.33, 0.09, 0], wheel),
+          part("nozzleL", [-0.43, 0.16, 0.11], alongForward),
+          part("nozzleR", [-0.43, 0.16, -0.11], alongForward),
+          part("coneL", [-0.62, 0.16, 0.11], alongForward),
+          part("coneR", [-0.62, 0.16, -0.11], alongForward),
+          part("torso", [0.02, 1.08, 0]),
+          part("visor", [0.13, 1.38, 0])
+        ]
+      };
+    }
+    return {
+      root,
+      parts: [
+        part("model", [0, 0, 0], MODEL_YAW.bike),
+        part("fairing", [0.14, 0.38, 0]),
+        part("wheelF", [0.72, 0.34, 0], wheel),
+        part("wheelR", [-0.72, 0.34, 0], wheel),
+        part("nozzleL", [-0.94, 0.5, 0.13], alongForward),
+        part("nozzleR", [-0.94, 0.5, -0.13], alongForward),
+        part("coneL", [-1.18, 0.5, 0.13], alongForward),
+        part("coneR", [-1.18, 0.5, -0.13], alongForward),
+        part("torso", [0.04, 1.06, 0], lean),
+        part("visor", [0.24, 1.35, 0])
+      ]
+    };
+  }
   if (vehicle === "skate") {
     return {
       root,
@@ -226,7 +265,7 @@ function riderRig(index: number, vehicle: Vehicle): Riderrig {
 }
 
 export interface WorldRuntime {
-  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void;
+  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number; readonly fovDelta?: number }, ghost?: GhostPose | null): void;
   resetCamera(): void;
   /** A zero-G crash along `normal`: push the drawn rider out along it for `IMPACT_REBOUND.seconds`. */
   impact(normal: readonly [number, number, number]): void;
@@ -304,9 +343,23 @@ export function buildWorld(options: WorldOptions): World {
   // Scene fog (SO47-E3): the custom shaders read its colour and density (u_a3dFogColor / u_a3dFogDensity) and add the
   // height mist; the engine fogs the GLBs with the same values, so a rider and the island behind it match.
   if (row.fog && !off.has("fog")) builder.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, intensity: (row.fog.maxOpacity - 0.25) / 0.55 }).runtime({ id: "haze" }));
-  if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", ...row.post.bloom }));
+  if (!off.has("bloom")) {
+    builder.add(look === "gouache"
+      ? effects.cinematicBloom({ name: "bloom", ...row.post.bloom, color: "#fff1de" })
+      : effects.bloom({ name: "bloom", ...row.post.bloom }));
+  }
   if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", ...row.post.grade }));
   if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", ...row.post.vignette }));
+  // Eevee grounding & surface-response post stack on gouache: contact shadows, multi-bounce SSAO, and glazed-line SSR.
+  if (look === "gouache" && !off.has("shadows")) {
+    builder.add(effects.contactShadows({ length: 0.42, thickness: 0.22, steps: high ? 16 : 12, intensity: 0.72, lights: "sun" }));
+  }
+  if (look === "gouache" && !off.has("ao")) {
+    builder.add(effects.ambientOcclusion({ name: "ssao", intensity: 0.44, radius: 0.82, multiBounce: true }));
+  }
+  if (look === "gouache" && high && !off.has("ssr")) {
+    builder.add(effects.screenSpaceReflections({ name: "track-ssr", intensity: 0.42, roughness: 0.34, maxDistance: 28, thickness: 0.35 }));
+  }
   // SO47-P1 grain on every tier but Low (PRD §6.4).
   if (row.post.grain && high && !off.has("grain")) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain.intensity, size: row.post.grain.size }));
   // SO47-P2 / P3 (High gouache only): boost motion blur and CA start at 0 and are driven at runtime through
@@ -326,19 +379,14 @@ export function buildWorld(options: WorldOptions): World {
   builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }).runtime({ id: "ramps" }));
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
-  /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
+  /* ---- sky: nebula dome, gas giant, sunlit crescent Earthrise, star layers ---- */
   if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec(0, look)) }).runtime({ id: "sky-dome" }));
-  // SO47-E2: gouache moves the gas giant out past the ring on -X (it fills the right of the sky at the start grid),
-  // 520 m across, with a banded ring and a small second moon; `?look=original` keeps the small overhead planet.
   const planet = row.planet;
   builder.add(primitives.sphere({
     name: "planet",
     position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
-    // GU47 phase 4: primitives are unit-sized (object-space y in +-0.5), so the old 0.034 band frequency painted one flat
-    // pale disc that the sibling judge read as "a large pale moon" (the Heatsink Run tell). Gouache bands at 12 per unit
-    // in peach and terracotta read as a gas giant (PRD 6.1 row G15).
     material: look === "original"
       ? solidMaterial(hexLinear("#f9ece3"), hexLinear("#c98a68"), 0, 0.045)
       : solidMaterial(hexLinear("#f4d6b8"), hexLinear("#a9502c"), 0, 12)
@@ -349,6 +397,24 @@ export function buildWorld(options: WorldOptions): World {
     size: planet.size * 1.06,
     material: material.custom(atmosphereSpec(hexLinear("#ffb48c")))
   }));
+  // Sunlit crescent Earthrise suspended over the forward-east crater rim (paired GLSL + WGSL shader + cerulean Rayleigh limb).
+  if (look === "gouache" && !off.has("earthrise")) {
+    builder.add(primitives.sphere({
+      name: "earthrise",
+      position: [...EARTHRISE_POSITION],
+      rotation: [0.22, -0.68, 0.16],
+      size: EARTHRISE_RADIUS * 2,
+      material: material.custom(earthriseSpec(1.05))
+    }));
+    if (!off.has("atmo")) {
+      builder.add(primitives.sphere({
+        name: "earthrise-atmosphere",
+        position: [...EARTHRISE_POSITION],
+        size: EARTHRISE_RADIUS * 2 * 1.07,
+        material: material.custom(atmosphereSpec(hexLinear("#5eb2ff")))
+      }));
+    }
+  }
   if (planet.ring) {
     // Banded ring: an opaque painted band plus (High only) an additive outer edge (+1 draw each).
     const ringRot: [number, number, number] = [1.2, 0.35, 0.18];
@@ -416,7 +482,7 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stars-bright", material: spriteMaterial(true) }));
 
-  /* ---- checkpoints: veils + pillars ---- */
+  /* ---- checkpoints: veils + pillars + brushed-metal lintel ---- */
   GATES.forEach((gate, i) => {
     builder.add(geometry.custom(dynamicFrom(veilQuad(gate.s), false), {
       name: `gate-veil-${i}`,
@@ -430,12 +496,15 @@ export function buildWorld(options: WorldOptions): World {
         builder.add(model(MESHY.pylon, { name: `gate-${i}-pillar-${side}`, position: [p.x - f.up.x * 6.5, p.y - f.up.y * 6.5, p.z - f.up.z * 6.5], rotation: rot, targetMaxDimension: 13, castShadow: false, receiveShadow: false }));
         continue;
       }
-      builder.add(primitives.cylinder({
+      builder.add(primitives.roundedBox({
         name: `gate-${i}-pillar-${side}`,
         position: [p.x, p.y, p.z],
         rotation: rot,
-        size: [1.1, 13, 1.1],
-        material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.2)
+        size: [1.05, 13, 1.05],
+        params: { radius: 0.16 },
+        material: look === "gouache"
+          ? material.brushedMetal({ color: "#8c96a4", roughness: 0.28 })
+          : solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.2)
       }));
     }
     const top = f.p.clone().addScaledVector(f.up, 13.1);
@@ -443,13 +512,15 @@ export function buildWorld(options: WorldOptions): World {
       name: `gate-${i}-lintel`,
       position: [top.x, top.y, top.z],
       rotation: rot,
-      size: [0.9, 0.7, 23.2],
-      params: { radius: 0.2 },
-      material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.6)
+      size: [0.95, 0.72, 23.2],
+      params: { radius: 0.18 },
+      material: look === "gouache"
+        ? material.brushedMetal({ color: "#b6a388", roughness: 0.26, envMapIntensity: 1.4 })
+        : solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.6)
     }));
   });
 
-  /* ---- GU47 SO47-W1: jagged crater rim at 600-900 m + instanced rocks and spires (gouache; 3 draws) ---- */
+  /* ---- stratified basalt/anorthosite crater rim + terrain-grounded instanced lunar boulders ---- */
   if (look === "gouache" && !off.has("rim")) {
     const rim = buildCraterRim(high ? RIM.segments : 128);
     builder.add(geometry.custom(geometry.dynamic({
@@ -459,49 +530,87 @@ export function buildWorld(options: WorldOptions): World {
       indices: Uint32Array.from(rim.indices)
     }), { name: "crater-rim", scale: RIM_UNIT, material: mineralMaterial(hexLinear("#b9785e"), false) }));
     const scatter = rimScatter(high);
-    const rockColors = ["#a8644c", "#7d5a4e", "#c58a6a", "#5d5a66"];
-    builder.add(instances.polyhedron({
-      name: "rim-rocks",
-      params: { variant: "dodecahedron", detail: 0 },
-      transforms: scatter.rocks.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
-      colors: scatter.rocks.map((_, i) => rockColors[i % rockColors.length]!),
-      castShadow: false,
-      receiveShadow: false,
-      material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
-    }));
-    // GU47 phase 3 (distinctness vs Thermal Drift: "spiky crystal cones"): the spires are eroded terracotta hoodoos
-    // (truncated 7-sided columns, warm umber/ochre), not crystal spikes; still one instanced draw.
-    builder.add(instances.cylinder({
-      name: "rim-spires",
-      params: { radiusTop: 0.24, radiusBottom: 0.5, radialSegments: 7 },
-      transforms: scatter.spires.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
-      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#7a4f3e" : i % 3 === 1 ? "#b06e4e" : "#c9925f")),
-      castShadow: false,
-      receiveShadow: false,
-      material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
-    }));
+    const rockTransforms = scatter.rocks.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
+    const spireTransforms = scatter.spires.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
+    const moonRockTransforms = scatter.moonRocks.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
+    if (MESHY_ENABLED && !off.has("rocks")) {
+      builder.add(instances.model(MESHY.boulderA, {
+        name: "rim-rocks",
+        targetHeight: 1,
+        transforms: rockTransforms,
+        castShadow: false,
+        receiveShadow: true
+      }));
+      builder.add(instances.model(MESHY.boulderB, {
+        name: "rim-spires",
+        targetHeight: 1,
+        transforms: spireTransforms,
+        castShadow: false,
+        receiveShadow: true
+      }));
+      builder.add(instances.model(ROCK_ASSET, {
+        name: "rim-moon-rocks",
+        targetHeight: 1,
+        transforms: moonRockTransforms,
+        castShadow: false,
+        receiveShadow: true
+      }));
+    } else {
+      const rockColors = ["#a8644c", "#7d5a4e", "#c58a6a", "#5d5a66"];
+      builder.add(instances.polyhedron({
+        name: "rim-rocks",
+        params: { variant: "dodecahedron", detail: 0 },
+        transforms: rockTransforms,
+        colors: scatter.rocks.map((_, i) => rockColors[i % rockColors.length]!),
+        castShadow: false,
+        receiveShadow: false,
+        material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
+      }));
+      builder.add(instances.cylinder({
+        name: "rim-spires",
+        params: { radiusTop: 0.24, radiusBottom: 0.5, radialSegments: 7 },
+        transforms: spireTransforms,
+        colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#7a4f3e" : i % 3 === 1 ? "#b06e4e" : "#c9925f")),
+        castShadow: false,
+        receiveShadow: false,
+        material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
+      }));
+    }
   }
-  /* ---- GU47 SO47-W2 (part): amber beacon posts every 40 m along the outer edge (2 instanced draws) ---- */
+  /* ---- chamfered brushed-metal lunar pylon beacons + hooded amber practical lenses every 40 m ---- */
   if (look === "gouache" && !off.has("beacons")) {
     const posts: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
-    const lamps: { position: [number, number, number] }[] = [];
+    const hoods: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
+    const lamps: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
     for (let s = 20; s < COURSE_LENGTH; s += BEACON_SPACING) {
       const f = mainFrame(s);
       const side = (Math.floor(s / BEACON_SPACING) % 2 === 0 ? 1 : -1) * 13.5;
-      const p = f.p.clone().addScaledVector(f.side, side).addScaledVector(f.up, 1.1);
-      posts.push({ position: [p.x, p.y, p.z], rotation: euler(basisMatrix(f.tangent, f.up, f.side)) });
-      lamps.push({ position: [p.x + f.up.x * 1.2, p.y + f.up.y * 1.2, p.z + f.up.z * 1.2] });
+      const p = f.p.clone().addScaledVector(f.side, side).addScaledVector(f.up, 1.15);
+      const rot = euler(basisMatrix(f.tangent, f.up, f.side));
+      posts.push({ position: [p.x, p.y, p.z], rotation: rot });
+      lamps.push({ position: [p.x + f.up.x * 1.18, p.y + f.up.y * 1.18, p.z + f.up.z * 1.18], rotation: rot });
+      hoods.push({ position: [p.x + f.up.x * 1.4, p.y + f.up.y * 1.4, p.z + f.up.z * 1.4], rotation: rot });
     }
-    builder.add(instances.cylinder({
+    builder.add(instances.roundedBox({
       name: "beacon-posts",
-      size: [0.22, 2.2, 0.22],
+      size: [0.34, 2.3, 0.24],
+      params: { radius: 0.055 },
       transforms: posts,
       castShadow: false,
-      material: material.pbr({ color: "#e2d6bb", roughness: 0.8, metallic: 0 })
+      material: material.brushedMetal({ color: "#8e99a8", roughness: 0.29, envMapIntensity: 1.45 })
     }));
-    builder.add(instances.sphere({
+    builder.add(instances.roundedBox({
+      name: "beacon-hoods",
+      size: [0.46, 0.18, 0.4],
+      params: { radius: 0.045 },
+      transforms: hoods,
+      castShadow: false,
+      material: material.brushedMetal({ color: "#3d4652", roughness: 0.34, envMapIntensity: 1.25 })
+    }));
+    builder.add(instances.roundedBox({
       name: "beacon-lamps",
-      size: 0.42,
+      size: [0.28, 0.34, 0.28],
+      params: { radius: 0.075 },
       transforms: lamps,
       castShadow: false,
       material: beaconLampMaterial(BEACON_GLOW[0])
@@ -570,9 +679,41 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stardust", material: spriteMaterial(true) }).runtime({ id: "stardust" }));
 
+  /* ---- low-G regolith dust flipbook plume & procedural vfx-pack dust wake ---- */
+  const dustPlumeEnabled = look === "gouache" && !off.has("dustplume");
+  if (dustPlumeEnabled) {
+    const regolithDustAtlas = createFlipbookAtlas("dust", [219, 156, 114]);
+    builder.add(effects.flipbook({
+      name: "regolith-dust-plume",
+      sprite: "smoke-a",
+      spriteColumns: regolithDustAtlas.columns,
+      spriteRows: regolithDustAtlas.rows,
+      frameRate: 24,
+      size: 1.55,
+      color: "#dba078",
+      blend: "alpha",
+      position: [0, -500, 0]
+    }).runtime({ id: "regolith-dust-plume" }));
+    builder.add(primitives.plane({
+      name: "regolith-dust-wake",
+      size: [1.5, 1.5],
+      position: [0, -500, 0],
+      castShadow: false,
+      receiveShadow: false,
+      material: material.pbr({
+        color: "#e6b48e",
+        texture: regolithDustAtlas.texture,
+        roughness: 0.94,
+        metallic: 0,
+        opacity: 0.68,
+        blend: "alpha",
+        depthWrite: false,
+        side: "double"
+      })
+    }).runtime({ id: "regolith-dust-wake" }));
+  }
+
   /* ---- exhaust ---- */
-  // Original keeps its point exhaust; gouache replaces that draw with one
-  // atlas batch (smoke while cruising, flame while boosting).
   const EXHAUST = look === "original" ? 160 : 0;
   if (EXHAUST > 0) {
     builder.add(geometry.custom(spriteGeometry({
@@ -586,65 +727,109 @@ export function buildWorld(options: WorldOptions): World {
     }), { name: "exhaust", material: spriteMaterial(true) }).runtime({ id: "exhaust" }));
   }
 
-  /* ---- riders ---- */
-  const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle));
+  /* ---- riders: glossy clearcoat GLBs + multi-lobe carPaint/chrome/fabric/studioGlass sub-parts ---- */
+  const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle, look));
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
+    const liveryHex = i === 0 ? RIDERS[rider]!.color : GOUACHE_LIVERIES[i - 1]!;
     const body = hexLinear(bodyHex), accent = hexLinear(accentHex), dark = hexLinear("#2a2f3b");
+    const chassisPaint = material.carPaint({ color: liveryHex, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.025, envMapIntensity: 1.55 });
+    const chromeTrim = material.chrome({ color: "#eef4fb", roughness: 0.035, envMapIntensity: 1.9 });
+    const suitFabric = material.fabric({ color: mixHex(liveryHex, "#ebe6dc", 0.65), roughness: 0.78, sheen: 0.45 });
+    const goldVisor = material.studioGlass({
+      color: "#ffd685",
+      tint: "#ffbf52",
+      attenuationColor: "#d68624",
+      roughness: 0.025,
+      ior: 1.62,
+      thickness: 0.45,
+      clearcoat: 1,
+      clearcoatRoughness: 0.02,
+      envMapIntensity: 2.1
+    });
+    const machConeMat = material.glowingEmissive({
+      color: i === 0 ? "#8ce8ff" : "#ffbe73",
+      emissive: i === 0 ? "#66dcff" : "#ff9d42",
+      emissiveIntensity: i === 0 ? 3.2 : 2.4,
+      roughness: 0.14,
+      opacity: 0.84,
+      blend: "alpha",
+      practical: true
+    });
     if (MESHY_ENABLED) {
-      const part = rig.parts[0]!;
+      const modelPart = rig.parts[0]!;
       const size = vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target;
-      const wedge = vehicle === "bike" && i % 2 === 1; // rivals 1, 3, 5 ride the second Meshy bike design
-      // GU47 SO47-M2 (gouache): five distinct rival liveries on both bike designs, a clearcoat hero, and the E-D rim
-      // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
+      const wedge = vehicle === "bike" && i % 2 === 1;
       const tint = look === "gouache"
         ? [{
-          // GU47 phase 4 (rubric: "near-uniform white, blown, fully matte"): the hero's white enamel is knocked down a
-          // touch and every rider mirrors the captured nebula/giant probe harder (envMapIntensity), so the fairings read glossy.
-          ...(i === 0 ? { color: riderSuitTint(rider), colorMode: "multiply" as const, clearcoat: 0.7, clearcoatRoughness: 0.2, envMapIntensity: 0.9 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.15), colorMode: "multiply" as const, clearcoat: 0.6, clearcoatRoughness: 0.2, envMapIntensity: 0.9 }),
-          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
+          ...(i === 0
+            ? { color: riderSuitTint(rider), colorMode: "multiply" as const, clearcoat: 0.85, clearcoatRoughness: 0.12, envMapIntensity: 1.2 }
+            : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.15), colorMode: "multiply" as const, clearcoat: 0.72, clearcoatRoughness: 0.15, envMapIntensity: 1.15 }),
+          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.28 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
       builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
-        name: part.id,
+        name: modelPart.id,
         targetMaxDimension: size,
-        // SO47-L1: the player casts into the raking key so its long shadow reads on the road (+1 draw per cascade).
         castShadow: look === "gouache" && i === 0,
         receiveShadow: false,
         ...(tint ? { materialOverrides: tint } : {})
-      }).runtime({ id: part.id }));
+      }).runtime({ id: modelPart.id }));
+      for (const sub of rig.parts.slice(1)) {
+        const makeSub = (): ReturnType<typeof primitives.box> => {
+          switch (sub.kind) {
+            case "fairing":
+              return primitives.roundedBox({ name: sub.id, size: vehicle === "skate" ? [0.76, 0.045, 0.24] : [0.88, 0.11, 0.22], params: { radius: 0.035 }, castShadow: false, material: chassisPaint });
+            case "wheelF":
+            case "wheelR":
+              return primitives.cylinder({ name: sub.id, size: vehicle === "skate" ? [0.13, 0.07, 0.13] : [0.32, 0.075, 0.32], castShadow: false, material: chromeTrim });
+            case "nozzleL":
+            case "nozzleR":
+              return primitives.cylinder({ name: sub.id, size: [0.11, 0.22, 0.11], castShadow: false, material: chromeTrim });
+            case "coneL":
+            case "coneR":
+              return primitives.cone({ name: sub.id, params: { radius: 0.075, height: 0.42, radialSegments: 12 }, castShadow: false, material: machConeMat });
+            case "torso":
+              return primitives.capsule({ name: sub.id, size: [0.15, 0.26, 0.15], castShadow: false, material: suitFabric });
+            case "visor":
+            default:
+              return primitives.sphere({ name: sub.id, size: 0.21, castShadow: false, material: goldVisor });
+          }
+        };
+        builder.add(makeSub().runtime({ id: sub.id }));
+      }
       return;
     }
     for (const part of rig.parts) {
-      const kind = part.id.slice(rig.root.length + 1);
+      const kind = part.kind;
       const suit = hexLinear("#d9d6cf");
       const cyan = hexLinear("#8fe9ff");
       const make = (): ReturnType<typeof primitives.box> => {
         switch (kind) {
-          case "frame": return primitives.roundedBox({ name: part.id, size: [1.04, 0.17, 0.22], params: { radius: 0.075 }, material: solidMaterial(body, accent, 0.12) });
-          case "deck": return primitives.roundedBox({ name: part.id, size: [0.95, 0.05, 0.27], params: { radius: 0.02 }, material: solidMaterial(accent, accent, 0.18) });
-          case "seat": return primitives.roundedBox({ name: part.id, size: [0.44, 0.1, 0.3], params: { radius: 0.04 }, material: solidMaterial(dark) });
-          case "bar": return primitives.cylinder({ name: part.id, size: [0.045, 0.62, 0.045], material: solidMaterial(dark) });
+          case "frame": return primitives.roundedBox({ name: part.id, size: [1.04, 0.17, 0.22], params: { radius: 0.075 }, material: look === "gouache" ? chassisPaint : solidMaterial(body, accent, 0.12) });
+          case "deck": return primitives.roundedBox({ name: part.id, size: [0.95, 0.05, 0.27], params: { radius: 0.02 }, material: look === "gouache" ? chassisPaint : solidMaterial(accent, accent, 0.18) });
+          case "seat": return primitives.roundedBox({ name: part.id, size: [0.44, 0.1, 0.3], params: { radius: 0.04 }, material: look === "gouache" ? suitFabric : solidMaterial(dark) });
+          case "bar": return primitives.cylinder({ name: part.id, size: [0.045, 0.62, 0.045], material: look === "gouache" ? chromeTrim : solidMaterial(dark) });
           case "headlight": return primitives.sphere({ name: part.id, size: 0.15, material: solidMaterial(hexLinear("#fff3d6"), hexLinear("#ffe4a8"), 2.4) });
           case "tireF":
-          case "tireR": return primitives.torus({ name: part.id, size: 0.8, material: solidMaterial(hexLinear("#171a22"), [0, 0, 0], 0) });
+          case "tireR": return primitives.torus({ name: part.id, size: 0.8, material: look === "gouache" ? material.blackRubber() : solidMaterial(hexLinear("#171a22"), [0, 0, 0], 0) });
           case "wheelF":
-          case "wheelR": return primitives.cylinder({ name: part.id, size: [0.58, 0.05, 0.58], material: solidMaterial(hexLinear("#3a4150")) });
+          case "wheelR": return primitives.cylinder({ name: part.id, size: [0.58, 0.05, 0.58], material: look === "gouache" ? chromeTrim : solidMaterial(hexLinear("#3a4150")) });
           case "hubF":
-          case "hubR": return primitives.cylinder({ name: part.id, size: [0.5, 0.085, 0.5], material: solidMaterial(accent, accent, 0.9) });
+          case "hubR": return primitives.cylinder({ name: part.id, size: [0.5, 0.085, 0.5], material: look === "gouache" ? chromeTrim : solidMaterial(accent, accent, 0.9) });
           case "nozzleL":
-          case "nozzleR": return primitives.cylinder({ name: part.id, size: [0.12, 0.3, 0.12], material: solidMaterial(cyan, cyan, 2.4) });
+          case "nozzleR": return primitives.cylinder({ name: part.id, size: [0.12, 0.3, 0.12], material: look === "gouache" ? machConeMat : solidMaterial(cyan, cyan, 2.4) });
           case "truckFL":
           case "truckFR":
           case "truckRL":
-          case "truckRR": return primitives.cylinder({ name: part.id, size: [0.12, 0.06, 0.12], material: solidMaterial(dark, accent, 0.4) });
+          case "truckRR": return primitives.cylinder({ name: part.id, size: [0.12, 0.06, 0.12], material: look === "gouache" ? chromeTrim : solidMaterial(dark, accent, 0.4) });
           case "legL":
-          case "legR": return primitives.capsule({ name: part.id, size: [vehicle === "skate" ? 0.14 : 0.13, vehicle === "skate" ? 0.6 : 0.62, vehicle === "skate" ? 0.14 : 0.13], material: solidMaterial(dark) });
+          case "legR": return primitives.capsule({ name: part.id, size: [vehicle === "skate" ? 0.14 : 0.13, vehicle === "skate" ? 0.6 : 0.62, vehicle === "skate" ? 0.14 : 0.13], material: look === "gouache" ? suitFabric : solidMaterial(dark) });
           case "armL":
-          case "armR": return primitives.capsule({ name: part.id, size: [0.1, 0.58, 0.1], material: solidMaterial(suit, accent, 0.06) });
-          case "torso": return primitives.capsule({ name: part.id, size: [0.34, 0.89, 0.34], material: solidMaterial(accent, accent, 0.1) });
-          case "visor": return primitives.sphere({ name: part.id, size: 0.17, material: solidMaterial(cyan, cyan, 2.0) });
-          default: return primitives.sphere({ name: part.id, size: 0.3, material: solidMaterial(suit) });
+          case "armR": return primitives.capsule({ name: part.id, size: [0.1, 0.58, 0.1], material: look === "gouache" ? suitFabric : solidMaterial(suit, accent, 0.06) });
+          case "torso": return primitives.capsule({ name: part.id, size: [0.34, 0.89, 0.34], material: look === "gouache" ? suitFabric : solidMaterial(accent, accent, 0.1) });
+          case "visor": return primitives.sphere({ name: part.id, size: 0.17, material: look === "gouache" ? goldVisor : solidMaterial(cyan, cyan, 2.0) });
+          default: return primitives.sphere({ name: part.id, size: 0.3, material: look === "gouache" ? suitFabric : solidMaterial(suit) });
         }
       };
       builder.add(make().runtime({ id: part.id }));
@@ -659,13 +844,13 @@ export function buildWorld(options: WorldOptions): World {
         targetMaxDimension: vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target,
         castShadow: false,
         receiveShadow: false,
-        materialOverrides: [{ color: "#9fe8ff", colorMode: "replace", opacity: 0.38, emissive: "#5fd8ff", emissiveIntensity: 0.6 }]
+        materialOverrides: [{ color: "#9fe8ff", colorMode: "replace", opacity: 0.38, emissive: "#5fd8ff", emissiveIntensity: 0.09 }]
       }).runtime({ id: "ghost-rider" })
       : primitives.capsule({ name: "ghost-rider", size: [0.5, 1.5, 0.5], material: solidMaterial(hexLinear("#9fe8ff"), hexLinear("#5fd8ff"), 0.8, 0, { transparent: true, blending: "additive", depthWrite: false }) }).runtime({ id: "ghost-rider" }));
   }
 
-  /* ---- GU47 phase 3 (gouache): soft rider shadow quads (+6 draws; unit quad in local xz, scaled per frame) ---- */
-  const riderShadows = look === "gouache" && !off.has("shadows");
+  /* ---- legacy shadow quads disabled on gouache (replaced by real PCSS key + effects.contactShadows + SSAO) ---- */
+  const riderShadows = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadows") === "quads";
   if (riderShadows) {
     for (let i = 0; i < RIDER_SHADOWS; i++) {
       builder.add(geometry.custom(geometry.dynamic({
@@ -687,7 +872,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, quads: spriteQuads, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, quads: spriteQuads, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows, dustPlume: dustPlumeEnabled });
     }
   };
 }
@@ -708,9 +893,19 @@ interface BindInput {
   readonly high: boolean;
   readonly headlight: boolean;
   readonly riderShadows: boolean;
+  readonly dustPlume: boolean;
 }
 
 interface Pose { position: Vec3; forward: Vec3; up: Vec3 }
+
+interface RiderMotion {
+  readonly lean: number;
+  readonly speed: number;
+  readonly boosting: boolean;
+  readonly dt: number;
+  readonly time: number;
+  readonly menu: boolean;
+}
 
 function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const maybeCamera = app.camera;
@@ -754,8 +949,10 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const riderFwd: Vec3[] = Array.from({ length: 7 }, () => new Vec3(1, 0, 0));
   const riderUp: Vec3[] = Array.from({ length: 7 }, () => new Vec3(0, 1, 0));
   const riderShown: boolean[] = Array.from({ length: 6 }, () => true);
+  const wheelSpin = new Float32Array(6);
   /** SO47-N1 landing squash (vertical scale drop, decays in ~0.3 s; 30% amplitude on reduced motion). */
   let squash = 0;
+  let dustPlumeTimer = 0;
   /** SO47-E4 meteor streaks: next streak time and a presentation-only RNG (the sim RNG is untouched). */
   const skyRng = lehmer(5309);
   let nextMeteor = 4 + skyRng() * 4;
@@ -832,28 +1029,61 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     return { position, forward, up };
   };
 
-  const placeRider = (index: number, pose: Pose, scale: number, extraPitch = 0, extraRoll = 0): void => {
+  const IDLE_MOTION: RiderMotion = { lean: 0, speed: 0, boosting: false, dt: 0, time: 0, menu: true };
+
+  const placeRider = (index: number, pose: Pose, scale: number, extraPitch = 0, extraRoll = 0, motion: RiderMotion = IDLE_MOTION): void => {
     const side = new Vec3().crossVectors(pose.forward, pose.up).normalize();
     const up = new Vec3().crossVectors(side, pose.forward).normalize();
+    const aeroPitch = motion.boosting && !motion.menu ? -0.05 : 0;
     let base = basisMatrix(pose.forward, up, side);
-    if (extraPitch) base = multiplyMat3(base, axisRotation("z", extraPitch));
+    if (extraPitch || aeroPitch) base = multiplyMat3(base, axisRotation("z", extraPitch + aeroPitch));
     if (extraRoll) base = multiplyMat3(base, axisRotation("x", extraRoll));
     riderAt[index]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
     riderFwd[index]!.copy(pose.forward);
     riderUp[index]!.copy(up);
+    if (!input.reducedMotion && motion.dt > 0 && motion.speed > 0.05) {
+      const wheelRadius = input.vehicle === "skate" ? 0.14 : 0.34;
+      wheelSpin[index] = (wheelSpin[index]! + (motion.speed * motion.dt) / wheelRadius) % (Math.PI * 2);
+    }
+    const spin = wheelSpin[index]!;
     const rigDef = input.riders[index]!;
     for (const part of rigDef.parts) {
-      const [dx, dy, dz] = part.offset;
+      let [dx, dy, dz] = part.offset;
+      let local = part.local;
+      let partScale: number | [number, number, number] = index === 0 && squash > 0.001
+        ? [scale * (1 + squash * 0.5), scale * (1 - squash), scale * (1 + squash * 0.5)]
+        : scale;
+      const h = node(part.id);
+
+      if (part.kind === "wheelF" || part.kind === "wheelR") {
+        local = multiplyMat3(local, axisRotation("y", spin));
+      } else if (part.kind === "torso") {
+        dz += motion.lean * 0.18;
+        if (motion.boosting && !motion.menu) { dx += 0.08; dy -= 0.05; }
+        local = multiplyMat3(local, multiplyMat3(axisRotation("x", -motion.lean * 0.55), axisRotation("z", motion.boosting && !motion.menu ? -0.22 : 0)));
+      } else if (part.kind === "visor" || part.kind === "head") {
+        dz += motion.lean * 0.22;
+        if (motion.boosting && !motion.menu) { dx += 0.11; dy -= 0.06; }
+        local = multiplyMat3(local, multiplyMat3(axisRotation("x", motion.lean * 0.65), axisRotation("y", -motion.lean * 0.75)));
+      } else if (part.kind === "coneL" || part.kind === "coneR") {
+        const coneVisible = riderShown[index]! && !motion.menu && (motion.speed > 1.5 || motion.boosting);
+        h.setVisible(coneVisible);
+        if (!coneVisible) continue;
+        const flutter = input.reducedMotion ? 0 : 0.16 * Math.sin(motion.time * 46 + (part.kind === "coneL" ? 0 : 1.9));
+        const lenScale = Math.max(0.26, Math.min(1, motion.speed / 32) * 0.62 + (motion.boosting ? 0.92 + flutter : 0));
+        const radScale = motion.boosting ? 1.26 : 0.86;
+        dx -= (lenScale - 1) * 0.24;
+        partScale = [scale * radScale, scale * lenScale, scale * radScale];
+      }
+
       const p = pose.position.clone()
         .addScaledVector(pose.forward, dx * scale)
         .addScaledVector(up, dy * scale)
         .addScaledVector(side, dz * scale);
-      const e = euler(multiplyMat3(base, part.local));
-      const h = node(part.id);
+      const e = euler(multiplyMat3(base, local));
       h.setPosition(p.x, p.y, p.z);
       h.setRotation(e[0], e[1], e[2]);
-      if (index === 0 && squash > 0.001) h.setScale([scale * (1 + squash * 0.5), scale * (1 - squash), scale * (1 + squash * 0.5)]);
-      else h.setScale(scale);
+      h.setScale(partScale);
     }
   };
 
@@ -914,7 +1144,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     }
   };
 
-  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void {
+  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number; readonly fovDelta?: number }, ghost?: GhostPose | null): void {
     const menu = state.phase === "menu";
     // GU47 phase 3 (gouache): the parked grid idles on its hover pads (a few cm, none on reduced motion; presentation only).
     const menuHover = (i: number): number => (input.look === "gouache" && !input.reducedMotion ? 0.07 * (1 + Math.sin(time * 2.1 + i * 1.7)) : 0);
@@ -956,7 +1186,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       playerPose.position.z += rebound.z * k;
       rebound.t = Math.max(0, rebound.t - dt);
     }
-    placeRider(0, playerPose, scale, pitch, roll);
+    placeRider(0, playerPose, scale, pitch, roll, {
+      lean: menu ? 0 : state.lean,
+      speed: menu ? 0 : state.speed,
+      boosting: !menu && Boolean(state.boosting),
+      dt,
+      time,
+      menu
+    });
     riderGrounded[0] = !state.flight && !state.loop && !state.air;
 
     /* time-trial ghost */
@@ -983,8 +1220,41 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       const s = menu ? 35 + 10 + i * 5 : rival.s;
       const lane = menu ? (i % 3 - 1) * 3 : rival.lane;
       const ground = menu ? menuHover(i + 1) : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
-      placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : rival.lean ?? 0), scale);
+      placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : (rival.lean ?? 0) * (input.look === "gouache" ? LEAN_GAIN * 0.85 : 1)), scale, 0, 0, {
+        lean: menu ? 0 : rival.lean ?? 0,
+        speed: menu ? 0 : rival.speed,
+        boosting: !menu && Boolean(rival.boosting),
+        dt,
+        time: time + i * 0.7,
+        menu
+      });
       riderGrounded[i + 1] = menu || !rival.air;
+    }
+
+    /* low-G regolith dust plume & wake behind player rear wheel during hard cornering / crater landings */
+    dustPlumeTimer = Math.max(0, dustPlumeTimer - Math.max(0, dt));
+    if (input.dustPlume) {
+      const plume = node("regolith-dust-plume");
+      const wake = node("regolith-dust-wake");
+      const plumeActive = !menu && riderGrounded[0]! && state.phase === "racing" && ((Math.abs(state.lean) >= 0.16 && state.speed > 5) || dustPlumeTimer > 0);
+      if (plumeActive) {
+        const rear = playerPose.position.clone().addScaledVector(playerPose.forward, -0.88 * scale).addScaledVector(playerPose.up, 0.28 * scale);
+        plume.setPosition(rear.x, rear.y, rear.z);
+        plume.setVisible(true);
+        const wakeScale = 0.55 + Math.min(0.65, Math.abs(state.lean) * 1.8 + dustPlumeTimer);
+        const groundWake = playerPose.position.clone().addScaledVector(playerPose.forward, -1.15 * scale).addScaledVector(playerPose.up, 0.05);
+        const across = new Vec3().crossVectors(playerPose.forward, playerPose.up).normalize();
+        const wakeEuler = euler(multiplyMat3(basisMatrix(playerPose.forward, playerPose.up, across), axisRotation("x", -Math.PI / 2)));
+        wake.setPosition(groundWake.x, groundWake.y, groundWake.z);
+        wake.setRotation(wakeEuler[0], wakeEuler[1], wakeEuler[2]);
+        wake.setScale([wakeScale, wakeScale, wakeScale]);
+        wake.setVisible(true);
+      } else {
+        plume.setPosition(0, -500, 0);
+        plume.setVisible(false);
+        wake.setPosition(0, -500, 0);
+        wake.setVisible(false);
+      }
     }
 
     updateRiderLights(menu);
@@ -1055,7 +1325,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
       if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);
       look = origin.clone().addScaledVector(rig.forward, 3).addScaledVector(cu, 1.4);
-      fov = (aspect < 0.85 ? params.portraitFov : params.fov) + kick.fovOffset;
+      fov = (aspect < 0.85 ? params.portraitFov : params.fov) + kick.fovOffset + (shake?.fovDelta ?? 0);
     }
     const camRoll = (shake?.roll ?? 0) + kick.roll;
     lastCamera = { eye: eye.clone(), look: look.clone(), up: menu ? frame.up.clone() : cu.clone(), fov };
@@ -1238,6 +1508,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         feel.landing(ev.type === "stunt");
         if (input.look === "gouache") {
           squash = LANDING_SQUASH * (input.reducedMotion ? 0.3 : 1);
+          dustPlumeTimer = input.reducedMotion ? 0.22 : 0.45;
           // SO47-V3: a tyre scuff on the road under the rider, fading over 6 s.
           const p0 = riderAt[0]!, u0 = riderUp[0]!;
           app.effects?.decal({ position: [p0.x - u0.x * 0.78, p0.y - u0.y * 0.78, p0.z - u0.z * 0.78], normal: [u0.x, u0.y, u0.z] }, { kind: "scuff", size: 1.4, lifetime: 6, color: "#3a2626", opacity: 0.55 });

@@ -1,27 +1,36 @@
 /**
- * Splat Rush world on the public `@aura3d/engine` surface only: toon-shaded `material.custom` surfaces,
- * `geometry.dynamic` meshes (exact three.js dimensions, see `meshes.ts`), `texture.canvas` textures painted from
- * the values the simulation drew, and per-frame runtime-node updates read straight from `SplatRushSim`.
+ * Splat world on the public `@aura3d/engine` surface: custom toon & liquid-lacquer shaders (`material.custom`),
+ * `geometry.dynamic` batches (`meshes.ts`), `texture.canvas` procedural paint maps, and per-frame runtime-node updates
+ * driven from `SplatRushSim`.
  *
  * Draw calls and uploads (C9, C10): every pooled entity kind is one merged `geometry.dynamic` batch (deck, rails, lane
- * marks, gates, gate symbols, splatters, particles, clouds, streaks) instead of one node per entity. Road entities
- * (segments, gates, splatters) live in a scrolling frame: a road entity's z minus `sim.scroll` never changes, so its
- * vertices are written once when it appears and the batch node is moved by the scroll each frame. Clouds do the same
+ * marks, gates, gate curtains, gate symbols, splatters, particles, clouds, streaks) instead of one node per entity. Road
+ * entities (segments, gates, splatters) live in a scrolling frame: a road entity's z minus `sim.scroll` never changes, so
+ * its vertices are written once when it appears and the batch node is moved by the scroll each frame. Clouds do the same
  * with `sim.cloudDrift`. Only particles and streaks are rewritten per frame, and only the dirty vertex range uploads.
  */
 import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
-import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { CORRIDOR_BOUNDS } from "../shared/runner-kit";
+import { blobMesh, capsuleMesh, coneMesh, curbRailMesh, cylinderMesh, gateCurtainMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
 import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, PAINT_POT_PIECES, PIECES, addBackdrop, backdropPose, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
-import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import {
-  CARNIVAL_CLOUD_FRAGMENT_WGSL, CARNIVAL_SEA_FRAGMENT_WGSL, CARNIVAL_SKY_FRAGMENT_WGSL, FLAT_FRAGMENT_WGSL, FLAT_TONE_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL, FLAT_VERTEX_WGSL,
-  GATE_SHADOW_FRAGMENT_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, carnivalToonFragmentWgsl, carnivalVertexWgsl, toonFragmentWgsl, toonVertexWgsl
+  CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_CURTAIN_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_INK_FRAGMENT, CARNIVAL_SEA_FRAGMENT,
+  CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX,
+  FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX,
+  TOON_VERTEX, carnivalToonFragment, toonFragment
+} from "./shaders";
+import {
+  CARNIVAL_CLOUD_FRAGMENT_WGSL, CARNIVAL_CURTAIN_FRAGMENT_WGSL, CARNIVAL_INK_FRAGMENT_WGSL, CARNIVAL_SEA_FRAGMENT_WGSL,
+  CARNIVAL_SKY_FRAGMENT_WGSL, FLAT_FRAGMENT_WGSL, FLAT_TONE_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL, FLAT_VERTEX_WGSL,
+  GATE_SHADOW_FRAGMENT_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL,
+  carnivalToonFragmentWgsl, carnivalVertexWgsl, toonFragmentWgsl, toonVertexWgsl
 } from "./shaders-wgsl";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
+import { createInkFlipbook } from "./vfx3d";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 type Rgb = readonly [number, number, number];
@@ -236,23 +245,58 @@ export const carnivalSeaSpec = (look: SplatLook): CustomSpec => {
   };
 };
 
+export const carnivalCurtainSpec = (look: SplatLook): CustomSpec => {
+  const tod = timeOfDay(look, 0) as TimeOfDay;
+  return {
+    glsl: { vertex: CARNIVAL_TONE_VERTEX, fragment: CARNIVAL_CURTAIN_FRAGMENT },
+    wgsl: { vertex: carnivalVertexWgsl("tone"), fragment: CARNIVAL_CURTAIN_FRAGMENT_WGSL },
+    uniforms: {
+      alpha: { type: "f32", value: 0.85 },
+      crTime: { type: "f32", value: 0 },
+      ...hazeUniforms(look, tod)
+    },
+    transparent: true,
+    depthWrite: false,
+    side: "double"
+  };
+};
+
+export const carnivalInkSpec = (map: TextureHandle | ReturnType<typeof texture.data>): CustomSpec => ({
+  glsl: { vertex: SHADOW_VERTEX, fragment: CARNIVAL_INK_FRAGMENT },
+  wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: CARNIVAL_INK_FRAGMENT_WGSL },
+  uniforms: {
+    baseColor: { type: "color3", value: [1, 1, 1] },
+    alpha: { type: "f32", value: 1 },
+    crFrame: { type: "f32", value: 0 },
+    map: { type: "texture2d" as const, value: map }
+  },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
+
 /** One of each distinct program, so a unit test can compile exactly what the app draws with. */
-export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
-  { name: "toon", spec: toonSpec([0.5, 0.5, 0.5]) },
-  { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
-  { name: "flat-tone", spec: flatSpec([1, 1, 1], 1, true) },
-  { name: "toon-map", spec: toonSpec([0.5, 0.5, 0.5], texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle) },
-  { name: "sky", spec: skySpec() },
-  { name: "flat", spec: flatSpec([1, 1, 1], 0.4) },
-  { name: "shadow", spec: shadowSpec() },
-  { name: "carnival-toon", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { gloss: 0.5 }) },
-  { name: "carnival-toon-tone", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.7, drySeconds: 2 }) },
-  { name: "carnival-gate", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.2, wobble: true }) },
-  { name: "carnival-toon-map", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { map: texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle, canvas: [0.05, 0.06] }) },
-  { name: "carnival-cloud", spec: carnivalCloudSpec(LOOKS.carnival) },
-  { name: "carnival-sky", spec: carnivalSkySpec(LOOKS.carnival) },
-  { name: "carnival-sea", spec: carnivalSeaSpec(LOOKS.carnival) }
-];
+export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => {
+  const unitTex = texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle;
+  return [
+    { name: "toon", spec: toonSpec([0.5, 0.5, 0.5]) },
+    { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
+    { name: "flat-tone", spec: flatSpec([1, 1, 1], 1, true) },
+    { name: "toon-map", spec: toonSpec([0.5, 0.5, 0.5], unitTex) },
+    { name: "sky", spec: skySpec() },
+    { name: "flat", spec: flatSpec([1, 1, 1], 0.4) },
+    { name: "shadow", spec: shadowSpec() },
+    { name: "carnival-toon", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { gloss: 0.5 }) },
+    { name: "carnival-toon-tone", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.7, drySeconds: 2 }) },
+    { name: "carnival-gate", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.2, wobble: true }) },
+    { name: "carnival-toon-map", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { map: unitTex, canvas: [0.05, 0.06] }) },
+    { name: "carnival-cloud", spec: carnivalCloudSpec(LOOKS.carnival) },
+    { name: "carnival-sky", spec: carnivalSkySpec(LOOKS.carnival) },
+    { name: "carnival-sea", spec: carnivalSeaSpec(LOOKS.carnival) },
+    { name: "carnival-curtain", spec: carnivalCurtainSpec(LOOKS.carnival) },
+    { name: "carnival-ink", spec: carnivalInkSpec(unitTex) }
+  ];
+};
 
 /* ---------------------------------------------------------------- canvases (painted from the sim's own draws) */
 
@@ -322,7 +366,12 @@ export class Batch {
   private anyToneDirty = false;
   /** Vertex uploads issued by `flush` so far (for tests and the C10 budget). */
   uploadedVertices = 0;
-  constructor(private readonly template: MeshData, readonly max: number, tone: Rgb | readonly number[] | null = null) {
+  constructor(
+    private readonly template: MeshData,
+    readonly max: number,
+    tone: Rgb | readonly number[] | null = null,
+    private readonly bounds: { readonly min: [number, number, number]; readonly max: [number, number, number] } = OPEN_BOUNDS
+  ) {
     this.vertsPer = template.positions.length / 3;
     this.dirty = new Uint8Array(max);
     this.toneDirty = new Uint8Array(max);
@@ -399,7 +448,7 @@ export class Batch {
 
   geometry() {
     return geometry.dynamic({
-      positions: this.positions.slice(), normals: this.normals.slice(), uvs: f32(this.mesh.uvs), indices: Uint32Array.from(this.mesh.indices), bounds: OPEN_BOUNDS,
+      positions: this.positions.slice(), normals: this.normals.slice(), uvs: f32(this.mesh.uvs), indices: Uint32Array.from(this.mesh.indices), bounds: this.bounds,
       ...(this.tones ? { attributes: { tone: { itemSize: 3, data: this.tones.slice() } } } : {})
     });
   }
@@ -530,9 +579,9 @@ export function buntingMesh(): { mesh: MeshData; tones: number[] } {
 }
 
 /**
- * CR-W2 crayon spires and towers on a ring around the road (static: the world scrolls past the ball, the horizon does
- * not). Positions come from a fixed integer hash, never from the sim's random stream. Each piece is a shaft plus a
- * crayon-tip cone (or a flat-topped tower every third one), toned with the violet haze colours.
+ * CR-W2 sculpted lacquer spires and studio domes on a ring around the road (static: the world scrolls past the ball,
+ * the horizon does not). Positions come from a fixed integer hash, never from the sim's random stream. Each piece is a
+ * smooth 16-sided shaft with a stepped plinth plus a tapered spire or observatory dome, toned with the violet haze colours.
  */
 export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: MeshData; tones: number[] } {
   const hash = (i: number, k: number): number => {
@@ -548,12 +597,16 @@ export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: Me
     const h = row.minHeight + (row.maxHeight - row.minHeight) * hash(i, 3);
     const w = 1.6 + 2.2 * hash(i, 4);
     const x = Math.sin(a) * r, z = -Math.cos(a) * r;
-    const tower = i % 3 === 2;
-    const shaft = transformMesh(cylinderMesh(w * (tower ? 1.2 : 1), w * (tower ? 1.35 : 1), h, 6), { tx: x, ty: row.baseY + h / 2, tz: z });
-    const tip = tower
-      ? transformMesh(cylinderMesh(w * 1.5, w * 1.5, 1.2, 6), { tx: x, ty: row.baseY + h + 0.6, tz: z })
-      : transformMesh(coneMesh(w, w * 2.4, 6, 0), { tx: x, ty: row.baseY + h, tz: z });
-    const piece = mergeMeshes([shaft, tip]);
+    const dome = i % 3 === 2;
+    const plinth = transformMesh(cylinderMesh(w * 1.45, w * 1.6, 2.4, 16), { tx: x, ty: row.baseY + 1.2, tz: z });
+    const shaft = transformMesh(cylinderMesh(w * (dome ? 1.15 : 0.92), w * (dome ? 1.32 : 1.08), h, 16), { tx: x, ty: row.baseY + h / 2, tz: z });
+    const crown = dome
+      ? mergeMeshes([
+          transformMesh(cylinderMesh(w * 1.36, w * 1.36, 0.9, 16), { tx: x, ty: row.baseY + h + 0.45, tz: z }),
+          sphereMesh(w * 1.18, 16, 10, x, row.baseY + h + 0.9, z)
+        ])
+      : transformMesh(coneMesh(w * 0.96, w * 2.35, 16, 0), { tx: x, ty: row.baseY + h, tz: z });
+    const piece = mergeMeshes([plinth, shaft, crown]);
     parts.push(piece);
     const c = hexLinear(row.colors[i % row.colors.length] as string);
     for (let v = 0; v < piece.positions.length / 3; v++) tones.push(...c);
@@ -598,6 +651,20 @@ export interface WorldView {
   readonly guide?: boolean;
   /** CR-C1: presentation camera layers (roll, speed FOV); off on reduced motion and `manual=1`. */
   readonly cameraLayers?: boolean;
+  /** Real-frame impact camera trauma + micro-FOV kick from `createImpactRig` (presentation only). */
+  readonly impact?: {
+    readonly shakeOffset: readonly [number, number, number];
+    readonly shakeRoll: number;
+    readonly fovDeltaDeg: number;
+  };
+  /** Real-frame chroma ink-droplet flipbook burst at the ball on gate match / hazard pop. */
+  readonly inkBurst?: null | {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+    readonly color: Rgb;
+    readonly progress: number;
+  };
 }
 
 export interface WorldRuntime {
@@ -758,12 +825,13 @@ export function buildWorld(options: WorldOptions): World {
   /* soft contact shadow under the ball */
   add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
 
-  /* road batches, in the scrolling frame */
+  /* road batches, in the scrolling frame; world-space movers in carnival take tight CORRIDOR_BOUNDS */
+  const worldSpaceBounds = carnival ? CORRIDOR_BOUNDS : OPEN_BOUNDS;
   const deck = new Batch(boxMesh(8, 0.3, 1), MAX_SEG);
-  const rails = new Batch(sphereMesh(1, 8, 6), MAX_SEG * 2);
+  const rails = new Batch(carnival ? curbRailMesh(8) : sphereMesh(1, 8, 6), MAX_SEG * 2);
   const dashes = new Batch(boxMesh(0.15, 0.02, 1.2), DASH_MAX);
   addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const, mirror: true } : {}) }));
-  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.4 : 0, contact: true, env: look.toon?.env.rails ?? 0 }));
+  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.52 : 0, contact: true, env: look.toon?.env.rails ?? 0 }));
   addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1]));
 
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
@@ -774,7 +842,10 @@ export function buildWorld(options: WorldOptions): World {
   const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.25 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0 }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.34 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0 }));
+  /* Translucent pigment curtain inside each carnival gate arch (+1 batched draw call) */
+  const gateCurtains = carnival ? new Batch(gateCurtainMesh(), GATE_MAX, hexLinear(COLORS[0] as string)) : null;
+  if (gateCurtains) addBatch("gate-curtains", gateCurtains, carnivalCurtainSpec(look));
   /* GU47 phase 3: gate cel shadows on the deck (carnival only, +1 draw, same slots as the gates) */
   const gateShadows = look.gateShadow && look.toon
     ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
@@ -785,7 +856,7 @@ export function buildWorld(options: WorldOptions): World {
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
   const gateSymbols = new Batch(symbolMeshes.circle, GATE_MAX, symbolMeshes.circle.tones);
   addBatch("gate-symbols", gateSymbols, flatSpec([1, 1, 1], 1, true));
-  const ballSymbol = new Batch(symbolMeshes.circle, 1, symbolMeshes.circle.tones);
+  const ballSymbol = new Batch(symbolMeshes.circle, 1, symbolMeshes.circle.tones, worldSpaceBounds);
   addBatch("ball-symbol", ballSymbol, flatSpec([1, 1, 1], 1, true));
 
   /* C18 first-run guide ring under the matching gate */
@@ -813,7 +884,7 @@ export function buildWorld(options: WorldOptions): World {
   // batch, rather than adding an emitter/draw for each island.
   const dripsPerPot = 4;
   const dripCount = carnival ? PAINT_POT_PIECES.length * dripsPerPot : 0;
-  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1]);
+  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1], worldSpaceBounds);
   addBatch("particles", particles, toon([1, 1, 1], { tone: true }));
   const puff = mergeMeshes([
     sphereMesh(2.5, 14, 10),
@@ -825,16 +896,28 @@ export function buildWorld(options: WorldOptions): World {
   const lowCloud = hexLinear(look.clouds.low);
   for (let i = 30; i < CLOUDS; i++) clouds.setTone(i, lowCloud);
   addBatch("clouds", clouds, carnival ? carnivalCloudSpec(look) : toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
-  const streaks = new Batch(boxMesh(0.08, 0.08, 4), STREAKS);
+  const streaks = new Batch(carnival ? boxMesh(0.038, 0.038, 2.8) : boxMesh(0.08, 0.08, 4), STREAKS, undefined, worldSpaceBounds);
   addBatch("streaks", streaks, flatSpec(hexLinear(look.streaks.color), look.streaks.alpha));
   add("shield", sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
+  if (carnival) {
+    const inkQuad: MeshData = {
+      positions: [-1.35, -1.35, 0, 1.35, -1.35, 0, 1.35, 1.35, 0, -1.35, 1.35, 0],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+      uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+      indices: [0, 1, 2, 0, 2, 3]
+    };
+    add("ink-burst", inkQuad, carnivalInkSpec(createInkFlipbook().texture));
+  }
 
-  /* CR-P1 / CR-P2 post: bloom on the sun, gems and flashes (threshold above the shouldered surfaces), warm vignette,
-   * grade, plum ink outline on the ball, gates and rails (E-E targets). Tone mapping stays "none" (main.ts). */
+  /* Post stack (carnival): contact shadows, AO, glossy paint-ribbon SSR, warm cinematic bloom, grade, vignette,
+   * plum ink outline on ball/gates/rails, and title-only thin-lens DOF. */
   if (look.post) {
     const post = look.post;
     builder
-      .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, scatter: post.bloom.scatter }))
+      .add(effects.contactShadows(post.contactShadows))
+      .add(effects.ambientOcclusion({ name: "ao", intensity: post.ao.intensity, radius: post.ao.radius, density: post.ao.density }))
+      .add(effects.screenSpaceReflections({ name: "ssr", intensity: post.ssr.intensity, roughness: post.ssr.roughness, maxDistance: post.ssr.maxDistance, thickness: post.ssr.thickness }))
+      .add(effects.cinematicBloom({ name: "bloom", color: "#fff5ea", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius, softKnee: post.bloom.knee }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature, gain: post.grade.gain }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
       .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }))
@@ -859,6 +942,7 @@ export function buildWorld(options: WorldOptions): World {
       node("guide").setVisible(false);
       node("ball-symbol").setVisible(false);
       node("gate-symbols").setVisible(false);
+      if (carnival) node("ink-burst").setVisible(false);
 
       const segSlots = new Slots<Segment>(MAX_SEG);
       const dashSlots = new Slots<Segment>(DASH_MAX);
@@ -900,6 +984,7 @@ export function buildWorld(options: WorldOptions): World {
         clouds.setUniform?.("crCloudTop", [...tod.cloudTop]);
         clouds.setUniform?.("crCloudShadow", [...tod.cloudShadow]);
         clouds.setUniform?.("crFogColor", [...tod.horizon]);
+        if (gateCurtains) node("gate-curtains").setUniform?.("crFogColor", [...tod.horizon]);
         const sky = node("sky");
         writeUniforms(sky, carnivalSkyUniforms(look, tod));
         if (look.cloudSea) {
@@ -961,9 +1046,15 @@ export function buildWorld(options: WorldOptions): World {
           if (fresh) {
             const r = s.z - scroll, x = curve(-o.distance + s.z), yaw = roadYaw(-o.distance + s.z);
             deck.place(slot, x, -0.15, r, yaw, 1, 1, 1);
-            const cx = 4.3 * Math.cos(yaw), cz = 4.3 * Math.sin(yaw);
-            rails.place(slot * 2, x - cx, 0.3, r + cz, yaw, 0.32, 0.32, 0.235);
-            rails.place(slot * 2 + 1, x + cx, 0.3, r - cz, yaw, 0.32, 0.32, 0.235);
+            if (carnival) {
+              const cx = 4.24 * Math.cos(yaw), cz = 4.24 * Math.sin(yaw);
+              rails.place(slot * 2, x - cx, 0.12, r + cz, yaw, 0.3, 0.34, 0.54);
+              rails.place(slot * 2 + 1, x + cx, 0.12, r - cz, yaw, 0.3, 0.34, 0.54);
+            } else {
+              const cx = 4.3 * Math.cos(yaw), cz = 4.3 * Math.sin(yaw);
+              rails.place(slot * 2, x - cx, 0.3, r + cz, yaw, 0.32, 0.32, 0.235);
+              rails.place(slot * 2 + 1, x + cx, 0.3, r - cz, yaw, 0.32, 0.32, 0.235);
+            }
           }
           if (bunting && s.index % buntingEvery === 0) {
             const bs = buntingSlots.use(s);
@@ -980,9 +1071,9 @@ export function buildWorld(options: WorldOptions): World {
           }
         }
 
-        /* gates and their symbols */
+        /* gates, pigment curtains, and accessibility symbols */
         const wantSymbols = view.symbols === true;
-        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateColor[slot] = -1; });
+        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateCurtains?.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateColor[slot] = -1; });
         const squashSeconds = look.gates?.squashSeconds ?? 0;
         for (const g of simNow.gates) {
           const { slot, fresh } = gateSlots.use(g);
@@ -990,6 +1081,7 @@ export function buildWorld(options: WorldOptions): World {
           const r = g.z - scroll, x = g.laneX + curve(-o.distance + g.z);
           if (fresh) {
             gates.place(slot, x, 0, r, 0, 1, 1, 1);
+            gateCurtains?.place(slot, x, 0, r, 0, 1, 1, 1);
             gateShadows?.place(slot, x, 0.012, r, 0, 1, 1, 1);
             gatePassed[slot] = g.passed; gateSquashAt[slot] = Number.NaN; gateGone[slot] = false;
           }
@@ -1000,12 +1092,20 @@ export function buildWorld(options: WorldOptions): World {
           }
           if (!gateGone[slot] && !Number.isNaN(gateSquashAt[slot])) {
             const sq = gateSquash(elapsed - (gateSquashAt[slot] as number), squashSeconds);
-            if (sq) gates.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
-            else { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateGone[slot] = true; }
+            if (sq) {
+              gates.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
+              gateCurtains?.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
+            } else {
+              gates.collapse(slot); gateCurtains?.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateGone[slot] = true;
+            }
           }
           if (gateGone[slot]) { gateColor[slot] = g.colorIndex; continue; }
           if (fresh || gateColor[slot] !== g.colorIndex || (wantSymbols && !symbolsOn)) {
-            if (gateColor[slot] !== g.colorIndex) gates.setTone(slot, hexLinear(COLORS[g.colorIndex] as string));
+            if (gateColor[slot] !== g.colorIndex) {
+              const gCol = hexLinear(COLORS[g.colorIndex] as string);
+              gates.setTone(slot, gCol);
+              gateCurtains?.setTone(slot, gCol);
+            }
             gateColor[slot] = g.colorIndex;
             gateSymbols.place(slot, x, GATE_SYMBOL_Y, r, 0, 1, 1, 1, symbolMeshes[SYMBOL_FOR_COLOR[g.colorIndex] ?? "circle"]);
           }
@@ -1135,6 +1235,12 @@ export function buildWorld(options: WorldOptions): World {
         dashes.flush(node("dashes"));
         if (bunting) bunting.flush(node("bunting"));
         gates.flush(node("gates"));
+        if (gateCurtains) {
+          const ch = node("gate-curtains");
+          ch.setPosition(0, 0, roadZ);
+          ch.setUniform?.("crTime", view.reducedMotion ? 0 : elapsed);
+          gateCurtains.flush(ch, false);
+        }
         if (gateShadows) { node("gate-shadows").setPosition(0, 0, roadZ); gateShadows.flush(node("gate-shadows"), false); }
         gateSymbols.flush(node("gate-symbols"), false);
         ballSymbol.flush(node("ball-symbol"), false);
@@ -1149,6 +1255,18 @@ export function buildWorld(options: WorldOptions): World {
           if (look.gates) node("gates").setUniform?.("crWobble", [elapsed, view.reducedMotion ? 0 : look.gates.wobble, look.gates.wobbleHz]);
           node("splats").setUniform?.("crDry", [p.z, Math.max(1, o.speed), look.toon?.gloss.drySeconds ?? 0]);
           if (look.cloudSea) node("cloud-sea").setUniform?.("crScroll", -drift * 0.045 * look.cloudSea.scroll);
+          const ink = node("ink-burst");
+          const burst = !view.reducedMotion && view.cameraLayers === true ? view.inkBurst : null;
+          if (burst && burst.progress >= 0 && burst.progress < 1) {
+            const frame = Math.min(31, Math.floor(burst.progress * 32));
+            const expand = 0.72 + 1.05 * Math.pow(burst.progress, 0.55);
+            ink.setVisible(true).setPosition(burst.x, burst.y + 0.35, burst.z + 0.45).setScale(expand);
+            ink.setUniform?.("baseColor", [...burst.color]);
+            ink.setUniform?.("alpha", Math.max(0, 1 - Math.pow(burst.progress, 1.8)) * 0.92);
+            ink.setUniform?.("crFrame", frame);
+          } else {
+            ink.setVisible(false);
+          }
         }
         /* camera */
         if (o.phase !== phaseName) { phaseName = o.phase; phaseStart = elapsed; }
@@ -1159,9 +1277,15 @@ export function buildWorld(options: WorldOptions): World {
         const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);
         const layers = view.cameraLayers === true && !view.reducedMotion && look.camera !== null && o.phase === "playing";
         const cam = layers && look.camera ? cameraLayers(look.camera, roadYaw(-(o.distance - back)), simNow.speedRatio) : { rollDeg: 0, fovDeg: 0 };
-        const fov = baseFov + (look.camera?.fovOffsetDeg ?? 0) + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
-        const up = cam.rollDeg === 0 ? [0, 1, 0] as const : rolledUp([c.x, c.y, c.z], [c.lookX, c.lookY, c.lookZ], cam.rollDeg);
-        controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [...up], fov }, { cut: false });
+        const imp = layers && view.impact ? view.impact : null;
+        const sx = imp ? imp.shakeOffset[0] : 0;
+        const sy = imp ? imp.shakeOffset[1] : 0;
+        const rollDeg = cam.rollDeg + (imp ? (imp.shakeRoll * 180) / Math.PI : 0);
+        const fov = baseFov + (look.camera?.fovOffsetDeg ?? 0) + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg + (imp ? imp.fovDeltaDeg : 0);
+        const pos: [number, number, number] = [c.x + sx, c.y + sy, c.z];
+        const tgt: [number, number, number] = [c.lookX + sx * 0.35, c.lookY + sy * 0.35, c.lookZ];
+        const up = rollDeg === 0 ? [0, 1, 0] as const : rolledUp(pos, tgt, rollDeg);
+        controller.setPose({ position: pos, target: tgt, up: [...up], fov }, { cut: false });
         /* CR-P3: depth of field only on the title, focused on the ball; the play frames never run it */
         if (look.post) {
           const title = o.phase === "splash";
@@ -1170,8 +1294,8 @@ export function buildWorld(options: WorldOptions): World {
           if (title && focus !== dofLast) { app.post?.setEffect?.(TITLE_DOF, { focusDistance: focus }); dofLast = focus; }
         }
       }
-      const batches = [deck, rails, dashes, gates, ...(gateShadows ? [gateShadows] : []), gateSymbols, ballSymbol, splats, particles, clouds, streaks];
-      const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol"];
+      const batches = [deck, rails, dashes, gates, ...(gateCurtains ? [gateCurtains] : []), ...(gateShadows ? [gateShadows] : []), gateSymbols, ballSymbol, splats, particles, clouds, streaks];
+      const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol", ...(carnival ? ["ink-burst"] : [])];
       function warm(on: boolean): void {
         for (const id of parked) {
           const h = node(id).setVisible(on);

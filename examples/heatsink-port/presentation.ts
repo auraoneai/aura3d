@@ -115,3 +115,30 @@ export function createHeatsinkPresenter(getRace: () => Pick<Race, "player" | "op
     blend: (a, b, t) => blendShown(a, b, t, blended)
   });
 }
+
+/** Pure visual articulation state for the quad-rotor ducted fans, vector airbrakes, and twin ion nozzles. */
+export interface CraftArticulationState {
+  rotorAngle: number;
+  flapPitch: number;
+  flapRoll: number;
+}
+
+export function stepCraftArticulation(
+  state: CraftArticulationState,
+  dt: number,
+  speed01: number,
+  boostActive: boolean,
+  brakingOrDrifting: boolean,
+  steer: number
+): { rotorAngle: number; flapPitch: number; flapRoll: number; nozzleScale: number } {
+  const clampedDt = Math.min(0.1, Math.max(0, dt));
+  const rpmRad = 44 + 52 * Math.min(1, Math.max(0, speed01)) + (boostActive ? 30 : 0);
+  state.rotorAngle = (state.rotorAngle + rpmRad * clampedDt) % (Math.PI * 200);
+  const targetPitch = brakingOrDrifting ? 0.52 : 0.06 + 0.08 * speed01;
+  const targetRoll = Math.max(-1, Math.min(1, steer)) * 0.22;
+  const k = 1 - Math.exp(-clampedDt * 14);
+  state.flapPitch += (targetPitch - state.flapPitch) * k;
+  state.flapRoll += (targetRoll - state.flapRoll) * k;
+  const nozzleScale = boostActive ? 1.32 : 0.88 + 0.28 * speed01;
+  return { rotorAngle: state.rotorAngle, flapPitch: state.flapPitch, flapRoll: state.flapRoll, nozzleScale };
+}

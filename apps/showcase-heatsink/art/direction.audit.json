@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-heatsink/art/direction.ts",
-  "sourceSha256": "70d2ac12ad4ad6f436b7c751e3c48e7e289c3f22c2c34dfaef16fb08f0f49795",
+  "sourceSha256": "9260a14c47650bf13cf7e4e4bd85e97a754eed3a5626660c66d5437f8421aab2",
   "id": "showcase-heatsink",
   "genre": "racing",
   "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
@@ -17,7 +17,7 @@
   },
   "environment": {
     "hdri": "kloppenheim_02",
-    "background": "hdri"
+    "background": "sky"
   },
   "violations": [],
   "snapshot": {
@@ -128,20 +128,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsink_thermalArchIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalArchIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "heatsinkOverpass",
         "triangles": 0,
         "textures": 0,
@@ -149,35 +135,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkTunnelFrame",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkTunnelFrame",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "heatsink_thermalLadleCrane",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalTowerLIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalTowerLIron",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -206,20 +164,6 @@
       },
       {
         "assetKey": "heatsink_thermalWaterTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkHoloBillboard",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkHoloBillboard",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -287,6 +231,34 @@
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsink_thermalArchIron",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTunnelFrame",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsink_thermalTowerLIron",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkHoloBillboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
       }
     ],
     "materials": [
@@ -345,7 +317,17 @@
         "practical": true
       },
       {
+        "name": "td barrier brushed metal",
         "node": "track-walls",
+        "practical": false
+      },
+      {
+        "name": "td heatsink cooling fins",
+        "node": "track-heatsink-fins",
+        "practical": false
+      },
+      {
+        "node": "track-thermal-vents",
         "practical": false
       },
       {
@@ -370,6 +352,14 @@
         "practical": true
       },
       {
+        "node": "drone-thruster-plumes",
+        "practical": false
+      },
+      {
+        "node": "drone-rotor-discs",
+        "practical": false
+      },
+      {
         "node": "player-shockwave-ring",
         "emissiveIntensity": 2.4,
         "practical": true
@@ -383,6 +373,14 @@
         "node": "incoming-missile",
         "emissiveIntensity": 2.6,
         "practical": true
+      },
+      {
+        "node": "vfx-plasma-flipbook",
+        "practical": false
+      },
+      {
+        "node": "vfx-sparks-flipbook",
+        "practical": false
       }
     ],
     "drawCalls": 0
@@ -433,7 +431,7 @@
       "practicals": 6,
       "environment": {
         "hdri": "kloppenheim_02",
-        "background": "hdri"
+        "background": "sky"
       },
       "exposureEV": 0.4
     },

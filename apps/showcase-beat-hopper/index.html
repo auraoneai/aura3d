@@ -17,20 +17,19 @@
     <meta name="twitter:title" content="Beat Hopper — Aura3D" />
     <meta name="twitter:description" content="Swipe between three lanes, tap to hop, hold to duck. Dodge walls, grab beat orbs and ride the 132 BPM beat — PERFECT timing builds combos! A neon lane-runner rhythm game built with Aura3D." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/beat-hopper@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Beat Hopper","url":"https://aura3d.auraone.ai/apps/showcase-beat-hopper/","description":"Three-lane rhythm runner on a 132 BPM beat grid: swipe or press left/right to move between lanes and dodge walls, tap to hop over blocks and gaps or hold to…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/beat-hopper@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Beat Hopper","url":"https://aura3d.auraone.ai/apps/showcase-beat-hopper/","description":"Three-lane rhythm runner on a 132 BPM beat grid: swipe or press left/right to move between lanes and dodge walls, tap to hop over blocks and gaps or hold to…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/beat-hopper@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
   <style>
-    @font-face {
-      font-family: "GT Walsheim";
-      src: url("/aura-assets/GT-Walsheim-Bold.woff2") format("woff2");
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
     :root {
+      font-synthesis: none;
+      --font-ui: "Whitney", "Whitney Fallback", "Graphik", sans-serif;
+      --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif;
+      --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
       --ink: #f4f0ff;
       --ink-dim: #cfc6ee;
       --paper: #14082e;
       --panel: #1e0f42;
+      --glass: rgba(20, 8, 46, 0.82);
+      --glass-border: rgba(244, 240, 255, 0.16);
       --accent: #ff2fb3;
       --accent-2: #23e6ff;
       --gold: #ffd166;
@@ -38,128 +37,310 @@
       --road: #1c1240;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; background: var(--paper); }
+    html { height: 100%; overflow: hidden; background: var(--paper); font-synthesis: none; }
     body {
-      font-family: "GT Walsheim", sans-serif;
-      font-weight: 700;
+      height: 100%;
+      overflow: hidden;
+      background: var(--paper);
+      font-family: var(--font-ui);
+      font-weight: 500;
+      font-kerning: normal;
+      font-variant-numeric: tabular-nums;
       color: var(--ink);
       -webkit-user-select: none;
       user-select: none;
       touch-action: none;
     }
+    b, strong { font-weight: 600; }
     #app { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
     .overlay {
       position: fixed; inset: 0; display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 14px; text-align: center;
-      padding: calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right))
-               calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+      padding: calc(20px + env(safe-area-inset-top) + var(--a3d-bar-space, 0px))
+               calc(20px + env(safe-area-inset-right))
+               calc(20px + env(safe-area-inset-bottom))
+               calc(20px + env(safe-area-inset-left));
       z-index: 20;
     }
     .hidden { display: none !important; }
-    /* translucent menus: the synthwave stage stays visible behind the title, results and pause cards */
-    #splash-screen { background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(20, 8, 46, 0.78) 0%, rgba(20, 8, 46, 0.5) 55%, rgba(20, 8, 46, 0.12) 100%); }
-    #splash-screen .instructions, #splash-screen .hint, #splash-screen .toggles { text-shadow: 0 1px 6px rgba(8, 3, 22, 0.9); }
+    /* Translucent menus keep the concert-stage equalizer skyline visible behind cards */
+    #splash-screen { background: radial-gradient(ellipse 62% 72% at 50% 50%, rgba(20, 8, 46, 0.80) 0%, rgba(20, 8, 46, 0.52) 55%, rgba(20, 8, 46, 0.14) 100%); }
+    #splash-screen .instructions, #splash-screen .hint, #splash-screen .toggles { text-shadow: 0 1px 6px rgba(8, 3, 22, 0.92); }
     #gameover-screen { background: radial-gradient(ellipse 65% 75% at 50% 50%, rgba(255, 47, 179, 0.93) 0%, rgba(255, 47, 179, 0.82) 60%, rgba(160, 20, 120, 0.55) 100%); color: #14082e; }
-    #pause-screen { background: rgba(20, 8, 46, 0.62); }
-    h1 { font-size: clamp(34px, 7vw, 64px); letter-spacing: 0.02em; color: var(--accent-2); text-shadow: 0 0 24px rgba(35, 230, 255, 0.55); }
-    #gameover-screen h1 { color: #14082e; text-shadow: none; }
-    .instructions { max-width: 420px; font-size: clamp(15px, 2.6vw, 19px); color: var(--ink); line-height: 1.45; }
-    .hint { font-size: 13px; color: var(--ink-dim); }
-    #splash-best { font-size: 16px; color: var(--gold); }
-    button {
-      font-family: inherit; font-weight: 700; font-size: 20px; letter-spacing: 0.04em;
-      border: none; border-radius: 999px; padding: 14px 42px; cursor: pointer;
-      background: var(--accent); color: #14082e;
-      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+    #pause-screen { background: rgba(20, 8, 46, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    h1 {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: clamp(32px, 6.6vw, 58px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      color: var(--accent-2);
+      text-shadow: 0 0 24px rgba(35, 230, 255, 0.52);
     }
-    button:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35); }
+    #gameover-screen h1 { color: #14082e; text-shadow: none; }
+    .instructions { max-width: 430px; font-weight: 400; font-size: clamp(14px, 2.4vw, 17px); color: var(--ink); line-height: 1.45; }
+    .hint { font-size: 13px; font-weight: 400; color: var(--ink-dim); line-height: 1.35; }
+    #splash-best {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--gold);
+    }
+    button {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: 0;
+      min-height: 46px;
+      min-width: 44px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      padding: 11px 36px;
+      cursor: pointer;
+      touch-action: manipulation;
+      background: var(--accent);
+      color: #14082e;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.36);
+    }
+    button:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.36); }
     button[aria-busy="true"] { opacity: 0.6; cursor: progress; }
     #btn-restart { background: var(--gold); color: #14082e; }
     #load-bar {
-      width: min(300px, 70vw); height: 10px; border-radius: 999px;
+      width: min(300px, 70vw); height: 8px; border-radius: 999px;
       background: rgba(244, 240, 255, 0.18); overflow: hidden;
     }
     #load-fill { height: 100%; width: 0%; border-radius: 999px; background: var(--accent-2); transition: width 120ms linear; }
-    .toggles { display: flex; gap: 18px; font-size: 14px; color: var(--ink); }
-    .toggles label { display: flex; align-items: center; gap: 7px; cursor: pointer; }
-    .toggles input { width: 18px; height: 18px; accent-color: var(--accent-2); cursor: pointer; }
-    #hud {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 10; pointer-events: none;
-      display: flex; align-items: flex-start; justify-content: space-between;
-      padding: calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+    .toggles { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 14px; font-weight: 500; color: var(--ink); }
+    .toggles label {
+      display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+      min-height: 44px; padding: 6px 12px; border-radius: 999px;
+      background: rgba(20, 8, 46, 0.56); border: 1px solid rgba(244, 240, 255, 0.14);
+      touch-action: manipulation;
     }
-    #hud-left { display: flex; flex-direction: column; gap: 5px; }
-    #hud-score { font-size: clamp(26px, 5vw, 40px); font-variant-numeric: tabular-nums; color: var(--ink); text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
-    #hud-best { font-size: 13px; color: var(--ink); text-shadow: 0 2px 6px rgba(0,0,0,0.7); font-variant-numeric: tabular-nums; }
+    .toggles input { width: 18px; height: 18px; accent-color: var(--accent-2); cursor: pointer; }
+
+    /* Rhythm Stage HUD */
+    #hud {
+      position: fixed;
+      top: var(--a3d-bar-space, 0px);
+      left: 0; right: 0; z-index: 10; pointer-events: none;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+    }
+    #hud-left {
+      display: flex; flex-direction: column; gap: 5px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      backdrop-filter: blur(12px) saturate(135%);
+      -webkit-backdrop-filter: blur(12px) saturate(135%);
+      box-shadow: 0 8px 24px rgba(6, 2, 18, 0.42);
+    }
+    #hud-score-row { display: flex; align-items: baseline; gap: 10px; }
+    #hud-score {
+      font-family: var(--font-metric);
+      font-weight: 500;
+      font-size: clamp(24px, 4.6vw, 34px);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+    #hud-best {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-caps: all-small-caps;
+      letter-spacing: 0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-dim);
+    }
     #combo-wrap { display: flex; align-items: center; gap: 8px; }
-    #combo-tube { width: 110px; height: 9px; border-radius: 999px; background: rgba(20, 8, 46, 0.75); overflow: hidden; }
-    #combo-fill { height: 100%; width: 0%; background: var(--gold); border-radius: 999px; }
-    #combo-label { font-size: 13px; color: var(--ink); text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
-    #hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-    #hud-lives { display: flex; gap: 6px; }
-    .life-pip { width: 14px; height: 14px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px rgba(255, 77, 109, 0.8); }
+    #combo-tube { width: 104px; height: 7px; border-radius: 999px; background: rgba(244, 240, 255, 0.14); overflow: hidden; }
+    #combo-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-2), var(--gold)); border-radius: 999px; }
+    #combo-label {
+      font-family: var(--font-metric);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--gold);
+    }
+    #combo-streak {
+      font-family: var(--font-metric);
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-dim);
+    }
+    #hud-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      backdrop-filter: blur(12px) saturate(135%);
+      -webkit-backdrop-filter: blur(12px) saturate(135%);
+      box-shadow: 0 8px 24px rgba(6, 2, 18, 0.42);
+    }
+    #hud-telemetry { display: flex; align-items: center; gap: 8px; }
+    #hud-bpm {
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-2);
+      padding: 3px 6px;
+      border-radius: 5px;
+      background: rgba(35, 230, 255, 0.12);
+      border: 1px solid rgba(35, 230, 255, 0.28);
+    }
+    #hud-accuracy { display: inline-flex; align-items: baseline; gap: 4px; }
+    .hud-kicker {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+      font-variant-caps: all-small-caps;
+      letter-spacing: 0.03em;
+      color: var(--ink-dim);
+    }
+    #hud-acc-val {
+      font-family: var(--font-metric);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+    #hud-status-row { display: flex; align-items: center; gap: 10px; }
+    #hud-lives { display: flex; gap: 6px; align-items: center; }
+    .life-pip { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px rgba(255, 77, 109, 0.8); }
     .life-pip.lost { background: rgba(244, 240, 255, 0.22); box-shadow: none; }
+    #beat-meter { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    #beat-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 1.5px solid var(--accent-2);
+      opacity: 0.45; transform: scale(1.05);
+    }
     #beat-dot {
-      width: 18px; height: 18px; border-radius: 50%; background: var(--accent-2);
+      width: 12px; height: 12px; border-radius: 50%; background: var(--accent-2);
       box-shadow: 0 0 12px rgba(35, 230, 255, 0.9); transform: scale(1);
     }
+
     #corner-buttons {
       position: fixed; z-index: 15;
       bottom: calc(14px + env(safe-area-inset-bottom)); right: calc(14px + env(safe-area-inset-right));
-      display: flex; gap: 10px;
+      display: flex; gap: 8px;
     }
     #corner-buttons button {
-      font-size: 15px; padding: 9px 16px; background: var(--panel); color: var(--ink);
-      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+      font-family: var(--font-ui);
+      font-weight: 500;
+      font-size: 13px;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 10px 16px;
+      background: var(--glass);
+      color: var(--ink);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 6px 16px rgba(6, 2, 18, 0.42);
     }
+
+    /* Relocated OFF the track horizon vanishing point so incoming dodge walls & beat orbs remain 100% unobstructed */
     #popups {
-      position: fixed; top: 24%; left: 50%; transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      position: fixed;
+      top: 58%;
+      left: calc(50% + 128px);
+      transform: none;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
       z-index: 12; pointer-events: none;
     }
     .popup {
-      font-size: 22px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
-      animation: popup-rise 1.1s ease-out forwards;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 18px;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(20, 8, 46, 0.84);
+      border: 1px solid rgba(244, 240, 255, 0.16);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.65);
+      animation: popup-rise 0.95s ease-out forwards;
     }
     @keyframes popup-rise {
-      0% { opacity: 0; transform: translateY(10px) scale(0.8); }
-      15% { opacity: 1; transform: translateY(0) scale(1.05); }
-      70% { opacity: 1; }
-      100% { opacity: 0; transform: translateY(-34px) scale(1); }
+      0% { opacity: 0; transform: translateY(8px) scale(0.88); }
+      16% { opacity: 1; transform: translateY(0) scale(1.03); }
+      72% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-24px) scale(1); }
     }
-    #result-score { font-size: clamp(44px, 9vw, 76px); font-variant-numeric: tabular-nums; }
-    #result-best { font-size: 16px; }
-    #result-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 15px; }
-    #result-stats div { display: flex; flex-direction: column; gap: 2px; }
-    #result-stats span { font-size: 24px; font-variant-numeric: tabular-nums; }
+
+    #result-score {
+      font-family: var(--font-metric);
+      font-weight: 500;
+      font-size: clamp(44px, 9vw, 72px);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    #result-best { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    #result-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 13px; font-weight: 500; }
+    #result-stats div { display: flex; flex-direction: column; gap: 3px; }
+    #result-stats span {
+      font-family: var(--font-metric);
+      font-weight: 500;
+      font-size: 24px;
+      line-height: 1.05;
+      font-variant-numeric: tabular-nums;
+    }
     #render-error {
-      background: var(--panel); border-radius: 16px; padding: 22px 26px; max-width: 440px;
-      color: var(--ink); font-size: 15px; line-height: 1.5;
+      background: var(--panel); border-radius: 14px; padding: 20px 24px; max-width: 440px;
+      color: var(--ink); font-size: 14px; font-weight: 400; line-height: 1.5;
     }
-    /* How to play: a scrollable card over a dim of the stage; key chips and swatches use the game's own colours */
-    #howto-screen { z-index: 30; background: rgba(8, 3, 22, 0.72); justify-content: center; }
+
+    /* How to play dialog */
+    #howto-screen { z-index: 30; background: rgba(8, 3, 22, 0.76); justify-content: center; }
     #howto-card {
       width: min(760px, 100%); max-height: 100%; overflow-y: auto; overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch; touch-action: pan-y;
-      background: var(--panel); border: 2px solid rgba(35, 230, 255, 0.55); border-radius: 18px;
-      box-shadow: 0 0 32px rgba(35, 230, 255, 0.22), 0 10px 0 rgba(0, 0, 0, 0.35);
+      background: var(--panel); border: 1px solid rgba(35, 230, 255, 0.45); border-radius: 16px;
+      box-shadow: 0 0 32px rgba(35, 230, 255, 0.2), 0 12px 28px rgba(0, 0, 0, 0.45);
       padding: 20px 22px 18px; text-align: left; display: flex; flex-direction: column; gap: 14px;
       -webkit-user-select: text; user-select: text;
     }
     #howto-card:focus { outline: none; }
-    #howto-title { font-size: clamp(24px, 4.4vw, 34px); color: var(--accent-2); text-shadow: 0 0 18px rgba(35, 230, 255, 0.5); text-align: center; line-height: 1.1; }
-    .howto-goal { font-size: 15px; line-height: 1.45; color: var(--ink); text-align: center; max-width: 600px; align-self: center; }
+    #howto-title {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: clamp(22px, 4vw, 30px);
+      color: var(--accent-2);
+      text-shadow: 0 0 18px rgba(35, 230, 255, 0.45);
+      text-align: center;
+      line-height: 1.15;
+    }
+    .howto-goal { font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--ink); text-align: center; max-width: 600px; align-self: center; }
     .howto-goal b { color: var(--gold); }
-    #howto-card h3 { font-size: 13px; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 7px; }
+    #howto-card h3 {
+      font-size: 13px;
+      font-weight: 500;
+      font-variant-caps: all-small-caps;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      margin-bottom: 7px;
+    }
     .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
-    .howto-box { background: rgba(20, 8, 46, 0.7); border-radius: 12px; padding: 11px 13px; }
-    .howto-box h4 { font-size: 13px; color: var(--accent-2); margin-bottom: 7px; }
-    .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.4; color: var(--ink-dim); }
+    .howto-box { background: rgba(20, 8, 46, 0.7); border-radius: 12px; padding: 11px 13px; border: 1px solid rgba(244, 240, 255, 0.08); }
+    .howto-box h4 { font-size: 13px; font-weight: 600; color: var(--accent-2); margin-bottom: 7px; }
+    .howto-list { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 13px; font-weight: 400; line-height: 1.42; color: var(--ink-dim); }
     .howto-list li { display: flex; align-items: center; gap: 9px; }
     .howto-list li > .keys { flex: 0 0 auto; min-width: 104px; display: flex; gap: 4px; flex-wrap: wrap; }
-    .howto-list b { color: var(--ink); }
+    .howto-list b { color: var(--ink); font-weight: 600; }
     kbd {
-      font-family: inherit; font-size: 12px; line-height: 1; color: #14082e; background: var(--ink);
+      font-family: var(--font-ui); font-weight: 500; font-size: 12px; line-height: 1; color: #14082e; background: var(--ink);
       border-radius: 6px; padding: 5px 7px 4px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45); white-space: nowrap;
     }
     kbd.touch { background: var(--accent-2); }
@@ -171,8 +352,7 @@
     .sw-wall::after { content: ""; position: absolute; left: 9px; right: 9px; top: 3px; bottom: 0; background: #ff3a3a; border-top: 3px solid #ffb3b3; box-shadow: 0 0 6px rgba(255, 58, 58, 0.7); }
     .sw-orb::after { content: ""; position: absolute; left: 10px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #9ffcff; box-shadow: 0 0 8px #9ffcff; }
     .sw-life::after { content: ""; position: absolute; left: 11px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 6px rgba(255, 77, 109, 0.8); }
-    .sw-mult { display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gold); }
-    /* the close button stays in view while the rules scroll */
+    .sw-mult { font-family: var(--font-metric); font-weight: 500; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gold); }
     .howto-foot {
       display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; flex-wrap: wrap;
       position: sticky; bottom: -18px; margin: 0 -22px -18px; padding: 12px 22px 18px;
@@ -180,15 +360,42 @@
     }
     .howto-foot .hint { flex: 1 1 260px; display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; }
     #btn-howto-close { min-height: 48px; margin-left: auto; }
-    .btn-howto { font-size: 15px; padding: 10px 22px; min-height: 44px; background: var(--panel); color: var(--ink); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4); border: 2px solid rgba(35, 230, 255, 0.5); }
+    .btn-howto {
+      font-size: 14px; font-weight: 500; padding: 10px 22px; min-height: 44px; min-width: 44px;
+      background: var(--panel); color: var(--ink);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      border: 1.5px solid rgba(35, 230, 255, 0.5);
+    }
+
+    @media (pointer: coarse), (max-width: 760px) {
+      button, #corner-buttons button, .btn-howto, .toggles label {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+      }
+      #popups {
+        top: 64%;
+        left: auto;
+        right: calc(14px + env(safe-area-inset-right));
+        align-items: flex-end;
+      }
+      #hud {
+        padding: calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));
+        gap: 8px;
+      }
+      #hud-left, #hud-right { padding: 7px 10px; }
+      #combo-tube { width: 78px; }
+    }
+
     @media (max-width: 600px) {
-      #howto-screen { padding: calc(10px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
+      #howto-screen { padding: calc(10px + env(safe-area-inset-top) + var(--a3d-bar-space, 0px)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
       #howto-card { padding: 16px 14px 14px; gap: 12px; }
       .howto-cols { grid-template-columns: 1fr; }
       .howto-list li > .keys { min-width: 92px; }
       .howto-foot { bottom: -14px; margin: 0 -14px -14px; padding: 10px 14px 14px; }
       #btn-howto-close { width: 100%; margin-left: 0; }
     }
+
     @media (prefers-reduced-motion: reduce) {
       .popup { animation-duration: 0.01s; animation-fill-mode: none; opacity: 1; }
       #load-fill { transition: none; }
@@ -200,18 +407,30 @@
 
   <div id="hud" class="hidden no-steer" aria-hidden="true">
     <div id="hud-left">
-      <div id="hud-score">0</div>
-      <div id="hud-best">BEST 0</div>
+      <div id="hud-score-row">
+        <div id="hud-score">0</div>
+        <div id="hud-best">best 0</div>
+      </div>
       <div id="combo-wrap">
         <div id="combo-tube"><div id="combo-fill"></div></div>
         <div id="combo-label">x1</div>
+        <div id="combo-streak"></div>
       </div>
     </div>
     <div id="hud-right">
-      <div id="hud-lives">
-        <div class="life-pip"></div><div class="life-pip"></div><div class="life-pip"></div>
+      <div id="hud-telemetry">
+        <div id="hud-bpm">132 BPM</div>
+        <div id="hud-accuracy"><span class="hud-kicker">sync</span><span id="hud-acc-val">100%</span></div>
       </div>
-      <div id="beat-dot"></div>
+      <div id="hud-status-row">
+        <div id="hud-lives">
+          <div class="life-pip"></div><div class="life-pip"></div><div class="life-pip"></div>
+        </div>
+        <div id="beat-meter">
+          <div id="beat-ring"></div>
+          <div id="beat-dot"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -260,14 +479,13 @@
     <p class="hint">P or Esc to resume</p>
   </div>
 
-
   <div id="howto-screen" class="overlay no-steer hidden" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal">
     <div id="howto-card" tabindex="-1">
       <h2 id="howto-title">HOW TO PLAY</h2>
-      <p id="howto-goal" class="howto-goal">Run down three neon lanes on a 132 BPM beat: <b>hop, duck or switch lanes</b> past every row, grab beat orbs and score as much as you can before your <b>3 lives</b> run out.</p>
+      <p id="howto-goal" class="howto-goal">Skate down three neon lanes on a 132 BPM beat: <b>hop, duck or switch lanes</b> past every row, grab crystal beat orbs and score as much as you can before your <b>3 lives</b> run out.</p>
 
       <section aria-labelledby="howto-controls">
-        <h3 id="howto-controls">Controls</h3>
+        <h3 id="howto-controls">controls</h3>
         <div class="howto-cols">
           <div class="howto-box">
             <h4>Keyboard</h4>
@@ -294,15 +512,15 @@
       </section>
 
       <section aria-labelledby="howto-track">
-        <h3 id="howto-track">On the track</h3>
+        <h3 id="howto-track">on the track</h3>
         <div class="howto-cols">
           <ul class="howto-list">
-            <li><span class="swatch sw-block" aria-hidden="true"></span><span><b>Orange crate</b>: hop over it, or step into an open lane</span></li>
-            <li><span class="swatch sw-gap" aria-hidden="true"></span><span><b>Dark trench</b>: a hole in the road. Hop over it</span></li>
-            <li><span class="swatch sw-bar" aria-hidden="true"></span><span><b>Pink bar</b>: overhead. Duck under it</span></li>
+            <li><span class="swatch sw-block" aria-hidden="true"></span><span><b>Speaker crate</b>: hop over it, or step into an open lane</span></li>
+            <li><span class="swatch sw-gap" aria-hidden="true"></span><span><b>Laser trench</b>: a deep chasm in the runway. Hop over it</span></li>
+            <li><span class="swatch sw-bar" aria-hidden="true"></span><span><b>Plasma bar</b>: overhead beam. Duck under it</span></li>
           </ul>
           <ul class="howto-list">
-            <li><span class="swatch sw-wall" aria-hidden="true"></span><span><b>Red wall</b>: too tall to hop. Switch to a free lane (DODGE)</span></li>
+            <li><span class="swatch sw-wall" aria-hidden="true"></span><span><b>Equalizer monolith</b>: too tall to hop. Switch to a free lane (DODGE)</span></li>
             <li><span class="swatch sw-orb" aria-hidden="true"></span><span><b>Beat orb</b>: be in its lane as it passes to collect it</span></li>
             <li><span class="swatch sw-mult" aria-hidden="true">32</span><span>Every 32 beats the track gets <b>faster</b> and rows come closer together</span></li>
           </ul>
@@ -310,10 +528,10 @@
       </section>
 
       <section aria-labelledby="howto-score">
-        <h3 id="howto-score">Scoring</h3>
+        <h3 id="howto-score">scoring</h3>
         <div class="howto-cols">
           <ul class="howto-list">
-            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#ffd166">PERF</span><span><b>PERFECT</b> 60 / <b style="color:#5eead4">GOOD</b> 30 &times; your multiplier: hop so you peak right over the crate or trench, duck just before the bar</span></li>
+            <li><span class="swatch sw-mult" aria-hidden="true" style="color:#ffd166">60</span><span><b>PERFECT</b> 60 / <b style="color:#5eead4">GOOD</b> 30 &times; your multiplier: hop so you peak right over the crate or trench, duck just before the bar</span></li>
             <li><span class="swatch sw-mult" aria-hidden="true" style="color:#c9a7ff">+20</span><span><b>DODGE</b> 20 for passing a wall in a free lane, <b>orb</b> 15, both &times; your multiplier</span></li>
           </ul>
           <ul class="howto-list">
@@ -324,7 +542,7 @@
       </section>
 
       <section aria-labelledby="howto-lives">
-        <h3 id="howto-lives">Lives &amp; the end of a run</h3>
+        <h3 id="howto-lives">lives &amp; the end of a run</h3>
         <ul class="howto-list">
           <li><span class="swatch sw-life" aria-hidden="true"></span><span>Hitting an obstacle in your lane (the wrong move, or a hop or duck far off the beat) is a <b style="color:#ff4d6d">MISS</b>: you lose a life and your combo. Passing a hop or duck row in an open lane is safe but scores nothing. Lose all 3 lives and the set is over.</span></li>
         </ul>

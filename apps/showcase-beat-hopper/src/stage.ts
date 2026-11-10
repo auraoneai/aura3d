@@ -4,14 +4,13 @@
  *   - neon grid floor 7 m below the elevated track, track girder + under-glow, pylons every 12 m
  *   - LED equalizer meters rising from the floor beside the track (heights dance on the sim beat)
  *   - lit-window towers with neon roof trims (mid city, scrolls 1:1) and a static far skyline
- *   - neon palms along the floor, beat arches over the track, floating islands with palms and speaker stacks
- *     (half-speed parallax), two glowing ridge rings on the horizon, sweeping searchlights and drifting motes
- * The renderer snapshots every runtime geometry node each frame (a full vertex pass for its bounds), so scenery is
- * static geometry: scrolling layers are periodic static children of a runtime group that moves by `dist mod period`,
- * and only the equalizer (heights), searchlights (yaw), floor (grid scroll) and sky are runtime geometry nodes.
+ *   - neon palms along the floor, raised chamfered stadium beat arches (`top = 12.6 m` so portrait `390x844` never
+ *     slices the lintel across the sunset/HUD!), floating islands with palms and speaker stacks (half-speed parallax),
+ *     two glowing ridge rings on the horizon, smooth 18-segment volumetric laser cones and drifting motes.
+ * Tight `CORRIDOR_BOUNDS` and `STAGE_BOUNDS` replace `OPEN_BOUNDS` so zero unbounded batches leak into frustum/shadow cascades.
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
-import { Batch, type MeshData } from "../../../examples/shared/runner-kit/index";
+import { Batch, CORRIDOR_BOUNDS, type BatchBounds, type MeshData } from "../../../examples/shared/runner-kit/index";
 import { boxMesh, mergeMeshes, sphereMesh, translateMesh } from "./meshes";
 import { floorSpec, glowSpec, ridgeSpec, stageLitSpec, type Haze } from "./stage-shaders";
 import { linear } from "./look";
@@ -20,6 +19,11 @@ type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 type Rgb = readonly [number, number, number];
 
 export const FLOOR_Y = -7;
+
+const STAGE_BOUNDS: BatchBounds = {
+  min: [-360, -24, -420],
+  max: [360, 130, 80]
+};
 
 /** Presentation-only LCG (scenery layout): never the gameplay stream. */
 function lcg(seed: number): () => number {
@@ -131,29 +135,35 @@ function palmMesh(): MeshData {
   return mergeMeshes(parts);
 }
 
-/** Beat arch over the track: two pylons from the floor and a lintel, 15 m wide. */
+/** Raised stadium beat arch (`top = 12.6 m`, chamfered upper corners) so `390x844` portrait FOV never clips the sky/HUD. */
 function archMesh(): MeshData {
-  const top = 8.5;
-  const h = top - FLOOR_Y;
+  const shoulderY = 10.6;
+  const top = 12.6;
+  const legH = shoulderY - FLOOR_Y;
   return mergeMeshes([
-    translateMesh(boxMesh(0.5, h, 0.5), -7.5, FLOOR_Y + h / 2, 0),
-    translateMesh(boxMesh(0.5, h, 0.5), 7.5, FLOOR_Y + h / 2, 0),
-    translateMesh(boxMesh(15.5, 0.5, 0.5), 0, top, 0)
+    translateMesh(boxMesh(0.54, legH, 0.54), -7.9, FLOOR_Y + legH / 2, 0),
+    translateMesh(boxMesh(0.54, legH, 0.54), 7.9, FLOOR_Y + legH / 2, 0),
+    transformMesh(boxMesh(0.5, 2.85, 0.5), 0, 0, -6.9, 11.6, 0, -Math.PI / 4),
+    transformMesh(boxMesh(0.5, 2.85, 0.5), 0, 0, 6.9, 11.6, 0, Math.PI / 4),
+    translateMesh(boxMesh(12.2, 0.52, 0.54), 0, top, 0)
   ]);
 }
 
-/** Thin neon frame inside the arch (drawn additively). */
+/** Thin neon light-tube frame inside the raised stadium arch (drawn additively). */
 function archGlowMesh(): MeshData {
-  const top = 8.0;
-  const h = top - 0.2;
+  const shoulderY = 10.2;
+  const top = 12.05;
+  const legH = shoulderY - 0.2;
   return mergeMeshes([
-    translateMesh(boxMesh(0.12, h, 0.12), -7.0, 0.2 + h / 2, 0),
-    translateMesh(boxMesh(0.12, h, 0.12), 7.0, 0.2 + h / 2, 0),
-    translateMesh(boxMesh(14.1, 0.12, 0.12), 0, top, 0)
+    translateMesh(boxMesh(0.13, legH, 0.13), -7.4, 0.2 + legH / 2, 0),
+    translateMesh(boxMesh(0.13, legH, 0.13), 7.4, 0.2 + legH / 2, 0),
+    transformMesh(boxMesh(0.13, 2.65, 0.13), 0, 0, -6.48, 11.12, 0, -Math.PI / 4),
+    transformMesh(boxMesh(0.13, 2.65, 0.13), 0, 0, 6.48, 11.12, 0, Math.PI / 4),
+    translateMesh(boxMesh(11.3, 0.13, 0.13), 0, top, 0)
   ]);
 }
 
-/** Speaker stack: two cabinets. */
+/** Speaker stack on floating islands: two cabinets. */
 function speakerMesh(): MeshData {
   return mergeMeshes([
     translateMesh(boxMesh(1, 1.1, 0.8), 0, 0.55, 0),
@@ -161,24 +171,29 @@ function speakerMesh(): MeshData {
   ]);
 }
 
-/** Searchlight beam: an open square frustum along +Y, base at the origin, pre-tilted forward. */
-function beamMesh(length: number, r0: number, r1: number): MeshData {
+/** Smooth 18-segment open volumetric cone frustum along +Y, pre-tilted forward for silky Fresnel laser beams. */
+function beamMesh(length: number, r0: number, r1: number, radial = 18): MeshData {
   const m = empty();
-  const corners = [[1, 1], [-1, 1], [-1, -1], [1, -1]] as const;
-  for (let k = 0; k < 4; k++) {
-    const a = corners[k]!, b = corners[(k + 1) % 4]!;
-    const quad = [[a[0] * r0, 0, a[1] * r0], [b[0] * r0, 0, b[1] * r0], [b[0] * r1, length, b[1] * r1], [a[0] * r1, length, a[1] * r1]];
-    const nx = (a[0] + b[0]) / 2, nz = (a[1] + b[1]) / 2;
-    const l = Math.hypot(nx, nz) || 1;
-    const base = m.positions.length / 3;
-    for (const [i, p] of quad.entries()) {
-      m.positions.push(p[0]!, p[1]!, p[2]!);
-      m.normals.push(nx / l, 0, nz / l);
-      m.uvs.push(i === 1 || i === 2 ? 1 : 0, i >= 2 ? 1 : 0);
+  const slope = (r0 - r1) / Math.max(length, 1e-4);
+  const inv = 1 / Math.hypot(1, slope);
+  for (let iy = 0; iy <= 1; iy++) {
+    const r = iy === 0 ? r0 : r1;
+    const y = iy === 0 ? 0 : length;
+    for (let k = 0; k <= radial; k++) {
+      const u = k / radial;
+      const a = u * Math.PI * 2;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      m.positions.push(ca * r, y, sa * r);
+      m.normals.push(ca * inv, slope * inv, sa * inv);
+      m.uvs.push(u, iy);
     }
-    m.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
-  return transformMesh(m, -0.42, 0);
+  const row = radial + 1;
+  for (let k = 0; k < radial; k++) {
+    const a = k, b = k + 1, c = row + k, d = row + k + 1;
+    m.indices.push(a, b, d, a, d, c);
+  }
+  return transformMesh(m, -0.40, 0);
 }
 
 /** Ridge ring on the horizon: a strip of peaks around -Z between the given azimuths. */
@@ -238,7 +253,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   const rand = lcg(0x5e7a9e);
   const dyn = (m: MeshData) => geometry.dynamic({
     positions: Float32Array.from(m.positions), normals: Float32Array.from(m.normals),
-    uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices)
+    uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices),
+    bounds: STAGE_BOUNDS
   });
   const layers: Layer[] = [];
   /** Local z range that keeps [FAR_Z, NEAR_Z] covered for any node offset in [0, period * parallax-window). */
@@ -261,7 +277,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   const frontH = noise(10);
   const back = ridgeMesh(330, (u) => 6 + backH(u) * (0.55 + 0.45 * Math.abs(u - 0.5) * 2), -2.4, 2.4, 220);
   const front = ridgeMesh(250, (u) => 2 + frontH(u) * (0.25 + 0.75 * Math.pow(Math.abs(u - 0.5) * 2, 0.7)), -2.2, 2.2, 200);
-  const ridges = new Batch(mergeMeshes([back, front]), 1, null);
+  const ridges = new Batch(mergeMeshes([back, front]), 1, null, STAGE_BOUNDS);
   ridges.place(0, 0, 0, 0, 0, 1, 1, 1);
   {
     const tones: number[] = [];
@@ -271,14 +287,15 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     for (let i = 0; i < v2; i++) tones.push(c2[0], c2[1], c2[2]);
     const g = geometry.dynamic({
       positions: ridges.positions.slice(), normals: ridges.normals.slice(), uvs: Float32Array.from(ridges.mesh.uvs),
-      indices: Uint32Array.from(ridges.mesh.indices), attributes: { tone: { itemSize: 3, data: Float32Array.from(tones) } }
+      indices: Uint32Array.from(ridges.mesh.indices), attributes: { tone: { itemSize: 3, data: Float32Array.from(tones) } },
+      bounds: STAGE_BOUNDS
     });
     add("stage-ridges", g, ridgeSpec(o.ridgeHaze), "static");
   }
 
   /* far skyline (static, beyond the haze knee) */
   const FAR_TOWERS = 120;
-  const farBatch = new Batch(boxMesh(1, 1, 1), FAR_TOWERS, [1, 1, 1]);
+  const farBatch = new Batch(boxMesh(1, 1, 1), FAR_TOWERS, [1, 1, 1], STAGE_BOUNDS);
   for (let i = 0; i < FAR_TOWERS; i++) {
     const side = i % 2 === 0 ? -1 : 1;
     const a = (0.2 + rand() * 1.05) * side;
@@ -305,7 +322,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         h: 10 + Math.pow(rand(), 1.5) * 32, tone: linear(NEON[(k * 5) % NEON.length] as string)
       });
     }
-    const city = new Batch(boxMesh(1, 1, 1), copies * cityPer, [1, 1, 1]);
+    const city = new Batch(boxMesh(1, 1, 1), copies * cityPer, [1, 1, 1], STAGE_BOUNDS);
     let i = 0;
     for (let c = 0; c < copies; c++) {
       for (const t of tpl) {
@@ -327,7 +344,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       translateMesh(boxMesh(0.9, -FLOOR_Y - 0.6, 0.9), 0, (FLOOR_Y - 0.6) / 2, 0),
       translateMesh(boxMesh(5.2, 0.5, 0.7), 0, -0.85, 0)
     ]);
-    const pylons = new Batch(pylon, copies, [1, 1, 1]);
+    const pylons = new Batch(pylon, copies, [1, 1, 1], CORRIDOR_BOUNDS);
     for (let c = 0; c < copies; c++) {
       pylons.place(c, 0, 0, s.near - c * PYLON_P, 0, 1, 1, 1);
       pylons.setTone(c, linear("#23e6ff"));
@@ -343,7 +360,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const copies = Math.ceil((s.near - s.far) / PALM_P);
     const per = 4;
     const palm = palmMesh();
-    const palms = new Batch(palm, copies * per, [1, 1, 1]);
+    const palms = new Batch(palm, copies * per, [1, 1, 1], CORRIDOR_BOUNDS);
     let i = 0;
     for (let c = 0; c < copies; c++) {
       for (let k = 0; k < per; k++) {
@@ -359,13 +376,13 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     layers.push({ id: "grp-palms", period: PALM_P, parallax: 1 });
   }
 
-  /* beat arches every 48 m: dark frame + additive neon frame */
+  /* raised stadium beat arches every 48 m: dark chamfered frame + additive neon tube frame */
   const ARCH_P = 48;
   {
     const s = span(ARCH_P);
     const copies = Math.ceil((s.near - s.far) / ARCH_P);
-    const arches = new Batch(archMesh(), copies, [1, 1, 1]);
-    const glows = new Batch(archGlowMesh(), copies, [1, 1, 1]);
+    const arches = new Batch(archMesh(), copies, [1, 1, 1], CORRIDOR_BOUNDS);
+    const glows = new Batch(archGlowMesh(), copies, [1, 1, 1], CORRIDOR_BOUNDS);
     for (let c = 0; c < copies; c++) {
       const z = s.near - 14 - c * ARCH_P;
       arches.place(c, 0, 0, z, 0, 1, 1, 1);
@@ -374,7 +391,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       glows.setTone(c, linear(c % 2 === 0 ? "#b44dff" : "#23e6ff"));
     }
     add("stage-arches", arches.geometry(), stageLitSpec({ base: linear("#1c1240"), haze: o.haze, trim: true }), { group: "grp-arches" });
-    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.3, 1.3, 1.3] }), { group: "grp-arches" });
+    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.35, 1.35, 1.35] }), { group: "grp-arches" });
     layers.push({ id: "grp-arches", period: ARCH_P, parallax: 1 });
   }
 
@@ -385,11 +402,11 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const copies = Math.ceil((s.near - s.far) / ISLE_P);
     const per = 6;
     const isle = islandMesh(9, 1.7, lcg(0x15e));
-    const isles = new Batch(isle, copies * per, [1, 1, 1]);
+    const isles = new Batch(isle, copies * per, [1, 1, 1], STAGE_BOUNDS);
     const palm = palmMesh();
-    const props = new Batch(palm, copies * per, [1, 1, 1]);
+    const props = new Batch(palm, copies * per, [1, 1, 1], STAGE_BOUNDS);
     const spk = speakerMesh();
-    const speakers = new Batch(spk, copies * per, [1, 1, 1]);
+    const speakers = new Batch(spk, copies * per, [1, 1, 1], STAGE_BOUNDS);
     const tpl = Array.from({ length: per }, (_, k) => {
       const side = k % 2 === 0 ? -1 : 1;
       return { x: side * (24 + rand() * 26), y: -2.5 + rand() * 8, z: -(k / per) * ISLE_P - rand() * 8, r: 4 + rand() * 4, yaw: rand() * 6.28, tone: linear(NEON[(k + 1) % NEON.length] as string) };
@@ -425,7 +442,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const s = span(MOTE_P);
     const copies = Math.ceil((s.near - s.far) / MOTE_P);
     const per = 45;
-    const motes = new Batch(sphereMesh(0.08, 3, 2), copies * per, [1, 1, 1]);
+    const motes = new Batch(sphereMesh(0.08, 3, 2), copies * per, [1, 1, 1], CORRIDOR_BOUNDS);
     const mr = lcg(0x3073);
     const tpl = Array.from({ length: per }, () => ({ x: (mr() - 0.5) * 70, y: FLOOR_Y + 2 + mr() * 18, z: -mr() * MOTE_P, s: 0.6 + mr() * 1.4, c: mr() }));
     let i = 0;
@@ -438,26 +455,26 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [1, 1, 1] }), { group: "grp-motes" });
+    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [1.1, 1.1, 1.1] }), { group: "grp-motes" });
     layers.push({ id: "grp-motes", period: MOTE_P, parallax: 1 });
   }
 
-  /* searchlights from the far city */
+  /* smooth 18-segment volumetric laser searchlights from the far city */
   const BEAMS = 8;
-  const beamTpl = beamMesh(150, 0.6, 7);
-  const beams = new Batch(beamTpl, BEAMS, [1, 1, 1]);
+  const beamTpl = beamMesh(155, 0.55, 7.6, 18);
+  const beams = new Batch(beamTpl, BEAMS, [1, 1, 1], STAGE_BOUNDS);
   const beamBase = Array.from({ length: BEAMS }, (_, k) => {
     const side = k % 2 === 0 ? -1 : 1;
     return { x: side * (40 + (k >> 1) * 22), z: -150 - (k % 3) * 25, phase: k * 1.7, speed: 0.25 + (k % 3) * 0.08, tone: linear(k % 3 === 0 ? "#23e6ff" : k % 3 === 1 ? "#ff2fb3" : "#b44dff") };
   });
-  beamBase.forEach((b, k) => beams.setTone(k, [b.tone[0] * 0.10, b.tone[1] * 0.10, b.tone[2] * 0.10]));
-  add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1, 1, 1] }), "live");
+  beamBase.forEach((b, k) => beams.setTone(k, [b.tone[0] * 0.16, b.tone[1] * 0.16, b.tone[2] * 0.16]));
+  add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), "live");
 
   /* equalizer meters beside the track (heights dance on the beat) */
   const EQ_P = 64;
   const eqPer = 10;
   const eqCopies = Math.ceil((NEAR_Z - (FAR_Z - EQ_P)) / EQ_P);
-  const eq = new Batch(boxMesh(1, 1, 1), eqPer * eqCopies, [1, 1, 1]);
+  const eq = new Batch(boxMesh(1, 1, 1), eqPer * eqCopies, [1, 1, 1], CORRIDOR_BOUNDS);
   const eqRand = lcg(0xbea7);
   const eqTpl = Array.from({ length: eqPer }, (_, k) => {
     const side = k % 2 === 0 ? -1 : 1;
@@ -467,8 +484,6 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
 
   return {
     bind(node: (id: string) => NodeHandle): StageRuntime {
-      /* scrolling layers are static children of runtime groups (the group carries the scroll), so only the equalizer,
-       * beams, floor and sky take per-frame uniforms */
       const litIds = ["stage-eq"];
       const glowIds = ["stage-beams"];
       return {

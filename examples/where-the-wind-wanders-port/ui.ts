@@ -30,52 +30,76 @@ export const STORY = {
   ]
 } as const;
 
+const WAX_SEAL_SVG = `<svg class="wwui-seal" width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#a83b2c" stroke="#7c2419" stroke-width="1"/><circle cx="10" cy="10" r="5.6" fill="none" stroke="#f6dfc2" stroke-opacity="0.55" stroke-width="0.9"/><path d="M10 6.2 L12.4 11.8 L7.6 11.8 Z" fill="#f6dfc2" fill-opacity="0.85"/></svg>`;
+
 const CSS = `
-.wwui { position: fixed; inset: 0; pointer-events: none; font: 400 13px/1.45 "A3G GT Walsheim", "Graphik Web", sans-serif; color: #2b2a24; z-index: 5; }
-.wwui #wwui-title h1, .wwui #wwui-epilogue .big { font-family: "A3G Canela", "A3G GT Walsheim", serif; font-weight: 400; }
-/* WW47-H1 storybook caption: a cream deckled card (uneven corners, soft torn-edge shadow) */
-.wwui #wwui-caption { background: #fbf3dc; border-radius: 10px 4px 12px 5px / 5px 11px 4px 10px; box-shadow: 0 1px 0 rgba(120, 90, 50, 0.25), 0 0 0 1px rgba(120, 90, 50, 0.12), 2px 3px 8px rgba(60, 40, 20, 0.14); font-size: 16px; }
+html, body { font: 400 13px/1.45 var(--font-ui); font-synthesis: none; -webkit-font-smoothing: antialiased; }
+#hud { z-index: 4; font: 400 13px/1.4 var(--font-ui); font-variant-numeric: tabular-nums; font-synthesis: none; }
+#hud .panel, #loading .panel { background: rgba(252, 247, 234, 0.88); border: 1px solid rgba(62, 48, 30, 0.18); border-radius: 9px; padding: 7px 12px; box-shadow: 0 2px 10px rgba(42, 31, 18, 0.1); backdrop-filter: blur(8px); }
+#quest { top: max(12px, calc(var(--a3d-bar-space, 0px) + 8px), env(safe-area-inset-top)); left: 12px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; font-variant-caps: all-small-caps; color: #2b261e; }
+#hint { top: max(12px, calc(var(--a3d-bar-space, 0px) + 8px), env(safe-area-inset-top)); right: 12px; font-size: 12.5px; font-weight: 500; letter-spacing: 0.04em; font-variant-caps: all-small-caps; color: #544b3d; }
+#toast { background: rgba(252, 247, 234, 0.94); border-color: rgba(120, 90, 50, 0.24); font-size: 13.5px; font-weight: 500; color: #2b261e; }
+.hud-metric { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; font-variant-caps: normal; letter-spacing: 0.01em; color: #1f1b15; }
+.wwui { position: fixed; inset: 0; pointer-events: none; font: 400 13px/1.45 var(--font-ui); font-variant-numeric: tabular-nums; font-synthesis: none; color: #2b261e; z-index: 5; }
+.wwui strong { font-weight: 600; }
 .wwui * { box-sizing: border-box; }
-.wwui .p { background: rgba(255, 252, 240, 0.86); border: 1px solid rgba(43, 42, 36, 0.16); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); pointer-events: auto; }
-.wwui button { font: inherit; font-weight: 500; color: #2b2a24; background: #f6efd2; border: 1px solid rgba(43, 42, 36, 0.28); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
-.wwui button:hover { background: #fff8de; }
+.wwui .p { background: rgba(252, 247, 234, 0.9); border: 1px solid rgba(62, 48, 30, 0.18); border-radius: 10px; padding: 9px 13px; box-shadow: 0 3px 14px rgba(38, 28, 16, 0.12); backdrop-filter: blur(8px); pointer-events: auto; }
+.wwui button { font: 500 12.5px/1.2 var(--font-ui); letter-spacing: 0.05em; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; font-synthesis: none; color: #2b261e; background: #f6eed8; border: 1px solid rgba(62, 48, 30, 0.26); border-radius: 7px; min-height: 36px; padding: 6px 13px; cursor: pointer; transition: background 0.16s ease, border-color 0.16s ease; }
+.wwui button:hover { background: #fff9e6; border-color: rgba(62, 48, 30, 0.4); }
 .wwui .hide { display: none !important; }
-.wwui #wwui-title { position: absolute; inset: 0; display: grid; align-items: end; justify-items: start; padding: 6vh 5vw; background: linear-gradient(180deg, rgba(20, 40, 30, 0) 40%, rgba(20, 40, 30, 0.46) 100%); }
-.wwui #wwui-title .card { max-width: 440px; padding: 18px 22px; }
-.wwui #wwui-title h1 { margin: 0 0 4px; font-size: 30px; line-height: 1.15; font-weight: 500; letter-spacing: -0.01em; }
-.wwui #wwui-title .sub { margin: 0 0 12px; color: #5a584b; }
-.wwui #wwui-title table { border-collapse: collapse; margin: 0 0 14px; }
-.wwui #wwui-title td { padding: 2px 14px 2px 0; font-size: 12px; color: #4b4a40; }
-.wwui #wwui-title td:first-child { color: #2b2a24; font-weight: 500; white-space: nowrap; }
-.wwui #wwui-caption { position: absolute; left: 50%; top: 11%; transform: translateX(-50%); max-width: min(620px, 88vw); text-align: center; font-size: 15px; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+.wwui-seal { vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+.wwui #wwui-title { position: absolute; inset: 0; display: grid; align-items: end; justify-items: start; padding: 6vh 5vw; background: linear-gradient(180deg, rgba(20, 36, 28, 0) 38%, rgba(22, 32, 26, 0.48) 100%); }
+.wwui #wwui-title .card { max-width: 448px; padding: 20px 24px; background: rgba(253, 248, 236, 0.94); border-color: rgba(96, 72, 40, 0.24); }
+.wwui #wwui-title .eyebrow { display: flex; align-items: center; margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; font-variant-caps: all-small-caps; color: #7a5530; }
+.wwui #wwui-title h1 { margin: 0 0 6px; font-family: var(--font-ui); font-size: 28px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em; color: #221d16; }
+.wwui #wwui-title .sub { margin: 0 0 13px; font-size: 13.5px; color: #574f41; }
+.wwui #wwui-title table { border-collapse: collapse; margin: 0 0 15px; width: 100%; }
+.wwui #wwui-title td { padding: 3px 14px 3px 0; font-size: 12.5px; color: #4d463a; border-bottom: 1px solid rgba(62, 48, 30, 0.08); }
+.wwui #wwui-title tr:last-child td { border-bottom: 0; }
+.wwui #wwui-title td:first-child { color: #2b261e; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.04em; white-space: nowrap; }
+.wwui #wwui-begin { min-height: 44px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; background: #efe2be; border-color: rgba(112, 82, 40, 0.38); }
+/* WW47-H1 storybook caption: a warm deckled cotton-paper card */
+.wwui #wwui-caption { position: absolute; left: 50%; top: max(64px, 11%); transform: translateX(-50%); max-width: min(620px, 88vw); text-align: center; background: #fcf4df; border-radius: 10px 4px 12px 5px / 5px 11px 4px 10px; box-shadow: 0 1px 0 rgba(120, 90, 50, 0.24), 0 0 0 1px rgba(120, 90, 50, 0.14), 2px 4px 12px rgba(48, 34, 18, 0.14); font-size: 15px; line-height: 1.5; color: #2b261e; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
 .wwui #wwui-caption.on { opacity: 1; }
-.wwui #wwui-journal { position: absolute; top: 94px; right: 12px; width: min(330px, 86vw); max-height: 62vh; overflow: auto; }
-.wwui #wwui-journal h2 { margin: 0 0 6px; font-size: 13px; font-weight: 500; }
-.wwui #wwui-journal .entry { margin: 0 0 8px; padding: 0 0 8px; border-bottom: 1px solid rgba(43, 42, 36, 0.12); }
+.wwui #wwui-journal { position: absolute; top: calc(max(12px, calc(var(--a3d-bar-space, 0px) + 8px), env(safe-area-inset-top)) + 84px); right: 12px; width: min(340px, 88vw); max-height: 60vh; overflow: auto; background: rgba(253, 248, 235, 0.95); border-color: rgba(110, 82, 44, 0.24); }
+.wwui #wwui-journal h2 { display: flex; align-items: center; margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(96, 72, 40, 0.16); font-size: 13px; font-weight: 600; letter-spacing: 0.05em; font-variant-caps: all-small-caps; color: #3a3022; }
+.wwui #wwui-journal h2 .hud-metric { margin: 0 4px; }
+.wwui #wwui-journal .entry { margin: 0 0 9px; padding: 0 0 9px; border-bottom: 1px solid rgba(62, 48, 30, 0.11); font-size: 13px; line-height: 1.45; }
 .wwui #wwui-journal .entry:last-child { border: 0; margin: 0; padding: 0; }
-.wwui #wwui-journal .place { font-weight: 500; }
-.wwui #wwui-journal .dim { color: #7a7867; }
-.wwui #wwui-bar { position: absolute; top: 52px; right: 12px; display: flex; gap: 6px; }
-.wwui #wwui-pause { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 40, 30, 0.3); }
-.wwui #wwui-epilogue { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); width: min(560px, 90vw); text-align: center; }
-.wwui #wwui-epilogue .big { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
-.wwui #wwui-epilogue .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.wwui #wwui-prompt { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); font-weight: 500; white-space: nowrap; pointer-events: none; }
+.wwui #wwui-journal .place { font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; font-variant-caps: all-small-caps; color: #614728; margin-bottom: 2px; }
+.wwui #wwui-journal .dim { color: #787060; }
+.wwui #wwui-journal .dim .place { color: #787060; }
+.wwui #wwui-bar { position: absolute; top: calc(max(12px, calc(var(--a3d-bar-space, 0px) + 8px), env(safe-area-inset-top)) + 40px); right: 12px; display: flex; gap: 6px; }
+.wwui #wwui-pause { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 36, 28, 0.34); }
+.wwui #wwui-epilogue { position: absolute; left: 50%; bottom: max(8%, calc(20px + env(safe-area-inset-bottom))); transform: translateX(-50%); width: min(560px, 90vw); text-align: center; padding: 16px 20px; }
+.wwui #wwui-epilogue .big { font-family: var(--font-ui); font-size: 22px; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 6px; color: #221d16; }
+.wwui #wwui-epilogue .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.wwui #wwui-epilogue .row button { min-height: 44px; padding: 8px 16px; }
+.wwui #wwui-prompt { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); font-size: 13.5px; font-weight: 600; letter-spacing: 0.06em; font-variant-caps: all-small-caps; white-space: nowrap; pointer-events: none; background: rgba(253, 248, 235, 0.94); border-color: rgba(138, 98, 42, 0.34); }
 .wwui #wwui-fade { position: absolute; inset: 0; background: #c9dfe9; opacity: 0; transition: opacity 0.45s; pointer-events: none; }
 .wwui #wwui-fade.on { opacity: 1; }
 .wwui #wwui-journal-btn.flash { animation: wwui-flash 0.7s ease-in-out 4; }
 .wwui #wwui-act.ready { animation: wwui-pulse 1.1s ease-in-out infinite; }
 @keyframes wwui-flash { 50% { background: #ffe9a0; box-shadow: 0 0 0 3px rgba(255, 210, 110, 0.7); } }
 @keyframes wwui-pulse { 50% { background: #ffe9a0; box-shadow: 0 0 0 4px rgba(255, 210, 110, 0.55); } }
-@media (max-width: 560px) { .wwui #wwui-bar { top: max(8px, env(safe-area-inset-top)); right: 8px; } .wwui #wwui-journal { top: 52px; right: 8px; } .wwui #wwui-caption { top: 18%; } }
-.wwui #wwui-touch { position: absolute; inset: auto 0 calc(14px + 48px + env(safe-area-inset-bottom)) 0; display: flex; justify-content: space-between; padding: 0 16px; }
-@media (pointer: coarse) { .wwui #wwui-prompt { bottom: calc(14px + 48px + 140px + env(safe-area-inset-bottom)); } .wwui #wwui-pause .p { pointer-events: auto; } }
+@media (max-width: 760px) {
+  #quest { top: max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)); left: 8px; }
+  #hint { display: none; }
+  .wwui #wwui-bar { top: max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)); right: 8px; }
+  .wwui #wwui-journal { top: calc(max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)) + 52px); right: 8px; left: 8px; width: auto; }
+  .wwui #wwui-caption { top: calc(max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)) + 56px); }
+}
+.wwui #wwui-touch { position: absolute; inset: auto 0 calc(14px + 48px + env(safe-area-inset-bottom)) 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 16px; }
+@media (pointer: coarse), (max-width: 760px) {
+  .wwui button { min-width: 44px; min-height: 44px; }
+  .wwui #wwui-prompt { bottom: calc(14px + 48px + 156px + env(safe-area-inset-bottom)); }
+  .wwui #wwui-pause .p { pointer-events: auto; min-height: 44px; }
+}
 @media (prefers-reduced-motion: reduce) { .wwui #wwui-caption, .wwui #wwui-fade { transition: none; } .wwui #wwui-journal-btn.flash, .wwui #wwui-act.ready { animation: none; outline: 3px solid #e2b04a; } }
-.wwui #wwui-pad { width: 128px; height: 128px; border-radius: 64px; background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(43, 42, 36, 0.2); pointer-events: auto; touch-action: none; position: relative; }
-.wwui #wwui-pad i { position: absolute; left: 44px; top: 44px; width: 40px; height: 40px; border-radius: 20px; background: rgba(255, 252, 240, 0.92); border: 1px solid rgba(43, 42, 36, 0.25); }
+.wwui #wwui-pad { width: 128px; height: 128px; border-radius: 64px; background: rgba(252, 247, 234, 0.46); border: 1px solid rgba(62, 48, 30, 0.24); pointer-events: auto; touch-action: none; position: relative; }
+.wwui #wwui-pad i { position: absolute; left: 42px; top: 42px; width: 44px; height: 44px; border-radius: 22px; background: rgba(253, 248, 236, 0.94); border: 1px solid rgba(62, 48, 30, 0.28); }
 .wwui #wwui-acts { display: grid; gap: 8px; align-content: end; }
-.wwui #wwui-acts button { width: 88px; height: 44px; pointer-events: auto; }
-.wwui #wwui-acts #wwui-pause-btn { height: 36px; }
+.wwui #wwui-acts button { width: 88px; min-width: 88px; height: 44px; min-height: 44px; pointer-events: auto; }
 `;
 
 export interface WindUi {
@@ -102,23 +126,7 @@ export interface WindUi {
   setSound(muted: boolean, started: boolean): void;
 }
 
-/** WW47-H1: the E-J storybook faces (GT Walsheim text, Canela display), self-hosted beside the game (assets/fonts/NOTICE.txt). */
-const FONT_FACES = [
-  { family: "A3G GT Walsheim", url: new URL("./assets/fonts/gt-walsheim-400.woff2", import.meta.url).href },
-  { family: "A3G Canela", url: new URL("./assets/fonts/canela-400.woff2", import.meta.url).href }
-] as const;
-
-function registerStorybookFonts(): void {
-  if (typeof FontFace === "undefined" || typeof document === "undefined" || !document.fonts) return;
-  for (const face of FONT_FACES) {
-    const f = new FontFace(face.family, `url(${face.url}) format("woff2")`, { weight: "400", display: "swap" });
-    document.fonts.add(f);
-    void f.load().catch(() => undefined);
-  }
-}
-
 export function createUi(): WindUi {
-  registerStorybookFonts();
   const style = document.createElement("style");
   style.textContent = CSS;
   document.head.appendChild(style);
@@ -127,6 +135,7 @@ export function createUi(): WindUi {
   root.innerHTML = `
     <div id="wwui-title">
       <div class="p card">
+        <p class="eyebrow">${WAX_SEAL_SVG}Highland Sanctuary</p>
         <h1>The Bellkeeper's Walk</h1>
         <p class="sub">A slow walk through a painted valley. Find three letters, ring the bell.</p>
         <table>
@@ -158,7 +167,7 @@ export function createUi(): WindUi {
   let pauseFn = (): void => {};
   let againFn = (): void => {};
   const coarse = matchMedia("(pointer: coarse)").matches;
-  const narrow = (): boolean => coarse || matchMedia("(max-width: 560px)").matches;
+  const narrow = (): boolean => coarse || matchMedia("(max-width: 760px)").matches;
   const reducedMotion = (): boolean => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const touch = $("wwui-touch"), prompt = $("wwui-prompt"), fadeEl = $("wwui-fade"), journalBtn = $("wwui-journal-btn"), actBtn = $("wwui-act");
   /** Touch controls only while walking: never over the title card's Begin button or the epilogue card. */
@@ -170,7 +179,7 @@ export function createUi(): WindUi {
   }
 
   const renderJournal = (): void => {
-    journal.innerHTML = `<h2>Journal: ${found.size} of ${LETTERS.length} letters</h2>` + STORY.letters.map((l, i) => found.has(i)
+    journal.innerHTML = `<h2>${WAX_SEAL_SVG}Journal · <span class="hud-metric">${found.size} / ${LETTERS.length}</span> letters</h2>` + STORY.letters.map((l, i) => found.has(i)
       ? `<div class="entry"><div class="place">${l.place}</div><div>${l.text}</div></div>`
       : `<div class="entry dim"><div class="place">Somewhere in the valley</div><div>A letter waits here, unread.</div></div>`).join("");
   };

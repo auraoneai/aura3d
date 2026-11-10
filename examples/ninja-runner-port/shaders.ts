@@ -61,11 +61,15 @@ ${NOISE}
 ${LIGHT_AND_FOG}
 void main() {
   vec3 N = normalize(vNormal);
-  if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
+  vec3 V = normalize(cameraPosition - vWorld);
+  if (dot(N, V) < 0.0) N = -N;
   float n = fbm(vWorld.xz * 0.42);
   float speck = vnoise(vWorld.xz * 3.1);
-  vec3 albedo = vTone * (0.78 + 0.34 * n) * (0.94 + 0.12 * speck);
-  outColor = vec4(applyFog(shade(albedo, N), vWorld), 1.0);
+  float moss = smoothstep(0.54, 0.78, fbm(vWorld.xz * 0.19 + vec2(3.7, -5.1))) * smoothstep(0.65, 0.95, N.y);
+  vec3 base = mix(vTone, vTone * vec3(0.72, 0.88, 0.68), moss * 0.42);
+  vec3 albedo = base * (0.78 + 0.34 * n) * (0.94 + 0.12 * speck);
+  float wet = pow(1.0 - max(0.0, dot(N, V)), 3.0) * 0.08 * smoothstep(0.4, 0.9, n);
+  outColor = vec4(applyFog(shade(albedo, N) + vec3(0.72, 0.82, 0.96) * wet, vWorld), 1.0);
 }`;
 
 export const SOLID_VERTEX = /* glsl */ `
@@ -306,4 +310,53 @@ void main() {
   float a = pow(max(0.0, 1.0 - d), 1.6) * vAlpha;
   if (a < 0.005) discard;
   outColor = vec4(vColor, a);
+}`;
+
+/** Katana / gale-blade crescent slash ribbon: sumi-indigo body with forged-steel outer edge glint. */
+export const SLASH_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const SLASH_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+${NOISE}
+void main() {
+  float head = clamp(slashProgress * 1.35, 0.0, 1.25);
+  float sweep = smoothstep(head - 0.78, head - 0.06, vUv.x) * (1.0 - smoothstep(head - 0.04, head + 0.06, vUv.x));
+  float streak = 0.65 + 0.35 * vnoise(vec2(vUv.x * 14.0 - slashTime * 16.0, vUv.y * 5.0));
+  float blade = smoothstep(0.24, 0.90, vUv.y) * (1.0 - smoothstep(0.93, 1.0, vUv.y));
+  float glint = smoothstep(0.72, 0.94, vUv.y);
+  vec3 col = mix(slashInk, slashEdge * 1.65, glint * 0.85 + 0.15 * streak);
+  float alpha = clamp(sweep * blade * streak * (1.15 - slashProgress * 0.55), 0.0, 1.0);
+  if (alpha < 0.01) discard;
+  outColor = vec4(col, alpha);
+}`;
+
+/** Calligraphy seal targeting ring under the next lane rival (`threat-0`). */
+export const THREAT_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const THREAT_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  vec2 p = (vUv - vec2(0.5)) * 2.0;
+  float r = length(p);
+  float ang = atan(p.y, p.x);
+  float brush = 0.78 + 0.22 * sin(ang * 4.0 + ringTime * 3.2) * cos(ang * 3.0 - ringTime * 1.8);
+  float outer = smoothstep(0.68, 0.78, r) * (1.0 - smoothstep(0.88, 0.97, r));
+  float inner = smoothstep(0.36, 0.42, r) * (1.0 - smoothstep(0.46, 0.52, r));
+  float ticks = step(0.65, cos(ang * 4.0 - ringTime * 2.2)) * smoothstep(0.52, 0.58, r) * (1.0 - smoothstep(0.68, 0.74, r));
+  float mask = clamp(outer * brush + inner * 0.65 + ticks * 0.75, 0.0, 1.0);
+  if (mask < 0.04) discard;
+  vec3 col = mix(inkColor, ringColor * (1.05 + 0.55 * glow), clamp(outer + ticks * 0.8, 0.0, 1.0));
+  outColor = vec4(col, clamp(mask * (0.68 + 0.28 * glow), 0.0, 1.0));
 }`;

@@ -11,13 +11,16 @@
  */
 import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, geometry, instances, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
-import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
+import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, slashSpec, solidSpec, sparksSpec, threatRingSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
 import { LAYERS, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
-import { unitBox, unitCone, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
+import { unitBox, unitCone, unitCrescentArc, unitCylinder, unitDisc, unitGable, unitHip, unitKanabo, unitKatana, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
 import type { CameraShake } from "@aura3d/engine/game";
+import { Batch, CORRIDOR_BOUNDS } from "../shared/runner-kit";
+import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
+import type { ImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, PROP_ASSETS, SET_PIECE_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
@@ -53,6 +56,8 @@ const BEAM_POOL = 8;
 const PLANK_POOL = 32, STRAP_POOL = 12, BEAM_PIECE_POOL = 12;
 const SHURIKEN_POOL = 3;
 const THREAT_POOL = 1;
+const SLASH_POOL = 6;
+const FLIPBOOK_POOL = 4;
 const TOWN_FLOOR_Y = 3.2;
 
 /** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
@@ -128,15 +133,18 @@ const layerSurface = (key: SurfaceKey, repeat: readonly [number, number]): Surfa
   }
 };
 
-/** A layer's material; the evening (GU47 NR-11) adds lacquer to the roofs and a damp coat to the rocks. */
+/** A layer's material; the evening (GU47 NR-11 / WP-23) lacquers the roofs/trim and glazes the damp rocks. */
 const layerMaterial = (l: LayerSpec, evening = false) => {
-  if (l.emissive) return material.emissive({ color: "#ffffff", emissive: l.emissive });
+  if (l.emissive) return material.emissive({ color: "#fff1d6", emissive: l.emissive });
   const coat = evening ? EVENING_SURFACES[l.id] : undefined;
   const roughness = coat?.roughness ?? l.roughness;
-  const base = l.map
-    ? mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", roughness, { metallic: l.metalness })
-    : material.pbr({ color: "#ffffff", roughness, metallic: l.metalness });
-  return coat ? { ...base, clearcoat: coat.clearcoat, clearcoatRoughness: coat.clearcoatRoughness } : base;
+  const surf = l.map ? layerSurface(l.map, l.repeat ?? [1, 1]) : null;
+  const maps = surf ? { texture: surf.albedo as never, textureAnisotropy: 8, ...(surf.normal ? { normal: surf.normal, normalScale: 1 } : {}) } : {};
+  if (coat) {
+    const factory = l.id === "rocks" ? material.ceramic : material.lacquer;
+    return factory({ color: "#ffffff", roughness, metallic: l.metalness, clearcoat: coat.clearcoat, clearcoatRoughness: coat.clearcoatRoughness, ...maps });
+  }
+  return surf ? mapped(surf, "#ffffff", roughness, { metallic: l.metalness }) : material.pbr({ color: "#ffffff", roughness, metallic: l.metalness });
 };
 
 /** Column-major model matrix: uniform scale, yaw about +Y, translation. */
@@ -205,7 +213,8 @@ const MESHY07_TINT: Partial<Record<CharacterId, readonly [number, number, number
   caster: [1, 1, 1, 1],
   scout: [1, 1, 1, 1]
 };
-const CLONE_TINT: Tint = { base: [0.6, 0.85, 1, 1], emissive: [0.18, 0.45, 1], strength: 0.55 };
+/** WP-23: Spectral sumi-indigo + spirit-cyan rim silhouette on shadow clones (prevents warm clothes washing out pink). */
+const CLONE_TINT: Tint = { base: [0.10, 0.16, 0.30, 1], emissive: [0.14, 0.64, 0.96], strength: 0.72, roughness: 0.28, metallic: 0.32 };
 const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };
 
 export interface ActorAssets {
@@ -277,6 +286,7 @@ export interface WorldOptions {
   /** `?vfx=0`: no runtime VFX pack, ambients or scarf (GU47 phase 2 frame-cost ablation). */ readonly vfx?: boolean;
   /** `?ink=0` / `?grain=0`: drop the evening ink line / film grain (GU47 phase 2 frame-cost ablation). */ readonly ink?: boolean;
   readonly grain?: boolean;
+  /** WP-23 visual-only katana-deflect / dash impact rig (stepped on real dt in main.ts). */ readonly impactRig?: ImpactRig;
 }
 
 export interface WorldRuntime {
@@ -348,22 +358,22 @@ export function buildWorld(options: WorldOptions): World {
   // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.
   for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false, shadowTune: typeof location === "undefined" ? undefined : shadowTuneFromSearch(location.search) })) builder.add(node);
   builder.add(effects.fog({ name: "haze", color: evening ? village.fog.color : "#b5c8c4", density: evening ? village.fog.density : 0.0028 }));
-  // Screen-space AO stays on the 4.6.2 look only: in the evening the low sun's cascaded shadow carries the contact
-  // shading, and AO was the largest single post cost of a ~40 s software-WebGL2 frame (GU47 phase 3).
-  if (high && !evening) builder.add(effects.ambientOcclusion({ name: "ao" }));
+  // WP-23: Screen-space AO + contact shadows + rain-wet roof SSR + AgX cinematicBloom + clean radial godRays on High.
+  if (high) builder.add(effects.ambientOcclusion({ name: "ao", intensity: 0.68, radius: 0.78 }));
   if (evening) {
-    // GU47 NR-08 woodblock grade (agx is set on the app output in main.ts) and NR-09 indigo ink line (full frame:
-    // the hero is a root render source, not a scene node, so per-target outline has no node name to match yet).
     const post = WOODBLOCK_POST;
+    if (high) {
+      builder.add(effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 16, intensity: 0.72 }));
+      builder.add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.38, maxDistance: 18, roughness: 0.18, thickness: 0.25 }));
+    }
     builder
-      .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius }))
+      .add(effects.cinematicBloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius, color: "#ffd8a8" }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, smoothness: post.vignette.smoothness }));
     if (options.ink !== false) builder.add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
     // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
     if (high && options.grain !== false) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
-    // NR-07: god rays only in Rooftop Run and the forest entry (switched by distance at runtime); High only (§6.4).
-    if (high && options.godRays === true) builder.add(effects.volumetricFog({ name: "god rays", density: 0.08, color: "#ffb48a", intensity: 0.45, godRayDensity: 0.35 }));
+    if (high && options.godRays !== false) builder.add(effects.godRays({ name: "god rays", source: "sun", intensity: 0.32, decay: 0.94, samples: 48, color: "#ffd8a8" }));
     builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
     builder
@@ -393,7 +403,10 @@ export function buildWorld(options: WorldOptions): World {
   }
   for (const [key, m] of merged) {
     const spec = geometry.define({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
-    builder.add(geometry.custom(spec, { name: `ground-${key}`, material: mapped(m.surf, m.tint, m.rough), castShadow: false, receiveShadow: true }));
+    const groundMat = evening && key.startsWith("tiles|")
+      ? material.ceramic({ color: m.tint, roughness: 0.24, clearcoat: 0.84, clearcoatRoughness: 0.08, texture: m.surf.albedo as never, textureAnisotropy: 8, ...(m.surf.normal ? { normal: m.surf.normal, normalScale: 1 } : {}) })
+      : mapped(m.surf, m.tint, m.rough);
+    builder.add(geometry.custom(spec, { name: `ground-${key}`, material: groundMat, castShadow: false, receiveShadow: true }));
   }
   const floor = buildTownFloor(520, 1030, 130, TOWN_FLOOR_Y);
   builder.add(geometry.custom(geometry.define({ positions: f32(floor.positions), normals: f32(floor.normals), uvs: f32(floor.uvs), indices: Uint32Array.from(floor.indices) }), {
@@ -412,7 +425,7 @@ export function buildWorld(options: WorldOptions): World {
       for (const glow of Object.keys(LANTERN_GLOW) as LanternGlow[]) {
         const placements = layer.placements.filter((_, i) => glowOf[i] === glow);
         const g = LANTERN_GLOW[glow];
-        if (placements.length > 0) groups.push({ material: material.emissive({ color: "#ffffff", emissive: g.emissive, emissiveIntensity: g.intensity }), placements });
+        if (placements.length > 0) groups.push({ material: material.pbr({ color: "#fff1d6", emissive: g.emissive, emissiveIntensity: g.intensity, roughness: 0.42, sheen: 0.45, sheenColor: "#ffdca8" }), placements });
       }
     } else groups.push({ material: layerMaterial(spec, evening), placements: layer.placements });
     for (const group of groups) {
@@ -469,19 +482,20 @@ export function buildWorld(options: WorldOptions): World {
   const sheet = buildSheet(56, 63, 24, 12, evening ? FALLS_BEND : 0);
   builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec(evening ? 1 : 0)), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
 
-  const crate = material.pbr({ color: "#8a5a35", roughness: 0.86 });
-  const strap = material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
-  const beam = hexLinear("#c2603a"), glowOrange = hexLinear("#ff8a3a");
+  const crate = evening ? material.lacquer({ color: "#5e3622", roughness: 0.38, clearcoat: 0.72, clearcoatRoughness: 0.12 }) : material.pbr({ color: "#8a5a35", roughness: 0.86 });
+  const strap = evening ? material.brushedMetal({ color: "#3d4654", roughness: 0.26, metallic: 0.92 }) : material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
+  const barrierTopMat = evening ? material.lacquer({ color: "#a83826", roughness: 0.3, clearcoat: 0.84, clearcoatRoughness: 0.08 }) : material.pbr({ color: "#c8a57b", roughness: 0.8 });
+  const beam = hexLinear(evening ? "#485468" : "#c2603a"), glowOrange = hexLinear("#ff8a3a");
   for (let i = 0; i < BARRIER_POOL; i++) {
     builder.add(primitives.box({ name: `barrier-${i}`, size: [2.0, 1.5, 0.55], material: crate, castShadow: true }).runtime({ id: `barrier-${i}` }));
     builder.add(primitives.box({ name: `barrier-band-${i}`, size: [2.1, 0.2, 0.62], material: strap, castShadow: true }).runtime({ id: `barrier-band-${i}` }));
-    builder.add(primitives.box({ name: `barrier-top-${i}`, size: [2.2, 0.14, 0.7], material: material.pbr({ color: "#c8a57b", roughness: 0.8 }), castShadow: true }).runtime({ id: `barrier-top-${i}` }));
+    builder.add(primitives.box({ name: `barrier-top-${i}`, size: [2.2, 0.14, 0.7], material: barrierTopMat, castShadow: true }).runtime({ id: `barrier-top-${i}` }));
   }
-  for (let i = 0; i < BEAM_POOL; i++) builder.add(primitives.box({ name: `beam-${i}`, size: [2.5, 0.34, 0.34], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beam-${i}` }));
+  for (let i = 0; i < BEAM_POOL; i++) builder.add(primitives.box({ name: `beam-${i}`, size: [2.5, 0.34, 0.34], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })) }).runtime({ id: `beam-${i}` }));
 
   for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false }).runtime({ id: `plank-${i}` }));
   for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
-  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beampiece-${i}` }));
+  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })) }).runtime({ id: `beampiece-${i}` }));
 
   const pickups = spiritPickups(options.entities);
   builder.add(geometry.custom(geometry.dynamic({
@@ -501,23 +515,61 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `shuriken-${i}` }));
   builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "aura" }));
 
-  const steel = material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
-  const club = material.pbr({ color: "#5a4332", roughness: 0.8 });
+  const steel = evening ? material.brushedMetal({ color: "#dce6f2", roughness: 0.18, metallic: 0.96 }) : material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
+  const club = evening ? material.brushedMetal({ color: "#464b56", roughness: 0.34, metallic: 0.84 }) : material.pbr({ color: "#5a4332", roughness: 0.8 });
+  const katanaGeo = defineShape(unitKatana());
+  const kanaboGeo = defineShape(unitKanabo());
   const enemySlotCount = hasMeshy07Slots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
   for (let i = 0; i < enemySlotCount; i++) {
-    builder.add(primitives.box({ name: `blade-${i}`, size: [0.07, 0.05, 1], material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
-    builder.add(primitives.box({ name: `club-${i}`, size: [0.26, 0.26, 1.1], material: club, castShadow: false }).runtime({ id: `club-${i}` }));
+    builder.add(geometry.custom(katanaGeo, { name: `blade-${i}`, material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
+    builder.add(geometry.custom(kanaboGeo, { name: `club-${i}`, material: club, castShadow: false }).runtime({ id: `club-${i}` }));
     builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `orb-${i}` }));
   }
+  builder.add(geometry.custom(katanaGeo, { name: "hero-blade", material: steel, castShadow: false }).runtime({ id: "hero-blade" }));
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
-  // Threat marker: a glowing red disc under the next rival in the hero's lane (`crosshairTarget`, E-01). A strip between
-  // the two sat behind the hero's body from the chase camera (g20-dbg-threat2), so the marker sits under the rival.
-  // Opaque, like the beams: the alpha-blended version never reached the frame on the remote captures (g20-dbg-threat).
-  const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
+  // Threat marker: calligraphy vermilion + sumi-ink targeting ring under the next rival in the hero's lane (`crosshairTarget`).
+  const threat = evening ? threatRingSpec() : solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
   for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < options.actors.actors.length; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
+
+  // WP-23: Batched katana crescent slash arcs in runner-corridor space (`CORRIDOR_BOUNDS`, paired GLSL+WGSL `slashSpec`).
+  const slashBatch = new Batch(unitCrescentArc(20), SLASH_POOL, null, CORRIDOR_BOUNDS);
+  builder.add(geometry.custom(slashBatch.geometry(), { name: "slash-arcs", material: material.custom(slashSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "slash-arcs" }));
+
+  // WP-23: Flipbook blade-deflect sparks (`createFlipbookAtlas("sparks")`) & smoke-step puffs (`createFlipbookAtlas("dust")`).
+  if (evening) {
+    const sparksAtlas = createFlipbookAtlas("sparks", [255, 212, 124]);
+    const dustAtlas = createFlipbookAtlas("dust", [202, 216, 236]);
+    for (let i = 0; i < FLIPBOOK_POOL; i++) {
+      builder.add(effects.flipbook({
+        name: `spark-burst-${i}`,
+        texture: sparksAtlas.texture as never,
+        spriteColumns: sparksAtlas.columns,
+        spriteRows: sparksAtlas.rows,
+        frameRate: 30,
+        size: 1.45,
+        blend: "additive",
+        color: "#ffd89a",
+        intensity: 1.35,
+        loop: false,
+        position: [0, -500, 0]
+      }).runtime({ id: `spark-burst-${i}` }));
+      builder.add(effects.flipbook({
+        name: `smoke-step-${i}`,
+        texture: dustAtlas.texture as never,
+        spriteColumns: dustAtlas.columns,
+        spriteRows: dustAtlas.rows,
+        frameRate: 26,
+        size: 1.65,
+        color: "#dce6f5",
+        intensity: 0.95,
+        loop: false,
+        position: [0, -500, 0]
+      }).runtime({ id: `smoke-step-${i}` }));
+    }
+  }
 
   // GU47 NR-15: the scarf ribbon's anchor, moved to the hero's upper spine every frame (hidden: +0 draws).
   builder.add(primitives.sphere({ name: SCARF.anchor, size: 0.01, material: material.pbr({ color: "#1b2236", roughness: 1 }), castShadow: false, receiveShadow: false }).runtime({ id: SCARF.anchor }));
@@ -537,10 +589,12 @@ export function buildWorld(options: WorldOptions): World {
     // frame as a floating translucent rectangle over the falls (blind panel g20p3r4); -1 draw.
   }
 
-  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex) };
+  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex, slashBatch) };
 }
 
 interface Particle { life: number; max: number; vx: number; vy: number; vz: number; gravity: number; size: number; r: number; g: number; b: number; x: number; y: number; z: number }
+interface SlashArc { age: number; maxAge: number; x: number; y: number; z: number; yaw: number; scale: number }
+interface FlipBurst { left: number; x: number; y: number; z: number }
 interface Anim { clip: string; t?: number; rate?: number }
 interface SceneNodeLike { transform: { worldMatrix: ArrayLike<number> } }
 
@@ -574,7 +628,7 @@ export function godRaysAt(s: number): boolean {
 /** Upper-spine joint the scarf anchors to (Meshy rigs name it Spine02). */
 const SCARF_BONES = ["Spine02", "Spine01", "Spine"] as const;
 
-function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[], lanternSpots: readonly LanternSpot[]): WorldRuntime {
+function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[], lanternSpots: readonly LanternSpot[], slashBatch: Batch): WorldRuntime {
   const cameraController = app.camera;
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -624,10 +678,43 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const poolShown = new Array<string>(lightPool.amber + lightPool.cyan).fill("");
   const moonDir = (() => { const g = DISTRICT_LOOKS[DISTRICT_LOOKS.length - 1]!.key; const e = (g.elevationDeg * Math.PI) / 180, a = (g.azimuthDeg * Math.PI) / 180; return [Math.cos(e) * Math.sin(a), Math.sin(e), Math.cos(e) * Math.cos(a)]; })();
   let lastLookS = -1e9, ambientClock = 0;
-  const godRaysAuthored = evening && quality === "high" && options.godRays === true;
-  let godRaysOn: boolean | null = null;
   let district: DistrictId | null = null;
   if (vfx) node(SCARF.anchor).setVisible(false);
+  /* WP-23: pooled katana slash arcs & flipbook blade-spark / smoke-step bursts */
+  const slashes: SlashArc[] = Array.from({ length: SLASH_POOL }, () => ({ age: 99, maxAge: 0.28, x: 0, y: -500, z: 0, yaw: 0, scale: 1 }));
+  let slashHead = 0;
+  const spawnSlash = (wx: number, wy: number, wz: number, yaw: number, scale = 1.45, maxAge = 0.28): void => {
+    const sl = slashes[slashHead]!;
+    slashHead = (slashHead + 1) % SLASH_POOL;
+    sl.age = 0; sl.maxAge = maxAge; sl.x = wx; sl.y = wy; sl.z = wz; sl.yaw = yaw; sl.scale = scale;
+  };
+  const sparkBursts: FlipBurst[] = Array.from({ length: FLIPBOOK_POOL }, () => ({ left: 0, x: 0, y: -500, z: 0 }));
+  const smokeBursts: FlipBurst[] = Array.from({ length: FLIPBOOK_POOL }, () => ({ left: 0, x: 0, y: -500, z: 0 }));
+  let sparkHead = 0, smokeHead = 0;
+  const fireSparkFlipbook = (wx: number, wy: number, wz: number): void => {
+    if (!evening) return;
+    const slotIdx = sparkHead; sparkHead = (sparkHead + 1) % FLIPBOOK_POOL;
+    const b = sparkBursts[slotIdx]!;
+    b.left = 0.44; b.x = wx; b.y = wy; b.z = wz;
+    const h = node(`spark-burst-${slotIdx}`);
+    h.setVisible(true);
+    h.setPosition(wx, wy, wz);
+  };
+  const fireSmokeFlipbook = (wx: number, wy: number, wz: number): void => {
+    if (!evening) return;
+    const slotIdx = smokeHead; smokeHead = (smokeHead + 1) % FLIPBOOK_POOL;
+    const b = smokeBursts[slotIdx]!;
+    b.left = 0.52; b.x = wx; b.y = wy; b.z = wz;
+    const h = node(`smoke-step-${slotIdx}`);
+    h.setVisible(true);
+    h.setPosition(wx, wy, wz);
+  };
+  if (evening) {
+    for (let i = 0; i < FLIPBOOK_POOL; i++) {
+      node(`spark-burst-${i}`).setVisible(false);
+      node(`smoke-step-${i}`).setVisible(false);
+    }
+  }
   /** Moves the pooled point `id` to `p` at `intensity`; patches only on change (no per-frame light churn). */
   const placePoolLight = (slot: number, id: string, p: Vec3 | null, intensity: number): void => {
     const key = p ? `${p[0].toFixed(1)},${p[1].toFixed(1)},${p[2].toFixed(1)}|${intensity.toFixed(2)}` : "off";
@@ -659,15 +746,19 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     river.setUniform?.("waterZenith", [...look.skyZenith]);
     river.setUniform?.("waterHorizon", [...look.skyHorizon]);
     river.setUniform?.("waterKey", [...look.toKey]);
-    // Key, environment and fog: re-applied every 3 m with a short blend, so the light follows the distance smoothly.
+    // Key, environment and fog: re-applied every 3 m with a short blend, with sun position tracking the runner so shadow cascades stay razor-sharp across all 2,640 m.
     if (Math.abs(s - lastLookS) >= 3) {
       lastLookS = s;
-      node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity * KEY_GAIN * LOOK_AB.key, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
+      const sunAnchor = groundFrame(s, x, 0);
+      node("sun").setLight?.({
+        color: linearToHex(look.keyColor),
+        intensity: look.keyIntensity * KEY_GAIN * LOOK_AB.key,
+        position: [sunAnchor.x + look.toKey[0] * 60, sunAnchor.y + look.toKey[1] * 60, sunAnchor.z + look.toKey[2] * 60],
+        direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]]
+      }, { transitionSeconds: 0.3 });
       app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN * LOOK_AB.fill);
       node("evening fill").setLight?.({ intensity: EVENING_FILL.intensity * look.environmentIntensity * LOOK_AB.fill });
       app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
-      const rays = godRaysAuthored && godRaysAt(s);
-      if (godRaysAuthored && rays !== godRaysOn) { godRaysOn = rays; app.post?.setEffectEnabled("volumetricFog", rays); }
     }
     // NR-03 pooled lantern points (amber, on from the river) and spirit points (cyan, on the nearest live flames).
     const lanterns = nearestLanterns(lanternSpots, s, lightPool.amber);
@@ -794,6 +885,10 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   return {
     update(state, dt, time, events) {
       const s = state.s;
+      const rigFrame = options.impactRig ? options.impactRig.step(dt) : { simDt: dt, frozen: false, shakeOffset: [0, 0, 0] as const, shakeRoll: 0, fovDeltaDeg: 0 };
+      const animDt = rigFrame.simDt;
+      const heroHeadingFrame = groundFrame(s, state.x, Math.max(0, state.y));
+      const heroYaw = Math.atan2(heroHeadingFrame.dx, heroHeadingFrame.dz) + Math.PI;
       /* sky, fog and animated uniforms */
       const sky = groundFrame(s, 0, 0);
       node("sky").setPosition(sky.x, 0, sky.z);
@@ -803,7 +898,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       flames.setUniform?.("flameTime", time);
       flames.setUniform?.("runnerS", s);
 
-      /* events -> particles, pickups */
+      /* events -> particles, pickups, flipbook blade sparks, smoke-step dust & katana slash arcs */
       for (const ev of events) {
         const at = (es: number, lane: number, y = 0.9): [number, number, number] => { const p = groundFrame(es, lane * laneOffset(es), y); return [p.x, p.y, p.z]; };
         if (vfx) {
@@ -816,23 +911,59 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         if (ev.type === "pickup") {
           const i = pickupIndex.get(ev.entity as number);
           if (i !== undefined) { aliveFlags[i] = 0; flamesDirty = true; const p = pickups[i]!.position; emit(p[0], p[1], p[2], 12, [0.3, 0.85, 1], 3, 0.18, 0.55, -2); }
-        } else if (ev.type === "kill") { const p = at(ev.s as number, ev.lane as number, 1); emit(p[0], p[1], p[2], ev.heavy ? 40 : 28, ev.heavy ? [1, 0.55, 0.2] : [1, 0.85, 0.5], 6, 0.32, 0.75, 4); }
-        else if (ev.type === "land") { const p = groundFrame(s, state.x, 0.1); emit(p.x, p.y, p.z, 10, [0.8, 0.75, 0.6], 2.4, 0.3, 0.55, 1); }
+        } else if (ev.type === "kill") {
+          const p = at(ev.s as number, ev.lane as number, 1);
+          emit(p[0], p[1], p[2], ev.heavy ? 40 : 28, ev.heavy ? [1, 0.55, 0.2] : [1, 0.85, 0.5], 6, 0.32, 0.75, 4);
+          fireSparkFlipbook(p[0], p[1] + 0.15, p[2]);
+          spawnSlash(p[0], p[1] + 0.1, p[2], heroYaw + (rng() - 0.5) * 0.5, ev.heavy ? 2.1 : 1.65, 0.3);
+        }
+        else if (ev.type === "deflect" || ev.type === "interrupt" || ev.type === "armorBreak") {
+          const p = typeof ev.s === "number" && typeof ev.lane === "number" ? at(ev.s, ev.lane, 1.15) : [heroHeadingFrame.x + heroHeadingFrame.dx * 1.1, heroHeadingFrame.y + 1.15, heroHeadingFrame.z + heroHeadingFrame.dz * 1.1] as [number, number, number];
+          emit(p[0], p[1], p[2], 20, [1, 0.86, 0.48], 6, 0.26, 0.5, 1);
+          fireSparkFlipbook(p[0], p[1], p[2]);
+          spawnSlash(p[0], p[1], p[2], heroYaw + 0.35, 1.55, 0.26);
+        }
+        else if (ev.type === "land") {
+          const p = groundFrame(s, state.x, 0.1);
+          emit(p.x, p.y, p.z, 10, [0.8, 0.75, 0.6], 2.4, 0.3, 0.55, 1);
+          fireSmokeFlipbook(p.x, p.y + 0.35, p.z);
+        }
         else if (ev.type === "damage") { lastDamage = time; shake.add(0.3); const p = groundFrame(s, state.x, 1.2); emit(p.x, p.y, p.z, 22, [1, 0.25, 0.2], 5, 0.28, 0.65, 3); }
         else if (ev.type === "ram") {
           const tier = ev.tier as RamTier, fb = TIER_FEEDBACK[tier];
           addPieces(spawnPieces(ev.kind === "beam" ? "beam" : "barrier", tier, ev.entity as number, ev.s as number, ev.lane as number));
           const p = at(ev.s as number, ev.lane as number, 0.7);
           emit(p[0], p[1], p[2], fb.dust, [0.82, 0.66, 0.45], tier === "crash" ? 6.5 : 3.5, 0.34, 0.8, 3);
+          fireSparkFlipbook(p[0], p[1] + 0.2, p[2]);
         }
-        else if (ev.type === "windImpact" || ev.type === "cloneStrike") { const p = at(ev.s as number, ev.lane as number, 1.1); emit(p[0], p[1], p[2], 24, [0.6, 0.95, 1], 6.5, 0.3, 0.65, 0); }
-        else if (ev.type === "break") { addPieces(spawnPieces("barrier", "smash", Math.round((ev.s as number) * 10), ev.s as number, ev.lane as number)); const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); }
-        else if (ev.type === "dash") { const p = groundFrame(s, state.x, 1); emit(p.x, p.y, p.z, 24, [0.5, 0.9, 1], 4, 0.26, 0.55, 0); }
-        else if (ev.type === "spiralorb") { const p = groundFrame(s + 0.8, state.x, 1.2); emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0); }
+        else if (ev.type === "windImpact" || ev.type === "cloneStrike") {
+          const p = at(ev.s as number, ev.lane as number, 1.1);
+          emit(p[0], p[1], p[2], 24, [0.6, 0.95, 1], 6.5, 0.3, 0.65, 0);
+          fireSparkFlipbook(p[0], p[1], p[2]);
+          spawnSlash(p[0], p[1], p[2], heroYaw - 0.3, 1.75, 0.3);
+        }
+        else if (ev.type === "break") { addPieces(spawnPieces("barrier", "smash", Math.round((ev.s as number) * 10), ev.s as number, ev.lane as number)); const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); fireSparkFlipbook(p[0], p[1], p[2]); }
+        else if (ev.type === "dash") {
+          const p = groundFrame(s, state.x, 1);
+          emit(p.x, p.y, p.z, 24, [0.5, 0.9, 1], 4, 0.26, 0.55, 0);
+          fireSmokeFlipbook(p.x, p.y - 0.35, p.z);
+          spawnSlash(p.x + p.dx * 1.35, p.y + 0.15, p.z + p.dz * 1.35, heroYaw, 1.85, 0.32);
+        }
+        else if (ev.type === "clones") {
+          const p = groundFrame(s, state.x, 0.85);
+          fireSmokeFlipbook(p.x - 1.2, p.y, p.z);
+          fireSmokeFlipbook(p.x + 1.2, p.y, p.z);
+        }
+        else if (ev.type === "spiralorb") {
+          const p = groundFrame(s + 0.8, state.x, 1.2);
+          emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0);
+          spawnSlash(p.x + p.dx * 0.6, p.y - 0.05, p.z + p.dz * 0.6, heroYaw, 1.5, 0.26);
+        }
         else if (ev.type === "form" || ev.type === "unlock") {
           lastFormShift = time;
           const p = groundFrame(s, state.x, 0.9);
           emit(p.x, p.y, p.z, 46, ev.form === "beast" ? [1, 0.7, 0.18] : [1, 0.62, 0.22], 7, 0.34, 0.9, -1.5);
+          fireSmokeFlipbook(p.x, p.y, p.z);
         } else if (ev.type === "enemyAttack") { const p = at(ev.s as number, ev.lane as number, 1.2); emit(p[0], p[1], p[2], 8, [1, 0.5, 0.3], 3, 0.2, 0.35, 0); }
       }
       if (flamesDirty) { flames.updateAttribute?.("aAlive", { array: aliveFlags, offset: 0 }); flamesDirty = false; }
@@ -857,8 +988,18 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const heroSlot = state.form === "base" ? HERO : SAGE;
       activeHero = heroSlot;
       setTint(heroSlot, flash ? "flash" : state.form, heroTint);
-      place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, dt, true);
-      place(heroSlot === HERO ? SAGE : HERO, { s, x: state.x, y: 0 }, 0, 1, anim, dt, false);
+      place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, animDt, true);
+      place(heroSlot === HERO ? SAGE : HERO, { s, x: state.x, y: 0 }, 0, 1, anim, animDt, false);
+      /* hero katana drawn in right hand during attacks, gale-star cast or surge dash */
+      {
+        const drawBlade = state.phase === "running" && (state.attack > 0 || state.dash > 0 || state.shurikenCast > 0);
+        if (drawBlade) {
+          refresh(heroSlot);
+          const hand = boneWorld(heroSlot, BONES.handR), fore = boneWorld(heroSlot, BONES.foreR);
+          if (hand && fore) aim("hero-blade", fore, hand, 1.12, 0.12);
+          else node("hero-blade").setVisible(false);
+        } else node("hero-blade").setVisible(false);
+      }
       if (evening) applyLook(s, state.x, state.y, dt, state.form);
 
       /* shadow clones */
@@ -867,7 +1008,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         const lateral = [-1.5, 1.5, 0][k]!;
         const behind = [0.6, 0.6, 2.4][k]!;
         setTint(slot, "clone", CLONE_TINT);
-        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07) }, dt, show);
+        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07) }, animDt, show);
       });
 
       /* enemies: stable slot per entity while in window */
@@ -931,7 +1072,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         }
       });
 
-      /* threat marker: a disc under the next rival in the hero's lane (the crosshair target), brighter as it closes in */
+      /* threat marker: a calligraphy seal ring under the next rival in the hero's lane (the crosshair target), brighter as it closes in */
       const target = state.phase === "running" ? crosshairTarget(state) : null;
       threatShown = null;
       const marker = node("threat-0");
@@ -940,9 +1081,44 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       if (target && show) {
         const f = groundFrame(target.s, target.lane * laneOffset(target.s), 0.06);
         marker.setPosition(f.x, f.y, f.z);
-        marker.setScale([0.85, 1, 0.85]);
+        marker.setScale([1.05, 1, 1.05]);
         threatShown = { target: target.id, from: +s.toFixed(2), to: +target.s.toFixed(2) };
         marker.setUniform?.("glow", 0.5 + 1.2 * (1 - Math.min(1, (target.s - s) / 26)));
+        marker.setUniform?.("ringTime", time);
+      }
+
+      /* batched katana slash arcs in runner-corridor space (`CORRIDOR_BOUNDS`) & flipbook burst lifetimes */
+      {
+        const slashNode = node("slash-arcs");
+        slashNode.setPosition(heroHeadingFrame.x, heroHeadingFrame.y, heroHeadingFrame.z);
+        let activeProgress = 0, anySlash = false;
+        for (let i = 0; i < SLASH_POOL; i++) {
+          const sl = slashes[i]!;
+          if (sl.age < sl.maxAge) {
+            sl.age += animDt;
+            if (sl.age < sl.maxAge) {
+              const prog = sl.age / sl.maxAge;
+              if (!anySlash || prog < activeProgress) activeProgress = prog;
+              anySlash = true;
+              slashBatch.place(i, sl.x - heroHeadingFrame.x, sl.y - heroHeadingFrame.y, sl.z - heroHeadingFrame.z, sl.yaw, sl.scale, 1, sl.scale);
+            } else slashBatch.collapse(i);
+          }
+        }
+        slashBatch.flush(slashNode, false);
+        slashNode.setVisible(anySlash);
+        if (anySlash) {
+          slashNode.setUniform?.("slashTime", time);
+          slashNode.setUniform?.("slashProgress", activeProgress);
+          slashNode.setUniform?.("slashInk", state.form === "base" ? [0.16, 0.34, 0.68] : [0.18, 0.72, 0.96]);
+        }
+      }
+      if (evening) {
+        for (let i = 0; i < FLIPBOOK_POOL; i++) {
+          const sb = sparkBursts[i]!;
+          if (sb.left > 0) { sb.left -= dt; if (sb.left <= 0) { const h = node(`spark-burst-${i}`); h.setVisible(false); h.setPosition(0, -500, 0); } }
+          const db = smokeBursts[i]!;
+          if (db.left > 0) { db.left -= dt; if (db.left <= 0) { const h = node(`smoke-step-${i}`); h.setVisible(false); h.setPosition(0, -500, 0); } }
+        }
       }
 
       /* barriers and beams */
@@ -1072,8 +1248,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const pose = chase.step({
         wantEye: [eyeF.x, eyeF.y, eyeF.z],
         wantLook: [lookF.x, lookF.y, lookF.z],
-        fovTarget: 57 + (state.dash > 0 && !cinematic ? 5 : 0),
-        shakeOffset: [jolt.x, jolt.y, jolt.x * 0.4]
+        fovTarget: 57 + (state.dash > 0 && !cinematic ? 5 : 0) + rigFrame.fovDeltaDeg,
+        shakeOffset: [jolt.x + rigFrame.shakeOffset[0], jolt.y + rigFrame.shakeOffset[1], jolt.x * 0.4 + rigFrame.shakeOffset[2]]
       }, dt);
       // NR-18: title shot over the roofs blending into the chase through the 3-2-1, three win shots at the gate, and a
       // lane-change roll (<= 3 deg). Reduced motion and ?look=original keep today's chase with no roll.
@@ -1108,7 +1284,16 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       scarfTrail?.clear();
       mixerClip.fill("");
       lastLookS = -1e9;
-      godRaysOn = null;
+      for (let i = 0; i < SLASH_POOL; i++) { slashes[i]!.age = 99; slashBatch.collapse(i); }
+      slashBatch.flush(node("slash-arcs"), false);
+      node("slash-arcs").setVisible(false);
+      if (evening) {
+        for (let i = 0; i < FLIPBOOK_POOL; i++) {
+          sparkBursts[i]!.left = 0; node(`spark-burst-${i}`).setVisible(false);
+          smokeBursts[i]!.left = 0; node(`smoke-step-${i}`).setVisible(false);
+        }
+      }
+      options.impactRig?.reset();
     },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();

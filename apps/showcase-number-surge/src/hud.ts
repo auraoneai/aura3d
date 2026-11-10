@@ -1,8 +1,9 @@
 /**
  * Number Surge HUD: DOM writes only when a value changes. Contrast-safe ink/paper
- * pairs are exported for the unit contrast gate (every pair ≥ 4.5:1, kit helpers).
+ * pairs are exported for the unit contrast gate (every pair >= 4.5:1, kit helpers).
  */
 import { comboTubeFill, contrastRatio } from "../../../examples/shared/runner-kit/index";
+import { DIMS } from "./meshes";
 import { CONFIG, type GameState } from "./sim";
 
 /** Every HUD text/background pair used by index.html (worst-case backdrop per surface). */
@@ -12,8 +13,11 @@ export const HUD_PAIRS: readonly { readonly name: string; readonly ink: string; 
   { name: "mult", ink: "#3ef2ff", paper: "#131230" },
   { name: "number", ink: "#3ef2ff", paper: "#131230" },
   { name: "wall", ink: "#ff4fd8", paper: "#131230" },
+  { name: "wall-smash", ink: "#7dff9e", paper: "#131230" },
+  { name: "wall-danger", ink: "#ff6b86", paper: "#131230" },
   { name: "shield", ink: "#7dff9e", paper: "#131230" },
   { name: "x2", ink: "#ffd84d", paper: "#131230" },
+  { name: "eyebrow", ink: "#a9b8d8", paper: "#131230" },
   { name: "splash-title-cyan", ink: "#3ef2ff", paper: "#281a52" },
   { name: "splash-title-magenta", ink: "#ff4fd8", paper: "#281a52" },
   { name: "splash-instruction", ink: "#eaf6ff", paper: "#281a52" },
@@ -53,6 +57,8 @@ export interface HudElements {
   wall: HTMLElement;
   shield: HTMLElement;
   x2: HTMLElement;
+  laneRail?: HTMLElement | null;
+  laneThumb?: HTMLElement | null;
 }
 
 const text = (el: HTMLElement, value: string): void => {
@@ -64,11 +70,12 @@ export class NumberSurgeHud {
   private lastBest = -1;
   private lastMult = -1;
   private lastNumber = -1;
-  private lastWall = -1;
+  private lastWallKey = "";
   private lastFill = -1;
   private lastShield: boolean | null = null;
   private lastX2 = false;
   private lastVisible: boolean | null = null;
+  private lastLanePct = -1;
 
   constructor(private readonly el: HudElements) {}
 
@@ -77,15 +84,16 @@ export class NumberSurgeHud {
     if (visible !== this.lastVisible) {
       this.lastVisible = visible;
       this.el.hud.hidden = !visible;
+      if (this.el.laneRail) this.el.laneRail.hidden = !visible;
     }
     if (!visible) return;
     if (o.score !== this.lastScore) {
       this.lastScore = o.score;
-      text(this.el.score, String(o.score));
+      text(this.el.score, o.score.toLocaleString());
     }
     if (best !== this.lastBest) {
       this.lastBest = best;
-      text(this.el.best, `BEST ${best}`);
+      text(this.el.best, `best ${best.toLocaleString()}`);
     }
     if (o.mult !== this.lastMult) {
       this.lastMult = o.mult;
@@ -98,11 +106,22 @@ export class NumberSurgeHud {
     }
     if (o.number !== this.lastNumber) {
       this.lastNumber = o.number;
-      text(this.el.number, String(o.number));
+      text(this.el.number, o.number.toLocaleString());
     }
-    if (o.wallHp !== this.lastWall) {
-      this.lastWall = o.wallHp;
-      text(this.el.wall, o.wallHp > 0 ? `WALL ${o.wallHp}` : "");
+    const wallState = o.wallHp <= 0 ? "none" : o.number > o.wallHp ? "smash" : o.shieldActive ? "shield" : "danger";
+    const wallKey = `${wallState}:${o.wallHp}`;
+    if (wallKey !== this.lastWallKey) {
+      this.lastWallKey = wallKey;
+      if (wallState === "none") {
+        this.el.wall.hidden = true;
+        text(this.el.wall, "");
+      } else {
+        this.el.wall.hidden = false;
+        this.el.wall.dataset.state = wallState === "danger" ? "danger" : "smash";
+        const label =
+          wallState === "smash" ? `smash −${o.wallHp}` : wallState === "shield" ? `shield ${o.wallHp}` : `danger ${o.wallHp}`;
+        text(this.el.wall, label);
+      }
     }
     if (o.shieldActive !== this.lastShield) {
       this.lastShield = o.shieldActive;
@@ -112,6 +131,13 @@ export class NumberSurgeHud {
     if (x2 !== this.lastX2) {
       this.lastX2 = x2;
       this.el.x2.hidden = !x2;
+    }
+    if (this.el.laneThumb) {
+      const pct = Math.round(Math.max(0, Math.min(100, ((o.laneOffset / (DIMS.EDGE_X - 0.55)) * 0.5 + 0.5) * 100)));
+      if (pct !== this.lastLanePct) {
+        this.lastLanePct = pct;
+        this.el.laneThumb.style.left = `${pct}%`;
+      }
     }
   }
 }

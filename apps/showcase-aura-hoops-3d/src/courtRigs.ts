@@ -258,6 +258,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 110,
     backdrop: "boardwalk, lifeguard tower and the ocean",
     surface: { name: "bleached teal acrylic", floor: "#4f8a93", paint: "#e6dcc2", line: "#fbf3df", apron: "#cdb07a", roughness: 0.72, puddles: 0, pbrSet: "hoopsCourtAcrylicTeal" },
+    surround: { color: "#bfa36f", roughness: 0.94 },
     // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
     bleachers: { color: "#d9cdb4", seat: "#ff5d8f" },
     sprayTag: { color: "#ff5d8f", opacity: 0.82, size: 2.2 }
@@ -325,6 +326,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 70,
     backdrop: "corrugated walls and open sides onto the rain",
     surface: { name: "painted concrete", floor: "#6a5a43", paint: "#8f3c2a", line: "#f3e8cf", apron: "#3e352b", roughness: 0.8, puddles: 0, pbrSet: "hoopsCourtConcretePainted" },
+    surround: { color: "#28231e", roughness: 0.88 },
     // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
     bleachers: { color: "#6b5a45", seat: "#ffe14d" },
     sprayTag: { color: "#ffe14d", opacity: 0.84, size: 2.2 }
@@ -364,6 +366,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 120,
     backdrop: "riverside towers across the water",
     surface: { name: "wet asphalt", floor: "#1d222c", paint: "#1b5a86", line: "#9fdcff", apron: "#12161f", roughness: 0.12, puddles: 0.7, pbrSet: "hoopsCourtAsphaltWet" },
+    surround: { color: "#121824", roughness: 0.42 },
     // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
     bleachers: { color: "#2a3140", seat: "#39d7ff" },
     sprayTag: { color: "#39d7ff", opacity: 0.8, size: 2.2 }
@@ -434,20 +437,20 @@ export const KEY_MIN_ELEVATION_DEG = 12;
  * (below the S3 0.5 cutoff): Manila's polished concrete, Shanghai's wet asphalt, Orbit's composite deck.
  */
 export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: number; readonly paintRoughness: number; readonly ssr: number }>> = {
-  rucker: { roughness: 0.74, paintRoughness: 0.66, ssr: 0 },
+  rucker: { roughness: 0.34, paintRoughness: 0.28, ssr: 0.24 },
   venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
   athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
   // phase 7: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3); phase 4's 0.45 / 0.42 / 0.5 ran at
   // 26 % (roughness 0.45 was read as a cutoff, e6 SSR_ROUGHNESS_GATED), i.e. about 0.11-0.13 effective.
-  manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.24 },
-  // round 5: SSR 0.6 -> 0.42 and a thicker hit (rubric: horizontal banding near the bottom of the Shanghai frame)
-  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.22 },
-  orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.28 }
+  manila: { roughness: 0.3, paintRoughness: 0.26, ssr: 0.3 },
+  // WP-02: Voronoi wet asphalt + SSR (replaces deprecated weather.wetGround)
+  shanghai: { roughness: 0.14, paintRoughness: 0.18, ssr: 0.52 },
+  orbit: { roughness: 0.22, paintRoughness: 0.2, ssr: 0.34 }
 };
 
 /**
  * GU47 phase 7 (e6 handoff): the S3 trace takes `roughness` as the surface roughness of every pixel (no per-pixel
- * channel yet), full strength at 0.35 or less, zero at 0.5. 0.3 keeps the gate fully open on the three glossy courts.
+ * channel yet), full strength at 0.35 or less, zero at 0.5. 0.3 keeps the gate fully open on the glossy courts.
  */
 export const COURT_SSR_ROUGHNESS = 0.3;
 
@@ -455,7 +458,7 @@ export const COURT_SSR_ROUGHNESS = 0.3;
 export function courtReflectionNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   const ssr = COURT_FLOOR_FINISH[rig.id].ssr;
   if (ssr <= 0) return [];
-  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 24, roughness: COURT_SSR_ROUGHNESS, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
+  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 28, roughness: COURT_SSR_ROUGHNESS, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
 }
 
 /** The look overrides of one court (E-A): catalogue HDRI, key, fog to the horizon, grade, post preset and bloom. */
@@ -497,7 +500,7 @@ export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean }
   }) as AuraNodeBuilder<AuraSceneNode>[];
   if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
-  nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
+  nodes.push(effects.cinematicBloom({ name: "court bloom", color: "#ffffff", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold, antiBlowout: true }) as AuraNodeBuilder<AuraSceneNode>);
   if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.045 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
   return nodes;
 }
@@ -711,11 +714,44 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
       }).toJSON());
     }
   }
-  if (rig.weather.wetGround) {
-    // The wetness node only (the slab and puddle discs are legacy primitives; the court floor carries the wet look).
-    out.push(...withoutLegacyWeather(weather.wetGround({ type: "rain", dryColor: rig.surface.floor, dryRoughness: 0.9, size: 14, seed: 0x5a1e }).nodes));
-  }
   return out;
+}
+
+/** Subtle overhead light-cone shafts on night floodlight cages (kept gentle so chase luma never washes out). */
+export function courtOverheadBeamNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  if (rig.id === "rucker") {
+    return rig.practicals.filter((p): p is CourtPracticalSpot => p.kind === "spot").map((p) => {
+      const dx = p.target[0] - p.position[0];
+      const dy = p.target[1] - p.position[1];
+      const dz = p.target[2] - p.position[2];
+      const len = Math.hypot(dx, dy, dz) || 1;
+      return effects.lightCone({
+        name: `${p.name}-beam`,
+        position: p.position,
+        direction: [dx / len, dy / len, dz / len],
+        color: p.color,
+        intensity: 0.08,
+        length: 8.4,
+        coneAngle: p.angle * 0.68,
+        softness: 0.85
+      } as Parameters<typeof effects.lightCone>[0]) as AuraNodeBuilder<AuraSceneNode>;
+    });
+  }
+  if (rig.id === "shanghai") {
+    return [
+      effects.lightCone({
+        name: "shanghai-rim-beam",
+        position: [0, 8.2, -1.2],
+        direction: [0, -1, 0.14],
+        color: "#39d7ff",
+        intensity: 0.1,
+        length: 6.5,
+        coneAngle: 0.44,
+        softness: 0.8
+      } as Parameters<typeof effects.lightCone>[0]) as AuraNodeBuilder<AuraSceneNode>
+    ];
+  }
+  return [];
 }
 
 /** H47-L1 / H47-E1 summary per court for the identity sheet and the tests. */
@@ -767,8 +803,8 @@ export function courtBleacherNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode
     }
   }
   return [
-    instances.box({ name: "bleacher-risers", transforms: risers, castShadow: true, receiveShadow: true, material: material.pbr({ color: rig.bleachers.color, roughness: 0.45, metalness: 0.55 }) } as Parameters<typeof instances.box>[0]) as unknown as AuraNodeBuilder<AuraSceneNode>,
-    instances.box({ name: "bleacher-planks", transforms: planks, castShadow: false, material: material.pbr({ color: rig.bleachers.seat, roughness: 0.6 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>
+    instances.box({ name: "bleacher-risers", transforms: risers, castShadow: true, receiveShadow: true, material: material.brushedMetal({ color: rig.bleachers.color, roughness: 0.38 }) } as Parameters<typeof instances.box>[0]) as unknown as AuraNodeBuilder<AuraSceneNode>,
+    instances.box({ name: "bleacher-planks", transforms: planks, castShadow: false, material: material.lacquer({ color: rig.bleachers.seat, roughness: 0.34 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>
   ];
 }
 
@@ -857,11 +893,11 @@ export function courtBackdropNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode
   const spec = COURT_BACKDROP[rig.id];
   if (!spec) return [];
   const { blocks, windows, darkWindows } = courtBackdropLayout(rig.id);
-  const glass = material.pbr({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.12, metalness: 0.4 });
+  const glass = material.physical({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.08, metalness: 0.35, clearcoat: 0.72, clearcoatRoughness: 0.1 });
   const nodes = [
-    instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: material.pbr({ color: spec.wall, roughness: 0.92 }) }) as AuraNodeBuilder<AuraSceneNode>,
+    instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: material.physical({ color: spec.wall, roughness: 0.88, metalness: 0, sheen: 0.08 }) }) as AuraNodeBuilder<AuraSceneNode>,
     instances.box({ name: `${rig.id}-walkup-glass`, transforms: spec.lit ? darkWindows : [...windows, ...darkWindows], castShadow: false, material: glass }) as AuraNodeBuilder<AuraSceneNode>
   ];
-  if (spec.lit) nodes.push(instances.box({ name: `${rig.id}-walkup-lit`, transforms: windows, castShadow: false, material: material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.1 }) }) as AuraNodeBuilder<AuraSceneNode>);
+  if (spec.lit) nodes.push(instances.box({ name: `${rig.id}-walkup-lit`, transforms: windows, castShadow: false, material: material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.15 }) }) as AuraNodeBuilder<AuraSceneNode>);
   return nodes;
 }

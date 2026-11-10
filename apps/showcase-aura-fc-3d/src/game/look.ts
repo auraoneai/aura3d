@@ -265,31 +265,31 @@ const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness:
 
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
-    // phase 4
-    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.6, roughness: 0.3, maxDistance: 30 },
-    background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
-    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.02, tint: 0 },
-    rim: { color: "#8fc8ff", intensity: 0.35, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.58, pools: 0.16, coneIntensity: 0.55, mirror: null,
-    bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
+    // phase 4 + WP-04 floodlight AgX calibration
+    key: NIGHT_KEY, fogScale: 1.05, ssr: { intensity: 0.34, roughness: 0.34, maxDistance: 32 },
+    background: "#0a1422", exposureEv: 0.12, floodScale: 1.34,
+    grade: { contrast: 1.12, saturation: 1.02, temperature: -0.02, tint: 0 },
+    rim: { color: "#8fc8ff", intensity: 0.42, azimuthDeg: 200 }, flares: true, weather: "rain",
+    surface: "grass", turfRoughness: 0.42, pools: 0.18, coneIntensity: 0.56, mirror: null,
+    bloom: { intensity: 0.3, threshold: 0.84 }, vignette: 0.26, grain: 0, chromaticAberration: 0
   },
   kyoto: {
-    // phase 4
-    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.5, roughness: 0.35, maxDistance: 30 },
-    background: "#120814", exposureEv: 0.08, floodScale: 1.3,
-    grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
-    rim: { color: "#ff8fbd", intensity: 0.3, azimuthDeg: 160 }, flares: true, weather: "drizzle",
-    surface: "grass", turfRoughness: 0.62, pools: 0.14, coneIntensity: 0.5, mirror: null,
-    bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
+    // phase 4 + WP-04 floodlight AgX calibration
+    key: NIGHT_KEY, fogScale: 1.05, ssr: { intensity: 0.32, roughness: 0.36, maxDistance: 32 },
+    background: "#120814", exposureEv: 0.12, floodScale: 1.34,
+    grade: { contrast: 1.09, saturation: 1.1, temperature: 0.05, tint: 0.12 },
+    rim: { color: "#ff8fbd", intensity: 0.36, azimuthDeg: 160 }, flares: true, weather: "drizzle",
+    surface: "grass", turfRoughness: 0.44, pools: 0.16, coneIntensity: 0.52, mirror: null,
+    bloom: { intensity: 0.3, threshold: 0.82 }, vignette: 0.26, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
-    // phase 4
-    key: NIGHT_KEY, fogScale: 1.0, ssr: null,
-    background: "#140d07", exposureEv: 0.08, floodScale: 1.3,
-    grade: { contrast: 1.1, saturation: 1.05, temperature: 0.25, tint: -0.05 },
-    rim: { color: "#ffc27a", intensity: 0.7, azimuthDeg: 190 }, flares: true, weather: "dust",
-    surface: "dirt", turfRoughness: 0.9, pools: 0.16, coneIntensity: 0.55, mirror: null,
-    bloom: { intensity: 0.28, threshold: 0.8 }, vignette: 0.28, grain: 0.05, chromaticAberration: 0
+    // phase 4 + WP-04 sodium cage calibration
+    key: NIGHT_KEY, fogScale: 0.96, ssr: null,
+    background: "#140d07", exposureEv: 0.1, floodScale: 1.32,
+    grade: { contrast: 1.1, saturation: 1.06, temperature: 0.25, tint: -0.05 },
+    rim: { color: "#ffc27a", intensity: 0.72, azimuthDeg: 190 }, flares: true, weather: "dust",
+    surface: "dirt", turfRoughness: 0.88, pools: 0.18, coneIntensity: 0.55, mirror: null,
+    bloom: { intensity: 0.28, threshold: 0.84 }, vignette: 0.26, grain: 0.05, chromaticAberration: 0
   },
   lagos: {
     // phase 4
@@ -298,29 +298,29 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     grade: { contrast: 1.26, saturation: 1.06, temperature: 0.12, tint: 0 },
     rim: null, flares: false, weather: "none",
     surface: "plain", turfRoughness: 0.95, pools: 0, coneIntensity: 0.3, mirror: null,
-    bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
+    bloom: { intensity: 0.08, threshold: 0.96 }, vignette: 0.24, grain: 0, chromaticAberration: 0
   },
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
     // phase 4
-    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.8, roughness: 0.25, maxDistance: 30 },
+    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.52, roughness: 0.28, maxDistance: 30 },
     background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
     // dark pitch lines read; the 4.6.2 white flat measured mean 227
-    surface: "ice", turfRoughness: 0.35, pitchColor: "#c4c6d1", pools: 0, coneIntensity: 0.3, mirror: null,
-    bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.3, grain: 0, chromaticAberration: 0
+    surface: "ice", turfRoughness: 0.34, pitchColor: "#c4c6d1", pools: 0, coneIntensity: 0.3, mirror: null,
+    bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   glacier: {
-    // phase 4
-    key: NIGHT_KEY, fogScale: 1.0, ssr: { intensity: 0.7, roughness: 0.25, maxDistance: 30 },
-    background: "#050b14", exposureEv: 0.08, floodScale: 1.1,
-    grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
-    rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",
-    surface: "ice", turfRoughness: 0.3, pools: 0.06, coneIntensity: 0.55, mirror: null,
-    bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
+    // phase 4 + WP-04 polar floodlight calibration
+    key: NIGHT_KEY, fogScale: 0.98, ssr: { intensity: 0.46, roughness: 0.28, maxDistance: 32 },
+    background: "#050b14", exposureEv: 0.1, floodScale: 1.15,
+    grade: { contrast: 1.08, saturation: 1.0, temperature: -0.18, tint: -0.03 },
+    rim: { color: "#7fe8c9", intensity: 0.82, azimuthDeg: 170 }, flares: true, weather: "snow",
+    surface: "ice", turfRoughness: 0.3, pools: 0.08, coneIntensity: 0.56, mirror: null,
+    bloom: { intensity: 0.26, threshold: 0.84 }, vignette: 0.26, grain: 0, chromaticAberration: 0,
     hideDome: true
   }
 };

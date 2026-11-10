@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "ae83b3e6aa0cf594173003d8e4808e6b7d25223a13ef704a93e28ff72ed42162",
+  "sourceSha256": "88f6c54c13dbc512ed011f3441998b48e01cee6937042f05e750c092bbd98c93",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -228,9 +228,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkDroneNighthawk",
+            "assetKey": "leapBeetleAnim",
             "triangles": 0,
-            "textures": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -296,32 +296,32 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:earth",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plat-tops:earth",
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plat-tops:grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plats:leaf",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plat-tops:leaf",
             "practical": false
           },
@@ -345,27 +345,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -593,9 +593,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkDroneNighthawk",
+            "assetKey": "leapBeetleAnim",
             "triangles": 0,
-            "textures": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -719,27 +719,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -997,7 +997,11 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "node": "pbl-millpond-ripple:pond",
+            "practical": false
+          },
+          {
+            "name": "instanced felt",
             "node": "pbl-millpond-foam",
             "practical": false
           },
@@ -1047,22 +1051,22 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:dock",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "matte clay (instanced)",
             "node": "plat-tops:dock",
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:wood",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "matte clay (instanced)",
             "node": "plat-tops:wood",
             "practical": false
           },
@@ -1089,27 +1093,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -1412,22 +1416,22 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plats:sky",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plat-tops:sky",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plats:cloud",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "felt (instanced)",
             "node": "plat-tops:cloud",
             "practical": false
           },
@@ -1449,27 +1453,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -1748,7 +1752,7 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-base-mounds",
             "practical": false
           },
@@ -1783,22 +1787,22 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:stone",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "matte clay (instanced)",
             "node": "plat-tops:stone",
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:ember",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "matte clay (instanced)",
             "node": "plat-tops:ember",
             "practical": false
           },
@@ -1834,27 +1838,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -2170,7 +2174,7 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-base-mounds",
             "practical": false
           },
@@ -2199,20 +2203,22 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "glazed clay (instanced)",
             "node": "plats:marble",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed ceramic (instanced)",
             "node": "plat-tops:marble",
             "practical": false
           },
           {
+            "name": "instanced surface",
             "node": "plats:gold",
             "practical": false
           },
           {
+            "name": "instanced surface",
             "node": "plat-tops:gold",
             "practical": false
           },
@@ -2240,27 +2246,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -2527,7 +2533,7 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-base-mounds",
             "practical": false
           },
@@ -2562,10 +2568,12 @@
             "practical": false
           },
           {
+            "name": "lacquer",
             "node": "plats:crystal",
             "practical": false
           },
           {
+            "name": "lacquer",
             "node": "plat-tops:crystal",
             "practical": false
           },
@@ -2597,27 +2605,27 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-grass",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-fern",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "instanced clay",
             "node": "pbl-flora-pebble",
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "instanced felt",
             "node": "pbl-flora-leaf",
             "practical": false
           }
@@ -2941,13 +2949,6 @@
         "assetKey": "blockfallReactorContainmentPylonMeshy",
         "maxTriangles": 20000,
         "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkDroneNighthawk",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
         "maxTextureSize": 1024
       }
     ],

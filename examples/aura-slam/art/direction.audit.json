@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "3c4a2bf0aa1a552096fd534b1787d1878cabf03540d777024966b296e3bdddde",
+  "sourceSha256": "dad18e80b3c26ffaa723e4a449115a2125bd2dff9ed6048f0b40691047e9a7cc",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -67,20 +67,6 @@
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
-      },
-      {
-        "assetKey": "showcaseStadiumSeats",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rooftopScoreboardRigMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
       }
     ],
     "materials": [
@@ -119,10 +105,12 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "net-post-left",
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "net-post-right",
         "practical": false
       },
@@ -164,6 +152,15 @@
         "practical": true
       },
       {
+        "node": "stadium-grandstand-rear",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "stadium-scoreboard-gantry",
+        "practical": false
+      },
+      {
         "node": "static-lines",
         "practical": false
       },
@@ -172,10 +169,12 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "static-chairFrame",
         "practical": false
       },
       {
+        "name": "lacquer",
         "node": "static-wood",
         "practical": false
       },
@@ -538,28 +537,6 @@
     },
     "assets": [
       {
-        "role": "set-dressing",
-        "assetKey": "showcaseStadiumSeats",
-        "kit": "K4",
-        "maxTriangles": 60000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "rooftopScoreboardRigMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "rooftopFloodlightTowerMeshy",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
         "role": "prop",
         "assetKey": "tennisFloodMast",
         "maxTriangles": 26506,
@@ -599,6 +576,10 @@
       {
         "event": "ace",
         "kind": "ace-flash"
+      },
+      {
+        "event": "racket-sweetspot",
+        "kind": "felt-burst"
       }
     ],
     "audio": [

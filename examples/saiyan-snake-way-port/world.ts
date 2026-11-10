@@ -5,10 +5,12 @@
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
 import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { createCameraClearance } from "@aura3d/engine/game";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
-  PALETTE, auraSpec, blobSpec, flagInstancedSpec, islandInstancedSpec, flatSpec, glowInstancedSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
+  PALETTE, auraSpec, blobSpec, boostGateSpec, cloudBillowInstancedSpec, flagInstancedSpec, flatSpec, flipbookSpec, glowInstancedSpec, glowSpec, hexLinear, islandInstancedSpec, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
@@ -106,12 +108,17 @@ export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SP
  * clear 7.6 m, above every grounded runner pose; presentation only (no collision). None within GATE_BOARD_CLEAR m of a board.
  */
 export const GATE_EVERY = 3;
-export const GATE_HALF_SPAN = 5.6;
+export const GATE_HALF_SPAN = 7.4;
 /** Lacquer pillar width (m); the road shader's post trace uses half of it (shaders.ts ROAD_FRAGMENT). */
 export const GATE_POST_WIDTH = 0.8;
 const GATE_PIECES = 6;
 const GATE_BOARD_CLEAR = 30;
 export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
+const GATE_RING_SLOTS = 6;
+export const CLOUD_BILLOW_COUNT = 192;
+const CLOUD_BILLOW_SPACING = 2.6;
+const VFX_PLASMA_SLOTS = 6;
+const VFX_DUST_SLOTS = 4;
 /** Temple-craft palette (identity row): deep red lacquer posts, an indigo lacquer lintel under a gold-leaf ridge, a gold tie. */
 const GATE_POST_TINT: V3 = [0.2, 0.022, 0.026];
 const GATE_LINTEL_TINT: V3 = [0.045, 0.03, 0.12];
@@ -352,7 +359,9 @@ export function buildWorld(options: WorldOptions = {}): World {
     .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: sunCascades(options.tier ?? autoTier()), maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
   if (script) {
     builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
-    builder.add(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.8, lights: "sun" }));
+    builder.add(lights.point({ name: "title-head-key", position: [0, -500, 0], color: "#ffd494", intensity: 280, distance: 260, decay: 1.5, shadow: false }).runtime({ id: "title-head-key" }));
+    builder.add(lights.point({ name: "title-head-rim", position: [0, -500, 0], color: "#7fe0c4", intensity: 210, distance: 240, decay: 1.5, shadow: false }).runtime({ id: "title-head-rim" }));
+    builder.add(effects.contactShadows({ length: 0.34, thickness: 0.06, intensity: 0.85, lights: "sun" }));
     // GU47 SSR-06: sun lens flare (positioned on the sun each frame; shown with the god rays: High / Ultra, low-sun stages)
     builder.add(lights.lensFlare({ name: "sun flare", position: [0, -500, 0], intensity: 0.55, edgeFade: 0.25, elements: SUN_FLARE_ELEMENTS }).runtime({ id: "sun-flare" }));
   }
@@ -458,12 +467,13 @@ export function buildWorld(options: WorldOptions = {}): World {
       (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
         const id = `inst-${type}-${j}`;
         const transforms = Array.from({ length: count }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
+        const colors = Array.from({ length: count }, () => "#ffffff");
         const mat = material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
         const size = part.size ?? 1;
         const node =
-          part.shape === "cone" ? instances.cone({ name: id, transforms, params: { radius: part.cone?.radius ?? 0.2, height: part.cone?.height ?? 0.6, radialSegments: 8 }, material: mat })
-          : part.shape === "octahedron" ? instances.polyhedron({ name: id, transforms, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat })
-          : instances.sphere({ name: id, transforms, size: size as number, material: mat });
+          part.shape === "cone" ? instances.cone({ name: id, transforms, colors, params: { radius: part.cone?.radius ?? 0.2, height: part.cone?.height ?? 0.6, radialSegments: 8 }, material: mat })
+          : part.shape === "octahedron" ? instances.polyhedron({ name: id, transforms, colors, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat })
+          : instances.sphere({ name: id, transforms, colors, size: size as number, material: mat });
         builder.add(node.runtime({ id }));
       });
     }
@@ -484,11 +494,22 @@ export function buildWorld(options: WorldOptions = {}): World {
       builder.add(primitives.box({ name: board.id, size: [width, 3.2, 0.3], material: material.custom(solidSpec(hexLinear(0x1c1640), hexLinear(0xf2b33d), 0.08)) }).position(at[0], at[1], at[2]).rotate(e[0], e[1], e[2]).runtime({ id: board.id }));
       builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
     }
-    builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
+    builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), colors: Array.from({ length: SOUL_COLUMN.count }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
     for (const band of SPIRE_BANDS_SHOWN ? ISLAND_BANDS : []) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
-    builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+    builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), colors: Array.from({ length: VERGE_POSTS }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+    builder.add(instances.sphere({ name: "cloud-billows", size: 1, transforms: hidden(CLOUD_BILLOW_COUNT), colors: Array.from({ length: CLOUD_BILLOW_COUNT }, () => "#ffffff"), material: material.custom(cloudBillowInstancedSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "cloud-billows" }));
+    for (let i = 0; i < GATE_RING_SLOTS; i++) {
+      builder.add(primitives.torus({ name: `gate-ring-${i}`, size: 9.6, params: { tube: 0.032, radialSegments: 12, tubularSegments: 36 }, material: material.custom(boostGateSpec()), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `gate-ring-${i}` }));
+    }
+    for (let i = 0; i < VFX_PLASMA_SLOTS; i++) {
+      builder.add(primitives.box({ name: `vfx-plasma-${i}`, size: [3.2, 3.2, 0.02], material: material.custom(flipbookSpec("plasma", [127, 224, 196], 0.3)), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `vfx-plasma-${i}` }));
+    }
+    for (let i = 0; i < VFX_DUST_SLOTS; i++) {
+      builder.add(primitives.box({ name: `vfx-dust-${i}`, size: [3.6, 3.6, 0.02], material: material.custom(flipbookSpec("dust", [255, 226, 192], 0.25)), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `vfx-dust-${i}` }));
+    }
+    builder.add(effects.auroraRibbon({ name: "celestial-ribbon", color: "#7fe0c4", colorTop: "#ffd36e", intensity: 0.78, width: 210, height: 28, segments: 64, sway: 0.65, shimmer: 0.65 }).position(0, -500, 0).runtime({ id: "celestial-ribbon" }));
   }
 
   /* entity pools: every slot is a small multi-part prop */
@@ -511,10 +532,12 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
-    // GU47 SSR-05/06: bloom 0.45 / 0.85, per-stage grade (written each frame by art/lookRuntime.ts), vignette 0.22, and
-    // the god-ray volumetric pass (enabled at runtime on High / Ultra tiers and low-sun stages only).
+    // GU47 SSR-05/06 + WP-27: SSAO crevice grounding, cinematic bloom, warm golden sun shafts, per-stage grade, vignette 0.22,
+    // and the god-ray volumetric pass (enabled at runtime on High / Ultra tiers and low-sun stages only).
     builder
-      .add(effects.bloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, radius: 0.5 }))
+      .add(effects.ambientOcclusion({ name: "ao", intensity: 0.36, radius: 0.68, density: 0.56 }))
+      .add(effects.cinematicBloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, color: "#fff0d8", radius: 0.48, softKnee: 0.55 }))
+      .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.16, decay: 0.94, density: 0.5, samples: 32, color: first.sun.color }))
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
       .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
@@ -577,11 +600,31 @@ export function buildWorld(options: WorldOptions = {}): World {
       let exposureBoost = 0;
       let lookSkipAt = Number.NaN;
       let vfxFired = 0;
-      /* GU47 SSR-11: verge buffers */
+      /* GU47 SSR-11: verge buffers + WP-27 cloud billows, boost-gate rings, flipbook bursts, camera clearance & impact rig */
       const flagBuf = script ? { data: new Float32Array(FLAG_DRAW_SLOTS * 16), rgba: new Float32Array(FLAG_DRAW_SLOTS * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
+      const cloudBuf = script ? { data: new Float32Array(CLOUD_BILLOW_COUNT * 16), rgba: new Float32Array(CLOUD_BILLOW_COUNT * 4) } : null;
       const islandBufs = script && SPIRE_BANDS_SHOWN ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
+      const camClearance = script ? createCameraClearance({ pullRate: 18, releaseRate: 3.5 }) : null;
+      const impactRig = script ? createImpactRig({ reducedMotion }) : null;
+      interface FlipbookSlot { active: boolean; at: V3; age: number; life: number; scale: number; tint: Rgb }
+      const plasmaBursts: FlipbookSlot[] = Array.from({ length: VFX_PLASMA_SLOTS }, () => ({ active: false, at: [0, -500, 0], age: 0, life: 0.55, scale: 1, tint: [1, 1, 1] }));
+      const dustBursts: FlipbookSlot[] = Array.from({ length: VFX_DUST_SLOTS }, () => ({ active: false, at: [0, -500, 0], age: 0, life: 0.65, scale: 1, tint: [1, 1, 1] }));
+      let plasmaCursor = 0;
+      let dustCursor = 0;
+      const spawnFlipbook = (pool: FlipbookSlot[], cursor: number, at: V3, scale: number, life: number, tint: Rgb): number => {
+        if (reducedMotion) return cursor;
+        const slot = pool[cursor % pool.length]!;
+        slot.active = true;
+        slot.at = at;
+        slot.age = 0;
+        slot.life = life;
+        slot.scale = scale;
+        slot.tint = tint;
+        return (cursor + 1) % pool.length;
+      };
+      let prevImpact = { init: false, rung: 0, gateIdx: 0, stumble: 0, grounded: true, slide: 0, pulse: 0 };
       /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
       const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
       if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
@@ -820,20 +863,36 @@ export function buildWorld(options: WorldOptions = {}): World {
           h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
         }
 
-        /* GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent rising out of the cloud sea, alternating sides */
+        /* GU47 phase 4 (WP-36 serpSerpentHead) + WP-27 title hero lighting: colossal serpent rising out of the cloud sea */
         if (script) {
+          if (lookDriver) lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           const lap = Math.floor((S.s + SERPENT_HEAD.cycle - SERPENT_HEAD.ahead) / SERPENT_HEAD.cycle);
-          const rel = mod(SERPENT_HEAD.ahead - S.s, SERPENT_HEAD.cycle) - (SERPENT_HEAD.cycle - SERPENT_HEAD.ahead);
-          const side = lap % 2 ? -1 : 1;
+          const rel = title ? 210 : mod(SERPENT_HEAD.ahead - S.s, SERPENT_HEAD.cycle) - (SERPENT_HEAD.cycle - SERPENT_HEAD.ahead);
+          const side = title ? -1 : lap % 2 ? -1 : 1;
+          const lateral = title ? 54 : SERPENT_HEAD.lateral;
+          const riseBase = title ? -26 : SERPENT_HEAD.rise;
           const hf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
-          const hp = onRoad(hf, side * SERPENT_HEAD.lateral, SERPENT_HEAD.rise + (reducedMotion ? 0 : Math.sin(time * 0.25) * 2));
-          const he = matrixEuler(frameBasis(hf, (-side * SERPENT_HEAD.yawDeg * Math.PI) / 180));
-          show("serpent-head", true).setPosition(hp[0], hp[1], hp[2]).setRotation(he[0], he[1], he[2]);
+          const hp = onRoad(hf, side * lateral, riseBase + (reducedMotion ? 0 : Math.sin(time * 0.25) * 2));
+          const he = matrixEuler(frameBasis(hf, (-side * (title ? 34 : SERPENT_HEAD.yawDeg) * Math.PI) / 180));
+          show("serpent-head", true).setPosition(hp[0], hp[1], hp[2]).setRotation(he[0], he[1], he[2]).setScale(title ? 0.72 : 1);
+          if (title) {
+            const keyAt = onRoad(hf, side * (lateral - 36), riseBase + 68);
+            const rimAt = onRoad(hf, side * (lateral + 28), riseBase + 54);
+            show("title-head-key", true).setPosition(keyAt[0], keyAt[1], keyAt[2]);
+            show("title-head-rim", true).setPosition(rimAt[0], rimAt[1], rimAt[2]);
+          } else {
+            hide("title-head-key");
+            hide("title-head-rim");
+          }
+          const farF = frameAt(samples, Math.min(Math.max(S.s + 420, 0), ROAD_LENGTH));
+          const ribAt = onRoad(farF, 0, 92);
+          const ribEuler = matrixEuler(frameBasis(farF));
+          show("celestial-ribbon", true).setPosition(ribAt[0], ribAt[1], ribAt[2]).setRotation(ribEuler[0], ribEuler[1], ribEuler[2]);
         }
 
         /* GU47 SSR-11: flag lines strung between verge posts every 18 m, a lantern hanging at each post */
         if (flagBuf && lampBuf) {
-          let fi = 0, li = 0;
+          let fi = 0, li = 0, ringUsed = 0;
           const first = Math.floor((S.s - VERGE_BEHIND) / VERGE_SPACING);
           for (let k = 0; k < VERGE_POSTS / 2; k++) {
             const s0 = (first + k) * VERGE_SPACING;
@@ -869,7 +928,8 @@ export function buildWorld(options: WorldOptions = {}): World {
               }
             }
           }
-          // GU47 phase 4: pilgrim gates across the road on every GATE_EVERY-th span (shadow casters, same draw)
+          // GU47 phase 4 + WP-27: widened pilgrim gates across the road + celestial harmonic sonic rings
+          const gateClock = reducedMotion ? time * 0.3 : time;
           for (let k = 0; k < VERGE_POSTS / 2; k++) {
             if (mod(first + k, GATE_EVERY) !== 0) continue;
             const s0 = (first + k) * VERGE_SPACING;
@@ -886,7 +946,18 @@ export function buildWorld(options: WorldOptions = {}): World {
             box(onRoad(gf, 0, 9.45), GATE_HALF_SPAN * 2 + 3, 0.6, 0.85, GATE_LINTEL_TINT);
             box(onRoad(gf, 0, 9.9), GATE_HALF_SPAN * 2 + 3.6, 0.22, 1.25, GATE_RIDGE_TINT);
             box(onRoad(gf, 0, 8.65), 1.3, 1.1, 0.25, GATE_LINTEL_TINT);
+            if (ringUsed < GATE_RING_SLOTS && s0 >= S.s - 8 && s0 <= S.s + 260) {
+              const rh = show(`gate-ring-${ringUsed}`, true);
+              const rp = onRoad(gf, 0, 4.2);
+              const re = matrixEuler(gb);
+              const prox = Math.exp(-Math.pow((s0 - S.s) / 22, 2));
+              rh.setPosition(rp[0], rp[1], rp[2]).setRotation(re[0], re[1], re[2]).setScale([1.18, 0.76, 1]);
+              rh.setUniform?.("gateTime", gateClock + ringUsed * 0.9);
+              rh.setUniform?.("gatePulse", 0.22 + 0.78 * prox + 0.25 * surge);
+              ringUsed++;
+            }
           }
+          for (let i = ringUsed; i < GATE_RING_SLOTS; i++) hide(`gate-ring-${i}`);
           const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
           flags.setInstanceMatrices?.(flagBuf.data, fi, flagBuf.rgba);
           flags.setUniform?.("flagTime", reducedMotion ? time * 0.3 : time);
@@ -895,6 +966,42 @@ export function buildWorld(options: WorldOptions = {}): World {
             if (lookShown) { flags.setUniform?.("flagSunColor", [...lookShown.sunColor]); flags.setUniform?.("flagFogColor", [...lookShown.fogColor]); }
           }
           (node("verge-lanterns") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(lampBuf, li);
+        }
+
+        /* WP-27: 192 GPU-instanced 3D subsurface-lit cumulus cloud billows flanking both sides of the viaduct coils */
+        if (cloudBuf) {
+          const span = CLOUD_BILLOW_COUNT * CLOUD_BILLOW_SPACING;
+          const drift = reducedMotion ? time * 0.2 : time;
+          for (let i = 0; i < CLOUD_BILLOW_COUNT; i++) {
+            const hash = (k: number): number => { const x = Math.sin((i + 1) * 19.19 + k * 73.17) * 43758.5453; return x - Math.floor(x); };
+            const rel = mod(i * CLOUD_BILLOW_SPACING - S.s, span) - 55;
+            const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+            const side = i % 2 ? 1 : -1;
+            const tier = i % 3;
+            const lat = (tier === 0 ? 22 : tier === 1 ? 56 : 104) + hash(1) * (tier === 2 ? 54 : 28);
+            const up = -(tier === 0 ? 8.5 : tier === 1 ? 15 : 23) - hash(2) * 8.5 + (reducedMotion ? 0 : Math.sin(drift * 0.32 + i * 0.9) * 1.1);
+            const sx = (tier === 0 ? 13 : tier === 1 ? 22 : 34) + hash(3) * 12;
+            const sy = sx * (0.44 + hash(4) * 0.18);
+            const sz = sx * (0.86 + hash(5) * 0.32);
+            const cb = frameBasis(sf, hash(6) * Math.PI * 2);
+            const m: M3 = [cb[0] * sx, cb[1] * sx, cb[2] * sx, cb[3] * sy, cb[4] * sy, cb[5] * sy, cb[6] * sz, cb[7] * sz, cb[8] * sz];
+            writeMatrix(cloudBuf.data, i * 16, m, onRoad(sf, side * lat, up), 1);
+            const fogFloor = tier === 2 ? 0.36 : tier === 1 ? 0.16 : 0.04;
+            cloudBuf.rgba[i * 4] = fogFloor; cloudBuf.rgba[i * 4 + 1] = 1; cloudBuf.rgba[i * 4 + 2] = 1; cloudBuf.rgba[i * 4 + 3] = 1;
+          }
+          const clouds = node("cloud-billows") as Partial<ReturnType<typeof node>>;
+          clouds.setInstanceMatrices?.(cloudBuf.data, CLOUD_BILLOW_COUNT, cloudBuf.rgba);
+          clouds.setUniform?.("cloudTime", drift);
+          if (lookDriver) {
+            clouds.setUniform?.("islandSunDir", [...lookDriver.sunDir]);
+            if (lookShown) {
+              clouds.setUniform?.("islandSunColor", [...lookShown.sunColor]);
+              clouds.setUniform?.("islandFogColor", [...lookShown.fogColor]);
+              clouds.setUniform?.("islandLit", [...lookShown.cloudLit]);
+              clouds.setUniform?.("cloudMid", [...lookShown.cloudMid]);
+              clouds.setUniform?.("islandDark", [...lookShown.cloudDark]);
+            }
+          }
         }
 
         /* GU47 SSR-11: stage boards only while within BOARD_SHOW_AHEAD m ahead (and 20 m behind) */
@@ -1015,6 +1122,69 @@ export function buildWorld(options: WorldOptions = {}): World {
           for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) hide(`ent-${type}-${i}-${j}`);
         }
 
+        /* WP-27: visual-only impact rig, flipbook spirit/cloud bursts & camera clearance (stepped strictly on REAL dt) */
+        let impactShake: readonly [number, number, number] = [0, 0, 0];
+        let impactRoll = 0;
+        let impactFov = 0;
+        if (script && impactRig) {
+          const gateSpan = VERGE_SPACING * GATE_EVERY;
+          const gateIdx = Math.floor(S.s / gateSpan);
+          if (!prevImpact.init) {
+            prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
+          } else {
+            if (S.auraRung > prevImpact.rung) {
+              impactRig.trigger({ trauma: 0.28, fovKickDeg: 3.8 });
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.7, 0]), 1.35, 0.52, [1.15, 1.02, 0.72]);
+            }
+            if (gateIdx > prevImpact.gateIdx && S.s > 12 && ds > 0 && ds < 25) {
+              const gs = gateIdx * gateSpan;
+              if (!STAGE_BOARDS.some((b) => Math.abs(b.s - gs) < GATE_BOARD_CLEAR)) {
+                impactRig.trigger({ trauma: 0.16, fovKickDeg: 2.8 });
+                plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.6), 1.45, 0.48, [0.85, 1.15, 1.02]);
+              }
+            }
+            if (S.kiPulse > prevImpact.pulse + 0.3 && S.kiChain > 0 && S.kiChain % 4 === 0) {
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.5, -0.3]), 0.92, 0.42, [0.82, 1.18, 1.05]);
+            }
+            if (S.stumble > prevImpact.stumble + 0.25) {
+              impactRig.trigger({ trauma: 0.42, fovKickDeg: -2.2 });
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, toWorld([0, 1.1, -0.4]), 1.25, 0.62, [1.08, 0.88, 0.76]);
+            }
+            if (!prevImpact.grounded && S.grounded && S.phase === "run") {
+              impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.2 });
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.55), 1.05, 0.56, [1.0, 0.94, 0.88]);
+            }
+            if (S.sliding > prevImpact.slide + 0.1) {
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.45), 0.95, 0.5, [1.0, 0.94, 0.88]);
+            }
+            prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
+          }
+          if (!reducedMotion && dt > 0) {
+            const stepped = impactRig.step(dt);
+            impactShake = stepped.shakeOffset;
+            impactRoll = stepped.shakeRoll;
+            impactFov = stepped.fovDeltaDeg;
+          }
+          const faceEuler = matrixEuler(frameBasis(frame));
+          const stepPool = (prefix: string, pool: FlipbookSlot[], peakAlpha: number): void => {
+            for (let i = 0; i < pool.length; i++) {
+              const slot = pool[i]!;
+              if (!slot.active) { hide(`${prefix}-${i}`); continue; }
+              slot.age += dt;
+              if (slot.age >= slot.life) { slot.active = false; hide(`${prefix}-${i}`); continue; }
+              const t01 = Math.max(0, Math.min(1, slot.age / slot.life));
+              const h = show(`${prefix}-${i}`, true);
+              const grow = slot.scale * (0.72 + 0.62 * t01);
+              h.setPosition(slot.at[0], slot.at[1], slot.at[2]).setRotation(faceEuler[0], faceEuler[1], faceEuler[2]).setScale([grow, grow, 1]);
+              h.setUniform?.("flipFrame", Math.min(31, Math.floor(t01 * 32)));
+              h.setUniform?.("flipAlpha", peakAlpha * (1 - t01 * t01));
+              h.setUniform?.("flipTint", [...slot.tint]);
+            }
+          };
+          stepPool("vfx-plasma", plasmaBursts, 0.92);
+          stepPool("vfx-dust", dustBursts, 0.72);
+        }
+
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
@@ -1023,7 +1193,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         // larger road foreground as the other runners' framing (differentRate 0.73 -> 0.50); the panel-won framing stays.
         const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
-        const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
+        const jx = shake * Math.sin(time * 61) + impactShake[0], jy = shake * Math.sin(time * 47 + 1.3) + impactShake[1];
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : 12;
@@ -1036,16 +1206,46 @@ export function buildWorld(options: WorldOptions = {}): World {
           const side = 2.6, aimSide = -0.9;
           eye = [eye[0] + frame.R[0] * side, eye[1] + frame.R[1] * side, eye[2] + frame.R[2] * side];
           look = [look[0] + frame.R[0] * aimSide, look[1] + frame.R[1] * aimSide, look[2] + frame.R[2] * aimSide];
+          if (camClearance && (!shot || shot.intro <= 0)) {
+            const focus: V3 = [pose[0] + rig.u[0] * 1.6, pose[1] + rig.u[1] * 1.6, pose[2] + rig.u[2] * 1.6];
+            const nearArches = (S.ents as readonly Entity[]).filter((e) => !e.dead && e.type === "arch" && e.s > S.s - 14 && e.s < S.s + 4);
+            eye = camClearance.update(dt, {
+              focus,
+              eye,
+              minDistance: 3.2,
+              samples: 14,
+              blocked: (x, y, z) => {
+                const dx = x - frame.p[0], dy = y - frame.p[1], dz = z - frame.p[2];
+                const uDot = dx * frame.U[0] + dy * frame.U[1] + dz * frame.U[2];
+                const rDot = dx * frame.R[0] + dy * frame.R[1] + dz * frame.R[2];
+                if (Math.abs(rDot) < 4.5 && uDot < 0.65) return true;
+                for (const arch of nearArches) {
+                  const af = frameAt(samples, Math.min(arch.s, ROAD_LENGTH));
+                  const ax = x - af.p[0], ay = y - af.p[1], az = z - af.p[2];
+                  const fDist = Math.abs(ax * af.F[0] + ay * af.F[1] + az * af.F[2]);
+                  const uDist = ax * af.U[0] + ay * af.U[1] + az * af.U[2];
+                  const rDist = Math.abs(ax * af.R[0] + ay * af.R[1] + az * af.R[2]);
+                  if (fDist < 1.35 && rDist < 4.4 && uDist > 2.9 && uDist < 5.6) return true;
+                }
+                return false;
+              }
+            });
+          }
         }
         let up: V3 = rig.u;
         if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
-        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0);
+        if (impactRoll !== 0) {
+          const v: V3 = [look[0] - eye[0], look[1] - eye[1], look[2] - eye[2]];
+          const vn = Math.hypot(v[0], v[1], v[2]) || 1;
+          up = rotateAbout(up, [v[0] / vn, v[1] / vn, v[2] / vn], impactRoll);
+        }
+        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0) + impactFov;
         cameraController.setPose({ position: eye, target: look, up, fov }, { cut: false });
         lastShot = shot;
 
         /* GU47 SSR-01: stage colour script, read-only from the run's distance */
         if (lookDriver) {
-          lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
+          if (!lookShown) lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
           const flare = show("sun-flare", lookDriver.godRaysOn);
           if (lookDriver.godRaysOn) {
@@ -1058,7 +1258,7 @@ export function buildWorld(options: WorldOptions = {}): World {
 
       return {
         update,
-        resetCamera() { rig = null; prevS = null; },
+        resetCamera() { rig = null; prevS = null; camClearance?.reset(); impactRig?.reset(); prevImpact.init = false; },
         setTitle(on: boolean) { title = on; },
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },

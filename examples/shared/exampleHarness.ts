@@ -156,7 +156,7 @@ export function installExampleStyles(): void {
   const style = document.createElement("style");
   style.id = "aura3d-example-styles";
   style.textContent = `
-    html, body, #app { margin: 0; min-height: 100%; background: #101418; color: #eef2f6; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    html, body, #app { margin: 0; min-height: 100%; background: #101418; color: #eef2f6; font-family: "Whitney", "Whitney Fallback", "Graphik", sans-serif; font-synthesis: none; }
     .example-shell { min-height: 100vh; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
     canvas { width: 100%; height: min(72vh, 620px); display: block; background: #11171d; }
     .example-panel { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(20rem, 1.5fr) minmax(16rem, 1fr); gap: 1rem; align-items: start; padding: 1rem 1.25rem; border-top: 1px solid #2a343d; background: #151b21; }
@@ -171,7 +171,7 @@ export function installExampleStyles(): void {
 export function drawLabel(context: CanvasRenderingContext2D, text: string, x: number, y: number): void {
   context.save();
   context.fillStyle = "#d8e1e8";
-  context.font = "14px ui-sans-serif, system-ui, sans-serif";
+  context.font = '14px "Whitney", "Graphik", sans-serif';
   context.fillText(text, x, y);
   context.restore();
 }

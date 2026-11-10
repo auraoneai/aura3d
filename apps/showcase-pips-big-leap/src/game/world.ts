@@ -34,17 +34,22 @@ import {
   ambientEmitterNode,
   auroraNode,
   dioramaBase,
+  dioramaName,
   type BaseTile,
   floraLayers,
   floraNodes,
   hazardMaterial,
   hemisphereNode,
+  heroCapeGeometry,
+  heroCapeMaterial,
+  instancedSurface,
   lensFlareNode,
   millpondNodes,
   miniatureDofNode,
   practicalNodes,
   skyNode,
   slabTransforms,
+  ssrNode,
   sunShaftsNode,
   vignetteNode
 } from "./diorama.js";
@@ -580,12 +585,44 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   if (sky) builder.add(sky);
   const aurora = auroraNode(spec, look, scale);
   if (aurora) builder.add(aurora);
-  for (const n of millpondNodes(spec, look)) builder.add(n);
+  const ssr = ssrNode(look);
+  if (ssr) builder.add(ssr);
+  for (const n of millpondNodes(spec, look, scale.motion)) builder.add(n);
   builder.add(effects.contactShadows(CONTACT_SHADOWS));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));
   if (look.lens !== "none") builder.add(miniatureDofNode());
   builder.add(ambientEmitterNode(look, scale, nodeName.hero, 4700 + spec.order));
+  for (let slot = 0; slot < 3; slot += 1) {
+    builder.add(
+      effects.flipbook({
+        name: dioramaName.flipbookDust(slot),
+        sprite: "smoke-a",
+        spriteColumns: 4,
+        spriteRows: 4,
+        size: 0.72,
+        opacity: 0.85,
+        color: look.dust,
+        blend: "alpha"
+      })
+        .position(0, -120, 0)
+        .runtime(game.runtimeNode(dioramaName.flipbookDust(slot), { tags: ["vfx"] }))
+    );
+    builder.add(
+      effects.flipbook({
+        name: dioramaName.flipbookSparks(slot),
+        sprite: "flare",
+        spriteColumns: 4,
+        spriteRows: 4,
+        size: 0.68,
+        opacity: 0.92,
+        color: "#ffd96a",
+        blend: "additive"
+      })
+        .position(0, -120, 0)
+        .runtime(game.runtimeNode(dioramaName.flipbookSparks(slot), { tags: ["vfx"] }))
+    );
+  }
   return base.top;
 }
 
@@ -632,10 +669,10 @@ function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec, bobNodes: s
     const legacy = LEGACY_SLAB_NORMAL_WORLDS.has(spec.id);
     const body = legacy
       ? geometry.custom(geometry.define(legacySlabGeometry(group.body as readonly SlabTransformSpec[], SLAB_RADIUS)), { name: `plats:${kind}`, material: surface.body, castShadow: true, receiveShadow: true })
-      : instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true });
+      : instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: instancedSurface(surface.body), castShadow: true, receiveShadow: true });
     const top = legacy
       ? geometry.custom(geometry.define(legacySlabGeometry(group.top as readonly SlabTransformSpec[], 0.3)), { name: `plat-tops:${kind}`, material: surface.top, castShadow: false, receiveShadow: true })
-      : instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true });
+      : instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: instancedSurface(surface.top), castShadow: false, receiveShadow: true });
     if (BOBBING_PLATFORM_KINDS.has(kind)) {
       // PBL-AN1: the leaf pads bob as one draw each; the instance transforms are world
       // space, so the node's own position is the bob offset.
@@ -895,12 +932,26 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       .animate({ clip: PIP_CLIPS.idle, loop: true })
       .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
   );
-  // Player Studio cape: a thin panel on Pip's back (the Studio tints it). The
-  // old acorn-cap accessory is gone: Pip's GLB bakes one material, so there
-  // was no cap mesh to tint and the stand-in was always hidden.
+  // Player Studio cape: diorama uses a shoulder-pinned fluttering wool-felt cloak
+  // with paired GLSL+WGSL cloth billow; original keeps the legacy box mesh.
   builder.add(
-    primitives.box({ name: nodeName.heroCape, size: [0.3, 0.03, 0.32], position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: false })
-      .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
+    (diorama
+      ? geometry
+          .custom(geometry.define(heroCapeGeometry()), {
+            name: nodeName.heroCape,
+            material: heroCapeMaterial("#3f8cff", scale.motion),
+            castShadow: false,
+            receiveShadow: false
+          })
+          .position(spec.spawn[0], spec.spawn[1] + 0.78, spec.spawn[2] - 0.04)
+      : primitives.box({
+          name: nodeName.heroCape,
+          size: [0.3, 0.03, 0.32],
+          position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16],
+          material: material.pbr({ color: "#3f8cff", roughness: 0.6 }),
+          castShadow: false
+        })
+    ).runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
   // Boss (W5) — bespoke Meshy Brambleback; body is runtime-driven and the

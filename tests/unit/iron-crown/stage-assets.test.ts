@@ -45,10 +45,12 @@ describe("iron crown loads a per-app stage manifest, not the shared catalog (RH-
   });
 });
 
-describe("iron crown throne plinth (IC-16)", () => {
-  it("the pale gallery pedestal is gone and the crown sits on the plinth top", () => {
+describe("iron crown throne plinth (IC-16 / WP-09)", () => {
+  it("the pale gallery pedestal is gone and the throne sits atop the 0.34m stepped dais with the crown on the throne", () => {
     expect(stages).not.toContain("galleryShiftPedestal");
     expect(stages).toContain("buildThronePlinth()");
-    expect(stages).toMatch(/cr-iron-crown[\s\S]{0,120}\.position\(0, PLINTH_TOP, -2\.5\)/);
+    expect(stages).toContain("export const PLINTH_TOP = 0.34;");
+    expect(stages).toContain('modelProp(assets.ironcrownThrone, "cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 2.1, 0)');
+    expect(stages).toMatch(/cr-iron-crown[\s\S]{0,140}\.position\(0, PLINTH_TOP \+ 0\.48, PLINTH_Z \+ 0\.14\)/);
   });
 });

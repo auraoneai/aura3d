@@ -25,12 +25,12 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.6
+        "intensity": 2.75
       },
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 0.55
+        "intensity": 0.62
       }
     ],
     "hasAmbient": false,
@@ -267,6 +267,10 @@
         "practical": false
       },
       {
+        "node": "dune-mica-veil",
+        "practical": false
+      },
+      {
         "node": "plaza",
         "practical": false
       },
@@ -335,7 +339,27 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "masts",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "signal-monoliths",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "signal-caps",
+        "practical": false
+      },
+      {
+        "node": "signal-glyphs",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "route-sails",
         "practical": false
       },
       {
@@ -389,12 +413,30 @@
       },
       {
         "node": "thruster-l",
-        "emissiveIntensity": 2.4,
+        "emissiveIntensity": 2.5,
         "practical": true
       },
       {
         "node": "thruster-r",
-        "emissiveIntensity": 2.4,
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "brushed metal",
+        "node": "board-trim",
+        "practical": false
+      },
+      {
+        "node": "board-sail",
+        "practical": false
+      },
+      {
+        "node": "wake-plume-sheet",
+        "practical": false
+      },
+      {
+        "node": "signal-ripple",
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {

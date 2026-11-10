@@ -3,7 +3,8 @@
  * No DOM, no engine rendering imports; the only engine-backed import is the kit's
  * counted GameRng so every gameplay draw is reproducible under `replay()`.
  */
-import { GameRng, POPUP_LIMIT, type Popup } from "../../../examples/shared/runner-kit/index";
+import { GameRng } from "../../../examples/shared/runner-kit/rng";
+import { POPUP_LIMIT, type Popup } from "../../../examples/shared/runner-kit/popups";
 
 export const CONFIG = {
   DT: 1 / 60,

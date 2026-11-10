@@ -528,9 +528,21 @@ export function buildProps(f: Furniture, skip: PropSkip = {}): MeshData {
   }
   for (const p of f.pedestrians) {
     const k = p.scale;
-    orientedBox(m, p.x, 0, p.z, p.yaw, 0.21 * k, 0.84 * k, 0.13 * k, hexRgb(p.pants), hexRgb(p.pants));
-    orientedBox(m, p.x, 0.84 * k, p.z, p.yaw, 0.26 * k, 0.6 * k, 0.15 * k, hexRgb(p.shirt), hexRgb(p.shirt));
-    orientedBox(m, p.x, 1.44 * k, p.z, p.yaw, 0.15 * k, 0.32 * k, 0.15 * k, hexRgb(p.skin), hexRgb(p.skin));
+    const pants = hexRgb(p.pants);
+    const shirt = hexRgb(p.shirt);
+    const skin = hexRgb(p.skin);
+    const rx = Math.cos(p.yaw);
+    const rz = -Math.sin(p.yaw);
+    const fx = Math.sin(p.yaw);
+    const fz = Math.cos(p.yaw);
+    // Articulated stride legs + jacket torso + swinging arms + sculpted head/cap (100% outward-wound, palette-safe)
+    prism(m, p.x - rx * 0.085 * k + fx * 0.05 * k, 0, p.z - rz * 0.085 * k + fz * 0.05 * k, 0.068 * k, 0.82 * k, 6, pants, pants);
+    prism(m, p.x + rx * 0.085 * k - fx * 0.05 * k, 0, p.z + rz * 0.085 * k - fz * 0.05 * k, 0.068 * k, 0.82 * k, 6, pants, pants);
+    orientedBox(m, p.x, 0.80 * k, p.z, p.yaw, 0.19 * k, 0.58 * k, 0.115 * k, shirt, shirt);
+    prism(m, p.x - rx * 0.235 * k - fx * 0.04 * k, 0.86 * k, p.z - rz * 0.235 * k - fz * 0.04 * k, 0.05 * k, 0.48 * k, 5, shirt, shirt);
+    prism(m, p.x + rx * 0.235 * k + fx * 0.04 * k, 0.86 * k, p.z + rz * 0.235 * k + fz * 0.04 * k, 0.05 * k, 0.48 * k, 5, shirt, shirt);
+    blob(m, p.x, 1.54 * k, p.z, 0.132 * k, 0.155 * k, 6, skin);
+    prism(m, p.x, 1.62 * k, p.z, 0.122 * k, 0.065 * k, 6, pants, pants);
   }
   return m;
 }

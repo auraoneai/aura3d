@@ -29,6 +29,33 @@ float fbm(vec2 p) {
   for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
   return s;
 }
+float hash31(vec3 p) {
+  p = fract(p * vec3(127.1, 311.7, 74.7));
+  p += dot(p, p.yzx + 33.33);
+  return fract((p.x + p.y) * p.z);
+}
+float vnoise3(vec3 p) {
+  vec3 i = floor(p), f = fract(p);
+  vec3 u = f * f * (3.0 - 2.0 * f);
+  float n000 = hash31(i);
+  float n100 = hash31(i + vec3(1.0, 0.0, 0.0));
+  float n010 = hash31(i + vec3(0.0, 1.0, 0.0));
+  float n110 = hash31(i + vec3(1.0, 1.0, 0.0));
+  float n001 = hash31(i + vec3(0.0, 0.0, 1.0));
+  float n101 = hash31(i + vec3(1.0, 0.0, 1.0));
+  float n011 = hash31(i + vec3(0.0, 1.0, 1.0));
+  float n111 = hash31(i + vec3(1.0, 1.0, 1.0));
+  return mix(
+    mix(mix(n000, n100, u.x), mix(n010, n110, u.x), u.y),
+    mix(mix(n001, n101, u.x), mix(n011, n111, u.x), u.y),
+    u.z
+  );
+}
+float fbm3(vec3 p) {
+  float a = 0.5, s = 0.0;
+  for (int i = 0; i < 4; i++) { s += a * vnoise3(p); p = p * 2.03 + vec3(17.1, 9.7, 23.4); a *= 0.5; }
+  return s;
+}
 // original atmosphere: density 0.0004, hDensity 0.0022, hBase 18, hFalloff 0.031, maxFog 0.96
 // GU47 phase 4: hazeSun (zero under ?look=original) warms the haze toward the sun azimuth, so the distance is not one flat tone
 vec3 applyFog(vec3 color, vec3 world) {
@@ -128,9 +155,16 @@ void main() {
   // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
   // GU47 phase 3: darker obsidian (0.34 / 0.10 + 0.5 fres) and a warm grazing glint of the sunset band along the sun azimuth
   float glint = pow(max(dot(Rv, normalize(sunDir)), 0.0), 18.0);
+  float carbonWeave = 0.92 + 0.08 * (sin(u * 140.0) * sin(s * 14.0));
+  float chDist = abs(abs(u) - 0.36);
+  float conduitSlot = 1.0 - smoothstep(0.008, 0.024, chDist);
+  float conduitLip = 1.0 - smoothstep(0.0, 0.012, abs(chDist - 0.026));
+  float chevFlow = fract(s * 0.11 - chDist * 7.0 - u_time * (1.6 + ionSpeed * 0.04));
+  float conduitChev = smoothstep(0.10, 0.24, chevFlow) * (1.0 - smoothstep(0.54, 0.70, chevFlow));
   // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen;
   // round g19p3-r3 lifts the near floor a little (r2 bottom corner cells 39.5 vs the IC-01 floor of 40)
-  color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
+  color = mix(color, color * 0.30 * carbonWeave + mirror * (0.095 + 0.44 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.42, glass);
+  color *= 1.0 - 0.34 * conduitSlot * glass;
   // GU47 phase 4: engine cast shadows (gantries, rocks, the drone) cut the glass sheen too (glassShadow = 0 under ?look=original)
   color *= 1.0 - glassShadow * (1.0 - gSun) * glass;
   // GU47 phase 4: the drone's contact shadow in the road itself (contact.w = 0 under ?look=original): an ellipse along the
@@ -144,6 +178,8 @@ void main() {
   float beaconRefl = exp(-bs * bs / 18.0) * exp(-pow((abs(u) - 0.88) / 0.05, 2.0));
   float curbRefl = exp(-pow((abs(u) - 0.88) / 0.06, 2.0)) * (0.55 + 0.45 * fres);
   color += (vRoad * beaconRefl * 0.9 + neon * curbRefl * 0.10) * neonReflect;
+  color += vec3(0.45, 0.72, 0.95) * conduitLip * (0.10 + 0.32 * glint) * glass;
+  color += mix(vec3(0.06, 0.86, 1.0), vRoad, 0.22) * conduitSlot * (0.28 + 0.72 * conduitChev) * veinHdr * 0.52 * glass;
   // GU47 phase 4: twilight seams glow ion blue-violet, not the district colour (the orange grid was a sibling tell: "orange accents in road markings")
   color += mix(vRoad, vec3(0.22, 0.5, 0.95), 0.85 * glass) * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
@@ -197,18 +233,27 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** Additive checkpoint gate and boost-pad glow. `veilTime`/`veilPulse` avoid the reserved `time`/`pulse` lowering to u_time. */
+/** Additive checkpoint gate and boost/cooling-pad glow with crisp SDF chevrons, cooling-rail side bars and harmonic scanlines. */
 export const VEIL_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
 in vec2 vUv;
 out vec4 outColor;
 void main() {
   vec2 c = vUv * 2.0 - 1.0;
-  float band = veilMode > 0.5
-    ? (1.0 - smoothstep(0.55, 1.0, max(abs(c.x), abs(c.y)))) * (0.45 + 0.25 * sin(u_time * 6.0 - c.y * 5.0))
-    : (1.0 - smoothstep(0.0, 1.0, abs(c.x))) * (0.25 + 0.15 * sin(u_time * 4.0 + c.y * 9.0));
-  float a = band * (0.5 + veilPulse);
-  outColor = vec4(veilColor * a, a);
+  float edgeBox = max(abs(c.x), abs(c.y));
+  float gateFrame = smoothstep(0.68, 0.88, edgeBox) * (1.0 - smoothstep(0.92, 1.0, edgeBox));
+  float gateScan = (1.0 - smoothstep(0.55, 1.0, edgeBox)) * (0.28 + 0.22 * sin(u_time * 6.0 - c.y * 7.0 + sin(c.x * 4.0) * 0.5));
+  float gateBand = gateFrame * 0.95 + gateScan * 0.72;
+  float chevFlow = fract(vUv.y * 3.0 - abs(c.x) * 0.82 - u_time * 2.8);
+  float padChev = smoothstep(0.10, 0.24, chevFlow) * (1.0 - smoothstep(0.52, 0.68, chevFlow)) * (1.0 - smoothstep(0.68, 0.86, abs(c.x)));
+  float padRail = smoothstep(0.74, 0.82, abs(c.x)) * (1.0 - smoothstep(0.92, 1.0, abs(c.x)));
+  float padScan = 0.84 + 0.16 * sin(vUv.y * 44.0 - u_time * 12.0);
+  float padEnds = 1.0 - smoothstep(0.86, 1.0, abs(c.y));
+  float padBand = (padChev * 0.85 + padRail * 1.15 + (1.0 - smoothstep(0.0, 0.92, abs(c.x))) * 0.16) * padScan * padEnds;
+  float band = veilMode > 0.5 ? gateBand : padBand;
+  float a = band * (0.55 + veilPulse * 1.15);
+  vec3 hotCore = mix(veilColor, vec3(0.92, 0.98, 1.0), clamp(padChev * 0.45 * (1.0 - veilMode), 0.0, 1.0));
+  outColor = vec4(hotCore * a, min(a, 1.0));
 }`;
 
 export const SKY_VERTEX = /* glsl */ `
@@ -219,7 +264,7 @@ void main() {
   gl_Position = clip;
 }`;
 
-/** Teal-to-navy sky with a cloud layer, two aurora ribbons, a ringed planet, a moon and stars. */
+/** Seamless 3D unit-sphere cyber-industrial night dome: aurora curtains, sunset band, ringed planet, moon and stars (zero atan seam). */
 export const SKY_FRAGMENT = /* glsl */ `
 in vec3 vDir;
 out vec4 outColor;
@@ -227,61 +272,55 @@ ${COMMON}
 void main() {
   vec3 d = normalize(vDir);
   float h = d.y;
-  float az = atan(d.z, d.x);
+  vec2 dHor = normalize(vec2(d.x, d.z) + vec2(1e-5, 0.0));
   vec3 zen = vec3(0.012, 0.030, 0.090);
   vec3 mid = vec3(0.022, 0.120, 0.175);
   vec3 hor = vec3(0.150, 0.420, 0.450);
   vec3 sky = h > 0.0 ? mix(hor, mix(mid, zen, smoothstep(0.12, 0.8, h)), smoothstep(0.0, 0.34, h)) : mix(hor, vec3(0.07, 0.20, 0.24), smoothstep(0.0, 0.25, -h));
-  // GU47 IC-05 (twilight = 0 under ?look=original): violet zenith, a magenta-to-amber band centred on the sun azimuth,
-  // teal haze below the horizon
   vec3 sd = normalize(sunDir);
-  float sunAz = cos(az - atan(sd.z, sd.x)) * 0.5 + 0.5;
+  vec2 sHor = normalize(vec2(sd.x, sd.z) + vec2(1e-5, 0.0));
+  float sunAz = dot(dHor, sHor) * 0.5 + 0.5;
   float bandW = pow(sunAz, 2.2) * (1.0 - smoothstep(0.0, 0.32, h)) * smoothstep(-0.06, 0.02, h);
   vec3 band = mix(bandLow, bandHigh, smoothstep(0.0, 0.2, h));
-  // GU47 phase 3: the teal-to-violet turn was smoothstep(-0.02, 0.18, h); the teal-fogged cliffs then stood as pale ghosts on
-  // violet (round g19p3-r1). The sky now stays teal behind the canyon walls and turns violet above them
-  // GU47 phase 5: the upper sky was violet (0.09, 0.07, 0.26) and read as a sibling's purple nebula; it is now a deep
-  // teal-to-navy polar night, so the aurora carries the violet
-  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.03, 0.11, 0.15), vec3(0.01, 0.025, 0.07), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
-  // GU47 phase 3: the lavender lift was vec3(0.10, 0.08, 0.22) over |h| < 0.5 and washed the planet into the sky; it now
-  // hugs the horizon (|h| < 0.22) so the violet upper sky stays deep and the planet and aurora read against it
-  twSky += band * bandW * 0.95 + vec3(0.04, 0.06, 0.10) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
+  vec3 twSky = mix(vec3(0.038, 0.145, 0.172), mix(vec3(0.022, 0.092, 0.142), vec3(0.008, 0.018, 0.058), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
+  twSky += band * bandW * 0.98 + vec3(0.036, 0.058, 0.102) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
   sky = mix(sky, twSky, twilight);
-  // cloud layer hugging the horizon
-  float cl = fbm(vec2(az * 2.4 + u_time * 0.008, h * 6.0));
+  // seamless 3D horizon cloud layer
+  float cl = fbm3(vec3(d.x * 2.8 + u_time * 0.012, h * 6.5, d.z * 2.8 - u_time * 0.009));
   float cmask = smoothstep(0.0, 0.16, h) * (1.0 - smoothstep(0.22, 0.65, h));
-  sky += vec3(0.30, 0.34, 0.44) * pow(smoothstep(0.42, 0.9, cl), 1.4) * cmask * 0.55;
-  // aurora ribbons (purple low, teal high), curtained by noise
-  float c1 = 0.30 + 0.10 * sin(az * 1.6 + 0.8) + 0.04 * sin(az * 5.0);
-  float c2 = 0.47 + 0.08 * sin(az * 2.1 + 3.1);
+  sky += vec3(0.28, 0.34, 0.46) * pow(smoothstep(0.42, 0.9, cl), 1.4) * cmask * 0.52;
+  // seamless 3D aurora ribbons (purple-violet low, ion-cyan high)
+  float c1 = 0.30 + 0.09 * (dHor.x * 0.7 + dHor.y * 0.71) + 0.05 * (2.0 * dHor.x * dHor.y) + 0.03 * sin(dHor.x * 3.1 - dHor.y * 2.7);
+  float c2 = 0.47 + 0.08 * (dHor.x * dHor.x - dHor.y * dHor.y) + 0.035 * sin(dHor.y * 2.9 + dHor.x * 1.8);
   float r1 = exp(-(((h - c1) / 0.05) * ((h - c1) / 0.05)));
   float r2 = exp(-(((h - c2) / 0.07) * ((h - c2) / 0.07)));
-  float tex = 0.40 + 0.60 * fbm(vec2(az * 7.0, h * 14.0 + u_time * 0.03));
-  vec3 aur = (vec3(0.60, 0.24, 0.85) * r1 * tex * 1.0 + vec3(0.12, 0.80, 0.68) * r2 * tex * 0.8 + vec3(0.2, 0.75, 0.65) * r1 * 0.14) * auroraGain;
-  // ringed planet
+  float tex = 0.38 + 0.62 * fbm3(vec3(d.x * 8.5, h * 14.0 + u_time * 0.035, d.z * 8.5));
+  vec3 aur = (vec3(0.62, 0.24, 0.88) * r1 * tex * 1.02 + vec3(0.10, 0.84, 0.74) * r2 * tex * 0.84 + vec3(0.18, 0.78, 0.68) * r1 * 0.15) * auroraGain;
+  // ringed planet with atmospheric rim halo
   vec3 pd = normalize(planetDir);
   vec3 pr = normalize(cross(vec3(0.0, 1.0, 0.0), pd));
   vec3 pu = cross(pd, pr);
   vec2 pp = vec2(dot(d, pr), dot(d, pu)) / (0.17 * planetScale);
   float facing = step(0.0, dot(d, pd));
-  float disk = (1.0 - smoothstep(0.96, 1.0, length(pp))) * facing;
+  float pRad = length(pp);
+  float disk = (1.0 - smoothstep(0.96, 1.0, pRad)) * facing;
+  float planetHalo = (1.0 - smoothstep(0.98, 1.28, pRad)) * smoothstep(0.86, 0.99, pRad) * facing * twilight;
   vec2 q = mat2(0.94, -0.34, 0.34, 0.94) * pp;
   float ringR = length(vec2(q.x, q.y * 3.4));
   float ring = (1.0 - smoothstep(0.0, 0.16, abs(ringR - 1.85))) * facing * (1.0 - disk * 0.6);
-  // twilight: a lit crescent on the sun side of the disk and the planet's shadow across the far ring
   vec2 sunP = normalize(vec2(dot(sd, pr), dot(sd, pu)) + vec2(1e-4, 0.0));
   float crescent = mix(1.0, 0.25 + 1.4 * smoothstep(-0.2, 0.7, dot(pp, sunP)), twilight);
   float ringShadow = mix(1.0, 1.0 - 0.7 * step(q.y, 0.0) * (1.0 - smoothstep(0.7, 1.05, abs(q.x))), twilight);
-  // GU47 phase 5: twilight gives the planet a magenta-rose disk and an amber ring (was lavender on violet)
   vec3 pLo = mix(vec3(0.12, 0.08, 0.22), vec3(0.14, 0.04, 0.10), twilight);
-  vec3 pHi = mix(vec3(0.50, 0.34, 0.52), vec3(0.62, 0.24, 0.38), twilight);
-  vec3 ringC = mix(vec3(0.55, 0.50, 0.62), vec3(0.78, 0.52, 0.28), twilight);
-  vec3 planet = mix(pLo, pHi, fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent * (1.0 + 0.45 * twilight) + ringC * ring * 0.55 * ringShadow * (1.0 + 0.35 * twilight);
+  vec3 pHi = mix(vec3(0.50, 0.34, 0.52), vec3(0.64, 0.24, 0.40), twilight);
+  vec3 ringC = mix(vec3(0.55, 0.50, 0.62), vec3(0.80, 0.54, 0.28), twilight);
+  vec3 planet = mix(pLo, pHi, fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent * (1.0 + 0.45 * twilight)
+    + ringC * ring * 0.56 * ringShadow * (1.0 + 0.35 * twilight)
+    + vec3(0.32, 0.62, 0.92) * planetHalo * 0.32;
   float moonMask = 1.0 - smoothstep(0.022, 0.026, acos(clamp(dot(d, normalize(moonDir)), -1.0, 1.0)));
   float sun = pow(max(dot(d, normalize(sunDir)), 0.0), 160.0);
-  vec2 g = floor(d.xz * 700.0 + d.y * 300.0);
-  float star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h) * (1.0 - twilight * 0.5 * (0.5 + 0.5 * sin(u_time * 3.0 + hash21(g + 7.0) * 40.0)));
-  // twilight: the planet disk occludes the aurora behind it (additive, it washed out into the violet band)
+  vec3 sg = floor(d * 520.0);
+  float star = step(0.9986, hash31(sg)) * smoothstep(0.1, 0.4, h) * (1.0 - twilight * 0.45 * (0.5 + 0.5 * sin(u_time * 3.0 + hash31(sg + vec3(7.0)) * 40.0)));
   vec3 behind = mix(sky + aur, sky * 0.35, disk * twilight * 0.85);
   vec3 color = behind + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
   outColor = vec4(color, 1.0);
@@ -452,4 +491,54 @@ void main() {
   float band = smoothstep(0.62, 0.7, vUv.y);
   color += vBeacon * band * beaconGlow * (0.8 + 0.2 * sin(u_time * 3.0 + vWorld.x * 0.05));
   outColor = vec4(applyFog(color, vWorld), 1.0);
+}`;
+
+/** Holographic race gantry banner graded through the 16^3 cyber-neon strip LUT (`createGradingLut("cyber-neon")`). */
+export const HOLO_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+vec3 applyLut16(vec3 c) {
+  vec3 cl = clamp(c, 0.0, 1.0);
+  float bSlice = cl.b * 15.0;
+  float b0 = floor(bSlice);
+  float b1 = min(15.0, b0 + 1.0);
+  vec2 uv0 = vec2((b0 * 16.0 + cl.r * 15.0 + 0.5) / 256.0, (cl.g * 15.0 + 0.5) / 16.0);
+  vec2 uv1 = vec2((b1 * 16.0 + cl.r * 15.0 + 0.5) / 256.0, (cl.g * 15.0 + 0.5) / 16.0);
+  return mix(textureLod(lutMap, uv0, 0.0).rgb, textureLod(lutMap, uv1, 0.0).rgb, fract(bSlice));
+}
+void main() {
+  vec2 c = vUv * 2.0 - 1.0;
+  float edge = max(abs(c.x), abs(c.y));
+  float frame = smoothstep(0.76, 0.90, edge) * (1.0 - smoothstep(0.92, 1.0, edge));
+  float chevFlow = fract(vUv.x * 6.0 - abs(c.y) * 0.65 - u_time * 1.4);
+  float chev = smoothstep(0.18, 0.34, chevFlow) * (1.0 - smoothstep(0.54, 0.72, chevFlow)) * (1.0 - smoothstep(0.62, 0.88, abs(c.y)));
+  float scan = 0.80 + 0.20 * sin(vUv.y * 56.0 + u_time * 8.0);
+  float a = (frame * 0.95 + chev * 0.65 + 0.14 * (1.0 - smoothstep(0.0, 0.94, edge))) * scan;
+  vec3 raw = clamp(bannerColor * (0.65 + 0.75 * chev) + vec3(0.12, 0.36, 0.55) * frame, 0.0, 1.0);
+  vec3 graded = applyLut16(raw) * bannerGain;
+  outColor = vec4(graded * a, min(a, 1.0));
+}`;
+
+/** 8x4 sprite-sheet flipbook burst shader sampling `createFlipbookAtlas("plasma" | "sparks")`. */
+export const FLIPBOOK_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+vec3 srgbToLin(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+vec4 sampleFlip(float idx, vec2 uv) {
+  float col = mod(idx, 8.0);
+  float row = floor(idx / 8.0);
+  vec2 cellUv = (vec2(col, row) + clamp(uv, 0.02, 0.98)) / vec2(8.0, 4.0);
+  return textureLod(atlasMap, cellUv, 0.0);
+}
+void main() {
+  float p = clamp(flipProgress, 0.0, 0.999);
+  float f = p * 31.0;
+  float f0 = floor(f);
+  float f1 = min(31.0, f0 + 1.0);
+  vec4 texel = mix(sampleFlip(f0, vUv), sampleFlip(f1, vUv), fract(f));
+  float alpha = texel.a * (1.0 - smoothstep(0.76, 1.0, p));
+  vec3 col = srgbToLin(texel.rgb) * flipTint * flipGain;
+  outColor = vec4(col * alpha, alpha);
 }`;

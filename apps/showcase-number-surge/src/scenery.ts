@@ -9,12 +9,14 @@
  * Everything here is a pure function of the shown scroll distance and time. It never reads or writes the simulation's
  * state or its random stream (layout variety comes from a fixed hash), so gameplay is unchanged.
  */
-import { geometry, material, scene, type AuraApp } from "@aura3d/engine";
+import { geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import { Batch, hexToLinear, mergeMeshes, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { boxMesh } from "./meshes";
 import {
-  DECK_FRAGMENT_WGSL, EDGE_GLOW_FRAGMENT_WGSL, EDGE_GLOW_VERTEX_WGSL, GLYPH_FRAGMENT_WGSL, GRID_FRAGMENT_WGSL, HALO_FRAGMENT_WGSL, MOTE_FRAGMENT_WGSL,
-  MOTE_VERTEX_WGSL, MOUNTAIN_FRAGMENT_WGSL, ROCK_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, STRIP_FRAGMENT_WGSL, TOWER_FRAGMENT_WGSL, UV_VERTEX_WGSL,
+  CRYSTAL_WALL_FRAGMENT_WGSL, DECK_FRAGMENT_WGSL, EDGE_GLOW_FRAGMENT_WGSL, EDGE_GLOW_VERTEX_WGSL, FROSTED_GATE_FRAGMENT_WGSL,
+  GLYPH_FRAGMENT_WGSL, GRID_FRAGMENT_WGSL, HALO_FRAGMENT_WGSL, HEX_SHIELD_FRAGMENT_WGSL, MOTE_FRAGMENT_WGSL,
+  MOTE_VERTEX_WGSL, MOUNTAIN_FRAGMENT_WGSL, ROCK_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SPARKS_FLIPBOOK_FRAGMENT_WGSL,
+  STANCHION_FRAGMENT_WGSL, STRIP_FRAGMENT_WGSL, TOWER_FRAGMENT_WGSL, UV_VERTEX_WGSL,
   WORLD_VERTEX_WGSL, litVertexWgsl
 } from "./scenery-wgsl";
 
@@ -293,25 +295,35 @@ in vec2 vUv;
 out vec4 outColor;
 ${FOG_GLSL}
 void main() {
-  // fine tile grid in object space, glossy horizon reflection towards the distance
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 L = normalize(nsSunDir);
+  vec3 H = normalize(L + V);
   vec2 g = vec2(vLocal.x / 1.85, vLocal.z / 2.0);
   vec2 w = fwidth(g) * 1.1;
   vec2 a = abs(fract(g - 0.5) - 0.5) / max(w, vec2(1e-4));
   float line = 1.0 - min(min(a.x, a.y), 1.0);
-  vec3 V = normalize(cameraPosition - vWorld);
-  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 4.0);
-  vec3 col = nsBase * 0.85;
-  col += nsLine * line * 0.18;
-  col += vec3(0.9, 0.25, 0.5) * 0.32 * fres;
-  col += nsLine * 0.05 * (1.0 - smoothstep(0.0, 3.2, abs(vWorld.x)));
+  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.6);
+  float spec = pow(max(dot(N, H), 0.0), 64.0) * 0.42;
+  float laneRail = exp(-abs(abs(vWorld.x) - 1.55) * 5.5);
+  vec3 col = nsBase * (0.78 + 0.34 * max(dot(N, L), 0.0));
+  col += nsLine * line * 0.22;
+  col += nsLine * laneRail * 0.14;
+  col += vec3(0.95, 0.88, 1.0) * spec;
+  col += vec3(0.42, 0.62, 1.0) * 0.36 * fres;
   col = nsFogMix(col, vWorld, nsDensity);
   outColor = vec4(col, 1.0);
 }`;
 
-export const deckSpec = (base: Rgb, line: Rgb): CustomSpec => ({
+export const deckSpec = (base: Rgb, line: Rgb, sunDir: Rgb = [-0.42, 0.72, 0.48]): CustomSpec => ({
   glsl: { vertex: LIT_VERTEX(false), fragment: DECK_FRAGMENT },
   wgsl: { vertex: litVertexWgsl(false), fragment: DECK_FRAGMENT_WGSL },
-  uniforms: { nsBase: { type: "color3", value: [...base] }, nsLine: { type: "color3", value: [...line] }, ...fogUniforms(0.006) },
+  uniforms: {
+    nsBase: { type: "color3", value: [...base] },
+    nsLine: { type: "color3", value: [...line] },
+    nsSunDir: { type: "vec3", value: [...sunDir] },
+    ...fogUniforms(0.006)
+  },
   side: "double"
 });
 
@@ -457,6 +469,198 @@ export const edgeGlowSpec = (color: Rgb, alpha: number): CustomSpec => ({
 const moteSpec = (): CustomSpec => ({
   glsl: { vertex: "in vec3 tone;\nout vec3 vTone;\nvoid main() { vTone = tone; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }", fragment: "in vec3 vTone;\nout vec4 outColor;\nvoid main() { outColor = vec4(vTone, 1.0); }" },
   wgsl: { vertex: MOTE_VERTEX_WGSL, fragment: MOTE_FRAGMENT_WGSL },
+  side: "double"
+});
+
+/* ------------------------------------------------------------ holographic gate, chrome stanchions, crystal walls, hex shield & sparks */
+
+const FROSTED_GATE_FRAGMENT = /* glsl */ `
+in vec3 vTone;
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vLocal;
+in vec2 vUv;
+out vec4 outColor;
+${FOG_GLSL}
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  float ndotv = clamp(abs(dot(N, V)), 0.0, 1.0);
+  float fres = 0.0426 + 0.9574 * pow(1.0 - ndotv, 3.8);
+  vec2 pUv = vUv + V.xy * 0.04;
+  vec2 gc = pUv * vec2(10.0, 12.0);
+  vec2 gw = fwidth(gc) * 1.15;
+  vec2 ga = abs(fract(gc - 0.5) - 0.5) / max(gw, vec2(1e-4));
+  float grid = 1.0 - min(min(ga.x, ga.y), 1.0);
+  float scan = 0.5 + 0.5 * sin(vWorld.y * 16.0 - uTime * 3.4);
+  float scanBand = smoothstep(0.45, 0.96, scan);
+  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  float border = 1.0 - smoothstep(0.016, 0.058, edgeDist);
+  vec3 core = vTone * (0.38 + 0.22 * vUv.y);
+  vec3 rimCol = mix(vTone, vec3(1.0), 0.36);
+  vec3 col = core + rimCol * (fres * 1.45 + border * 0.92 + scanBand * 0.16 + grid * 0.18);
+  col = nsFogMix(col, vWorld, nsDensity * 0.8);
+  float alpha = clamp(0.28 + fres * 0.50 + border * 0.42 + grid * 0.08 + scanBand * 0.06, 0.22, 0.92);
+  outColor = vec4(col, alpha);
+}`;
+
+/** Translucent refractive holographic gate panel with Schlick ior=1.52 Fresnel, parallax micro-grid & animated scanlines. */
+export const frostedGateSpec = (): CustomSpec => ({
+  glsl: { vertex: LIT_VERTEX(true), fragment: FROSTED_GATE_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(true), fragment: FROSTED_GATE_FRAGMENT_WGSL },
+  uniforms: { ...fogUniforms(0.0055) },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
+
+const STANCHION_FRAGMENT = /* glsl */ `
+in vec3 vTone;
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vLocal;
+in vec2 vUv;
+out vec4 outColor;
+${FOG_GLSL}
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 L = normalize(nsSunDir);
+  vec3 H = normalize(L + V);
+  float ndotl = max(dot(N, L), 0.0);
+  float spec = pow(max(dot(N, H), 0.0), 48.0);
+  float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0);
+  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  float bevel = 1.0 - smoothstep(0.02, 0.09, edgeDist);
+  vec3 chrome = vec3(0.62, 0.68, 0.82) * (0.42 + 0.68 * ndotl);
+  vec3 col = chrome + vec3(1.0, 0.96, 0.92) * (spec * 0.85) + vTone * (bevel * 0.85 + fres * 0.45);
+  col = nsFogMix(col, vWorld, nsDensity);
+  outColor = vec4(col, 1.0);
+}`;
+
+/** Brushed studio-chrome portal stanchions with neon bevel accents. */
+export const stanchionSpec = (sunDir: Rgb = [-0.42, 0.72, 0.48]): CustomSpec => ({
+  glsl: { vertex: LIT_VERTEX(true), fragment: STANCHION_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(true), fragment: STANCHION_FRAGMENT_WGSL },
+  uniforms: {
+    nsSunDir: { type: "vec3", value: [...sunDir] },
+    ...fogUniforms(0.006)
+  },
+  side: "double"
+});
+
+const CRYSTAL_WALL_FRAGMENT = /* glsl */ `
+in vec3 vTone;
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vLocal;
+in vec2 vUv;
+out vec4 outColor;
+${FOG_GLSL}
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 L = normalize(nsSunDir);
+  vec3 H = normalize(L + V);
+  float ndotl = max(dot(N, L), 0.0);
+  float spec = pow(max(dot(N, H), 0.0), 42.0);
+  float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.2);
+  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  float mortar = 1.0 - smoothstep(0.02, 0.085, edgeDist);
+  float veinCoord = vLocal.x * 1.45 + sin(vLocal.y * 2.8) * 0.35;
+  float vw = fwidth(veinCoord) * 1.4 + 1e-4;
+  float vein = 1.0 - smoothstep(0.0, vw * 2.2, abs(fract(veinCoord) - 0.5));
+  float smashable = smoothstep(0.96, 1.04, nsBreakRatio);
+  float warnPulse = 0.72 + 0.28 * sin(uTime * 5.2);
+  float goldPulse = 0.86 + 0.18 * sin(uTime * 6.8 + vLocal.y * 2.0);
+  vec3 dangerGlow = vec3(1.35, 0.14, 0.32) * warnPulse;
+  vec3 smashGlow = vec3(1.45, 1.05, 0.26) * goldPulse;
+  vec3 fissureCol = mix(dangerGlow, smashGlow, smashable);
+  vec3 crystalBase = mix(vTone * 0.78, vec3(0.16, 0.36, 0.44), smashable * 0.45);
+  float fissureMask = clamp(mortar * 0.85 + vein * (0.35 + 0.45 * smashable), 0.0, 1.0);
+  vec3 col = crystalBase * (0.38 + 0.72 * ndotl) + vec3(1.0, 0.95, 0.9) * (spec * 0.65) + fissureCol * (fissureMask * 0.92 + fres * 0.35);
+  col = nsFogMix(col, vWorld, nsDensity);
+  outColor = vec4(col, 1.0);
+}`;
+
+/** Segmented crystal-masonry boss wall shader driven by live `nsBreakRatio` (`playerNumber / wallHp`). */
+export const crystalWallSpec = (sunDir: Rgb = [-0.42, 0.72, 0.48]): CustomSpec => ({
+  glsl: { vertex: LIT_VERTEX(true), fragment: CRYSTAL_WALL_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(true), fragment: CRYSTAL_WALL_FRAGMENT_WGSL },
+  uniforms: {
+    nsBreakRatio: { type: "f32", value: 0 },
+    nsSunDir: { type: "vec3", value: [...sunDir] },
+    ...fogUniforms(0.006)
+  },
+  side: "double"
+});
+
+const HEX_SHIELD_FRAGMENT = /* glsl */ `
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vLocal;
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.5);
+  vec2 hp = vec2(atan(vLocal.x, vLocal.z) * 5.0, vLocal.y * 9.0);
+  vec2 hw = fwidth(hp) * 1.2 + vec2(1e-4);
+  vec2 ha = abs(fract(hp - 0.5) - 0.5) / hw;
+  float hexLine = 1.0 - min(min(ha.x, ha.y), 1.0);
+  float wave = 0.5 + 0.5 * sin(vLocal.y * 10.0 - uTime * 4.5);
+  vec3 col = mix(baseColor, vec3(0.85, 1.0, 0.96), fres * 0.55 + hexLine * 0.35) * (1.05 + fres * 1.25 + wave * 0.25);
+  float alpha = clamp(0.14 + fres * 0.56 + hexLine * 0.22 + wave * 0.06, 0.10, 0.84);
+  outColor = vec4(col, alpha);
+}`;
+
+/** Hexagonal Fresnel energy barrier around the shielded hero core. */
+export const hexShieldSpec = (color: Rgb): CustomSpec => ({
+  glsl: { vertex: LIT_VERTEX(false), fragment: HEX_SHIELD_FRAGMENT },
+  wgsl: { vertex: litVertexWgsl(false), fragment: HEX_SHIELD_FRAGMENT_WGSL },
+  uniforms: { baseColor: { type: "color3", value: [...color] } },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
+
+const SPARKS_FLIPBOOK_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float f = floor(max(nsFrame, 0.0));
+  float colIdx = f - nsCols * floor(f / nsCols);
+  float rowIdx = floor(f / nsCols);
+  vec2 cellUv = (vec2(colIdx, rowIdx) + clamp(vUv, vec2(0.02), vec2(0.98))) / vec2(nsCols, nsRows);
+  vec4 s = texture(map, cellUv);
+  vec3 lin = mix(s.rgb / 12.92, pow((s.rgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), s.rgb));
+  outColor = vec4(lin * nsTint * (alpha * s.a), alpha * s.a);
+}`;
+
+/** Additive billboard flipbook sampling `createFlipbookAtlas("sparks")` for gate-shatter & wall-breakthrough bursts. */
+export const sparksFlipbookSpec = (
+  map: ReturnType<typeof texture.data>,
+  cols: number,
+  rows: number,
+  tint: Rgb = [1.4, 1.15, 0.55]
+): CustomSpec => ({
+  glsl: {
+    vertex: "out vec2 vUv;\nvoid main() { vUv = uv; gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }",
+    fragment: SPARKS_FLIPBOOK_FRAGMENT
+  },
+  wgsl: { vertex: UV_VERTEX_WGSL, fragment: SPARKS_FLIPBOOK_FRAGMENT_WGSL },
+  uniforms: {
+    map: { type: "texture2d", value: map },
+    nsFrame: { type: "f32", value: 0 },
+    nsCols: { type: "f32", value: cols },
+    nsRows: { type: "f32", value: rows },
+    nsTint: { type: "color3", value: [...tint] },
+    alpha: { type: "f32", value: 0 }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
   side: "double"
 });
 
@@ -670,7 +874,15 @@ export const sceneryProgramSpecs = (): readonly { readonly name: string; readonl
   { name: "glyph", spec: glyphSpec([1, 1, 1], 0) },
   { name: "halo", spec: haloSpec([1, 1, 1], 0.5) },
   { name: "edge-glow", spec: edgeGlowSpec([1, 0.1, 0.7], 0.5) },
-  { name: "motes", spec: moteSpec() }
+  { name: "motes", spec: moteSpec() },
+  { name: "frosted-gate", spec: frostedGateSpec() },
+  { name: "stanchion", spec: stanchionSpec() },
+  { name: "crystal-wall", spec: crystalWallSpec() },
+  { name: "hex-shield", spec: hexShieldSpec([0.3, 1.0, 0.65]) },
+  {
+    name: "sparks-flipbook",
+    spec: sparksFlipbookSpec(texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }), 8, 4)
+  }
 ];
 
 export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: string) => NodeHandle): SceneryRuntime } {

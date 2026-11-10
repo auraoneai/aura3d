@@ -4,4 +4,4 @@ import "../../showcase-port-shared/worker-lab";
 import "../../../examples/aura-slam/main";
 
 /** Asset ids the production route build must ship (it scans route sources for these ids). */
-export const AURA_ASSET_IDS = ["showcaseStadiumSeats", "rooftopScoreboardRigMeshy", "rooftopFloodlightTowerMeshy", "tennisFloodMast"] as const;
+export const AURA_ASSET_IDS = ["tennisFloodMast"] as const;

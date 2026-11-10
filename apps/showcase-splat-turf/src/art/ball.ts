@@ -17,8 +17,8 @@ import {
   type Rgb
 } from "../../../../examples/shared/runner-kit/index";
 
-/** The kit key light (every toon program in the game lights from here). */
-const KEY_DIR = [6, 12, 6] as const;
+/** The sunlit key light direction matching the 48 deg / -32 deg outdoor skate-arena rig. */
+const KEY_DIR = [-6.5, 14.5, 9.5] as const;
 
 export const BALL_VERTEX = /* glsl */ `
 out vec3 vNormal;
@@ -179,14 +179,14 @@ export function glossyBallSpec(look: GlossyBall): CustomSpec {
       emissive: { type: "color3", value: [0, 0, 0] },
       alpha: { type: "f32", value: 1 },
       crKeyDir: { type: "vec3", value: KEY_DIR.map((v) => v / l) },
-      crKey: { type: "color3", value: [0.72, 0.66, 0.6] },
-      crSky: { type: "color3", value: [1, 0.94, 0.9] },
-      crGround: { type: "color3", value: [0.3, 0.16, 0.36] },
-      crRim: { type: "color3", value: scale(hexToLinear(look.rim), 0.6) },
+      crKey: { type: "color3", value: [0.86, 0.83, 0.76] },
+      crSky: { type: "color3", value: [0.92, 0.96, 1] },
+      crGround: { type: "color3", value: [0.34, 0.35, 0.46] },
+      crRim: { type: "color3", value: scale(hexToLinear(look.rim), 0.65) },
       crSkyWindow: { type: "color3", value: [...hexToLinear(look.skyWindow)] },
       crInk: { type: "color3", value: [...hexToLinear(look.ink)] },
       /* x = shininess, y = sky-window mix */
-      crGloss: { type: "vec2", value: [56, 0.5] },
+      crGloss: { type: "vec2", value: [82, 0.56] },
       /* x = fade height (m), y = strength */
       crContact: { type: "vec2", value: [0.32, 0.4] },
       /* x, y, z = world-axis squash, w = pivot drop below the centre (radius x scale) */

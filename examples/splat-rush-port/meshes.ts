@@ -1,7 +1,7 @@
 /**
- * Exact-dimension mesh generators for the port (the engine's unit primitives are sized by `size`, which
+ * Exact-dimension mesh generators for Splat (the engine's unit primitives are sized by `size`, which
  * makes a capsule of radius 0.46 and a 6.24 m bar ambiguous). Each returns plain arrays; `world.ts` turns
- * them into `geometry.dynamic` specs. Dimensions are those of the original's three.js geometries.
+ * them into `geometry.dynamic` specs.
  */
 
 export interface MeshData {
@@ -13,7 +13,7 @@ export interface MeshData {
 
 const empty = (): MeshData => ({ positions: [], normals: [], uvs: [], indices: [] });
 
-/** three's SphereGeometry(radius, widthSegments, heightSegments), unrotated (poles on +/-Y). */
+/** UV-sphere of `radius` with `widthSegments` x `heightSegments`, unrotated (poles on +/-Y). */
 export function sphereMesh(radius: number, widthSegments: number, heightSegments: number, cx = 0, cy = 0, cz = 0): MeshData {
   const m = empty();
   for (let iy = 0; iy <= heightSegments; iy++) {
@@ -68,7 +68,7 @@ export function capsuleMesh(radius: number, length: number, radial: number, caps
   return m;
 }
 
-/** three's CylinderGeometry(radiusTop, radiusBottom, height, radialSegments), closed. */
+/** Closed cylinder (`radiusTop`, `radiusBottom`, `height`, `radial` segments). */
 export function cylinderMesh(radiusTop: number, radiusBottom: number, height: number, radial: number): MeshData {
   const m = empty();
   const slope = (radiusBottom - radiusTop) / height;
@@ -109,7 +109,7 @@ export function cylinderMesh(radiusTop: number, radiusBottom: number, height: nu
   return m;
 }
 
-/** three's ConeGeometry(radius, height, radialSegments) translated so the base sits at y = 0 + `dy`. */
+/** Closed cone (`radius`, `height`, `radial` segments) translated by `dy`. */
 export function coneMesh(radius: number, height: number, radial: number, dy: number): MeshData {
   const m = cylinderMesh(0, radius, height, radial);
   for (let i = 1; i < m.positions.length; i += 3) m.positions[i] = (m.positions[i] as number) + dy;
@@ -207,4 +207,51 @@ export function gateDripMesh(): MeshData {
     return m;
   });
   return mergeMeshes(parts);
+}
+
+/**
+ * Smooth bevelled continuous extruded curb rail along local Z (`[-1, 1]`), unit-normalised so adjacent
+ * 1 m road segments lock into a continuous wet-lacquer studio bumper rather than discrete beads.
+ */
+export function curbRailMesh(archSteps = 8): MeshData {
+  const m = empty();
+  const profile: { x: number; y: number; nx: number; ny: number; u: number }[] = [];
+  for (let i = 0; i <= archSteps; i++) {
+    const u = i / archSteps;
+    const a = Math.PI * (1 - u);
+    const x = Math.cos(a);
+    const y = -0.35 + 1.15 * Math.sin(a);
+    const nx = Math.cos(a);
+    const ny = Math.max(0.15, Math.sin(a));
+    const inv = 1 / Math.hypot(nx, ny);
+    profile.push({ x, y, nx: nx * inv, ny: ny * inv, u });
+  }
+  for (const [z, v] of [[1, 1], [-1, 0]] as const) {
+    for (const p of profile) {
+      m.positions.push(p.x, p.y, z);
+      m.normals.push(p.nx, p.ny, 0);
+      m.uvs.push(p.u, v);
+    }
+  }
+  const stride = profile.length;
+  for (let i = 0; i < archSteps; i++) {
+    const a = i, b = i + 1, c = stride + i, d = stride + i + 1;
+    m.indices.push(a, c, b, b, c, d);
+  }
+  return m;
+}
+
+/**
+ * Translucent pigment gate curtain spanning the interior opening of a 0.32-scaled gate arch
+ * (`x` in `[-0.70, 0.70]`, `y` in `[0.02, 1.42]`). Single-quad template (`uv` in `0..1`) so all live gates
+ * batch into one draw call.
+ */
+export function gateCurtainMesh(): MeshData {
+  const x0 = -0.7, x1 = 0.7, y0 = 0.02, y1 = 1.42;
+  return {
+    positions: [x0, y0, 0, x1, y0, 0, x1, y1, 0, x0, y1, 0],
+    normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+    uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+    indices: [0, 1, 2, 0, 2, 3]
+  };
 }

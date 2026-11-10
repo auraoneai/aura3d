@@ -35,8 +35,11 @@ export interface LinksSurface {
   /** Tangent-space normal tile (null: none). */
   readonly normal: (SurfaceMap<LinksNormalKind> & { readonly scale: number }) | null;
   readonly roughness: number;
-  /** Sheen of cut grass (green and fairway only); 0 = none. */
+  /** Sheen of cut grass (green, fringe, fairway) or silica micro-sheen; 0 = none. */
   readonly sheen: number;
+  /** Optional clearcoat micro-glint (raked silica sand bunkers). */
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
 }
 
 export type LinksSurfaceSlot = "rough" | "fairway" | "firstCut" | "green" | "fringe" | "bunker";
@@ -56,12 +59,19 @@ export const TEXEL_SIZE: Record<LinksMaskKind | LinksNormalKind, number> = {
 export const MOW_TILE_METRES = 18;
 
 const turf = (roughKind: LinksNormalKind, roughScale: number, bunkerKind: LinksNormalKind, opts: { roughness?: number; sheen?: number } = {}): Record<LinksSurfaceSlot, LinksSurface> => ({
-  rough: { mask: { kind: "patch", tileMetres: 1 }, normal: { kind: roughKind, tileMetres: 1, scale: roughScale }, roughness: opts.roughness ?? 0.94, sheen: 0 },
-  firstCut: { mask: { kind: "patch", tileMetres: 1 }, normal: { kind: "blades", tileMetres: 1, scale: 0.55 }, roughness: 0.9, sheen: 0 },
-  fairway: { mask: { kind: "mow", tileMetres: MOW_TILE_METRES }, normal: { kind: "blades", tileMetres: 1, scale: 0.45 }, roughness: 0.84, sheen: opts.sheen ?? 0.25 },
-  fringe: { mask: null, normal: { kind: "blades", tileMetres: 0.5, scale: 0.4 }, roughness: 0.85, sheen: opts.sheen ?? 0.25 },
-  green: { mask: null, normal: { kind: "blades", tileMetres: 0.5, scale: 0.3 }, roughness: 0.74, sheen: (opts.sheen ?? 0.25) + 0.1 },
-  bunker: { mask: null, normal: { kind: bunkerKind, tileMetres: bunkerKind === "regolith" ? 2 : 1, scale: 0.6 }, roughness: 0.9, sheen: 0 }
+  rough: { mask: { kind: "patch", tileMetres: 1 }, normal: { kind: roughKind, tileMetres: 1, scale: roughScale }, roughness: opts.roughness ?? 0.9, sheen: 0 },
+  firstCut: { mask: { kind: "patch", tileMetres: 1 }, normal: { kind: "blades", tileMetres: 1, scale: 0.55 }, roughness: 0.84, sheen: opts.sheen !== undefined ? opts.sheen * 0.55 : 0.18 },
+  fairway: { mask: { kind: "mow", tileMetres: MOW_TILE_METRES }, normal: { kind: "blades", tileMetres: 1, scale: 0.45 }, roughness: 0.76, sheen: opts.sheen ?? 0.38 },
+  fringe: { mask: null, normal: { kind: "blades", tileMetres: 0.5, scale: 0.38 }, roughness: 0.68, sheen: (opts.sheen ?? 0.38) * 0.85 },
+  green: { mask: null, normal: { kind: "blades", tileMetres: 0.5, scale: 0.28 }, roughness: 0.52, sheen: (opts.sheen ?? 0.38) + 0.1 },
+  bunker: {
+    mask: null,
+    normal: { kind: bunkerKind, tileMetres: bunkerKind === "regolith" ? 2 : 1, scale: 0.68 },
+    roughness: bunkerKind === "regolith" ? 0.94 : 0.82,
+    sheen: bunkerKind === "regolith" ? 0 : 0.16,
+    clearcoat: bunkerKind === "regolith" ? 0 : 0.14,
+    clearcoatRoughness: 0.42
+  }
 });
 
 /**

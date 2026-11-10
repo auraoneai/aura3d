@@ -1,25 +1,50 @@
 /**
- * Thermal Drift scene: the per-circuit foundry rig, the instanced road, walls, rain and bolts, and the 30 model nodes.
+ * Thermal Drift scene: the per-circuit cyber-thermal rig, instanced road, brushed-metal barrier walls & heatsink
+ * cooling-fin pylons, plasma thruster plumes, rotor-blur discs, flipbook VFX burst quads, and batched GLB setpieces.
  *
- * GU47 WP-13 (look table: look.ts; art direction: ../art/direction.ts):
- * HS-01: a per-circuit rig replaces the `night-city` look: one PCSS 3-cascade key (the only shadowed light), an
- *   unshadowed coolant counter-rim, the VESPER vent up-fill and an explicit AO node; the two point lights are gone.
- * HS-03: the circuit HDRI is the sky (background on) and the image-based fill; the backdrop wall and the two emissive
- *   horizon bands are gone. A circuit change remounts the scene (main.ts), so every per-circuit node is authored here.
- * HS-05: per-circuit exponential fog; DUSTFALL adds a volumetric inscatter with god rays from its 9-degree sun.
- * HS-02: drone headlight spot, 2 sodium points on the start gantry (1 on VESPER), 2 tunnel strip lights (unshadowed).
- * HS-06: one weather system per circuit (rain, dust or embers), none on reduced motion.
- * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
- * HS-15: molten slag gutters and the lava pool (custom shader, one instanced draw); chevrons follow the core heat.
- * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
+ * WP-07 10/10 Visual Overhaul:
+ * - Night-industrial/cyber sky dome (`sky.gradient`) paired with prefiltered HDRI specular IBL (`background: false`,
+ *   killing the daytime meadow skybox) and zero `lights.ambient`.
+ * - Tightened 2-cascade PCSS directional key (`mapSize: 2048, maxDistance: 65`), zero live `everyNFrames: 6` cubemap
+ *   reflection probes, and wet-asphalt `screenSpaceReflections` + `cinematicBloom` + `contactShadows` + `ambientOcclusion`.
+ * - GPU `instances.model` batching for repeated trackside arches, tunnel frames, iron towers, and holo billboards
+ *   (strictly positive uniform scales so `ForwardPass` draws 1 instanced call per batch), plus instanced anodized
+ *   `material.brushedMetal` heatsink cooling-fin pylons and heat-reactive thermal vents.
+ * - Multi-lobe `material.carPaint` drone chassis liveries + instanced Mach-cone plasma plumes & quadcopter rotor discs.
  */
-import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraLutAssetRef, type AuraMaterialSpec, type AuraModelMaterialOverride, type AuraSceneNode } from "@aura3d/engine";
+import {
+  camera,
+  effects,
+  environments,
+  game,
+  instances,
+  lights,
+  material,
+  model,
+  primitives,
+  scene,
+  sky,
+  type AuraAssetRef,
+  type AuraLutAssetRef,
+  type AuraMaterialSpec,
+  type AuraModelMaterialOverride,
+  type AuraNodeBuilder,
+  type AuraSceneNode
+} from "@aura3d/engine";
 import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, luts, textures } from "./aura-assets";
-import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
+import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec, type SceneryAnchor } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
-import { chevronHeatMaterial, contactShadowMaterial, moltenMaterial } from "./shaders";
+import {
+  chevronHeatMaterial,
+  contactShadowMaterial,
+  flipbookBurstMaterial,
+  moltenMaterial,
+  rotorBlurMaterial,
+  thrusterPlumeMaterial
+} from "./shaders";
 import { LASER_BOLTS } from "./sim";
 import { skylineNodes } from "./skyline";
+import { getPlasmaFlipbookAtlas, getSparksFlipbookAtlas } from "./vfx";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 
 export const ROAD_TILE_COUNT = 16;
@@ -34,17 +59,10 @@ export const RIG_IDS = {
   key: "td-key-light",
   rim: "td-rim-light",
   upFill: "td-vent-up-fill",
-  sky: "td-sky"
+  sky: "td-sky",
+  skyDome: "td-sky-dome"
 } as const;
 
-/**
- * HS-02 local lights, all unshadowed (the key is the only caster). The art-direction contract caps the non-key lights at
- * 6 (`packages/game/src/art/define.ts`), and the coolant rim (plus VESPER's up-fill) count against it, so the set is: the
- * headlight spot, two sodium lamps on the start gantry (one centre lamp on VESPER, whose up-fill takes the sixth slot) and
- * one strip light in each tunnel ceiling: 5 local lights (4 on VESPER), 6 non-key lights per circuit. Each anchored
- * light rides with its anchor (main.ts `setPosition` at the anchor's track distance, the E-B light handle path); `offset`
- * is [lateral, height] in metres from the anchor's lateral and base.
- */
 export interface LocalLightSpec {
   readonly id: string;
   readonly kind: "sodium" | "strip";
@@ -80,12 +98,10 @@ export const HEADLIGHT_DIRECTION: readonly [number, number, number] = (() => {
 })();
 /** Where the key light aims: the road about 20 m ahead of the drone (the drone stays near the origin). */
 export const KEY_TARGET: [number, number, number] = [0, 0, -20];
-/** HS-01: PCSS soft shadows over three cascades (the engine drops to 1 cascade PCF on the Low tier). */
-// GU47 phase 4 (rubric shadows 5.5: "blob-like, little defined cast shadow"): a smaller light size keeps the PCSS
-// penumbra tight enough that drone, gantry and wall shapes read on the deck.
-export const KEY_SHADOW = { filter: "pcss", cascades: 3, mapSize: 2048, maxDistance: 140, lightSize: 0.3 } as const;
-/** GU47 phase 4: screen-space contact shadows from the key (wall feet, props, drone undersides). */
-export const CONTACT_SHADOWS = { intensity: 0.75, length: 0.32, steps: 12 } as const;
+/** WP-07: tightened 2-cascade PCSS directional key (`mapSize: 2048, maxDistance: 65`) for crisp near-field drone & barrier shadows. */
+export const KEY_SHADOW = { filter: "pcss", cascades: 2, mapSize: 2048, maxDistance: 65, lightSize: 0.3 } as const;
+/** Screen-space contact shadows from the key (wall feet, props, drone undersides). */
+export const CONTACT_SHADOWS = { intensity: 0.78, length: 0.34, steps: 12 } as const;
 
 export const IDS = {
   deckEven: "road-deck-even",
@@ -94,38 +110,104 @@ export const IDS = {
   spineB: "road-spine-b",
   lanes: "road-lanes",
   walls: "track-walls",
+  fins: "track-heatsink-fins",
+  vents: "track-thermal-vents",
   chevA: "wall-chevrons-a",
   chevB: "wall-chevrons-b",
   gutters: "slag-gutters",
   bolts: "laser-bolts",
+  thrusters: "drone-thruster-plumes",
+  rotors: "drone-rotor-discs",
   floor: "megacity-abyss-floor",
   ring: "player-shockwave-ring",
   missile: "homing-missile-active",
   incoming: "incoming-missile",
   mine: "weapon-mine-active",
-  shadows: "drone-contact-shadows"
+  shadows: "drone-contact-shadows",
+  plasmaBurst: "vfx-plasma-flipbook",
+  sparksBurst: "vfx-sparks-flipbook"
 } as const;
 
-/** Instance counts per instanced node. */
+/** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
+export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
+  "heatsink_thermalTowerLIron",
+  "heatsink_thermalTowerTIron",
+  "heatsinkTowerX",
+  "heatsink_thermalCoolingTower",
+  "heatsink_thermalSmokestacks",
+  "heatsink_thermalWaterTower",
+  "heatsink_thermalReactorRing",
+  "heatsinkHoloBillboard",
+  "heatsinkCheckpointRing",
+  "heatsinkLavaFall"
+]);
+
+/** Repeated `SCENERY_ANCHORS` consolidated into GPU `instances.model` pools (1 draw call per repeated GLB, positive scales only). */
+export interface SceneryBatchSpec {
+  readonly id: string;
+  readonly assetKey: string;
+  readonly baseMaxDim: number;
+  readonly castShadow: boolean;
+  readonly anchors: readonly SceneryAnchor[];
+}
+
+const BATCHED_ASSET_KEYS = [
+  "heatsink_thermalArchIron",
+  "heatsinkTunnelFrame",
+  "heatsink_thermalTowerLIron",
+  "heatsinkHoloBillboard"
+] as const;
+
+const BATCHED_ASSET_SET: ReadonlySet<string> = new Set(BATCHED_ASSET_KEYS);
+
+export const SCENERY_BATCHES: readonly SceneryBatchSpec[] = BATCHED_ASSET_KEYS.map((assetKey) => {
+  const anchors = SCENERY_ANCHORS.filter((a) => a.assetKey === assetKey);
+  return {
+    id: `batch-${assetKey}`,
+    assetKey,
+    baseMaxDim: anchors[0]!.maxDim,
+    castShadow: !UNSHADOWED_ANCHOR_ASSETS.has(assetKey),
+    anchors
+  };
+});
+
+export const SINGLE_SCENERY_ANCHORS: readonly SceneryAnchor[] = SCENERY_ANCHORS.filter(
+  (a) => !BATCHED_ASSET_SET.has(a.assetKey)
+);
+
+/** Instance counts per instanced node (primitives + batched `instances.model` scenery pools). */
 export const INSTANCE_COUNTS = {
   deckEven: ROAD_TILE_COUNT / 2,
   deckOdd: ROAD_TILE_COUNT / 2,
   spineA: Math.ceil(ROAD_TILE_COUNT / 3),
-  // Every third tile (by absolute index) is spine A: 16 consecutive tiles hold 5 or 6 of them.
   spineB: ROAD_TILE_COUNT - Math.floor(ROAD_TILE_COUNT / 3),
   lanes: ROAD_TILE_COUNT * 2,
   walls: WALL_SEGMENT_COUNT * 2,
+  fins: WALL_SEGMENT_COUNT * 2,
+  vents: WALL_SEGMENT_COUNT * 2,
   chevA: WALL_SEGMENT_COUNT,
   chevB: WALL_SEGMENT_COUNT,
-  // HS-15: one molten gutter per wall segment and side, plus the pool under the lava curtain (last slot).
   gutters: WALL_SEGMENT_COUNT * 2 + 1,
   bolts: LASER_BOLTS,
-  // GU47 phase 3: one soft contact shadow per drone model (the player and up to six drawn rivals).
-  shadows: DRONE_ORDER.length
+  shadows: DRONE_ORDER.length,
+  thrusters: DRONE_ORDER.length * 2,
+  rotors: DRONE_ORDER.length * 4,
+  archBatch: 2,
+  tunnelBatch: 2,
+  towerLBatch: 2,
+  billboardBatch: 2
 } as const;
 
-/** GU47 phase 3 contact shadow under each drone: a soft disc on the deck (metres; height above the deck). */
+/** Soft contact shadow under each drone: a soft disc on the deck (metres; height above the deck). */
 export const CONTACT_SHADOW = { y: 0.035, size: 3.4, opacity: 0.62 } as const;
+
+/** Anodized brushed-metal heatsink cooling-fin pylons & emissive thermal vent cores flanking the barrier walls. */
+export const HEATSINK_FIN = { lateral: 12.05, y: 1.45, size: [0.58, 2.75, 2.2] as [number, number, number] } as const;
+export const THERMAL_VENT = { lateral: 11.72, y: 1.52, size: [0.16, 1.65, 1.35] as [number, number, number] } as const;
+
+/** Dual plasma Mach-cone plumes & 4 quadcopter rotor-blur discs per drone. */
+export const THRUSTER_PLUME = { lateral: 0.44, y: -0.04, back: 1.55, radius: 0.34, length: 2.35 } as const;
+export const ROTOR_DISC = { lateral: 1.05, foreAft: 0.88, y: 0.22, size: 1.18 } as const;
 
 /** HS-15 slag gutter: a molten strip on the deck along the foot of each wall (inside the drone's lateral limit + body). */
 export const GUTTER = { lateral: 10.25, y: 0.02, size: [0.9, 0.06, 12.4] as [number, number, number] } as const;
@@ -137,7 +219,7 @@ export const LAVA_POOL_SCALE: readonly [number, number, number] = [
   LAVA_POOL.size[1] / GUTTER.size[1],
   LAVA_POOL.size[2] / GUTTER.size[2]
 ];
-/** Wall chevron emissive intensity (the old `chevronMaterial`), before the HS-15 heat gain. */
+/** Wall chevron emissive intensity, before the HS-15 heat gain. */
 export const CHEVRON_INTENSITY = 1.65;
 
 const asset = (key: string): AuraAssetRef<"model"> => {
@@ -166,7 +248,7 @@ export interface SceneOptions {
 const degToRad = (deg: number): number => (deg * Math.PI) / 180;
 const add3 = (a: readonly [number, number, number], b: readonly [number, number, number]): [number, number, number] => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
-/** HS-01 lighting rig: one shadowed key, the unshadowed counter-rim, the VESPER up-fill. Fill is the HDRI (no ambient). */
+/** HS-01 lighting rig: one shadowed key, the unshadowed counter-rim, the VESPER up-fill. Fill is the HDRI (zero ambient). */
 export function circuitLights(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
     lights.directional({
@@ -187,7 +269,6 @@ export function circuitLights(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>
     }).runtime(game.runtimeNode(RIG_IDS.rim))
   ];
   if (look.upFill) {
-    // Vents below the causeway: a warm light travelling upwards, so undersides and arches glow from beneath.
     out.push(lights.directional({ name: "td vent up-fill", position: [0, -40, -12], target: KEY_TARGET, color: look.upFill.color, intensity: look.upFill.intensity, shadow: false })
       .runtime(game.runtimeNode(RIG_IDS.upFill)));
   }
@@ -209,15 +290,29 @@ export function circuitLocalLights(look: CircuitLook): AuraNodeBuilder<AuraScene
   return out;
 }
 
-/** HS-03 sky: the circuit HDRI drawn as the background and used as the image-based fill. */
+/** WP-07 IBL fill: prefiltered circuit HDRI specular/diffuse reflections with `background: false` (no daytime meadow backdrop). */
 export function circuitSky(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
   return environments.hdri({
     name: `td sky ${look.hdri}`,
     texture: HDRI_BY_ID[look.hdri],
     intensity: look.environmentIntensity,
     rotation: degToRad(look.environmentRotationDeg),
-    background: true
+    background: false
   }).runtime(game.runtimeNode(RIG_IDS.sky));
+}
+
+/** WP-07 procedural night-industrial / foundry / twilight sky dome per circuit (`captureEnvironment: false` keeps HDRI IBL). */
+export function circuitSkyDome(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
+  return sky.gradient({
+    name: "td sky dome",
+    zenith: look.sky.zenith,
+    horizon: look.sky.horizon,
+    ground: look.sky.ground,
+    stars: look.sky.stars,
+    clouds: look.sky.clouds,
+    captureEnvironment: false,
+    affectsFog: false
+  }).runtime(game.runtimeNode(RIG_IDS.skyDome));
 }
 
 /** Texture repeats across one road tile (22.4 x 13.1 m): about 5.6 m of asphalt per repeat. */
@@ -232,44 +327,27 @@ export function roadMaterial(look: CircuitLook, tint: string): AuraMaterialSpec 
     metalness: look.road.metalness,
     texture: textures.heatsinkAsphaltColor,
     normal: textures.heatsinkAsphaltNormal,
-    normalScale: 0.8,
+    normalScale: 0.85,
     roughnessMap: textures.heatsinkAsphaltRoughness,
+    envMapIntensity: 1.35,
     texTransforms: { baseColor: repeat, normal: repeat, metallicRoughness: repeat }
   });
 }
 
-/**
- * The C-10 reflection-probe node `probes.reflection` emits (same fields and defaults). GU47(E-G): `probes` is not
- * exported from the `@aura3d/engine` root yet (lane report handoff); swap to `probes.reflection(...)` when it is.
- */
-function reflectionProbe(options: { readonly name: string; readonly position: readonly [number, number, number]; readonly box: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] }; readonly resolution: 64 | 128 | 256; readonly everyNFrames: number }): AuraNodeBuilder<AuraSceneNode> {
-  return new AuraNodeBuilder<AuraSceneNode>({
-    kind: "probe",
-    probe: "reflection",
-    name: options.name,
-    options: { name: options.name, position: options.position, box: options.box, resolution: options.resolution, update: { everyNFrames: options.everyNFrames }, blendDistance: 1, priority: 0, intensity: 1 }
-  } as unknown as AuraSceneNode);
-}
-
-/** HS-07 reflections: a road probe refreshed 1 frame in 6 and SSR on the wet circuits (E-C). */
+/** WP-07 reflections: prefiltered HDRI specular IBL + screen-space reflections on wet asphalt circuits (zero live cubemap probes). */
 export function circuitReflections(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
-  const out: AuraNodeBuilder<AuraSceneNode>[] = [];
-  if (look.reflections.probe) {
-    out.push(reflectionProbe({ name: "td road probe", position: [0, 2.5, -14], box: { min: [-14, -1, -70], max: [14, 24, 12] }, resolution: 64, everyNFrames: 6 }));
-  }
-  if (look.reflections.ssr > 0) out.push(effects.screenSpaceReflections({ name: "td wet road ssr", intensity: look.reflections.ssr }));
-  return out;
+  if (look.reflections.ssr <= 0) return [];
+  return [
+    effects.screenSpaceReflections({
+      name: "td wet road ssr",
+      intensity: look.reflections.ssr,
+      roughness: Math.min(0.35, look.road.roughness),
+      maxDistance: 42,
+      thickness: 0.3
+    })
+  ];
 }
 
-/**
- * HS-06 weather, one system per circuit, replacing the 18 rain boxes: sodium-lit rain with splashes on MEGACITY, a
- * wind-driven ochre dust field on DUSTFALL (the camera-following snow volume, recoloured), rising additive embers on
- * VESPER. Reduced motion mounts none (live count 0). Each is one particle draw.
- *
- * The embers spawn on a 26 m disc below the deck (the legacy `radius` disc: the production lowering does not consume
- * the PRD-07 `shape`/`shapeSize` fields yet) and accelerate upwards (`gravity` is the signed y acceleration), so they
- * rise from the vents past the causeway edges.
- */
 export const EMBER_SPAWN = { position: [0, -2.5, -26] as [number, number, number], radius: 26 } as const;
 
 export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
@@ -289,7 +367,6 @@ export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraN
         loop: true,
         prewarm: 3,
         lifetime: [2.5, 4.5],
-        // A scalar speed lowers to the range [0.7 x, x] (the node type narrows `speed` to a number).
         speed: 1.5,
         gravity: 1.2,
         drag: 0.4,
@@ -303,10 +380,9 @@ export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraN
   }
 }
 
-/** HS-05 atmosphere and HS-12 post for a circuit (AO is HS-01's explicit pass). */
+/** HS-05 atmosphere and WP-07 post stack (`cinematicBloom`, `colorGrade` foundry LUT, `ambientOcclusion`, `contactShadows`). */
 export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
-    // GU47 phase 4 (rubric atmospheric_effects 5.5: "skyline crisp, little aerial perspective"): 0.6 -> 0.78.
     effects.fog({ name: "td fog", color: look.fog.color, density: look.fog.density, intensity: 0.78 }),
     effects.colorGrade({
       name: "td grade",
@@ -315,19 +391,17 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
       saturation: look.grade.saturation,
       temperature: look.grade.temperature,
       tint: look.grade.tint,
-      // HS-12: the authored foundry LUT (S10b display grade) at the circuit's strength.
       lut: luts.heatsinkFoundryLut as unknown as AuraLutAssetRef,
       lutIntensity: look.lutIntensity
     }),
-    effects.bloom({ name: "td warm bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: look.bloom.color }),
+    effects.cinematicBloom({ name: "td warm bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: look.bloom.color }),
     effects.vignette({ name: "td vignette", intensity: look.vignette, smoothness: 0.65 })
   ];
-  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: "td ambient occlusion", intensity: 0.5, radius: 0.7 }));
+  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: "td ambient occlusion", intensity: 0.52, radius: 0.72 }));
   out.push(effects.contactShadows({ ...CONTACT_SHADOWS, lights: "shadowed" }));
   if (look.grain > 0) out.push(effects.filmGrain({ name: "td film grain", intensity: look.grain }));
   if (look.volumetricFog) {
     const v = look.volumetricFog;
-    // God rays take their direction from the shadowed key (the 9-degree burnt sun); no screen anchor is authored.
     out.push(effects.volumetricFog({ name: "td dust god rays", color: v.color, density: v.density, intensity: v.intensity, godRayDensity: v.godRayDensity }));
   }
   return out;
@@ -338,9 +412,10 @@ export function buildThermalDriftScene(options: SceneOptions) {
   const look = CIRCUIT_LOOKS[circuit.id];
   const reducedMotion = options.reducedMotion === true;
   const s = scene()
-    .background(look.fog.color)
+    .background(look.sky.horizon)
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
     .add(circuitSky(look))
+    .add(circuitSkyDome(look))
     .addMany(circuitLights(look))
     .addMany(circuitPost(look, {
       ...(options.exposureEv !== undefined ? { exposureEv: options.exposureEv } : {}),
@@ -350,59 +425,64 @@ export function buildThermalDriftScene(options: SceneOptions) {
     .addMany(circuitReflections(look))
     .addMany(circuitWeather(look, reducedMotion));
 
-  // Ground far below the elevated road (the HDRI is the sky; no backdrop wall or horizon bands).
+  // Abyssal foundry plain far below the elevated causeway.
   s.add(
-    primitives.box({ name: IDS.floor, size: [520, 0.5, 460], material: material.pbr({ color: look.ground, roughness: 0.92, metalness: 0.12 }), castShadow: false })
+    primitives.box({ name: IDS.floor, size: [520, 0.5, 460], material: material.pbr({ color: look.ground, roughness: 0.88, metalness: 0.18 }), castShadow: false })
       .position(0, -8.5, -150).runtime(game.runtimeNode(IDS.floor))
   );
-  // HS-04: three parallax skyline layers (6 instanced draws, unshadowed).
+  // HS-04: three parallax curtain-wall skyline layers (6 instanced draws, unshadowed).
   s.addMany(skylineNodes(circuit, look));
 
-  // Road, lanes, walls and chevrons: one instanced node per material.
+  // Road, lanes, brushed-metal barriers, anodized heatsink fins, thermal vents, chevrons, molten gutters, drone plumes & rotors.
   const unshadowed = { castShadow: false, frustumCulled: false } as const;
   s.addMany([
-    // HS-07: CC0 worn asphalt per circuit (wet MEGACITY/VESPER, dusty ochre DUSTFALL).
     instances.box({ name: IDS.deckEven, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.color), transforms: along(INSTANCE_COUNTS.deckEven, 0, -0.18, ROAD_TILE_SPACING * 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.deckEven)),
     instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.colorAlt), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.deckOdd)),
-    // Warm foundry accents per circuit (look.ts); coolant cyan stays off the road.
     instances.box({ name: IDS.spineA, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.spineA, 0, 0.03, ROAD_TILE_SPACING * 3), ...unshadowed })
       .runtime(game.runtimeNode(IDS.spineA)),
     instances.box({ name: IDS.spineB, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.primary), transforms: along(INSTANCE_COUNTS.spineB, 0, 0.03, ROAD_TILE_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.spineB)),
     instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive(look.accents.lanes, 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.lanes)),
-    instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.pbr({ color: "#232936", roughness: 0.34, metalness: 0.7 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
+    instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.brushedMetal({ name: "td barrier brushed metal", color: "#283244", roughness: 0.28, anisotropy: 0.86, envMapIntensity: 1.55 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
-    // HS-15: the chevrons brighten with the core heat (u_heat, +25% at 90%); one custom program for both nodes.
+    instances.box({ name: IDS.fins, size: HEATSINK_FIN.size, material: material.brushedMetal({ name: "td heatsink cooling fins", color: "#1c2536", roughness: 0.24, anisotropy: 0.92, envMapIntensity: 1.75 }), transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), frustumCulled: false })
+      .runtime(game.runtimeNode(IDS.fins)),
+    instances.box({ name: IDS.vents, size: THERMAL_VENT.size, material: chevronHeatMaterial(look.accents.primary, 2.2, reducedMotion), transforms: along(INSTANCE_COUNTS.vents, THERMAL_VENT.lateral, THERMAL_VENT.y, WALL_SPACING / 2), ...unshadowed })
+      .runtime(game.runtimeNode(IDS.vents)),
     instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronHeatMaterial(look.accents.primary, CHEVRON_INTENSITY, reducedMotion), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevA)),
     instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronHeatMaterial(look.accents.secondary, CHEVRON_INTENSITY, reducedMotion), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevB)),
-    // HS-15: molten slag gutters at the foot of both walls and the pool under the lava curtain, one instanced draw.
     instances.box({ name: IDS.gutters, size: GUTTER.size, material: moltenMaterial({ ...look.molten, reducedMotion }), transforms: along(INSTANCE_COUNTS.gutters, GUTTER.lateral, GUTTER.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.gutters)),
-    // GU47 phase 3: soft contact shadows ground the hovering drones (the PCSS key alone left them floating).
     instances.box({ name: IDS.shadows, size: [CONTACT_SHADOW.size, 0.01, CONTACT_SHADOW.size], material: contactShadowMaterial(CONTACT_SHADOW.opacity, CONTACT_SHADOW.size / 2), transforms: along(INSTANCE_COUNTS.shadows, 0, -60, 4), ...unshadowed })
       .runtime(game.runtimeNode(IDS.shadows)),
     instances.box({ name: IDS.bolts, size: [0.14, 0.14, 2.8], material: emissive("#ff4d1f", 2.6), transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
-      .runtime(game.runtimeNode(IDS.bolts))
+      .runtime(game.runtimeNode(IDS.bolts)),
+    instances.cone({ name: IDS.thrusters, size: [THRUSTER_PLUME.radius, THRUSTER_PLUME.length, THRUSTER_PLUME.radius], material: thrusterPlumeMaterial(THRUSTER_PLUME.length / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.thrusters, 0, -60, 2), ...unshadowed })
+      .runtime(game.runtimeNode(IDS.thrusters)),
+    instances.box({ name: IDS.rotors, size: [ROTOR_DISC.size, 0.015, ROTOR_DISC.size], material: rotorBlurMaterial(ROTOR_DISC.size / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.rotors, 0, -60, 2), ...unshadowed })
+      .runtime(game.runtimeNode(IDS.rotors))
   ]);
 
-  // Shockwave ring and the two missiles (the player's and an incoming one).
+  // Shockwave ring, active missiles, and procedural 8x4 plasma / sparks flipbook burst quads.
   s.addMany([
     primitives.torus({ name: IDS.ring, size: [2.2, 2.2, 0.14], material: emissive("#35d6ff", 2.4), castShadow: false })
       .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.ring)),
     primitives.cylinder({ name: IDS.missile, size: [0.26, 1.9, 0.26], material: emissive("#ff4d1f", 2.4), castShadow: false })
       .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.missile)),
     primitives.cylinder({ name: IDS.incoming, size: [0.3, 2.1, 0.3], material: emissive("#ff2952", 2.6), castShadow: false })
-      .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.incoming))
+      .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.incoming)),
+    primitives.plane({ name: IDS.plasmaBurst, size: [3.2, 3.2, 0.02], material: flipbookBurstMaterial(getPlasmaFlipbookAtlas().texture), castShadow: false })
+      .position(0, -60, 0).runtime(game.runtimeNode(IDS.plasmaBurst)),
+    primitives.plane({ name: IDS.sparksBurst, size: [2.2, 2.2, 0.02], material: flipbookBurstMaterial(getSparksFlipbookAtlas().texture), castShadow: false })
+      .position(0, -60, 0).runtime(game.runtimeNode(IDS.sparksBurst))
   ]);
 
-  // 1-7: the drones (one is the player, six stand in for the drawn rivals). HS-10 interim: each grey GLB is tinted
-  // (multiply, textures kept) towards its DRONE_SPECS colour under a clearcoat lacquer until the wp36 livery retextures
-  // (with emissive nozzles) are admitted.
+  // 1-7: playable & rival drones under multi-lobe metallic `carPaint` clearcoat lacquer + molten heat rim.
   for (const id of DRONE_ORDER) {
     const spec = DRONE_SPECS[id];
     s.add(
@@ -411,17 +491,37 @@ export function buildThermalDriftScene(options: SceneOptions) {
         .runtime(game.runtimeNode(spec.nodeId, id === "orion" ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
     );
   }
-  // 8: the dropped proximity mine (hidden until deployed).
+  // 8: dropped proximity mine.
   s.add(
     model(assets.heatsinkWeaponMine, { name: IDS.mine, role: "setDressing", scaleMode: "fit", targetMaxDimension: 1.45 })
       .position(0, 0.35, -28).runtime(game.runtimeNode(IDS.mine))
   );
-  // 9-30: track-side anchors, the shockwave pylon included. HS-20: far towers and emissive pieces cast no shadow (each
-  // caster is drawn once per cascade, three cascades since HS-01); arches, gantry, tunnels and overpass keep theirs.
-  for (const anchor of SCENERY_ANCHORS) {
+  // 9-24: unique single track-side anchors.
+  for (const anchor of SINGLE_SCENERY_ANCHORS) {
     s.add(
       model(asset(anchor.assetKey), { name: anchor.id, role: "setDressing", scaleMode: "fit", targetMaxDimension: anchor.maxDim, ...(UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey) ? { castShadow: false } : {}) })
         .position(anchor.lateralX, anchor.baseY, -anchor.s).rotate(0, anchor.yaw, 0).runtime(game.runtimeNode(anchor.id))
+    );
+  }
+  // 25-28: repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.model` pools.
+  for (const batch of SCENERY_BATCHES) {
+    s.add(
+      instances.model(asset(batch.assetKey), {
+        name: batch.id,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: batch.baseMaxDim,
+        frustumCulled: false,
+        ...(!batch.castShadow ? { castShadow: false } : {}),
+        transforms: batch.anchors.map((anchor) => {
+          const uniformScale = Math.max(0.01, anchor.maxDim / batch.baseMaxDim);
+          return {
+            position: [anchor.lateralX, anchor.baseY, -anchor.s] as [number, number, number],
+            rotation: [0, anchor.yaw, 0] as [number, number, number],
+            scale: [uniformScale, uniformScale, uniformScale] as [number, number, number]
+          };
+        })
+      }).runtime(game.runtimeNode(batch.id))
     );
   }
   return s;
@@ -434,47 +534,23 @@ export function liftTowardsWhite(hex: string, amount: number): string {
   return `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
-/**
- * GU47 phase 4 (PRD 6.1 identity, distinctness vs heatsink-port: "orange quadcopter drones in both"): every drone glows
- * molten amber at its silhouette edges, as if the hull were still hot from the foundry.
- */
 export const DRONE_HEAT_RIM = { color: "#ff6a1a", power: 2.6, intensity: 1.4 } as const;
+export const PLAYER_IRON = { towardsSoot: 0.55, metallic: 0.74, roughness: 0.24, rimIntensity: 2 } as const;
 
-/**
- * GU47 phase 4 (PRD 6.1 identity; distinctness vs heatsink-port, whose tell was "glossy orange quadcopter in both"): the
- * player's ORION is cast foundry iron, its orange burnt down towards soot (same hue), polished metal under the lacquer,
- * with a hotter molten rim at the silhouette.
- */
-export const PLAYER_IRON = { towardsSoot: 0.55, metallic: 0.7, roughness: 0.28, rimIntensity: 2 } as const;
 export function playerFoundryLivery(color: string): AuraModelMaterialOverride {
   const n = Number.parseInt(color.replace("#", ""), 16);
   const soot = Number.parseInt("14110f", 16);
   const ch = (shift: number) => Math.round(((n >> shift) & 255) * (1 - PLAYER_IRON.towardsSoot) + ((soot >> shift) & 255) * PLAYER_IRON.towardsSoot);
   const iron = `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-  return { color: iron, colorMode: "multiply", clearcoat: 0.85, clearcoatRoughness: 0.08, metallic: PLAYER_IRON.metallic, roughness: PLAYER_IRON.roughness, envMapIntensity: 1.8, rim: { ...DRONE_HEAT_RIM, intensity: PLAYER_IRON.rimIntensity } };
+  const paint = material.carPaint({ color: iron, metallic: PLAYER_IRON.metallic, roughness: PLAYER_IRON.roughness, clearcoat: 0.92, clearcoatRoughness: 0.06, envMapIntensity: 1.9 });
+  return { color: iron, colorMode: "multiply", clearcoat: paint.clearcoat ?? 0.92, clearcoatRoughness: paint.clearcoatRoughness ?? 0.06, metallic: paint.metallic ?? PLAYER_IRON.metallic, roughness: paint.roughness ?? PLAYER_IRON.roughness, envMapIntensity: paint.envMapIntensity ?? 1.9, rim: { ...DRONE_HEAT_RIM, intensity: PLAYER_IRON.rimIntensity } };
 }
 
-/** HS-10 interim livery: DRONE_SPECS colour (lifted 30% towards white) multiplied over the authored maps, lacquered. */
 export function droneLivery(color: string): AuraModelMaterialOverride {
-  // GU47 phase 4 (rubric ibl_reflections: "drone metals show little environment reflection"): a little metal and a
-  // stronger environment term under the lacquer.
-  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.8, clearcoatRoughness: 0.1, metallic: 0.45, roughness: 0.32, envMapIntensity: 1.7, rim: DRONE_HEAT_RIM };
+  const lifted = liftTowardsWhite(color, 0.3);
+  const paint = material.carPaint({ color: lifted, metallic: 0.52, roughness: 0.28, clearcoat: 0.88, clearcoatRoughness: 0.08, envMapIntensity: 1.8 });
+  return { color: lifted, colorMode: "multiply", clearcoat: paint.clearcoat ?? 0.88, clearcoatRoughness: paint.clearcoatRoughness ?? 0.08, metallic: paint.metallic ?? 0.52, roughness: paint.roughness ?? 0.28, envMapIntensity: paint.envMapIntensity ?? 1.8, rim: DRONE_HEAT_RIM };
 }
 
-/** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
-export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
-  "heatsink_thermalTowerLIron",
-  "heatsink_thermalTowerTIron",
-  "heatsinkTowerX",
-  // GU47 wave 2 (HS-20): the far Meshy set pieces cast no shadow (each caster is drawn once per cascade).
-  "heatsink_thermalCoolingTower",
-  "heatsink_thermalSmokestacks",
-  "heatsink_thermalWaterTower",
-  "heatsink_thermalReactorRing",
-  "heatsinkHoloBillboard",
-  "heatsinkCheckpointRing",
-  "heatsinkLavaFall"
-]);
-
-/** Model nodes in the scene (route-health budget: 32). */
-export const MODEL_NODE_COUNT = DRONE_ORDER.length + 1 + SCENERY_ANCHORS.length;
+/** Model nodes in the scene (route-health budget: 32; consolidated to 28 via `instances.model`). */
+export const MODEL_NODE_COUNT = DRONE_ORDER.length + 1 + SINGLE_SCENERY_ANCHORS.length + SCENERY_BATCHES.length;

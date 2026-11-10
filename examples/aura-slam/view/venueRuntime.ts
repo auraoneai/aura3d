@@ -60,7 +60,7 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
     earth: look.id === "moon",
     output: {
       preset: look.grade.preset,
-      toneMapping: preset?.output.toneMapping ?? "aces",
+      toneMapping: "agx",
       exposure: (preset?.output.exposure ?? 1) * look.grade.exposure
     },
     post: {
@@ -126,7 +126,7 @@ export function applyVenueRuntime(app: VenueRuntimeApp, plan: VenueRuntimePlan, 
     }));
     call(() => app.atmosphere?.setFog?.(plan.fog ? { color: plan.fog.color, density: plan.fog.density } : null, { overrideSceneFog: true }));
   }
-  call(() => app.setOutput?.({ preset: plan.output.preset, toneMapping: plan.output.toneMapping, exposure: plan.output.exposure }));
+  call(() => app.setOutput?.({ preset: plan.output.preset, toneMapping: plan.output.toneMapping, exposure: plan.output.exposure, dither: true }));
   call(() => app.post?.setEffect?.(POST_EFFECT.bloom, { ...plan.post.bloom }));
   call(() => app.post?.setEffect?.(POST_EFFECT.grade, { ...plan.post.grade }));
   call(() => app.post?.setEffect?.(POST_EFFECT.vignette, { ...plan.post.vignette }));

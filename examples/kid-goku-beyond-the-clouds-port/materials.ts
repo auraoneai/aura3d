@@ -1,9 +1,9 @@
-/** `material.custom` specs and the look constants (sky, haze, light) for the Cloud Runner. */
+/** `material.custom` specs and the look constants (sky, haze, light) for Cumulus Dash. */
 import type { material } from "@aura3d/engine";
 import { ACTIVE_LOOK, lookRow, type CumulusLookRow } from "./art/look";
-import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_QUAD_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUFF_QUAD_FRAGMENT, SPRITE_QUAD_VERTEX, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX, WATERFALL_FRAGMENT, WATERFALL_VERTEX } from "./shaders";
+import { BALL_FRAGMENT, BALL_VERTEX, CLOUD_SSS_FRAGMENT, CLOUD_SSS_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_QUAD_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUFF_QUAD_FRAGMENT, SPRITE_QUAD_VERTEX, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX, WATERFALL_FRAGMENT, WATERFALL_VERTEX } from "./shaders";
 import {
-  BALL_FRAGMENT_WGSL, BALL_VERTEX_WGSL, GLOW_QUAD_FRAGMENT_WGSL, PUDDLE_FRAGMENT_WGSL, PUFF_QUAD_FRAGMENT_WGSL, SCENERY_FRAGMENT_WGSL, SCENERY_SHADOWED_FRAGMENT_WGSL,
+  BALL_FRAGMENT_WGSL, BALL_VERTEX_WGSL, CLOUD_SSS_FRAGMENT_WGSL, CLOUD_SSS_VERTEX_WGSL, GLOW_QUAD_FRAGMENT_WGSL, PUDDLE_FRAGMENT_WGSL, PUFF_QUAD_FRAGMENT_WGSL, SCENERY_FRAGMENT_WGSL, SCENERY_SHADOWED_FRAGMENT_WGSL,
   SCENERY_VERTEX_WGSL, SHADOW_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SPRITE_QUAD_VERTEX_WGSL, STORM_SKY_FRAGMENT_WGSL, UV_WORLD_VERTEX_WGSL, VALLEY_FRAGMENT_WGSL,
   VALLEY_VERTEX_WGSL, WARN_FRAGMENT_WGSL, WARN_VERTEX_WGSL, WATER_FRAGMENT_WGSL, WATERFALL_FRAGMENT_WGSL
 } from "./shaders-wgsl";
@@ -159,6 +159,24 @@ export const scenerySpec = (o: SceneryOptions = {}, row: CumulusLookRow = ACTIVE
   ...(o.transparent ? { transparent: true, depthWrite: false } : {})
 });
 
+/** Anisotropic subsurface-scattering cumulus cloud sea banks (paired GLSL + WGSL). */
+export const cloudSpec = (billowAmp = 0.36, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
+  glsl: { vertex: CLOUD_SSS_VERTEX, fragment: CLOUD_SSS_FRAGMENT },
+  wgsl: { vertex: CLOUD_SSS_VERTEX_WGSL, fragment: CLOUD_SSS_FRAGMENT_WGSL },
+  uniforms: {
+    sunDirW: { type: "vec3", value: unit(row.scenery.sunDir) },
+    sunColor: { type: "vec3", value: [...row.scenery.sunColor] },
+    cloudLight: { type: "vec3", value: [...row.sky.cloudLight] },
+    cloudShade: { type: "vec3", value: [...row.sky.cloudShade] },
+    rimColor: { type: "vec3", value: [...row.scenery.rimColor] },
+    hazeColor: { type: "vec3", value: [...row.fog.haze] },
+    fogDensity: { type: "f32", value: row.fog.density * 0.72 },
+    cloudPhase: { type: "f32", value: 0 },
+    billowAmp: { type: "f32", value: billowAmp }
+  },
+  side: "double"
+});
+
 export const warnSpec = (round: boolean): CustomSpec => ({
   glsl: { vertex: WARN_VERTEX, fragment: WARN_FRAGMENT },
   wgsl: { vertex: WARN_VERTEX_WGSL, fragment: WARN_FRAGMENT_WGSL },
@@ -179,6 +197,6 @@ export const shadowSpec = (): CustomSpec => ({
 
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "sky", spec: skySpec(lookRow("storm-washed")) }, { name: "sky-original", spec: skySpec(lookRow("original")) }, { name: "valley", spec: valleySpec() }, { name: "puddle", spec: puddleSpec() }, { name: "water", spec: waterSpec() }, { name: "waterfall", spec: waterfallSpec() },
-  { name: "ball", spec: ballSpec(4) }, { name: "scenery", spec: scenerySpec({}, lookRow("storm-washed")) }, { name: "scenery-original", spec: scenerySpec({}, lookRow("original")) }, { name: "warn", spec: warnSpec(false) }, { name: "shadow", spec: shadowSpec() }, { name: "glow", spec: glowSpec() }, { name: "puff", spec: puffSpec() },
+  { name: "ball", spec: ballSpec(4) }, { name: "cloud", spec: cloudSpec() }, { name: "scenery", spec: scenerySpec({}, lookRow("storm-washed")) }, { name: "scenery-original", spec: scenerySpec({}, lookRow("original")) }, { name: "warn", spec: warnSpec(false) }, { name: "shadow", spec: shadowSpec() }, { name: "glow", spec: glowSpec() }, { name: "puff", spec: puffSpec() },
   { name: "glow-quads", spec: glowSpec(true) }, { name: "puff-quads", spec: puffSpec(true) }
 ];

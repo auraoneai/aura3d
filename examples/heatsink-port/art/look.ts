@@ -78,6 +78,8 @@ export interface HeatsinkLookRow {
   /** IC-08 post stack; `null` fields are not mounted (today's look mounts none of them) */
   readonly post: {
     readonly ao: boolean;
+    readonly contactShadows?: boolean;
+    readonly ssr?: number | null;
     readonly motionBlur: number | null;
     readonly chromaticAberration: number | null;
     readonly grain: number | null;
@@ -131,12 +133,10 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.7, seams: 0.6 },
-    bloom: { intensity: 0.6, threshold: 1.0 },
-    /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
-    grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
-    post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: null, lensFlare: 0.55 },
-    /* GU47 phase 2: godRays was 0.35 (effects.volumetricFog, density 0.08, #ffb7a0). On software WebGL2 it drew no shafts, only a
-     * peach extinction that flattened the drone and the causeway to one tone at chase distance; off until the god-ray stage draws shafts. */
+    bloom: { intensity: 0.56, threshold: 1.0 },
+    /* IC-09 split tone: teal shadows, amber highlights, cyber-neon contrast so the warm band stays the primary warm field */
+    grade: { exposure: 1.05, contrast: 1.1, saturation: 1.12, temperature: -0.04, tint: 0.03, shadows: [0.91, 1.03, 1.08], highlights: [1.07, 1.0, 0.9] },
+    post: { ao: true, contactShadows: true, ssr: 0.68, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.022, vignette: 0.28, godRays: 0.32, lensFlare: 0.55 },
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true, menuHero: true },
     glow: { pools: 1, points: 2 },
@@ -183,7 +183,7 @@ export function lowTier(row: HeatsinkLookRow): HeatsinkLookRow {
   return {
     ...row,
     key: { ...row.key, cascades: 1, maxDistance: Math.min(row.key.maxDistance, 140) },
-    post: { ...row.post, ao: false, motionBlur: null, godRays: null, grain: null, chromaticAberration: null, lensFlare: null },
+    post: { ...row.post, ao: false, contactShadows: false, ssr: null, motionBlur: null, godRays: null, grain: null, chromaticAberration: null, lensFlare: null },
     glow: { ...row.glow, points: Math.min(row.glow.points, 1) },
     dressing: { ...row.dressing, spores: Math.min(row.dressing.spores, 120) }
   };
@@ -220,6 +220,7 @@ export function postToggles(row: HeatsinkLookRow | undefined, state: { readonly 
   const out: (readonly [string, boolean])[] = [];
   if (row.post.motionBlur !== null) out.push(["motionBlur", !state.reducedMotion && !state.lowFps]);
   if (row.post.chromaticAberration !== null) out.push(["chromaticAberration", !state.reducedMotion && !state.lowFps]);
-  if (row.post.godRays !== null) out.push(["volumetricFog", !state.lowFps]);
+  if (row.post.godRays !== null) out.push(["godRays", !state.lowFps]);
+  if (row.post.ssr !== null && row.post.ssr !== undefined) out.push(["screenSpaceReflections", !state.lowFps]);
   return out;
 }

@@ -1,5 +1,5 @@
 /**
- * Silt & Signal on Aura3D: the rendered world for one chapter, built on the public engine surface.
+ * Duneglide on Aura3D: the rendered world for one chapter, built on the public engine surface.
  *
  * Lit PBR terrain, road and canal banks with CC0 texture sets, instanced trees, rocks, houses, lamps and aqueduct
  * piers, a rigged hero on a board, additive signal rings, a flowing canal, the ported sky dome, a cascaded sun,
@@ -14,9 +14,17 @@ import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
 import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { gateOpen, objectiveOf, type Sim } from "./sim";
-import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
-import { SKY_FRAGMENT_WGSL, SKY_INK_FRAGMENT_WGSL, SKY_VERTEX_WGSL } from "./shaders-wgsl";
+import {
+  DUNE_SAND_FRAGMENT, DUNE_SAND_VERTEX, RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX,
+  STRATA_CLIFF_FRAGMENT, STRATA_CLIFF_VERTEX, WATER_FRAGMENT, WATER_VERTEX
+} from "./shaders";
+import {
+  DUNE_SAND_FRAGMENT_WGSL, DUNE_SAND_VERTEX_WGSL, RING_FRAGMENT_WGSL, RING_VERTEX_WGSL, SKY_FRAGMENT_WGSL,
+  SKY_INK_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STRATA_CLIFF_FRAGMENT_WGSL, STRATA_CLIFF_VERTEX_WGSL, WATER_FRAGMENT_WGSL, WATER_VERTEX_WGSL
+} from "./shaders-wgsl";
 import { createSiltFx, type SiltFx } from "./fx";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import { waterGraphMaterial } from "./water-graph";
 import { portableWaterMaterial } from "./portable-water";
 import { readPortableFlag } from "../shared/portable-flag";
@@ -34,7 +42,7 @@ export type Rgb = readonly [number, number, number];
 export type CustomSpec = Parameters<typeof material.custom>[0];
 
 const srgbToLinear = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-/** 0xRRGGBB (sRGB) to a linear triple, the working space three.js uses for `Color(hex)`. */
+/** 0xRRGGBB (sRGB) to a linear RGB triple. */
 export const hexLinear = (hex: number): Rgb => [srgbToLinear(((hex >> 16) & 255) / 255), srgbToLinear(((hex >> 8) & 255) / 255), srgbToLinear((hex & 255) / 255)];
 export const cssHex = (hex: number): string => `#${(hex & 0xffffff).toString(16).padStart(6, "0")}`;
 const mixHex = (a: number, b: number, t: number): number => {
@@ -99,6 +107,7 @@ export const waterSpec = (chapter: number, look: SiltLookMode = "original"): Cus
   const inked = look === "inked";
   return {
     glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT },
+    wgsl: { vertex: WATER_VERTEX_WGSL, fragment: WATER_FRAGMENT_WGSL },
     uniforms: {
       waterColor: { type: "color3", value: [...hexLinear(p.water!)] },
       siltTime: { type: "f32", value: 0 },
@@ -149,6 +158,7 @@ export const waterMaterial = (chapter: number, look: SiltLookMode, mode: "graph"
 
 export const ringSpec = (active: boolean, color: Rgb = [1, 0.82, 0.42]): CustomSpec => ({
   glsl: { vertex: RING_VERTEX, fragment: RING_FRAGMENT },
+  wgsl: { vertex: RING_VERTEX_WGSL, fragment: RING_FRAGMENT_WGSL },
   uniforms: {
     ringColor: { type: "color3", value: [...color] },
     ringActive: { type: "f32", value: active ? 1 : 0 },
@@ -159,6 +169,57 @@ export const ringSpec = (active: boolean, color: Rgb = [1, 0.82, 0.42]): CustomS
   blending: "additive",
   side: "double"
 });
+
+/** Paired GLSL 300 es + WGSL wind-rippled desert sand + mineral mica-glint shader (`veil = true` over terrain, `false` on banks). */
+export const duneSandSpec = (chapter: number, veil = true): CustomSpec => {
+  const row = chapterLook(chapter);
+  const original = usesOriginalTerrain(chapter);
+  const crest = row.night ? linearOf("#9b91b8") : linearOf("#f5cfa0");
+  const slope = row.night ? linearOf("#665d86") : linearOf("#df9e62");
+  const shadow = row.night ? linearOf("#242148") : linearOf("#75432d");
+  return {
+    glsl: { vertex: DUNE_SAND_VERTEX, fragment: DUNE_SAND_FRAGMENT },
+    wgsl: { vertex: DUNE_SAND_VERTEX_WGSL, fragment: DUNE_SAND_FRAGMENT_WGSL },
+    uniforms: {
+      sandCrest: { type: "color3", value: crest },
+      sandSlope: { type: "color3", value: slope },
+      sandShadow: { type: "color3", value: shadow },
+      sunDir: { type: "vec3", value: keyDirection(row) },
+      sunColor: { type: "color3", value: linearOf(row.key.color) },
+      fogColor: { type: "color3", value: linearOf(row.fog.color) },
+      fogFar: { type: "f32", value: 1400 },
+      canalShift: { type: "f32", value: original ? 0 : 62 },
+      canalHalf: { type: "f32", value: original ? 25 : 16 },
+      siltTime: { type: "f32", value: 0 },
+      duneVeil: { type: "f32", value: veil ? 1 : 0 }
+    },
+    ...(veil ? { transparent: true, depthWrite: false } : {})
+  };
+};
+
+/** Paired GLSL 300 es + WGSL sedimentary sandstone cliff strata shader (`cliffs` in inked look). */
+export const strataCliffSpec = (chapter: number): CustomSpec => {
+  const row = chapterLook(chapter);
+  return {
+    glsl: { vertex: STRATA_CLIFF_VERTEX, fragment: STRATA_CLIFF_FRAGMENT },
+    wgsl: { vertex: STRATA_CLIFF_VERTEX_WGSL, fragment: STRATA_CLIFF_FRAGMENT_WGSL },
+    uniforms: {
+      sunDir: { type: "vec3", value: keyDirection(row) },
+      sunColor: { type: "color3", value: linearOf(row.key.color) },
+      skyAmbient: { type: "color3", value: linearOf(row.sky.horizon) },
+      sandCap: { type: "color3", value: row.night ? linearOf("#6d6488") : linearOf("#e4b379") },
+      fogColor: { type: "color3", value: linearOf(row.fog.color) },
+      fogFar: { type: "f32", value: 1400 }
+    }
+  };
+};
+
+/** Extra dual-backend surface programs authored for WP-29 Duneglide. */
+export const surfaceProgramSpecs = (chapter = 0): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
+  { name: "dune-sand", spec: duneSandSpec(chapter, true) },
+  { name: "dune-bank", spec: duneSandSpec(chapter, false) },
+  { name: "strata-cliff", spec: strataCliffSpec(chapter) }
+];
 
 /** One of each distinct program the scene uses, so a unit test can compile exactly what the app draws. */
 export const allProgramSpecs = (chapter = 0): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
@@ -253,6 +314,8 @@ export interface BuildOptions {
   readonly reducedMotion?: boolean;
   /** 5.0.3 A4: `"graph"` (default) draws the canal with the portable shader graph, `"glsl"` (`?water=glsl`) with the hand-written GLSL baseline. */
   readonly water?: "graph" | "glsl";
+  /** Real-GPU browser sessions enable PCSS soft sun shadows on low-sun chapters (`main.ts`); omitted in headless unit tests. */
+  readonly pcss?: boolean;
 }
 
 /** DG-AN2: instance wind for the flora (desert breeze from the west; reduced motion keeps 30%, PRD §6.3). */
@@ -337,18 +400,13 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   builder.add(hdri
     ? environments.hdri({ name: `silt ibl ${look.hdri}`, texture: hdri as unknown as Parameters<typeof environments.hdri>[0]["texture"], intensity: look.environmentIntensity, rotation: (look.environmentRotationDeg * Math.PI) / 180, background: false })
     : environments.neutral({ intensity: look.environmentIntensity }));
-  // phase 4: PCSS only with `?siltpcss=1`. On the remote software WebGL2 runner the PCSS chapters (ch0, ch3, default)
-  // showed no cast shadow at light size 2.5 or 0.6 (p4-r2, p4-r3), while the PCF storm chapter drew every tree's, so
-  // the low-sun chapters use the tier PCF filter (DG-L5 PCSS waits on a real-GPU check)
-  const pcss = look.pcss && !options.low && PCSS_OPT_IN;
+  const pcss = look.pcss && !options.low && (PCSS_OPT_IN || options.pcss === true);
   builder.add(lights.directional({
     name: "silt key",
     position: [dir[0] * 240, dir[1] * 240, dir[2] * 240],
     target: [0, 0, 0],
     intensity: look.key.intensity,
     color: look.key.color,
-    // phase 4: PCSS light size 2.5 -> 0.6. At a 6-14 deg sun the blocker-receiver gap is metres, and a 2.5 m light blurred
-    // the long dusk shadows away entirely (p4-r2 ch0: none visible while the PCF storm chapter showed every tree's)
     shadow: { ...keyShadow(options), ...(pcss ? { filter: "pcss" as const, lightSize: PCSS_LIGHT_SIZE } : {}) }
   }).runtime({ id: "silt-key" }));
   // DG-L3: the rim sits opposite the key (mirrored azimuth, 25 deg up), never shadowed, always below the key
@@ -366,16 +424,20 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     mode: "height", color: look.fog.color, density: look.fog.density, heightFalloff: look.fog.heightFalloff,
     heightReference: look.fog.heightReference, maxOpacity: look.fog.maxOpacity
   } as unknown as Parameters<typeof effects.fog>[0]));
-  // DG-S4: god rays from the low sun (ch0) and moon shafts through the roots (ch2) only, never on Low. With
-  // A3D_QR_VFX_FOG on, forward fog stays the height fog above; this node only feeds the S4 shaft pass, which marches
-  // toward the strongest directional (the key). The engine also drops S4 below Medium. +0 draws, one post stage.
+  // DG-S4: god rays from the low sun (ch0) and moon shafts through the roots (ch2) via volumetricFog, plus S4 shafts on dusk/dawn (ch3/ch6)
   if (look.godRays && !options.low) {
     builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.35 : 0.5, godRayDensity: GOD_RAY_DENSITY }));
+  } else if (!options.low && (chapter === 3 || chapter === 6)) {
+    builder.add(effects.godRays({ name: "silt dusk shafts", intensity: 0.36, decay: 0.94, samples: 48, color: look.key.color, source: { direction: [-dir[0], -dir[1], -dir[2]] } }));
   }
-  // DG-L5: screen-space contact shadows under the board, rider and props in every inked chapter (not on Low)
-  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.9, length: 0.45 }));
-  builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
-  // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
+  // DG-L5 + WP-29 grounding: contact shadows, multi-bounce SSAO and screen-space reflections (canal banks & wet storm paving)
+  if (!options.low) {
+    builder.add(effects.contactShadows({ intensity: 0.9, length: 0.45 }));
+    builder.add(effects.ambientOcclusion({ intensity: 0.38, radius: 0.82, falloff: 1.5, multiBounce: true }));
+    builder.add(effects.screenSpaceReflections({ intensity: look.rain ? 0.46 : 0.26, maxDistance: 24, roughness: 0.18, thickness: 0.25 }));
+  }
+  builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold, knee: 0.42, scatter: 0.44, clampLuminance: 8 }));
+  // exposure + AgX cinema-warm LUT live on the output (main.ts); the grade keeps exposure 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));
   // DG-S5: rain only in the storm chapter, an explicit volume count (Low and reduced motion halve it); lightning (storm.ts)
   // and the wet road are in buildWorld and bind
@@ -420,6 +482,39 @@ const BOARD_YAW = Math.PI / 2;
 const RIDER_HEIGHT = 2.1;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
+
+type QuatObj = { readonly x: number; readonly y: number; readonly z: number; readonly w: number };
+const quatAxis = (ax: number, ay: number, az: number, rad: number): QuatObj => {
+  const half = rad * 0.5;
+  const s = Math.sin(half);
+  return { x: ax * s, y: ay * s, z: az * s, w: Math.cos(half) };
+};
+const quatMul = (a: QuatObj, b: QuatObj): QuatObj => {
+  const x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
+  const y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
+  const z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
+  const w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
+  const len = Math.hypot(x, y, z, w) || 1;
+  return { x: x / len, y: y / len, z: z / len, w: w / len };
+};
+/** Exact bind-pose quaternions from courier.glb so overlay surf/carve deltas work even before clip evaluation. */
+const COURIER_BIND_ROT: Readonly<Record<string, QuatObj>> = {
+  Spine: { x: -0.170828, y: -0.013334, z: -0.008401, w: 0.985175 },
+  Spine01: { x: 0, y: 0, z: 0, w: 1 },
+  Head: { x: 0.170797, y: 0.040323, z: 0.028442, w: 0.98407 },
+  LeftLeg: { x: -0.020993, y: -0.04157, z: 0.045201, w: 0.997892 },
+  RightLeg: { x: -0.017162, y: 0.042045, z: -0.046242, w: 0.997897 },
+  LeftArm: { x: -0.407038, y: 0.494043, z: -0.463452, w: 0.612743 },
+  RightArm: { x: -0.382519, y: -0.491115, z: 0.495587, w: 0.605705 }
+};
+
+const DESERT_FLORA_TINTS = ["#dfd09c", "#ccb87e", "#e6d8aa", "#bfa872"] as const;
+const ORCHARD_FLORA_TINTS = ["#dce2a6", "#cbd694", "#e6e8b8", "#c2cf8a"] as const;
+function floraTint(index: number, orchard: boolean): string {
+  const palette = orchard ? ORCHARD_FLORA_TINTS : DESERT_FLORA_TINTS;
+  const h = Math.abs(Math.sin(index * 19.173 + 2.7) * 43758.5453) % 1;
+  return palette[Math.floor(h * palette.length)]!;
+}
 
 /**
  * Lighting rig per chapter, from the measured chapter-0 rig (warm key 2.2, sky/ground hemisphere 1.05, exp2 fog) and the palette.
@@ -529,15 +624,23 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: orchard ? orchardTerrainColors(terrainMesh.positions) : terrainColors(terrainMesh.positions, inked) }), {
     name: "terrain",
     receiveShadow: true,
-    // GU47 DG-M1 (interim): the inked look trades the grass set for the gravel-sand ground set under warm sand vertex
-    // colours; the WP-36 rippled sand, scrub and sandstone sets replace it (asset need in the lane report)
-    // phase 3: the storm chapter's orchard keeps the grass set under rain-green and gold vertex colours (storm light)
     material: orchard
       ? pbr({ color: "#e4ead2", texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 0.92 })
       : inked
       ? pbr({ color: look.night ? "#b7a48a" : "#f0dcc0", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, normalScale: 0.6, roughness: 1 })
       : pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
   }).runtime({ id: "terrain" }));
+  // WP-29 paired GLSL+WGSL wind-rippled desert sand + sparkling mineral mica-glint veil over open dunes (feathered clear of road/plaza/canal)
+  const duneVeilOn = inked && !orchard && !buildOptions.low;
+  if (duneVeilOn) {
+    const lifted = terrainMesh.positions.map((v, idx) => (idx % 3 === 1 ? v + 0.045 : v));
+    builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, positions: lifted }), {
+      name: "dune-mica-veil",
+      castShadow: false,
+      receiveShadow: false,
+      material: material.custom(duneSandSpec(chapter, true))
+    }).runtime({ id: "dune-mica-veil" }));
+  }
   const plaza = terrain.plazaMesh();
   if (plaza.indices.length) {
     builder.add(geometry.custom(dynamicFrom(plaza), {
@@ -557,11 +660,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       : pbr({ color: usesOriginalTerrain(chapter) ? "#d8c08e" : stoneTint, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: 1 })
   }).runtime({ id: "road" }));
   const bank = terrain.bankMesh();
+  const duneBankOn = bank.indices.length > 0 && inked && !orchard;
   if (bank.indices.length) {
     builder.add(geometry.custom(dynamicFrom(bank), {
       name: "bank",
       receiveShadow: true,
-      material: pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
+      material: duneBankOn
+        ? material.custom(duneSandSpec(chapter, false))
+        : pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
   // A4 pilot (?portable=1, default off): a transparent graph material with the node-default castShadow casts a real opaque shadow,
@@ -578,7 +684,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   const arch = buildArchitecture(props.walls, { inked });
   const white = "#ffffff";
   const archMeshes: readonly { name: string; mesh: ColoredMesh; spec: AuraMaterialSpec; cast: boolean }[] = [
-    { name: "cliffs", mesh: arch.cliff, cast: true, spec: pbr({ color: white, texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }) },
+    { name: "cliffs", mesh: arch.cliff, cast: true, spec: inked ? material.custom(strataCliffSpec(chapter)) : pbr({ color: white, texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }) },
     { name: "limestone", mesh: arch.stone, cast: true, spec: pbr({ color: white, texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, normalScale: 0.8 }) },
     ...arch.plaster.map((mesh, i) => ({
       name: `plaster-${i}`, mesh, cast: true,
@@ -622,9 +728,16 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       }).runtime({ id: "silt-decals" }));
     }
   }
-  // GU47 DG-AN2 (part): E-G instance wind on today's trees in the inked look (reduced motion keeps 30% sway); the WP-36
-  // palms and tamarisk take the same option when admitted. Same draw, wind variant of its program.
-  if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true, ...(inked ? { wind: treeWind(!!buildOptions.reducedMotion) } : {}) }));
+  // GU47 DG-AN2 + WP-29 desert tamarisk/olive-gold flora tints in the inked look (reduced motion keeps 30% sway)
+  if (props.trees.length) {
+    builder.add(instances.model(assets.tree, {
+      name: "trees",
+      transforms: placements(props.trees),
+      castShadow: true,
+      receiveShadow: true,
+      ...(inked ? { colors: props.trees.map((_, i) => floraTint(i, orchard)), wind: treeWind(!!buildOptions.reducedMotion) } : {})
+    }));
+  }
   // boulders: Meshy canyon-rock cluster (1.9 m wide, origin at its centre), sunk slightly so it sits on the ground
   if (props.rocks.length) {
     builder.add(instances.model(assets.canyonrocks, {
@@ -683,13 +796,50 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       size: [1, 1, 1],
       transforms: columnTransforms(props.brass),
       castShadow: true,
-      // GU47 DG-M4 (inked): brushed bronze, every mast with its own seeded verdigris tint (low-saturation grey-green, so
-      // jade stays the signal's alone); same 1 draw. `?look=original` keeps the polished brass.
+      // GU47 DG-M4 + WP-29 (inked): anisotropic brushed bronze with seeded verdigris patina
       ...(inked ? { colors: props.brass.map((_, i) => mastTint(i)) } : {}),
       material: inked
-        ? pbr({ color: MAST_BRONZE.color, roughness: MAST_BRONZE.roughness, metallic: MAST_BRONZE.metallic, envMapIntensity: 0.9 })
+        ? material.brushedMetal({ color: MAST_BRONZE.color, roughness: MAST_BRONZE.roughness, anisotropy: 0.86, envMapIntensity: 1.15 })
         : pbr({ color: "#b99455", roughness: 0.38, metallic: 0.85, envMapIntensity: 1.1 })
     }));
+  }
+  // WP-29 weathered obsidian & brushed-brass signal monoliths + emissive signal-jade glyphs + woven cloth route sails
+  if (inked) {
+    const monolithBodies: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    const monolithCaps: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    const monolithGlyphs: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    const monolithSails: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    const insideWall = (x: number, z: number): boolean =>
+      props.walls.some((w) => Math.abs(x - w.x) < w.halfX + 4 && Math.abs(z - w.z) < w.halfZ + 4);
+    let idx = 0;
+    for (const objective of ch.objectives) {
+      for (let i = 0; i < objective.points.length && monolithBodies.length < 32; i += 2) {
+        const pt = objective.points[i]!;
+        const next = objective.points[Math.min(objective.points.length - 1, i + 1)]!;
+        const dx = next.x - pt.x, dz = next.z - pt.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const nx = -dz / len, nz = dx / len;
+        const yaw = Math.atan2(dx, dz);
+        for (const side of [-1, 1] as const) {
+          const mx = pt.x + nx * side * 38;
+          const mz = pt.z + nz * side * 38;
+          if (overCanal(chapter, mx, mz) || insideWall(mx, mz)) continue;
+          const gy = terrain.heightAt(mx, mz);
+          const h = 11.5 + (idx % 3) * 2.2;
+          monolithBodies.push({ position: [mx, gy + h * 0.48, mz], rotation: [side * 0.04, yaw, 0], scale: [1.55, h, 1.15] });
+          monolithCaps.push({ position: [mx, gy + h - 0.15, mz], rotation: [side * 0.04, yaw, 0], scale: [1.88, 0.55, 1.42] });
+          monolithGlyphs.push({ position: [mx - nx * side * 0.62, gy + h * 0.56, mz - nz * side * 0.62], rotation: [side * 0.04, yaw, 0], scale: [0.16, h * 0.58, 0.22] });
+          monolithSails.push({ position: [mx - nx * side * 1.45, gy + h * 0.72, mz - nz * side * 1.45], rotation: [0, yaw, 0], scale: [1.9, 3.4, 0.06] });
+          idx++;
+        }
+      }
+    }
+    if (monolithBodies.length) {
+      builder.add(instances.box({ name: "signal-monoliths", size: [1, 1, 1], castShadow: true, receiveShadow: true, transforms: monolithBodies, material: material.brushedMetal({ color: "#2b2520", roughness: 0.3, anisotropy: 0.88, envMapIntensity: 1.25 }) }));
+      builder.add(instances.box({ name: "signal-caps", size: [1, 1, 1], castShadow: false, receiveShadow: true, transforms: monolithCaps, material: material.brushedMetal({ color: "#c2924f", roughness: 0.24, anisotropy: 0.9, envMapIntensity: 1.4 }) }));
+      builder.add(instances.box({ name: "signal-glyphs", size: [1, 1, 1], castShadow: false, transforms: monolithGlyphs, material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.3, practical: true }) }));
+      builder.add(instances.box({ name: "route-sails", size: [1, 1, 1], castShadow: false, receiveShadow: true, transforms: monolithSails, wind: treeWind(!!buildOptions.reducedMotion), material: material.fabric({ color: SILT_PALETTE.terracotta, sheen: 0.62, sheenRoughness: 0.68, roughness: 0.88 }) }));
+    }
   }
 
   // Waiting rings are Meshy stone rings with ember runes (lit PBR, no blending), drawn as one instanced pool of MAX_RINGS; the
@@ -709,9 +859,75 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   for (const side of ["l", "r"]) {
     // GU47 DG-A3 (part): the inked look swaps the two cyan thruster spheres for flat jade strips under the deck (same 2 draws)
     builder.add((inked
-      ? primitives.box({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.12, 0.05, 1.5], material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.4 }) })
+      ? primitives.box({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.12, 0.05, 1.5], material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.5, practical: true }) })
       : primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) })
     ).runtime({ id: `thruster-${side}` }));
+  }
+  if (inked) {
+    builder.add(primitives.box({
+      name: "board-trim",
+      position: [0, 4, 0],
+      size: [0.14, 0.04, 1.72],
+      castShadow: false,
+      material: material.brushedMetal({ color: "#c69652", roughness: 0.26, anisotropy: 0.88, envMapIntensity: 1.35 })
+    }).runtime({ id: "board-trim" }));
+    builder.add(primitives.box({
+      name: "board-sail",
+      position: [0, 4, 0],
+      size: [0.46, 0.024, 1.32],
+      castShadow: true,
+      material: material.fabric({ color: SILT_PALETTE.terracotta, sheen: 0.68, sheenRoughness: 0.64, roughness: 0.86 })
+    }).runtime({ id: "board-sail" }));
+  }
+  const flipbooksOn = inked && !buildOptions.low;
+  if (flipbooksOn) {
+    const dustAtlas = createFlipbookAtlas("dust", [238, 188, 118]);
+    const rippleAtlas = createFlipbookAtlas("ripple", [92, 232, 188]);
+    builder.add(effects.flipbook({
+      name: "wake-plume",
+      position: [...FAR],
+      sprite: "smoke-a",
+      spriteColumns: dustAtlas.columns,
+      spriteRows: dustAtlas.rows,
+      frameRate: 26,
+      size: 2.4,
+      blend: "alpha",
+      intensity: 0.88,
+      color: look.wake.color
+    }).runtime({ id: "wake-plume" }));
+    builder.add(primitives.plane({
+      name: "wake-plume-sheet",
+      size: [2.2, 2.2],
+      position: [...FAR],
+      castShadow: false,
+      receiveShadow: false,
+      material: pbr({
+        color: look.wake.color,
+        texture: dustAtlas.texture,
+        roughness: 0.94,
+        opacity: 0.68,
+        doubleSided: true,
+        texTransforms: { baseColor: { scale: [1 / dustAtlas.columns, 1 / dustAtlas.rows] } }
+      })
+    }).runtime({ id: "wake-plume-sheet" }));
+    builder.add(primitives.plane({
+      name: "signal-ripple",
+      size: [9.5, 9.5],
+      position: [...FAR],
+      castShadow: false,
+      receiveShadow: false,
+      material: pbr({
+        color: SILT_PALETTE.jadeWhite,
+        emissive: SILT_PALETTE.jade,
+        emissiveIntensity: 1.55,
+        practical: true,
+        texture: rippleAtlas.texture,
+        roughness: 0.45,
+        opacity: 0.82,
+        doubleSided: true,
+        texTransforms: { baseColor: { scale: [1 / rippleAtlas.columns, 1 / rippleAtlas.rows], offset: [0.375, 0.25] } }
+      })
+    }).runtime({ id: "signal-ripple" }));
   }
   builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
   builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
@@ -801,6 +1017,10 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         ? createSiltFx(app.effects, { chapter, reducedMotion: options.reducedMotion, low: buildOptions.low, trailNodes: ["thruster-l", "thruster-r"], motesNode: "rider" })
         : undefined;
       let fovKick = 0, roll = 0, punchLeft = 0;
+      const impactRig = createImpactRig({ reducedMotion: options.reducedMotion });
+      let wasBoosting = false;
+      let rippleLeft = 0;
+      let rippleAt: AuraVec3 = [...FAR];
       const keyDir = keyDirection(look);
       // DG-P4: both toggled effects start off (inked High only; the nodes are absent on Low and in the original look)
       const toggles = inked && !buildOptions.low;
@@ -821,20 +1041,36 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         celebrate() { oneShot = 0.9; playClip("walk"); },
         shake(strength) {
           siltFx?.impact(lastRider, strength);
+          impactRig.trigger({ freezeSeconds: 0.04 * strength, trauma: Math.min(1, 0.3 + strength * 0.7), fovKickDeg: -2.2 * strength });
           if (options.reducedMotion) return;
           shakeStrength = Math.min(1, Math.max(shakeStrength * (shakeLeft > 0 ? 1 : 0), strength));
           shakeLeft = SHAKE_SECONDS;
         },
         update(sim, dt, time, aspect, cut = false) {
           const { state, flight } = sim;
+          if (cut) impactRig.reset();
+          if (flight.boosting && !wasBoosting && inked && !cut) {
+            impactRig.trigger({ freezeSeconds: 0, trauma: 0.18, fovKickDeg: 2.8 });
+          }
+          wasBoosting = flight.boosting;
+          const feelStep = impactRig.step(dt);
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
           const pitch = Math.max(-0.35, Math.min(0.35, -flight.vertical * 0.012));
           const rider = node("rider"), board = node("board");
           board.setPosition(state.x, state.y - BOARD_DROP, state.z);
           board.setRotation(pitch, state.yaw + BOARD_YAW, flight.bank);
           rider.setPosition(state.x, state.y - BOARD_DROP + DECK_TOP, state.z);
-          rider.setRotation(pitch, state.yaw + Math.PI, flight.bank);
+          rider.setRotation(pitch, state.yaw + Math.PI + (inked ? 0.34 : 0), flight.bank);
           const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw);
+          if (inked) {
+            const trim = node("board-trim");
+            trim.setPosition(state.x, state.y - BOARD_DROP + DECK_TOP * 0.52, state.z);
+            trim.setRotation(pitch, state.yaw, flight.bank);
+            const flutter = options.reducedMotion ? 0 : Math.sin(time * 10.5) * (0.04 + Math.min(0.08, Math.abs(flight.speed) * 0.0012));
+            const sail = node("board-sail");
+            sail.setPosition(state.x - fx * 0.82 - 0.14 * cy, state.y - BOARD_DROP + DECK_TOP + 1.18, state.z - fz * 0.82 + 0.14 * sy);
+            sail.setRotation(pitch - 0.22 - Math.min(0.28, Math.abs(flight.speed) * 0.004) + flutter, state.yaw + flight.bank * 0.2, flight.bank * 1.15 + flutter * 0.8);
+          }
           for (const [side, ox] of [["l", -0.62], ["r", 0.62]] as const) {
             const t = node(`thruster-${side}`);
             if (inked) {
@@ -850,6 +1086,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           node("sky").setPosition(state.x, state.y, state.z);
           if (flare) node("silt-flare").setPosition(state.x + keyDir[0] * FLARE_DISTANCE, state.y + keyDir[1] * FLARE_DISTANCE, state.z + keyDir[2] * FLARE_DISTANCE);
           node("canal").setUniform?.("siltTime", WATER_PIN ?? time);
+          if (duneVeilOn) node("dune-mica-veil").setUniform?.("siltTime", time);
+          if (duneBankOn) node("bank").setUniform?.("siltTime", time);
           if (lightning) {
             const { flash, began } = lightning.step(time);
             for (const strike of began) { strikes++; options.onThunder?.(strike.thunderDelay, strike.peak); }
@@ -860,37 +1098,97 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             }
           }
 
+          const floorUnder = Math.max(sim.world.floor(state.x, state.z, state.y), overCanal(chapter, state.x, state.z) ? 0 : -Infinity);
+          const boardAlt = Math.max(0, state.y - BOARD_DROP - floorUnder);
+          const isOverCanal = overCanal(chapter, state.x, state.z);
           if (blob) {
             // under the board, slid a little along the key's shadow direction (capped), smaller as the board climbs
-            const floor = Math.max(sim.world.floor(state.x, state.z, state.y), overCanal(chapter, state.x, state.z) ? 0 : -Infinity);
-            const alt = Math.max(0, state.y - BOARD_DROP - floor);
-            const slide = Math.min(RIDER_BLOB.maxSlide, alt / Math.max(0.2, Math.tan(Math.asin(Math.min(0.99, keyDir[1])))));
+            const slide = Math.min(RIDER_BLOB.maxSlide, boardAlt / Math.max(0.2, Math.tan(Math.asin(Math.min(0.99, keyDir[1])))));
             const h = Math.hypot(keyDir[0], keyDir[2]) || 1;
-            const shrink = 1 - Math.min(0.55, alt / 18);
+            const shrink = 1 - Math.min(0.55, boardAlt / 18);
             const b = node("rider-blob");
-            b.setPosition(state.x - (keyDir[0] / h) * slide, floor + 0.09, state.z - (keyDir[2] / h) * slide);
+            b.setPosition(state.x - (keyDir[0] / h) * slide, floorUnder + 0.09, state.z - (keyDir[2] / h) * slide);
             b.setRotation(0, state.yaw, 0);
             b.setScale([RIDER_BLOB.width * shrink, 0.02, RIDER_BLOB.length * shrink]);
           }
           lastRider = [state.x, state.y, state.z];
           applyPost(sequencePost({ boosting: flight.boosting, sequence, reducedMotion: !!options.reducedMotion }));
           if (siltFx) {
-            const ground = Math.max(sim.world.floor(state.x, state.z, state.y), overCanal(chapter, state.x, state.z) ? 0 : -Infinity);
-            siltFx.update({ position: [state.x, state.y - BOARD_DROP, state.z], forward: [fx0(state.yaw), fz0(state.yaw)], speed: flight.speed, altitude: state.y - BOARD_DROP - ground, overCanal: overCanal(chapter, state.x, state.z) }, dt);
+            siltFx.update({ position: [state.x, state.y - BOARD_DROP, state.z], forward: [fx0(state.yaw), fz0(state.yaw)], speed: flight.speed, altitude: boardAlt, overCanal: isOverCanal }, dt);
+          }
+          if (flipbooksOn) {
+            const plume = node("wake-plume");
+            const plumeSheet = node("wake-plume-sheet");
+            const speedFrac = Math.max(0, Math.min(1, (Math.abs(flight.speed) - 18) / 42));
+            const altFrac = boardAlt < 9 ? 1 - boardAlt / 9 : 0;
+            const wakeK = isOverCanal ? 0 : speedFrac * altFrac;
+            if (wakeK > 0.06) {
+              plume.setPosition(state.x - fx * 2.1, floorUnder + 0.85, state.z - fz * 2.1);
+              plume.setScale(0.75 + wakeK * 1.15);
+              plumeSheet.setPosition(state.x - fx * 2.6, floorUnder + 0.65, state.z - fz * 2.6);
+              plumeSheet.setRotation(0, state.yaw, 0);
+              plumeSheet.setScale(0.8 + wakeK * 1.1);
+            } else {
+              plume.setPosition(...FAR);
+              plumeSheet.setPosition(...FAR);
+            }
           }
           if (state.point !== lastPoint || state.objective !== lastObjective) {
             if (siltFx && lastPoint >= 0 && state.objective === lastObjective && state.point > lastPoint) {
               const passed = objectiveOf(state).points[lastPoint];
-              if (passed) siltFx.ringPassed([passed.x, passed.y, passed.z]);
+              if (passed) {
+                siltFx.ringPassed([passed.x, passed.y, passed.z]);
+                rippleAt = [passed.x, passed.y, passed.z];
+                rippleLeft = 0.55;
+              }
               punchLeft = RING_PUNCH.seconds;
+              if (!cut) impactRig.trigger({ freezeSeconds: 0.02, trauma: 0.2, fovKickDeg: 2.6 });
             }
             if (lastPoint >= 0 && (state.point > lastPoint || state.objective !== lastObjective)) { oneShot = 0.9; playClip("walk"); }
             lastPoint = state.point; lastObjective = state.objective;
+          }
+          if (flipbooksOn) {
+            const rip = node("signal-ripple");
+            if (rippleLeft > 0) {
+              rippleLeft = Math.max(0, rippleLeft - dt);
+              const expand = 0.85 + (1 - rippleLeft / 0.55) * 0.95;
+              rip.setPosition(rippleAt[0], rippleAt[1], rippleAt[2]);
+              rip.setRotation(0, state.yaw, 0);
+              rip.setScale(expand);
+            } else {
+              rip.setPosition(...FAR);
+            }
           }
           if (oneShot > 0) oneShot -= dt;
           else if (sim.state.hold > 0) playClip("walk");
           else playClip("idle");
           controller?.update(dt);
+          // WP-29 athletic hoverboard carve stance: knees bent into dune landings, torso banking & forward boost tuck, head sighting down-course
+          if (inked && options.animate !== false) {
+            const base = rider.animationPose?.();
+            const crouch = 0.24 + (flight.boosting ? 0.16 : 0) + Math.max(0, Math.min(0.18, -flight.vertical * 0.015));
+            const leanFwd = 0.14 + (flight.boosting ? 0.2 : 0) + Math.min(0.1, Math.abs(flight.speed) * 0.0018);
+            const carve = Math.max(-0.32, Math.min(0.32, flight.bank * 0.55));
+            const rotOf = (boneName: string): QuatObj => base?.bones?.[boneName]?.rotation ?? COURIER_BIND_ROT[boneName] ?? { x: 0, y: 0, z: 0, w: 1 };
+            const withRot = (boneName: string, delta: QuatObj) => ({
+              ...(base?.bones?.[boneName] ?? {}),
+              rotation: quatMul(rotOf(boneName), delta)
+            });
+            rider.setAnimationPose?.({
+              ...(base ?? {}),
+              mode: "overlay",
+              bones: {
+                ...(base?.bones ?? {}),
+                Spine: withRot("Spine", quatMul(quatAxis(1, 0, 0, leanFwd * 0.65), quatAxis(0, 0, 1, carve * 0.5))),
+                Spine01: withRot("Spine01", quatMul(quatAxis(1, 0, 0, leanFwd * 0.45), quatAxis(0, 1, 0, -0.18))),
+                Head: withRot("Head", quatMul(quatAxis(0, 1, 0, -0.32 - carve * 0.25), quatAxis(1, 0, 0, -leanFwd * 0.4))),
+                LeftLeg: withRot("LeftLeg", quatAxis(1, 0, 0, crouch)),
+                RightLeg: withRot("RightLeg", quatAxis(1, 0, 0, crouch * 0.92)),
+                LeftArm: withRot("LeftArm", quatAxis(0, 0, 1, 0.18 - carve * 0.35)),
+                RightArm: withRot("RightArm", quatAxis(0, 0, 1, -0.18 - carve * 0.35))
+              }
+            });
+          }
 
           const o = objectiveOf(state);
           const active = o.points[state.point];
@@ -954,15 +1252,20 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const wantRoll = options.reducedMotion ? 0 : cameraRoll(flight.bank);
             roll += (wantRoll - roll) * Math.min(1, dt * 8);
             if (cut) roll = wantRoll;
-            up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll);
+            up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll + feelStep.shakeRoll);
+            kick = fovKick + feelStep.fovDeltaDeg;
           }
           const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
           lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
-          let shown: [number, number, number] = [eye[0], eye[1], eye[2]];
+          let shown: [number, number, number] = [
+            eye[0] + feelStep.shakeOffset[0],
+            eye[1] + feelStep.shakeOffset[1],
+            eye[2] + feelStep.shakeOffset[2]
+          ];
           if (shakeLeft > 0) {
             shakeLeft = Math.max(0, shakeLeft - dt);
             const a = SHAKE_METRES * shakeStrength * (shakeLeft / SHAKE_SECONDS);
-            shown = [eye[0] + a * Math.sin(time * 61), eye[1] + a * Math.sin(time * 47 + 1.3), eye[2] + a * Math.sin(time * 53 + 2.1)];
+            shown = [shown[0] + a * Math.sin(time * 61), shown[1] + a * Math.sin(time * 47 + 1.3), shown[2] + a * Math.sin(time * 53 + 2.1)];
           }
           const baseFov = aspect < 0.85 ? 78 : 62;
           const safe = guardPose({ position: shown, target: [lookX, lookY, lookZ], up, fov: baseFov + kick }, lastGoodPose, { position: [sim.state.x, sim.state.y + 5, sim.state.z + 13], target: [sim.state.x, sim.state.y + 1.5, sim.state.z], up: [0, 1, 0], fov: baseFov });

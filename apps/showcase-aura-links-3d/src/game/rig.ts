@@ -32,7 +32,7 @@
  * The golfer faces -X toward the ball: lead (left) arm/foot sit on the +Z
  * (target) side, trail (right) side toward -Z — a right-handed stance.
  */
-import { game, material, model, primitives } from "@aura3d/engine";
+import { game, group, material, model, primitives } from "@aura3d/engine";
 import { gripQToEulerZYX } from "@aura3d/engine/game";
 import { assets } from "../aura-assets";
 import type { GolferFit, Vec3 } from "./types";
@@ -157,14 +157,74 @@ export interface GolferRig {
  * 4.6.2 materials. Presentation only.
  */
 export const CART_REFINED_OVERRIDES = [
-  // GU47 phase 4 round 2: the multiplied cream still read as "flat matte white" (judge, run g10p4-r2); a deep racing-green
-  // lacquer shows the sky in its clear coat
-  { color: "#1f4a3a", colorMode: "replace" as const, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.6 }
+  // Unnamed inner-backface primitives (0..2) receive matte chassis dark so inverted normals never bloom chalk-white
+  { color: "#191c22", colorMode: "replace" as const, roughness: 0.84, metallic: 0.08 },
+  // Championship British racing-green clear-coated bodywork
+  { target: "cart_body", color: "#184b39", colorMode: "replace" as const, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.65 },
+  // Warm ivory sun canopy lacquer
+  { target: "cart_roof", color: "#f3eee3", colorMode: "replace" as const, roughness: 0.26, clearcoat: 0.85, clearcoatRoughness: 0.1, envMapIntensity: 1.35 },
+  // Stitched saddle-tan leather bench with grazing microfiber sheen
+  { target: "cart_seat", color: "#b68352", colorMode: "replace" as const, roughness: 0.62, sheen: 0.48, sheenColor: "#e6c79c", sheenRoughness: 0.5 },
+  // Tires, floor mat, steering column & suspension hardware
+  { target: "cart_dark", color: "#191c22", colorMode: "replace" as const, roughness: 0.78, metallic: 0.16 }
 ];
 
 export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
-  const steel = material.pbr({ color: "#c8ccd4", metalness: 0.85, roughness: 0.28 });
+  const chromeShaft = material.chrome({ color: "#e8eef5", roughness: 0.06, envMapIntensity: 1.8 });
+  const brushedTitanium = material.brushedMetal({ color: "#cfd6e0", roughness: 0.22 });
+  const carbonCrown = material.clearcoatPaint({
+    color: "#141820",
+    roughness: 0.18,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.65
+  });
+  const soleBrass = material.pbr({ color: "#d4af5a", metalness: 0.88, roughness: 0.26 });
+  const gripRubber = material.physical({
+    color: fit.cap || "#191c22",
+    roughness: 0.86,
+    sheen: 0.25,
+    sheenColor: "#3a3f4a",
+    sheenRoughness: 0.72
+  });
+  const bagBodyMat = refined
+    ? material.physical({
+        color: "#184b39",
+        roughness: 0.4,
+        clearcoat: 0.45,
+        clearcoatRoughness: 0.22,
+        sheen: 0.3,
+        sheenColor: "#357a60"
+      })
+    : material.pbr({ color: "#1f5f46", roughness: 0.8 });
+  const bagLeatherMat = material.physical({
+    color: "#a87444",
+    roughness: 0.58,
+    sheen: 0.42,
+    sheenColor: "#dfbe93",
+    sheenRoughness: 0.52
+  });
   const rt = (name: string) => game.runtimeNode(name);
+
+  const tourBagNode = refined
+    ? group("golfer-bag", [
+        primitives.cylinder({ name: "bag-shell", size: [0.27, 0.84, 0.27], material: bagBodyMat }).position(0, -0.02, 0),
+        primitives.cylinder({ name: "bag-collar", size: [0.29, 0.11, 0.29], material: bagLeatherMat }).position(0, 0.39, 0),
+        primitives.cylinder({ name: "bag-base", size: [0.285, 0.08, 0.285], material: material.pbr({ color: "#171a20", roughness: 0.82 }) }).position(0, -0.42, 0),
+        primitives.box({ name: "bag-pocket", size: [0.18, 0.32, 0.12], material: bagLeatherMat }).position(0, -0.1, 0.14),
+        primitives.cylinder({ name: "bag-leg-l", size: [0.016, 0.72, 0.016], material: brushedTitanium }).position(-0.11, -0.1, -0.16).rotation(-0.24, 0, 0.12),
+        primitives.cylinder({ name: "bag-leg-r", size: [0.016, 0.72, 0.016], material: brushedTitanium }).position(0.11, -0.1, -0.16).rotation(-0.24, 0, -0.12)
+      ]).runtime(rt("golfer-bag"))
+    : primitives
+        .cylinder({ name: "golfer-bag", size: [0.3, 0.9, 0.3], material: bagBodyMat })
+        .runtime(rt("golfer-bag"));
+
+  const clubHeadNode = group("golfer-club-head", [
+    primitives.cylinder({ name: "club-hosel", size: [0.017, 0.046, 0.017], material: chromeShaft }).position(0, -0.018, 0),
+    primitives.sphere({ name: "club-crown", size: 1, material: carbonCrown }).position(0.036, 0.002, -0.016).scale([0.114, 0.054, 0.094]),
+    primitives.box({ name: "club-face", size: [0.102, 0.044, 0.012], material: brushedTitanium }).position(0.036, 0.002, 0.024).rotation(-0.18, 0, 0),
+    primitives.box({ name: "club-sole", size: [0.068, 0.008, 0.054], material: soleBrass }).position(0.036, 0.025, -0.014)
+  ]).runtime(rt("golfer-club-head"));
 
   return [
     // Blob shadow + "at address" marker ring (hidden until address/idle/putt)
@@ -201,9 +261,7 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
     })
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
       .runtime(rt("caddy-body")),
-    primitives
-      .cylinder({ name: "golfer-bag", size: [0.3, 0.9, 0.3], material: refined ? material.pbr({ color: "#1f5f46", roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.2 } as any) : material.pbr({ color: "#1f5f46", roughness: 0.8 }) })
-      .runtime(rt("golfer-bag")),
+    tourBagNode,
     model(assets.linksGolfCartMeshy, {
       name: "golfer-cart",
       targetHeight: 1.65,
@@ -211,22 +269,14 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       scaleMode: "fit",
       ...(refined ? { materialOverrides: CART_REFINED_OVERRIDES } : {})
     }).runtime(rt("golfer-cart")),
-    // Club — grip, shaft, head. Native geometry along local +Y; the bone
-    // attachment (RightForearm) owns the world transform of all three parts,
-    // laid out along the shaft per swingMath.CLUB_PARTS.
+    // Club — tour velvet grip, tapered chrome shaft, 460cc carbon-crown + brushed-titanium head.
     primitives
-      .cylinder({ name: "golfer-club-grip", size: [0.03, 0.3, 0.03], material: material.pbr({ color: "#1a1c22", roughness: 0.9 }) })
+      .cylinder({ name: "golfer-club-grip", size: [0.028, 0.3, 0.028], material: gripRubber })
       .runtime(rt("golfer-club-grip")),
     primitives
-      .cylinder({ name: "golfer-club-shaft", size: [0.016, 0.84, 0.016], material: steel })
+      .cylinder({ name: "golfer-club-shaft", size: [0.013, 0.84, 0.013], material: chromeShaft })
       .runtime(rt("golfer-club-shaft")),
-    primitives
-      .box({
-        name: "golfer-club-head",
-        size: [0.058, 0.055, 0.17],
-        material: material.pbr({ color: "#a7adba", metalness: 0.8, roughness: 0.32 })
-      })
-      .runtime(rt("golfer-club-head"))
+    clubHeadNode
   ];
 }
 

@@ -1,19 +1,20 @@
 /**
- * Slingshot Siege — scene construction.
+ * Slingshot Siege — scene construction (WP-12 visual & batching overhaul).
  *
- * One persistent scene built once: every gameplay visual is a POOLED runtime
- * node that the sim's pose updates drive each frame (blocks, gull rigs,
- * projectiles, debris chips, puffs, trajectory dots, windmill rotors, the
- * slingshot rig, the chapter set-dressing). Level loads reassign the pools —
- * no `setScene`, no re-mount.
+ * One persistent scene built once: every gameplay visual is a POOLED or INSTANCED
+ * runtime node driven by the fixed-step presenter each frame (5 instanced block
+ * families, 4 instanced prop pools + iron/lacquer keg bands, raider boss rigs,
+ * 5 visually distinct Hero Gull ammo variants, carved driftwood Y-fork + saddle-leather
+ * pouch + strain-colored dual-backend elastic bands, parabolic trajectory ribbon,
+ * and 32-frame dust/sparks flipbook burst cards).
  */
 import {
   camera,
   effects,
+  instances,
   lights,
   looks,
   material,
-  instances,
   model,
   primitives,
   scene,
@@ -28,23 +29,32 @@ import {
 } from "@aura3d/engine";
 import { assets } from "../aura-assets.route";
 import { MATERIALS, type SiegeMaterialId } from "./materials";
+import type { AmmoId } from "./ammo";
 import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
-import { SEA_STACK_PLACEMENT, farSetPiecesFor, setPieces } from "../art/setPieces";
+import { SEA_STACK_PLACEMENT, farSetPiecesFor, setPieces, type FarSetPiece as FarSetPiecePlacement } from "../art/setPieces";
 import { levelSignNodes } from "./sign";
-import { BLOCK_FAMILIES, PARKED_BLOCK, blockFamilyNodeId } from "./blockInstances";
+import {
+  BARREL_BAND_POOL_ID,
+  BLOCK_FAMILIES,
+  PARKED_BLOCK,
+  blockFamilyNodeId,
+  propPoolNodeId
+} from "./blockInstances";
+import {
+  blastSparksMaterial,
+  coastalSeaMaterial,
+  elasticBandMaterial,
+  limestoneCliffMaterial,
+  masonryPlumeMaterial,
+  trajectoryRibbonMaterial
+} from "./shaders";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 // ----------------------------------------------------------------- pools --
 
-/**
- * Node pools. `blocks` (stone-bridge GLB) carries the stone, glass, ice and
- * obsidian blocks; wood blocks draw from the crate and plank pools, so every
- * level fits (Gull Keep, the largest, needs 80 stone-family block nodes;
- * `tests/unit/slingshot-siege/pools.test.ts` asserts every level fits).
- */
 export const POOL = {
   blocks: 80,
   crates: 18,
@@ -53,7 +63,9 @@ export const POOL = {
   gullRigs: 8,
   projectiles: 10,
   debris: 30,
-  dots: 16,
+  dots: 20,
+  plumes: 6,
+  blasts: 4,
   windmillBlades: 4,
   windmills: 3
 } as const;
@@ -66,14 +78,24 @@ export function gullPartId(g: number, part: "body" | "head" | "beak" | "wingL" |
 export function projectileNodeId(i: number): string { return `v-proj-${i}`; }
 export function debrisNodeId(i: number): string { return `v-debris-${i}`; }
 export function dotNodeId(i: number): string { return `v-dot-${i}`; }
+export function plumeNodeId(i: number): string { return `v-plume-${i}`; }
+export function blastNodeId(i: number): string { return `v-blast-${i}`; }
 export function bladeNodeId(mill: number, blade: number): string { return `v-mill-${mill}-blade-${blade}`; }
 export function millHubNodeId(mill: number): string { return `v-mill-${mill}-hub`; }
 export function millPoleNodeId(mill: number): string { return `v-mill-${mill}-pole`; }
+export function farPieceNodeId(key: FarSetPiecePlacement["key"]): string { return `far-${key.slice(6)}`; }
+
+/** All chapter-selectable far horizon set-piece placements so `loadLevel()` can swap chapters live. */
+export const ALL_FAR_PIECES: readonly { readonly chapter: number | null; readonly piece: FarSetPiecePlacement }[] = [
+  { chapter: null, piece: farSetPiecesFor(0)[0]! },
+  { chapter: 1, piece: farSetPiecesFor(1)[1]! },
+  { chapter: 2, piece: farSetPiecesFor(2)[1]! },
+  { chapter: 4, piece: farSetPiecesFor(4)[1]! },
+  { chapter: 5, piece: farSetPiecesFor(5)[1]! }
+];
 
 /**
- * Every pooled node that starts parked at y -120. They must be hidden, not only
- * parked: a visible parked GLB still costs its draw calls (and shadow draws)
- * every frame, which is where most of the 394 draw calls on level 1 came from.
+ * Every pooled node that starts parked at y -120. Hidden when unused so idle slots cost 0 draws.
  */
 export function pooledNodeIds(): string[] {
   const ids: string[] = [];
@@ -84,6 +106,8 @@ export function pooledNodeIds(): string[] {
   for (let i = 0; i < POOL.projectiles; i += 1) ids.push(projectileNodeId(i));
   for (let i = 0; i < POOL.debris; i += 1) ids.push(debrisNodeId(i));
   for (let i = 0; i < POOL.dots; i += 1) ids.push(dotNodeId(i));
+  for (let i = 0; i < POOL.plumes; i += 1) ids.push(plumeNodeId(i));
+  for (let i = 0; i < POOL.blasts; i += 1) ids.push(blastNodeId(i));
   return ids;
 }
 
@@ -94,7 +118,8 @@ export const SLING_IDS = {
   pouch: "sling-pouch",
   bandL: "sling-band-l",
   bandR: "sling-band-r",
-  loaded: "sling-loaded"
+  loaded: "sling-loaded",
+  ammoCrest: "sling-ammo-crest"
 } as const;
 
 export const PROP_IDS = {
@@ -104,34 +129,28 @@ export const PROP_IDS = {
   stoneBridge: "prop-stone-bridge",
   plankScatter: "prop-plank-scatter",
   flag: "fortress-flag",
-  flagPole: "fortress-flag-pole"
+  flagPole: "fortress-flag-pole",
+  cliffs: "coastal-limestone-cliffs"
 } as const;
 
 // ------------------------------------------------------------- materials --
 
-/**
- * GLB material overrides for a pooled piece node (GU47 SS47-M1: five readable block families). Model nodes take
- * their look through the actor's override list (applied on every level load, so a pooled node never keeps the
- * previous level's material). Painted wood and chalky stone keep the authored GLB texture under a multiply tint;
- * glass is a clear clearcoat pane at 0.55 opacity with transmission (drawn when `A3D_QR_MATERIALS_TRANSMISSION`
- * is on; the opacity reads without it) and a pale rim; ice is pale and faintly emissive; obsidian is glossy black
- * glass with a violet rim. Gameplay never reads these: the sim's material table (materials.ts) is unchanged.
- */
 export const BLOCK_LOOKS: Readonly<Record<SiegeMaterialId, readonly AuraModelMaterialOverride[]>> = {
-  wood: [{ color: "#efc996", colorMode: "multiply", roughness: 0.78, metallic: 0 }],
-  stone: [{ color: "#c9c4b8", colorMode: "multiply", roughness: 0.95, metallic: 0 }],
+  wood: [{ color: "#e8be86", colorMode: "multiply", roughness: 0.72, metallic: 0, clearcoat: 0.38, clearcoatRoughness: 0.26 }],
+  stone: [{ color: "#dbd6ca", colorMode: "multiply", roughness: 0.88, metallic: 0, clearcoat: 0.18, clearcoatRoughness: 0.42 }],
   glass: [{
-    color: "#c4ecf6", colorMode: "replace", replaceTextures: true, roughness: 0.06, metallic: 0, opacity: 0.55,
-    clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6, envMapIntensity: 1.4,
-    rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
+    color: "#bfe9f5", colorMode: "replace", replaceTextures: true, roughness: 0.06, metallic: 0, opacity: 0.55,
+    clearcoat: 1, clearcoatRoughness: 0.04, transmission: 0.65, envMapIntensity: 1.48,
+    rim: { color: "#eafcff", power: 3, intensity: 0.62 }
   }],
   ice: [{
-    color: "#d6f0ff", colorMode: "replace", replaceTextures: true, roughness: 0.22, metallic: 0, opacity: 0.82,
-    emissive: "#bfe6ff", emissiveIntensity: 0.35, rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
+    color: "#d6f0ff", colorMode: "replace", replaceTextures: true, roughness: 0.18, metallic: 0, opacity: 0.82,
+    clearcoat: 0.85, clearcoatRoughness: 0.08,
+    emissive: "#bfe6ff", emissiveIntensity: 0.35, rim: { color: "#f0fbff", power: 2.5, intensity: 0.52 }
   }],
   obsidian: [{
-    color: "#221d30", colorMode: "replace", replaceTextures: true, roughness: 0.1, metallic: 0.15,
-    clearcoat: 1, clearcoatRoughness: 0.04, rim: { color: "#a874ff", power: 4, intensity: 0.35 }
+    color: "#241d34", colorMode: "replace", replaceTextures: true, roughness: 0.1, metallic: 0.16,
+    clearcoat: 1, clearcoatRoughness: 0.03, rim: { color: "#a874ff", power: 4, intensity: 0.38 }
   }]
 };
 
@@ -140,40 +159,127 @@ export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverri
 }
 
 /**
- * GU47 phase 3 (look rows with `solidBlocks`): the five block families as materials on a rounded solid block that is
- * exactly the sim's box (scale = 2 x half extents). Painted wood, chalky stone, clear glass, pale ice, glossy obsidian.
- * Presentation only: the sim's material table (materials.ts) is unchanged.
+ * Five visually unmistakable Hero Gull ammo variants (WP-12):
+ * Scout Gull (`pebble`), Iron-Helm Heavy Pelican (`stone`), Cerulean Trio Swiftlet (`triple`),
+ * Abyssal Cuttle-Gull (`squid`), and Blazing Cinder Gull (`ember`).
  */
-/**
- * GU47 phase 4 (4.7.2): the flat sea and shallows as a glossy clear-coated surface, so the chapter HDRI reflects in
- * them (the judge read the old 0.2-0.22 roughness sea as matte, ibl_reflections 3.5-4).
- */
-function seaGloss(color: AuraColor, envMapIntensity: number): AuraMaterialSpec {
+export const AMMO_GULL_LOOKS: Readonly<Record<AmmoId, readonly AuraModelMaterialOverride[]>> = {
+  pebble: [{
+    color: "#fff8eb", colorMode: "multiply", roughness: 0.56, metallic: 0, clearcoat: 0.25,
+    rim: { color: "#ffd766", power: 2.8, intensity: 0.34 }
+  }],
+  stone: [{
+    color: "#9db0c9", colorMode: "multiply", roughness: 0.32, metallic: 0.45, clearcoat: 0.72, clearcoatRoughness: 0.12,
+    rim: { color: "#e2eeff", power: 2.6, intensity: 0.48 }
+  }],
+  triple: [{
+    color: "#7ad6ff", colorMode: "multiply", roughness: 0.42, metallic: 0.06, clearcoat: 0.55,
+    rim: { color: "#e8fbff", power: 2.4, intensity: 0.52 }
+  }],
+  squid: [{
+    color: "#ba94ff", colorMode: "multiply", roughness: 0.36, metallic: 0.12, clearcoat: 0.78,
+    rim: { color: "#9ef7dc", power: 2.4, intensity: 0.58 }
+  }],
+  ember: [{
+    color: "#ff883d", colorMode: "multiply", roughness: 0.3, metallic: 0.08, clearcoat: 0.88,
+    emissive: "#ff5c1c", emissiveIntensity: 0.08,
+    rim: { color: "#ffe082", power: 2.2, intensity: 0.68 }
+  }]
+};
+
+export function ammoGullLook(ammo: AmmoId): readonly AuraModelMaterialOverride[] {
+  return AMMO_GULL_LOOKS[ammo] ?? AMMO_GULL_LOOKS.pebble;
+}
+
+export function seaGloss(color: AuraColor, envMapIntensity: number): AuraMaterialSpec {
   return material.physical({ color, roughness: 0.08, metallic: 0, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity });
 }
 
+/**
+ * Distinct multi-lobe material response across all 5 fortress structural families (WP-12):
+ *  - `wood`: warm timber beams with procedural wood-grain roughness & fiber relief under satin lacquer
+ *  - `stone`: chiseled warm limestone blocks with mineral micro-roughness & crisp bevel catchlights
+ *  - `glass`: physical refractive `studioGlass` (`#bfe9f5`, `roughness: 0.06`, `opacity: 0.55`)
+ *  - `ice`: translucent glacial crystal with pale internal glow & clearcoat sheen
+ *  - `obsidian`: high-gloss volcanic `lacquer` with violet grazing rim
+ */
 export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMaterialSpec>> = {
-  // Mid-value wood and stone: at #bdb6a8 the stone pillars blew out to blank white under the warm sunset sun (g12p3r1).
-  // GU47 phase 4: painted toy blocks under a satin lacquer, so the sky picks out their edges (ibl_reflections).
-  wood: material.physical({ color: "#a8703f", roughness: 0.7, metallic: 0, clearcoat: 0.55, clearcoatRoughness: 0.22, envMapIntensity: 1.2, rim: { color: "#ffe2b8", power: 3, intensity: 0.1 } }),
-  stone: material.physical({ color: "#8f897e", roughness: 0.8, metallic: 0, clearcoat: 0.3, clearcoatRoughness: 0.35, envMapIntensity: 1.1, rim: { color: "#fff6e6", power: 3, intensity: 0.08 } }),
-  glass: material.physical({
-    color: "#bfe9f5", roughness: 0.06, metallic: 0, opacity: 0.55, clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6,
-    envMapIntensity: 1.4, rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
+  wood: material.physical({
+    name: "timber beam",
+    color: "#b47740",
+    roughness: 0.68,
+    metallic: 0,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.24,
+    normal: material.proceduralTextures.fabric({ scale: 14, strength: 0.36, contrast: 0.66 }),
+    roughnessMap: material.proceduralTextures.rubber({ scale: 16, strength: 0.56, contrast: 0.72 }),
+    envMapIntensity: 1.24,
+    rim: { color: "#ffe4ba", power: 3, intensity: 0.12 }
   }),
-  ice: material.pbr({
-    color: "#d6f0ff", roughness: 0.22, metallic: 0, opacity: 0.85, emissive: "#bfe6ff", emissiveIntensity: 0.3,
+  stone: material.ceramic({
+    name: "chiseled limestone",
+    color: "#c8c2b5",
+    roughness: 0.76,
+    clearcoat: 0.24,
+    clearcoatRoughness: 0.36,
+    normal: material.proceduralTextures.rubber({ scale: 26, strength: 0.4, contrast: 0.76 }),
+    envMapIntensity: 1.14,
+    rim: { color: "#fff7e8", power: 3, intensity: 0.1 }
+  }),
+  glass: material.studioGlass({
+    name: "fortress glass pane",
+    tint: "#bfe9f5",
+    color: "#bfe9f5",
+    roughness: 0.06,
+    opacity: 0.55,
+    clearcoat: 1,
+    clearcoatRoughness: 0.04,
+    transmission: 0.65,
+    thickness: 0.65,
+    ior: 1.52,
+    envMapIntensity: 1.48,
+    rim: { color: "#eafcff", power: 3, intensity: 0.6 }
+  }),
+  ice: material.physical({
+    name: "glacial ice block",
+    color: "#d6f0ff",
+    roughness: 0.18,
+    metallic: 0,
+    opacity: 0.85,
+    clearcoat: 0.88,
+    clearcoatRoughness: 0.08,
+    transmission: 0.36,
+    emissive: "#bfe6ff",
+    emissiveIntensity: 0.3,
+    practical: true,
     rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
   }),
-  obsidian: material.physical({
-    color: "#2a2338", roughness: 0.12, metallic: 0.15, clearcoat: 1, clearcoatRoughness: 0.04,
-    rim: { color: "#a874ff", power: 4, intensity: 0.35 }
+  obsidian: material.lacquer({
+    name: "obsidian block",
+    color: "#2a2338",
+    roughness: 0.12,
+    metallic: 0.15,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.38,
+    rim: { color: "#a874ff", power: 4, intensity: 0.36 }
   })
 };
 
 export function solidBlockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
   return SOLID_BLOCK_MATERIALS[id] ?? SOLID_BLOCK_MATERIALS.stone;
 }
+
+/** Explosive powder-keg crimson lacquer + dark forged-iron collar band material. */
+export const KEG_BAND_MATERIAL: AuraMaterialSpec = material.lacquer({
+  name: "explosive keg band",
+  color: "#8f201a",
+  roughness: 0.22,
+  metallic: 0.38,
+  clearcoat: 1,
+  clearcoatRoughness: 0.04,
+  envMapIntensity: 1.35
+});
 
 /** Debris chips take the colour of the material they broke off. */
 export function debrisLook(matId: string): readonly AuraModelMaterialOverride[] {
@@ -184,10 +290,7 @@ export function debrisLook(matId: string): readonly AuraModelMaterialOverride[] 
 function pbr(color: AuraColor, opts: { roughness?: number; metallic?: number; opacity?: number } = {}): AuraMaterialSpec {
   return material.pbr({ color, roughness: opts.roughness ?? 0.65, metallic: opts.metallic ?? 0, ...(opts.opacity !== undefined ? { opacity: opts.opacity } : {}) });
 }
-function glow(color: AuraColor, intensity = 0.9): AuraMaterialSpec {
-  return material.emissive({ color, emissive: color, emissiveIntensity: intensity });
-}
-/** Blend two authored hex colors — terrain decor stays derived from the chapter palette. */
+
 function mixHex(a: string, b: string, t: number): string {
   const pa = parseInt(a.slice(1), 16);
   const pb = parseInt(b.slice(1), 16);
@@ -209,25 +312,15 @@ export interface StageNodes {
 type StageNode = AuraSceneNode | AuraNodeBuilder<AuraSceneNode>;
 
 export interface StageOptions {
-  /** prefers-reduced-motion or `?still=1`: drops the vignette (FXAA stays on), calms the sea and the weather. */
   readonly reducedMotion: boolean;
-  /** `?ao=0` evidence switch: removes the miniature ambient-occlusion pass for an AO-on/off capture pair. */
   readonly ambientOcclusion?: boolean;
-  /**
-   * SS47-M2 CC0 detail maps on turf, sand and the chalk/wet-rock lip. GU47 phase 2: opt-in (`?surfaces=1`); on
-   * software WebGL2 the mapped turf rendered near-white in every chapter, so the default is the flat 4.6.2 material.
-   */
   readonly surfaceMaps?: boolean;
 }
 
-/** Name of the stage's one AO node (SS47-L2: a miniature-scale radius instead of the look's default). */
 export const SIEGE_AO_NODE = "siege miniature ambient occlusion";
-/** Name of the signature tilt-shift depth-of-field node (SS47-P1); main.ts retargets its band every frame. */
 export const SIEGE_DOF_NODE = "siege miniature tilt-shift";
-/** Island centre and radius the sun's two shadow cascades are fitted to (SS47-L1). */
 export const ISLAND_SHADOW_FIT = { center: [1.5, 0.8, -0.4] as [number, number, number], extent: 13.5, depth: 48 };
 
-/** The one shadowed sun: PCSS, two cascades fitted to the island (Low tier falls back to its own 1 cascade + PCF). */
 export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirectionalShadowOptions {
   return {
     filter: "pcss",
@@ -240,9 +333,9 @@ export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirecti
 }
 
 /**
- * The chapter's look group (SS47-E1/P2): its own preset, catalogue HDRI for image lighting, one shadowed sun and no
- * rim, fog back on, the output preset and grade. The look's default AO and bloom children are replaced by the
- * stage's own miniature AO (SS47-L2) and day/night bloom (SS47-P3).
+ * Chapter look group: forces `background: false` on the HDRI node and drops any solid `look background`
+ * child so `chapterSkyNode` (`sky.gradient` / `sky.preetham`) renders crisp coastal skies behind the sea-cliffs,
+ * with zero `lights.ambient`.
  */
 export function chapterLookNode(row: ChapterLook): StageNode {
   const look = looks.preset(row.preset, {
@@ -259,14 +352,15 @@ export function chapterLookNode(row: ChapterLook): StageNode {
     grade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, tint: row.grade.tint },
     post: row.post
   }) as unknown as { toJSON?: () => AuraSceneNode };
-  // A v1 `look` node (every look contract provided) has no children to retune: keep it whole.
   if (typeof look.toJSON !== "function") return look as unknown as AuraSceneNode;
   const group = look.toJSON() as AuraSceneNode & { readonly children?: readonly AuraSceneNode[] };
-  const replaced = new Set(["look ambient occlusion", "look bloom"]);
-  return { ...group, children: (group.children ?? []).filter((c) => !replaced.has((c as { name?: string }).name ?? "")) } as AuraSceneNode;
+  const replaced = new Set(["look ambient occlusion", "look bloom", "look background"]);
+  const children = (group.children ?? [])
+    .filter((c) => !replaced.has((c as { name?: string }).name ?? ""))
+    .map((c) => (c.kind === "environment" ? ({ ...c, background: false } as AuraSceneNode) : c));
+  return { ...group, children } as AuraSceneNode;
 }
 
-/** The chapter's visible sky (SS47-E2): gradient by day, Preetham at golden hour and sunset, stars at night. */
 export function chapterSkyNode(row: ChapterLook): StageNode {
   const { model: skyModel, ...spec } = row.sky as { model: string } & Record<string, unknown>;
   const options = { name: `siege sky ch${row.chapter}`, captureEnvironment: false, affectsFog: row.skyFog, ...spec };
@@ -275,11 +369,6 @@ export function chapterSkyNode(row: ChapterLook): StageNode {
     : sky.gradient(options as unknown as Parameters<typeof sky.gradient>[0]);
 }
 
-/**
- * Chapter practicals (SS47-L3): warm window points in the gatehouse and watchtower (ch4-5), the far lighthouse
- * spot (ch5), harbour lanterns by the fort (ch5) and the sun flare (ch3-4). None casts a shadow; the sun stays the
- * one shadowed light.
- */
 export function chapterPracticals(row: ChapterLook): StageNode[] {
   const out: StageNode[] = [];
   const amber = row.accent;
@@ -314,32 +403,35 @@ export function chapterPracticals(row: ChapterLook): StageNode[] {
 }
 
 /**
- * Miniature post (SS47-P1/L2/P3): the signature tilt-shift band (High tier and up; the engine drops DOF below High),
- * contact shadows from the sun and a small AO radius for toy scale, day/night bloom and vignette. FXAA stays on for
- * reduced motion; only the vignette goes, as before.
+ * Miniature post stack (WP-12):
+ *  - Tilt-shift `depthOfField` (`SIEGE_DOF_NODE`)
+ *  - Crisp sun `contactShadows` grounding blocks & timber joints
+ *  - `screenSpaceReflections` (`roughness: 0.22 <= 0.35`)
+ *  - `cinematicBloom` (`name: "siege bloom"`)
+ *  - Multi-bounce miniature `ambientOcclusion` (`SIEGE_AO_NODE`, `radius: 0.48`)
+ *  - Optional `godRays` sunbeams on Chapter 2
+ *  - `vignette` (dropped on reduced motion) + `antiAlias("fxaa")`
  */
 export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[] {
   const out: StageNode[] = [
-    effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.52, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
-    effects.contactShadows({ length: 0.32, thickness: 0.05, steps: 16, intensity: 1, lights: "sun" }),
-    // effects.bloom drops `name`; stamp it so the runtime and the tests can find the day/night bloom node.
-    { ...effects.bloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
+    effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.54, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
+    effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: 0.85, lights: "sun" }),
+    effects.screenSpaceReflections({ intensity: 0.42, maxDistance: 22, roughness: 0.22, thickness: 0.25 }),
+    { ...effects.cinematicBloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
   ];
-  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.35, intensity: 0.75, density: 0.7 }));
+  if (row.chapter === 2 && !options.reducedMotion) {
+    out.push(effects.godRays({ name: "siege greenhouse sunbeams", intensity: 0.24, decay: 0.93, samples: 32, color: "#fff5dc", medium: 0.14 }));
+  }
+  if (options.ambientOcclusion !== false) {
+    out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.48, intensity: 0.72, density: 0.74, multiBounce: true }));
+  }
   if (!options.reducedMotion) out.push(effects.vignette({ intensity: row.vignette }));
   out.push(effects.antiAlias({ mode: "fxaa" }));
   return out;
 }
 
-/** Rest height of the sea: just under the beach ring top (-0.10), 3 cm over the shallows disc. */
 export const SEA_LEVEL = -0.26;
 
-/**
- * The sea to the horizon (SS47-E2/E3): one world-water ocean (E-G, drawn with only `A3D_QR_WORLD_WATER`, default
- * on) with calm Gerstner waves and shoreline foam where it meets the island; the waves slow to 30% on reduced
- * motion. Replaces the 34 instanced foam boxes. The seabed cylinders stay underneath, so a build without world
- * water still shows today's flat sea.
- */
 export function seaNode(row: ChapterLook, options: StageOptions): StageNode {
   const water = world.water({
     id: "siege-sea",
@@ -358,10 +450,6 @@ export function seaNode(row: ChapterLook, options: StageOptions): StageNode {
   return water.toJSON() as unknown as AuraSceneNode;
 }
 
-/**
- * SS47-E4 chapter weather: drizzle (ch4), drifting dust motes (ch1) and a low sea mist (ch2); nothing on the other
- * chapters. Reduced motion drops the moving layers (no rain streaks, no motes); the mist stays because it is still.
- */
 export function chapterWeather(row: ChapterLook, options: StageOptions): StageNode[] {
   if (row.weather === "drizzle") {
     return options.reducedMotion ? [] : [{ ...effects.rain({ intensity: 0.22, density: 0.35, color: "#c9d6e6", speed: 0.8, wind: [-0.9, -5, -0.2], splashes: true, mist: false }).toJSON(), name: "siege drizzle" }];
@@ -379,7 +467,6 @@ export function chapterWeather(row: ChapterLook, options: StageOptions): StageNo
   return [];
 }
 
-/** SS47-W1: one instanced draw per dressing kind; the grass sways in the wind except on reduced motion. */
 export function beachDressingNodes(row: ChapterLook, options: StageOptions): StageNode[] {
   const d = beachDressing();
   const t = row.terrain;
@@ -414,69 +501,19 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const nodes: StageNode[] = [];
   const row = chapterLook(chapter.id);
 
-  // Chapter look (SS47-E1/L1/P2), the real sky (SS47-E2) and the chapter practicals (SS47-L3): no ambient, no
-  // hemisphere, no fill directionals; the look's key is the one shadowed sun.
+  // Zero ambient/hemisphere lights: IBL + one PCSS shadowed sun + authored night/sunset practicals.
   nodes.push(chapterLookNode(row), chapterSkyNode(row), ...chapterPracticals(row));
 
   // ------------------------------------------------------------- terrain --
-  // One island all day (bleached sand, sea-meadow turf, chalk cliffs, sea teal); light carries the time of day.
   const terrain = row.terrain;
-  // SS47-M2: CC0 grain/blade/rock detail maps on the three island discs (0 draws); the rock GLBs already drop their
-  // photoreal moss colour (replaceTextures) for flat palette tints.
   const textured = options.surfaceMaps === true;
   const groundColor = terrain.turf;
   const farColor = terrain.sand;
-  const backdrop = row.horizon;
   const accentColor = row.accent;
   const grassLight = mixHex(groundColor, "#dceab0", 0.2);
   const grassDark = mixHex(groundColor, "#1b3520", 0.34);
-  // Sandy footpath and chalk cliff lip (the old dark earth lip read as a green disc on a plate).
-  const dirtColor = mixHex(terrain.sand, groundColor, 0.22);
   const rimColor = terrain.lip;
   const shallowColor = terrain.shallows;
-  const hazeColor = mixHex(terrain.chalk, row.fog.color, 0.45);
-  const rockTint = mixHex(terrain.wetRock, terrain.chalk, 0.35);
-  const rockTintSmall = mixHex(terrain.wetRock, terrain.sand, 0.4);
-  // GU47 phase 3: the day chapters keep the authored rock texture under a light multiply tint (the flat replacement
-  // colour lost every surface detail on the cliffs); the night keeps the flat chalk/wet-rock colours.
-  const rockOverrides = row.rockTexture
-    ? [{ color: row.rockTint ?? "#ffffff", colorMode: "multiply" as const, roughness: 0.9, metallic: 0.02 }]
-    : [{ color: rockTint, colorMode: "replace" as const, replaceTextures: true, roughness: 0.9, metallic: 0.02 }];
-  const boulderOverrides = row.rockTexture
-    ? [{ color: row.rockTint ?? "#ffffff", colorMode: "multiply" as const, roughness: 0.94, metallic: 0 }]
-    : [{ color: rockTintSmall, colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
-
-  const moundSpecs: readonly { position: readonly [number, number, number]; scale: readonly [number, number, number] }[] = [
-    { position: [-6.8, -0.42, -4.6], scale: [4.4, 1.3, 3.2] },
-    { position: [10.4, -0.46, -4.9], scale: [4.2, 1.25, 3.1] },
-    { position: [-4.0, -0.5, -6.3], scale: [5.0, 1.6, 3.6] },
-    { position: [3.0, -0.52, -6.7], scale: [5.4, 1.65, 3.8] },
-    { position: [8.6, -0.48, -6.2], scale: [4.4, 1.5, 3.3] },
-    { position: [-6.9, -0.26, 1.9], scale: [3.0, 0.85, 2.2] },
-    { position: [9.6, -0.28, 2.6], scale: [3.2, 0.8, 2.4] }
-  ];
-  const moundColors = [mixHex(groundColor, farColor, 0.35), mixHex(farColor, groundColor, 0.25), grassDark, mixHex(groundColor, grassLight, 0.35)];
-  const moundInst = moundSpecs.map((m, i) => ({ ...m, rotation: [0, i * 1.37, 0] as [number, number, number] }));
-
-  const patchSpecs: readonly { position: readonly [number, number, number]; scale: readonly [number, number, number] }[] = [
-    { position: [-3.4, -0.02, 2.4], scale: [3.2, 0.07, 2.2] },
-    { position: [4.6, -0.02, 4.0], scale: [2.8, 0.06, 1.9] },
-    { position: [-0.6, -0.02, -3.4], scale: [3.6, 0.07, 2.4] },
-    { position: [7.2, -0.02, -3.9], scale: [3.0, 0.06, 2.0] },
-    { position: [-5.0, -0.02, -1.2], scale: [2.4, 0.06, 1.7] },
-    { position: [9.2, -0.02, 1.0], scale: [2.2, 0.06, 1.6] },
-    { position: [1.6, -0.02, 5.3], scale: [3.4, 0.07, 1.8] }
-  ];
-  const patchColors = patchSpecs.map((_, i) => (i % 2 === 0 ? mixHex(groundColor, grassLight, 0.5) : mixHex(groundColor, grassDark, 0.4)));
-
-  const pathInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  for (let i = 0; i < 7; i += 1) {
-    pathInst.push({
-      position: [-6.6 + i * 1.75, 0.008, 0.72 + Math.sin(i * 1.9) * 0.22],
-      rotation: [0, Math.sin(i * 2.1) * 0.1, 0],
-      scale: [1.55, 0.02, 1.05 - (i % 2) * 0.12]
-    });
-  }
 
   const tuftInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
   for (let i = 0; i < 46; i += 1) {
@@ -493,60 +530,56 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   }
   const tuftColors = tuftInst.map((_, i) => (i % 3 === 0 ? grassLight : i % 3 === 1 ? grassDark : mixHex(groundColor, "#9ab060", 0.3)));
 
-  const pebbleInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [
-    { position: [-2.9, 0.05, 4.9], rotation: [0, 0.4, 0], scale: [0.5, 0.16, 0.35] as [number, number, number] },
-    { position: [2.4, 0.04, 5.6], rotation: [0, 1.1, 0], scale: [0.34, 0.12, 0.28] as [number, number, number] },
-    { position: [7.6, 0.05, 4.2], rotation: [0, 2.0, 0], scale: [0.44, 0.14, 0.3] as [number, number, number] },
-    { position: [-4.6, 0.04, 3.4], rotation: [0, 0.8, 0], scale: [0.3, 0.1, 0.24] as [number, number, number] },
-    { position: [4.2, 0.05, 6.2], rotation: [0, 1.5, 0], scale: [0.5, 0.15, 0.36] as [number, number, number] }
+  // Sun-bleached sedimentary limestone sea-cliffs (replaces 19 MB / ~2M-tri dark Objaverse rock & pine scans).
+  const cliffTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [
+    { position: [-13.2, 0.65, -9.8], rotation: [0.04, 0.38, -0.03], scale: [4.2, 2.3, 2.6] },
+    { position: [-6.4, 0.95, -11.4], rotation: [-0.03, 0.92, 0.02], scale: [5.4, 2.9, 3.0] },
+    { position: [1.8, 1.15, -12.2], rotation: [0.02, 1.74, -0.04], scale: [6.2, 3.3, 3.2] },
+    { position: [9.6, 0.9, -11.0], rotation: [-0.04, 0.68, 0.03], scale: [5.0, 2.7, 2.8] },
+    { position: [14.8, 0.6, -8.8], rotation: [0.03, 1.35, -0.02], scale: [3.8, 2.1, 2.4] },
+    { position: [-6.4, 0.42, -5.4], rotation: [0, 0.52, 0], scale: [3.6, 1.35, 2.3] },
+    { position: [9.6, 0.48, -4.9], rotation: [0, -0.44, 0], scale: [3.9, 1.45, 2.5] },
+    { position: [-11.4, 0.32, -2.8], rotation: [0, 0.6, 0], scale: [2.5, 1.1, 1.9] },
+    { position: [8.4, 0.28, 3.1], rotation: [0, 1.42, 0], scale: [2.1, 0.92, 1.6] }
   ];
 
-  const headlandSpecs: readonly { position: readonly [number, number, number]; scale: readonly [number, number, number] }[] = [
-    { position: [-19, 0.2, -23], scale: [9, 2.4, 3.6] },
-    { position: [-7, 0.1, -27], scale: [7, 1.8, 3.0] },
-    { position: [4, 0.3, -25], scale: [6, 2.1, 2.8] },
-    { position: [13, -0.1, -28], scale: [8, 1.5, 3.2] },
-    { position: [23, 0.2, -24], scale: [9, 2.0, 3.4] }
+  const pineTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: number }[] = [
+    { position: [-10.2, 0, -2.9], rotation: [0, 0.3, 0], scale: 0.25 },
+    { position: [-5.1, 0, -3.7], rotation: [0, 1.2, 0], scale: 0.22 },
+    { position: [3.8, 0, -3.9], rotation: [0, 2.1, 0], scale: 0.26 },
+    { position: [10.8, 0, -2.7], rotation: [0, 3.0, 0], scale: 0.27 },
+    { position: [11.5, 0, 2.2], rotation: [0, 4.1, 0], scale: 0.22 }
   ];
-  const headlandInst = headlandSpecs.map((h, i) => ({ ...h, rotation: [0, i * 0.9, 0] as [number, number, number] }));
-  const headlandColors = headlandSpecs.map((_, i) => mixHex(hazeColor, backdrop, 0.25 + (i % 3) * 0.12));
 
   nodes.push(
     primitives.cylinder({ name: "stage-ground", material: islandSurface("turf", groundColor, 0.78, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.175, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
-    // Chalk cliff lip around the turf at the island edge so the disc reads as a sea stack, not a decal. GU47 phase 2:
-    // its top sits 2 cm under the turf (it was 1 cm over, so the wider chalk disc covered the whole island white).
     primitives.cylinder({ name: "stage-ground-rim", material: islandSurface("wetRock", rimColor, 0.88, textured), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.2, 0).scale([18.5, 0.36, 14.5]),
-    // Bleached-sand beach ring above the waterline.
+      .position(1.5, -0.2, 0).scale([18.5, 0.36, 14.5]).runtime({ id: "stage-ground-rim", tags: ["stage"] }),
     primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
       .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
-    // Shallows and seabed under the animated sea (SS47-E3); the seabed is also the sea when world water is off.
     primitives.cylinder({ name: "stage-shallows", material: seaGloss(shallowColor, row.seaReflection), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]),
-    primitives.cylinder({ name: "stage-ocean", material: seaGloss(mixHex(terrain.sea, "#0b2a38", 0.45), row.seaReflection), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.45, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
+      .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]).runtime({ id: "stage-shallows", tags: ["stage"] }),
+    // Animated dual-backend GLSL 300 es + WGSL coastal water (`dualAnimatedWaterSpec`).
+    primitives.cylinder({ name: "stage-ocean", material: coastalSeaMaterial(row, options.reducedMotion), castShadow: false, receiveShadow: true })
+      .position(1.5, -0.42, -2.0).scale([72, 0.24, 58]).runtime({ id: "stage-ocean", tags: ["stage"] }),
     ...(row.worldWater ? [seaNode(row, options)] : []),
-    // GU47 phase 7 (4.7.6, Task B): mounds, grass patches, pebbles and the far headlands share one instanced sphere draw
-    // (they were four, roughness 0.92-1; one 0.94). The headlands sit outside the island's shadow fit, so receiving
-    // shadows changes nothing for them.
-    primitives.sphere({
-      name: "terrain-spheres", material: pbr("#ffffff", { roughness: 0.94, metallic: 0.01 }),
-      instances: [...moundInst, ...patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), ...pebbleInst, ...headlandInst],
-      instanceColors: [...moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), ...patchColors, ...pebbleInst.map(() => rockTintSmall), ...headlandColors],
-      castShadow: false, receiveShadow: true
-    }),
-    primitives.box({ name: "dirt-path", material: pbr(dirtColor, { roughness: 0.96, metallic: 0 }), instances: pathInst, instanceColors: pathInst.map((_, i) => (i % 2 === 0 ? dirtColor : mixHex(dirtColor, groundColor, 0.28))), castShadow: false, receiveShadow: true }),
     primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: true, receiveShadow: false }),
-    // GU47 WP-36 (SS47-A1): the game's own Meshy sea-stack islet on the far sea (1 draw, no shadow, no collider).
+    // Stylized coastal sea-stack + chapter horizon set pieces (all mounted with runtime IDs so chapters swap live).
     model(setPieces.sling_seaStackIsland, { name: "far-sea-stack", position: SEA_STACK_PLACEMENT.position, rotation: [0, SEA_STACK_PLACEMENT.rotationY, 0], castShadow: false, receiveShadow: false })
       .scale(SEA_STACK_PLACEMENT.scale),
-    // GU47 wave 2 (WP-36 second batch): the far lighthouse islet (every chapter) and this chapter's set piece (crane,
-    // greenhouse frame, curtain wall or crystal crater); one draw each, no shadow, no collider.
-    ...farSetPiecesFor(chapter.id).map((piece) =>
-      model(setPieces[piece.key], { name: `far-${piece.key.slice(6)}`, position: [piece.position[0], piece.position[1], piece.position[2]], rotation: [0, piece.rotationY, 0], castShadow: false, receiveShadow: false })
-        .scale(piece.scale)),
-    // GU47 phase 7 (4.7.6, Task B): the launch knoll and the stone-bridge prop are one instanced draw of the bridge GLB.
+    ...ALL_FAR_PIECES.map(({ chapter: onlyChapter, piece }) => {
+      const id = farPieceNodeId(piece.key);
+      const active = onlyChapter === null || onlyChapter === chapter.id;
+      return model(setPieces[piece.key], {
+        name: id,
+        position: active ? [piece.position[0], piece.position[1], piece.position[2]] : [0, -160, 0],
+        rotation: [0, piece.rotationY, 0],
+        visible: active,
+        castShadow: false,
+        receiveShadow: false
+      }).scale(piece.scale).runtime({ id, tags: ["backdrop"] });
+    }),
     instances.model(assets.gullsiegeBridgeMeshy, {
       name: "launch-knoll-and-bridge", castShadow: true, receiveShadow: true,
       transforms: [
@@ -556,70 +589,103 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     }).runtime({ id: "launch-knoll", tags: ["stage"] }),
     model(assets.gullsiegeBridgeMeshy, {
       name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0],
-      // SS47-E4: the drizzle chapter wets the fort pad (darker, glossier); a tint only, the pad stays above 70 luma.
       ...(row.weather === "drizzle" ? { materialOverrides: [{ color: "#b9b3a8", colorMode: "multiply" as const, roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.15 }] } : {})
-    })
-      .scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
+    }).scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
   );
 
-  // SS47-W1: seeded instanced beach dressing (5 draws), clear of the flight lane; wind bends the sea grass.
   nodes.push(...beachDressingNodes(row, options), ...chapterWeather(row, options));
-  // SS47-H1: the wooden level sign with the chapter name in SDF text (+3 draws).
   nodes.push(...levelSignNodes(chapter.id));
 
-  // Stylized chapter rocks and the island trees. GU47 phase 7 (4.7.6, Task B draw budget): the 9 rock placements
-  // (boulders A, back rocks B) and the 5 trees (3 pines of 23 meshes, 2 conifer rows of 6) were one model() node each,
-  // 95 meshes drawn in every pass (main, contact-shadow depth, two sun cascades). They are now three baked GLBs
-  // (../art/staticSets.placements.json, tools/bake-static-sets.mjs) with the same transforms, geometry and materials,
-  // one primitive per material: 8 meshes, drawn with scaleMode "world" (the bake applied each placement's model()
-  // normalisation). The rocks keep their per-kind material overrides.
+  // Sun-bleached coastal limestone strata bluffs + lightweight 61 KB instanced coastal pines (1 draw each).
   nodes.push(
-    model(setPieces.sling_rocksB, { name: "hill-rocks-b", position: [0, 0, 0], scaleMode: "world", materialOverrides: rockOverrides })
-      .runtime({ id: "hill-rocks-b", tags: ["dressing"] }),
-    model(setPieces.sling_rocksA, { name: "hill-rocks-a", position: [0, 0, 0], scaleMode: "world", materialOverrides: boulderOverrides })
-      .runtime({ id: "hill-rocks-a", tags: ["dressing"] }),
-    model(setPieces.sling_islandTrees, { name: "island-trees", position: [0, 0, 0], scaleMode: "world" })
-      .runtime({ id: "island-trees", tags: ["cloud"] })
+    instances.roundedBox({
+      name: PROP_IDS.cliffs,
+      params: { radius: 0.18, widthSegments: 3 },
+      material: limestoneCliffMaterial(row),
+      transforms: cliffTransforms,
+      castShadow: true,
+      receiveShadow: true
+    }).runtime({ id: PROP_IDS.cliffs, tags: ["dressing"] }),
+    instances.model(assets.propConifer, {
+      name: "island-trees",
+      castShadow: true,
+      receiveShadow: true,
+      transforms: pineTransforms
+    }).runtime({ id: "island-trees", tags: ["cloud"] })
   );
 
   // ------------------------------------------------------------- slingshot --
-  // Hero typed asset — the 3D Meshy siege catapult — as the launcher on the knoll.
+  const saddleLeather = material.physical({
+    name: "saddle leather pouch",
+    color: "#5e3419",
+    roughness: 0.62,
+    metallic: 0,
+    sheen: 0.36,
+    sheenColor: "#b87b48",
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.35,
+    normal: material.proceduralTextures.fabric({ scale: 24, strength: 0.4, contrast: 0.65 })
+  });
+  const carvedDriftwood = material.physical({
+    name: "carved driftwood fork",
+    color: "#8f6339",
+    roughness: 0.74,
+    metallic: 0,
+    clearcoat: 0.28,
+    clearcoatRoughness: 0.36,
+    normal: material.proceduralTextures.fabric({ scale: 16, strength: 0.35, contrast: 0.62 })
+  });
+
   nodes.push(
     model(assets.gullsiegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.42, 0], rotation: [0, 0.35, 0] })
       .scale(1.35)
       .runtime({ id: SLING_IDS.catapult, tags: ["sling"] }),
-    // Y-fork arms and trunk: GU47 phase 7 (4.7.6) draws them in the instanced "flag-poles" cylinders below (static).
-    // Pouch + bands + loaded 3D Meshy Hero Gull + waiting Hero Gull squad on the launch knoll.
-    model(assets.gullsiegeCrateMeshy, { name: "sling-pouch", position: [-7.4, 1.6, 0] })
-      .scale([0.22, 0.08, 0.18]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
-    primitives.box({ name: "sling-band-l", material: pbr("#d94f30", { roughness: 0.6 }) })
-      .position(-7.5, 1.7, -0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
-    primitives.box({ name: "sling-band-r", material: pbr("#d94f30", { roughness: 0.6 }) })
-      .position(-7.5, 1.7, 0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "sling-loaded", position: [-7.4, 1.62, 0], rotation: [0, Math.PI * 0.5, 0] })
+    // Carved driftwood Y-fork yoke + bronze binding collars above the catapult base.
+    instances.cylinder({
+      name: "sling-driftwood-yoke",
+      material: carvedDriftwood,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: [
+        { position: [-7.42, 1.08, 0], rotation: [0, 0, 0.06], scale: [0.1, 0.82, 0.1] },
+        { position: [-7.64, 1.56, -0.22], rotation: [0.16, 0, 0.42], scale: [0.068, 0.86, 0.068] },
+        { position: [-7.64, 1.56, 0.22], rotation: [-0.16, 0, 0.42], scale: [0.068, 0.86, 0.068] }
+      ]
+    }),
+    // Sculpted saddle-leather cradle pouch (replaces the squashed crate!).
+    primitives.roundedBox({ name: "sling-pouch", params: { radius: 0.045, widthSegments: 2 }, material: saddleLeather, castShadow: true, receiveShadow: true })
+      .position(-7.4, 1.6, 0).scale([0.24, 0.11, 0.24]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
+    // Paired GLSL 300 es + WGSL strain-colored elastic band ribbons.
+    primitives.box({ name: "sling-band-l", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
+      .position(-7.5, 1.7, -0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
+    primitives.box({ name: "sling-band-r", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
+      .position(-7.5, 1.7, 0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
+    model(assets.gullsiegeHeroGullMeshy, { name: "sling-loaded", position: [-7.4, 1.62, 0], rotation: [0, Math.PI * 0.5, 0], materialOverrides: ammoGullLook("pebble") })
       .scale(0.46)
       .animate({ clip: "Ready", loop: true, speed: 1.0 })
       .runtime({ id: SLING_IDS.loaded, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-0", position: [-8.35, 0.25, 0.52], rotation: [0, Math.PI * 0.42, 0] })
+    // Per-ammo helm / crest / cinder crown perched on the loaded Hero Gull.
+    primitives.sphere({
+      name: SLING_IDS.ammoCrest,
+      material: material.lacquer({ name: "ammo crest", color: "#ffd766", roughness: 0.2, clearcoat: 1 }),
+      castShadow: false,
+      receiveShadow: false
+    }).position(-7.4, 1.98, 0).scale(0.08).runtime({ id: SLING_IDS.ammoCrest, tags: ["sling"] }),
+    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-0", position: [-8.35, 0.25, 0.52], rotation: [0, Math.PI * 0.42, 0], materialOverrides: ammoGullLook("stone") })
       .scale(0.52)
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
       .runtime({ id: "ammo-wait-0", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-1", position: [-8.95, 0.2, -0.42], rotation: [0, Math.PI * 0.48, 0] })
+    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-1", position: [-8.95, 0.2, -0.42], rotation: [0, Math.PI * 0.48, 0], materialOverrides: ammoGullLook("triple") })
       .scale(0.48)
       .animate({ clip: "Idle_Loop", loop: true, speed: 1.05 })
       .runtime({ id: "ammo-wait-1", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-2", position: [-9.45, 0.16, 0.28], rotation: [0, Math.PI * 0.45, 0] })
+    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-2", position: [-9.45, 0.16, 0.28], rotation: [0, Math.PI * 0.45, 0], materialOverrides: ammoGullLook("ember") })
       .scale(0.45)
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
       .runtime({ id: "ammo-wait-2", tags: ["stage"] })
   );
 
   // ------------------------------------------------------- piece pools ------
-  // Every fortress piece is a real 3D Meshy GLB model (crates, barrels, planks, stone bridge blocks).
-  // Block pool = the stone-bridge GLB (stone, glass, ice, obsidian); wood blocks use the crate/plank pools below.
-  // GU47 phase 7 (4.7.6, Task B): on solid-block rows the block pool is one instanced rounded block per family (same
-  // geometry and material as the old per-block nodes), driven through BlockInstancePool (blockInstances.ts). Like the
-  // old pool they mount with the stone material and take their family's material at runtime (first flush).
   if (row.solidBlocks) {
     for (const family of BLOCK_FAMILIES) {
       nodes.push(instances.roundedBox({
@@ -633,21 +699,43 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
         .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
     }
   }
-  for (let i = 0; i < POOL.crates; i += 1) {
-    nodes.push(model(assets.gullsiegeCrateMeshy, { name: crateNodeId(i), position: [0, -120, 0] })
-      .scale(0.38).runtime({ id: crateNodeId(i), tags: ["piece"] }));
-  }
-  for (let i = 0; i < POOL.barrels; i += 1) {
-    nodes.push(model(assets.gullsiegeBarrelMeshy, { name: barrelNodeId(i), position: [0, -120, 0] })
-      .scale(0.42).runtime({ id: barrelNodeId(i), tags: ["piece"] }));
-  }
-  for (let i = 0; i < POOL.planks; i += 1) {
-    nodes.push(model(assets.gullsiegePlanksMeshy, { name: plankNodeId(i), position: [0, -120, 0] })
-      .scale([0.65, 0.6, 0.45]).runtime({ id: plankNodeId(i), tags: ["piece"] }));
-  }
 
-  // ------------------------------------------------------- gull rigs --------
-  // Bespoke 3D Meshy Raider Bosses (pirate boar kings) perched inside the fortress!
+  // WP-12: 84 individual crate/barrel/plank/debris model nodes collapsed into 4 `instances.model` pools + 1 keg band pool!
+  nodes.push(
+    instances.model(assets.gullsiegeCrateMeshy, {
+      name: propPoolNodeId("crate"),
+      castShadow: true,
+      receiveShadow: true,
+      transforms: Array.from({ length: POOL.crates }, () => PARKED_BLOCK)
+    }).runtime({ id: propPoolNodeId("crate"), tags: ["piece"] }),
+    instances.model(assets.gullsiegeBarrelMeshy, {
+      name: propPoolNodeId("barrel"),
+      castShadow: true,
+      receiveShadow: true,
+      transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)
+    }).runtime({ id: propPoolNodeId("barrel"), tags: ["piece"] }),
+    instances.cylinder({
+      name: BARREL_BAND_POOL_ID,
+      material: KEG_BAND_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)
+    }).runtime({ id: BARREL_BAND_POOL_ID, tags: ["piece"] }),
+    instances.model(assets.gullsiegePlanksMeshy, {
+      name: propPoolNodeId("plank"),
+      castShadow: true,
+      receiveShadow: true,
+      transforms: Array.from({ length: POOL.planks }, () => PARKED_BLOCK)
+    }).runtime({ id: propPoolNodeId("plank"), tags: ["piece"] }),
+    instances.model(assets.gullsiegePlanksMeshy, {
+      name: propPoolNodeId("debris"),
+      castShadow: true,
+      receiveShadow: false,
+      transforms: Array.from({ length: POOL.debris }, () => PARKED_BLOCK)
+    }).runtime({ id: propPoolNodeId("debris"), tags: ["debris"] })
+  );
+
+  // ------------------------------------------------------- raider rigs ------
   for (let g = 0; g < POOL.gullRigs; g += 1) {
     nodes.push(
       model(assets.gullsiegeRaiderBossMeshy, { name: gullPartId(g, "body"), position: [0, -120, 0], rotation: [0, -Math.PI * 0.45, 0] })
@@ -657,23 +745,35 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     );
   }
 
-  // ------------------------------------------------- projectiles + debris ---
+  // ------------------------------------------------- projectiles + ribbon ---
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    // 5.0.3: the pool is created hidden below the stage like every other pooled node (5.0.2 draws hidden-created pooled
-    // skinned models once they are shown); syncVisuals places and shows the node when a shot uses it.
     nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
       .scale(1)
       .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
       .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
   }
-  for (let i = 0; i < POOL.debris; i += 1) {
-    nodes.push(model(assets.gullsiegePlanksMeshy, { name: debrisNodeId(i), position: [0, -120, 0] })
-      .scale(0.18).runtime({ id: debrisNodeId(i), tags: ["debris"] }));
-  }
-  // SS47-V1: the 14 sphere puffs are gone; breaks, hits and abilities fire the runtime VFX pack (vfx.ts).
+
+  // Predictive parabolic trajectory ribbon segments (paired GLSL 300 es + WGSL flow-pulsed arc dashes).
+  const arcRibbonMat = trajectoryRibbonMaterial("#ffe89e", options.reducedMotion ? 0 : 2.8);
   for (let i = 0; i < POOL.dots; i += 1) {
-    nodes.push(primitives.sphere({ name: dotNodeId(i), material: glow("#fff7d8", 1.8), castShadow: false, receiveShadow: false })
-      .position(0, -120, 0).scale(0.07).runtime({ id: dotNodeId(i), tags: ["trajectory"] }));
+    nodes.push(
+      primitives.box({ name: dotNodeId(i), material: arcRibbonMat, castShadow: false, receiveShadow: false })
+        .position(0, -120, 0).scale([0.28, 0.05, 0.025]).runtime({ id: dotNodeId(i), tags: ["trajectory"] })
+    );
+  }
+
+  // Pooled 8x4 RGBA8 flipbook cards (`createFlipbookAtlas("dust")` masonry plumes & `createFlipbookAtlas("sparks")` blasts).
+  for (let i = 0; i < POOL.plumes; i += 1) {
+    nodes.push(
+      primitives.plane({ name: plumeNodeId(i), material: masonryPlumeMaterial(0), castShadow: false, receiveShadow: false })
+        .position(0, -120, 0).scale(1.1).runtime({ id: plumeNodeId(i), tags: ["vfx"] })
+    );
+  }
+  for (let i = 0; i < POOL.blasts; i += 1) {
+    nodes.push(
+      primitives.plane({ name: blastNodeId(i), material: blastSparksMaterial(0), castShadow: false, receiveShadow: false })
+        .position(0, -120, 0).scale(1.5).runtime({ id: blastNodeId(i), tags: ["vfx"] })
+    );
   }
 
   // ------------------------------------------------------- windmill rigs ----
@@ -691,10 +791,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   }
 
   // -------------------------------------------------- chapter dressing ------
-  // Hero typed 3D Meshy props placed right around the slingshot and fortress so they frame every shot!
   nodes.push(
-    // Off to the far left-front so it frames the launch knoll without standing
-    // between the camera and the slingshot.
     model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-12.4, 0, 4.2], rotation: [0, 0.5, 0] })
       .scale(1.85).runtime({ id: PROP_IDS.watchtower, tags: ["dressing"] }),
     model(assets.gullsiegeGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [9.8, 0, -2.4], rotation: [0, -0.45, 0] })
@@ -706,10 +803,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   );
 
   // -------------------------------------------------- foreground framing ----
-  // Static props at the edges of the launch knoll populate the lower third
-  // without entering the flight lane (z ≈ 0 between sling and fort).
   nodes.push(
-    // GU47 phase 7 (4.7.6, Task B): the three foreground crates and two barrels as one instanced draw per GLB.
     instances.model(assets.gullsiegeCrateMeshy, {
       name: "fg-crates", castShadow: true, receiveShadow: true,
       transforms: [
@@ -725,22 +819,21 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
         { position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0], scale: 0.38 }
       ]
     }).runtime({ id: "fg-barrels", tags: ["dressing"] }),
-    // GU47 phase 7 (4.7.6, Task B): the banner and flag dressing as one instanced draw per shape (same colours, sizes
-    // and places; one roughness per shape). Was 14 nodes: banner pole, banner, trim, finial; bastion, plinth, mast,
-    // finial, pennant, hoist rope, ribbon; the slingshot's two fork arms and trunk. The bastion and the pennant keep
-    // their own nodes (main.ts recolours the pennant).
+    instances.cylinder({
+      name: "fg-barrel-bands", material: KEG_BAND_MATERIAL, castShadow: false, receiveShadow: true,
+      transforms: [
+        { position: [-4.0, 0.26, 4.95], rotation: [0, 0.2, 0], scale: [0.44, 0.18, 0.44] },
+        { position: [-9.6, 0.2, 4.1], rotation: [0, 0.5, 0], scale: [0.34, 0.14, 0.34] }
+      ]
+    }),
     instances.cylinder({
       name: "flag-poles", material: pbr("#ffffff", { roughness: 0.82 }), castShadow: true, receiveShadow: true,
       transforms: [
         { position: [6.3, 1.35, 5.15], scale: [0.06, 2.7, 0.06] },
         { position: [7.2, 1.14, -0.6], scale: [0.42, 0.18, 0.42] },
-        { position: [7.2, 3.4, -0.6], scale: [0.07, 4.5, 0.07] },
-        // The slingshot's Y-fork arms and trunk (were sling-fork-l/-r and sling-trunk, roughness 0.75-0.8).
-        { position: [-7.62, 1.5, -0.22], rotation: [0, 0, 0.42], scale: [0.055, 0.85, 0.055] },
-        { position: [-7.62, 1.5, 0.22], rotation: [0, 0, 0.42], scale: [0.055, 0.85, 0.055] },
-        { position: [-7.4, 1.0, 0], scale: [0.09, 0.8, 0.09] }
+        { position: [7.2, 3.4, -0.6], scale: [0.07, 4.5, 0.07] }
       ],
-      colors: ["#7a4e26", "#5a5448", "#6a4a2a", "#8a5a2e", "#8a5a2e", "#7a4e26"]
+      colors: ["#7a4e26", "#5a5448", "#6a4a2a"]
     }),
     instances.box({
       name: "flag-cloths", material: pbr("#ffffff", { roughness: 0.72 }), castShadow: false, receiveShadow: true,
@@ -753,29 +846,28 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       colors: [mixHex(accentColor, "#c8452e", 0.4), mixHex(accentColor, "#ffe9b0", 0.5), "#3a2c20", mixHex(accentColor, "#f0b45a", 0.5)]
     }),
     instances.sphere({
-      name: "flag-finials", material: pbr("#ffffff", { roughness: 0.42, metallic: 0.32 }), castShadow: false, receiveShadow: true,
+      name: "flag-finials", material: material.studioMetal({ color: "#e8cf8c", roughness: 0.24 }), castShadow: false, receiveShadow: true,
       transforms: [
         { position: [6.3, 2.75, 5.15], scale: [0.13, 0.13, 0.13] },
         { position: [7.2, 5.7, -0.6], scale: [0.16, 0.16, 0.16] }
-      ],
-      colors: [mixHex(accentColor, "#ffe9b0", 0.55), mixHex(accentColor, "#ffe9b0", 0.55)]
+      ]
     })
   );
 
-  // Fortress flag: the stone bastion and the pennant on the mast through the central keep.
+  // Fortress flag bastion + animated pennant.
   nodes.push(
-    primitives.box({ name: "fortress-flag-bastion", material: pbr(mixHex("#738296", farColor, 0.22), { roughness: 0.82, metallic: 0.05 }), castShadow: true, receiveShadow: true })
+    primitives.box({ name: "fortress-flag-bastion", material: SOLID_BLOCK_MATERIALS.stone, castShadow: true, receiveShadow: true })
       .position(7.2, 0.55, -0.6).scale([1.15, 1.1, 1.15]),
-    primitives.box({ name: "flag-pennant", material: pbr("#ff4d5a", { roughness: 0.7 }), castShadow: false })
+    primitives.box({ name: "flag-pennant", material: material.physical({ color: "#ff4d5a", roughness: 0.65, sheen: 0.45, sheenColor: "#ffb3b8" }), castShadow: false })
       .position(7.74, 5.15, -0.6).scale([1.04, 0.5, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
   );
 
   // --------------------------------------------------------------- post ----
-  // FXAA is an image-quality pass, not motion: it stays on for reduced-motion players. Only the vignette is dropped.
   nodes.push(...chapterPost(row, options));
 
   // ---------------------------------------------------------- camera spec ---
-  const cameraSpec = camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
+  const cameraSpec = camera.perspective({
+    ...labCameraOptions(readLabFlags(), "reversed"),
     position: [-2.5, 4.0, 15.5],
     target: [-0.5, 1.5, 0],
     fov: 55
@@ -786,8 +878,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
 export function buildScene(chapter: ChapterDef, options: StageOptions): ReturnType<typeof scene> {
   const { nodes, cameraSpec } = buildStage(chapter, options);
-  // The horizon colour sits behind the sky node, so the sea edge and any frame before the sky binds stay on palette.
-  let s = scene().background(chapterLook(chapter.id).horizon, { toneMapped: false });
+  let s = scene();
   for (const node of nodes) s = s.add(node);
   s = s.camera(cameraSpec);
   return s;

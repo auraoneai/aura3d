@@ -1,53 +1,59 @@
 /**
- * Splat Turf look table (§6.3): paint-world carnival — a white road under a plum-to-peach painted sky,
- * saturated trail paint that cycles every 25 m stretch, plum ink HUD. Presentation only; the sim never
- * reads this file, so replays and traces are look-independent.
+ * Splat Turf look table: sunlit urban skate-arena & art-park causeway — warm gesso concrete deck under a
+ * crisp cobalt-to-cream sunlit sky, glossy clearcoat acrylic trail pigments cycling every 25 m stretch,
+ * and high-contrast plum-on-cream AuraOne territory HUD. Presentation only; the sim never reads this file,
+ * so replays and traces remain 100% look-independent.
  */
-import { hexToLinear, sunDirection, type Rgb, type SkyStop } from "../../../examples/shared/runner-kit/index";
+import { hexSrgb, hexToLinear, sunDirection, type Rgb, type SkyStop } from "../../../examples/shared/runner-kit/index";
 
 export const LOOK = {
   id: "splat-turf",
-  background: "#ffc2bc",
-  /** Sunset dome: violet zenith, rose band, gold horizon line (t = 0.5 is the horizon). */
+  background: "#bfe4ff",
+  /** Sunlit outdoor sky dome: crisp cobalt zenith, azure mid-sky, sunlit cream horizon (t = 0.5 is horizon). */
   skyStops: [
-    { t: 0, hex: "#2c1866" },
-    { t: 0.28, hex: "#6a3fb8" },
-    { t: 0.43, hex: "#d47acc" },
-    { t: 0.49, hex: "#ffaab4" },
-    { t: 0.52, hex: "#ffd0a0" },
-    { t: 0.6, hex: "#f6aac2" },
-    { t: 1, hex: "#b98ad6" }
+    { t: 0, hex: "#1b63cc" },
+    { t: 0.24, hex: "#479cf2" },
+    { t: 0.42, hex: "#8fd0ff" },
+    { t: 0.49, hex: "#e4f4ff" },
+    { t: 0.52, hex: "#fff3da" },
+    { t: 0.62, hex: "#cfe9f6" },
+    { t: 1, hex: "#8fc0ea" }
   ] as readonly SkyStop[],
-  /** Horizon haze every lit surface fades towards (matches the sky's horizon band). */
-  haze: "#ffbcbc",
-  /** Low sun ahead and to the right of the run (world direction), warm white. */
-  sunDir: [0.42, 0.1, -1] as readonly [number, number, number],
-  sunColor: "#fff0c8",
-  /** Lavender keel under the deck: the road reads as a floating ribbon. */
-  keel: "#a88ad8",
+  /** Sunlit atmospheric horizon haze every distant surface melts towards. */
+  haze: "#d8eeff",
+  /** Sunlit highlight direction ahead of the run (sky sun disc + clearcoat specular lobe). */
+  sunDir: [-0.36, 0.52, -0.77] as readonly [number, number, number],
+  sunColor: "#fff7de",
+  /** Architectural skate-park slate underside beneath the floating gesso deck. */
+  keel: "#584476",
   post: {
-    bloom: { intensity: 0.55, threshold: 0.9, scatter: 0.6 },
-    grade: { contrast: 1.08, saturation: 1.1, temperature: 0.03, gain: 1 },
-    vignette: { intensity: 0.24, color: "#3a2148" }
+    bloom: { intensity: 0.3, threshold: 0.86, scatter: 0.58 },
+    grade: { contrast: 1.06, saturation: 1.08, vibrance: 0.08, temperature: 0.02, gain: 1 },
+    vignette: { intensity: 0.14, color: "#2b1c3d" }
   },
   road: "#ffffff",
-  roadEdge: "#3b1f47",
-  ball: "#ff3d8b",
-  can: "#ffb400",
-  solvent: "#14c9c9",
-  eraser: "#8a8a99",
-  finish: "#ffb400",
+  roadEdge: "#34224a",
+  ball: "#ff2e88",
+  can: "#ffb000",
+  solvent: "#0ec8d8",
+  eraser: "#687086",
+  finish: "#ffb000",
   ink: "#3b1f47",
   paper: "#fff8f2",
-  wipeWash: "#bff2f2",
-  /** Soft turf the road runs across (horizon and motion read). */
-  turf: "#9fe0c4",
-  /** Trail paint cycles per 25 m stretch so the coverage map reads as a carnival rainbow. */
-  paintColors: ["#ff3d8b", "#ffb400", "#14c9c9", "#7a4fd0", "#5fd400", "#ff6a00"] as readonly string[],
-  sun: sunDirection(55, 25)
+  wipeWash: "#bff4f8",
+  /** Sunlit park turf on floating roadside islets. */
+  turf: "#72dca8",
+  /** Glossy clearcoat acrylic pigments cycling per 25 m stretch. */
+  paintColors: ["#ff2e88", "#ffb000", "#0ec8d8", "#7b4dff", "#4ad620", "#ff6218"] as readonly string[],
+  sun: sunDirection(48, -32)
 } as const;
 
 export const linear = (hex: string): Rgb => hexToLinear(hex);
+
+export function hexToRgba8(hex: string, alpha = 255): readonly [number, number, number, number] {
+  const [r, g, b] = hexSrgb(hex);
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), alpha];
+}
 
 /** Deterministic per-cell trail colour (no RNG: presentation must never consume gameplay draws). */
 export function paintColorFor(row: number): string {

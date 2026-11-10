@@ -16,25 +16,28 @@ describe("heatsink scene", () => {
   const nodes = flatten(snapshot.nodes);
   const lightsOf = (kind: string) => nodes.filter((n) => n.kind === "light" && (n.light === kind || n.type === kind));
   const sceneOf = (id: keyof typeof CIRCUITS) => flatten((buildThermalDriftScene({ circuit: CIRCUITS[id] }).toJSON() as unknown as { nodes: Node[] }).nodes);
-  it("replaces the night-city look with the circuit rig and draws the circuit HDRI as the sky (HS-01, HS-03)", () => {
+  it("replaces the night-city look with the circuit rig, prefiltered HDRI IBL (background: false) and a night sky dome (HS-01, WP-07)", () => {
     expect(JSON.stringify(snapshot.nodes)).not.toContain("night-city");
     expect(JSON.stringify(snapshot.nodes)).not.toContain("aura-look:");
     const skies = (id: keyof typeof CIRCUITS) => sceneOf(id).filter((n) => n.kind === "environment") as unknown as { environment: string; background: boolean; intensity: number; texture: { url: string } }[];
-    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.7, "/hdri/kloppenheim_02_1k.hdr"]]);
-    expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[1.1, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
-    expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
+    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", false, 0.7, "/hdri/kloppenheim_02_1k.hdr"]]);
+    expect(skies("dustfall").map((e) => [e.background, e.intensity, e.texture.url])).toEqual([[false, 1.1, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
+    expect(skies("vesper").map((e) => [e.background, e.intensity, e.texture.url])).toEqual([[false, 0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
+    for (const id of ["grand", "dustfall", "vesper"] as const) {
+      expect(sceneOf(id).some((n) => n.kind === "sky"), id).toBe(true);
+    }
   });
   it("has no backdrop wall, no horizon bands, and no point lights besides the HS-02 sodium lamps (HS-01, HS-03)", () => {
     for (const name of ["sky-backdrop", "horizon-band-a", "horizon-band-b"]) expect(nodes.find((n) => n.name === name), name).toBeUndefined();
     expect(lightsOf("point").map((n) => n.name)).toEqual(["td-sodium-gantry-l", "td-sodium-gantry-r"]);
     expect(lightsOf("ambient")).toHaveLength(0);
   });
-  it("has one shadowed key (PCSS, 3 cascades), an unshadowed cyan rim, and the up-fill only on VESPER (HS-01)", () => {
+  it("has one shadowed key (PCSS, 2 tight cascades), an unshadowed cyan rim, and the up-fill only on VESPER (HS-01, WP-07)", () => {
     for (const id of ["grand", "dustfall", "vesper"] as const) {
       const all = sceneOf(id);
       const shadowed = all.filter((n) => n.kind === "light" && n.shadow);
       expect(shadowed, id).toHaveLength(1);
-      expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 3 });
+      expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 2, mapSize: 2048, maxDistance: 65 });
       const directional = all.filter((n) => n.kind === "light" && n.light === "directional") as unknown as { name: string; color: string; intensity: number }[];
       expect(directional.find((l) => l.name === "td coolant rim")).toMatchObject({ color: "#35d6ff", intensity: id === "grand" ? 0.55 : 0.35 });
       expect(directional.some((l) => l.name === "td vent up-fill"), id).toBe(id === "vesper");
@@ -70,9 +73,8 @@ describe("heatsink scene", () => {
       expect(deck.material.normal?.url, id).toMatch(/asphalt033\/normal-gl-512\.webp$/);
       expect(deck.material.roughnessMap?.url, id).toMatch(/asphalt033\/roughness-512\.webp$/);
       expect(deck.material.roughness * 0.745, id).toBeCloseTo(CIRCUIT_LOOKS[id].road.roughness, 3);
-      const probesOf = all.filter((n) => n.kind === "probe") as unknown as { options: { update: unknown } }[];
-      expect(probesOf.length, id).toBe(id === "dustfall" ? 0 : 1);
-      for (const p of probesOf) expect(p.options.update).toEqual({ everyNFrames: 6 });
+      const probesOf = all.filter((n) => n.kind === "probe");
+      expect(probesOf.length, id).toBe(0);
       expect(all.some((n) => n.kind === "effect" && n.effect === "screen-space-reflections"), id).toBe(id !== "dustfall");
     }
     const bytes = ["color-512.webp", "normal-gl-512.webp", "roughness-512.webp"].reduce((sum, f) => sum + statSync(`apps/showcase-heatsink/textures/asphalt033/${f}`).size, 0);
@@ -107,11 +109,11 @@ describe("heatsink scene", () => {
     expect(embers.maxParticles).toBeLessThanOrEqual(96);
     expect(embers.blend).toBe("additive");
   });
-  it("drops the shadow casters of far towers and emissive pieces, keeps them on arches, tunnels and drones (HS-20)", () => {
+  it("drops the shadow casters of far towers and emissive pieces, keeps them on arches, tunnels and drones (HS-20, WP-07)", () => {
     const models = nodes.filter((n) => n.kind === "model") as unknown as { name: string; castShadow?: boolean }[];
     const castOf = (name: string) => models.find((m) => m.name === name)?.castShadow;
-    for (const name of ["prop-tower-l-left", "prop-tower-t-left", "prop-tower-x-right", "prop-billboard-left", "prop-checkpoint-ring", "prop-lava-fall"]) expect(castOf(name), name).toBe(false);
-    for (const name of ["prop-arch-a", "prop-tunnel-a", "prop-overpass", "prop-gantry-start", "drone-orion"]) expect(castOf(name), name).not.toBe(false);
+    for (const name of ["batch-heatsink_thermalTowerLIron", "prop-tower-t-left", "prop-tower-x-right", "batch-heatsinkHoloBillboard", "prop-checkpoint-ring", "prop-lava-fall"]) expect(castOf(name), name).toBe(false);
+    for (const name of ["batch-heatsink_thermalArchIron", "batch-heatsinkTunnelFrame", "prop-overpass", "prop-gantry-start", "drone-orion"]) expect(castOf(name), name).not.toBe(false);
   });
   it("tints every drone towards its DRONE_SPECS colour (hue within 20 deg) under a clearcoat, keeping its textures (HS-10)", () => {
     const hue = (hex: string) => {

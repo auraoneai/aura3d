@@ -12,6 +12,7 @@
 import { game, geometry, material, type AuraCustomGeometrySpec, type AuraMaterialSpec } from "@aura3d/engine";
 import { BASELINE_Z, DOUBLES_X } from "./constants";
 import type { NodeInput } from "./rigPort";
+import { racketStringsShaderSpec } from "./shaders";
 import { VENUE_PALETTES, venueKey } from "./venues";
 
 export type CourtPart = "court" | "alley" | "apron" | "ground";
@@ -47,35 +48,57 @@ export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPar
   moon: { court: "#2c5f96", alley: "#244e7c", apron: "#8e9297", ground: "#24272b" }
 };
 
-/** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */
+/** The material of one court part at a venue (multi-lobe `material.physical` PBR per venue surface family). */
 export function surfaceMaterial(venue: string | null | undefined, part: CourtPart): AuraMaterialSpec {
   const key = venueKey(venue);
   const pal = { ...VENUE_PALETTES[key]!, ...WORLD_TOUR_PALETTE[key] };
   const kind = VENUE_SURFACE[key] ?? "acrylic";
   const color = (part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground);
-  // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
-  // GU47 phase 3: the engine's moon planet preset keeps its own pale #cbd5e1 whatever colour it is given, which washed the lunar
-  // plain out to a flat light grey; a plain PBR regolith in the palette charcoal keeps the court the brightest thing in frame.
-  if (part === "ground") return kind === "regolith" ? material.pbr({ color, roughness: 0.98, normal: grain(kind) }) : material.pbr({ color, roughness: 0.94 });
+  if (part === "ground") {
+    return kind === "regolith"
+      ? material.physical({ color, roughness: 0.98, specularIntensity: 0.28, normal: grain(kind) })
+      : material.physical({ color, roughness: 0.94, specularIntensity: 0.35 });
+  }
   switch (kind) {
     case "acrylic":
-      // GU47 phase 3 (rubric: no environment reflections): the floodlit New York acrylic gets a glossier clearcoat so the floods
-      // and the night sky glint on the court; the day venues keep the panel-verified 0.35 / 0.35.
-      // GU47 phase 4 (rubric ibl_reflections 2.5, "hard court fully matte"): every acrylic court takes a sealed tournament
-      // clearcoat (1.0 at 0.06) so the venue sky, the floods and the athletes show in it; the screen-space reflection stage
-      // (lighting.ts postEffects) traces the playing surface, the apron stays a satin step below it.
+      // WP-01 multi-lobe physical acrylic: sealed tournament clearcoat (1.0 at 0.055) with subtle court/alley wear differentiation
+      // so floodlights and stadium skyline reflect cleanly across SSR while apron steps down to satin (0.7 clearcoat).
       return part === "apron"
-        ? material.pbr({ color, roughness: 0.6, clearcoat: 0.7, clearcoatRoughness: 0.18, normal: grain(kind) })
-        : material.pbr({ color, roughness: key === "hard" ? 0.34 : 0.42, clearcoat: 1, clearcoatRoughness: 0.06, normal: grain(kind) });
+        ? material.physical({ color, roughness: 0.58, clearcoat: 0.7, clearcoatRoughness: 0.18, specularIntensity: 0.78, ior: 1.49, normal: grain(kind) })
+        : material.physical({
+            color,
+            roughness: part === "alley" ? 0.42 : key === "hard" ? 0.32 : 0.38,
+            clearcoat: 1,
+            clearcoatRoughness: part === "alley" ? 0.075 : 0.055,
+            specularIntensity: 0.92,
+            ior: 1.49,
+            normal: grain(kind)
+          });
     case "turf":
-      return material.pbr({ color, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain(kind) });
+      return material.physical({
+        color,
+        roughness: 0.88,
+        sheen: 0.6,
+        sheenRoughness: 0.58,
+        sheenColor: "#c9e6a8",
+        anisotropy: 0.28,
+        specularIntensity: 0.38,
+        normal: grain(kind)
+      });
     case "clay":
-      return material.pbr({ color, roughness: 0.95, normal: grain(kind) });
+      return material.physical({
+        color,
+        roughness: 0.95,
+        sheen: 0.22,
+        sheenRoughness: 0.86,
+        sheenColor: "#e8a57e",
+        specularIntensity: 0.26,
+        normal: grain(kind)
+      });
     case "regolith":
-      // GU47 phase 4: the lunar court is cobalt acrylic (phase 3), so it takes the same sealed clearcoat; the apron stays dust.
       return part === "apron"
-        ? material.pbr({ color, roughness: 0.97, normal: grain(kind) })
-        : material.pbr({ color, roughness: 0.4, clearcoat: 1, clearcoatRoughness: 0.06, normal: grain("acrylic") });
+        ? material.physical({ color, roughness: 0.97, sheen: 0.16, sheenRoughness: 0.9, sheenColor: "#c2c7cf", specularIntensity: 0.22, normal: grain(kind) })
+        : material.physical({ color, roughness: 0.38, clearcoat: 1, clearcoatRoughness: 0.06, specularIntensity: 0.9, ior: 1.49, normal: grain("acrylic") });
   }
 }
 
@@ -130,7 +153,16 @@ export function buildGrassStripesNodes(): NodeInput[] {
     geometry
       .custom(grassStripesGeometry(parity as 0 | 1), {
         name: id,
-        material: material.pbr({ color: STRIPE_COLORS[parity]!, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain("turf") }),
+        material: material.physical({
+          color: STRIPE_COLORS[parity]!,
+          roughness: 0.88,
+          sheen: 0.6,
+          sheenRoughness: 0.58,
+          sheenColor: "#c9e6a8",
+          anisotropy: 0.28,
+          specularIntensity: 0.38,
+          normal: grain("turf")
+        }),
         castShadow: false
       })
       .runtime(game.runtimeNode(id)) as unknown as NodeInput
@@ -142,23 +174,30 @@ export function feltBallMaterial(): AuraMaterialSpec {
   return material.felt({ color: "#d8ff3e", sheenColor: "#f2ff7a", roughness: 0.82, emissive: "#d8ff3e", emissiveIntensity: 0.1 });
 }
 
-/** Rig part suffixes whose material is the kit (fabric) or the racket frame (clearcoat paint). */
+/** WP-01: Dual-backend (GLSL 3.00 + WGSL) derivative-antialiased 16x19 gut string-bed shader material. */
+export function racketStringsMaterial(): AuraMaterialSpec {
+  return material.custom(racketStringsShaderSpec());
+}
+
+/** Rig part suffixes whose material is the kit (fabric), the racket frame (clearcoat paint), or the string bed (custom shader). */
 const KIT_PARTS = ["-torso", "-hips", "-left-upper-leg", "-right-upper-leg", "-left-upper-arm", "-right-upper-arm", "-collar"] as const;
 const RACKET_PARTS = ["-racket-hoop", "-racket-throat-left", "-racket-throat-right", "-racket-handle"] as const;
 
-export type RigMaterialRole = "kit" | "racket" | null;
+export type RigMaterialRole = "kit" | "racket" | "strings" | null;
 
-/** Which TT-M2 upgrade a rig node id takes. */
+/** Which TT-M2 / WP-01 upgrade a rig node id takes. */
 export function rigMaterialRole(id: string): RigMaterialRole {
   if (KIT_PARTS.some((suffix) => id.endsWith(suffix))) return "kit";
   if (RACKET_PARTS.some((suffix) => id.endsWith(suffix))) return "racket";
+  if (id.endsWith("-racket-strings")) return "strings";
   return null;
 }
 
-/** TT-M2: the World Tour version of a material the rig sets (colour kept; fabric sheen 0.5 or clearcoat paint). */
+/** TT-M2 + WP-01: the World Tour version of a material the rig sets (fabric kit, carbon-graphite clearcoat frame, gut strings). */
 export function upgradeRigMaterial(role: RigMaterialRole, spec: AuraMaterialSpec): AuraMaterialSpec {
   const color = typeof spec.color === "string" ? spec.color : "#ffffff";
-  if (role === "kit") return material.fabric({ color, roughness: 0.86, sheen: 0.5, sheenColor: color });
-  if (role === "racket") return material.clearcoatPaint({ color, roughness: 0.32, metalness: 0.18, clearcoat: 0.9, clearcoatRoughness: 0.08 });
+  if (role === "kit") return material.fabric({ color, roughness: 0.84, sheen: 0.5, sheenColor: color });
+  if (role === "racket") return material.clearcoatPaint({ color, roughness: 0.28, metalness: 0.22, clearcoat: 0.94, clearcoatRoughness: 0.06 });
+  if (role === "strings") return racketStringsMaterial();
   return spec;
 }

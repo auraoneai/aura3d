@@ -1,12 +1,10 @@
 /**
- * GU47 AO-M1 / AO-A2: vehicle paint overrides. The hero GLB's base colour map is a neutral grey (mean sRGB 127/125/121), so a
- * multiply tint turns it cobalt while its baked detail survives (no texture is replaced: the C-35 `asset-texture-override`
- * rule stays clean). Paint values come from `material.carPaint` (semi-metal base under a clearcoat lobe); the warm rim (E-D)
- * is the low sun dead ahead catching the silhouette. The tangerine stripe needs the WP-36 hero retexture.
- *
- * Rivals (interim until the WP-36 interceptor lands): graphite with a red rim, so a sky-lane threat never reads as the hero.
+ * GU47 AO-M1 / AO-A2 / WP-06: automotive multi-lobe clearcoat flake paint, brushed alloy trim, and studio canopy glass.
+ * Hero uses cobalt metallic clearcoat (`material.carPaint`) with warm golden-hour tangerine rim; sky-lane rivals use
+ * graphite with reserved rival-red rim; highway traffic uses varied metallic `material.clearcoatPaint` finishes so every
+ * vehicle class catches sunset IBL speculars and wet-deck reflections instead of reading as matte plastic.
  */
-import { material, type AuraModelMaterialOverride } from "@aura3d/engine";
+import { material, type AuraMaterialSpec, type AuraModelMaterialOverride } from "@aura3d/engine";
 import { APEX_PALETTE } from "./look";
 
 /** Multiply tint over the grey base map: lands on the identity cobalt with the map's mid-grey shading. */
@@ -27,15 +25,63 @@ function paintOverride(tint: string | null, rim: { color: string; power: number;
 }
 
 /**
- * Hero: cobalt metallic clearcoat, warm tangerine rim (AO-M1). GU47 phase 4: the WP-36 retexture (apexHeroCobalt) paints the
- * cobalt and the tangerine stripe into the base map, so the hero keeps the clearcoat values and the rim but takes no tint;
- * `?models=0` (the grey showcase car) still gets the multiply tint.
+ * Hero: cobalt metallic clearcoat, warm tangerine rim (AO-M1). Retextured hero keeps its baked cobalt + tangerine stripe
+ * while inheriting multi-lobe clearcoat flake speculars and warm silhouette rim.
  */
 export function apexHeroPaint(retextured = true): readonly AuraModelMaterialOverride[] {
   return [paintOverride(retextured ? null : APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.6 })];
 }
 
-/** Sky-lane rival: graphite with the reserved rival red on the rim (AO-A2 interim). */
+/** Sky-lane rival: graphite clearcoat with the reserved rival red on the rim (AO-A2). */
 export function apexRivalPaint(): readonly AuraModelMaterialOverride[] {
   return [paintOverride(APEX_RIVAL_TINT, { color: APEX_PALETTE.rival, power: 2.5, intensity: 1.2 })];
+}
+
+/** Automotive clearcoat lacquer overrides per highway traffic class (preserves baked GLB albedo maps, zero texture override). */
+const TRAFFIC_FINISH: Readonly<Record<string, { metallic: number; roughness: number; clearcoat: number; clearcoatRoughness: number; rimIntensity: number }>> = {
+  sedan: { metallic: 0.58, roughness: 0.26, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.34 },
+  hatch: { metallic: 0.52, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.07, rimIntensity: 0.32 },
+  suv: { metallic: 0.62, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.36 },
+  taxi: { metallic: 0.35, roughness: 0.24, clearcoat: 0.95, clearcoatRoughness: 0.08, rimIntensity: 0.3 },
+  van: { metallic: 0.28, roughness: 0.34, clearcoat: 0.82, clearcoatRoughness: 0.12, rimIntensity: 0.24 },
+  pickup: { metallic: 0.54, roughness: 0.3, clearcoat: 0.92, clearcoatRoughness: 0.09, rimIntensity: 0.3 },
+  boxtruck: { metallic: 0.22, roughness: 0.42, clearcoat: 0.65, clearcoatRoughness: 0.16, rimIntensity: 0.2 },
+  bus: { metallic: 0.34, roughness: 0.34, clearcoat: 0.8, clearcoatRoughness: 0.12, rimIntensity: 0.24 },
+  carrier: { metallic: 0.68, roughness: 0.32, clearcoat: 0.78, clearcoatRoughness: 0.14, rimIntensity: 0.32 }
+};
+
+export function apexTrafficPaint(vehicleType: string): readonly AuraModelMaterialOverride[] {
+  const base = material.clearcoatPaint({ color: "#d8dee9" });
+  const cfg = TRAFFIC_FINISH[vehicleType] ?? TRAFFIC_FINISH.sedan!;
+  return [
+    {
+      roughness: cfg.roughness,
+      metallic: cfg.metallic,
+      clearcoat: cfg.clearcoat,
+      clearcoatRoughness: cfg.clearcoatRoughness,
+      ...(base.envMapIntensity !== undefined ? { envMapIntensity: base.envMapIntensity } : {}),
+      rim: { color: "#ffb272", power: 3.8, intensity: cfg.rimIntensity }
+    }
+  ];
+}
+
+/** Anisotropic brushed alloy for aero splitters, thruster collars and carrier ramp diamond-plate treads. */
+export function apexBrushedAlloyMaterial(color = "#cfd8e3"): AuraMaterialSpec {
+  return material.brushedMetal({ color, roughness: 0.24, anisotropy: 0.88 });
+}
+
+/** Dark smoked cockpit canopy visor (`material.studioGlass`). */
+export function apexCanopyGlassMaterial(): AuraMaterialSpec {
+  return material.studioGlass({ color: "#0b1424", roughness: 0.03, opacity: 0.86 });
+}
+
+/** Sculpted carrier launch ramp deck: brushed anodized tangerine steel with subtle warm guide glow. */
+export function apexRampDeckMaterial(): AuraMaterialSpec {
+  return material.brushedMetal({
+    color: "#e0782f",
+    roughness: 0.28,
+    anisotropy: 0.82,
+    emissive: APEX_PALETTE.tangerine,
+    emissiveIntensity: 0.14
+  });
 }

@@ -4,10 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
-  <meta name="theme-color" content="#0b1020" />
+      <meta name="theme-color" content="#0b1020" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/fonts/local.css" />
   <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>
+  <style>
+      html, body { margin: 0; height: 100%; background: #9fd4e8; overflow: hidden; font-family: ui-sans-serif, system-ui, sans-serif; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+      #hud { position: fixed; left: 12px; top: 10px; color: #1b3a2f; font-size: 13px; line-height: 1.4; text-shadow: 0 1px 0 #fff8; pointer-events: none; }
+    </style>
   <title>Cumulus Dash — Cloud Obstacle Runner</title>
     <meta name="description" content="Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -22,9 +27,9 @@
     <meta name="twitter:title" content="Cumulus Dash — Cloud Obstacle Runner" />
     <meta name="twitter:description" content="Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/cloud-runner-port@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Cumulus Dash","url":"https://aura3d.auraone.ai/apps/cumulus-dash/","description":"Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Includes creatures, boulders, the duel and finale, with…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/cloud-runner-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Cumulus Dash","url":"https://aura3d.auraone.ai/apps/cumulus-dash/","description":"Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Includes creatures, boulders, the duel and finale, with…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/cloud-runner-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <style>
-      html, body { margin: 0; height: 100%; background: #9fd4e8; overflow: hidden; font-family: ui-sans-serif, system-ui, sans-serif; }
+      html, body { margin: 0; height: 100%; background: #9fb8cf; overflow: hidden; font-family: var(--font-ui, "Whitney", "Graphik", sans-serif); font-synthesis: none; }
       canvas { display: block; width: 100vw; height: 100vh; }
       #hud { position: fixed; left: 12px; top: 10px; color: #1b3a2f; font-size: 13px; line-height: 1.4; text-shadow: 0 1px 0 #fff8; pointer-events: none; }
     </style>

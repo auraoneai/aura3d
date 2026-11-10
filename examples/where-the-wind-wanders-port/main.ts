@@ -1,5 +1,5 @@
 /**
- * Where the Wind Wanders on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
+ * The Bellkeeper's Walk on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `sim.ts` (pure); `world.ts` draws it through the public engine surface.
  *
  * Query parameters (GU47 adds `look=original` for the 4.6 look and `found=0..3|epilogue` to pin the daylight key): `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
@@ -10,6 +10,7 @@
  * Two clocks: the sim runs on fixed steps; captions, the epilogue wait and the voyage run on the game clock, which only
  * moves while the walk runs (not on the title card, not while paused, not in a hidden tab).
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, nearbyInteraction, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
 import { createCaptionQueue } from "./captions";
@@ -20,7 +21,7 @@ import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
-import { PAPER_PASS_NAME, paperPass, paperScale } from "./paper-pass";
+import { PAPER_PASS_NAME, paperPass, paperScale, warmGradingLut } from "./paper-pass";
 
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 
@@ -113,7 +114,8 @@ function handleMessage(m: string): void {
 }
 
 function updateHud(): void {
-  $("found").textContent = `${state.found.length} / ${LETTERS.length} discovered`;
+  const bells = state.complete ? 1 : 0;
+  $("found").innerHTML = `<span class="hud-metric">${state.found.length} / ${LETTERS.length}</span> discovered · <span class="hud-metric">${bells} / 1</span> bell`;
   $("complete").classList.toggle("hidden", !state.complete);
   for (const m of state.messages) handleMessage(m);
 }
@@ -296,7 +298,7 @@ function tick(now: number): void {
 }
 
 function sizeCanvas(): void {
-  const dpr = Math.min(1.25, devicePixelRatio || 1);
+  const dpr = Math.min(1.5, devicePixelRatio || 1);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
   // the paper grain is anchored to drawing-buffer pixels: re-fit it after a resize or rotation (the pass is registered once at boot)
@@ -449,14 +451,19 @@ async function boot(): Promise<void> {
     // WW47-P1: renderer.quality replaces the deprecated qualityProfile (?look=original keeps the 4.6 options)
     // lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with none present these spreads add nothing
     renderer: { ...(originalLook ? { mode: "production" as const, qualityProfile: "production" as const, fallback: "safe-basic" as const } : { mode: "production" as const, quality: lowQuality ? "low" as const : "high" as const, fallback: "safe-basic" as const }), ...lab.renderer },
-    output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false, ...lab.output },
+    output: originalLook
+      ? { toneMapping: "aces", exposure: 1.25, dither: false, ...lab.output }
+      : { toneMapping: "agx", exposure: 1.08, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await app.ready();
   runtime = world.bind(app);
-  // WW47-P3: the gouache paper pass (High only, not on the original look)
-  if (!originalLook && !lowQuality) paperOn = true;
+  // WW47-P3: the gouache paper + warm cinema LUT pass (High only, not on the original look)
+  if (!originalLook && !lowQuality) {
+    paperOn = true;
+    warmGradingLut();
+  }
   if (paperOn) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height, lookPostFor(daylightKey ?? 0).paper));
   stopWatching();
   ready = true;

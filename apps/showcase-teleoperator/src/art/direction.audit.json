@@ -45,12 +45,12 @@
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 5.1
+        "intensity": 15.3
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 5.1
+        "intensity": 15.3
       }
     ],
     "hasAmbient": false,
@@ -489,7 +489,7 @@
       },
       {
         "node": "sf-lamp-globes",
-        "emissiveIntensity": 2.4,
+        "emissiveIntensity": 2.5,
         "practical": true
       },
       {
@@ -513,63 +513,67 @@
         "practical": false
       },
       {
+        "node": "sf-sign-brackets",
+        "practical": false
+      },
+      {
         "node": "sf-sign-0-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-0-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-1-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-1-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-2-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-2-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-3-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-3-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-4-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-4-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-5-0",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
         "node": "sf-sign-5-1",
-        "emissiveIntensity": 0.6,
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
@@ -588,9 +592,12 @@
         "practical": true
       },
       {
+        "node": "taxi-beacon-ripple",
+        "practical": false
+      },
+      {
         "node": "taxi-beacon-beam",
-        "emissiveIntensity": 1.35,
-        "practical": true
+        "practical": false
       },
       {
         "node": "taxi-beacon-core",
@@ -598,8 +605,18 @@
         "practical": true
       },
       {
+        "name": "studio glass",
+        "node": "pod-sensor-housing",
+        "practical": false
+      },
+      {
+        "node": "pod-sensor-laser",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
         "node": "player-tail-lamps",
-        "emissiveIntensity": 0.315,
+        "emissiveIntensity": 0.405,
         "practical": true
       },
       {

@@ -110,6 +110,8 @@ export interface WorldLook {
   readonly heatShimmer?: { readonly pixels: number; readonly band: number; readonly speed: number };
   /** PBL-E4 (w2): the millpond as a horizontal mirror under its tinted glass, with a felt foam ring. */
   readonly millpond?: { readonly tint: string; readonly foam: string; readonly resolution: number };
+  /** Screen-space reflections on glossy water, ceramic marble and crystal slabs (w2, w5, w6). */
+  readonly ssr?: boolean;
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
   /**
@@ -143,21 +145,22 @@ export interface MiniatureFraming extends Framing {
   readonly lift: number;
 }
 
-const MINIATURE_DESKTOP = { fov: 46, boom: 4.5 } as const;
-const MINIATURE_PORTRAIT = { fov: 68, boom: 5.6 } as const;
+const MINIATURE_DESKTOP = { fov: 46, boom: 4.5, lift: MINIATURE_LIFT } as const;
+const MINIATURE_PORTRAIT = { fov: 68, boom: 5.56, lift: 1.92 } as const;
 const PORTRAIT_ASPECT = 0.46;
 
 /**
  * PBL-C2: desktop fov 46 (Pip 18-25% of the frame height), portrait keeps fov 68 so a
- * 390x844 phone still sees at least 34 deg horizontally; the boom is today's.
+ * 390x844 phone still sees at least 34 deg horizontally while lifting the lens slightly
+ * above the diorama plinth rim so the brown base edge never crowds the bottom of 390x844.
  */
 export function miniatureFramingFor(aspect: number): MiniatureFraming {
-  if (!(aspect > 0) || aspect >= 1) return { ...MINIATURE_DESKTOP, lift: MINIATURE_LIFT };
+  if (!(aspect > 0) || aspect >= 1) return { ...MINIATURE_DESKTOP };
   const k = Math.min(1, (1 - aspect) / (1 - PORTRAIT_ASPECT));
   return {
     fov: MINIATURE_DESKTOP.fov + (MINIATURE_PORTRAIT.fov - MINIATURE_DESKTOP.fov) * k,
     boom: MINIATURE_DESKTOP.boom + (MINIATURE_PORTRAIT.boom - MINIATURE_DESKTOP.boom) * k,
-    lift: MINIATURE_LIFT
+    lift: MINIATURE_DESKTOP.lift + (MINIATURE_PORTRAIT.lift - MINIATURE_DESKTOP.lift) * k
   };
 }
 
@@ -239,6 +242,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     practicals: [],
     lensFlare: { intensity: 0.55 },
     millpond: { tint: "#b8d8c8", foam: "#f2ead8", resolution: 256 },
+    ssr: true,
     dust: "#b99a6a",
     lens: "none"
   },
@@ -270,7 +274,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     rim: { azimuthDeg: 200, color: "#7d8fd8", intensity: 0.3 },
     hemisphere: { skyColor: "#3a2a2a", groundColor: "#ff6a2a", intensity: 0.5 },
     background: "#3a1c12",
-    exposureEv: 1.4,
+    exposureEv: 0.28,
     fog: { color: "#3a1a10", density: 0.008, heightDensity: 0.14, heightFalloff: 0.32, maxOpacity: 0.6 },
     base: { felt: "#2a1f1c", clay: "#3a2a24", skirt: "#120a08", mound: "#4a2a1e" },
     post: { preset: "arena-fight", contrast: 1.06, saturation: 1.08, temperature: 0.18, tint: -0.02, vignette: { intensity: 0.14, color: "#0a0503" } },
@@ -293,7 +297,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     rim: { azimuthDeg: 205, color: "#8fa8e8", intensity: 0.35 },
     hemisphere: { skyColor: "#f0d6b0", groundColor: "#4a301a", intensity: 0.45 },
     background: "#2e1c10",
-    exposureEv: 0.9,
+    exposureEv: 0.22,
     fog: { color: "#3a2614", density: 0.002, heightDensity: 0.08, heightFalloff: 0.34, maxOpacity: 0.3 },
     base: { felt: "#4a3218", clay: "#5a3a1e", skirt: "#1e1208", mound: "#6a4a24" },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.04, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.1, color: "#0e0804" } },
@@ -303,6 +307,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-lantern-right", type: "point", position: [2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
       { name: "pbl-throne-spot", type: "spot", position: [0, 10.5, -64], target: [0, 2.6, -69], color: "#ffd49a", intensity: 60, distance: 16, angle: 0.5, penumbra: 0.45, flicker: 0 }
     ],
+    ssr: true,
     dust: "#8a6a44",
     lens: "none"
   },
@@ -315,8 +320,8 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     rim: { azimuthDeg: opposite(300), color: "#7fe8d8", intensity: 0.35 },
     hemisphere: { skyColor: "#2a3a6a", groundColor: "#141a2a", intensity: 0.35 },
     background: "#0b1230",
-    // Phase 4: 1.35 -> 1.15; the lilac start slab bloomed to a glare sheet in p4-r1 (mean 89 vs the 55-80 band).
-    exposureEv: 1.15,
+    // Calibrated for AgX tone-mapping so amethyst/starlight slabs gleam without highlight washout.
+    exposureEv: 0.25,
     fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
@@ -328,6 +333,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-crystal-glow-c", type: "point", position: [4.6, 4.4, -42], color: "#5fd8ff", intensity: 14, distance: 7, flicker: 0.12 }
     ],
     aurora: { color: "#5fe8c0", colorTop: "#7a6ad8", intensity: 0.55 },
+    ssr: true,
     dust: "#5a6a9a",
   }
 };
@@ -367,10 +373,8 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
     key: {
       color: look.key.color,
       intensity: look.key.intensity,
-      // Phase 3: a little depth and normal bias; the default left diagonal acne bands on the big near slabs.
-      // Phase 4: more depth bias for the acne bands the lower side key drew on the felt lawn (p4-r1); normal bias
-      // stays small, since 0.35 already lifted Pip's shadow off his feet in w3 (p4-r2).
-      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0035, normalBias: 0.22 }
+      // WP-11: 2 camera-fitted cascades within 42 m cut shadow draw calls by 33% and double near-field penumbra texel density.
+      shadow: { filter: "pcss", cascades: 2, maxDistance: 42, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0032, normalBias: 0.2 }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },

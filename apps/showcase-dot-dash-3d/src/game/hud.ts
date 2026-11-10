@@ -223,21 +223,28 @@ export function tickUI(): void {
   const inRun = st.mode !== "title";
   $("dd-hud").style.opacity = inRun ? "1" : "0.25";
 
-  // mode tag + school legend + wave
+  // mode tag + silkscreen board rev + school legend
+  const boardIdx = MAZE_ORDER.indexOf(st.mazeId) + 1;
   $("dd-mode-tag").textContent =
-    st.runKind === "school" ? "SENTRY LAB" : st.runKind === "circuit" ? "BOARD MAP" : "QUICK PLAY";
+    st.runKind === "school" ? "Sentry Lab" : st.runKind === "circuit" ? "Board Map" : "Quick Play";
+  const revEl = document.getElementById("dd-rev-tag");
+  if (revEl) revEl.textContent = `REV 5.5 · BD-0${boardIdx}`;
   $("dd-school-legend").hidden = !(st.school && inRun);
   if (st.school) {
     const rows = document.querySelectorAll("#dd-school-legend .dd-school-row");
-    GHOST_ORDER.forEach((g, i) => {
+    GHOST_ORDER.forEach((_g, i) => {
       const row = rows[i] as HTMLElement | undefined;
       if (row) row.style.setProperty("--t", "1");
     });
   }
 
-  // HUD numbers
+  // HUD numbers (DIN Pro tabular-nums)
   $("dd-score").textContent = String(st.score).padStart(6, "0");
   $("dd-hiscore").textContent = String(Math.max(st.profile.best, st.score)).padStart(6, "0");
+  const multVal = st.fright > 0 ? (1 << Math.min(3, st.chain)) : 1;
+  const multEl = document.getElementById("dd-mult");
+  if (multEl) multEl.textContent = `${multVal}x`;
+  document.getElementById("dd-mult-chip")?.classList.toggle("surge", st.fright > 0);
   $("dd-lives").textContent = "●".repeat(Math.max(0, st.lives)) + "○".repeat(Math.max(0, 3 - st.lives));
   $("dd-dots").textContent = String(st.dotsLeft);
   // cache chip: lit while the bonus gem is on the board, dimmed while it is not

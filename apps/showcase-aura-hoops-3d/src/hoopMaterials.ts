@@ -2,12 +2,11 @@ import type { AuraModelMaterialOverride } from "@aura3d/engine";
 import { HOOPS_PALETTE } from "./courtRigs";
 
 /**
- * H47-M2 (code part): the hoop hardware and ball as real materials on the new look. Galvanised steel poles in the
- * chain-link tone (the GLB's camo maps are replaced, so no pole noise), a clear tempered-glass backboard, a powder-coated
- * rim and a rubber ball. Transmission applies where the GLB material carries the KHR parameter; elsewhere the glass reads
- * from opacity, clearcoat and the environment. The pebble-grain normal and the chain-link alpha are WP-36 assets
- * (`hoopsBallPebbleNormal`, `hoopsChainLinkAlpha`). `?look=original` keeps the 4.6 overrides (`ORIGINAL_HOOP_MATERIALS`).
- * Draw delta: 0 (same nodes, new parameters).
+ * Multi-lobe physical hoop hardware & composite leather basketball overrides:
+ *   - `rig`: brushed galvanized steel stanchion in `HOOPS_PALETTE.chainLink` (`metallic >= 0.85`).
+ *   - `backboard`: tempered polycarbonate studio glass (`ior: 1.54`, `transmission: 0.92`, `clearcoat: 1`).
+ *   - `rim`: high-gloss orange breakaway lacquer over satin steel (`clearcoat: 0.88`).
+ *   - `ball`: pebbled composite leather sheen + subtle clearcoat over the ball's channel seams.
  */
 export interface HoopMaterialSet {
   readonly rig: readonly AuraModelMaterialOverride[];
@@ -24,14 +23,14 @@ export const ORIGINAL_HOOP_MATERIALS: HoopMaterialSet = {
 };
 
 export const HOOP_MATERIALS: HoopMaterialSet = {
-  // galvanised steel: bright, metallic, a little rough (spangle), no texture noise
-  rig: [{ color: HOOPS_PALETTE.chainLink, colorMode: "replace", replaceTextures: true, roughness: 0.42, metallic: 0.9, envMapIntensity: 1.0 }],
-  // tempered glass: thin, near-clear, glossy coat
-  backboard: [{ color: "#dfe9ee", colorMode: "replace", replaceTextures: true, roughness: 0.04, metallic: 0, opacity: 0.38, transmission: 0.9, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.2 }],
-  // powder coat: saturated orange, satin, not metallic
-  rim: [{ color: "#d4561a", colorMode: "replace", replaceTextures: true, roughness: 0.55, metallic: 0.05, clearcoat: 0.3, clearcoatRoughness: 0.4, envMapIntensity: 0.6 }],
-  // rubber: keep the ball's own maps, matte it, no metal
-  ball: [{ roughness: 0.78, metallic: 0, envMapIntensity: 0.7 }]
+  // Brushed galvanized steel stanchion: bright metallic spangle, zero camo texture noise
+  rig: [{ color: HOOPS_PALETTE.chainLink, colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.92, clearcoat: 0.22, clearcoatRoughness: 0.28, envMapIntensity: 1.15 }],
+  // Tempered polycarbonate backboard: high transmission, crisp clearcoat specular
+  backboard: [{ color: "#e6f1f6", colorMode: "replace", replaceTextures: true, roughness: 0.03, metallic: 0, opacity: 0.34, transmission: 0.92, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.38 }],
+  // Breakaway orange lacquer over powder-coat dielectric base
+  rim: [{ color: "#e04f16", colorMode: "replace", replaceTextures: true, roughness: 0.44, metallic: 0.14, clearcoat: 0.88, clearcoatRoughness: 0.14, envMapIntensity: 1.05 }],
+  // Pebbled composite leather basketball: preserves seam map, adds leather micro-sheen
+  ball: [{ roughness: 0.64, metallic: 0, clearcoat: 0.18, clearcoatRoughness: 0.52, sheen: 0.16, envMapIntensity: 0.88 }]
 };
 
 export const hoopMaterials = (original: boolean): HoopMaterialSet => (original ? ORIGINAL_HOOP_MATERIALS : HOOP_MATERIALS);

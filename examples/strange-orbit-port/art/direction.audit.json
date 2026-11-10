@@ -25,7 +25,7 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.95
+        "intensity": 0.88
       },
       {
         "type": "directional",
@@ -129,6 +129,27 @@
       },
       {
         "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -382,6 +403,14 @@
         "practical": false
       },
       {
+        "node": "earthrise",
+        "practical": false
+      },
+      {
+        "node": "earthrise-atmosphere",
+        "practical": false
+      },
+      {
         "node": "stars",
         "practical": false
       },
@@ -394,6 +423,7 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "gate-0-lintel",
         "practical": false
       },
@@ -402,6 +432,7 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "gate-1-lintel",
         "practical": false
       },
@@ -410,6 +441,7 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "gate-2-lintel",
         "practical": false
       },
@@ -418,6 +450,7 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "gate-3-lintel",
         "practical": false
       },
@@ -426,6 +459,7 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "gate-4-lintel",
         "practical": false
       },
@@ -434,18 +468,17 @@
         "practical": false
       },
       {
-        "node": "rim-rocks",
-        "practical": false
-      },
-      {
-        "node": "rim-spires",
-        "practical": false
-      },
-      {
+        "name": "brushed metal",
         "node": "beacon-posts",
         "practical": false
       },
       {
+        "name": "brushed metal",
+        "node": "beacon-hoods",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
         "node": "beacon-lamps",
         "emissiveIntensity": 2.2,
         "practical": true
@@ -527,27 +560,283 @@
         "practical": false
       },
       {
-        "node": "rider-shadow-0",
+        "node": "regolith-dust-wake",
         "practical": false
       },
       {
-        "node": "rider-shadow-1",
+        "name": "car paint",
+        "node": "rider-0-fairing",
         "practical": false
       },
       {
-        "node": "rider-shadow-2",
+        "name": "chrome",
+        "node": "rider-0-wheelF",
         "practical": false
       },
       {
-        "node": "rider-shadow-3",
+        "name": "chrome",
+        "node": "rider-0-wheelR",
         "practical": false
       },
       {
-        "node": "rider-shadow-4",
+        "name": "chrome",
+        "node": "rider-0-nozzleL",
         "practical": false
       },
       {
-        "node": "rider-shadow-5",
+        "name": "chrome",
+        "node": "rider-0-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-0-coneL",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-0-coneR",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "node": "rider-0-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-0-visor",
+        "practical": false
+      },
+      {
+        "name": "car paint",
+        "node": "rider-1-fairing",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-1-wheelF",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-1-wheelR",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-1-nozzleL",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-1-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-1-coneL",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-1-coneR",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-1-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-1-visor",
+        "practical": false
+      },
+      {
+        "name": "car paint",
+        "node": "rider-2-fairing",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-2-wheelF",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-2-wheelR",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-2-nozzleL",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-2-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-2-coneL",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-2-coneR",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-2-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-2-visor",
+        "practical": false
+      },
+      {
+        "name": "car paint",
+        "node": "rider-3-fairing",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-3-wheelF",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-3-wheelR",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-3-nozzleL",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-3-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-3-coneL",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-3-coneR",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-3-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-3-visor",
+        "practical": false
+      },
+      {
+        "name": "car paint",
+        "node": "rider-4-fairing",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-4-wheelF",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-4-wheelR",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-4-nozzleL",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-4-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-4-coneL",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-4-coneR",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-4-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-4-visor",
+        "practical": false
+      },
+      {
+        "name": "car paint",
+        "node": "rider-5-fairing",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-5-wheelF",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-5-wheelR",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-5-nozzleL",
+        "practical": false
+      },
+      {
+        "name": "chrome",
+        "node": "rider-5-nozzleR",
+        "practical": false
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-5-coneL",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "name": "glowing emissive",
+        "node": "rider-5-coneR",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-5-torso",
+        "practical": false
+      },
+      {
+        "name": "studio glass",
+        "node": "rider-5-visor",
         "practical": false
       },
       {

@@ -95,7 +95,7 @@ export function skylineNodes(circuit: CircuitSpec, look: CircuitLook): AuraNodeB
     const { bodies, seams } = skylineTransforms(skylineLayout(layer, index === 0));
     const flat = { castShadow: false, receiveShadow: false, frustumCulled: false } as const;
     out.push(
-      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: skylineFacadeMaterial({ body: look.skyline.color, foot: look.skyline.foot, window: look.skyline.windows[0], window2: look.skyline.windows[1], cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!, lit: look.skyline.lit, glow: look.skyline.windowGlow - index * 0.5 }), transforms: bodies, ...flat })
+      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: skylineFacadeMaterial({ body: look.skyline.color, skySheen: look.skyline.skySheen, foot: look.skyline.foot, window: look.skyline.windows[0], window2: look.skyline.windows[1], cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!, lit: look.skyline.lit, glow: look.skyline.windowGlow - index * 0.5 }), transforms: bodies, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-bodies`)),
       instances.box({ name: `td skyline ${index} seams`, size: [1, 1, 1], material: material.emissive({ color: look.skyline.glow, emissive: look.skyline.glow, emissiveIntensity: 1.3 - index * 0.25 }), transforms: seams, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-seams`))

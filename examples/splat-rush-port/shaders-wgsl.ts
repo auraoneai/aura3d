@@ -287,13 +287,28 @@ export function carnivalToonFragmentWgsl(withMap: boolean, withTone = false, mir
   var base = aura.u_baseColor;
 ${withTone ? "  base = base * vTone;" : ""}
 ${withMap ? "  base = base * srgbToLinear(textureSample(u_mapTexture, u_mapSampler, vUv).rgb);" : ""}
+  let wet = select(1.0, 1.0 - clamp((vWorld.z - aura.u_crDry.x) / max(aura.u_crDry.y * aura.u_crDry.z, 1e-3), 0.0, 1.0), aura.u_crDry.z > 0.0);
+  let deckTop = step(0.001, aura.u_crCanvas.x + aura.u_crCanvas.y) * step(0.5, N.y);
+  let centerLane = (1.0 - smoothstep(0.16, 0.44, abs(vUv.x - 0.5))) * deckTop;
   if (aura.u_crCanvas.x + aura.u_crCanvas.y > 0.0) {
-    let weave = sin(vLocal.x * 31.0) * sin(vLocal.z * 29.0);
+    let weave = sin(vLocal.x * 34.0) * sin(vLocal.z * 32.0);
     let streak = sin(vLocal.x * 2.3 + sin(vLocal.z * 0.61) * 2.4 + vLocal.z * 0.17);
-    base = base * (1.0 + aura.u_crCanvas.x * weave + aura.u_crCanvas.y * streak);
+    base = base * (1.0 + aura.u_crCanvas.x * weave * (1.0 - 0.55 * centerLane) + aura.u_crCanvas.y * streak);
+    N = normalize(N + vec3<f32>(cos(vLocal.x * 34.0) * 0.028, 0.0, cos(vLocal.z * 32.0) * 0.028) * deckTop * (1.0 - 0.7 * centerLane));
     let railShade = max(1.0 - band(vUv.x, 0.085), band(vUv.x, 0.972)) * step(0.5, N.y);
     base = base * (1.0 - 0.3 * railShade);
   }
+  let splatMask = step(0.001, aura.u_crDry.z);
+  let duv = vUv - vec2<f32>(0.5);
+  let splatRad = length(duv) * 2.0;
+  let rimDir = duv / max(length(duv), 1e-3);
+  let meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.42;
+  N = normalize(N + vec3<f32>(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+${!withTone ? /* wgsl */ `
+  if (aura.u_crGloss > 0.45) {
+    let swirl = 0.5 + 0.5 * sin(vLocal.x * 5.4 + sin(vLocal.y * 4.6 - vLocal.z * 3.9) * 1.7);
+    base = base * mix(0.90, 1.14, smoothstep(0.22, 0.78, swirl));
+  }` : ""}
   let d = dot(N, aura.u_crSunDir);
   let lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
   let hemi = mix(aura.u_crGround, aura.u_crSkyFill, 0.5 * N.y + 0.5);
@@ -302,18 +317,21 @@ ${withMap ? "  base = base * srgbToLinear(textureSample(u_mapTexture, u_mapSampl
   let fres = 1.0 - max(dot(N, V), 0.0);
   let rimSide = clamp(d + 0.6, 0.0, 1.0);
   c = c + aura.u_crRim * band(fres, aura.u_crRimThreshold) * (0.35 + 0.65 * rimSide);
-  let wet = select(1.0, 1.0 - clamp((vWorld.z - aura.u_crDry.x) / max(aura.u_crDry.y * aura.u_crDry.z, 1e-3), 0.0, 1.0), aura.u_crDry.z > 0.0);
   let H = normalize(aura.u_crSunDir + V);
-  let spec = band(a3dPow(max(dot(N, H), 0.0), aura.u_crShininess), 0.45);
-  c = c + aura.u_crSunColor * spec * aura.u_crGloss * wet * 1.6;
+  let nh = max(dot(N, H), 0.0);
+  let effGloss = aura.u_crGloss + centerLane * 0.24;
+  let spec = band(a3dPow(nh, aura.u_crShininess), 0.45);
+  let coatPin = a3dPow(nh, aura.u_crShininess * 3.2) * step(0.2, effGloss);
+  c = c + aura.u_crSunColor * (spec * effGloss * 1.55 + coatPin * effGloss * 0.65) * wet;
   let R = reflect(-V, N);
   let skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
   let horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
   let skyRefl = mix(mix(aura.u_crFogColor, aura.u_crEnvRose, 0.6) * 0.75, mix(vec3<f32>(0.78, 0.84, 1.0), aura.u_crEnvTop * 1.6, 0.35) * 0.7, band(R.y, 0.5));
-  c = c + (skyRefl * skyWin + aura.u_crFogColor * 0.9 * horizonLine) * aura.u_crGloss * aura.u_crSkyReflect * wet;
+  c = c + (skyRefl * skyWin + aura.u_crFogColor * 0.9 * horizonLine) * effGloss * aura.u_crSkyReflect * wet;
   let schlick = 0.04 + 0.96 * a3dPow(fres, 5.0);
   let dome = mix(aura.u_crFogColor, aura.u_crEnvTop, smoothstep(-0.05, 0.5, R.y));
-  c = c + dome * schlick * aura.u_crEnv;
+  let irid = (vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(fres * 1.15) + vec3<f32>(0.0, 0.33, 0.67)))) * step(0.45, aura.u_crGloss) * 0.14;
+  c = c + dome * schlick * (aura.u_crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
   c = c * (1.0 - aura.u_crContact.y * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
   return vec4<f32>(haze(shoulder(c), vWorld) + aura.u_emissive, aura.u_alpha);
@@ -371,4 +389,40 @@ fn puff(p: vec2<f32>) -> f32 {
   let m = puff(p * 3.0) * 0.65 + puff(p * 7.0 + vec2<f32>(3.1)) * 0.35;
   let c = aura.u_crSea * (0.86 + 0.24 * smoothstep(0.35, 0.75, m));
   return vec4<f32>(haze(c, vWorld), 1.0);
+}`);
+
+export const CARNIVAL_CURTAIN_FRAGMENT_WGSL = stage([HAZE], /* wgsl */ `
+@fragment fn fs_main(@location(1) vWorld: vec3<f32>, @location(3) vUv: vec2<f32>, @location(4) vTone: vec3<f32>) -> @location(0) vec4<f32> {
+  let p = (vUv - vec2<f32>(0.5, 0.52)) * vec2<f32>(2.1, 2.0);
+  let ripple = 0.5 + 0.5 * sin(vUv.x * 22.0 + sin(vUv.y * 8.0 + aura.u_crTime * 2.8) * 1.4);
+  let dripMeniscus = smoothstep(0.58, 1.0, vUv.y) * (0.65 + 0.35 * sin(vUv.x * 18.84955));
+  let postRim = smoothstep(0.32, 0.5, abs(vUv.x - 0.5));
+  let dCircle = abs(length(p) - 0.44) - 0.055;
+  let tp = vec2<f32>(abs(p.x), p.y + 0.14);
+  let dTri = abs(max(tp.x * 0.866025 + tp.y * 0.5, -tp.y) - 0.34) - 0.05;
+  let sp = abs(p);
+  let dSq = abs(max(sp.x, sp.y) - 0.38) - 0.052;
+  let dCross = abs(min(max(sp.x - 0.12, sp.y - 0.42), max(sp.x - 0.42, sp.y - 0.12))) - 0.04;
+  let lowBlue = step(vTone.b, 0.2);
+  let warmGreen = step(0.2, vTone.g);
+  let coolCyan = step(vTone.r, vTone.g);
+  let dWarm = mix(dCircle, dTri, warmGreen);
+  let dCool = mix(dCross, dSq, coolCyan);
+  let dMark = mix(dCool, dWarm, lowBlue);
+  let mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
+  let sheen = mix(vTone, vec3<f32>(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
+  var a = aura.u_alpha * clamp(0.18 + 0.12 * ripple + 0.24 * dripMeniscus + 0.22 * postRim + 0.32 * mark, 0.0, 0.72);
+  a = a * smoothstep(0.0, 0.08, vUv.y);
+  return vec4<f32>(haze(sheen, vWorld), a);
+}`);
+
+export const CARNIVAL_INK_FRAGMENT_WGSL = stage([POW, SRGB], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let f = clamp(floor(aura.u_crFrame), 0.0, 31.0);
+  let row = floor(f / 8.0);
+  let col = f - row * 8.0;
+  let suv = vec2<f32>((col + clamp(vUv.x, 0.02, 0.98)) / 8.0, (row + clamp(1.0 - vUv.y, 0.02, 0.98)) / 4.0);
+  let tex = textureSample(u_mapTexture, u_mapSampler, suv);
+  let ink = aura.u_baseColor * (1.12 + 0.42 * srgbToLinear(tex.rgb).r);
+  return vec4<f32>(ink, tex.a * aura.u_alpha);
 }`);

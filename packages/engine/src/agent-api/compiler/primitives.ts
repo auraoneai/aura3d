@@ -1348,6 +1348,7 @@ export interface AuraL2AttributeUpdate {
   readonly name: string;
   readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
   readonly offset: number;
+  readonly skipBoundsRefresh?: boolean;
 }
 
 /** Per-resource tracking for the runtime geometry/attribute channels. */
@@ -1403,11 +1404,12 @@ function syncRuntimePrimitiveGeometry(
   }
   const updates = node.__parityL2AttributeUpdates;
   if (updates) {
-    let positionsChanged = false;
+    let needsBoundsRefresh = false;
     for (const update of updates) {
-      positionsChanged = applyAttributeUpdateToGeometry(resource.geometry, update, spec) || positionsChanged;
+      const changed = applyAttributeUpdateToGeometry(resource.geometry, update, spec);
+      if (changed && !update.skipBoundsRefresh) needsBoundsRefresh = true;
     }
-    if (positionsChanged) {
+    if (needsBoundsRefresh) {
       // Authored bounds describe the original positions, not subsequent writes.
       // Derive new bounds from all current vertices so culling and matrix caches
       // receive the same result as the actual buffer, including partial edits.

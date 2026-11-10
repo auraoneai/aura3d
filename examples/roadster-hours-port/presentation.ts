@@ -1,7 +1,7 @@
 import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { Run } from "./sim";
 
-/** What the renderer reads of one simulation step that moves continuously: the car, its attitude and the traffic. */
+/** What the renderer reads of one simulation step that moves continuously: the car, its attitude, steering/slip and traffic. */
 export interface Shown {
   s: number;
   l: number;
@@ -11,6 +11,8 @@ export interface Shown {
   spin: number;
   flip: number;
   theta: number;
+  wheel?: number;
+  slip?: number;
   traffic: { s: number; l: number }[];
 }
 
@@ -19,9 +21,11 @@ export const SNAP_DISTANCE = 20;
 
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-export function shownOf(run: Pick<Run, "s" | "l" | "h" | "v" | "roll" | "spin" | "flip" | "theta" | "traffic">): Shown {
+export function shownOf(run: Pick<Run, "s" | "l" | "h" | "v" | "roll" | "spin" | "flip" | "theta" | "traffic"> & Partial<Pick<Run, "wheel" | "slip">>): Shown {
   return {
     s: run.s, l: run.l, h: run.h, v: run.v, roll: run.roll, spin: run.spin, flip: run.flip, theta: run.theta,
+    ...(run.wheel !== undefined ? { wheel: run.wheel } : {}),
+    ...(run.slip !== undefined ? { slip: run.slip } : {}),
     traffic: run.traffic.map((c) => ({ s: c.s, l: c.l }))
   };
 }
@@ -31,6 +35,8 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
   return {
     s: mix(a.s, b.s, t), l: mix(a.l, b.l, t), h: mix(a.h, b.h, t), v: mix(a.v, b.v, t), roll: mix(a.roll, b.roll, t),
     spin: mix(a.spin, b.spin, t), flip: mix(a.flip, b.flip, t), theta: mix(a.theta, b.theta, t),
+    ...(a.wheel !== undefined && b.wheel !== undefined ? { wheel: mix(a.wheel, b.wheel, t) } : b.wheel !== undefined ? { wheel: b.wheel } : {}),
+    ...(a.slip !== undefined && b.slip !== undefined ? { slip: mix(a.slip, b.slip, t) } : b.slip !== undefined ? { slip: b.slip } : {}),
     traffic: a.traffic.length === b.traffic.length
       ? b.traffic.map((c, i) => (Math.abs(c.s - a.traffic[i]!.s) > SNAP_DISTANCE ? c : { s: mix(a.traffic[i]!.s, c.s, t), l: mix(a.traffic[i]!.l, c.l, t) }))
       : b.traffic
@@ -45,6 +51,8 @@ export function viewOf(run: Run, shown: Shown, out?: Run): Run {
   const previous = out?.traffic;
   const view = Object.assign(out ?? ({} as Run), run);
   view.s = shown.s; view.l = shown.l; view.h = shown.h; view.v = shown.v; view.roll = shown.roll; view.spin = shown.spin; view.flip = shown.flip; view.theta = shown.theta;
+  if (shown.wheel !== undefined) view.wheel = shown.wheel;
+  if (shown.slip !== undefined) view.slip = shown.slip;
   const traffic = previous && previous !== run.traffic && previous.length === run.traffic.length ? previous : run.traffic.map((c) => ({ ...c }));
   for (let i = 0; i < run.traffic.length; i++) {
     const t = Object.assign(traffic[i]!, run.traffic[i]!);

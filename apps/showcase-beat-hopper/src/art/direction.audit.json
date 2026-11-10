@@ -1,10 +1,10 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-beat-hopper/src/art/direction.ts",
-  "sourceSha256": "a9eb17fe951673cbe8da00798cf80c9827455b9f6566fb856295490ab64d5878",
+  "sourceSha256": "1623e6adeb984b1543f9236cca68792fb0bba004646fc70e64c4bb8832486903",
   "id": "beat-hopper",
   "genre": "platformer",
-  "signatureEffect": "Night-neon equalizer stage: the whole world pulses on the 132 BPM sim beat and PERFECT judgements fire expanding gold timing rings.",
+  "signatureEffect": "Synesthetic concert-stage equalizer runway: mirrored Acrylic beat pads and skyline pulse on the 132 BPM sim beat while PERFECT judgements fire expanding gold timing rings.",
   "palette": {
     "primary": [
       "#14082e",
@@ -16,7 +16,7 @@
     "reservedObjective": "#ff4d6d"
   },
   "environment": {
-    "preset": "neutral",
+    "preset": "night",
     "background": "sky"
   },
   "violations": [],
@@ -25,7 +25,17 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 0.9
+        "intensity": 1.15
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 2.1
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 1.7
       }
     ],
     "hasAmbient": false,
@@ -39,27 +49,27 @@
   "direction": {
     "id": "beat-hopper",
     "genre": "platformer",
-    "fantasy": "Hop and duck across a neon night stage on a 132 BPM beat grid while the equalizer skyline dances and PERFECT timing rings ripple out.",
+    "fantasy": "Skate, hop and duck across a mirrored Acrylic neon stage on a 132 BPM beat grid as equalizer towers and gold timing rings pulse.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
       {
         "file": "evidence/beat-hopper/README.md",
-        "source": "generic reference: night-city neon palettes (deep indigo sky, magenta and cyan practicals)",
+        "source": "generic reference: concert-stage volumetric night palettes (deep indigo sky, magenta and cyan practicals)",
         "licence": "reference-only",
-        "why": "Five-stop night gradient from ink zenith to hot-magenta horizon with cyan road stripes and magenta rails"
+        "why": "Five-stop night gradient from ink zenith to hot-magenta horizon with AgX cyber-neon grading, cyan beat thresholds and anodized magenta rails"
       },
       {
         "file": "evidence/beat-hopper/README.md",
-        "source": "generic reference: audio equalizer bar visualizations as city skylines",
+        "source": "generic reference: audio equalizer bar visualizations embedded in dark Acrylic stage floors and city skylines",
         "licence": "reference-only",
-        "why": "Two rows of towers whose heights dance on the sim beat, reading the rhythm before the obstacle arrives"
+        "why": "Per-lane 132 BPM LED spectrum bars under dark glass plus two rows of equalizer towers whose heights dance on the sim beat"
       },
       {
         "file": "evidence/beat-hopper/README.md",
-        "source": "generic reference: rhythm-game timing feedback (expanding judgement rings, beat-synced world pulses)",
+        "source": "generic reference: synesthetic rhythm-game timing feedback (concentric ripple shockwaves, beat-synced bloom)",
         "licence": "reference-only",
-        "why": "PERFECT judgements fire gold expanding rings; the whole world's emissive gain pulses exactly on the beat"
+        "why": "PERFECT judgements fire gold expanding timing rings and star-spark bursts while stage emissives and bloom pulse on quantized BPM phase"
       }
     ],
     "palette": {
@@ -81,10 +91,10 @@
       "fill": "ibl+bounce",
       "practicals": 2,
       "environment": {
-        "preset": "neutral",
+        "preset": "night",
         "background": "sky"
       },
-      "exposureEV": 0
+      "exposureEV": 0.07
     },
     "framing": {
       "rig": "chase",
@@ -154,7 +164,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Night-neon equalizer stage: the whole world pulses on the 132 BPM sim beat and PERFECT judgements fire expanding gold timing rings.",
+    "signatureEffect": "Synesthetic concert-stage equalizer runway: mirrored Acrylic beat pads and skyline pulse on the 132 BPM sim beat while PERFECT judgements fire expanding gold timing rings.",
     "criticalCategories": [
       "lighting",
       "environment_world",
@@ -170,20 +180,20 @@
       },
       "medium": {
         "particles": 90,
-        "shadowMap": 512,
-        "cascades": 1,
+        "shadowMap": 1024,
+        "cascades": 2,
         "textureMax": 1024
       },
       "high": {
         "particles": 90,
-        "shadowMap": 1024,
-        "cascades": 1,
+        "shadowMap": 2048,
+        "cascades": 2,
         "textureMax": 1024
       },
       "ultra": {
         "particles": 90,
-        "shadowMap": 1024,
-        "cascades": 1,
+        "shadowMap": 2048,
+        "cascades": 2,
         "textureMax": 1024
       }
     }

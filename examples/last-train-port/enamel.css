@@ -1,40 +1,129 @@
 /*
- * GU47 WP-31 LT-17: railway-enamel HUD for the band look (html.enamel; ?look=original keeps today's HUD).
- * Enamel sign panels (deep navy, cream ring), station names in National 2 Narrow, a brass spirit-level lean meter and a
- * departure-board results card in TT Commons Pro Mono. Lamplight amber #ffc77a is the only accent; cherry red stays
- * the reserved objective colour (the red end of the lean level). Licensed fonts only (fonts/NOTICE.txt).
- * Contrast: cream #f6efe1 on #16213a is 14.0:1, amber #ffc77a on #0f1422 is 12.0:1 (10.3:1 on the flap #1a2236), muted #cfc6b4 on #1e2c4a is 8.2:1.
+ * GU47 WP-31 LT-17 + WP-24: railway-enamel timetable HUD for the band look (html.enamel; ?look=original keeps base HUD).
+ * Enamel sign panels (deep navy, cream ring), Whitney small-caps station plaques, DIN Pro tabular numeric speed / stopping
+ * distance / schedule delta, Monument Grotesk Mono route codes, and a brass spirit-level lean meter.
  */
 @font-face { font-family: "Lamplight Narrow"; src: url("./fonts/national-2-narrow-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Lamplight Narrow"; src: url("./fonts/national-2-narrow-700.woff2") format("woff2"); font-weight: 700 900; font-style: normal; font-display: swap; }
 
 html.enamel {
-  --enamel: #16213a;
+  --enamel: #141f38;
   --enamel-ring: #e9dfc8;
   --brass-hi: #f1d38b;
   --brass: #b98a3e;
   --brass-lo: #6f4f1f;
   --lamp: #ffc77a;
-  --board: #0f1422;
+  --board: #0d1220;
   --muted: #cfc6b4;
   --warm: #ffc77a;
+  font-synthesis: none;
+}
+html.enamel body {
+  font: 400 13px/1.42 var(--font-ui);
+  font-variant-numeric: tabular-nums;
 }
 html.enamel .panel {
-  background: linear-gradient(180deg, rgba(30, 44, 74, 0.94), rgba(22, 33, 58, 0.94));
-  border: 2px solid var(--enamel-ring);
+  background: linear-gradient(180deg, rgba(28, 41, 70, 0.92), rgba(18, 28, 50, 0.92));
+  border: 1.5px solid var(--enamel-ring);
   border-radius: 10px;
-  box-shadow: inset 0 0 0 3px var(--enamel), inset 0 0 0 4px rgba(233, 223, 200, 0.35), 0 4px 14px rgba(0, 0, 0, 0.35);
-  backdrop-filter: none;
+  box-shadow: inset 0 0 0 2px var(--enamel), inset 0 0 0 3px rgba(233, 223, 200, 0.3), 0 6px 18px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(8px);
 }
-html.enamel #top h1, html.enamel #title h2, html.enamel #results .meta:first-child, html.enamel #prompt {
-  font-family: "Lamplight Narrow", "Graphik Web", sans-serif;
+html.enamel #top {
+  top: var(--a3d-bar-space, 12px);
 }
-html.enamel #top h1 { font-weight: 700; font-size: 17px; letter-spacing: 0.06em; text-transform: uppercase; }
-html.enamel #stats .big { font-family: "Lamplight Narrow", "Graphik Web", sans-serif; font-weight: 700; color: var(--lamp); }
-html.enamel #prompt { border-color: var(--lamp); letter-spacing: 0.02em; }
-html.enamel #title h2 { font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--enamel-ring); }
-html.enamel kbd { border-color: rgba(233, 223, 200, 0.45); }
-html.enamel #lanterns { color: var(--lamp); }
+html.enamel #stats {
+  top: var(--a3d-bar-space, 12px);
+}
+html.enamel #top .line-badge {
+  display: inline-block;
+  margin-bottom: 2px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(241, 211, 139, 0.45);
+  background: rgba(13, 18, 32, 0.78);
+  color: var(--lamp);
+  font: 400 12px/1.25 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+html.enamel #top h1 {
+  font: 600 17px/1.2 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  color: #f8f2e6;
+}
+html.enamel #stats .big {
+  font: 500 13px/1.1 var(--font-ui);
+  color: var(--muted);
+}
+html.enamel #speed, html.enamel .metric-val, html.enamel #results .grid .num {
+  font: 500 13px/1.2 var(--font-metric);
+  font-variant-numeric: tabular-nums;
+}
+html.enamel #speed {
+  font: 500 26px/1.05 var(--font-metric);
+  color: var(--lamp);
+}
+html.enamel .tele-row {
+  margin: 2px 0 3px;
+}
+html.enamel #sched-delta[data-state="early"], html.enamel #sched-delta[data-state="on"] {
+  color: #8ee0b5;
+}
+html.enamel #sched-delta[data-state="late"] {
+  color: var(--lamp);
+}
+html.enamel #prompt {
+  top: var(--a3d-bar-space, 12px);
+  font: 500 14px/1.35 var(--font-ui);
+  border-color: var(--lamp);
+  letter-spacing: 0.02em;
+}
+html.enamel #toast {
+  top: calc(var(--a3d-bar-space, 12px) + 66px);
+  font: 500 13px/1.35 var(--font-ui);
+}
+html.enamel #title > div {
+  max-width: min(560px, calc(100vw - 24px));
+  padding: 24px 28px 20px;
+  border-radius: 14px;
+  border: 1.5px solid var(--brass);
+  background: linear-gradient(180deg, rgba(20, 31, 56, 0.88), rgba(13, 18, 32, 0.92));
+  box-shadow: inset 0 0 0 1px rgba(241, 211, 139, 0.25), 0 18px 44px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+}
+html.enamel #title h2 {
+  font: 600 40px/1.1 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  color: var(--enamel-ring);
+}
+html.enamel #title .start {
+  border-color: var(--brass-hi);
+  background: rgba(255, 199, 122, 0.16);
+  font: 500 14px/1.2 var(--font-ui);
+}
+html.enamel kbd {
+  border-color: rgba(233, 223, 200, 0.45);
+  font: 400 12px/1.2 var(--font-mono);
+}
+html.enamel #riders .dot {
+  font-size: 12px;
+}
+html.enamel #lanterns {
+  color: var(--lamp);
+}
+html.enamel .touch button {
+  min-width: 64px;
+  min-height: 56px;
+  border: 1.5px solid var(--brass);
+  background: rgba(16, 24, 44, 0.88);
+  box-shadow: inset 0 1px 0 rgba(241, 211, 139, 0.22), 0 6px 16px rgba(0, 0, 0, 0.4);
+  font: 500 14px/1 var(--font-ui);
+}
+html.enamel .touch button.go {
+  border-color: #8ee0b5;
+}
 
 /* brass spirit level: the coloured lean bands sit under a glass tube in a brass case; the marker is the bubble */
 html.enamel #lean {
@@ -56,23 +145,58 @@ html.enamel #lean[data-band="red"] { outline: 2px solid #c9362a; outline-offset:
 
 /* departure-board results: amber split-flap rows on a dark board */
 html.enamel #results > div {
-  background: var(--board); border: 2px solid var(--brass); border-radius: 8px; padding: 18px 22px 14px;
-  box-shadow: inset 0 0 0 1px var(--brass-lo), 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: var(--board); border: 2px solid var(--brass); border-radius: 10px; padding: 18px 22px 14px;
+  box-shadow: inset 0 0 0 1px var(--brass-lo), 0 12px 32px rgba(0, 0, 0, 0.55);
 }
-html.enamel #results .meta:first-child { font-weight: 700; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lamp); }
-html.enamel #results .grade, html.enamel #results .grid, html.enamel #res-score {
-  font-family: "TT Commons Pro Mono", ui-monospace, monospace; color: var(--lamp); text-transform: uppercase;
+html.enamel #results .meta:first-child {
+  font: 600 14px/1.2 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+  color: var(--lamp);
 }
-html.enamel #results .grade { font-size: 52px; letter-spacing: 0.08em; }
-html.enamel #results .grid { gap: 3px 0; grid-template-columns: minmax(150px, auto) minmax(72px, auto); }
+html.enamel #results .grade {
+  font: 500 52px/1.08 var(--font-metric);
+  color: var(--lamp);
+  letter-spacing: 0.04em;
+}
+html.enamel #res-score {
+  font: 500 14px/1.35 var(--font-ui);
+  color: var(--lamp);
+}
+html.enamel #results .grid {
+  font: 500 13px/1.35 var(--font-ui);
+  color: var(--enamel-ring);
+  gap: 3px 0;
+  grid-template-columns: minmax(150px, auto) minmax(76px, auto);
+}
 html.enamel #results .grid span {
-  padding: 3px 8px; background: linear-gradient(180deg, #1a2236 0 49%, #0b0f1a 49% 51%, #161d2f 51% 100%);
-  border-bottom: 1px solid #05070c; letter-spacing: 0.08em;
+  padding: 4px 8px;
+  background: linear-gradient(180deg, #1a2236 0 49%, #0b0f1a 49% 51%, #161d2f 51% 100%);
+  border-bottom: 1px solid #05070c;
+  letter-spacing: 0.03em;
 }
-html.enamel #results .grid span:nth-child(even) { text-align: right; }
-html.enamel #results .row-btns button { border-color: var(--brass); }
-@media (max-width: 560px) {
-  html.enamel #lean { width: 112px; }
+html.enamel #results .grid span:nth-child(even) { text-align: right; color: var(--lamp); }
+html.enamel #results .row-btns button { border-color: var(--brass); font: 500 14px/1.2 var(--font-ui); }
+
+@media (max-width: 760px) {
+  html.enamel .panel { padding: 5px 8px; border-width: 1px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+  html.enamel #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 51%; min-width: 0; }
+  html.enamel #top h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.enamel #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.enamel #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 50%; right: 8px; text-align: right; display: block; }
+  html.enamel #speed { font-size: 20px; }
+  html.enamel #stats > .meta.num:not(.tele-row):not(.lean-row) { display: none; }
+  html.enamel #stats .lean-row { justify-content: flex-end; gap: 4px; margin-top: 2px; }
+  html.enamel #lean { width: 68px; height: 12px; }
+  html.enamel #prompt { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 68px); left: 8px; right: 8px; transform: none; max-width: none; min-width: 0; padding: 4px 10px; font-size: 13px; }
+  html.enamel #prompt .meta { display: none; }
+  html.enamel #toast { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 102px); }
+  html.enamel #status { display: none; }
+  html.enamel #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 64px); left: 8px; max-width: calc(100vw - 16px); padding: 4px 8px; }
+  html.enamel #riders .rider { display: none; }
+  html.enamel #title > div { padding: 16px 14px 14px; }
+  html.enamel #title h2 { font-size: 30px; }
+  html.enamel #title .keys { display: none; }
   html.enamel #results .grade { font-size: 42px; }
   html.enamel #results > div { padding: 14px 12px 10px; }
 }

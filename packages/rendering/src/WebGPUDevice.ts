@@ -303,11 +303,31 @@ const WEBGPU_MIP_AREA_FRAGMENT = `
 // ACES is the WebGL2 output curve (ACES_FILMIC_GLSL): the 1/0.6 viewing scale, the ACES working-gamut rows, Hill's
 // RRT+ODT fit and the display rows, so a WebGPU frame tone-maps like the default backend.
 const WEBGPU_NATIVE_TONE_FRAGMENT = `
+fn a3dNativeRows(v: vec3<f32>, r0: vec3<f32>, r1: vec3<f32>, r2: vec3<f32>) -> vec3<f32> {
+ return vec3<f32>(dot(r0, v), dot(r1, v), dot(r2, v));
+}
 fn a3dNativeToneAces(color: vec3<f32>) -> vec3<f32> {
  let v = color / 0.6;
  let w = vec3<f32>(dot(vec3<f32>(0.59719, 0.35458, 0.04823), v), dot(vec3<f32>(0.07600, 0.90834, 0.01566), v), dot(vec3<f32>(0.02840, 0.13383, 0.83777), v));
  let f = ((w + vec3<f32>(0.0245786)) * w - vec3<f32>(0.000090537)) / ((0.983729 * w + vec3<f32>(0.432951)) * w + vec3<f32>(0.238081));
  return clamp(vec3<f32>(dot(vec3<f32>(1.60475, -0.53108, -0.07367), f), dot(vec3<f32>(-0.10208, 1.10813, -0.00605), f), dot(vec3<f32>(-0.00327, -0.07276, 1.07602), f)), vec3<f32>(0.0), vec3<f32>(1.0));
+}
+fn a3dNativeAgxContrast(x: vec3<f32>) -> vec3<f32> {
+ return (((((15.5 * x - vec3<f32>(40.14)) * x + vec3<f32>(31.96)) * x - vec3<f32>(6.868)) * x + vec3<f32>(0.4298)) * x + vec3<f32>(0.1191)) * x - vec3<f32>(0.00232);
+}
+fn a3dNativeToneAgx(c: vec3<f32>) -> vec3<f32> {
+ let wide = a3dNativeRows(max(c, vec3<f32>(0.0)), vec3<f32>(0.6274, 0.3293, 0.0433), vec3<f32>(0.0691, 0.9195, 0.0113), vec3<f32>(0.0164, 0.0880, 0.8956));
+ let inset = a3dNativeRows(wide, vec3<f32>(0.856627153315983, 0.0951212405381588, 0.0482516061458583), vec3<f32>(0.137318972929847, 0.761241990602591, 0.101439036467562), vec3<f32>(0.11189821299995, 0.0767994186031903, 0.811302368396859));
+ let logExposure = clamp((log2(max(inset, vec3<f32>(1e-10))) + vec3<f32>(12.47393)) / 16.499999, vec3<f32>(0.0), vec3<f32>(1.0));
+ let outset = a3dNativeRows(a3dNativeAgxContrast(logExposure), vec3<f32>(1.1271005818144368, -0.11060664309660323, -0.016493938717834573), vec3<f32>(-0.1413297634984383, 1.157823702216272, -0.016493938717834257), vec3<f32>(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));
+ let display = pow(max(outset, vec3<f32>(0.0)), vec3<f32>(2.2));
+ return clamp(a3dNativeRows(display, vec3<f32>(1.6605, -0.5876, -0.0728), vec3<f32>(-0.1246, 1.1329, -0.0083), vec3<f32>(-0.0182, -0.1006, 1.1187)), vec3<f32>(0.0), vec3<f32>(1.0));
+}
+fn a3dNativeUnchartedCurve(x: vec3<f32>) -> vec3<f32> {
+ return ((x * (0.15 * x + vec3<f32>(0.05)) + vec3<f32>(0.004)) / (x * (0.15 * x + vec3<f32>(0.5)) + vec3<f32>(0.06))) - vec3<f32>(0.02 / 0.3);
+}
+fn a3dNativeToneUncharted2(c: vec3<f32>) -> vec3<f32> {
+ return clamp(a3dNativeUnchartedCurve(max(c, vec3<f32>(0.0)) * 2.0) / a3dNativeUnchartedCurve(vec3<f32>(11.2)), vec3<f32>(0.0), vec3<f32>(1.0));
 }
 @group(0) @binding(0) var<uniform> params: vec4<f32>;
 @group(0) @binding(1) var linearSampler: sampler;
@@ -315,7 +335,10 @@ fn a3dNativeToneAces(color: vec3<f32>) -> vec3<f32> {
 @fragment fn fs_tone(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
  let sample = textureSample(source, linearSampler, uv);
  var c = max(sample.rgb * params.x / params.w, vec3<f32>(0.0));
- if (params.y > 5.5) { c = min(vec3<f32>(1.0), (c * (vec3<f32>(1.0) + c / 7.5)) / (vec3<f32>(1.0) + c)); }
+ if (params.y > 6.5) { let x = max(c - vec3<f32>(0.004), vec3<f32>(0.0)); c = clamp(pow((x * (6.2 * x + vec3<f32>(0.5))) / (x * (6.2 * x + vec3<f32>(1.7)) + vec3<f32>(0.06)), vec3<f32>(2.2)), vec3<f32>(0.0), vec3<f32>(1.0)); }
+ else if (params.y > 5.5) { c = min(vec3<f32>(1.0), (c * (vec3<f32>(1.0) + c / 7.5)) / (vec3<f32>(1.0) + c)); }
+ else if (params.y > 4.5) { c = a3dNativeToneUncharted2(c); }
+ else if (params.y > 3.5) { c = a3dNativeToneAgx(c); }
  else if (params.y > 2.5) { let toe=max(c-vec3<f32>(0.004),vec3<f32>(0.0)); c=min((toe*(6.2*toe+vec3<f32>(0.5)))/(toe*(6.2*toe+vec3<f32>(1.7))+vec3<f32>(0.06)),c*1.08); }
  else if (params.y > 1.5) { c = a3dNativeToneAces(c); }
  else if (params.y > 0.5) { c = c / (vec3<f32>(1.0) + c); }
@@ -6048,7 +6071,7 @@ export class WebGPUDevice implements RenderDevice {
         const tone = { ...options.toneMappingDefaults, ...pass.options };
         const operator = tone.operator ?? "reinhard", exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
         const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;
-        if (!["linear", "none", "reinhard", "aces", "aces-filmic", "filmic"].includes(String(operator)) ||
+        if (!["linear", "none", "reinhard", "aces", "aces-filmic", "filmic", "agx", "uncharted2", "neutral", "cineon"].includes(String(operator)) ||
             !Number.isFinite(exposure) || exposure < 0 || !Number.isFinite(whitePoint) || whitePoint <= 0) {
           throw new RenderDeviceError("Native depth-of-field tone options are unsupported", "WEBGPU_POSTPROCESS_UNSUPPORTED");
         }
@@ -6128,7 +6151,7 @@ export class WebGPUDevice implements RenderDevice {
     const tone = { ...options.toneMappingDefaults, ...tones[0]!.options };
     const operator = tone.operator ?? "reinhard", exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
     const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;
-    if (!["linear", "none", "reinhard", "aces", "aces-filmic", "filmic"].includes(String(operator)) ||
+    if (!["linear", "none", "reinhard", "aces", "aces-filmic", "filmic", "agx", "uncharted2", "neutral", "cineon"].includes(String(operator)) ||
         !Number.isFinite(exposure) || exposure < 0 || !Number.isFinite(whitePoint) || whitePoint <= 0) {
       throw new RenderDeviceError("Display-P3 tone options are unsupported", "WEBGPU_POSTPROCESS_UNSUPPORTED");
     }
@@ -6570,7 +6593,7 @@ export class WebGPUDevice implements RenderDevice {
         } else if (pass.name === "tone-mapping") {
           const tone = { ...options.toneMappingDefaults, ...pass.options };
           const operator = tone.operator ?? "reinhard";
-          const operatorId = operator === "linear" || operator === "none" ? 0 : operator === "reinhard" ? 1 : operator === "aces" || operator === "aces-filmic" ? 2 : operator === "filmic" ? 3 : operator === "neutral" ? 6 : -1;
+          const operatorId = operator === "linear" || operator === "none" ? 0 : operator === "reinhard" ? 1 : operator === "aces" || operator === "aces-filmic" ? 2 : operator === "filmic" ? 3 : operator === "agx" ? 4 : operator === "uncharted2" ? 5 : operator === "neutral" ? 6 : operator === "cineon" ? 7 : -1;
           if (operatorId < 0) throw new RenderDeviceError(`Unsupported native WebGPU tone operator ${String(operator)}`, "WEBGPU_POSTPROCESS_UNSUPPORTED");
           const exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
           const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;

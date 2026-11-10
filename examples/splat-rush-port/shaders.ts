@@ -1,9 +1,7 @@
 /**
- * GLSL 300 es for the port's `material.custom` surfaces. The original draws everything with three's
- * `MeshToonMaterial` under one hemisphere light and two directional lights; the toon ramp below is three's
- * default (no gradient map): `mix(0.7, 1.0, smoothstep(0.7 - fw, 0.7 + fw, dot(N, L) * 0.5 + 0.5))` with
- * `fw = fwidth(coord) * 0.5`. Light intensities carry three's legacy factor of pi, which the Lambert
- * 1/pi cancels, so the effective strengths are 0.55 (hemisphere), 0.65 and 0.25 (directionals).
+ * GLSL 300 es for Splat's `material.custom` surfaces. The classic look draws surfaces with a two-step toon ramp
+ * under one hemisphere light and two directional lights: `mix(0.7, 1.0, smoothstep(0.7 - fw, 0.7 + fw, dot(N, L) * 0.5 + 0.5))`
+ * with `fw = fwidth(coord) * 0.5`. Effective light strengths are 0.55 (hemisphere), 0.65 and 0.25 (directionals).
  * Colours are linear; the engine encodes to sRGB on output.
  */
 
@@ -309,15 +307,32 @@ void main() {
   vec3 base = baseColor;
 ${withTone ? "  base *= vTone;" : ""}
 ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
+  float wet = crDry.z > 0.0 ? 1.0 - clamp((vWorld.z - crDry.x) / max(crDry.y * crDry.z, 1e-3), 0.0, 1.0) : 1.0;
+  float deckTop = step(0.001, crCanvas.x + crCanvas.y) * step(0.5, N.y);
+  float centerLane = (1.0 - smoothstep(0.16, 0.44, abs(vUv.x - 0.5))) * deckTop;
   if (crCanvas.x + crCanvas.y > 0.0) {
-    float weave = sin(vLocal.x * 31.0) * sin(vLocal.z * 29.0);
+    float weave = sin(vLocal.x * 34.0) * sin(vLocal.z * 32.0);
     float streak = sin(vLocal.x * 2.3 + sin(vLocal.z * 0.61) * 2.4 + vLocal.z * 0.17);
-    base *= 1.0 + crCanvas.x * weave + crCanvas.y * streak;
+    base *= 1.0 + crCanvas.x * weave * (1.0 - 0.55 * centerLane) + crCanvas.y * streak;
+    N = normalize(N + vec3(cos(vLocal.x * 34.0) * 0.028, 0.0, cos(vLocal.z * 32.0) * 0.028) * deckTop * (1.0 - 0.7 * centerLane));
     /* GU47 phase 3: painted rail shadows on the deck top (u runs across the deck): a wide band inside the left rail, whose
      * shadow the low sun (azimuth -35, ahead-left) throws onto the deck, and a thin contact band inside the right rail. */
     float railShade = max(1.0 - band(vUv.x, 0.085), band(vUv.x, 0.972)) * step(0.5, N.y);
     base *= 1.0 - 0.3 * railShade;
   }
+  /* Raised wet-meniscus bevel on fresh ground splatters */
+  float splatMask = step(0.001, crDry.z);
+  vec2 duv = vUv - vec2(0.5);
+  float splatRad = length(duv) * 2.0;
+  vec2 rimDir = duv / max(length(duv), 1e-3);
+  float meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.42;
+  N = normalize(N + vec3(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+${!withTone ? /* glsl */ `
+  /* Liquid-gloss marble pigment swirl on the painted roller sphere */
+  if (crGloss > 0.45) {
+    float swirl = 0.5 + 0.5 * sin(vLocal.x * 5.4 + sin(vLocal.y * 4.6 - vLocal.z * 3.9) * 1.7);
+    base *= mix(0.90, 1.14, smoothstep(0.22, 0.78, swirl));
+  }` : ""}
   float d = dot(N, crSunDir);
   float lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
   vec3 hemi = mix(crGround, crSkyFill, 0.5 * N.y + 0.5);
@@ -326,19 +341,22 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   float fres = 1.0 - max(dot(N, V), 0.0);
   float rimSide = clamp(d + 0.6, 0.0, 1.0);
   c += crRim * band(fres, crRimThreshold) * (0.35 + 0.65 * rimSide);
-  float wet = crDry.z > 0.0 ? 1.0 - clamp((vWorld.z - crDry.x) / max(crDry.y * crDry.z, 1e-3), 0.0, 1.0) : 1.0;
   vec3 H = normalize(crSunDir + V);
-  float spec = band(pow(max(dot(N, H), 0.0), crShininess), 0.45);
-  c += crSunColor * spec * crGloss * wet * 1.6;
+  float nh = max(dot(N, H), 0.0);
+  float effGloss = crGloss + centerLane * 0.24;
+  float spec = band(pow(nh, crShininess), 0.45);
+  float coatPin = pow(nh, crShininess * 3.2) * step(0.2, effGloss);
+  c += crSunColor * (spec * effGloss * 1.55 + coatPin * effGloss * 0.65) * wet;
   vec3 R = reflect(-V, N);
   float skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
   float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
   vec3 skyRefl = mix(mix(crFogColor, crEnvRose, 0.6) * 0.75, mix(vec3(0.78, 0.84, 1.0), crEnvTop * 1.6, 0.35) * 0.7, band(R.y, 0.5));
-  c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
-  /* GU47 phase 4: enamel environment reflection, the painted dome (horizon to upper sky) by the reflected ray, Schlick fresnel */
+  c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * effGloss * crSkyReflect * wet;
+  /* GU47 phase 4: enamel environment reflection + subtle grazing clearcoat iridescence */
   float schlick = 0.04 + 0.96 * pow(fres, 5.0);
   vec3 dome = mix(crFogColor, crEnvTop, smoothstep(-0.05, 0.5, R.y));
-  c += dome * schlick * crEnv;
+  vec3 irid = (0.5 + 0.5 * cos(6.2831853 * (fres * 1.15 + vec3(0.0, 0.33, 0.67)))) * step(0.45, crGloss) * 0.14;
+  c += dome * schlick * (crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
   c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
@@ -420,4 +438,58 @@ void main() {
   float m = puff(p * 3.0) * 0.65 + puff(p * 7.0 + 3.1) * 0.35;
   vec3 c = crSea * (0.86 + 0.24 * smoothstep(0.35, 0.75, m));
   outColor = vec4(haze(c, vWorld), 1.0);
+}`;
+
+/**
+ * Translucent liquid-pigment gate curtain inside each carnival arch (`CARNIVAL_TONE_VERTEX`):
+ * downward meniscus drip waves, crisp post/bar rim glow, and a subtle colour-blind shape watermark
+ * (circle / triangle / square / cross) derived from the gate pigment `vTone`.
+ */
+export const CARNIVAL_CURTAIN_FRAGMENT = /* glsl */ `
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vLocal;
+in vec2 vUv;
+in vec3 vTone;
+out vec4 outColor;
+${HAZE}
+void main() {
+  vec2 p = (vUv - vec2(0.5, 0.52)) * vec2(2.1, 2.0);
+  float ripple = 0.5 + 0.5 * sin(vUv.x * 22.0 + sin(vUv.y * 8.0 + crTime * 2.8) * 1.4);
+  float dripMeniscus = smoothstep(0.58, 1.0, vUv.y) * (0.65 + 0.35 * sin(vUv.x * 18.84955));
+  float postRim = smoothstep(0.32, 0.5, abs(vUv.x - 0.5));
+  float dCircle = abs(length(p) - 0.44) - 0.055;
+  vec2 tp = vec2(abs(p.x), p.y + 0.14);
+  float dTri = abs(max(tp.x * 0.866025 + tp.y * 0.5, -tp.y) - 0.34) - 0.05;
+  vec2 sp = abs(p);
+  float dSq = abs(max(sp.x, sp.y) - 0.38) - 0.052;
+  float dCross = abs(min(max(sp.x - 0.12, sp.y - 0.42), max(sp.x - 0.42, sp.y - 0.12))) - 0.04;
+  float lowBlue = step(vTone.b, 0.2);
+  float warmGreen = step(0.2, vTone.g);
+  float coolCyan = step(vTone.r, vTone.g);
+  float dWarm = mix(dCircle, dTri, warmGreen);
+  float dCool = mix(dCross, dSq, coolCyan);
+  float dMark = mix(dCool, dWarm, lowBlue);
+  float mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
+  vec3 sheen = mix(vTone, vec3(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
+  float a = alpha * clamp(0.18 + 0.12 * ripple + 0.24 * dripMeniscus + 0.22 * postRim + 0.32 * mark, 0.0, 0.72);
+  a *= smoothstep(0.0, 0.08, vUv.y);
+  outColor = vec4(haze(sheen, vWorld), a);
+}`;
+
+/**
+ * Chroma ink-droplet flipbook burst (`SHADOW_VERTEX`) sampling the 8x4 `createFlipbookAtlas("ink")` sheet.
+ */
+export const CARNIVAL_INK_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+${SRGB}
+void main() {
+  float f = clamp(floor(crFrame), 0.0, 31.0);
+  float col = mod(f, 8.0);
+  float row = floor(f / 8.0);
+  vec2 suv = vec2((col + clamp(vUv.x, 0.02, 0.98)) / 8.0, (row + clamp(1.0 - vUv.y, 0.02, 0.98)) / 4.0);
+  vec4 tex = texture(map, suv);
+  vec3 ink = baseColor * (1.12 + 0.42 * srgbToLinear(tex.rgb).r);
+  outColor = vec4(ink, tex.a * alpha);
 }`;

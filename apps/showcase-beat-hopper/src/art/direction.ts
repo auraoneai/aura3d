@@ -1,32 +1,32 @@
-// apps/showcase-beat-hopper/src/art/direction.ts — WP-6 (lane G6) art direction for Beat Hopper.
-// Fantasy: a neon night stage where the skyline is an equalizer and every obstacle lands on the beat.
-// The look table is `../look.ts`; the signature effect is the whole-world beat pulse + PERFECT timing rings.
+// apps/showcase-beat-hopper/src/art/direction.ts — WP-19 10/10 synesthetic concert-stage art direction for Beat Hopper.
+// Fantasy: a volumetric neon concert stage where the Acrylic runway and skyline dance as a 132 BPM equalizer and every
+// judgement fires concentric beat-ripple shockwaves.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "beat-hopper",
   genre: "platformer",
-  fantasy: "Hop and duck across a neon night stage on a 132 BPM beat grid while the equalizer skyline dances and PERFECT timing rings ripple out.",
+  fantasy: "Skate, hop and duck across a mirrored Acrylic neon stage on a 132 BPM beat grid as equalizer towers and gold timing rings pulse.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [
     {
       file: "evidence/beat-hopper/README.md",
-      source: "generic reference: night-city neon palettes (deep indigo sky, magenta and cyan practicals)",
+      source: "generic reference: concert-stage volumetric night palettes (deep indigo sky, magenta and cyan practicals)",
       licence: "reference-only",
-      why: "Five-stop night gradient from ink zenith to hot-magenta horizon with cyan road stripes and magenta rails"
+      why: "Five-stop night gradient from ink zenith to hot-magenta horizon with AgX cyber-neon grading, cyan beat thresholds and anodized magenta rails"
     },
     {
       file: "evidence/beat-hopper/README.md",
-      source: "generic reference: audio equalizer bar visualizations as city skylines",
+      source: "generic reference: audio equalizer bar visualizations embedded in dark Acrylic stage floors and city skylines",
       licence: "reference-only",
-      why: "Two rows of towers whose heights dance on the sim beat, reading the rhythm before the obstacle arrives"
+      why: "Per-lane 132 BPM LED spectrum bars under dark glass plus two rows of equalizer towers whose heights dance on the sim beat"
     },
     {
       file: "evidence/beat-hopper/README.md",
-      source: "generic reference: rhythm-game timing feedback (expanding judgement rings, beat-synced world pulses)",
+      source: "generic reference: synesthetic rhythm-game timing feedback (concentric ripple shockwaves, beat-synced bloom)",
       licence: "reference-only",
-      why: "PERFECT judgements fire gold expanding rings; the whole world's emissive gain pulses exactly on the beat"
+      why: "PERFECT judgements fire gold expanding timing rings and star-spark bursts while stage emissives and bloom pulse on quantized BPM phase"
     }
   ],
   palette: {
@@ -38,8 +38,8 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 8500, shadow: true },
     fill: "ibl+bounce",
     practicals: 2,
-    environment: { preset: "neutral", background: "sky" },
-    exposureEV: 0
+    environment: { preset: "night", background: "sky" },
+    exposureEV: 0.07
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [55, 80], mobile: "both" },
   assets: [],
@@ -58,12 +58,12 @@ export default defineArtDirection({
     { event: "milestone", cue: "milestone", variants: 1 },
     { event: "gameover", cue: "gameover", variants: 1 }
   ],
-  signatureEffect: "Night-neon equalizer stage: the whole world pulses on the 132 BPM sim beat and PERFECT judgements fire expanding gold timing rings.",
+  signatureEffect: "Synesthetic concert-stage equalizer runway: mirrored Acrylic beat pads and skyline pulse on the 132 BPM sim beat while PERFECT judgements fire expanding gold timing rings.",
   criticalCategories: ["lighting", "environment_world", "vfx", "gameplay_readability"],
   tiers: {
     low: { particles: 90, shadowMap: 512, cascades: 1, textureMax: 1024 },
-    medium: { particles: 90, shadowMap: 512, cascades: 1, textureMax: 1024 },
-    high: { particles: 90, shadowMap: 1024, cascades: 1, textureMax: 1024 },
-    ultra: { particles: 90, shadowMap: 1024, cascades: 1, textureMax: 1024 }
+    medium: { particles: 90, shadowMap: 1024, cascades: 2, textureMax: 1024 },
+    high: { particles: 90, shadowMap: 2048, cascades: 2, textureMax: 1024 },
+    ultra: { particles: 90, shadowMap: 2048, cascades: 2, textureMax: 1024 }
   }
 });

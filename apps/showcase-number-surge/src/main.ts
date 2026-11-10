@@ -7,12 +7,14 @@
  * Query params: seed=N, manual=1, autostart=1, autopilot=1, warmup=N, dpr=N,
  * motion=reduced|full.
  */
+import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { CONFIG, IDLE, NumberSurgeSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, SteadyCamera, createNumberSurgePresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -96,6 +98,8 @@ sound.setMuted(store.get("splatSiblings.number-surge.mute") === "1");
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const storedMotion = config.motion || store.get("splatSiblings.number-surge.motion");
 let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" ? false : prefersReduced;
+let impactRig = createImpactRig({ reducedMotion });
+let impactState = impactRig.step(0);
 // The presenter snapshots once at construction and reads `reducedMotion`, so it must be created after that
 // declaration (creating it earlier is a temporal-dead-zone ReferenceError at module load).
 const presenter = createNumberSurgePresenter(() => sim, () => (reducedMotion ? steady.cur : chase.cur));
@@ -109,7 +113,9 @@ const hud = new NumberSurgeHud({
   number: $("hud-number"),
   wall: $("hud-wall"),
   shield: $("hud-shield"),
-  x2: $("hud-x2")
+  x2: $("hud-x2"),
+  laneRail: document.getElementById("lane-rail"),
+  laneThumb: document.getElementById("lane-thumb")
 });
 
 /* ------------------------------------------------------------------ HUD, popups, results */
@@ -173,7 +179,24 @@ function reactToFrame(): void {
   prevEvents = { ...o.events };
   fovPunch = fx.apply(bursts);
   if (!reducedMotion) {
-    for (const b of bursts) if (b.shake > 0) chase.addShake(b.shake);
+    for (const b of bursts) {
+      if (b.shake > 0) chase.addShake(b.shake);
+      if (!config.manual && !pilot) {
+        if (b.cue === "smash") {
+          impactRig.trigger({ freezeSeconds: 0.038, trauma: 0.45, fovKickDeg: 3.4 });
+        } else if (b.cue === "wallBlock") {
+          impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.32, fovKickDeg: 1.8 });
+        } else if (
+          b.cue === "milestone" ||
+          b.cue === "powerup" ||
+          (b.cue === "pickGood" && o.combo > 0 && o.combo % CONFIG.COMBO_PER_MULT === 0)
+        ) {
+          impactRig.trigger({ freezeSeconds: 0.024, trauma: 0.22, fovKickDeg: 2.2 });
+        } else if (b.cue === "pickGood") {
+          impactRig.trigger({ freezeSeconds: 0, trauma: 0.08, fovKickDeg: 1.0 });
+        }
+      }
+    }
   }
   fx.vignette(o.mult, o.scoreX2Timer > 0, performance.now() / 1000);
   if (o.phase !== lastPhase) {
@@ -187,7 +210,7 @@ function reactToFrame(): void {
     sound.setIntensity(o.phase === "playing" || o.phase === "bursting" ? "play" : o.phase === "gameOver" ? "over" : "title");
     lastPhase = o.phase;
   }
-  $("splash-best").textContent = `BEST ${best}`;
+  $("splash-best").textContent = `best ${best.toLocaleString()}`;
 }
 
 function updateHud(): void {
@@ -206,7 +229,9 @@ function render(live = false): void {
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
       ...(shown ? { shown } : {}),
       reducedMotion,
-      fovPunch
+      fovPunch: fovPunch + impactState.fovDeltaDeg,
+      shakeOffset: impactState.shakeOffset,
+      shakeRoll: impactState.shakeRoll
     });
     app.step(0);
   } catch (error) {
@@ -230,6 +255,7 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howto.isOpen,
   step() {
+    if (impactState.frozen && !config.manual && !pilot) return;
     if (keyDir !== 0 && sim.o.phase === "playing") pending.dx += keyDir * 0.22;
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
     pending.start = pending.down = pending.up = false;
@@ -238,6 +264,7 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    impactState = impactRig.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
     sampleQuality(frameSeconds);
@@ -273,7 +300,10 @@ async function boot(): Promise<void> {
   startButton.setAttribute("aria-busy", "true");
   loading.set(0.1);
   try {
-    await document.fonts.load('700 32px "GT Walsheim"');
+    await Promise.allSettled([
+      document.fonts.load('500 32px "DIN Pro"'),
+      document.fonts.load('600 24px "Whitney"')
+    ]);
   } catch {
     /* the canvas labels fall back to the default face */
   }
@@ -286,7 +316,7 @@ async function boot(): Promise<void> {
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "none", dither: false, ...lab.output },
+    output: { preset: "neon-night", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -452,6 +482,8 @@ function restart(): void {
   presenter.reset();
   chase.reset();
   steady.reset();
+  impactRig.reset();
+  impactState = impactRig.step(0);
   prevAudio = null;
   prevEvents = null;
   pilot?.reset();
@@ -468,7 +500,7 @@ $("btn-restart").addEventListener("click", () => {
 
 const muteButton = $<HTMLButtonElement>("btn-mute");
 const paintMute = (): void => {
-  muteButton.textContent = sound.muted ? "SOUND OFF" : "SOUND ON";
+  muteButton.textContent = sound.muted ? "sound off" : "sound on";
   muteButton.setAttribute("aria-pressed", String(sound.muted));
 };
 const toggleMute = (): void => {
@@ -483,6 +515,8 @@ const motionToggle = $<HTMLInputElement>("toggle-motion");
 motionToggle.checked = reducedMotion;
 motionToggle.addEventListener("change", () => {
   reducedMotion = motionToggle.checked;
+  impactRig = createImpactRig({ reducedMotion });
+  impactState = impactRig.step(0);
   store.set("splatSiblings.number-surge.motion", reducedMotion ? "reduced" : "full");
   render();
 });
@@ -562,6 +596,8 @@ const qa = installQaHooks("number-surge", {
     presenter.reset();
     chase.reset();
     steady.reset();
+    impactRig = createImpactRig({ reducedMotion });
+    impactState = impactRig.step(0);
     steps = 0;
     nextPopupSeq = 0;
     prevAudio = null;
@@ -612,6 +648,8 @@ const qa = installQaHooks("number-surge", {
     },
     setting(which: "motion", on: boolean) {
       reducedMotion = on;
+      impactRig = createImpactRig({ reducedMotion });
+      impactState = impactRig.step(0);
       motionToggle.checked = on;
       render();
       updateHud();

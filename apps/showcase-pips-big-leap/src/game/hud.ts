@@ -16,6 +16,12 @@ const $ = <T extends HTMLElement>(id: string): T => {
   return el as T;
 };
 
+const HEART_SVG = `<svg class="pbl-ico-heart" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M8 14.1 6.9 13.1C3.1 9.7 1 7.7 1 5.1 1 3 2.7 1.4 4.8 1.4c1.2 0 2.4.6 3.2 1.5.8-.9 2-1.5 3.2-1.5C13.3 1.4 15 3 15 5.1c0 2.6-2.1 4.6-5.9 8L8 14.1Z"/></svg>`;
+const SUN_SVG = `<svg class="pbl-ico" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="3.4" fill="currentColor"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 1.4v1.8M8 12.8v1.8M1.4 8h1.8M12.8 8h1.8M3.3 3.3l1.3 1.3M11.4 11.4l1.3 1.3M12.7 3.3l-1.3 1.3M4.6 11.4l-1.3 1.3"/></svg>`;
+const CLOCK_SVG = `<svg class="pbl-ico" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 4.6V8l2.4 1.5"/></svg>`;
+const CHECK_SVG = `<svg class="pbl-ico" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M2.8 8.4 6.3 12l6.9-7.4"/></svg>`;
+const CHEVRON_SVG = `<svg class="pbl-compass-ico" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M8 1.6 13.4 13.6 8 10.9 2.6 13.6Z"/></svg>`;
+
 export interface Hud {
   setMode(mode: ModeId): void;
   setWorld(title: string): void;
@@ -24,6 +30,7 @@ export interface Hud {
   setAcorns(n: number): void;
   setTimer(seconds: number | null, medals?: { gold: number; silver: number; bronze: number }): void;
   setObjective(text: string): void;
+  setGateCompass(bearingRad: number | null, unlocked: boolean): void;
   setBoss(hp: number, max: number, active: boolean): void;
   banner(big: string, small?: string, seconds?: number): void;
   toast(text: string, seconds?: number): void;
@@ -62,12 +69,26 @@ export function createHud(): Hud {
   const nextWorldBtn = $<HTMLButtonElement>("pbl-next-world");
   const atlasGrid = $<HTMLDivElement>("pbl-atlas-grid");
   const capeSwatches = $<HTMLDivElement>("pbl-cape-swatches");
+  const hudRoot = $<HTMLDivElement>("pbl-hud");
+  let compassEl = document.getElementById("pbl-gate-compass") as HTMLDivElement | null;
+  if (!compassEl) {
+    compassEl = document.createElement("div");
+    compassEl.id = "pbl-gate-compass";
+    compassEl.className = "pbl-gate-compass";
+    compassEl.hidden = true;
+    compassEl.innerHTML = `<span class="pbl-compass-arrow">${CHEVRON_SVG}</span><span class="k">SUN-GATE</span>`;
+    hudRoot.appendChild(compassEl);
+  }
+  const compassArrow = compassEl.querySelector(".pbl-compass-arrow") as HTMLSpanElement | null;
 
   let bannerTimer: ReturnType<typeof setTimeout> | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
   // The timer is written every frame; only touch the DOM when its text changes.
   let timerText = "";
+  let timerMedal = "";
   let timerShown: boolean | null = null;
+  let compassDeg = Number.NaN;
+  let compassUnlocked: boolean | null = null;
 
   const fmt = (s: number) => {
     const m = Math.floor(s / 60);
@@ -86,7 +107,7 @@ export function createHud(): Hud {
     setWorld(title) { worldEl.textContent = title.toUpperCase(); },
     setHearts(n) {
       heartsEl.innerHTML = Array.from({ length: 3 }, (_, i) =>
-        `<span class="${i < n ? "on" : "off"}">&#10084;</span>`).join("");
+        `<span class="${i < n ? "on" : "off"}">${HEART_SVG}</span>`).join("");
     },
     setSeeds(got, total) { seedsEl.textContent = `${got}/${total}`; },
     setAcorns(n) { acornsEl.textContent = String(n); },
@@ -97,14 +118,35 @@ export function createHud(): Hud {
         timerShown = show;
       }
       if (seconds === null) return;
-      const medal = medals ? (seconds <= medals.gold ? " 🥇" : seconds <= medals.silver ? " 🥈" : seconds <= medals.bronze ? " 🥉" : "") : "";
-      const text = fmt(seconds) + medal;
+      const medal = medals ? (seconds <= medals.gold ? "GOLD" : seconds <= medals.silver ? "SILVER" : seconds <= medals.bronze ? "BRONZE" : "") : "";
+      const text = fmt(seconds);
       if (text !== timerText) {
         timerEl.textContent = text;
         timerText = text;
       }
+      if (medal !== timerMedal) {
+        timerChip.dataset.medal = medal.toLowerCase();
+        timerMedal = medal;
+      }
     },
     setObjective(text) { objectiveEl.textContent = text; },
+    setGateCompass(bearingRad, unlocked) {
+      if (!compassEl) return;
+      if (bearingRad === null) {
+        compassEl.hidden = true;
+        return;
+      }
+      compassEl.hidden = false;
+      if (unlocked !== compassUnlocked) {
+        compassEl.classList.toggle("unlocked", unlocked);
+        compassUnlocked = unlocked;
+      }
+      const deg = Math.round((bearingRad * 180) / Math.PI);
+      if (deg !== compassDeg && compassArrow) {
+        compassArrow.style.transform = `rotate(${deg}deg)`;
+        compassDeg = deg;
+      }
+    },
     setBoss(hp, max, active) {
       bossWrap.hidden = !active;
       bossFill.style.width = `${Math.max(0, (hp / max) * 100)}%`;
@@ -143,10 +185,10 @@ export function createHud(): Hud {
           <div class="n">${w.order}</div>
           <div class="t">${w.title.toUpperCase()}</div>
           <div class="s">${w.subtitle}</div>
-          <div class="p">${done ? "✔ SUN-GATE OPENED" : "···"}</div>
-          <div class="sd">☀ ${got}/${w.seedGoal} seeds${best !== undefined ? ` · ⏱ ${best.toFixed(1)}s` : ""}</div>
+          <div class="p">${done ? `${CHECK_SVG} SUN-GATE OPENED` : "UNEXPLORED"}</div>
+          <div class="sd">${SUN_SVG} <span class="m">${got}/${w.seedGoal}</span> seeds${best !== undefined ? ` · ${CLOCK_SVG} <span class="m">${best.toFixed(1)}s</span>` : ""}</div>
         </button>`;
-      }).join("") + `<div class="pbl-atlas-total">VALE TOTAL — ☀ ${total}/36 sun-seeds</div>`;
+      }).join("") + `<div class="pbl-atlas-total">VALE TOTAL — ${SUN_SVG} <span class="m">${total}/36</span> sun-seeds</div>`;
     },
     renderStudio(save, onPick) {
       const CAPES = ["#3f8cff", "#ffd95e", "#ff6a8a", "#5fd38a", "#9a8ce0", "#ff9435", "#6fd8ff", "#f0e6d4"];

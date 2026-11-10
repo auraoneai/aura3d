@@ -17,6 +17,7 @@ import {
   primitives,
   sky,
   surfaces,
+  type AuraCustomGeometrySpec,
   type AuraCustomPostPass,
   type AuraMaterialSpec,
   type AuraModelMaterialOverride,
@@ -24,6 +25,8 @@ import {
   type AuraVfxBuiltinSequence,
   type scene
 } from "@aura3d/engine";
+import { dualAnimatedWaterSpec } from "../../../showcase-port-shared/dual-shaders.js";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_ENVIRONMENT_FOG, WGSL_MATH, wgslStage } from "../../../showcase-port-shared/wgsl-twins.js";
 import {
   MINIATURE_LENS,
   PIP_PALETTE,
@@ -54,9 +57,13 @@ export const dioramaName = {
   shafts: "pbl-sun-shafts",
   lensFlare: "pbl-sun-flare",
   aurora: "pbl-aurora",
+  ssr: "pbl-ssr",
   millpondMirror: "pbl-millpond-mirror",
+  millpondRipple: "pbl-millpond-ripple",
   millpondFoam: "pbl-millpond-foam",
   heatShimmer: "pbl-heat-shimmer",
+  flipbookDust: (slot: number) => `pbl-flip-dust:${slot}`,
+  flipbookSparks: (slot: number) => `pbl-flip-sparks:${slot}`,
   flora: (layer: string) => `pbl-flora-${layer}`
 } as const;
 
@@ -109,23 +116,48 @@ const FELT_NAP = { kind: "aura-procedural-texture", texture: "fabric-normal", sc
 const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color, sheen: 0.35, normal: FELT_NAP });
 const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
 /**
- * GU47 phase 4: glazed clay for the platform bodies. A satin glaze (base roughness 0.62 under a
- * thin clearcoat; round 1's 0.55 coat read as grey metal) gives the slab sides a sky reflection; every rubric judgement scored the all-matte
- * felt-and-clay course lowest on image-based reflections. The felt tops stay matte (floor glare
- * lost the w5 panel in phase 3).
+ * Glazed ceramic clay for hero/merged platform bodies: satin ceramic glaze gives slab walls
+ * warm sky reflections while felt tops stay plush and glare-free.
  */
 const glazedClay = (color: string): AuraMaterialSpec =>
-  material.lacquer({ name: "glazed clay", color, roughness: 0.62, clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 0.6 });
+  material.ceramic({ name: "glazed clay", color, roughness: 0.56, clearcoat: 0.34, clearcoatRoughness: 0.28, envMapIntensity: 0.72 });
 
 /**
- * Interim hand-made surfaces per platform kind (PBL-M1): felt tops on clay bodies,
- * clearcoat toadstool-red caps on darker mushroom stems (#b8a58a), brushed metal, gold.
- * The platform tile kit (PBL-A1, WP-36) replaces these slabs on the same colliders.
+ * Hardware-instanced felt & ceramic equivalents for `instances.*` pools (WP-11 draw-call collapse):
+ * `ForwardPass` expands any `instances.*` material that sets extension lobes (`sheen`, `clearcoat`,
+ * `iridescence`, `anisotropy`, `specularIntensity`, `ior`, `thickness`, `transmission`) into 1 draw
+ * per instance. Translating felt nap onto `diffuseRoughness` + `retroreflection` keeps every
+ * `floraNodes`, `baseMounds`, `millpondFoam` and `instances.roundedBox` pool in 1 GPU draw call.
+ */
+export const instancedFelt = (color: string, roughness = 0.86): AuraMaterialSpec =>
+  material.pbr({ name: "instanced felt", color, roughness, metallic: 0, diffuseRoughness: 0.88, retroreflection: 0.28, envMapIntensity: 0.72 });
+
+export const instancedClay = (color: string, roughness = 0.82): AuraMaterialSpec =>
+  material.pbr({ name: "instanced clay", color, roughness, metallic: 0, diffuseRoughness: 0.65, envMapIntensity: 0.65 });
+
+export function instancedSurface(spec: AuraMaterialSpec): AuraMaterialSpec {
+  const hasSheen = (spec.sheen ?? 0) > 0;
+  const hasCoat = (spec.clearcoat ?? 0) > 0;
+  const baseRoughness = spec.roughness ?? 0.68;
+  return material.pbr({
+    name: spec.name ? `${spec.name} (instanced)` : "instanced surface",
+    color: spec.color ?? "#808080",
+    metallic: spec.metallic ?? spec.metalness ?? 0,
+    roughness: hasCoat ? Math.max(0.24, baseRoughness * 0.78) : baseRoughness,
+    diffuseRoughness: hasSheen ? Math.max(0.84, spec.diffuseRoughness ?? 0.84) : spec.diffuseRoughness,
+    retroreflection: hasSheen ? Math.max(0.26, spec.retroreflection ?? 0.26) : spec.retroreflection,
+    envMapIntensity: hasCoat ? Math.max(0.95, spec.envMapIntensity ?? 0.85) : (spec.envMapIntensity ?? 0.75)
+  });
+}
+
+/**
+ * Hand-made toy-diorama surfaces per platform kind (PBL-M1): plush wool-felt tops on glazed
+ * ceramic-clay bodies, lacquered toadstool-red caps on warm stems (#b8a58a), brushed metal, gold.
  */
 export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   grass: { body: glazedClay("#6b4c35"), top: felt("#6a9a48") },
   earth: { body: glazedClay("#5c3f28"), top: felt("#7d6243") },
-  mushroom: { body: glazedClay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.32 }) },
+  mushroom: { body: glazedClay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.28, clearcoat: 0.72, clearcoatRoughness: 0.14 }) },
   leaf: { body: felt("#2f6333"), top: felt("#4f8e45") },
   dock: { body: glazedClay("#6b4c35"), top: clay("#9e7344") },
   wood: { body: glazedClay("#6b4c35"), top: clay("#ad814c") },
@@ -135,11 +167,11 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   stone: { body: glazedClay("#4a4541"), top: clay("#736a61") },
   ember: { body: glazedClay("#3f271d"), top: clay("#8a4a2c") },
   metal: { body: material.brushedMetal({ color: "#5a5e6a" }), top: material.brushedMetal({ color: "#868c9c" }) },
-  // Matte honey stone: the glazed-ceramic top mirrored the palace HDRI as floor glare (phase 3).
-  marble: { body: glazedClay("#a89d8e"), top: material.matteClay({ color: "#d9c7a4", roughness: 0.7 }) },
+  // Satin honey ceramic stone with gentle clearcoat so palace lanterns glint softly without glare.
+  marble: { body: glazedClay("#a89d8e"), top: material.ceramic({ color: "#d9c7a4", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.34 }) },
   gold: { body: material.metal({ color: "#7c5f26", roughness: 0.42 }), top: material.metal({ color: "#c9a24a", roughness: 0.3 }) },
-  // Phase 4: deeper amethyst, a rougher base under the coat; the 0.18 lilac top bloomed into a glare sheet in w6 (p4-r1/r2).
-  crystal: { body: material.clearcoat({ color: "#3a2f6a", roughness: 0.4 }), top: material.clearcoat({ color: "#6a5ab4", roughness: 0.34, envMapIntensity: 0.8 }) },
+  // Deeper amethyst lacquer over dark crystal facets.
+  crystal: { body: material.lacquer({ color: "#3a2f6a", roughness: 0.38, clearcoat: 0.55 }), top: material.lacquer({ color: "#6a5ab4", roughness: 0.32, clearcoat: 0.6, envMapIntensity: 0.85 }) },
   starlight: { body: felt("#322c58"), top: felt("#9d8fd8") }
 };
 
@@ -185,6 +217,57 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+export const LAVA_VERTEX_WGSL = wgslStage(
+  [WGSL_CLIP],
+  /* wgsl */ `
+struct VertexOut {
+  @builtin(position) clipPosition: vec4<f32>,
+  @location(0) worldPos: vec3<f32>,
+};
+@vertex
+fn vs_main(@location(0) a_position: vec3<f32>) -> VertexOut {
+  var out: VertexOut;
+  let w = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  out.worldPos = w.xyz;
+  out.clipPosition = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`
+);
+
+export const LAVA_FRAGMENT_WGSL = wgslStage(
+  [WGSL_MATH, WGSL_COLOR, WGSL_ENVIRONMENT_FOG],
+  /* wgsl */ `
+fn pblHash(pIn: vec2<f32>) -> f32 {
+  var p = fract(pIn * vec2<f32>(123.34, 456.21));
+  p = p + dot(p, p + vec2<f32>(45.32));
+  return fract(p.x * p.y);
+}
+fn pblNoise(p: vec2<f32>) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (vec2<f32>(3.0) - 2.0 * f);
+  return mix(
+    mix(pblHash(i), pblHash(i + vec2<f32>(1.0, 0.0)), u.x),
+    mix(pblHash(i + vec2<f32>(0.0, 1.0)), pblHash(i + vec2<f32>(1.0, 1.0)), u.x),
+    u.y
+  );
+}
+@fragment
+fn fs_main(
+  @location(0) worldPos: vec3<f32>,
+  @builtin(position) fragCoord: vec4<f32>
+) -> @location(0) vec4<f32> {
+  let p = worldPos.xz * aura.u_crustScale + vec2<f32>(0.0, aura.u_time * aura.u_flowSpeed);
+  let n = pblNoise(p) * 0.65 + pblNoise(p * 2.3 + vec2<f32>(7.1, 3.7)) * 0.35;
+  let crack = 1.0 - smoothstep(0.05, 0.16, abs(n - 0.5));
+  let pulse = 0.85 + 0.15 * sin(aura.u_time * aura.u_flowSpeed * 3.0 + n * 6.2832);
+  let crust = a3dSrgbToLinear(aura.u_crustColor) * (0.75 + 0.5 * pblNoise(p * 5.0));
+  let glow = a3dSrgbToLinear(aura.u_glowColor) * aura.u_glowIntensity * pulse;
+  let lit = a3dFinite3(mix(crust, glow, crack));
+  return vec4<f32>(a3dApplyEnvironmentFog(lit, worldPos, fragCoord.xy), 1.0);
+}`
+);
+
 /** Lava look constants (PBL-M2): crust basalt, crack orange, HDR crack peak. */
 export const LAVA_LOOK = { crust: [0.16, 0.08, 0.06], glow: [1, 0.42, 0.12], glowIntensity: 3.2, crustScale: 0.9, flowSpeed: 0.12 } as const;
 
@@ -192,6 +275,7 @@ export function lavaMaterial(motion = 1): AuraMaterialSpec {
   return {
     ...material.custom({
       glsl: { vertex: LAVA_VERTEX_GLSL, fragment: LAVA_FRAGMENT_GLSL },
+      wgsl: { vertex: LAVA_VERTEX_WGSL, fragment: LAVA_FRAGMENT_WGSL },
       uniforms: {
         crustColor: { type: "vec3", value: [...LAVA_LOOK.crust] },
         glowColor: { type: "vec3", value: [...LAVA_LOOK.glow] },
@@ -279,11 +363,11 @@ export interface BaseTile {
 }
 
 /** Y squash of a base tile against its XZ stretch (1 = uniform scale). */
-export const BASE_TILE_SQUASH = 0.5;
+export const BASE_TILE_SQUASH = 0.42;
 /** The tile surface rides this far above the base top so it reads over the felt filler. */
 export const BASE_TILE_LIFT = 0.2;
-/** Tallest feature stays this far under the course floor (y = 0). */
-export const BASE_TILE_CLEARANCE = 1.2;
+/** Tallest feature stays well under the course floor (y = 0) so the rim never crowds portrait frames. */
+export const BASE_TILE_CLEARANCE = 1.8;
 
 /** Transforms of the base tiles along the course (pure, for the node and the tests). */
 export function baseTileTransforms(spec: WorldSpec, tile: BaseTile, depth: number): { readonly transforms: readonly AuraTransformSpec[]; readonly height: number } {
@@ -343,7 +427,7 @@ export function dioramaBase(spec: WorldSpec, look: WorldLook, depth: number, til
         receiveShadow: true,
         transforms: baseTileTransforms(spec, tile, depth).transforms
       })
-    : instances.sphere({ name: dioramaName.baseMounds, transforms: mounds, material: felt(look.base.mound), castShadow: false, receiveShadow: true });
+    : instances.sphere({ name: dioramaName.baseMounds, transforms: mounds, material: instancedFelt(look.base.mound), castShadow: false, receiveShadow: true });
   return {
     top,
     nodes: [
@@ -540,6 +624,18 @@ export function auroraNode(spec: WorldSpec, look: WorldLook, scale: Presentation
   }).position((b.minX + b.maxX) / 2, b.topY + 7, b.minZ - 16);
 }
 
+/** Screen-space reflections for glossy pond water, honey ceramic palace stone and crystal slabs. */
+export function ssrNode(look: WorldLook): DioramaNode | null {
+  if (!look.ssr) return null;
+  return effects.screenSpaceReflections({
+    name: dioramaName.ssr,
+    intensity: 0.52,
+    maxDistance: 14,
+    roughness: 0.22,
+    thickness: 0.25
+  });
+}
+
 /**
  * PBL-V3 (w4) heat-shimmer fragment. The engine prelude supplies `u_color`, `u_texelSize`,
  * `u_time` and `v_uv` (bottom-left origin). The ripple is a sum of two slow sines,
@@ -561,6 +657,29 @@ void main() {
   outColor = c;
 }`;
 
+export const HEAT_SHIMMER_WGSL = /* wgsl */ `
+struct HeatShimmerUniforms {
+  frame: vec4<f32>,
+  pixels: vec4<f32>,
+  band: vec4<f32>,
+  speed: vec4<f32>,
+};
+@group(0) @binding(0) var<uniform> u_shimmer: HeatShimmerUniforms;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+
+@fragment
+fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let bottomY = 1.0 - uv.y;
+  let w = 1.0 - smoothstep(0.0, u_shimmer.band.x, bottomY);
+  let t = u_shimmer.frame.z * u_shimmer.speed.x;
+  let dx = sin(bottomY * 92.0 - t * 3.1) * 0.6 + sin(bottomY * 171.0 + uv.x * 29.0 - t * 4.7) * 0.4;
+  let dy = sin(uv.x * 63.0 + t * 2.3) * 0.35;
+  let offset = vec2<f32>(dx, -dy) * w * u_shimmer.pixels.x * u_shimmer.frame.xy;
+  let p = clamp(uv + offset, u_shimmer.frame.xy * 0.5, vec2<f32>(1.0) - u_shimmer.frame.xy * 0.5);
+  return textureSample(u_color, u_sampler, p);
+}`;
+
 /**
  * PBL-V3 (w4): the heat-shimmer post pass for `app.post.addPostPass`, or null. Off under
  * reduced motion (a moving screen distortion is exactly what PRD 6.3 removes) and on the
@@ -572,21 +691,44 @@ export function heatShimmerPass(look: WorldLook, scale: PresentationScale, lowTi
     name: dioramaName.heatShimmer,
     order: "after-bloom",
     glsl: HEAT_SHIMMER_GLSL,
+    wgsl: HEAT_SHIMMER_WGSL,
     uniforms: { u_pixels: look.heatShimmer.pixels, u_band: look.heatShimmer.band, u_speed: look.heatShimmer.speed }
   });
 }
 
 /**
  * PBL-E4 (w2): each pond's surface as a horizontal planar mirror 2 cm under the top of its
- * tinted glass volume, plus a ring of felt foam tufts around the rim (one instanced draw).
+ * tinted glass volume, topped by an animated dual-backend GLSL+WGSL stream ripple sheet and
+ * a ring of instanced felt foam tufts around the rim (1 instanced draw).
  * Visual only: the water zones and colliders come from the same spec unchanged.
  */
-export function millpondNodes(spec: WorldSpec, look: WorldLook): readonly DioramaNode[] {
+export function millpondNodes(spec: WorldSpec, look: WorldLook, motion = 1): readonly DioramaNode[] {
   if (!look.millpond || spec.waters.length === 0) return [];
   const out: DioramaNode[] = [];
   const foam: AuraTransformSpec[] = [];
+  const rippleMaterial = material.custom(
+    dualAnimatedWaterSpec({
+      shallowColor: hexToRgbTriplet(look.millpond.tint),
+      deepColor: [0.15, 0.41, 0.5],
+      foamColor: hexToRgbTriplet(look.millpond.foam),
+      waveScale: 2.1,
+      waveSpeed: 0.85 * motion,
+      opacity: 0.42
+    })
+  );
   for (const w of spec.waters) {
     out.push(surfaces.mirror({ name: `${dioramaName.millpondMirror}:${w.id}`, position: [w.x, w.y - 0.02, w.z], size: [w.w * 0.98, w.d * 0.98], resolution: look.millpond.resolution, tint: look.millpond.tint }));
+    out.push(
+      primitives.plane({
+        name: `${dioramaName.millpondRipple}:${w.id}`,
+        size: [w.w * 0.98, 1, w.d * 0.98],
+        position: [w.x, w.y - 0.006, w.z],
+        rotation: [-Math.PI / 2, 0, 0],
+        material: rippleMaterial,
+        castShadow: false,
+        receiveShadow: false
+      })
+    );
     const perimeter = 2 * (w.w + w.d);
     const count = Math.max(12, Math.round(perimeter / 0.45));
     for (let i = 0; i < count; i += 1) {
@@ -601,7 +743,7 @@ export function millpondNodes(spec: WorldSpec, look: WorldLook): readonly Dioram
       foam.push({ position: [x, w.y + 0.01, z], scale: [0.16 * s, 0.035, 0.16 * s] });
     }
   }
-  out.push(instances.sphere({ name: dioramaName.millpondFoam, transforms: foam, material: felt(look.millpond.foam), castShadow: false, receiveShadow: true }));
+  out.push(instances.sphere({ name: dioramaName.millpondFoam, transforms: foam, material: instancedFelt(look.millpond.foam, 0.9), castShadow: false, receiveShadow: true }));
   return out;
 }
 
@@ -652,21 +794,212 @@ export function floraLayers(spec: WorldSpec, look: WorldLook, seed: number): rea
       const yaw = rand() * Math.PI * 2;
       const y = p.y + 0.01;
       const t: AuraTransformSpec =
-        kind === "clover" ? { position: [x, y + 0.03 * s, z], rotation: [0, yaw, 0], scale: [0.09 * s, 0.05 * s, 0.09 * s] }
-        : kind === "grass" ? { position: [x, y + 0.09 * s, z], rotation: [0, yaw, (rand() - 0.5) * 0.4], scale: [0.025 * s, 0.18 * s, 0.025 * s] }
-        : kind === "fern" ? { position: [x, y + 0.07 * s, z], rotation: [(rand() - 0.5) * 0.6, yaw, 0], scale: [0.05 * s, 0.14 * s, 0.05 * s] }
-        : kind === "pebble" ? { position: [x, y + 0.02 * s, z], rotation: [0, yaw, 0], scale: [0.07 * s, 0.035 * s, 0.05 * s] }
-        : { position: [x, y + 0.006, z], rotation: [0, yaw, 0], scale: [0.09 * s, 0.008, 0.05 * s] };
+        kind === "clover" ? { position: [x, y + 0.032 * s, z], rotation: [0, yaw, 0], scale: [0.11 * s, 0.055 * s, 0.11 * s] }
+        : kind === "grass" ? { position: [x, y + 0.075 * s, z], rotation: [0, yaw, (rand() - 0.5) * 0.35], scale: [0.042 * s, 0.15 * s, 0.042 * s] }
+        : kind === "fern" ? { position: [x, y + 0.065 * s, z], rotation: [(rand() - 0.5) * 0.5, yaw, 0], scale: [0.068 * s, 0.13 * s, 0.068 * s] }
+        : kind === "pebble" ? { position: [x, y + 0.022 * s, z], rotation: [0, yaw, 0], scale: [0.075 * s, 0.038 * s, 0.055 * s] }
+        : { position: [x, y + 0.008, z], rotation: [0, yaw, 0], scale: [0.095 * s, 0.012, 0.058 * s] };
       buckets[kind].push(t);
     }
   }
   return [
-    { name: dioramaName.flora("clover"), primitive: "sphere", transforms: buckets.clover, material: felt(colors.clover), wind: false },
-    { name: dioramaName.flora("grass"), primitive: "cone", transforms: buckets.grass, material: felt(colors.grass), wind: true },
-    { name: dioramaName.flora("fern"), primitive: "cone", transforms: buckets.fern, material: felt(colors.fern), wind: true },
-    { name: dioramaName.flora("pebble"), primitive: "sphere", transforms: buckets.pebble, material: clay(colors.pebble), wind: false },
-    { name: dioramaName.flora("leaf"), primitive: "box", transforms: buckets.leaf, material: felt(colors.leaf), wind: false }
+    { name: dioramaName.flora("clover"), primitive: "sphere", transforms: buckets.clover, material: instancedFelt(colors.clover), wind: false },
+    { name: dioramaName.flora("grass"), primitive: "cone", transforms: buckets.grass, material: instancedFelt(colors.grass), wind: true },
+    { name: dioramaName.flora("fern"), primitive: "cone", transforms: buckets.fern, material: instancedFelt(colors.fern), wind: true },
+    { name: dioramaName.flora("pebble"), primitive: "sphere", transforms: buckets.pebble, material: instancedClay(colors.pebble), wind: false },
+    { name: dioramaName.flora("leaf"), primitive: "box", transforms: buckets.leaf, material: instancedFelt(colors.leaf), wind: false }
   ];
+}
+
+// ---------------------------------------------------------------- hero shoulder cloth cape
+
+function hexToRgbTriplet(hex: string): [number, number, number] {
+  const clean = hex.trim().replace(/^#/, "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const n = Number.parseInt(full, 16);
+  if (!Number.isFinite(n)) return [0.25, 0.55, 1.0];
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
+/**
+ * Shoulder-pinned storybook cloak mesh (local origin = Pip's upper shoulders at y = 0).
+ * Subdivided 6x8 grid tapering wider toward a scalloped hem and curving gently down -Y / -Z
+ * behind Pip's back, with front + back faces so camera orbit never culls the inner lining.
+ */
+export function heroCapeGeometry(): Omit<AuraCustomGeometrySpec, "kind"> {
+  const cols = 6;
+  const rows = 8;
+  const vertCols = cols + 1;
+  const vertRows = rows + 1;
+  const singleCount = vertCols * vertRows;
+  const positions = new Float32Array(singleCount * 2 * 3);
+  const normals = new Float32Array(singleCount * 2 * 3);
+  const uvs = new Float32Array(singleCount * 2 * 2);
+
+  for (let r = 0; r <= rows; r += 1) {
+    const v = r / rows; // 0 at collar, 1 at hem
+    const halfW = 0.12 + 0.13 * Math.pow(v, 0.85);
+    const baseY = -0.44 * v + 0.015 * Math.sin(v * Math.PI);
+    const baseZ = -0.04 - 0.14 * Math.pow(v, 1.25);
+    for (let c = 0; c <= cols; c += 1) {
+      const u = c / cols;
+      const s = u * 2 - 1; // -1..1 across shoulders
+      const archZ = (1 - s * s) * (-0.038 * (0.35 + 0.65 * v));
+      const scallopY = Math.cos(s * Math.PI * 2.5) * 0.012 * v * v;
+      const px = s * halfW;
+      const py = baseY + scallopY;
+      const pz = baseZ + archZ;
+      const nxRaw = s * 0.28;
+      const nyRaw = 0.34;
+      const nzRaw = -0.9;
+      const nLen = Math.hypot(nxRaw, nyRaw, nzRaw) || 1;
+      const nx = nxRaw / nLen, ny = nyRaw / nLen, nz = nzRaw / nLen;
+
+      const idx = r * vertCols + c;
+      const backIdx = singleCount + idx;
+      positions[idx * 3] = px;
+      positions[idx * 3 + 1] = py;
+      positions[idx * 3 + 2] = pz;
+      normals[idx * 3] = nx;
+      normals[idx * 3 + 1] = ny;
+      normals[idx * 3 + 2] = nz;
+      uvs[idx * 2] = u;
+      uvs[idx * 2 + 1] = v;
+
+      positions[backIdx * 3] = px;
+      positions[backIdx * 3 + 1] = py - 0.004;
+      positions[backIdx * 3 + 2] = pz + 0.004;
+      normals[backIdx * 3] = -nx;
+      normals[backIdx * 3 + 1] = -ny;
+      normals[backIdx * 3 + 2] = -nz;
+      uvs[backIdx * 2] = u;
+      uvs[backIdx * 2 + 1] = v;
+    }
+  }
+
+  const indices = new Uint16Array(cols * rows * 12);
+  let ptr = 0;
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      const a = r * vertCols + c;
+      const b = a + 1;
+      const d = (r + 1) * vertCols + c;
+      const e = d + 1;
+      indices[ptr++] = a; indices[ptr++] = d; indices[ptr++] = b;
+      indices[ptr++] = b; indices[ptr++] = d; indices[ptr++] = e;
+
+      const ab = singleCount + a;
+      const bb = singleCount + b;
+      const db = singleCount + d;
+      const eb = singleCount + e;
+      indices[ptr++] = ab; indices[ptr++] = bb; indices[ptr++] = db;
+      indices[ptr++] = bb; indices[ptr++] = eb; indices[ptr++] = db;
+    }
+  }
+  return { positions, normals, uvs, indices };
+}
+
+export const HERO_CAPE_VERTEX_GLSL = /* glsl */ `
+out vec3 vW;
+out vec3 vN;
+out vec2 vCapeUv;
+void main() {
+  float pin = uv.y * uv.y;
+  float flutter = sin(uv.y * 5.8 - uTime * waveSpeed + uv.x * 2.6) * waveAmp * pin
+                + cos(uv.x * 7.2 - uTime * (waveSpeed * 1.35)) * (waveAmp * 0.42) * pin;
+  vec3 displaced = position + vec3(0.0, flutter * 0.45, -flutter);
+  vec4 w = modelMatrix * vec4(displaced, 1.0);
+  vW = w.xyz;
+  vN = normalize(normalMatrix * normal);
+  vCapeUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(displaced, 1.0);
+}`;
+
+export const HERO_CAPE_FRAGMENT_GLSL = /* glsl */ `
+#include <a3d_math>
+#include <colorspace_decode>
+in vec3 vW;
+in vec3 vN;
+in vec2 vCapeUv;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vN);
+  vec3 V = normalize(cameraPosition - vW);
+  vec3 L = normalize(vec3(0.58, 0.72, 0.38));
+  float ndl = clamp(dot(N, L), 0.0, 1.0);
+  float wrap = 0.42 + 0.58 * ndl;
+  float fresnel = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.4);
+  vec3 base = a3dSrgbToLinear(capeColor);
+  float hemTrim = smoothstep(0.86, 0.96, vCapeUv.y) * 0.18;
+  vec3 col = base * wrap + (base * 0.55 + vec3(0.14, 0.12, 0.09)) * fresnel * 0.48 + vec3(0.28, 0.22, 0.1) * hemTrim;
+  outColor = vec4(a3dFinite(col), 1.0);
+}`;
+
+export const HERO_CAPE_VERTEX_WGSL = wgslStage(
+  [WGSL_CLIP],
+  /* wgsl */ `
+struct CapeVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) worldPos: vec3<f32>,
+  @location(1) worldNormal: vec3<f32>,
+  @location(2) capeUv: vec2<f32>,
+};
+@vertex
+fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_normal: vec3<f32>,
+  @location(2) a_uv: vec2<f32>
+) -> CapeVarying {
+  var out: CapeVarying;
+  let pin = a_uv.y * a_uv.y;
+  let flutter = sin(a_uv.y * 5.8 - aura.u_time * aura.u_waveSpeed + a_uv.x * 2.6) * aura.u_waveAmp * pin
+              + cos(a_uv.x * 7.2 - aura.u_time * (aura.u_waveSpeed * 1.35)) * (aura.u_waveAmp * 0.42) * pin;
+  let displaced = a_position + vec3<f32>(0.0, flutter * 0.45, -flutter);
+  let w = aura.u_modelMatrix * vec4<f32>(displaced, 1.0);
+  out.worldPos = w.xyz;
+  out.worldNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.capeUv = a_uv;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(displaced, 1.0));
+  return out;
+}`
+);
+
+export const HERO_CAPE_FRAGMENT_WGSL = wgslStage(
+  [WGSL_MATH, WGSL_COLOR, WGSL_ENVIRONMENT_FOG],
+  /* wgsl */ `
+@fragment
+fn fs_main(
+  @location(0) worldPos: vec3<f32>,
+  @location(1) worldNormal: vec3<f32>,
+  @location(2) capeUv: vec2<f32>,
+  @builtin(position) fragCoord: vec4<f32>
+) -> @location(0) vec4<f32> {
+  let N = normalize(worldNormal);
+  let V = a3dSafeNormalize3(aura.u_cameraPosition - worldPos, vec3<f32>(0.0, 1.0, 0.0));
+  let L = normalize(vec3<f32>(0.58, 0.72, 0.38));
+  let ndl = clamp(dot(N, L), 0.0, 1.0);
+  let wrap = 0.42 + 0.58 * ndl;
+  let fresnel = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.4);
+  let base = a3dSrgbToLinear(aura.u_capeColor);
+  let hemTrim = smoothstep(0.86, 0.96, capeUv.y) * 0.18;
+  let col = a3dFinite3(base * wrap + (base * 0.55 + vec3<f32>(0.14, 0.12, 0.09)) * fresnel * 0.48 + vec3<f32>(0.28, 0.22, 0.1) * hemTrim);
+  return vec4<f32>(a3dApplyEnvironmentFog(col, worldPos, fragCoord.xy), 1.0);
+}`
+);
+
+/** Dual-backend GLSL + WGSL fluttering wool-felt cape material tinted by Pip's Studio swatch. */
+export function heroCapeMaterial(color: string, motion = 1): AuraMaterialSpec {
+  return material.custom({
+    glsl: { vertex: HERO_CAPE_VERTEX_GLSL, fragment: HERO_CAPE_FRAGMENT_GLSL },
+    wgsl: { vertex: HERO_CAPE_VERTEX_WGSL, fragment: HERO_CAPE_FRAGMENT_WGSL },
+    uniforms: {
+      capeColor: { type: "vec3", value: hexToRgbTriplet(color) },
+      waveAmp: { type: "f32", value: 0.045 * motion },
+      waveSpeed: { type: "f32", value: 7.2 * Math.max(0.3, motion) }
+    },
+    side: "double",
+    fog: true
+  });
 }
 
 /** Lower the flora layers to instanced nodes (one draw each, no shadow casting). */

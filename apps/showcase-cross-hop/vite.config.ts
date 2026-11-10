@@ -11,6 +11,7 @@ const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.
 export default defineConfig({
   plugins: rootConfig.plugins ?? [],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
+  worker: rootConfig.worker ?? { format: "es" },
   optimizeDeps: rootConfig.optimizeDeps,
   publicDir: path.resolve(appDir, "public"),
   server: {

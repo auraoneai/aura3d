@@ -86,7 +86,7 @@ describe("pips-big-leap look table (PBL-L1)", () => {
 });
 
 describe("pips-big-leap look overrides on the merged E-A looks.preset", () => {
-  it("lowers every world to its HDRI (IBL only), a PCSS 3-cascade key, a rim, base height fog and the post preset", () => {
+  it("lowers every world to its HDRI (IBL only), a PCSS 2-cascade key, a rim, base height fog and the post preset", () => {
     for (const id of WORLD_IDS) {
       const look = WORLD_LOOKS[id];
       const baseTop = -baseDepthFor(worldSpec(id));
@@ -99,7 +99,7 @@ describe("pips-big-leap look overrides on the merged E-A looks.preset", () => {
       // Phase 3: the daylight worlds draw their HDRI as the sky; the others keep the colour backdrop.
       if (look.hdriSky) expect(hdri?.background, id).not.toBe(false);
       else expect(hdri?.background).toBe(false);
-      expect(byName("look key light")?.shadow).toMatchObject({ filter: "pcss", cascades: 3 });
+      expect(byName("look key light")?.shadow).toMatchObject({ filter: "pcss", cascades: 2, maxDistance: 42 });
       expect(byName("look rim light")?.light).toBe("directional");
       const fog = byName("look fog");
       expect(fog?.mode).toBe("height");

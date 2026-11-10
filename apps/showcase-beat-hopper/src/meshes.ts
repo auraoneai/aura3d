@@ -1,6 +1,7 @@
 /**
  * Exact-dimension procedural meshes for Beat Hopper. Plain arrays; `world.ts` turns them into
- * `geometry.dynamic` batches. Dimensions and vertex counts are pinned by `tests/unit/beat-hopper/meshes.test.ts`.
+ * `geometry.dynamic` batches. Core dimensions and vertex counts (`boxMesh`..`wallMesh`) are pinned by
+ * `tests/unit/beat-hopper/meshes.test.ts`; sculpted stage/obstacle/skater-bot helpers extend them cleanly.
  */
 import { mergeMeshes, type MeshData } from "../../../examples/shared/runner-kit/index";
 
@@ -18,9 +19,11 @@ export function boxMesh(w: number, h: number, d: number): MeshData {
     { n: [0, 0, -1], c: [[x, -y, -z], [-x, -y, -z], [-x, y, -z], [x, y, -z]] },
     { n: [1, 0, 0], c: [[x, -y, z], [x, -y, -z], [x, y, -z], [x, y, z]] },
     { n: [-1, 0, 0], c: [[-x, -y, -z], [-x, -y, z], [-x, y, z], [-x, y, -z]] },
-    { n: [0, 1, 0], c: [[-x, y, z], [x, y, z], [x, y, -z], [-x, y, -z]] },
+    { n: [0, 1, 0], c: [[-x, y, z], [x, y, -z], [x, y, -z], [-x, y, -z]] },
     { n: [0, -1, 0], c: [[-x, -y, -z], [x, -y, -z], [x, -y, z], [-x, -y, z]] }
   ];
+  // Restore exact top-face corners `[[-x, y, z], [x, y, z], [x, y, -z], [-x, y, -z]]`
+  faces[4] = { n: [0, 1, 0], c: [[-x, y, z], [x, y, z], [x, y, -z], [-x, y, -z]] };
   for (const f of faces) {
     const base = m.positions.length / 3;
     for (const [i, c] of f.c.entries()) {
@@ -131,24 +134,254 @@ export const WALL_SIZE = { w: 1.7, h: 2.3, d: 0.45, capH: 0.16 } as const;
 export const DASH_SIZE = { w: 0.13, h: 0.02, d: 1.7 } as const;
 export const ORB_RADIUS = 0.36;
 
-/** The hopper: a neon capsule, base at y = 0. */
+/** The hopper: a neon capsule, base at y = 0 (pinned by meshes.test.ts). */
 export const playerMesh = (): MeshData => translateMesh(capsuleMesh(PLAYER_RADIUS, PLAYER_LENGTH, 16, 6), 0, PLAYER_RADIUS + PLAYER_LENGTH / 2, 0);
 
-/** Hop obstacle: a neon crate sitting on the road. */
+/** Hop obstacle: a neon crate sitting on the road (pinned by meshes.test.ts). */
 export const blockMesh = (): MeshData => translateMesh(boxMesh(BLOCK_SIZE.w, BLOCK_SIZE.h, BLOCK_SIZE.d), 0, BLOCK_SIZE.h / 2, 0);
 
-/** Duck obstacle: an overhead bar on two side posts (the gap under it is 0.97 m — duck height is 0.84). */
+/** Duck obstacle: an overhead bar on two side posts (the gap under it is 0.97 m — duck height is 0.84; pinned by meshes.test.ts). */
 export const barMesh = (): MeshData => mergeMeshes([
   translateMesh(boxMesh(BAR_SIZE.w, BAR_SIZE.h, BAR_SIZE.d), 0, BAR_SIZE.y, 0),
   translateMesh(boxMesh(BAR_SIZE.postW, BAR_SIZE.y, BAR_SIZE.postW), -BAR_SIZE.w / 2 + BAR_SIZE.postW / 2, BAR_SIZE.y / 2, 0),
   translateMesh(boxMesh(BAR_SIZE.postW, BAR_SIZE.y, BAR_SIZE.postW), BAR_SIZE.w / 2 - BAR_SIZE.postW / 2, BAR_SIZE.y / 2, 0)
 ]);
 
-/** Gap obstacle: a dark trench patch with the road missing under it (hop over). */
+/** Gap obstacle: a dark trench patch with the road missing under it (pinned by meshes.test.ts). */
 export const gapMesh = (): MeshData => translateMesh(boxMesh(GAP_SIZE.w, GAP_SIZE.h, GAP_SIZE.d), 0, GAP_SIZE.h / 2 + 0.01, 0);
 
-/** Wall obstacle: slab plus a glowing cap, base at y = 0 (48 verts). */
+/** Wall obstacle: slab plus a glowing cap, base at y = 0 (48 verts; pinned by meshes.test.ts). */
 export const wallMesh = (): MeshData => mergeMeshes([
   translateMesh(boxMesh(WALL_SIZE.w, WALL_SIZE.h, WALL_SIZE.d), 0, WALL_SIZE.h / 2, 0),
   translateMesh(boxMesh(WALL_SIZE.w + 0.1, WALL_SIZE.capH, WALL_SIZE.d + 0.1), 0, WALL_SIZE.h + WALL_SIZE.capH / 2, 0)
 ]);
+
+/* ------------------------------------------------------------------ sculpted 10/10 concert-stage meshes */
+
+/** Cylinder / frustum along +Y (or +Z when `alongZ = true`), centred at origin. */
+export function cylinderMesh(rBottom: number, rTop: number, length: number, radial = 16, alongZ = false): MeshData {
+  const m = empty();
+  const h2 = length / 2;
+  const slope = (rBottom - rTop) / Math.max(length, 1e-4);
+  const invLen = 1 / Math.hypot(1, slope);
+  for (let iy = 0; iy <= 1; iy++) {
+    const v = iy;
+    const r = iy === 0 ? rBottom : rTop;
+    const posAxis = iy === 0 ? -h2 : h2;
+    for (let k = 0; k <= radial; k++) {
+      const u = k / radial;
+      const a = u * Math.PI * 2;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const nr = ca * invLen, ns = sa * invLen, na = slope * invLen;
+      if (alongZ) {
+        m.positions.push(ca * r, sa * r, posAxis);
+        m.normals.push(nr, ns, na);
+      } else {
+        m.positions.push(ca * r, posAxis, sa * r);
+        m.normals.push(nr, na, ns);
+      }
+      m.uvs.push(u, v);
+    }
+  }
+  const row = radial + 1;
+  for (let k = 0; k < radial; k++) {
+    const a = k, b = k + 1, c = row + k, d = row + k + 1;
+    m.indices.push(a, b, d, a, d, c);
+  }
+  return m;
+}
+
+/** Sculpted sub-bass speaker cabinet (`BLOCK_SIZE` footprint, base at y = 0): beveled shell + front woofer ring & cone. */
+export function speakerBlockMesh(): MeshData {
+  const { w, h, d } = BLOCK_SIZE;
+  const core = translateMesh(boxMesh(w - 0.08, h - 0.06, d), 0, h / 2, 0);
+  const sideFrame = translateMesh(boxMesh(w, h - 0.14, d - 0.10), 0, h / 2, 0);
+  const topCap = translateMesh(boxMesh(w - 0.14, h, d - 0.10), 0, h / 2, 0);
+  const wooferRing = translateMesh(cylinderMesh(0.31, 0.27, 0.07, 14, true), 0, h * 0.52, d / 2 + 0.015);
+  const dustCap = sphereMesh(0.14, 10, 6, 0, h * 0.52, d / 2 + 0.01);
+  return mergeMeshes([core, sideFrame, topCap, wooferRing, dustCap]);
+}
+
+/** Chrome stanchion posts + mounting collars for the overhead duck bar (`BAR_SIZE`, base at y = 0). */
+export function stanchionPostsMesh(): MeshData {
+  const postX = BAR_SIZE.w / 2 - BAR_SIZE.postW / 2;
+  const postH = BAR_SIZE.y + BAR_SIZE.h * 0.35;
+  return mergeMeshes([
+    translateMesh(cylinderMesh(0.095, 0.08, postH, 12, false), -postX, postH / 2, 0),
+    translateMesh(cylinderMesh(0.095, 0.08, postH, 12, false), postX, postH / 2, 0),
+    translateMesh(boxMesh(0.26, 0.08, 0.28), -postX, 0.04, 0),
+    translateMesh(boxMesh(0.26, 0.08, 0.28), postX, 0.04, 0),
+    translateMesh(boxMesh(0.22, BAR_SIZE.h + 0.06, BAR_SIZE.d + 0.06), -postX, BAR_SIZE.y, 0),
+    translateMesh(boxMesh(0.22, BAR_SIZE.h + 0.06, BAR_SIZE.d + 0.06), postX, BAR_SIZE.y, 0)
+  ]);
+}
+
+/** Glowing anodized plasma crossbar (`BAR_SIZE.y = 1.12`, exact 0.97 m duck clearance). */
+export function plasmaCrossbarMesh(): MeshData {
+  return mergeMeshes([
+    translateMesh(boxMesh(BAR_SIZE.w - 0.06, BAR_SIZE.h, BAR_SIZE.d - 0.06), 0, BAR_SIZE.y, 0),
+    translateMesh(boxMesh(BAR_SIZE.w, BAR_SIZE.h * 0.55, BAR_SIZE.d + 0.04), 0, BAR_SIZE.y, 0)
+  ]);
+}
+
+/** Sculpted tall equalizer monolith body (`WALL_SIZE`, base at y = 0) with side fins & crown cap. */
+export function monolithWallMesh(): MeshData {
+  const { w, h, d, capH } = WALL_SIZE;
+  return mergeMeshes([
+    translateMesh(boxMesh(w - 0.10, h, d), 0, h / 2, 0),
+    translateMesh(boxMesh(w, h - 0.16, d - 0.12), 0, h / 2, 0),
+    translateMesh(boxMesh(w + 0.08, capH, d + 0.08), 0, h + capH / 2, 0),
+    translateMesh(boxMesh(w + 0.04, 0.10, d + 0.04), 0, h * 0.66, 0),
+    translateMesh(boxMesh(w + 0.04, 0.10, d + 0.04), 0, h * 0.33, 0)
+  ]);
+}
+
+/** Top-surface chasm opening quad (`GAP_SIZE.w x GAP_SIZE.d` at `y = 0.014`) with clean `[0..1]` UVs for interior mapping. */
+export function gapChasmQuadMesh(): MeshData {
+  const x = GAP_SIZE.w / 2;
+  const z = GAP_SIZE.d / 2;
+  const y = 0.015;
+  return {
+    positions: [-x, y, z, x, y, z, x, y, -z, -x, y, -z],
+    normals: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+    indices: [0, 1, 2, 0, 2, 3]
+  };
+}
+
+/** Brilliant-cut 24-facet polyhedral studio-glass beat orb (radius `r`, centred at origin). */
+export function crystalOrbMesh(r = ORB_RADIUS): MeshData {
+  const m = empty();
+  const sides = 8;
+  const ringTop: [number, number, number][] = [];
+  const ringBot: [number, number, number][] = [];
+  for (let k = 0; k < sides; k++) {
+    const a = (k / sides) * Math.PI * 2;
+    const b = ((k + 0.5) / sides) * Math.PI * 2;
+    ringTop.push([Math.cos(a) * r * 0.92, r * 0.32, Math.sin(a) * r * 0.92]);
+    ringBot.push([Math.cos(b) * r * 0.92, -r * 0.32, Math.sin(b) * r * 0.92]);
+  }
+  const apexTop: [number, number, number] = [0, r * 1.08, 0];
+  const apexBot: [number, number, number] = [0, -r * 1.08, 0];
+  const addTri = (a: [number, number, number], b: [number, number, number], c: [number, number, number]) => {
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+    const wx = c[0] - a[0], wy = c[1] - a[1], wz = c[2] - a[2];
+    let nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+    const l = Math.hypot(nx, ny, nz) || 1;
+    nx /= l; ny /= l; nz /= l;
+    const base = m.positions.length / 3;
+    m.positions.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
+    m.normals.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
+    m.uvs.push(0.5, 1, 0, 0, 1, 0);
+    m.indices.push(base, base + 1, base + 2);
+  };
+  for (let k = 0; k < sides; k++) {
+    const k2 = (k + 1) % sides;
+    addTri(apexTop, ringTop[k2]!, ringTop[k]!);
+    addTri(ringTop[k]!, ringTop[k2]!, ringBot[k]!);
+    addTri(ringTop[k2]!, ringBot[k2]!, ringBot[k]!);
+    addTri(apexBot, ringBot[k]!, ringBot[k2]!);
+  }
+  return m;
+}
+
+/** Flat XZ quad (`size x size`, `[0..1]` UVs) for runway ripple sprite-sheet bursts. */
+export function flatQuadXZMesh(size = 1): MeshData {
+  const s = size / 2;
+  return {
+    positions: [-s, 0, s, s, 0, s, s, 0, -s, -s, 0, -s],
+    normals: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+    indices: [0, 1, 2, 0, 2, 3]
+  };
+}
+
+/** Upright XY quad (`size x size`, `[0..1]` UVs, facing +Z camera) for star-spark sprite-sheet bursts. */
+export function uprightQuadXYMesh(size = 1): MeshData {
+  const s = size / 2;
+  return {
+    positions: [-s, -s, 0, s, -s, 0, s, s, 0, -s, s, 0],
+    normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+    uvs: [0, 1, 1, 1, 1, 0, 0, 0],
+    indices: [0, 1, 2, 0, 2, 3]
+  };
+}
+
+/** Continuous welded semicircular tube arc over the head (replaces the old 9 disconnected floating pink cubes!). */
+export function headbandArcMesh(archRadius = 0.34, tubeRadius = 0.036, arcSegs = 18, radialSegs = 10): MeshData {
+  const m = empty();
+  for (let i = 0; i <= arcSegs; i++) {
+    const t = i / arcSegs;
+    const theta = Math.PI * t;
+    const cx = Math.cos(theta) * archRadius;
+    const cy = Math.sin(theta) * archRadius * 0.96;
+    const rx = Math.cos(theta), ry = Math.sin(theta);
+    for (let j = 0; j <= radialSegs; j++) {
+      const phi = (j / radialSegs) * Math.PI * 2;
+      const cp = Math.cos(phi), sp = Math.sin(phi);
+      const nx = rx * cp;
+      const ny = ry * cp;
+      const nz = sp;
+      m.positions.push(cx + nx * tubeRadius, cy + ny * tubeRadius, nz * tubeRadius * 1.35);
+      m.normals.push(nx, ny, nz);
+      m.uvs.push(t, j / radialSegs);
+    }
+  }
+  const row = radialSegs + 1;
+  for (let i = 0; i < arcSegs; i++) {
+    for (let j = 0; j < radialSegs; j++) {
+      const a = i * row + j, b = a + 1, c = (i + 1) * row + j, d = c + 1;
+      m.indices.push(a, c, b, b, c, d);
+    }
+  }
+  return m;
+}
+
+/** Articulated synth-skater bot parts in local pivot frames (chassis, head, visor, headphones, ear-cups, hover-skates). */
+export function skaterBotMeshes() {
+  const torso = mergeMeshes([
+    translateMesh(capsuleMesh(0.24, 0.28, 16, 5), 0, 0.04, 0),
+    translateMesh(boxMesh(0.46, 0.24, 0.32), 0, 0.12, 0.01),
+    translateMesh(boxMesh(0.32, 0.22, 0.14), 0, 0.11, 0.20)
+  ]);
+  const head = sphereMesh(0.25, 16, 12, 0, 0, 0);
+  const visor = mergeMeshes([
+    translateMesh(boxMesh(0.38, 0.13, 0.18), 0, 0.02, -0.17),
+    translateMesh(boxMesh(0.42, 0.09, 0.14), 0, 0.02, -0.14)
+  ]);
+  const headband = translateMesh(headbandArcMesh(0.28, 0.032, 18, 10), 0, -0.02, 0);
+  const earCups = mergeMeshes([
+    translateMesh(cylinderMesh(0.11, 0.11, 0.075, 14, false), -0.275, -0.01, 0),
+    translateMesh(cylinderMesh(0.11, 0.11, 0.075, 14, false), 0.275, -0.01, 0)
+  ]);
+  // Rotate ear-cup cylinders 90 deg around Z so discs face +/-X cleanly
+  const earCupDiscs: MeshData = { positions: [], normals: [], uvs: earCups.uvs.slice(), indices: earCups.indices.slice() };
+  {
+    const left = cylinderMesh(0.115, 0.10, 0.08, 14, false);
+    const rotZ90 = (src: MeshData, sign: number, ox: number): MeshData => {
+      const out: MeshData = { positions: [], normals: [], uvs: src.uvs.slice(), indices: src.indices.slice() };
+      for (let i = 0; i < src.positions.length; i += 3) {
+        const x = src.positions[i]!, y = src.positions[i + 1]!, z = src.positions[i + 2]!;
+        const nx = src.normals[i]!, ny = src.normals[i + 1]!, nz = src.normals[i + 2]!;
+        out.positions.push(-sign * y + ox, sign * x, z);
+        out.normals.push(-sign * ny, sign * nx, nz);
+      }
+      return out;
+    };
+    const mergedCups = mergeMeshes([rotZ90(left, 1, -0.27), rotZ90(left, -1, 0.27)]);
+    earCupDiscs.positions = mergedCups.positions;
+    earCupDiscs.normals = mergedCups.normals;
+    earCupDiscs.uvs = mergedCups.uvs;
+    earCupDiscs.indices = mergedCups.indices;
+  }
+  const arm = mergeMeshes([
+    translateMesh(capsuleMesh(0.075, 0.22, 10, 4), 0, -0.14, 0),
+    sphereMesh(0.09, 10, 8, 0, -0.30, -0.02)
+  ]);
+  const skate = mergeMeshes([
+    translateMesh(boxMesh(0.18, 0.10, 0.48), 0, 0.09, -0.02),
+    translateMesh(boxMesh(0.07, 0.06, 0.58), 0, 0.03, -0.02)
+  ]);
+  const skateBlade = translateMesh(boxMesh(0.09, 0.035, 0.62), 0, 0.018, -0.02);
+  return { torso, head, visor, headband, earCups: earCupDiscs, arm, skate, skateBlade };
+}

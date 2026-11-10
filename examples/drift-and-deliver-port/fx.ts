@@ -152,7 +152,7 @@ export const SKID_LIFE = 20;
 export const SKID_QUADS = 384;
 /** A new quad pair is laid once the car moved this far, metres. */
 export const SKID_STEP = 0.7;
-const SKID_HALF_W = 0.13;
+const SKID_HALF_W = 0.115;
 /** Rear wheel track half-width and the wheels' distance behind the car's centre, metres. */
 const REAR = { halfTrack: 0.78, back: 1.35 } as const;
 
@@ -262,13 +262,14 @@ in vec2 vUv;
 out vec4 outColor;
 void main() {
   float age = skidNow - vUv.y;
-  float a = 0.55 * clamp(1.0 - age / skidLife, 0.0, 1.0);
-  float edge = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x);
-  a *= edge;
-  outColor = vec4(vec3(0.03, 0.03, 0.035), (a == a) ? a : 0.0);
+  float lifeFade = clamp(1.0 - age / skidLife, 0.0, 1.0);
+  float edge = smoothstep(0.0, 0.22, vUv.x) * smoothstep(1.0, 0.78, vUv.x);
+  float tread = 0.74 + 0.26 * smoothstep(0.16, 0.52, abs(sin(vUv.x * 9.424778)));
+  float a = 0.64 * lifeFade * edge * tread;
+  outColor = vec4(vec3(0.024, 0.025, 0.03), (a == a) ? a : 0.0);
 }`;
 
-/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL. Line for line. */
 export const SKID_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
 struct SkidVarying {
   @builtin(position) position: vec4<f32>,
@@ -284,10 +285,11 @@ struct SkidVarying {
 export const SKID_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
 @fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
   let age = aura.u_skidNow - vUv.y;
-  var a = 0.55 * clamp(1.0 - age / aura.u_skidLife, 0.0, 1.0);
-  let edge = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x);
-  a = a * edge;
-  return vec4<f32>(vec3<f32>(0.03, 0.03, 0.035), a3dFinite1(a));
+  let lifeFade = clamp(1.0 - age / aura.u_skidLife, 0.0, 1.0);
+  let edge = smoothstep(0.0, 0.22, vUv.x) * smoothstep(1.0, 0.78, vUv.x);
+  let tread = 0.74 + 0.26 * smoothstep(0.16, 0.52, abs(sin(vUv.x * 9.424778)));
+  let a = 0.64 * lifeFade * edge * tread;
+  return vec4<f32>(vec3<f32>(0.024, 0.025, 0.03), a3dFinite1(a));
 }`);
 
 /** `skidNow` is written each frame with `setUniform` (no recompiles); `time` is avoided (an engine built-in). */

@@ -1,5 +1,5 @@
 /**
- * Roadster Hours on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
+ * Saltwind Highway on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation (`sim.ts`) is pure; `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `level=0..2`, `autostart=1`, `autopilot=1`, `manual=1` (the sim only advances
@@ -7,6 +7,9 @@
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { createProceduralSfx } from "../../apps/showcase-port-shared/feel";
+import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
+import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { texturesSettled } from "./art/textureGate";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound, type AudioFrame, type GameSound } from "./audio";
@@ -27,23 +30,11 @@ const config = { autostart: params.get("autostart") === "1", autopilot: params.g
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
-  if (!el) throw new Error(`roadster-hours-port: #${id} is missing`);
+  if (!el) throw new Error(`saltwind-highway: #${id} is missing`);
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
 const storage: Storage | null = (() => { try { return window.localStorage; } catch { return null; } })();
-
-/* Licensed UI face (DIN Pro Regular/Medium/Bold, from the paid font gallery), loaded without blocking boot. */
-const FONT_FILES: readonly (readonly [string, string])[] = [
-  ["400", new URL("./assets/fonts/DINPro-Regular.woff", import.meta.url).href],
-  ["500", new URL("./assets/fonts/DINPro-Medium.woff", import.meta.url).href],
-  ["700", new URL("./assets/fonts/DINPro-Bold.woff", import.meta.url).href]
-];
-for (const [weight, url] of FONT_FILES) {
-  const face = new FontFace("DIN Pro", `url(${url})`, { weight });
-  (document.fonts as unknown as { add(font: FontFace): void }).add(face);
-  void face.load().catch(() => undefined);
-}
 
 /* Touch devices get on-screen controls; `?touch=1` forces them (QA). */
 const touch = params.get("touch") === "1" || (typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches);
@@ -57,6 +48,7 @@ let reducedMotion = (() => {
 })();
 
 const sound = new RoadsterSound();
+const feelSfx = createProceduralSfx();
 let lastInput: RunInput | undefined;
 
 const career: Career = defaultCareer();
@@ -159,6 +151,7 @@ function togglePause(): void {
 
 function toggleMute(): void {
   sound.setMuted(!sound.muted);
+  feelSfx.setMuted(sound.muted);
   $("mute").textContent = sound.muted ? "Sound off" : "Sound on";
 }
 
@@ -366,7 +359,8 @@ function render(dt: number, time: number, live = false): void {
   const shown = live ? (view = viewOf(run, presenter.present(loop, true), view)) : run;
   runtime.update(shown, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight), pendingEvents);
   const shot = runtime.shot();
-  timeScale = shot && live ? shot.timeScale : 1;
+  const hitStop = runtime.hitStopScale?.() ?? 1;
+  timeScale = live ? (shot ? shot.timeScale : 1) * hitStop : 1;
   const bars = shot ? shot.bars : 0;
   if (bars !== barsShown) { barsShown = bars; document.body.style.setProperty("--shot-bars", bars.toFixed(3)); document.body.classList.toggle("shot-bars", bars > 0); }
   if (removeRoadPass) {
@@ -383,6 +377,12 @@ function render(dt: number, time: number, live = false): void {
     f.combos = run.combos; f.vehiclesCleared = run.vehiclesCleared; f.throttle = (lastInput?.throttle ?? 0) > 0; f.gateMiss = run.gateMiss; f.overheated = run.overheated;
     const sounds = sound.update(f, pendingEvents);
     if (sounds.length) { cueLog.push({ frame: frames, sounds }); if (cueLog.length > 64) cueLog.shift(); }
+    if (live && !sound.muted && !paused && !document.hidden) {
+      for (const e of pendingEvents) {
+        if (e.type === "closePass") feelSfx.play("whoosh", 0.9);
+        else if (e.type === "nitro") feelSfx.play("boost", 0.75);
+      }
+    }
   }
   pendingEvents.length = 0;
   frames++;
@@ -408,7 +408,9 @@ function applyRoutePost(): void {
   removeRoadPass = undefined;
   const row = world?.look.row ?? null;
   if (!app || !row || params.get("post") === "0") return;
-  removeRoadPass = app.post?.addPostPass(roadPass(row));
+  const activeBackend = (app.diagnostics() as { backend?: string }).backend;
+  const inputs = activeBackend === "webgpu" ? (["color"] as const) : (["color", "depth"] as const);
+  removeRoadPass = app.post?.addPostPass(roadPass(row, inputs));
   app.setOutput?.({ autoExposure: autoExposureFor(row) });
 }
 
@@ -567,14 +569,22 @@ async function boot(): Promise<void> {
   if (new URLSearchParams(location.search).get("meshy") !== "0") await loadMeshy();
   world = buildWorld(levelIndex);
   buildMenu();
+  const defaultLab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
+  const injectedLab = (window as unknown as { __A3D_LAB_APP_OPTIONS__?: Record<string, unknown> }).__A3D_LAB_APP_OPTIONS__ ?? {};
+  const cinemaWarmLut = lookMode === "gu47" ? createGradingLut("cinema-warm") : null;
+  const baseOutput = lookMode === "gu47" && cinemaWarmLut
+    ? { toneMapping: "agx" as const, exposure: 1.04, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.28 } } as Record<string, unknown>), ...defaultLab.output }
+    : output.output;
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: output.pixelRatio,
-    // 4.5.0 pipeline on purpose (bloom pass fusion); measured against `production` in evidence/roadster-hours-port/audit-fix.
     quality: "auto",
-    output: output.output,
+    ...(defaultLab.renderer ? { renderer: defaultLab.renderer } : {}),
+    ...(defaultLab.worker ? { worker: defaultLab.worker } : {}),
+    output: baseOutput,
     scene: world.scene,
-    // Lab flags (?backend=, ?gamut=): published by the showcase wrapper only when a flag is present; absent by default.
-    ...((window as unknown as { __A3D_LAB_APP_OPTIONS__?: Record<string, unknown> }).__A3D_LAB_APP_OPTIONS__ ?? {})
+    // Lab flags (?backend=, ?gamut=): published by the showcase wrapper when present; merged over standalone defaults.
+    ...injectedLab,
+    ...(injectedLab.output ? { output: { ...baseOutput, ...(injectedLab.output as Record<string, unknown>) } } : {})
   });
   await app.ready();
   runtime = world.bind(app);

@@ -2,7 +2,7 @@ import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engin
 import type { SplatRushSim } from "./sim";
 
 /**
- * Splat Rush scrolls its world toward a fixed ball: the road, gates, power-ups and splatters advance by one shared
+ * Splat scrolls its world toward a fixed ball: the road, gates, power-ups and splatters advance by one shared
  * `move` per step. The ball, camera and clock interpolate between the last two steps; the scrolling entities are shown
  * stepped back by the part of the last step that has not elapsed yet (they are re-created at the far end, so matching
  * entities between steps by index would tear the road whenever a segment is recycled).

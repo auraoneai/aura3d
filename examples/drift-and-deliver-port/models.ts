@@ -1,14 +1,13 @@
 /**
- * Drift & Deliver port: generated 3D models (Meshy text-to-3D through Kiro Prism, prompts in assets/ATTRIBUTION.md).
+ * Gridlock Courier: generated 3D models (Meshy text-to-3D through Kiro Prism, prompts in assets/ATTRIBUTION.md).
  *
- * Each GLB is a single textured primitive whose longest side is 1.9 units. Cars are baked to face +z (the port's forward) with
- * their lowest point at y = 0 (`tools`: gltf-transform vertex bake, see assets/ATTRIBUTION.md); props are centred and stood on
- * the ground by `propTransform`.
+ * Each GLB is a single textured primitive whose longest side is 1.9 units. Cars are baked to face +z with
+ * their lowest point at y = 0 (`tools`: gltf-transform vertex bake, see assets/ATTRIBUTION.md); normalized
+ * `instances.model` props stand directly on `y` in `propTransform`.
  * URLs are same-origin pathnames with a content hash: the production bridge refuses http(s) model URLs.
  */
 import { defineModelAssets, instances, model, type AuraAssetRef } from "@aura3d/engine";
 import type { CarKind } from "./vehicles";
-import { assets as routeAssets } from "../../apps/showcase-drift-and-deliver-port/src/aura-assets";
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23";
 const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}`, import.meta.url).pathname, sha256 });
@@ -59,8 +58,8 @@ export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder
 // round 2 (judge g18p4r1): clearcoat 1 at 0.05 sparkled the Meshy normal detail on the rear glass into "cracked glass"
 // streaks; round 4 (g18p4-r5 frames): even a 0.6 / 0.22 coat streaked the rear glass under the lifted key, so the coat is
 // off and only the paint's roughness and environment gain stay
-export const COURIER_PAINT = { roughness: 0.5, clearcoat: 0, envMapIntensity: 1.3 } as const;
-export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.08, envMapIntensity: 1.3 } as const;
+export const COURIER_PAINT = { roughness: 0.24, metallic: 0.14, clearcoat: 0.72, clearcoatRoughness: 0.12, envMapIntensity: 1.45 } as const;
+export const TRAFFIC_PAINT = { roughness: 0.28, metallic: 0.12, clearcoat: 0.85, clearcoatRoughness: 0.08, envMapIntensity: 1.38 } as const;
 
 /**
  * GU47 wave 1 (GC-M3): the WP-36 Meshy retextures of `sedan.glb` and `hatch.glb` (orange sedan, pale mint hatch, 1024 px
@@ -68,9 +67,20 @@ export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughnes
  * re-normalised them to length 2 around the origin, so they were scaled back to the old length and lowest point (bounds
  * within 0.2 % of the old GLBs), which keeps `CAR_LENGTH`, the instance transforms and the collision boxes unchanged.
  */
+const SHIFT_TRAFFIC_REFS = defineModelAssets({
+  sedan: {
+    url: "/aura-assets/gridlock_gridlockSedanPastel.94d3d031.glb",
+    sha256: "94d3d03102c876dbbb7a02fce7e29f207cbb512efdc59c89b0fc03f41ba87d4f"
+  },
+  hatch: {
+    url: "/aura-assets/gridlock_gridlockHatchPastel.15d7dca9.glb",
+    sha256: "15d7dca98e8d9f60f1292174c5eb8f57ff13ce83ce0526327d2cf257e3037087"
+  }
+}, { license: LICENSE, queryParam: null }).refs;
+
 const SHIFT_TRAFFIC_ASSETS: Partial<Record<Exclude<CarKey, "courier">, AuraAssetRef<"model">>> = {
-  sedan: routeAssets.gridlock_gridlockSedanPastel,
-  hatch: routeAssets.gridlock_gridlockHatchPastel
+  sedan: SHIFT_TRAFFIC_REFS.sedan,
+  hatch: SHIFT_TRAFFIC_REFS.hatch
 };
 
 /** Uniform scale that brings a car GLB to its target length. */
@@ -87,9 +97,12 @@ export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, ca
   return instances.model(asset, { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false, ...(glossy ? { materialOverrides: [TRAFFIC_PAINT] } : {}) }).runtime({ id });
 }
 
-/** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */
+/**
+ * Vertical offset for normalized prop instances. `@aura3d/engine`'s `instances.model` already translates `-bounds.min[1]`
+ * so `y = 0` stands every prop flush on the sidewalk/ground (`0` mid-air levitation).
+ */
 export const PROP_BELOW: Record<PropKey, number> = {
-  lamp: 0.95, signal: 0.95, tree: 0.95, palm: 0.95, shelter: 0.56, hydrant: 0.95, clocktower: 0.95, lighthouse: 0.95, watertank: 0.86
+  lamp: 0, signal: 0, tree: 0, palm: 0, shelter: 0, hydrant: 0, clocktower: 0, lighthouse: 0, watertank: 0
 };
 
 /** Instance transform that stands a prop on the ground at (x, z) with its longest side scaled to `size` metres. */

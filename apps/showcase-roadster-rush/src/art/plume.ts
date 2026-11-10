@@ -92,10 +92,11 @@ void main() {
   // noise scrolls from nozzle to tip; 6 cells around, 5 along
   vec2 q = vec2(vAngle * 0.9549, vAlong * 5.0 - uTime * plumeScroll);
   float noise = 0.55 + 0.45 * plumeNoise(q) * plumeNoise(q * 2.1 + 7.3);
-  float core = pow(facing, 6.0) * tip * tip;
+  float diamonds = pow(max(0.0, cos(vAlong * 22.0 - uTime * plumeScroll * 2.2)), 8.0) * (1.0 - vAlong * 0.72) * pow(facing, 2.6);
+  float core = pow(facing, 6.0) * tip * tip + diamonds * 0.58;
   float bands = 0.5 + 0.5 * sin(vAlong * 41.0 - uTime * plumeScroll * 9.0 + vAngle * 2.0);
   float heat = plumeShimmer * edge * bands * vAlong * 0.6;
-  float body = a3dSaturate(edge * 0.85 + 0.25) * tip * noise + heat;
+  float body = a3dSaturate(edge * 0.85 + 0.25) * tip * noise + heat + diamonds * 0.25;
   vec3 col = a3dSrgbToLinear(plumeColor) * body + plumeCore * core;
   float a = a3dSaturate(body + core);
   outColor = vec4(a3dFinite(col * plumeGain), a);
@@ -165,10 +166,11 @@ fn plumeNoise(p: vec2<f32>) -> f32 {
   let tip = 1.0 - vAlong;
   let q = vec2<f32>(vAngle * 0.9549, vAlong * 5.0 - aura.u_time * aura.u_plumeScroll);
   let noise = 0.55 + 0.45 * plumeNoise(q) * plumeNoise(q * 2.1 + vec2<f32>(7.3));
-  let core = a3dPow(facing, 6.0) * tip * tip;
+  let diamonds = a3dPow(max(0.0, cos(vAlong * 22.0 - aura.u_time * aura.u_plumeScroll * 2.2)), 8.0) * (1.0 - vAlong * 0.72) * a3dPow(facing, 2.6);
+  let core = a3dPow(facing, 6.0) * tip * tip + diamonds * 0.58;
   let bands = 0.5 + 0.5 * sin(vAlong * 41.0 - aura.u_time * aura.u_plumeScroll * 9.0 + vAngle * 2.0);
   let heat = aura.u_plumeShimmer * edge * bands * vAlong * 0.6;
-  let body = a3dSaturate(edge * 0.85 + 0.25) * tip * noise + heat;
+  let body = a3dSaturate(edge * 0.85 + 0.25) * tip * noise + heat + diamonds * 0.25;
   let col = a3dSrgbToLinear(aura.u_plumeColor) * body + aura.u_plumeCore * core;
   let a = a3dSaturate(body + core);
   return vec4<f32>(a3dFinite3(col * aura.u_plumeGain), a);

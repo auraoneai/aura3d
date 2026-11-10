@@ -10,28 +10,13 @@
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "production",
-    "nativeWebGPU": false,
+    "nativeWebGPU": true,
     "productionRuntimeClaimed": true
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.showcaseStadiumSeats",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.rooftopScoreboardGantryMeshy",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
       "typedRef": "assets.tennisFloodMast",
-      "quality": "candidate",
+      "quality": "production",
       "role": "setDressing"
     }
   ],

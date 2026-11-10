@@ -1,7 +1,9 @@
+import "../../showcase-port-shared/hud-tokens.css";
 import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createGridAudio } from "./audio";
 import { createTrafficContacts } from "./collision";
@@ -58,8 +60,9 @@ import {
   PATH_RIBBON_COUNT,
   HEADLIGHT_IDS,
   ROAD_STRIPS,
-  TAIL_LAMP,
   WEATHER,
+  beaconEnergyMaterial,
+  beaconRippleMaterial,
   buildGridDispatchScene,
   buildingLayoutLeft,
   buildingLayoutRight,
@@ -69,6 +72,7 @@ import {
   carMaterialOverrides,
   probeBuildingModels,
   roadTileLayout,
+  skyOutput,
   sodiumPointIds,
   tailLampMaterial,
   windowGlowOverride
@@ -79,11 +83,11 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
-import { SIGNAL_COLORS, SIGNAL_FADE_S, createPitchSpring, signalFadeColor } from "./carMotion";
+import { HULL_TAIL_MOUNT, SIGNAL_COLORS, SIGNAL_FADE_S, conformalRearLampTransforms, createPitchSpring, roofSensorCrownPose, signalFadeColor } from "./carMotion";
 import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
-import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
+import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
-import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
+import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel, nearTrafficClearance } from "./cameraFeel";
 import { createTailTrails, TAIL_TRAIL_ID } from "./tailTrails";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
@@ -175,6 +179,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     spans: req("sf-catenary-spans"),
     parked: PARKED.map((_, k) => req(`sf-parked-${k}`)),
     signPlates: req("sf-sign-plates"),
+    signBrackets: req("sf-sign-brackets"),
     signs: new Map(DISTRICTS.flatMap((_, d) => Array.from({ length: SIGN_SLOTS }, (_, slot) => [signNodeId(d, slot), req(signNodeId(d, slot))] as const))),
     signalPoles: req("sf-signal-poles"),
     signalArms: req("sf-signal-arms"),
@@ -186,6 +191,8 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     ribbons: req("route-ribbons"),
     tailLamps: req("player-tail-lamps"),
     tailTrails: req(TAIL_TRAIL_ID),
+    sensorHousing: req("pod-sensor-housing"),
+    sensorLaser: req("pod-sensor-laser"),
     sodium: sodiumPointIds(SKY_LOOKS[sky]).map((id) => app.nodes.require(id)),
     headlights: HEADLIGHT_IDS.map((id) => (app.nodes.has(id) ? app.nodes.require(id) : null)),
     buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
@@ -195,6 +202,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     }),
     beaconRing: req("taxi-beacon-ring"),
     beaconDisc: req("taxi-beacon-disc"),
+    beaconRipple: req("taxi-beacon-ripple"),
     beaconBeam: req("taxi-beacon-beam"),
     beaconCore: req("taxi-beacon-core"),
     passenger: req(PASSENGER_NODE),
@@ -258,13 +266,16 @@ async function bootGridDispatch(): Promise<void> {
    */
   const tonemapQuery = params.has("aura3d-tonemap") || params.has("tm");
   const applySkyOutput = (): void => {
-    auraApp.setOutput?.(tonemapQuery ? { exposure: 1 } : { toneMapping: "aces", exposure: 1 });
+    const out = skyOutput(SKY_LOOKS[weather]);
+    auraApp.setOutput?.(tonemapQuery ? { exposure: out.exposure, dither: true } : { toneMapping: out.toneMapping, exposure: out.exposure, dither: true });
   };
   applySkyOutput();
 
   // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
   const cameraShake = createCameraShake({ maxOffset: 0.4 });
+  const impactRig = createImpactRig();
+  let dispatchPulse = 0.65;
   // GD-14: runtime VFX pack (E-F registerPreset). Sim callbacks queue world-space shots; present() fires them in view
   // space, so a burst lands where the street is drawn this frame.
   installGridVfx(auraApp.effects);
@@ -283,7 +294,10 @@ async function bootGridDispatch(): Promise<void> {
       shake: cameraShake,
       cue: (_name, gain) => audio?.play("collision", gain),
       cueName: "collision",
-      particles: (burst) => vfx.impact(burst),
+      particles: (burst) => {
+        vfx.impact(burst);
+        if (motionOk()) impactRig.trigger({ freezeSeconds: burst.speed > 9 ? 0.025 : 0, trauma: clamp(burst.speed / 18, 0.2, 0.85), fovKickDeg: -1.4 });
+      },
       fullSpeed: 20
     },
     { footprints: roadUserFootprints() }
@@ -370,7 +384,11 @@ async function bootGridDispatch(): Promise<void> {
       if (e.kind === "popup") hud.popup(e.title, e.detail, e.tone);
       else if (e.kind === "cue") {
         audio?.play(e.name, e.gain);
-        if (e.name === "pickup" || e.name === "dropoff") vfx.objective(CURB_BEACON_X, S.ride.beaconZ);
+        if (e.name === "pickup" || e.name === "dropoff") {
+          vfx.objective(CURB_BEACON_X, S.ride.beaconZ);
+          if (motionOk()) impactRig.trigger({ freezeSeconds: 0.018, trauma: 0.22, fovKickDeg: 1.6 });
+          dispatchPulse = 1;
+        }
       }
       else if (e.kind === "fare") {
         hud.showSummary(S.ride.fareIndex, e.style, e.outcome, S.ride.comfort, S.ride.multiplier);
@@ -485,6 +503,8 @@ async function bootGridDispatch(): Promise<void> {
   function setAutopilotLevel(level: AutopilotLevel): void {
     S.level = level;
     S.player.holdLane = S.player.x > 5.4 ? 7.4 : 3.4;
+    dispatchPulse = Math.max(dispatchPulse, 0.72);
+    if (motionOk()) impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.0 });
     updateModeLabels();
     hud.toast(`Driver assist: ${ASSIST[level].dock}`, ASSIST[level].hint);
   }
@@ -676,7 +696,8 @@ async function bootGridDispatch(): Promise<void> {
     const coreCol = mode === "pickup" ? "#a5f3fc" : "#fde68a";
     N.beaconRing.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 2.2 }));
     N.beaconDisc.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.45 }));
-    N.beaconBeam.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.35 }));
+    N.beaconRipple.setMaterial(beaconRippleMaterial(mode));
+    N.beaconBeam.setMaterial(beaconEnergyMaterial(mode, 0.72));
     N.beaconCore.setMaterial(material.emissive({ color: "#ffffff", emissive: coreCol, emissiveIntensity: 2.4 }));
     N.ribbons.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.9 }));
   }
@@ -702,10 +723,13 @@ async function bootGridDispatch(): Promise<void> {
   function present(frameSeconds: number): void {
     framesRendered += 1;
     hitStop.update(frameSeconds);
+    const rigSample = impactRig.step(frameSeconds);
+    dispatchPulse = Math.max(0, dispatchPulse - frameSeconds * 1.9);
     if (appliedCar !== S.car) applyCarVisibility();
     const live = S.phase === "driving" && !loop.manual;
     const pose = presenter.present(loop, live);
-    const shake = motionOk() ? cameraShake.update(frameSeconds) : { x: 0, y: 0 };
+    const baseShake = motionOk() ? cameraShake.update(frameSeconds) : { x: 0, y: 0 };
+    const shake = motionOk() ? { x: baseShake.x + rigSample.shakeOffset[0] * 0.45, y: baseShake.y + rigSample.shakeOffset[1] * 0.45 } : { x: 0, y: 0 };
     shakeNow = shake;
     const size = carSizes[S.car];
     const camOff = cameraOffsets(size)[camMode];
@@ -716,12 +740,16 @@ async function bootGridDispatch(): Promise<void> {
     const rz = (wz: number) => wz - pose.pz + camOff.z;
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
 
-    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pitchSpring.update(pose.pitch, frameSeconds, motionOk()), pose.yaw + qaYawAdd, pose.roll);
+    const pitched = pitchSpring.update(pose.pitch, frameSeconds, motionOk());
+    const bodyYaw = pose.yaw + qaYawAdd;
+    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pitched, bodyYaw, pose.roll);
     // GD-17: speed FOV kick and lane roll on the fixed scene camera; off on reduced motion.
     const feel = cameraFeel({ speed: S.player.speed, maxSpeed: PLAYABLE_FLEET[S.car].maxSpeedMps, steer: S.player.steer, motionOk: motionOk() });
+    const targetFovKick = Math.round(clamp(feel.fovKickDeg + (motionOk() ? rigSample.fovDeltaDeg * 0.45 : 0), -2, FOV_KICK_MAX_DEG) * 10) / 10;
+    const targetRoll = motionOk() ? Math.round((feel.roll + rigSample.shakeRoll * 0.5) * 1000) / 1000 : 0;
     try {
-      if (feel.fovKickDeg !== lastFovKick) { lastFovKick = feel.fovKickDeg; auraApp.camera?.fovKick.set("speed", feel.fovKickDeg, FOV_KICK_HALFLIFE_S); }
-      if (feel.roll !== lastRoll) { lastRoll = feel.roll; auraApp.camera?.setRoll(feel.roll, { halflife: ROLL_HALFLIFE_S }); }
+      if (targetFovKick !== lastFovKick) { lastFovKick = targetFovKick; auraApp.camera?.fovKick.set("speed", targetFovKick, FOV_KICK_HALFLIFE_S); }
+      if (targetRoll !== lastRoll) { lastRoll = targetRoll; auraApp.camera?.setRoll(targetRoll, { halflife: ROLL_HALFLIFE_S }); }
       // An unarmed controller presents its default pose; trust only a FOV inside the kick range.
       const fov = auraApp.camera?.presented().fov ?? SCENE_CAM_FOV_DEG;
       presentedFov = fov >= SCENE_CAM_FOV_DEG - 0.5 && fov <= SCENE_CAM_FOV_DEG + FOV_KICK_MAX_DEG + 0.5 ? fov : SCENE_CAM_FOV_DEG;
@@ -738,7 +766,8 @@ async function bootGridDispatch(): Promise<void> {
       eyeHeight: SCENE_CAM_POS[1] - ry(0),
       fovDeg: presentedFov,
       carX: rx(pose.px),
-      carZ: CAR_DRAW_Z + camOff.z
+      carZ: CAR_DRAW_Z + camOff.z,
+      dispatchBoost: motionOk() ? dispatchPulse : 0
     });
     // Road strips follow the same lateral shift as everything else, so the car stays in its lane (C2).
     for (const strip of N.strips) strip.h.setPosition(rx(strip.x), ry(strip.y), -160 + camOff.z);
@@ -771,15 +800,16 @@ async function bootGridDispatch(): Promise<void> {
     // GD-15: manhole covers past each crossing; steam puffs only while the car is nearly stopped (see MANHOLES).
     const manholes = manholeLayout(Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z));
     N.manholes.setInstances(manholes.map(([x, z]) => pos(rx(x), ry(0.012), rz(z))));
-    // GD-19: parked cars on the cross streets and the street-name sign at each crossing (text = the HUD cross street).
+    // GD-19: parked cars on the cross streets and the street-name blade hung beneath the curbside signal mast arm.
     const interZs = Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z);
     N.parked.forEach((h, k) => h.setInstances(parkedLayout(k, interZs).map((c) => ({ position: [rx(c.x), ry(0), rz(c.z)], rotation: [0, c.yaw, 0] }) as AuraTransformSpec)));
     const signs = signAssignments(interZs);
-    N.signPlates.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y), rz(z + SIGN.dz) - 0.04)));
+    N.signPlates.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y), rz(z + SIGN.dz) - 0.03)));
+    N.signBrackets.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y + 0.34), rz(z + SIGN.dz) - 0.05)));
     const shown = new Set<string>();
     for (const [id, z] of signs) {
       shown.add(id);
-      N.signs.get(id)?.setPosition(rx(SIGN.x), ry(SIGN.y - SIGN.size * 0.35), rz(z + SIGN.dz)).setVisible(true);
+      N.signs.get(id)?.setPosition(rx(SIGN.x), ry(SIGN.y - SIGN.size * 0.34), rz(z + SIGN.dz)).setVisible(true);
     }
     for (const [id, h] of N.signs) if (!shown.has(id)) h.setVisible(false);
     vfx.steam({ dt: frameSeconds, speed: S.phase === "driving" ? S.player.speed : 0, z: pose.pz, manholes });
@@ -802,8 +832,20 @@ async function bootGridDispatch(): Promise<void> {
     // GD-19: trolley catenary: wires along the avenue (like the road strips) and a span at every lamp pair.
     N.wires.setInstances(CATENARY.wiresX.map((x) => pos(rx(x), ry(CATENARY.wireY), -160 + camOff.z)));
     N.spans.setInstances(lz.map((z) => pos(rx(0), ry(CATENARY.spanY), z)));
-    N.trunks.setInstances(lz.map((z) => pos(rx(12.2), ry(1.6), z - 14)));
-    N.crowns.setInstances(lz.map((z) => pos(rx(12.2), ry(4.1), z - 14)));
+    N.trunks.setInstances(lz.flatMap((z) => [pos(rx(12.2), ry(1.65), z - 14), pos(rx(-12.2), ry(1.65), z - 19)]));
+    N.crowns.setInstances(
+      lz.flatMap((z, idx) =>
+        [
+          [12.2, z - 14, 1],
+          [-12.2, z - 19, -1]
+        ].flatMap(([tx, tz, side]) =>
+          TREE_CROWN_LOBES.map(([dx, dy, dz, sx, sy, sz], lobe) => ({
+            position: [rx(tx! + dx * side!), ry(dy + ((idx + lobe) % 2) * 0.08), tz! + dz],
+            scale: [sx, sy, sz]
+          }) as AuraTransformSpec)
+        )
+      )
+    );
 
     // Beacon, passenger and route ribbon
     const r = S.ride;
@@ -816,6 +858,7 @@ async function bootGridDispatch(): Promise<void> {
     const ringScale = beaconOn ? 1 + 0.08 * pulse : 0.0001;
     N.beaconRing.setPosition(bx, ry(0.08), bz).setRotation(Math.PI * 0.5, motionOk() ? t * 1.4 : 0, 0).setScale([ringScale, ringScale, 1]).setVisible(beaconOn);
     N.beaconDisc.setPosition(bx, ry(0.04), bz).setVisible(beaconOn);
+    N.beaconRipple.setPosition(bx, ry(0.048), bz).setScale(beaconOn ? [1 + pulse * 0.12, 1 + pulse * 0.12, 1] : HIDDEN_SCALE).setVisible(beaconOn);
     N.beaconBeam.setPosition(bx, ry(17), bz).setScale([0.92 + pulse * 0.14, 1, 0.92 + pulse * 0.14]).setVisible(beaconOn);
     N.beaconCore.setPosition(bx, ry(18), bz).setVisible(beaconOn);
     const showPassenger = r.state === "offer" || r.state === "boarding" || r.state === "alighting";
@@ -847,24 +890,36 @@ async function bootGridDispatch(): Promise<void> {
       })
     );
 
-    // Traffic and rivals
+    // Traffic and rivals (with near-camera lens clearance on chase views so adjacent cars never slice the foreground)
     S.users.forEach((u, i) => {
       const vz = rz(pose.uz[i] ?? u.z);
-      const visible = vz < 18 && vz > -220;
-      N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
+      const baseX = rx(u.laneX);
+      const baseY = ry(0);
+      const clear = camMode < 2 ? nearTrafficClearance([baseX, baseY, vz], SCENE_CAM_POS) : { x: baseX, visible: true };
+      const visible = vz < 18 && vz > -220 && clear.visible;
+      N.users[i]!.setPosition(clear.x, baseY, vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
     });
 
-    // GD-03: tail and brake lamps at the rear corners; headlight spots follow the car across lanes.
+    // GD-03 / WP-08: conformal 3D rear LED brake/tail lightbars + 10 Hz spinning roof LiDAR crown + dynamic headlights.
     const carX = rx(pose.px);
     const carZ = CAR_DRAW_Z + camOff.z;
-    carView = { x: carX, y: ry(0), z: carZ, width: size.width, height: size.height, length: size.length };
-    const lampY = ry(size.height * TAIL_LAMP.heightFrac);
-    const rearZ = carZ + size.length / 2;
-    N.tailLamps.setInstances([pos(carX - size.width * TAIL_LAMP.spreadFrac, lampY, rearZ), pos(carX + size.width * TAIL_LAMP.spreadFrac, lampY, rearZ)]);
+    const carY = ry(0);
+    carView = { x: carX, y: carY, z: carZ, width: size.width, height: size.height, length: size.length };
+    const bodyPose = { x: carX, y: carY, z: carZ, pitch: pitched, yaw: bodyYaw, roll: pose.roll };
+    N.tailLamps.setInstances(conformalRearLampTransforms(bodyPose, size, S.car)).setVisible(camMode < 2);
+    const crown = camMode < 2 ? roofSensorCrownPose(bodyPose, size, S.car, presentClock, motionOk()) : null;
+    if (crown) {
+      N.sensorHousing.setPosition(crown.position[0], crown.position[1], crown.position[2]).setRotation(crown.housingRot[0], crown.housingRot[1], crown.housingRot[2]).setScale([1, 1, 1]).setVisible(true);
+      N.sensorLaser.setPosition(crown.position[0], crown.position[1] + 0.01, crown.position[2]).setRotation(crown.laserRot[0], crown.laserRot[1], crown.laserRot[2]).setScale([1, 1, 1]).setVisible(true);
+    } else {
+      N.sensorHousing.setScale(HIDDEN_SCALE).setVisible(false);
+      N.sensorLaser.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+    const tailMount = HULL_TAIL_MOUNT[S.car];
     // GD-14: world-anchored lamp history, transformed like the street; roof/bumper cameras do not see the rear.
     const trailSegments = tailTrails.update({
-      x: pose.px, z: pose.pz + CAR_DRAW_Z + size.length / 2, time: S.time, speed: S.player.speed,
-      lampY: size.height * TAIL_LAMP.heightFrac, spread: size.width * TAIL_LAMP.spreadFrac,
+      x: pose.px, z: pose.pz + CAR_DRAW_Z + size.length * tailMount.rearFrac, time: S.time, speed: S.player.speed,
+      lampY: size.height * tailMount.heightFrac, spread: size.width * tailMount.spreadFrac,
       enabled: S.phase === "driving" && camMode < 2 && auraApp.effects?.runtime !== "off",
       motionOk: motionOk(), lowTier, rx, ry, rz
     });
@@ -877,7 +932,7 @@ async function bootGridDispatch(): Promise<void> {
     if (Math.abs(carX - lastHeadlightX) > 0.08) {
       lastHeadlightX = carX;
       N.headlights.forEach((h, i) => {
-        const hp = headlightPose(i === 0 ? -1 : 1, carX, carZ - size.length / 2, ry(0));
+        const hp = headlightPose(i === 0 ? -1 : 1, carX, carZ - size.length / 2, carY);
         const d = [hp.target[0] - hp.position[0], hp.target[1] - hp.position[1], hp.target[2] - hp.position[2]] as const;
         const l = Math.hypot(d[0], d[1], d[2]) || 1;
         h?.setLight?.({ position: hp.position, direction: [d[0] / l, d[1] / l, d[2] / l] });
@@ -888,23 +943,25 @@ async function bootGridDispatch(): Promise<void> {
     if (motes.sky !== weather || motes.lowTier !== lowTier || motes.motionOk !== motionOk()) {
       motes.handle?.stop({ immediate: true });
       const spec = headlightMotesSpec({ headlights: skyLook.street.headlights, motionOk: motionOk(), lowTier });
-      motes.handle = spec ? auraApp.effects?.spawn(spec, motesAnchor(carX, carZ - size.length / 2, ry(0))) ?? null : null;
+      motes.handle = spec ? auraApp.effects?.spawn(spec, motesAnchor(carX, carZ - size.length / 2, carY)) ?? null : null;
       motes.sky = weather;
       motes.lowTier = lowTier;
       motes.motionOk = motionOk();
     }
-    motes.handle?.setPosition(motesAnchor(carX, carZ - size.length / 2, ry(0)));
+    motes.handle?.setPosition(motesAnchor(carX, carZ - size.length / 2, carY));
 
-    // GD-14 runtime VFX: queued impact and objective shots, plus the night tyre spray behind the rear wheels.
-    vfx.tyres({ dt: frameSeconds, wet: skyLook.street.drizzle && S.phase === "driving", speed: S.player.speed, x: pose.px, z: pose.pz, width: size.width, length: size.length });
+    // GD-14 runtime VFX: queued impact and objective shots, plus damp/wet tyre mist behind the rear wheels.
+    const dampRoad = skyLook.street.drizzle || skyLook.street.asphalt.roughness <= 0.32;
+    vfx.tyres({ dt: frameSeconds, wet: dampRoad && S.phase === "driving", speed: S.player.speed, x: pose.px, z: pose.pz, width: size.width, length: size.length });
     const fire = (shot: GridVfxShot): void => {
       auraApp.effects?.burst(shot.kind, [rx(shot.at[0]), ry(shot.at[1]), rz(shot.at[2])], shot.options);
     };
     vfx.drain({ motionOk: motionOk(), lowTier }, fire);
 
-    // Rival tags (C15): the two nearest rivals get a full tag, the rest a small chip; layout reads happen at 10 Hz only (C11).
+    // Rival tags (C15): the two nearest rivals get a full tag, the rest a small chip on desktop (hidden on narrow mobile).
     const vw = window.innerWidth || 1280;
     const vh = window.innerHeight || 800;
+    const mobileCompact = vw <= 760;
     const rivalUsers = S.users.slice(TRAFFIC_COUNT);
     const dists = rivalUsers.map((u) => Math.hypot(u.laneX - S.player.x, u.z - S.player.z));
     const nearest = new Set(nearestIndices(dists, 2));
@@ -913,7 +970,7 @@ async function bootGridDispatch(): Promise<void> {
       const tag = tagEls[k]!;
       const vz = rz(pose.uz[TRAFFIC_COUNT + k] ?? u.z);
       const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh, presentedFov);
-      if (!proj.visible || S.phase !== "driving" || introPlaying) {
+      if (!proj.visible || S.phase !== "driving" || introPlaying || (mobileCompact && !nearest.has(k))) {
         if (tag.shown) { tag.el.style.display = "none"; tag.shown = false; }
         return;
       }
@@ -968,10 +1025,15 @@ async function bootGridDispatch(): Promise<void> {
         }
       } else if (r.state === "boarding") hint = `Boarding ${fareOf(S).passenger}…`;
       else if (r.state === "alighting") hint = `Dropping off ${fareOf(S).passenger}…`;
+      else if (S.time < 6.5 && S.shift.faresDone === 0) {
+        hint = `Deliver 5 fares · Follow teal chevrons & stop at kerb beacons (${formatDist(Math.max(0, dz))}) · Press I for Autopilot`;
+      }
       hud.update(S, drives, hint);
-      // GD-18: operator-console bezel (camera label, feed clock, link bars, REC dot).
-      const bz = bezelState({ camMode, sky: weather, simSeconds: S.time, motionOk: motionOk() });
+      // GD-18: operator-console bezel (unit ID, camera label, link latency, feed clock, link bars, REC dot).
+      const bz = bezelState({ camMode, sky: weather, simSeconds: S.time, motionOk: motionOk(), car: S.car });
+      setText("bzUnit", bz.unit);
       setText("bzCam", bz.cam);
+      setText("bzLat", bz.link);
       setText("bzClock", bz.clock);
       $("bzRec")?.classList.toggle("off", !bz.rec);
       const bars = $("bzBars");
@@ -1183,7 +1245,9 @@ async function bootGridDispatch(): Promise<void> {
   bootProgress(72);
   applyWindowGlow();
   applyMaterialOverrides();
-  lowTier = (auraApp.diagnostics() as unknown as { post?: { tier?: string } }).post?.tier === "low";
+  const bootDiag = auraApp.diagnostics() as unknown as { backend?: string; post?: { tier?: string } };
+  lowTier = bootDiag.post?.tier === "low";
+  sensor.syncBackend(bootDiag.backend, SKY_LOOKS[weather]);
   // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
   // Place the street first so the settle pass draws what the first game frame shows.
   present(0);

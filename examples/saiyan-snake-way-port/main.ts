@@ -13,8 +13,10 @@
  * GU47: `stage=1..8` pins the stage colour script to one stage's look (the run is unchanged) and `look=original` keeps the
  * pre-GU47 look (art/colorScript.ts).
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
+import "./hud.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { createRenderInterpolator } from "@aura3d/engine/game";
+import { createFixedStepPresenter } from "@aura3d/engine/game";
 import {
   RUNGS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, qaSnapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
@@ -55,7 +57,10 @@ let ready = false;
 let started = config.autostart;
 let paused = false;
 let renderTime = 0;
-const interpolator = createRenderInterpolator<PresentSample>(blendSamples);
+const presenter = createFixedStepPresenter<PresentSample>({
+  snapshot: () => sampleOf(state),
+  blend: blendSamples
+});
 let last = 0;
 let steps = 0;
 const guard = createRenderGuard();
@@ -256,6 +261,9 @@ function updateHud(): void {
   ($("strain-bar") as HTMLElement).style.width = `${Math.round(state.strain * 100)}%`;
   setText("banner", state.bannerT > 0 ? state.banner : "");
   setText("sub", state.bannerT > 0 ? state.bannerSub : "");
+  const bannerFade = state.bannerT <= 0 ? 0 : Math.min(1, Math.max(0, (state.bannerT - 0.85) / 0.4));
+  $("banner").style.opacity = bannerFade.toFixed(2);
+  $("sub").style.opacity = bannerFade.toFixed(2);
   const drowse = drowseCue(state);
   const gust = gustCue(state);
   const gap = started && counting <= 0 ? gapAhead(state) : null;
@@ -323,8 +331,9 @@ function render(dt: number, blend = false): void {
   if (!app || !runtime || guard.failed) return;
   try {
     const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
+    const sampled = blend && alpha < 1 ? presenter.present({ alpha }, true) : undefined;
     runtime.setTitle?.(!started);
-    runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
+    runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, sampled);
     // GU47 SSR-15: intro cinema bars (written only when the height moves)
     const bars = Math.round((runtime.shot?.bars ?? 0) * 100) / 100;
     if (bars !== barsShown) { document.getElementById("cinebars")?.style.setProperty("--bars", String(bars)); barsShown = bars; }
@@ -339,7 +348,7 @@ function render(dt: number, blend = false): void {
 
 function advance(input: RunInput): void {
   stepRun(state, input, STEP);
-  interpolator.push(sampleOf(state));
+  presenter.afterStep();
   steps++;
   renderTime += STEP;
 }
@@ -378,7 +387,7 @@ function tick(now: number): void {
 /** Instant start (capture hooks and tests). */
 function begin(): void {
   state = createRun();
-  interpolator.reset(sampleOf(state));
+  presenter.reset();
   steps = 0;
   loop.resetAccumulator();
   started = true;
@@ -485,8 +494,8 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { quality: "auto", ...lab.renderer },
-    // GU47 SSR-05: ACES under the colour script (exposure per stage from the look table); `?look=original` stays untonemapped
-    output: { ...(look.mode === "original" ? { toneMapping: "none" as const, dither: false } : { toneMapping: "aces" as const, exposure: STAGE_LOOK[look.pinnedStage ?? 0]!.exposure, dither: true }), ...lab.output },
+    // GU47 SSR-05 + WP-27: AgX highlight rolloff under the colour script (exposure per stage from the look table); `?look=original` stays untonemapped
+    output: { ...(look.mode === "original" ? { toneMapping: "none" as const, dither: false } : { toneMapping: "agx" as const, exposure: STAGE_LOOK[look.pinnedStage ?? 0]!.exposure, dither: true }), ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

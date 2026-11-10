@@ -52,10 +52,10 @@ export const GHOST_LABEL: Record<GhostId, string> = {
   dim: "SKITTISH"
 };
 export const GHOST_TINT: Record<GhostId, string> = {
-  blitz: "#ff6a3c",
-  sly: "#b78bff",
-  flick: "#46ffb0",
-  dim: "#ffe066"
+  blitz: "#ff4d3d",
+  sly: "#c47dff",
+  flick: "#a6ff3b",
+  dim: "#ffc43d"
 };
 export const GHOST_BLURB: Record<GhostId, string> = {
   blitz: "Locks onto your tile and follows your path.",

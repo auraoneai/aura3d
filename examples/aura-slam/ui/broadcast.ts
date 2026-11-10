@@ -3,7 +3,7 @@
  * scoreboard's top line with the set label, and a serve-speed strip ("1ST SERVE  176 KM/H") that slides over the
  * scorebug's footer for 2.6 s after every serve. Both live inside the scorebug box, so the HUD area does not grow and
  * stays in the top-left column, clear of the athletes (the TT-C1 frame keeps the far athlete inside the middle half of
- * the canvas width); they use the page's licensed faces (Graphik text, DIN Pro numerals, ui/styles.css). `?look=original`
+ * the canvas width); they use the page's licensed faces (Whitney UI labels, DIN Pro numerals, ui/styles.css). `?look=original`
  * does not create them.
  * Presentation only: reads `lastStroke`, `lastShotSpeed`, `server`, `serveNumber` and the score.
  */

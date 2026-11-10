@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { buildWorld } from "../../../apps/showcase-pips-big-leap/src/game/world";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
-import { HEAT_SHIMMER_GLSL, dioramaName, heatShimmerPass } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
+import { HEAT_SHIMMER_GLSL, HEAT_SHIMMER_WGSL, dioramaName, heatShimmerPass } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { WORLD_IDS, WORLD_LOOKS, presentationScale } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { createDioramaPresentation } from "../../../apps/showcase-pips-big-leap/src/game/presentation";
 
@@ -39,6 +39,7 @@ describe("pips-big-leap heat shimmer (PBL-V3)", () => {
     expect(pass.name).toBe(dioramaName.heatShimmer);
     expect(pass.insertAt).toBe("before-tonemap");
     expect(pass.fragment.glsl).toBe(HEAT_SHIMMER_GLSL);
+    expect(pass.fragment.wgsl).toBe(HEAT_SHIMMER_WGSL);
     expect(pass.uniforms).toEqual({ u_pixels: 1.6, u_band: 0.55, u_speed: 1 });
   });
 

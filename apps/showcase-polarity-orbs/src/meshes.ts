@@ -2,7 +2,7 @@
  * Procedural mesh builders for Polarity Orbs. Plain arrays in, `geometry.dynamic` out (world.ts); dimensions are
  * pinned by tests/unit/polarity-orbs/meshes.test.ts. No engine imports here.
  */
-import type { MeshData } from "../../../examples/shared/runner-kit/index";
+import type { MeshData } from "../../../examples/shared/runner-kit/batch";
 
 export const BALL_RADIUS = 0.5;
 export const ORB_RADIUS = 0.45;
@@ -160,3 +160,87 @@ export const dashMesh = (): MeshData => boxMesh(0.15, 0.02, 1.2);
 export const shadowMesh = (): MeshData => quadMesh(2, 2);
 export const shockwaveMesh = (): MeshData => ringMesh(RING_INNER, RING_OUTER, 48);
 export const streamMesh = (): MeshData => boxMesh(0.06, 0.06, 1);
+
+/** Wide feathered magnetic-flux shockwave annulus (`uv.y` = radial 0..1 across [0.22, 1.0]). */
+export const fluxWaveMesh = (segments = 64): MeshData => ringMesh(0.22, 1.0, segments);
+
+/** Grounded live polarity reticle ring directly under the hero orb (`uv.x` = angle 0..1, `uv.y` = radial 0..1). */
+export const reticleRingMesh = (segments = 48): MeshData => ringMesh(0.56, 0.94, segments);
+
+/** Upright camera-facing quad (`+Z` normal) for 8x4 `createFlipbookAtlas("plasma")` polarity-discharge bursts. */
+export function plasmaQuadMesh(size = 1): MeshData {
+  const h = size / 2;
+  return {
+    positions: [-h, -h, 0, h, -h, 0, h, h, 0, -h, h, 0],
+    normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+    uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+    indices: [0, 1, 2, 0, 2, 3]
+  };
+}
+
+/** Precision brushed-metal equatorial collar ring around the hero magnetic orb (`y` in [-h/2, h/2]). */
+export function orbCollarMesh(segments = 36): MeshData {
+  const m = empty();
+  const rOuter = BALL_RADIUS * 1.042;
+  const rInner = BALL_RADIUS * 0.985;
+  const hy = 0.044;
+  const profile: readonly [number, number, number, number][] = [
+    [rInner, -hy, 0, -1],
+    [rOuter, -hy * 0.65, 1, -0.35],
+    [rOuter, hy * 0.65, 1, 0.35],
+    [rInner, hy, 0, 1]
+  ];
+  const ringCount = profile.length;
+  for (let p = 0; p < ringCount; p++) {
+    const [r, py, nr, ny] = profile[p]!;
+    const nLen = Math.hypot(nr, ny) || 1;
+    for (let i = 0; i <= segments; i++) {
+      const u = i / segments;
+      const a = u * Math.PI * 2;
+      const c = Math.cos(a), s = Math.sin(a);
+      m.positions.push(r * c, py, r * s);
+      m.normals.push((nr / nLen) * c, ny / nLen, (nr / nLen) * s);
+      m.uvs.push(u, p / (ringCount - 1));
+    }
+  }
+  const stride = segments + 1;
+  for (let p = 0; p < ringCount - 1; p++) {
+    for (let i = 0; i < segments; i++) {
+      const a = p * stride + i, b = a + 1, c = (p + 1) * stride + i, d = c + 1;
+      m.indices.push(a, c, b, b, c, d);
+    }
+  }
+  return m;
+}
+
+/**
+ * Curved sinusoidal magnetic-flux dipole arc from z = -0.5 to z = +0.5 (`uv.x` = 0..1 along arc, `uv.y` = 0..1 across width).
+ * Crossed horizontal + vertical ribbons keep the arc readable from chase and oblique camera angles.
+ */
+export function fluxArcMesh(segments = 14): MeshData {
+  const m = empty();
+  const halfW = 0.055;
+  const planes: readonly [number, number, number, number, number][] = [
+    [1, 0, 0, 1, 0],
+    [0, 1, 1, 0, 0]
+  ];
+  for (const [ox, oy, nx, ny, nz] of planes) {
+    const base = m.positions.length / 3;
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const z = t - 0.5;
+      const envelope = Math.sin(Math.PI * t);
+      const y = 0.24 * envelope;
+      const x = 0.045 * Math.sin(Math.PI * 2 * t) * envelope;
+      const w = halfW * (0.35 + 0.65 * envelope);
+      m.positions.push(x - ox * w, y - oy * w, z, x + ox * w, y + oy * w, z);
+      m.normals.push(nx, ny, nz, nx, ny, nz);
+      m.uvs.push(t, 0, t, 1);
+    }
+    for (let i = 0; i < segments; i++) {
+      const a = base + i * 2;
+      m.indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+  }
+  return m;
+}

@@ -1,5 +1,5 @@
 /**
- * HEATSINK Time Trial on Aura3D: boot, fixed-step loop, input (keyboard, rebindable; touch on coarse pointers), pause,
+ * Ion Circuit Time Trial on Aura3D: boot, fixed-step loop, input (keyboard, rebindable; touch on coarse pointers), pause,
  * DOM HUD and capture hooks. The simulation lives in `race.ts` (pure); `world.ts` renders it through the public engine
  * surface.
  *
@@ -7,6 +7,7 @@
  * `__AURA_HEATSINK__.stepFrames`), `quality=high|low` (default: low on coarse-pointer devices, else high), `touch=1`
  * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
@@ -51,6 +52,7 @@ const el = {
   menu: $("menu"), results: $("results"), resultsTitle: $("results-title"), medalLine: $("medal-line"), resultsBody: $("results-body"), medalRules: $("medal-rules"),
   pause: $("pause"), error: $("error"), errorText: $("error-text"), loading: $("loading"), loadingStatus: $("loading-status"),
   district: $("district"), districtBanner: $("district-banner"),
+  coreTemp: document.getElementById("h-core-temp"),
   touch: $("touch"), mute: $<HTMLButtonElement>("mute"), motion: $<HTMLButtonElement>("motion-toggle"), binds: $("binds"),
   menuObjective: $("menu-objective"), menuControls: $("menu-controls")
 };
@@ -289,6 +291,10 @@ function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
   setText(el.score, v.score); setText(el.mult, v.multiplier); setText(el.targets, v.targets); setText(el.objective, v.objective);
   el.mult.classList.toggle("hot", v.chain >= 2);
   setText(el.lap, v.lap); setText(el.time, v.time); setText(el.best, `best ${v.best}`); setText(el.speed, v.speed);
+  if (el.coreTemp) {
+    setText(el.coreTemp, v.coreTemp);
+    el.coreTemp.classList.toggle("hot", v.burning || v.heatActive);
+  }
   setText(el.hull, `${"■".repeat(v.hull)}${"□".repeat(Math.max(0, v.hullMax - v.hull))}`);
   el.hull.setAttribute("aria-label", `hull ${v.hull} of ${v.hullMax}`);
   el.hull.classList.toggle("warn", v.hull <= 1);
@@ -342,7 +348,7 @@ const loop = createFixedStepLoop({
 });
 
 /* HP-12: a frame-time governor that lowers the pixel ratio when the device cannot keep up */
-const governor = { cap: config.quality === "low" ? 1 : 1.65, sum: 0, n: 0, drops: 0 };
+const governor = { cap: config.quality === "low" ? 1 : 2, sum: 0, n: 0, drops: 0 };
 function govern(dt: number): void {
   if (config.manual || paused || !started) return;
   governor.sum += dt; governor.n++;
@@ -537,14 +543,14 @@ async function boot(): Promise<void> {
   const world = buildWorld(track, config.quality);
   loadingProgress.set(0.4);
   lookRow = world.look;
-  document.body.classList.toggle("ion-telemetry", lookRow.id === "twilight");
+  const twilight = lookRow.id === "twilight";
+  document.body.classList.toggle("ion-telemetry", twilight);
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", dither: false, ...(lab.output ?? {}) },
-    ...(lab.renderer ? { renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer } } : {}),
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(lab.renderer ?? {}) },
+    output: { toneMapping: twilight ? "agx" : "aces", exposure: twilight ? 1.06 : 1.0, dither: twilight, ...(lab.output ?? {}) },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

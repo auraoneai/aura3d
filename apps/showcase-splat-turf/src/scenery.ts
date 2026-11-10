@@ -1,22 +1,23 @@
 /**
- * Splat Turf world dressing (art pass, presentation only): the white road is a floating carnival causeway over a
- * sunset cloud sea. Everything here is a pure function of the shown distance, the elapsed time and the road row, so it
- * never reads or advances the simulation's random stream.
+ * Splat Turf world dressing (WP-17, presentation only): the primed gesso road is a sunlit skate-park &
+ * art-park causeway over a fair-weather cloud sea. Everything here is a pure function of the shown distance,
+ * elapsed time, and road row, so it never reads or advances the simulation's random stream.
  *
- * Layers, near to far:
- * - per road segment: a lavender keel under the deck, paint drips hanging off both edges (row paint colour), carnival
- *   lamp posts with glowing bulbs, and a floating turf islet under every roadside paint pot;
- * - the cloud sea (three repeating tiles that scroll with the road) below the deck;
- * - Meshy floating islands and balloons drifting past at 0.55x road speed (typed `model(assets.x)`);
- * - static horizon cloud banks and a far cloud floor that melt into the haze.
+ * Performance & draw-call consolidation:
+ * - Corridor dressing batches (`keel`, `drips`, `posts`, `bulbs`, `pennants`, `islets`) carry tight `CORRIDOR_BOUNDS`
+ *   with `castShadow: false, receiveShadow: false` (zero shadow-pass vertex leak).
+ * - The 14 Meshy floating islands and balloons are consolidated into 6 `instances.model(...)` nodes (one per unique
+ *   admitted GLB asset key) tiled across 2 seamless `SPAN` belts and scrolled via `setPosition`.
  */
-import { model, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
-import { Batch, hexToLinear, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
+import { instances, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
+import { Batch, CORRIDOR_BOUNDS, hexToLinear, type BatchBounds, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { assets } from "./aura-model-assets";
 import { boxMesh, cylinderMesh, merge, sphereMesh, translateMesh } from "./meshes";
 import { LOOK, paintColorFor } from "./look";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
+
+const SKY_LAYER_BOUNDS: BatchBounds = { min: [-420, -48, -440], max: [420, 96, 140] };
 
 /* ------------------------------------------------------------------ meshes */
 
@@ -66,12 +67,12 @@ export function puffMesh(): MeshData {
   ]);
 }
 
-/** Floating turf islet: mint grass cap over a plum rock cone, with per-vertex tone (never retinted). */
+/** Floating turf islet: sunlit park turf cap over a slate rock cone, with per-vertex tone. */
 function isletParts(): { mesh: MeshData; tone: number[] } {
   const grass = translateMesh(cylinderMesh(1.05, 0.22, 12), 0, -0.11, 0);
   const rock = translateMesh(frustumMesh(0.98, 0.12, 1.5, 8), 0, -0.2, 0);
   const pebble = translateMesh(frustumMesh(0.32, 0.04, 0.5, 6), 0.55, -0.85, 0.2);
-  const g = hexToLinear(LOOK.turf), r = hexToLinear("#6b3f7a"), p = hexToLinear("#8a5a96");
+  const g = hexToLinear(LOOK.turf), r = hexToLinear("#56466d"), p = hexToLinear("#72608c");
   const parts: [MeshData, Rgb][] = [[grass, g], [rock, r], [pebble, p]];
   const tone: number[] = [];
   for (const [m, c] of parts) for (let v = 0; v < m.positions.length / 3; v++) tone.push(c[0], c[1], c[2]);
@@ -80,16 +81,15 @@ function isletParts(): { mesh: MeshData; tone: number[] } {
 
 /** Paint drip hanging from y = 0: a stem and a round bead at the end (scaled per instance on y). */
 const dripMesh = (): MeshData => merge([translateMesh(cylinderMesh(0.09, 1, 6), 0, -0.5, 0), sphereMesh(0.15, 6, 4, 0, -1, 0)]);
-/** Carnival lamp post (base at y = 0, 2.4 tall) with a cap ring; the bulb is a separate glow batch. */
+/** Skate-park lamp post (base at y = 0, 2.4 tall) with a cap ring; the bulb is a separate glow batch. */
 const postMesh = (): MeshData => merge([translateMesh(cylinderMesh(0.05, 2.4, 8), 0, 1.2, 0), translateMesh(cylinderMesh(0.14, 0.08, 10), 0, 2.4, 0)]);
 const bulbMesh = (): MeshData => sphereMesh(0.2, 8, 6, 0, 2.62, 0);
 /** Pennant: a downward triangle hanging from y = 0, 0.5 wide, facing the road. */
 function pennantMesh(): MeshData {
   const flag: MeshData = { positions: [-0.25, 0, 0, 0.25, 0, 0, 0, -0.5, 0], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1], uvs: [0, 0, 1, 0, 0.5, 1], indices: [0, 2, 1] };
-  // a piece of the bunting cord the flag hangs from (one span / PENNANTS_PER_SPAN long)
   return merge([flag, translateMesh(boxMesh(LAMP_SPACING / PENNANTS_PER_SPAN + 0.04, 0.035, 0.035), 0, 0.01, 0)]);
 }
-/** Road keel: the lavender underside that turns the deck into a floating ribbon. */
+/** Road keel: the architectural underside that turns the deck into an elevated causeway ribbon. */
 export const keelMesh = (): MeshData => scaleMesh(frustumMesh(1, 0.72, 1, 4, Math.PI / 4), 3.2 * Math.SQRT2, 0.9, 0.52 * Math.SQRT2);
 
 /* ------------------------------------------------------------------ layout */
@@ -107,10 +107,6 @@ const ISLET_SPACING = 10;
 /** Paint drips may hang off every other row on each edge. */
 const DRIP_SPACING = 2;
 
-/**
- * Row-keyed slot pool for sparse dressing (lamps every 8 rows, islets every 10): sized to the visible road window
- * instead of one slot per road segment, so the batches carry no collapsed padding through the vertex stage.
- */
 class RowPool {
   readonly rows: Float64Array;
   constructor(readonly perSide: number, readonly spacing: number) {
@@ -120,12 +116,14 @@ class RowPool {
     return side * this.perSide + (Math.floor(row / this.spacing) % this.perSide);
   }
 }
-/** Rows the road pool can show: SEGMENT_BACK behind the ball plus the pool ahead. */
+
 const WINDOW_BACK = 30;
+
+export type BackdropAssetKind = keyof typeof assets;
 
 export interface Piece {
   readonly id: string;
-  readonly kind: keyof typeof assets;
+  readonly kind: BackdropAssetKind;
   readonly side: -1 | 1;
   readonly offset: number;
   readonly y: number;
@@ -138,8 +136,17 @@ const SPAN = 190;
 const NEAR = 14;
 const FAR = NEAR - SPAN;
 
+const ASSET_KINDS: readonly BackdropAssetKind[] = [
+  "balloon",
+  "easelIsland",
+  "islandTower",
+  "islandTree",
+  "paintPotIsland",
+  "paletteIsland"
+];
+
 export const PIECES: readonly Piece[] = (() => {
-  const kinds: (keyof typeof assets)[] = [
+  const kinds: BackdropAssetKind[] = [
     "islandTree", "paintPotIsland", "balloon", "islandTower", "paletteIsland", "balloon", "easelIsland",
     "islandTree", "balloon", "paintPotIsland", "islandTower", "balloon", "paletteIsland", "islandTree"
   ];
@@ -175,7 +182,6 @@ export function piecePose(p: Piece, distance: number, elapsed: number, reduced: 
 const CLOUD_TILE = 110;
 const CLOUDS_PER_TILE = 26;
 const HORIZON_PUFFS = 34;
-/** High fair-weather puffs in the upper sky (portrait screens show a lot of sky). */
 const HIGH_PUFFS = 12;
 
 /* ------------------------------------------------------------------ builder */
@@ -189,9 +195,7 @@ export interface SceneryPrograms {
 }
 
 export interface Scenery {
-  /** Called from the world's segment-recycle loop (slot `i`, road row `row`). */
   placeSegment(i: number, row: number): void;
-  /** Called with the world's paint-pot placement (same row, side, x and scale). */
   placeIslet(row: number, side: number, x: number, sc: number): void;
   update(node: (id: string) => NodeHandle, roadZ: number, distance: number, elapsed: number, reduced: boolean): void;
   readonly batches: readonly Batch[];
@@ -207,18 +211,18 @@ export function addScenery(
   edgeX: number
 ): Scenery {
   const isletParts0 = isletParts();
-  const keel = new Batch(keelMesh(), segments, null);
+  const keel = new Batch(keelMesh(), segments, null, CORRIDOR_BOUNDS);
   const dripPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / DRIP_SPACING) + 1, DRIP_SPACING);
-  const drips = new Batch(dripMesh(), dripPool.rows.length, [1, 1, 1]);
+  const drips = new Batch(dripMesh(), dripPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
   const lampPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / LAMP_SPACING) + 1, LAMP_SPACING);
   const isletPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / ISLET_SPACING) + 1, ISLET_SPACING);
-  const posts = new Batch(postMesh(), lampPool.rows.length, [1, 1, 1]);
-  const bulbs = new Batch(bulbMesh(), lampPool.rows.length, [1, 1, 1]);
-  const pennants = new Batch(pennantMesh(), lampPool.rows.length * PENNANTS_PER_SPAN, [1, 1, 1]);
-  const islets = new Batch(isletParts0.mesh, isletPool.rows.length, isletParts0.tone);
-  const clouds = new Batch(puffMesh(), CLOUDS_PER_TILE * 3, [1, 1, 1]);
-  const horizon = new Batch(puffMesh(), HORIZON_PUFFS + HIGH_PUFFS, [1, 1, 1]);
-  const floor = new Batch(cylinderMesh(1, 0.02, 40), 1, [1, 1, 1]);
+  const posts = new Batch(postMesh(), lampPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
+  const bulbs = new Batch(bulbMesh(), lampPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
+  const pennants = new Batch(pennantMesh(), lampPool.rows.length * PENNANTS_PER_SPAN, [1, 1, 1], CORRIDOR_BOUNDS);
+  const islets = new Batch(isletParts0.mesh, isletPool.rows.length, isletParts0.tone, CORRIDOR_BOUNDS);
+  const clouds = new Batch(puffMesh(), CLOUDS_PER_TILE * 3, [1, 1, 1], SKY_LAYER_BOUNDS);
+  const horizon = new Batch(puffMesh(), HORIZON_PUFFS + HIGH_PUFFS, [1, 1, 1], SKY_LAYER_BOUNDS);
+  const floor = new Batch(cylinderMesh(1, 0.02, 40), 1, [1, 1, 1], SKY_LAYER_BOUNDS);
 
   addBatch("cloud-floor", floor, programs.far);
   addBatch("horizon", horizon, programs.far);
@@ -230,13 +234,44 @@ export function addScenery(
   addBatch("pennants", pennants, programs.toonTone);
   addBatch("islets", islets, programs.toonTone);
 
-  for (const p of PIECES) {
-    builder.add(model(assets[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: false, receiveShadow: false }).runtime({ id: p.id }));
+  // Consolidate all 14 backdrop islands & balloons into 6 single-draw GPU-instanced GLB nodes (2 repeating SPAN belts).
+  const instancedKinds: { readonly nodeId: string; readonly kind: BackdropAssetKind; readonly phase: number }[] = [];
+  for (let kIdx = 0; kIdx < ASSET_KINDS.length; kIdx += 1) {
+    const kind = ASSET_KINDS[kIdx]!;
+    const groupPieces = PIECES.filter((p) => p.kind === kind);
+    if (groupPieces.length === 0) continue;
+    const nodeId = `isle-group-${kind}`;
+    const transforms = [];
+    for (let tile = 0; tile < 2; tile += 1) {
+      const tileOffsetZ = -tile * SPAN;
+      for (const p of groupPieces) {
+        transforms.push({
+          position: [p.side * p.offset, p.y, NEAR - p.z0 + tileOffsetZ] as const,
+          rotation: [0, p.z0 * 0.45, 0] as const,
+          scale: 1
+        });
+      }
+    }
+    builder.add(
+      instances
+        .model(assets[kind], {
+          name: nodeId,
+          targetMaxDimension: groupPieces[0]!.size,
+          transforms,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: nodeId })
+    );
+    instancedKinds.push({ nodeId, kind, phase: kIdx * 1.15 });
   }
 
-  /* static layers: written once */
-  const pink = hexToLinear("#ffd6e4"), peach = hexToLinear("#ffe4cf"), lilac = hexToLinear("#e6d4ff");
-  const tints = [pink, peach, lilac, [1, 1, 1] as Rgb];
+  /* static sunlit cloud layers: written once */
+  const cloudWhite: Rgb = [1, 1, 1];
+  const cloudCream = hexToLinear("#fff6e8");
+  const cloudAzure = hexToLinear("#dcefff");
+  const cloudSky = hexToLinear("#cbe6ff");
+  const tints = [cloudWhite, cloudCream, cloudAzure, cloudSky];
   for (let t = 0; t < 3; t++) {
     for (let k = 0; k < CLOUDS_PER_TILE; k++) {
       const i = t * CLOUDS_PER_TILE + k;
@@ -261,10 +296,10 @@ export function addScenery(
     const r = 210 + hash(k, 21) * 60;
     const s = 9 + hash(k, 22) * 9;
     horizon.place(HORIZON_PUFFS + k, Math.cos(a) * r, 34 + hash(k, 23) * 34, Math.sin(a) * r, a, s * 2.2, s * 0.45, s);
-    horizon.setTone(HORIZON_PUFFS + k, k % 2 === 0 ? [1, 1, 1] : peach);
+    horizon.setTone(HORIZON_PUFFS + k, k % 2 === 0 ? cloudWhite : cloudCream);
   }
   floor.place(0, 0, -22, -120, 0, 340, 1, 340);
-  floor.setTone(0, hexToLinear("#e9b4d6"));
+  floor.setTone(0, hexToLinear("#bfe3ff"));
 
   let staticFlushed = false;
 
@@ -275,7 +310,6 @@ export function addScenery(
     const paint = hexToLinear(paintColorFor(row));
     for (let side = 0; side < 2; side++) {
       const sx = side === 0 ? -1 : 1;
-      // drips: on about two in three even rows per edge, deterministic length
       if (row % DRIP_SPACING === 0) {
         const h = hash(row, side + 5);
         const d = dripPool.slot(row, side);
@@ -285,7 +319,6 @@ export function addScenery(
           drips.setTone(d, paint);
         } else drips.collapse(d);
       }
-      // lamps on both edges every LAMP_SPACING rows, with a pennant string to the next lamp
       if (row % LAMP_SPACING === 0) {
         const lamp = lampPool.slot(row, side);
         lampPool.rows[lamp] = row;
@@ -305,14 +338,12 @@ export function addScenery(
     }
   }
 
-  /** Islets follow the paint-pot placement in world.ts (same row, side, x and scale). */
   function placeIslet(row: number, side: number, x: number, sc: number): void {
     const slot = isletPool.slot(row, side);
     isletPool.rows[slot] = row;
     islets.place(slot, x, -0.35, -row - 0.5, sc * 2.1, sc * 1.35, sc * 1.1, sc * 1.35);
   }
 
-  /** Fold lamps and islets whose row left the road window (a restart jumps the window back to row 0). */
   function retire(distance: number): void {
     const lo = distance - WINDOW_BACK, hi = distance + segments + 5;
     for (let s = 0; s < lampPool.rows.length; s++) {
@@ -340,9 +371,12 @@ export function addScenery(
     retire(distance);
     for (const id of SCENERY_BATCH_IDS) node(id).setPosition(0, 0, roadZ);
     node("clouds").setPosition(0, 0, ((roadZ % CLOUD_TILE) + CLOUD_TILE) % CLOUD_TILE);
-    for (const p of PIECES) {
-      const pose = piecePose(p, distance, elapsed, reduced);
-      node(p.id).setVisible(pose.fade > 0.02).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(Math.max(0.001, pose.fade));
+    const beltZ = (((distance * 0.55) % SPAN) + SPAN) % SPAN;
+    const t = reduced ? 0 : elapsed;
+    for (const item of instancedKinds) {
+      const amp = item.kind === "balloon" ? 0.48 : 0.22;
+      const bob = Math.sin(t * 0.72 + item.phase) * amp;
+      node(item.nodeId).setPosition(0, bob, beltZ);
     }
     keel.flush(node("keel"));
     drips.flush(node("drips"));

@@ -40,13 +40,14 @@ type MaterialOverrides = NonNullable<Parameters<typeof model>[1]>["materialOverr
  * in 4.6. Every GLB has one material, so the overrides target all of it.
  */
 export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
-  cottage: [{ roughness: 0.94, metallic: 0, envMapIntensity: 0.7 }],
-  belltower: [{ roughness: 0.9, metallic: 0, envMapIntensity: 0.7 }],
-  bell: [{ color: "#ffe2a6", colorMode: "multiply", metallic: 0.9, roughness: 0.3, envMapIntensity: 1.4, rim: { color: "#ffd38a", power: 3, intensity: 0.6 } }],
-  letter: [{ roughness: 0.62, metallic: 0, rim: { color: "#fff0d8", power: 2.5, intensity: 0.35 } }],
-  boat: [{ roughness: 0.9, metallic: 0, envMapIntensity: 0.75 }],
-  stones: [{ roughness: 0.96, metallic: 0, envMapIntensity: 0.6 }],
-  hero: [{ roughness: 0.85, rim: { color: "#ffe6c4", power: 2.6, intensity: 0.65 } }]
+  cottage: [{ roughness: 0.92, metallic: 0, envMapIntensity: 0.76 }],
+  belltower: [{ roughness: 0.88, metallic: 0, envMapIntensity: 0.78, rim: { color: "#dce8c6", power: 3.2, intensity: 0.22 } }],
+  bell: [{ color: "#f3d598", colorMode: "multiply", metallic: 0.9, roughness: 0.27, envMapIntensity: 1.55, rim: { color: "#ffe09c", power: 2.8, intensity: 0.68 } }],
+  letter: [{ roughness: 0.58, metallic: 0, rim: { color: "#fff2dc", power: 2.4, intensity: 0.42 } }],
+  boat: [{ roughness: 0.88, metallic: 0, envMapIntensity: 0.8 }],
+  stones: [{ roughness: 0.93, metallic: 0, envMapIntensity: 0.68, rim: { color: "#d8e4c2", power: 3.4, intensity: 0.18 } }],
+  hero: [{ roughness: 0.82, rim: { color: "#ffebd0", power: 2.5, intensity: 0.72 } }],
+  kite: [{ roughness: 0.74, metallic: 0, rim: { color: "#fff4dc", power: 2.3, intensity: 0.52 } }]
 };
 
 /** WW47-A1 kite: height of the placed kite (m), and where it flies relative to the traveller (downwind, up). */
@@ -105,7 +106,7 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
     // WW47-A1: the paper kite (WP-36 bellKite) riding the wind above the traveller; posed every frame by world.ts. It has no
     // string: the 2.8 cm cream box from a world-fixed hand offset to the kite read as a stray white line from the walker to
     // whatever roof the kite flew over (owner report, 2026-11-09), so it was removed.
-    builder.add(model(MODEL_ASSETS.kite, { name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false, materialOverrides: [{ roughness: 0.78, metallic: 0, rim: { color: "#fff4dc", power: 2.4, intensity: 0.45 } }] }).runtime({ id: "kite" }));
+    builder.add(model(MODEL_ASSETS.kite, { ...mo("kite"), name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false }).runtime({ id: "kite" }));
   } else if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
   if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }

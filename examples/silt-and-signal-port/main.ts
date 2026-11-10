@@ -1,5 +1,5 @@
 /**
- * Silt & Signal on Aura3D: boot, screens, fixed-step loop, input (keyboard, pointer/touch, gamepad), HUD, audio
+ * Duneglide on Aura3D: boot, screens, fixed-step loop, input (keyboard, pointer/touch, gamepad), HUD, audio
  * and capture hooks. The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `chapter=0..6`, `objective=N` (the QA jump: the rider starts 40 m
@@ -8,8 +8,10 @@
  * and `manual` are QA modes: straight into play, no pause on Esc / blur / Start. `start=1` alone is player mode without
  * the title (chapter changes and "Fly again" reload with it), so pause, audio and the results card all work.
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { updateCompass } from "@aura3d/engine/game";
+import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { createSiltPresenter, viewOf } from "./presentation";
 import { CHAPTERS } from "./chapters-data";
 import { autopilot } from "./autopilot";
@@ -17,7 +19,7 @@ import { createSiltAudio, type SiltAudio } from "./audio";
 import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy";
 import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
 import { buildWorld, type World, type WorldRuntime } from "./world";
-import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
+import { chapterLook, inkPassOptions, liveInkPassOptions, siltLookMode } from "./art/look";
 import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
@@ -78,6 +80,7 @@ let renderTime = 0;
 let frames = 0;
 let hudTimer = 0;
 let toastTimer = 0;
+let playHintElapsed = 0;
 let heldInput: Input | null = null;
 const down = new Set<string>();
 const audio: SiltAudio = createSiltAudio(config.chapter);
@@ -123,7 +126,11 @@ function setMode(next: Mode): void {
   mode = next;
   for (const id of Object.values(SCREENS)) $(id).classList.toggle("hidden", SCREENS[next as Exclude<Mode, "play">] !== id);
   $("hud").classList.toggle("hidden", next === "title");
-  if (next !== "play") { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; }
+  if (next !== "play") {
+    playHintElapsed = 0;
+    document.getElementById("keys")?.classList.remove("silt-faded");
+    down.clear(); pointers.clear(); touch.hold = false; touch.boost = false;
+  }
   syncMuteLabels();
 }
 
@@ -394,6 +401,10 @@ const loop = createFixedStepLoop({
         if (sim.state.completed && (finishLeft === null || finishLeft <= 0)) { finishLeft = null; openDone(); }
         else if (sim.state.scene) openScene();
       }
+      if (!config.manual && railLeft <= 0) {
+        playHintElapsed += dt;
+        if (playHintElapsed > 4) document.getElementById("keys")?.classList.add("silt-faded");
+      }
       audio.update(sim, dt);
     }
     render(dt);
@@ -410,10 +421,11 @@ function updateHud(): void {
   const ch = CHAPTERS[state.chapter]!;
   const o = objectiveOf(state);
   const t = targetOf(state);
+  const dist = Math.hypot(state.x - t.x, state.z - t.z);
   $("chapter").textContent = chapterName(state.chapter);
   $("objective").textContent = state.completed ? "The journey is complete" : state.scene ? "…" : objectiveTitle(o.id, o.title);
-  $("distance").textContent = `${Math.hypot(state.x - t.x, state.z - t.z).toFixed(0)} m`;
-  $("steps").textContent = `${state.objective + 1}/${ch.objectives.length} · ring ${state.point + 1}/${o.points.length}`;
+  $("distance").textContent = `${dist.toFixed(0)} m`;
+  $("steps").textContent = `${state.objective + 1}/${ch.objectives.length} · relay ${state.point + 1}/${o.points.length}`;
   $("speed").textContent = `${Math.abs(flight.speed).toFixed(0)}`;
   $("altitude").textContent = `${state.y.toFixed(0)}`;
   $<HTMLElement>("energy").style.width = `${(flight.energy * 100).toFixed(0)}%`;
@@ -425,6 +437,21 @@ function updateHud(): void {
   hintEl.classList.toggle("warn", !!hint?.warn);
   hintEl.classList.toggle("hidden", !hint);
   updateCompass($("compass"), state, t, state.yaw);
+  const pip = document.getElementById("silt-tape-pip");
+  if (pip) {
+    const dx = t.x - state.x, dz = t.z - state.z;
+    const rx = dx * Math.cos(state.yaw) - dz * Math.sin(state.yaw);
+    const fwd = -dx * Math.sin(state.yaw) - dz * Math.cos(state.yaw);
+    const bearing = Math.atan2(rx, fwd);
+    const clamped = Math.max(-1, Math.min(1, bearing / (Math.PI * 0.65)));
+    pip.style.left = `${(50 + clamped * 44).toFixed(1)}%`;
+    const tapeDist = document.getElementById("silt-tape-dist");
+    if (tapeDist) tapeDist.textContent = `${dist.toFixed(0)} m`;
+    const freq = document.getElementById("silt-freq");
+    if (freq) freq.textContent = `CH${state.chapter + 1} · R${String(state.point + 1).padStart(2, "0")} · ${(142.1 + state.chapter * 0.4 + state.point * 0.1).toFixed(1)}MHZ`;
+    const cardinal = document.querySelector(".silt-tape-cardinal");
+    if (cardinal) cardinal.textContent = Math.abs(bearing) < 0.14 ? "On bearing" : bearing > 0 ? "Starboard" : "Port";
+  }
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -586,28 +613,29 @@ async function boot(): Promise<void> {
   if (config.look === "inked") void mountSiltHud().then((loaded) => { hudFonts = loaded; });
   (window as unknown as { __SILT_HUD_FONTS__?: () => readonly string[] }).__SILT_HUD_FONTS__ = () => hudFonts;
   // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
-  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion, water: params.get("water") === "glsl" ? "glsl" : "graph" });
+  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, pcss: !coarse && params.get("siltpcss") !== "0", look: config.look, low: coarse, reducedMotion, water: params.get("water") === "glsl" ? "glsl" : "graph" });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   // W-8 lab flags (?backend=, ?gamut=p3). WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
+  const warmLut = createGradingLut("cinema-warm");
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    // DG-P2: ACES with the chapter's exposure in the inked look; the original renders with no tone mapping at 0.65
-    output: { ...(inked ? { toneMapping: "aces" as const, exposure: config.exposure ?? look.grade.exposure, dither: true } : { toneMapping: "none" as const, exposure: config.exposure ?? 0.65, dither: false }), ...lab.output },
+    // WP-29 & DG-P2: AgX tone-mapping + cinema-warm 3D grading LUT in the inked look; the original renders with no tone mapping at 0.65
+    output: { ...(inked ? { toneMapping: "agx" as const, exposure: config.exposure ?? look.grade.exposure, lut: { ...warmLut, intensity: 0.52 }, dither: true } : { toneMapping: "none" as const, exposure: config.exposure ?? 0.65, dither: false }), ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
   await app.ready();
   if (config.toon) {
     const texel = (): number[] => [1 / Math.max(1, canvas.width), 1 / Math.max(1, canvas.height)];
-    // DG-P1: the inked look draws depth plus colour edges in umber by day and indigo at night, fading to 0 by 600 m
-    // (so the sky is never inked); 4 luma bands by day, 6 at night. The original keeps its 5-band colour-edge pass.
+    // WP-29 & DG-P1: depth-only contour silhouettes at runtime so wind-rippled sand & sandstone strata keep clean micro-detail
+    const useLegacyBothInk = params.get("ink") === "both";
     app.post?.addPostPass?.(inked
-      ? effects.toon(inkPassOptions(config.chapter, [canvas.width, canvas.height]))
+      ? effects.toon(useLegacyBothInk ? inkPassOptions(config.chapter, [canvas.width, canvas.height]) : liveInkPassOptions(config.chapter, [canvas.width, canvas.height]))
       : effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }

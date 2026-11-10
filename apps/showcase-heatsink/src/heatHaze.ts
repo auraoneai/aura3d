@@ -79,6 +79,77 @@ export const HEAT_HAZE_NORMAL_GLSL = HEAT_HAZE_GLSL.replace(
   vec4 c = texture(u_color, uv + n * amount * 0.014 * mix(0.35, 1.0, cover) + bend);`
 );
 
+/**
+ * WebGPU WGSL twin of `HEAT_HAZE_GLSL` (`WebGPUDevice.executeWebGPUCustomPass` binding convention):
+ * - `@binding(0)` = packed `array<vec4<f32>, 16>` (`[0]` = engine `(texelX, texelY, timeSeconds, 0)`, `[1..7]` = declared
+ *   scalars/vec3 in registration order, `[8..15]` = `u_src0..u_src7`).
+ * - `@binding(1)` = linear clamp sampler, `@binding(2)` = HDR `u_color` (`rgba16f`).
+ * - `vs_post` emits top-left `rawUv`; we flip `y` to match bottom-left `v_uv` for `tdSource` / road / noise math, then flip
+ *   back when sampling `u_color`.
+ */
+export const HEAT_HAZE_WGSL = /* wgsl */ `
+@group(0) @binding(0) var<uniform> u_post: array<vec4<f32>, 16>;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+
+fn tdHash(p: vec2<f32>) -> f32 {
+  return fract(sin(dot(p, vec2<f32>(127.1, 311.7))) * 43758.5453);
+}
+fn tdNoise(p: vec2<f32>) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (vec2<f32>(3.0) - 2.0 * f);
+  return mix(
+    mix(tdHash(i), tdHash(i + vec2<f32>(1.0, 0.0)), u.x),
+    mix(tdHash(i + vec2<f32>(0.0, 1.0)), tdHash(i + vec2<f32>(1.0, 1.0)), u.x),
+    u.y
+  );
+}
+fn tdSource(s: vec4<f32>, uv: vec2<f32>, aspect: f32) -> f32 {
+  if (s.w <= 0.0) { return 0.0; }
+  var d = uv - s.xy;
+  d.x = d.x * aspect;
+  d.y = d.y * select(1.0, 0.62, d.y > 0.0);
+  return (1.0 - smoothstep(0.0, max(s.z, 1e-4), length(d))) * s.w;
+}
+@fragment
+fn fs_main(@location(0) rawUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let u_tdTime = u_post[1].x;
+  let u_strength = u_post[2].x;
+  let u_motion = u_post[3].x;
+  let u_edge = u_post[4].x;
+  let u_aspect = u_post[5].x;
+  let u_ambient = u_post[6].x;
+  let u_tint = u_post[7].xyz;
+  let uv = vec2<f32>(rawUv.x, 1.0 - rawUv.y);
+  var m = ${SOURCE_UNIFORMS.map((_, i) => `tdSource(u_post[${8 + i}], uv, u_aspect)`).join(" + ")};
+  m = clamp(m, 0.0, 1.0);
+  let road = u_ambient * (1.0 - smoothstep(0.08, 0.46, uv.y)) * smoothstep(0.0, 0.06, uv.y);
+  let amount = (m + road) * u_strength * u_motion;
+  let n = vec2<f32>(
+    tdNoise(uv * vec2<f32>(42.0, 26.0) + vec2<f32>(0.0, -u_tdTime * 2.4)),
+    tdNoise(uv * vec2<f32>(33.0, 21.0) + vec2<f32>(u_tdTime * 0.8, -u_tdTime * 1.7) + vec2<f32>(17.0))
+  ) - vec2<f32>(0.5);
+  let refracted = uv + n * amount * 0.014;
+  var c = textureSample(u_color, u_sampler, vec2<f32>(refracted.x, 1.0 - refracted.y));
+  let tinted = mix(c.rgb, c.rgb * u_tint, vec3<f32>(clamp(m * u_strength * 0.22, 0.0, 0.22)));
+  let e = abs(uv - vec2<f32>(0.5)) * 2.0;
+  let edge = smoothstep(0.5, 1.0, max(e.x, e.y));
+  c = vec4<f32>(tinted + vec3<f32>(0.95, 0.2, 0.05) * (u_edge * edge * 0.35), c.a);
+  return c;
+}`;
+
+export const HEAT_HAZE_NORMAL_WGSL = HEAT_HAZE_WGSL
+  .replace("@group(0) @binding(2) var u_color: texture_2d<f32>;", "@group(0) @binding(2) var u_color: texture_2d<f32>;\n@group(0) @binding(3) var u_normal: texture_2d<f32>;")
+  .replace(
+    "  let refracted = uv + n * amount * 0.014;\n  var c = textureSample(u_color, u_sampler, vec2<f32>(refracted.x, 1.0 - refracted.y));",
+    `  let nrm = textureSample(u_normal, u_sampler, rawUv);
+  let cover = smoothstep(0.0, 0.5, nrm.a);
+  let bend = nrm.xy * amount * 0.006 * cover;
+  let refracted = uv + n * amount * 0.014 * mix(0.35, 1.0, cover) + bend;
+  var c = textureSample(u_color, u_sampler, vec2<f32>(refracted.x, 1.0 - refracted.y));`
+  );
+
 /** Linear RGB of a "#rrggbb" tint, normalised so its brightest channel is 1 (tint multiplies, never darkens much). */
 export function tintVector(hex: string): [number, number, number] {
   const n = Number.parseInt(hex.replace("#", ""), 16);
@@ -108,8 +179,25 @@ export function heatHazePass(look: HeatHazeLook, enabled = true, useNormal = fal
     u_tint: tintVector(look.tint)
   };
   for (const u of SOURCE_UNIFORMS) uniforms[u] = [0, 0, 0, 0];
-  if (useNormal) return effects.shaderPass({ name: HEAT_HAZE_PASS, order: "before-tonemap", glsl: HEAT_HAZE_NORMAL_GLSL, inputs: ["color", "normal"], uniforms, enabled });
-  return effects.shaderPass({ name: HEAT_HAZE_PASS, order: "before-tonemap", glsl: HEAT_HAZE_GLSL, uniforms, enabled });
+  if (useNormal) {
+    return effects.shaderPass({
+      name: HEAT_HAZE_PASS,
+      order: "before-tonemap",
+      glsl: HEAT_HAZE_NORMAL_GLSL,
+      wgsl: HEAT_HAZE_NORMAL_WGSL,
+      inputs: ["color", "normal"],
+      uniforms,
+      enabled
+    });
+  }
+  return effects.shaderPass({
+    name: HEAT_HAZE_PASS,
+    order: "before-tonemap",
+    glsl: HEAT_HAZE_GLSL,
+    wgsl: HEAT_HAZE_WGSL,
+    uniforms,
+    enabled
+  });
 }
 
 /** Edge thermal ramp: 0 up to 80% core heat, linear to 1 at 100%. */

@@ -6,6 +6,7 @@ import {
   SCAN_RANGE_M,
   SENSOR_PASS_GLSL,
   SENSOR_PASS_NAME,
+  SENSOR_PASS_WGSL,
   createSensorPass,
   hexToLinear,
   installSensorPass,
@@ -105,6 +106,28 @@ describe("grid dispatch sensor pass descriptor", () => {
     expect(SENSOR_PASS_GLSL).not.toMatch(/#version|precision |uniform sampler2D u_color|in vec2 v_uv/);
     expect(CAMERA_PITCH_DEG).toBeGreaterThan(9.5);
     expect(CAMERA_PITCH_DEG).toBeLessThan(10.5);
+    expect(pass.fragment.wgsl).toBe(SENSOR_PASS_WGSL);
+    expect(SENSOR_PASS_WGSL).toContain("textureSample(u_color");
+  });
+
+  it("switches to color-only WebGPU post-pass mode via syncBackend", () => {
+    const passes: Array<{ inputs?: readonly string[] }> = [];
+    let activeCount = 0;
+    const host = {
+      addPostPass: (p: { inputs?: readonly string[] }) => {
+        passes.push(p);
+        activeCount += 1;
+        return () => { activeCount -= 1; };
+      },
+      post: { setPassUniform: () => {} }
+    };
+    const sensor = installSensorPass(host as never, SKY_LOOKS.golden);
+    expect(passes[0]?.inputs).toEqual(["color", "depth"]);
+    sensor.syncBackend("webgpu", SKY_LOOKS.golden);
+    expect(activeCount).toBe(1);
+    expect(passes[1]?.inputs).toEqual(["color"]);
+    sensor.dispose();
+    expect(activeCount).toBe(0);
   });
 
   it("installs once and streams the frame's uniforms through app.post.setPassUniform", () => {

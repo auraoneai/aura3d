@@ -13,7 +13,7 @@
  * the chevron heat response is a brightness, not a motion, and stays. Reduced flash: the pulse is a +-12% brightness
  * swing at under 0.5 Hz (no flash). Low tier: the same program (the gutters cover a few percent of the frame).
  */
-import { material, type AuraMaterialSpec } from "@aura3d/engine";
+import { material, type AuraMaterialSpec, type AuraTextureRef } from "@aura3d/engine";
 import { WGSL_CLIP, WGSL_ENVIRONMENT_FOG, WGSL_INSTANCE_INPUTS, WGSL_MATH, wgslStage } from "../../showcase-port-shared/wgsl-twins";
 
 /** Chevron brightness gain at full heat response: +25% at 90% core heat (HS-15 acceptance). */
@@ -202,37 +202,51 @@ export function quantisedHeat(heat01: number): number {
 const SKYLINE_VERTEX_GLSL = `out vec3 vTdBox;
 out vec3 vTdN;
 out vec2 vTdSeed;
+out vec3 vTdWorld;
 void main() {
   vec3 s = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
   vTdBox = position * s + vec3(0.0, 0.5 * s.y, 0.0);
-  vTdN = normal;
+  vTdN = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));
   vTdSeed = instanceMatrix[3].xz;
-  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
+  vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vTdWorld = world.xyz;
+  gl_Position = projectionMatrix * viewMatrix * world;
 }`;
 
 export const SKYLINE_FRAGMENT_GLSL = `in vec3 vTdBox;
 in vec3 vTdN;
 in vec2 vTdSeed;
+in vec3 vTdWorld;
 out vec4 outColor;
 float tdCellHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main() {
   vec3 n = normalize(vTdN);
+  vec3 V = normalize(cameraPosition - vTdWorld);
   float v = vTdBox.y;
-  vec3 body = u_body * mix(1.25, 0.7, smoothstep(0.0, 90.0, v));
-  vec3 color = body + u_foot * exp(-v / 14.0);
+  float hNorm = smoothstep(0.0, 110.0, v);
+  vec3 body = u_body * mix(0.85, 1.35, hNorm);
+  float fresnel = pow(1.0 - clamp(abs(dot(n, V)), 0.0, 1.0), 2.6);
+  vec3 glassSheen = u_skySheen * fresnel * (0.25 + 0.75 * hNorm);
+  vec3 color = body + glassSheen + u_foot * exp(-v / 15.0);
   if (abs(n.y) < 0.5) {
     float u = abs(n.z) > 0.5 ? vTdBox.x : vTdBox.z;
     vec2 cell = vec2(u / u_cell.x, (v - 2.0) / u_cell.y);
     vec2 id = floor(cell);
     vec2 f = fract(cell);
-    float pane = step(0.2, f.x) * step(f.x, 0.8) * step(0.28, f.y) * step(f.y, 0.78) * step(0.0, cell.y);
+    float mullion = (1.0 - step(0.08, f.x) * step(f.x, 0.92)) + (1.0 - step(0.12, f.y) * step(f.y, 0.88));
+    color *= 1.0 - 0.32 * clamp(mullion, 0.0, 1.0);
+    float pane = step(0.14, f.x) * step(f.x, 0.86) * step(0.20, f.y) * step(f.y, 0.82) * step(0.0, cell.y);
+    float floorBand = step(0.76, tdCellHash(vec2(id.y * 0.71, vTdSeed.x * 0.19 + vTdSeed.y * 0.13)));
     float pick = tdCellHash(id + vTdSeed * 0.173 + n.xz * 7.1);
-    float lit = step(1.0 - u_lit, pick);
+    float lit = max(step(1.0 - u_lit, pick), floorBand * step(0.35, pick));
     float tone = tdCellHash(id.yx * 1.7 + vTdSeed * 0.311);
-    vec3 window = mix(u_window, u_window2, tone) * u_glow * (0.6 + 0.4 * fract(pick * 13.0));
+    float interiorGrad = 0.55 + 0.45 * smoothstep(0.2, 0.82, f.y);
+    vec3 window = mix(u_window, u_window2, tone) * u_glow * interiorGrad * (0.55 + 0.45 * fract(pick * 13.0));
     color += window * pane * lit;
+    float crown = smoothstep(52.0, 96.0, v) * step(0.92, fract(v / 32.0)) * step(0.82, abs(fract(u / 18.0) - 0.5) * 2.0);
+    color += vec3(2.6, 0.28, 0.12) * crown;
   } else {
-    color *= 0.6;
+    color *= 0.52;
   }
   outColor = vec4(color, 1.0);
 }`;
@@ -250,9 +264,9 @@ struct SkylineVarying {
   var out: SkylineVarying;
   let s = vec3<f32>(length(a_instanceMatrix0.xyz), length(a_instanceMatrix1.xyz), length(a_instanceMatrix2.xyz));
   out.box = a_position * s + vec3<f32>(0.0, 0.5 * s.y, 0.0);
-  out.n = a_normal;
-  out.seed = a_instanceMatrix3.xz;
   let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  out.n = normalize(a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_normal)));
+  out.seed = a_instanceMatrix3.xz;
   let world = aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0);
   out.world = world.xyz;
   out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * world);
@@ -263,22 +277,32 @@ const SKYLINE_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_ENVIRONMENT_FOG], /* wg
 fn tdCellHash(p: vec2<f32>) -> f32 { return fract(sin(dot(p, vec2<f32>(12.9898, 78.233))) * 43758.5453); }
 @fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) vTdBox: vec3<f32>, @location(1) vTdN: vec3<f32>, @location(2) vTdSeed: vec2<f32>, @location(3) vTdWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let n = normalize(vTdN);
+  let V = a3dSafeNormalize3(aura.u_cameraPosition - vTdWorld, vec3<f32>(0.0, 0.0, 1.0));
   let v = vTdBox.y;
-  let body = aura.u_body * mix(1.25, 0.7, smoothstep(0.0, 90.0, v));
-  var color = body + aura.u_foot * exp(-v / 14.0);
+  let hNorm = smoothstep(0.0, 110.0, v);
+  let body = aura.u_body * mix(0.85, 1.35, hNorm);
+  let fresnel = pow(1.0 - clamp(abs(dot(n, V)), 0.0, 1.0), 2.6);
+  let glassSheen = aura.u_skySheen * fresnel * (0.25 + 0.75 * hNorm);
+  var color = body + glassSheen + aura.u_foot * exp(-v / 15.0);
   if (abs(n.y) < 0.5) {
     let u = select(vTdBox.z, vTdBox.x, abs(n.z) > 0.5);
     let cell = vec2<f32>(u / aura.u_cell.x, (v - 2.0) / aura.u_cell.y);
     let id = floor(cell);
     let f = fract(cell);
-    let pane = step(0.2, f.x) * step(f.x, 0.8) * step(0.28, f.y) * step(f.y, 0.78) * step(0.0, cell.y);
+    let mullion = (1.0 - step(0.08, f.x) * step(f.x, 0.92)) + (1.0 - step(0.12, f.y) * step(f.y, 0.88));
+    color = color * (1.0 - 0.32 * clamp(mullion, 0.0, 1.0));
+    let pane = step(0.14, f.x) * step(f.x, 0.86) * step(0.20, f.y) * step(f.y, 0.82) * step(0.0, cell.y);
+    let floorBand = step(0.76, tdCellHash(vec2<f32>(id.y * 0.71, vTdSeed.x * 0.19 + vTdSeed.y * 0.13)));
     let pick = tdCellHash(id + vTdSeed * 0.173 + n.xz * 7.1);
-    let lit = step(1.0 - aura.u_lit, pick);
+    let lit = max(step(1.0 - aura.u_lit, pick), floorBand * step(0.35, pick));
     let tone = tdCellHash(id.yx * 1.7 + vTdSeed * 0.311);
-    let window = mix(aura.u_window, aura.u_window2, vec3<f32>(tone)) * aura.u_glow * (0.6 + 0.4 * fract(pick * 13.0));
+    let interiorGrad = 0.55 + 0.45 * smoothstep(0.2, 0.82, f.y);
+    let window = mix(aura.u_window, aura.u_window2, vec3<f32>(tone)) * aura.u_glow * interiorGrad * (0.55 + 0.45 * fract(pick * 13.0));
     color = color + window * pane * lit;
+    let crown = smoothstep(52.0, 96.0, v) * step(0.92, fract(v / 32.0)) * step(0.82, abs(fract(u / 18.0) - 0.5) * 2.0);
+    color = color + vec3<f32>(2.6, 0.28, 0.12) * crown;
   } else {
-    color = color * 0.6;
+    color = color * 0.52;
   }
   return vec4<f32>(a3dApplyEnvironmentFog(color, vTdWorld, fragCoord.xy), 1.0);
 }`);
@@ -294,6 +318,8 @@ export interface SkylineFacadeOptions {
   readonly lit: number;
   /** HDR window brightness. */
   readonly glow: number;
+  /** Optional night-sky curtain-wall reflection tint. */
+  readonly skySheen?: string;
 }
 
 export function skylineFacadeMaterial(o: SkylineFacadeOptions): AuraMaterialSpec {
@@ -305,11 +331,178 @@ export function skylineFacadeMaterial(o: SkylineFacadeOptions): AuraMaterialSpec
       u_foot: { type: "vec3", value: linearRgb(o.foot) },
       u_window: { type: "vec3", value: linearRgb(o.window) },
       u_window2: { type: "vec3", value: linearRgb(o.window2) },
+      u_skySheen: { type: "vec3", value: linearRgb(o.skySheen ?? "#2c4268") },
       u_cell: { type: "vec2", value: [o.cell[0], o.cell[1]] },
       u_lit: { type: "f32", value: o.lit },
       u_glow: { type: "f32", value: o.glow }
     },
     fog: true
+  });
+}
+
+/**
+ * Dual additive Fresnel Mach-cone plasma thruster plumes (WP-07): shifts dynamically from cool ion cyan (`#38bdf8`)
+ * at nominal heat -> overdrive amber (`#fb923c`) -> critical white-hot (`#fff7ed`) near core meltdown, with standing
+ * shock-diamond rings along the jet axis. Drawn for all drones in 1 instanced draw call.
+ */
+export const THRUSTER_HEAT_UNIFORM = "u_heat";
+export const THRUSTER_BOOST_UNIFORM = "u_boost";
+
+const THRUSTER_VERTEX_GLSL = `out vec3 vPlumePos;
+out vec3 vPlumeNormal;
+out vec3 vPlumeWorld;
+void main() {
+  vPlumePos = position;
+  vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vPlumeWorld = world.xyz;
+  vPlumeNormal = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));
+  gl_Position = projectionMatrix * viewMatrix * world;
+}`;
+
+export const THRUSTER_FRAGMENT_GLSL = `in vec3 vPlumePos;
+in vec3 vPlumeNormal;
+in vec3 vPlumeWorld;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vPlumeNormal);
+  vec3 V = normalize(cameraPosition - vPlumeWorld);
+  float facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.35);
+  float along = clamp((vPlumePos.y + u_halfLen) / max(u_halfLen * 2.0, 1e-4), 0.0, 1.0);
+  float t = mod(u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * u_motion;
+  float diamonds = 0.62 + 0.38 * cos(along * 20.0 - t * 28.0);
+  float env = (1.0 - smoothstep(0.12, 1.0, along)) * smoothstep(0.0, 0.08, along);
+  float heatMix = clamp(u_heat + u_boost * 0.28, 0.0, 1.0);
+  vec3 nominal = vec3(0.04, 0.52, 0.95);
+  vec3 hot = vec3(0.96, 0.30, 0.05);
+  vec3 crit = vec3(1.0, 0.92, 0.80);
+  vec3 base = mix(nominal, hot, smoothstep(0.18, 0.68, heatMix));
+  vec3 tint = mix(base, crit, smoothstep(0.72, 0.98, heatMix));
+  float gain = (3.4 + 3.2 * u_boost + 2.4 * u_heat) * diamonds;
+  float alpha = clamp(facing * env * (0.78 + 0.22 * u_boost), 0.0, 1.0);
+  outColor = vec4(tint * gain * alpha, alpha);
+}`;
+
+const THRUSTER_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct PlumeVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) pos: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) world: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> PlumeVarying {
+  var out: PlumeVarying;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let world = aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0);
+  out.pos = a_position;
+  out.world = world.xyz;
+  out.normal = normalize(a3dMat3Mul(aura.u_modelMatrix, a3dMat3Mul(instanceMatrix, a_normal)));
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * world);
+  return out;
+}`);
+
+const THRUSTER_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vPlumePos: vec3<f32>, @location(1) vPlumeNormal: vec3<f32>, @location(2) vPlumeWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let N = normalize(vPlumeNormal);
+  let V = a3dSafeNormalize3(aura.u_cameraPosition - vPlumeWorld, vec3<f32>(0.0, 0.0, 1.0));
+  let facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.35);
+  let along = clamp((vPlumePos.y + aura.u_halfLen) / max(aura.u_halfLen * 2.0, 1e-4), 0.0, 1.0);
+  let t = a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * aura.u_motion;
+  let diamonds = 0.62 + 0.38 * cos(along * 20.0 - t * 28.0);
+  let env = (1.0 - smoothstep(0.12, 1.0, along)) * smoothstep(0.0, 0.08, along);
+  let heatMix = clamp(aura.u_heat + aura.u_boost * 0.28, 0.0, 1.0);
+  let nominal = vec3<f32>(0.04, 0.52, 0.95);
+  let hot = vec3<f32>(0.96, 0.30, 0.05);
+  let crit = vec3<f32>(1.0, 0.92, 0.80);
+  let base = mix(nominal, hot, vec3<f32>(smoothstep(0.18, 0.68, heatMix)));
+  let tint = mix(base, crit, vec3<f32>(smoothstep(0.72, 0.98, heatMix)));
+  let gain = (3.4 + 3.2 * aura.u_boost + 2.4 * aura.u_heat) * diamonds;
+  let alpha = clamp(facing * env * (0.78 + 0.22 * aura.u_boost), 0.0, 1.0);
+  return vec4<f32>(tint * gain * alpha, alpha);
+}`);
+
+export function thrusterPlumeMaterial(halfLength: number, reducedMotion = false): AuraMaterialSpec {
+  return material.custom({
+    glsl: { vertex: THRUSTER_VERTEX_GLSL, fragment: THRUSTER_FRAGMENT_GLSL },
+    wgsl: { vertex: THRUSTER_VERTEX_WGSL, fragment: THRUSTER_FRAGMENT_WGSL },
+    uniforms: {
+      u_halfLen: { type: "f32", value: halfLength },
+      [THRUSTER_HEAT_UNIFORM]: { type: "f32", value: 0.25 },
+      [THRUSTER_BOOST_UNIFORM]: { type: "f32", value: 0 },
+      u_motion: { type: "f32", value: reducedMotion ? 0 : 1 }
+    },
+    transparent: true,
+    depthWrite: false,
+    blending: "additive",
+    side: "double"
+  });
+}
+
+/**
+ * Translucent RPM-driven quadcopter rotor-blur disc (WP-07): concentric shroud ring + 3-blade motion sweep on flat
+ * instanced boxes, giving hovering drones visible lift and kinetic rotor spin in 1 instanced draw call.
+ */
+const ROTOR_VERTEX_GLSL = `out vec2 vRotorDisc;
+void main() {
+  vRotorDisc = position.xz / max(u_radius, 1e-4);
+  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
+}`;
+
+export const ROTOR_FRAGMENT_GLSL = `in vec2 vRotorDisc;
+out vec4 outColor;
+void main() {
+  float r = length(vRotorDisc);
+  if (r > 1.0) discard;
+  float ang = atan(vRotorDisc.y, vRotorDisc.x);
+  float spin = mod(u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * 34.0 * u_motion;
+  float blades = 0.38 + 0.62 * pow(0.5 + 0.5 * cos(ang * 3.0 + spin), 2.0);
+  float ring = smoothstep(0.80, 0.92, r) * (1.0 - smoothstep(0.94, 1.0, r));
+  float hub = 1.0 - smoothstep(0.0, 0.22, r);
+  float body = smoothstep(0.18, 0.34, r) * (1.0 - smoothstep(0.76, 0.96, r)) * blades;
+  vec3 tint = mix(vec3(0.22, 0.78, 0.98), vec3(1.0, 0.48, 0.16), clamp(u_heat, 0.0, 1.0));
+  float alpha = clamp(body * 0.24 + ring * 0.55 + hub * 0.35, 0.0, 0.72);
+  outColor = vec4(tint * (1.2 + ring * 1.4), alpha);
+}`;
+
+const ROTOR_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct RotorVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) disc: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, ${WGSL_INSTANCE_INPUTS}) -> RotorVarying {
+  var out: RotorVarying;
+  let instanceMatrix = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  out.disc = a_position.xz / max(aura.u_radius, 1e-4);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * (aura.u_modelMatrix * instanceMatrix * vec4<f32>(a_position, 1.0)));
+  return out;
+}`);
+
+const ROTOR_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vRotorDisc: vec2<f32>) -> @location(0) vec4<f32> {
+  let r = length(vRotorDisc);
+  if (r > 1.0) { discard; }
+  let ang = atan2(vRotorDisc.y, vRotorDisc.x);
+  let spin = a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * 34.0 * aura.u_motion;
+  let blades = 0.38 + 0.62 * pow(0.5 + 0.5 * cos(ang * 3.0 + spin), 2.0);
+  let ring = smoothstep(0.80, 0.92, r) * (1.0 - smoothstep(0.94, 1.0, r));
+  let hub = 1.0 - smoothstep(0.0, 0.22, r);
+  let body = smoothstep(0.18, 0.34, r) * (1.0 - smoothstep(0.76, 0.96, r)) * blades;
+  let tint = mix(vec3<f32>(0.22, 0.78, 0.98), vec3<f32>(1.0, 0.48, 0.16), vec3<f32>(clamp(aura.u_heat, 0.0, 1.0)));
+  let alpha = clamp(body * 0.24 + ring * 0.55 + hub * 0.35, 0.0, 0.72);
+  return vec4<f32>(tint * (1.2 + ring * 1.4), alpha);
+}`);
+
+export function rotorBlurMaterial(radius: number, reducedMotion = false): AuraMaterialSpec {
+  return material.custom({
+    glsl: { vertex: ROTOR_VERTEX_GLSL, fragment: ROTOR_FRAGMENT_GLSL },
+    wgsl: { vertex: ROTOR_VERTEX_WGSL, fragment: ROTOR_FRAGMENT_WGSL },
+    uniforms: {
+      u_radius: { type: "f32", value: radius },
+      [THRUSTER_HEAT_UNIFORM]: { type: "f32", value: 0.2 },
+      u_motion: { type: "f32", value: reducedMotion ? 0 : 1 }
+    },
+    transparent: true,
+    depthWrite: false,
+    side: "double"
   });
 }
 
@@ -359,5 +552,67 @@ export function contactShadowMaterial(opacity: number, radius: number): AuraMate
     uniforms: { u_opacity: { type: "f32", value: opacity }, u_radius: { type: "f32", value: radius } },
     transparent: true,
     depthWrite: false
+  });
+}
+
+/**
+ * 8x4 sprite-sheet flipbook burst card material (WP-07): samples procedural `createFlipbookAtlas("plasma" | "sparks")`
+ * RGBA8 textures on camera-aligned or drone-anchored burst quads (`u_burst = [frameIndex, opacity, hdrGain, 0]`).
+ */
+export const FLIPBOOK_BURST_UNIFORM = "u_burst";
+
+const FLIPBOOK_VERTEX_GLSL = `out vec2 vBurstUv;
+void main() {
+  vBurstUv = uv;
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+}`;
+
+export const FLIPBOOK_FRAGMENT_GLSL = `in vec2 vBurstUv;
+out vec4 outColor;
+void main() {
+  float idx = floor(clamp(u_burst.x, 0.0, 31.0));
+  float col = mod(idx, 8.0);
+  float row = floor(idx / 8.0);
+  vec2 cellUv = vec2((col + clamp(vBurstUv.x, 0.02, 0.98)) / 8.0, (row + clamp(1.0 - vBurstUv.y, 0.02, 0.98)) / 4.0);
+  vec4 tex = texture(flipbookMap, cellUv);
+  float alpha = clamp(tex.a * u_burst.y, 0.0, 1.0);
+  outColor = vec4(tex.rgb * u_burst.z * alpha, alpha);
+}`;
+
+const FLIPBOOK_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct BurstVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> BurstVarying {
+  var out: BurstVarying;
+  out.uv = a_uv;
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * aura.u_modelMatrix * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+const FLIPBOOK_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vBurstUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let idx = floor(clamp(aura.u_burst.x, 0.0, 31.0));
+  let col = a3dModF(idx, 8.0);
+  let row = floor(idx / 8.0);
+  let cellUv = vec2<f32>((col + clamp(vBurstUv.x, 0.02, 0.98)) / 8.0, (row + clamp(1.0 - vBurstUv.y, 0.02, 0.98)) / 4.0);
+  let tex = textureSample(u_flipbookMapTexture, u_flipbookMapSampler, cellUv);
+  let alpha = clamp(tex.a * aura.u_burst.y, 0.0, 1.0);
+  return vec4<f32>(tex.rgb * aura.u_burst.z * alpha, alpha);
+}`);
+
+export function flipbookBurstMaterial(flipbookTexture: AuraTextureRef): AuraMaterialSpec {
+  return material.custom({
+    glsl: { vertex: FLIPBOOK_VERTEX_GLSL, fragment: FLIPBOOK_FRAGMENT_GLSL },
+    wgsl: { vertex: FLIPBOOK_VERTEX_WGSL, fragment: FLIPBOOK_FRAGMENT_WGSL },
+    uniforms: {
+      flipbookMap: { type: "texture2d", value: flipbookTexture },
+      [FLIPBOOK_BURST_UNIFORM]: { type: "vec4", value: [0, 0, 2.4, 0] }
+    },
+    transparent: true,
+    depthWrite: false,
+    blending: "additive",
+    side: "double"
   });
 }

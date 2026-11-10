@@ -157,6 +157,93 @@ export function unitDisc(segments = 20): Shape {
   return b.shape;
 }
 
+/** Curved forged katana oriented along local Z [-0.5..0.5] (compatible with `aim` scaling [1, 1, length]). */
+export function unitKatana(segments = 6): Shape {
+  const b = new ShapeBuilder();
+  // Tsuba guard plate near grip (z = -0.34)
+  const gz0 = -0.35, gz1 = -0.33, grx = 0.068, gry = 0.052;
+  b.quad([-grx, -gry, gz1], [grx, -gry, gz1], [grx, gry, gz1], [-grx, gry, gz1]);
+  b.quad([grx, -gry, gz0], [-grx, -gry, gz0], [-grx, gry, gz0], [grx, gry, gz0]);
+  // Tsuka hilt [-0.50 .. -0.35]
+  const hx = 0.022, hy = 0.028;
+  b.quad([-hx, -hy, -0.35], [hx, -hy, -0.35], [hx, -hy, -0.5], [-hx, -hy, -0.5]);
+  b.quad([-hx, hy, -0.5], [hx, hy, -0.5], [hx, hy, -0.35], [-hx, hy, -0.35]);
+  b.quad([hx, -hy, -0.35], [hx, hy, -0.35], [hx, hy, -0.5], [hx, -hy, -0.5]);
+  b.quad([-hx, hy, -0.35], [-hx, -hy, -0.35], [-hx, -hy, -0.5], [-hx, hy, -0.5]);
+  // Sori curved shinogi-zukuri blade [-0.33 .. +0.50]
+  for (let i = 0; i < segments; i++) {
+    const t0 = i / segments, t1 = (i + 1) / segments;
+    const z0 = -0.33 + t0 * 0.83, z1 = -0.33 + t1 * 0.83;
+    const sori0 = t0 * t0 * 0.075, sori1 = t1 * t1 * 0.075;
+    const taper0 = 1 - t0 * 0.55, taper1 = 1 - t1 * 0.55;
+    const w0 = 0.014 * taper0, w1 = 0.014 * taper1;
+    const hBack0 = sori0 + 0.022 * taper0, hBack1 = sori1 + 0.022 * taper1;
+    const hEdge0 = sori0 - 0.018 * taper0, hEdge1 = sori1 - 0.018 * taper1;
+    // Right cheek (spine to cutting edge)
+    b.quad([w0, sori0, z0], [0, hEdge0, z0], [0, hEdge1, z1], [w1, sori1, z1]);
+    b.quad([0, hBack0, z0], [w0, sori0, z0], [w1, sori1, z1], [0, hBack1, z1]);
+    // Left cheek (spine to cutting edge)
+    b.quad([0, hEdge0, z0], [-w0, sori0, z0], [-w1, sori1, z1], [0, hEdge1, z1]);
+    b.quad([-w0, sori0, z0], [0, hBack0, z0], [0, hBack1, z1], [-w1, sori1, z1]);
+  }
+  return b.shape;
+}
+
+/** Octagonal iron-studded kanabo war club oriented along local Z [-0.5..0.5]. */
+export function unitKanabo(sides = 8): Shape {
+  const b = new ShapeBuilder();
+  const ring = (z: number, r: number, v: number): number[] => Array.from({ length: sides + 1 }, (_, i) => {
+    const a = (i / sides) * Math.PI * 2;
+    return b.smooth([Math.cos(a) * r, Math.sin(a) * r, z], [Math.cos(a), Math.sin(a), 0], i / sides, v);
+  });
+  const sections: readonly [number, number, number][] = [[-0.5, 0.045, 0], [-0.22, 0.055, 0.25], [-0.16, 0.095, 0.35], [0.44, 0.145, 0.92], [0.5, 0.06, 1]];
+  const rings = sections.map(([z, r, v]) => ring(z, r, v));
+  for (let s = 0; s < rings.length - 1; s++) {
+    const r0 = rings[s]!, r1 = rings[s + 1]!;
+    for (let i = 0; i < sides; i++) {
+      b.index(r0[i]!, r1[i]!, r0[i + 1]!);
+      b.index(r0[i + 1]!, r1[i]!, r1[i + 1]!);
+    }
+  }
+  // Iron studs along three bands of the club head
+  for (const z of [-0.02, 0.16, 0.34]) {
+    const r = 0.115 + (z + 0.02) * 0.07;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + z * 3;
+      const cx = Math.cos(a) * r, cy = Math.sin(a) * r;
+      const tip: V3 = [Math.cos(a) * (r + 0.048), Math.sin(a) * (r + 0.048), z];
+      const inside: V3 = [0, 0, z];
+      const tx = -Math.sin(a) * 0.024, ty = Math.cos(a) * 0.024, dz = 0.022;
+      const p0: V3 = [cx - tx, cy - ty, z - dz], p1: V3 = [cx + tx, cy + ty, z - dz];
+      const p2: V3 = [cx + tx, cy + ty, z + dz], p3: V3 = [cx - tx, cy - ty, z + dz];
+      b.tri(p0, p1, tip, inside); b.tri(p1, p2, tip, inside); b.tri(p2, p3, tip, inside); b.tri(p3, p0, tip, inside);
+    }
+  }
+  return b.shape;
+}
+
+/** Crescent katana slash ribbon in XZ (y = 0, radius 1, sweep 155 deg around -Z forward): u = sweep 0..1, v = inner..outer 0..1. */
+export function unitCrescentArc(segments = 20): Shape {
+  const b = new ShapeBuilder();
+  const inner: number[] = [], outer: number[] = [];
+  const span = 2.7; // ~155 deg
+  for (let i = 0; i <= segments; i++) {
+    const u = i / segments;
+    const a = -span * 0.5 + u * span;
+    const taper = Math.sin(u * Math.PI);
+    const rOut = 1.0 + 0.12 * taper;
+    const rIn = rOut - (0.12 + 0.52 * taper);
+    const sx = Math.sin(a), cz = -Math.cos(a);
+    inner.push(b.smooth([sx * rIn, -0.04 * (1 - u), cz * rIn], [0, 1, 0], u, 0));
+    outer.push(b.smooth([sx * rOut, 0.06 * taper, cz * rOut], [0, 1, 0], u, 1));
+  }
+  for (let i = 0; i < segments; i++) {
+    b.index(inner[i]!, outer[i]!, inner[i + 1]!);
+    b.index(inner[i + 1]!, outer[i]!, outer[i + 1]!);
+  }
+  return b.shape;
+}
+
 /** Column-major model matrix: non-uniform scale, yaw about +Y (local +z faces `(sin yaw, cos yaw)`), translation. */
 export function trs(x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number): number[] {
   const c = Math.cos(yaw), s = Math.sin(yaw);

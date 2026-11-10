@@ -2,11 +2,13 @@ import { camera, defineAuraAssets, effects, environments, game, instances, light
 import { assets, type GridAssetKey } from "./aura-assets";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
-import { MANHOLES } from "./vfx";
+import { MANHOLES, createBeaconRippleTexture } from "./vfx";
 import { TAIL_TRAIL_CAPACITY, TAIL_TRAIL_ID, tailTrailMaterial } from "./tailTrails";
-import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, crossStreetName, signNodeId } from "./dressing";
+import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { dualEnergyFieldSpec } from "../../showcase-port-shared/dual-shaders";
+import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../showcase-port-shared/wgsl-twins";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 /** GD-16 waiting passenger (Meshy rigged): node id, the one clip it ships and its kerb facing (toward the avenue and the approaching car). */
@@ -209,9 +211,8 @@ export function godRayNodes(look: SkyLook) {
  */
 export function groundingNodes() {
   return [
-    // GU47 phase 3 round 3: longer, darker contact shadows and stronger AO (rubric: cars sit on the road without contact shadow).
-    effects.contactShadows({ length: 0.55, thickness: 0.08, steps: 12, intensity: 1, lights: "shadowed" }),
-    effects.ambientOcclusion({ name: "grid ao", intensity: 0.75, radius: 0.8, density: 0.6, color: "#05080d" })
+    effects.contactShadows({ length: 0.62, thickness: 0.09, steps: 16, intensity: 1, lights: "shadowed" }),
+    effects.ambientOcclusion({ name: "grid ao", intensity: 0.78, radius: 0.85, density: 0.64, color: "#05080d", multiBounce: true })
   ];
 }
 
@@ -231,26 +232,23 @@ export function drizzleNodes(look: SkyLook, motionOk = true) {
  * every few frames costs six scene renders. The asphalt roughness (0.22) sits under the 0.4 fade so the road reflects;
  * cars and facades stay matte. One post stage, no scene draws; the post tiers drop it below High (PRD 6.4).
  */
-export const WET_SSR = { maxDistance: 24, roughness: 0.4, thickness: 0.3, intensity: 0.55 } as const;
+export const WET_SSR = { maxDistance: 28, roughness: 0.42, thickness: 0.28, intensity: 0.62 } as const;
 export function wetReflectionNodes(look: SkyLook) {
-  // GU47 phase 4: Marine dusk's street is damp (asphalt roughness 0.36, under the 0.4 fade) and reflects the sunset and
-  // facades through the same SSR stage (rubric ibl_reflections); noon and fog stay dry.
+  // Marine dusk (asphalt roughness 0.30) and Sodium night (0.22 + drizzle) reflect sunset, sodium pools and beacons via SSR.
   if (!look.street.drizzle && look.street.asphalt.roughness >= 0.4) return [];
   return [effects.screenSpaceReflections({ name: "grid wet ssr", ...WET_SSR })];
 }
 
 /**
- * GD-08: the post stack of one row: bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55), the
- * E-C linear grade (contrast, saturation, white balance) and a vignette. Tone mapping and exposure are output settings,
- * applied with `app.setOutput` after every `setScene` (`skyOutput`).
+ * GD-08: the post stack of one row: cinematic bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55),
+ * linear HDR grade (contrast, saturation, white balance) and subtle remote-feed vignette + grain.
  */
 export function skyPost(look: SkyLook) {
   const g = look.grade;
   return [
-    effects.bloom({ name: "grid bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }),
+    effects.bloom({ name: "grid bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius, knee: 0.55, clampLuminance: 18 }),
     effects.colorGrade({ name: "grid grade", contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...(g.lift === undefined ? {} : { lift: g.lift }) }),
     effects.vignette({ name: "grid vignette", intensity: look.vignette, smoothness: 0.65 }),
-    // GU47 phase 3: sensor-feed grain (the operator watches a remote camera); the post tiers drop it below High.
     effects.filmGrain({ name: "grid feed grain", intensity: look.grain, size: 1.4 })
   ] as const;
 }
@@ -407,6 +405,83 @@ export const GRID_DISPATCH_FLAGS = { A3D_QR_GAME: true, A3D_QR_VFX_SKY: true, A3
 
 const placed = (items: ReadonlyArray<readonly [number, number, number]>): AuraTransformSpec[] => items.map(([x, y, z]) => ({ position: [x, y, z] }));
 
+/** Paired GLSL + WGSL holographic scanline energy material for the kerb beacon column (`dualEnergyFieldSpec`). */
+export function beaconEnergyMaterial(mode: "pickup" | "dropoff", opacity = 0.72) {
+  const pickup = mode === "pickup";
+  return material.custom(
+    dualEnergyFieldSpec({
+      coreColor: pickup ? [0.06, 0.62, 0.56] : [0.85, 0.45, 0.08],
+      edgeColor: pickup ? [0.42, 0.96, 0.89] : [1.0, 0.82, 0.36],
+      pulseSpeed: 3.1,
+      scanScale: 0.95,
+      opacity
+    })
+  );
+}
+
+let ripplePickupTex: ReturnType<typeof createBeaconRippleTexture> | null = null;
+let rippleDropoffTex: ReturnType<typeof createBeaconRippleTexture> | null = null;
+
+/** Paired GLSL + WGSL 8x4 procedural ripple flipbook decal on the damp kerb asphalt (`createBeaconRippleTexture`). */
+export function beaconRippleMaterial(mode: "pickup" | "dropoff") {
+  const atlasTex =
+    mode === "pickup"
+      ? (ripplePickupTex ??= createBeaconRippleTexture([63, 214, 198]))
+      : (rippleDropoffTex ??= createBeaconRippleTexture([255, 179, 71]));
+  const tint: [number, number, number] = mode === "pickup" ? [0.25, 0.88, 0.8] : [1.0, 0.7, 0.28];
+  const glslVertex = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+  const glslFragment = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float f = mod(floor(uTime * 18.0), 32.0);
+  vec2 cell = vec2(mod(f, 8.0), floor(f / 8.0));
+  vec2 uvCell = (cell + clamp(vUv, 0.02, 0.98)) * vec2(0.125, 0.25);
+  vec4 s = texture(rippleAtlas, uvCell);
+  float edge = 1.0 - smoothstep(0.42, 0.5, length(vUv - vec2(0.5)));
+  float a = clamp(s.a * edge * 0.92, 0.0, 0.95);
+  outColor = vec4(rippleTint * (1.35 + s.rgb * 0.9) * a, a);
+}`;
+  const wgslVertex = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct RippleVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> RippleVarying {
+  var out: RippleVarying;
+  out.vUv = a_uv;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+  const wgslFragment = wgslStage([WGSL_MATH], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let f = floor(aura.u_time * 18.0) % 32.0;
+  let colIdx = f - floor(f / 8.0) * 8.0;
+  let rowIdx = floor(f / 8.0);
+  let uvCell = (vec2<f32>(colIdx, rowIdx) + clamp(vUv, vec2<f32>(0.02), vec2<f32>(0.98))) * vec2<f32>(0.125, 0.25);
+  let s = textureSample(u_rippleAtlasTexture, u_rippleAtlasSampler, uvCell);
+  let edge = 1.0 - smoothstep(0.42, 0.5, length(vUv - vec2<f32>(0.5)));
+  let a = clamp(s.a * edge * 0.92, 0.0, 0.95);
+  return vec4<f32>(aura.u_rippleTint * (1.35 + s.rgb * 0.9) * a, a);
+}`);
+  return material.custom({
+    glsl: { vertex: glslVertex, fragment: glslFragment },
+    wgsl: { vertex: wgslVertex, fragment: wgslFragment },
+    uniforms: {
+      rippleTint: { type: "color3", value: tint },
+      rippleAtlas: { type: "texture2d", value: atlasTex }
+    },
+    transparent: true,
+    depthWrite: false,
+    side: "double"
+  });
+}
+
 export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly motionOk?: boolean } = {}): ReturnType<typeof scene> {
   const w = WEATHER[weather];
   const look = SKY_LOOKS[weather];
@@ -458,28 +533,28 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const BRIDGE_Z = -315;
   const BRIDGE_TOWER_X = 88;
   s.addMany([
-    model(assets.gridPyramidTower, { name: "sf-pyramid-tower", role: "setDressing", scaleMode: "fit", targetMaxDimension: 150 }).position(44, 0, -210),
-    model(assets.gridGlassTower, { name: "sf-glass-landmark", role: "setDressing", scaleMode: "fit", targetMaxDimension: 110 }).position(-70, 0, -235),
-    model(assets.gridBridgeTower, { name: "sf-bridge-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118 }).position(-BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, Math.PI / 2, 0),
-    model(assets.gridBridgeTower, { name: "sf-bridge-tower-r", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118 }).position(BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, -Math.PI / 2, 0),
-    model(assets.gridBridgeDeck, { name: "sf-bridge-span", role: "setDressing", scaleMode: "fit", targetMaxDimension: 66 }).position(0, 30.2, BRIDGE_Z)
+    model(assets.gridPyramidTower, { name: "sf-pyramid-tower", role: "setDressing", scaleMode: "fit", targetMaxDimension: 150, castShadow: false }).position(44, 0, -210),
+    model(assets.gridGlassTower, { name: "sf-glass-landmark", role: "setDressing", scaleMode: "fit", targetMaxDimension: 110, castShadow: false }).position(-70, 0, -235),
+    model(assets.gridBridgeTower, { name: "sf-bridge-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118, castShadow: false }).position(-BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, Math.PI / 2, 0),
+    model(assets.gridBridgeTower, { name: "sf-bridge-tower-r", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118, castShadow: false }).position(BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, -Math.PI / 2, 0),
+    model(assets.gridBridgeDeck, { name: "sf-bridge-span", role: "setDressing", scaleMode: "fit", targetMaxDimension: 66, castShadow: false }).position(0, 30.2, BRIDGE_Z)
   ]);
 
   // 3. Skyline towers: this game's own glass and art-deco towers at skyline scale (GU47: the borrowed Heatsink towers
   // and overpass are gone, D2). The marine layer swallows their tops.
   s.addMany([
-    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72 }).position(-58, 0, -145),
-    model(assets.gridBldgArtDeco, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68 }).position(58, 0, -135),
-    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74 }).position(-128, 0, -250)
+    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72, castShadow: false }).position(-58, 0, -145),
+    model(assets.gridBldgArtDeco, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68, castShadow: false }).position(58, 0, -135),
+    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74, castShadow: false }).position(-128, 0, -250)
   ]);
 
-  // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, signal masts, lamps and trees.
+  // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, signal masts, lamps and sculpted multi-canopy trees.
   // main.ts rewrites every instance transform each frame (setInstances), so the initial transforms only size the pools.
   const dashMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 });
   const zebraMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.4 });
   const signalPoleMat = material.pbr({ color: "#334155", metalness: 0.72, roughness: 0.32 });
   const signalHeadMat = material.emissive({ color: "#43d17a", emissive: "#43d17a", emissiveIntensity: 2.1 });
-  // GD-02: lamp globes from the look table (night 3.0, dusk 2.4, fog 1.6, noon unlit 0.25).
+  // GD-02: lamp globes from the look table (night 3.0, dusk 2.5, fog 1.6, noon unlit 0.25).
   const lampMat = material.emissive({ color: "#fef3c7", emissive: SODIUM, emissiveIntensity: look.street.lampEmissive });
   const pool = (n: number): AuraTransformSpec[] => Array.from({ length: n }, (_, i) => ({ position: [0, -50, 200 + i] }));
   s.addMany([
@@ -495,8 +570,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.sphere({ name: "sf-signal-lights", size: [0.52, 0.52, 0.52], material: signalHeadMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
     instances.cylinder({ name: "sf-lamp-poles", size: [0.16, 6.2, 0.16], material: signalPoleMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
     instances.sphere({ name: "sf-lamp-globes", size: [0.42, 0.42, 0.42], material: lampMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
-    instances.cylinder({ name: "sf-tree-trunks", size: [0.28, 3.2, 0.28], material: material.pbr({ color: "#5c4033", roughness: 0.88 }), transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-tree-trunks")),
-    instances.sphere({ name: "sf-tree-crowns", size: [2.6, 3.1, 2.6], material: material.pbr({ color: "#15803d", roughness: 0.78 }), transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-tree-crowns"))
+    instances.cylinder({ name: "sf-tree-trunks", size: [0.24, 3.3, 0.24], material: material.pbr({ color: "#4e392d", roughness: 0.9 }), transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
+    instances.sphere({ name: "sf-tree-crowns", size: [2.2, 2.0, 2.2], material: material.pbr({ color: "#1e5f36", roughness: 0.84 }), transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length) }).runtime(game.runtimeNode("sf-tree-crowns"))
   ]);
 
   // 5. Street-front buildings
@@ -520,9 +595,10 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     ...PARKED.map((p, k) =>
       instances.model(assets[p.asset], { name: `sf-parked-${k}`, transforms: pool(INTERSECTION_COUNT * p.slots.length), targetMaxDimension: p.maxDim, castShadow: true }).runtime(game.runtimeNode(`sf-parked-${k}`))
     ),
-    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.5 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates"))
+    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
+    instances.box({ name: "sf-sign-brackets", size: [0.08, 0.36, 0.08], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-brackets"))
   ]);
-  const signMat = material.emissive({ color: SIGN.textColor, emissive: SIGN.textColor, emissiveIntensity: look.street.headlights > 0 ? 0.6 : 0.2 });
+  const signMat = material.emissive({ color: SIGN.textColor, emissive: SIGN.textColor, emissiveIntensity: look.street.headlights > 0 ? 0.65 : 0.22 });
   for (let d = 0; d < DISTRICTS.length; d++) {
     for (let slot = 0; slot < SIGN_SLOTS; slot++) {
       const id = signNodeId(d, slot);
@@ -530,15 +606,16 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     }
   }
 
-  // 6. Kerb beacon (ring, floor disc, beam, core), the waiting passenger and the route ribbon
+  // 6. Kerb beacon (ring, floor disc, holographic energy beam, core, ripple flipbook), waiting passenger and route ribbon
   const beaconTealMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 });
-  const beaconBeamMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
+  const beaconDiscMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
   s.addMany([
     instances.box({ name: "route-ribbons", size: [1.35, 0.03, 3.2], material: beaconTealMat, transforms: pool(PATH_RIBBON_COUNT) }).runtime(game.runtimeNode("route-ribbons")),
     primitives.torus({ name: "taxi-beacon-ring", size: [2.1, 2.1, 0.14], material: beaconTealMat }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
-    primitives.cylinder({ name: "taxi-beacon-disc", size: [1.85, 0.04, 1.85], material: beaconBeamMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
-    primitives.cylinder({ name: "taxi-beacon-beam", size: [0.42, 34, 0.42], material: beaconBeamMat }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
-    primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }) }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
+    primitives.cylinder({ name: "taxi-beacon-disc", size: [1.85, 0.04, 1.85], material: beaconDiscMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
+    primitives.plane({ name: "taxi-beacon-ripple", size: [3.6, 3.6], material: beaconRippleMaterial("pickup"), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.048, -38).rotate(-Math.PI * 0.5, 0, 0).runtime(game.runtimeNode("taxi-beacon-ripple")),
+    primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
+    primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
     // meshy07 (GD-16): the waiting passenger is the Meshy rigged hooded commuter hailing with its `wave` loop (replaces the
     // body/head/arm stand-in). Skinned, so it is created visible on screen and parked at HIDDEN_SCALE, never hidden.
     model(assets.gridPassenger, { name: PASSENGER_NODE, role: "setDressing", scaleMode: "fit", targetHeight: PASSENGER_HEIGHT })
@@ -548,8 +625,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
       .runtime(game.runtimeNode(PASSENGER_NODE))
   ]);
 
-  // 7. Five playable cars (one shown at a time). GD-14: the 12 instanced spark spheres are gone; collisions fire the
-  // `grid-impact` runtime VFX preset (vfx.ts) instead (-1 draw).
+  // 7. Five playable cars (one shown at a time) + spinning 10 Hz roof LiDAR crown + conformal rear LED lightbars.
   s.addMany([
     ...PLAYABLE_IDS.map((id, i) =>
       model(assets[PLAYER_ASSET[id]], { name: `player-car-${id}`, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: PLAYABLE_FLEET[id].maxDim })
@@ -557,6 +633,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
         .scale(i === 0 ? [1, 1, 1] : HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-car-${id}`, i === 0 ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
     ),
+    primitives.cylinder({ name: "pod-sensor-housing", size: [0.3, 0.1, 0.3], material: material.studioGlass({ color: "#111b26", opacity: 0.82, ior: 1.52, roughness: 0.04 }), castShadow: false, receiveShadow: false }).position(0, 2.55, -0.85).runtime(game.runtimeNode("pod-sensor-housing")),
+    primitives.box({ name: "pod-sensor-laser", size: [0.32, 0.024, 0.06], material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.6 }), castShadow: false, receiveShadow: false }).position(0, 2.56, -0.85).runtime(game.runtimeNode("pod-sensor-laser")),
     ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
     instances.plane({ name: TAIL_TRAIL_ID, material: material.custom(tailTrailMaterial()), castShadow: false, receiveShadow: false, frustumCulled: false, transforms: pool(TAIL_TRAIL_CAPACITY) }).runtime(game.runtimeNode(TAIL_TRAIL_ID)),

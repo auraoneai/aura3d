@@ -1,16 +1,18 @@
 /**
- * Splat Turf boot: loading bar → buildWorld → createAuraApp → bind → warm → fixed-step loop.
- * Splat shell pattern: pointer/keyboard steering, pause on P/Esc/hidden tab, adaptive DPR, QA hooks
- * (`window.__AURA_SPLAT_TURF__`), route-health snapshot, localStorage best/mute/motion (guarded).
+ * Splat Turf boot (WP-17): loading bar -> buildWorld -> createAuraApp (AgX daylight-outdoor) -> bind -> warm -> fixed-step loop.
+ * Features real-frame-dt `createImpactRig` (`createHitStop` + `createCameraShake` + FOV kick), 32-frame ink-droplet bursts,
+ * AuraOne territory-meter HUD (`hud-tokens.css`, Whitney + DIN Pro), pointer/keyboard/touch-pad steering, and QA hooks.
  *
  * Query parameters: `seed=N`, `manual=1`, `autostart=1`, `autopilot=1`, `warmup=N`, `dpr=N`, `motion=reduced|full`.
  */
+import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
-import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { CONFIG, IDLE, SplatTurfSim, TRACE_COLUMNS, coverageGrade, expandScript, parseScript, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, createTurfPresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -56,6 +58,7 @@ let fx: ScreenFx | undefined;
 let prevFrame: FrameState | null = null;
 let lastPhase: Phase = "splash";
 let keyDir = 0;
+let touchPadDir = 0;
 let keyDragging = false;
 let paused = false;
 
@@ -72,9 +75,23 @@ const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-
 const storedMotion = config.motion || store.get(KEY_MOTION);
 let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" ? false : prefersReduced;
 
+let impact = createImpactRig({ reducedMotion });
+let impactFrame = impact.step(0);
+
 const hud = new HudWriter({
-  score: $("score"), best: $("best-line"), coverage: $("coverage-line"), mult: $("mult"),
-  comboFill: $("combo-fill"), tankFill: $("tank-fill"), tankBar: $("tank-bar")
+  score: $("score"),
+  best: $("best-line"),
+  coverage: $("coverage-line"),
+  mult: $("mult"),
+  comboFill: $("combo-fill"),
+  tankFill: $("tank-fill"),
+  tankBar: $("tank-bar"),
+  coveragePct: $("coverage-pct"),
+  territoryFill: $("territory-fill"),
+  liveGrade: $("live-grade"),
+  distanceRem: $("distance-rem"),
+  courseFill: $("course-fill"),
+  tankPct: $("tank-pct")
 });
 
 /* ------------------------------------------------------------------ results */
@@ -87,10 +104,10 @@ function showResults(): void {
   const finished = o.phase === "finished";
   $("result-title").textContent = finished ? "RUN COMPLETE!" : "OUT OF PAINT!";
   $("result-grade").textContent = coverageGrade(cov);
-  $("result-coverage").textContent = `COVERAGE ${cov}%`;
-  $("result-best").textContent = `BEST COVERAGE ${best}%`;
-  $("result-cans").textContent = `CANS GRABBED ${o.cansGrabbed}`;
-  $("splash-best").textContent = `BEST COVERAGE ${best}%`;
+  $("result-coverage").textContent = `coverage ${cov}%`;
+  $("result-best").textContent = `best coverage ${best}%`;
+  $("result-cans").textContent = `cans grabbed ${o.cansGrabbed}`;
+  $("splash-best").textContent = `best coverage ${best}%`;
   const out = $("result-score");
   if (config.manual) { out.textContent = final.toLocaleString(); return; }
   const startedAt = performance.now();
@@ -146,8 +163,27 @@ function reactToFrame(): void {
     if (config.manual) continue;
     const flash = flashFor(event.sound);
     if (flash) fx.flash(flash.color, flashStrength(flash.strength, reducedMotion));
-    if (event.sound === "burst") fx.reveal(LOOK.ball, reducedMotion);
-    if (event.sound === "finish") fx.reveal(LOOK.can, reducedMotion);
+    if (event.sound === "eraser") {
+      impact.trigger({ freezeSeconds: 0.038, trauma: 0.68, fovKickDeg: -2.4 });
+      runtime?.spawnInkBurst("eraser");
+    } else if (event.sound === "solvent") {
+      impact.trigger({ freezeSeconds: 0.024, trauma: 0.45, fovKickDeg: -1.4 });
+      runtime?.spawnInkBurst("solvent");
+    } else if (event.sound === "can") {
+      impact.trigger({ freezeSeconds: 0, trauma: 0.16, fovKickDeg: 1.5 });
+      runtime?.spawnInkBurst("can");
+    } else if (event.sound === "stretch") {
+      impact.trigger({ freezeSeconds: 0, trauma: 0.22, fovKickDeg: 2.2 });
+      runtime?.spawnInkBurst("stretch");
+    } else if (event.sound === "finish") {
+      impact.trigger({ freezeSeconds: 0, trauma: 0.3, fovKickDeg: 3.0 });
+      runtime?.spawnInkBurst("finish");
+      fx.reveal(LOOK.can, reducedMotion);
+    } else if (event.sound === "burst") {
+      impact.trigger({ freezeSeconds: 0.032, trauma: 0.72, fovKickDeg: -2.8 });
+      runtime?.spawnInkBurst("eraser");
+      fx.reveal(LOOK.ball, reducedMotion);
+    }
   }
   prevFrame = frame;
   fx.vignette(o.mult, false, LOOK.ball, o.time, reducedMotion);
@@ -161,7 +197,12 @@ function render(live = false): void {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = steady.at(live ? loop.alpha : 1);
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
-      ...(shown ? { shown } : {}), camera, reducedMotion
+      ...(shown ? { shown } : {}),
+      camera,
+      reducedMotion,
+      impactShake: impactFrame.shakeOffset,
+      impactRoll: impactFrame.shakeRoll,
+      impactFov: impactFrame.fovDeltaDeg
     });
     app.step(0);
   } catch (error) {
@@ -181,9 +222,13 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howto.open,
   step() {
-    if (keyDir !== 0 && sim.o.phase === "playing") {
+    if (!config.manual && !pilot && impactFrame.frozen && sim.o.phase === "playing") {
+      return;
+    }
+    const steerDir = Math.max(-1, Math.min(1, keyDir + touchPadDir));
+    if (steerDir !== 0 && sim.o.phase === "playing") {
       if (!keyDragging) { pending.down = true; keyDragging = true; }
-      pending.dx += keyDir * 0.2;
+      pending.dx += steerDir * 0.2;
     }
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
     pending.start = pending.down = pending.up = false;
@@ -192,27 +237,19 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    // Advance ImpactRig strictly on REAL frame dt (never frozen game dt).
+    impactFrame = config.manual
+      ? { simDt: 0, frozen: false, shakeOffset: [0, 0, 0], shakeRoll: 0, fovDeltaDeg: 0 }
+      : impact.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
-    sampleQuality(frameSeconds);
   }
 });
 
-/* ------------------------------------------------------------------ adaptive DPR */
+/* ------------------------------------------------------------------ crisp DPR */
 
 const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
-const frameSamples: number[] = [];
-function sampleQuality(frameSeconds: number): void {
-  if (config.dpr > 0 || config.manual || pixelRatio <= 1 || sim.o.phase !== "playing" || frameSamples.length >= 90) return;
-  frameSamples.push(frameSeconds);
-  if (frameSamples.length < 90) return;
-  const median = [...frameSamples].sort((a, b) => a - b)[45] as number;
-  if (median > 0.028) {
-    pixelRatio = 1;
-    app?.setPixelRatio?.(1);
-  }
-}
+const pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
 
 /* ------------------------------------------------------------------ boot */
 
@@ -226,15 +263,13 @@ async function boot(): Promise<void> {
   });
   loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
-  // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame with the
-  // WGSL twins and kept >= 0.9x the WebGL2 frame rate in play. `?backend=webgl2` forces WebGL2.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "none", dither: false, ...lab.output },
+    output: { preset: "daylight-outdoor", toneMapping: "agx", exposure: 1.04, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -253,9 +288,9 @@ async function boot(): Promise<void> {
   ready = true;
   loading.done();
   startButton.disabled = false;
-  startButton.textContent = "PLAY NOW";
+  startButton.textContent = "play now";
   startButton.removeAttribute("aria-busy");
-  $("splash-best").textContent = `BEST COVERAGE ${best}%`;
+  $("splash-best").textContent = `best coverage ${best}%`;
   if (config.autostart) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
@@ -265,7 +300,7 @@ async function boot(): Promise<void> {
   updateHud();
 }
 
-/* ------------------------------------------------------------------ pointer input */
+/* ------------------------------------------------------------------ pointer & touch-pad input */
 
 const DRAG_SCALE = 0.02; // 50 px of drag = 1 m of steering target
 let lastX = 0;
@@ -282,7 +317,7 @@ addEventListener("pointerdown", (e) => {
   dragging = true;
   lastX = e.clientX;
   if (!target?.closest?.("button")) {
-    try { canvas.setPointerCapture?.(e.pointerId); } catch { /* the pointer is already gone */ }
+    try { canvas.setPointerCapture?.(e.pointerId); } catch { /* pointer already gone */ }
   }
 });
 addEventListener("pointermove", (e) => {
@@ -299,9 +334,41 @@ addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
 canvas.addEventListener("lostpointercapture", () => { if (dragging) release(); });
 
+function bindSteerPad(button: HTMLButtonElement, dir: -1 | 1): void {
+  const press = (e: PointerEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    void sound.unlock();
+    if (config.manual || pilot || paused || howto.open) return;
+    touchPadDir = dir;
+    button.classList.add("active");
+    if (!keyDragging && sim.o.phase === "playing") {
+      pending.down = true;
+      keyDragging = true;
+    }
+  };
+  const lift = (): void => {
+    if (touchPadDir === dir) touchPadDir = 0;
+    button.classList.remove("active");
+    if (touchPadDir === 0 && held.size === 0 && keyDragging) {
+      pending.up = true;
+      keyDragging = false;
+    }
+  };
+  button.addEventListener("pointerdown", press);
+  button.addEventListener("pointerup", lift);
+  button.addEventListener("pointercancel", lift);
+  button.addEventListener("pointerleave", lift);
+}
+bindSteerPad($<HTMLButtonElement>("btn-steer-left"), -1);
+bindSteerPad($<HTMLButtonElement>("btn-steer-right"), 1);
+
 function dropInput(): void {
   held.clear();
   keyDir = 0;
+  touchPadDir = 0;
+  $("btn-steer-left").classList.remove("active");
+  $("btn-steer-right").classList.remove("active");
   if (keyDragging || dragging) pending.up = true;
   keyDragging = false;
   dragging = false;
@@ -337,6 +404,8 @@ function paintMotion(): void {
 }
 $("btn-motion").addEventListener("click", () => {
   reducedMotion = !reducedMotion;
+  impact = createImpactRig({ reducedMotion });
+  impactFrame = impact.step(0);
   store.set(KEY_MOTION, reducedMotion ? "reduced" : "full");
   paintMotion();
   render();
@@ -344,7 +413,10 @@ $("btn-motion").addEventListener("click", () => {
 paintMotion();
 
 const muteButton = $<HTMLButtonElement>("btn-mute");
-const paintMute = (): void => { muteButton.setAttribute("aria-pressed", String(sound.muted)); muteButton.textContent = sound.muted ? "\u{1F507}" : "♫"; };
+const paintMute = (): void => {
+  muteButton.setAttribute("aria-pressed", String(sound.muted));
+  muteButton.classList.toggle("is-muted", sound.muted);
+};
 const toggleMute = (): void => { sound.setMuted(!sound.muted); store.set(KEY_MUTE, sound.muted ? "1" : "0"); paintMute(); };
 muteButton.addEventListener("click", toggleMute);
 paintMute();
@@ -353,9 +425,9 @@ function restart(): void {
   sim.begin();
   presenter.reset();
   steady.reset(sim);
+  impact.reset();
+  impactFrame = impact.step(0);
   prevFrame = null;
-  // Leave lastPhase alone: the next updateHud sees the phase change and clears the burst/finish
-  // reveal layer, the popups and the music intensity (setting it here left the reveal over the game).
   $("splash-screen").classList.remove("on");
   $("gameover-screen").classList.remove("on");
   $("hud").classList.add("on");
@@ -363,7 +435,6 @@ function restart(): void {
 
 /* ------------------------------------------------------------------ how to play */
 
-/** Play from the splash: the first time ever, show How to play first (the sim waits until it closes). */
 function requestStart(): void {
   if (!ready || howto.open) return;
   if (store.get(HOWTO_SEEN_KEY) !== "1") { howto.show("first", $("btn-start")); return; }
@@ -376,7 +447,6 @@ const howto = createHowto({
   onClose(context) {
     store.set(HOWTO_SEEN_KEY, "1");
     loop.resetAccumulator();
-    // The player already pressed Play: any close (GOT IT, Enter, Space or Esc) starts the run.
     if (context === "first" && sim.o.phase === "splash") {
       (document.activeElement as HTMLElement | null)?.blur?.();
       pending.start = true;
@@ -404,7 +474,6 @@ const held = new Set<string>();
 addEventListener("keydown", (e) => {
   void sound.unlock();
   if (howto.open) {
-    // The dialog owns the keyboard: Enter/Space confirm, Esc closes, Tab stays inside, nothing reaches the game.
     if (howto.trapTab(e)) return;
     if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
       e.preventDefault();
@@ -433,7 +502,7 @@ addEventListener("keyup", (e) => {
   if (!(e.code in KEY_DIR)) return;
   held.delete(e.code);
   keyDir = [...held].reduce((sum, k) => sum + (KEY_DIR[k] ?? 0), 0);
-  if (held.size === 0 && keyDragging) { pending.up = true; keyDragging = false; }
+  if (held.size === 0 && touchPadDir === 0 && keyDragging) { pending.up = true; keyDragging = false; }
 });
 
 /* ------------------------------------------------------------------ QA hooks */
@@ -482,6 +551,8 @@ const qa = installQaHooks("splat-turf", {
     sim = new SplatTurfSim(seed);
     presenter.reset();
     steady.reset(sim);
+    impact.reset();
+    impactFrame = impact.step(0);
     steps = 0;
     nextPopupSeq = 0;
     prevFrame = null;
@@ -510,7 +581,11 @@ const qa = installQaHooks("splat-turf", {
       return { popupsShown, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, warm: warmResult };
     },
     setting(which: "motion", on: boolean) {
-      if (which === "motion") reducedMotion = on;
+      if (which === "motion") {
+        reducedMotion = on;
+        impact = createImpactRig({ reducedMotion });
+        impactFrame = impact.step(0);
+      }
       paintMotion();
       render();
       updateHud();
@@ -531,6 +606,6 @@ loop.start();
 boot().catch((error) => {
   (globalThis as { __AURA_SPLAT_TURF_ERROR__?: string }).__AURA_SPLAT_TURF_ERROR__ = String(error);
   $("render-error").classList.add("on");
-  $("render-error-msg").textContent = `Splat Turf could not start: ${String(error)}. This game needs WebGL2.`;
+  $("render-error-msg").textContent = `Splat Turf could not start: ${String(error)}. This game needs WebGPU or WebGL2.`;
   qa.reportError(error);
 });

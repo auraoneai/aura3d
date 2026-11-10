@@ -31,6 +31,36 @@ export class InstanceWriter {
     m[o + 12] = x; m[o + 13] = y; m[o + 14] = z; m[o + 15] = 1;
     this.cursor += 1;
   }
+  /**
+   * Full 3-axis Euler pose (`Ry(yaw) * Rx(pitch) * Rz(roll) * S`) with strictly non-negative scales so GPU instancing
+   * never splits batches over negative-determinant mirrored scales.
+   */
+  pushPose(x: number, y: number, z: number, pitch: number, yaw: number, roll: number, sx: number, sy: number, sz: number): void {
+    if (this.cursor >= this.capacity) return;
+    const psx = Math.max(0, sx);
+    const psy = Math.max(0, sy);
+    const psz = Math.max(0, sz);
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const cy = Math.cos(yaw), syw = Math.sin(yaw);
+    const cr = Math.cos(roll), sr = Math.sin(roll);
+    // R = Ry(yaw) * Rx(pitch) * Rz(roll), column-major
+    const r00 = cy * cr + syw * sp * sr;
+    const r10 = cp * sr;
+    const r20 = -syw * cr + cy * sp * sr;
+    const r01 = -cy * sr + syw * sp * cr;
+    const r11 = cp * cr;
+    const r21 = syw * sr + cy * sp * cr;
+    const r02 = syw * cp;
+    const r12 = -sp;
+    const r22 = cy * cp;
+    const o = this.cursor * 16;
+    const m = this.matrices;
+    m[o] = r00 * psx; m[o + 1] = r10 * psx; m[o + 2] = r20 * psx; m[o + 3] = 0;
+    m[o + 4] = r01 * psy; m[o + 5] = r11 * psy; m[o + 6] = r21 * psy; m[o + 7] = 0;
+    m[o + 8] = r02 * psz; m[o + 9] = r12 * psz; m[o + 10] = r22 * psz; m[o + 11] = 0;
+    m[o + 12] = x; m[o + 13] = y; m[o + 14] = z; m[o + 15] = 1;
+    this.cursor += 1;
+  }
   park(): void { this.push(0, -60, 0, 0, 0); }
   end(): void {
     while (this.cursor < this.capacity) this.park();

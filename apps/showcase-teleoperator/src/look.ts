@@ -136,14 +136,14 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
     // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
     // GU47 phase 3 round 3: r2 still mean 67 / p95 144 at exposure 1.3: 1.3 -> 1.55.
-    output: { toneMapping: "agx", fallback: "aces", exposure: 3.8 }, // round 5: r4 mean 53
+    output: { toneMapping: "agx", fallback: "aces", exposure: 1.52 },
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
-    grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02, lift: 0.02 },
-    vignette: 0.26,
-    godRays: { density: 0.08, color: "#ffb878", intensity: 0.14 },
-    grain: 0.04,
-    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 0.15, asphalt: { color: "#1f242c", roughness: 0.36 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
-    scanStrength: 0.7
+    grade: { contrast: 1.12, saturation: 1.1, temperature: 0.18, tint: -0.02, lift: 0.015 },
+    vignette: 0.24,
+    godRays: { density: 0.08, color: "#ffb878", intensity: 0.16 },
+    grain: 0.035,
+    street: { lampEmissive: 2.5, sodiumPoints: 2, sodiumPower: 980, lightPools: 0.42, windowGlow: 0.36, headlights: 0.45, asphalt: { color: "#1c2129", roughness: 0.3 }, ground: "#201b20", water: "#1b3658", drizzle: false },
+    scanStrength: 0.78
   },
   noon: {
     id: "noon",
@@ -160,7 +160,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     marine: { base: 70, top: 110, color: "#c4d3dc", opacity: 0.3, reach: 320 },
     // GU47 phase 3: recap2 noon mean 84 (band 95-120): exposure 1.0 -> 1.12, IBL 0.85 -> 1.0.
     // GU47 phase 3 round 3: r2 noon mean 92 at 1.12 -> 1.2.
-    output: { toneMapping: "aces", fallback: "aces", exposure: 2.3 }, // round 4: r3 mean 73 (band 95-120)
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.28 },
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
     bloom: { intensity: 0.18, threshold: 0.95, radius: 0.35 },
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.02, tint: 0 },

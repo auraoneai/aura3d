@@ -1,11 +1,10 @@
 /**
- * IRON CROWN arena scene (GU47 WP-15). Moved out of main.ts so the unit tests can mount every venue without the DOM
- * and audit it against the art direction (tests/unit/iron-crown/art-direction.test.ts).
+ * IRON CROWN arena scene (GU47 WP-15 + WP-09 10/10 Visual Overhaul).
  *
  * Layers, in order: the venue's look (its own HDRI, sun or follow-spot, fog, grade, bloom and post preset from
- * STAGE_LOOKS), the fighting-kit floor, the venue dressing, the two fighters, the venue's own lights (follow-spot on the
- * Crown, two back rims in the fighters' colours, Neo-Tokyo's rect panels), light shafts, weather and the post effects
- * the look does not author (contact shadows, vignette, Crown grain, SSR mirror at High).
+ * STAGE_LOOKS), the fighting-kit floor, the venue dressing, the two fighters with multi-lobe surface overrides,
+ * paired GLSL+WGSL rune ward & cleave/parry arc shaders, flipbook sparks & dust atlases, the venue's own lights
+ * (zero `lights.ambient`), volumetric truss shafts, weather, and GTAO + contact shadows + SSR + cinematic bloom.
  */
 import {
   camera,
@@ -20,16 +19,53 @@ import {
   type AuraPhotometricProfile,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { createFlipbookAtlas } from "../../../showcase-port-shared/vfx-pack";
+import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { prayerFlagNodes } from "./ambientMotion";
+import { crownRuneWardMaterialSpec, dualFlipbookAtlasBurstSpec, parrySlashArcMaterialSpec } from "./dualShaders";
 import { koScorchNode, stageFlareNodes } from "./flareScorch";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, RIM_IDS, stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
 import { ORIGINAL_LOOKS, ORIGINAL_VIGNETTE, type VenueLookMode } from "./originalLook";
 import { groundDressing, markDeckPracticals, refinedLook, refinedLookOverrides, type RefinedVenueLook } from "./refinedLook";
 import type { IronStage } from "./stages";
-import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 
 export type Vec3 = readonly [number, number, number];
+
+export const SPAWN_RING_IDS = [
+  "player-spawn-outer",
+  "player-spawn-inner",
+  "rival-spawn-outer",
+  "rival-spawn-inner"
+] as const;
+
+export const RUNE_WARD_ID = "ic-rune-ward";
+
+export const SLASH_ARC_IDS = {
+  p1: "ic-slash-arc-p1",
+  p2: "ic-slash-arc-p2",
+  parry: "ic-parry-ring"
+} as const;
+
+export const FLIPBOOK_VFX_IDS = {
+  sparks: "ic-flipbook-sparks",
+  dust: "ic-flipbook-dust"
+} as const;
+
+let cachedFlipbooks: {
+  sparks: ReturnType<typeof createFlipbookAtlas>;
+  dust: ReturnType<typeof createFlipbookAtlas>;
+} | null = null;
+
+function getFlipbooks() {
+  if (!cachedFlipbooks) {
+    cachedFlipbooks = {
+      sparks: createFlipbookAtlas("sparks", [255, 214, 128]),
+      dust: createFlipbookAtlas("dust", [214, 198, 176])
+    };
+  }
+  return cachedFlipbooks;
+}
 
 export interface ArenaOptions {
   readonly stage: IronStage;
@@ -50,6 +86,8 @@ export interface ArenaOptions {
   readonly lookMode?: VenueLookMode;
   /** A5 lab (`?ies=1`): IES distribution for the two ring spots; absent keeps the scalar spots. */
   readonly ringPhotometry?: AuraPhotometricProfile;
+  /** Mount procedural RGBA8 `createFlipbookAtlas` spark & dust burst sheets for live runtime combat. */
+  readonly liveFlipbooks?: boolean;
 }
 
 /** Spread into a ring `lights.spot`: the lab IES profile, or nothing. */
@@ -66,16 +104,108 @@ const ORIGINAL_SPAWN_DISC: AuraColor = "#15121a";
 function spawnRing(id: string, x: number, color: AuraColor, disc: AuraColor = ORIGINAL_SPAWN_DISC): AuraSceneNode[] {
   return [
     primitives
-      .cylinder({ name: `${id}-outer`, material: material.emissive({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4 }), castShadow: false, receiveShadow: false })
+      .cylinder({
+        name: `${id}-outer`,
+        material: material.pbr({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4, practical: true }),
+        castShadow: false,
+        receiveShadow: false
+      })
       .position(x, 0.012, 0.02)
       .scale([1.15, 0.012, 1.15])
+      .runtime({ id: `${id}-outer` })
       .toJSON(),
     primitives
-      .cylinder({ name: `${id}-inner`, material: material.pbr({ color: disc, roughness: 0.7 }), castShadow: false, receiveShadow: true })
+      .cylinder({
+        name: `${id}-inner`,
+        material: material.pbr({ color: disc, roughness: 0.7 }),
+        castShadow: false,
+        receiveShadow: true
+      })
       .position(x, 0.016, 0.02)
       .scale([0.96, 0.012, 0.96])
+      .runtime({ id: `${id}-inner` })
       .toJSON()
   ];
+}
+
+/** Paired GLSL+WGSL forged rune seal + runtime melee cleave/parry arcs + optional flipbook atlases. */
+function combatOverlayNodes(liveFlipbooks: boolean): AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [
+    primitives
+      .plane({
+        name: "iron crown rune ward",
+        material: material.custom(crownRuneWardMaterialSpec({ opacity: 0.52 })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, 0.008, 0.18)
+      .rotate(-Math.PI / 2, 0, 0)
+      .scale([2.55, 2.55, 1])
+      .runtime({ id: RUNE_WARD_ID })
+      .toJSON(),
+    primitives
+      .plane({
+        name: "p1 cleave slash arc",
+        material: material.custom(parrySlashArcMaterialSpec({ coreColor: [1.0, 0.74, 0.28], rimColor: [1.0, 0.96, 0.84], opacity: 0.88 })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, -40, 0)
+      .scale([1.45, 1.45, 1])
+      .runtime({ id: SLASH_ARC_IDS.p1 })
+      .toJSON(),
+    primitives
+      .plane({
+        name: "p2 cleave slash arc",
+        material: material.custom(parrySlashArcMaterialSpec({ coreColor: [0.98, 0.36, 0.24], rimColor: [1.0, 0.88, 0.68], opacity: 0.88 })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, -40, 0)
+      .scale([1.45, 1.45, 1])
+      .runtime({ id: SLASH_ARC_IDS.p2 })
+      .toJSON(),
+    primitives
+      .plane({
+        name: "guard parry shock arc",
+        material: material.custom(parrySlashArcMaterialSpec({ coreColor: [0.38, 0.86, 1.0], rimColor: [0.92, 0.99, 1.0], opacity: 0.92 })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, -40, 0)
+      .scale([1.35, 1.35, 1])
+      .runtime({ id: SLASH_ARC_IDS.parry })
+      .toJSON()
+  ];
+
+  if (liveFlipbooks) {
+    const atlases = getFlipbooks();
+    nodes.push(
+      primitives
+        .plane({
+          name: "steel clash sparks flipbook",
+          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.sparks, { tint: [1.0, 0.88, 0.56], emissiveGain: 1.55, additive: true })),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(0, -40, 0)
+        .scale([1.05, 1.05, 1])
+        .runtime({ id: FLIPBOOK_VFX_IDS.sparks })
+        .toJSON(),
+      primitives
+        .plane({
+          name: "arena footwork dust flipbook",
+          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.dust, { tint: [0.88, 0.82, 0.72], emissiveGain: 0.92 })),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(0, -40, 0)
+        .scale([1.22, 1.22, 1])
+        .runtime({ id: FLIPBOOK_VFX_IDS.dust })
+        .toJSON()
+    );
+  }
+  return nodes;
 }
 
 /** The kit's floor nodes (everything at or below 0.35 m), with the start-lane slabs swapped for spawn rings. */
@@ -104,18 +234,18 @@ export function rimColorOf(fighter: FighterDef, tint?: FighterPalette): AuraColo
 
 /**
  * The hero-floor mirror. `effects.screenSpaceReflections` copies only `name` and `intensity`; the v2 bridge reads
- * `maxDistance`, `roughness` and `thickness` off the node (postBridge POST_EFFECT_FIELDS, E-C EC-6), so they are set on
- * the node itself (factory pass-through: handoff to E-C in the lane report).
+ * `maxDistance`, `roughness` and `thickness` off the node (postBridge POST_EFFECT_FIELDS, E-C EC-6).
  */
 function ssrNode(): AuraSceneNode {
-  const node = effects.screenSpaceReflections({ name: "hero floor mirror", intensity: 0.55 }).toJSON();
-  return { ...node, maxDistance: 12, roughness: 0.32, thickness: 0.4 } as AuraSceneNode;
+  const node = effects.screenSpaceReflections({ name: "hero floor mirror", intensity: 0.52 }).toJSON();
+  return { ...node, maxDistance: 16, roughness: 0.28, thickness: 0.3 } as AuraSceneNode;
 }
 
 /** Post effects the look does not author, per row. Bloom and grade come from the look (one node each). */
 export function arenaPostNodes(row: StageLookRow, contactShadows: boolean): AuraSceneNode[] {
   return [
-    ...(contactShadows ? [effects.contactShadows({ intensity: 0.75, length: 0.3 }).toJSON()] : []),
+    effects.ambientOcclusion({ name: "iron crown gtao", intensity: 0.54, radius: 0.48, falloff: 0.6 }).toJSON(),
+    ...(contactShadows ? [effects.contactShadows({ intensity: 0.84, length: 0.32 }).toJSON()] : []),
     effects.vignette({ name: "iron crown vignette", intensity: row.vignette, smoothness: 0.65 }).toJSON(),
     ...(row.grain > 0 ? [effects.filmGrain({ name: "crown film grain", intensity: row.grain, size: 1.4, luminanceResponse: 0.6 }).toJSON()] : []),
     // Mirror floor: the S3 SSR stage runs at High and above only (the post tier drops it below High).
@@ -142,9 +272,7 @@ export function arenaShaftNodes(row: StageLookRow): AuraSceneNode[] {
 }
 
 /**
- * Rain on Neo-Tokyo, snow on the Monastery (IC47-E2). `weather.precipitation` emits the weather volume (first node) plus
- * flag-off primitive streaks that A3D_QR_VFX (default on) hides; the volume gets the row's explicit particle count and
- * colour, and both halve on reduced motion (the volume halves again on Low).
+ * Rain on Neo-Tokyo, snow on the Monastery (IC47-E2).
  */
 export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean, lowTier = false): AuraSceneNode[] {
   if (!row.weather) return [];
@@ -154,9 +282,7 @@ export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean, low
 }
 
 /**
- * The 4.6.2 venue scene (GU47 blind-panel fix pass): the 4.6.2 biome look preset and overrides, the 4.6.2 floor deck and
- * dressing (no far backdrop), the 4.6.2 fighters (no IC47-M2 rim), rim light, key/fill spots and light cones, and the
- * 4.6.2 contact shadows, vignette and bloom. Main.ts's follow-spot, back-rim and panel patches find no node and skip.
+ * The 4.6.2 venue scene (`?look=original` compatibility path).
  */
 export function buildOriginalArenaScene(o: ArenaOptions) {
   const s = o.stage;
@@ -178,7 +304,7 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
       lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 12, color: s.palette.warning, ...photometry(o) }),
       lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 9, color: accent, ...photometry(o) })
     ])
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 43 }));
 }
 
 /** The refined look group; under a follow-spot the look's sun is dropped (the spot is the one shadowed key). */
@@ -189,9 +315,9 @@ function refinedLookNode(look: RefinedVenueLook, dropSun: boolean): AuraSceneNod
 }
 
 /**
- * The refined venue scene (GU47 phase 3, refinedLook.ts): the 4.6.2 floor deck, dressing and fighter surface the panel
- * preferred, under a drawn HDRI sky with less haze, one shadowed sun key, neutral back rims (the Crown: a neutral
- * follow-spot and a mirror floor), neutral ring spots, a neutral grade and the airstrip jet set down on the deck.
+ * The refined venue scene (GU47 phase 3 + WP-09): multi-lobe fighter surfaces + Fresnel rims (`surfaceExtras = true`),
+ * paired GLSL+WGSL rune ward & parry/cleave arcs, GTAO + contact shadows + wet obsidian/stone SSR + cinematicBloom +
+ * volumetric truss beams, and zero `lights.ambient`.
  */
 export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) {
   const s = o.stage;
@@ -209,9 +335,10 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
   }
   for (const side of ["p1", "p2"] as const) {
     const pose = backRimPose(row.backRim, side === "p1" ? o.playerStart[0] : o.rivalStart[0]);
+    const rimTone = side === "p1" ? look.rim.color : "#ffe6be";
     lightNodes.push(
       lights
-        .spot({ name: `fighter back rim ${side}`, position: pose.position, target: pose.target, angle: row.backRim.angle, penumbra: row.backRim.penumbra, distance: row.backRim.distance, decay: 1.3, intensity: look.rim.intensity, color: look.rim.color })
+        .spot({ name: `fighter back rim ${side}`, position: pose.position, target: pose.target, angle: row.backRim.angle, penumbra: row.backRim.penumbra, distance: row.backRim.distance, decay: 1.3, intensity: look.rim.intensity, color: rimTone })
         .runtime({ id: RIM_IDS[side] })
         .toJSON()
     );
@@ -228,27 +355,30 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
     .add(refinedLookNode(look, row.key.kind === "follow-spot" && look.followSpot !== undefined))
     .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0], look.spawnDisc))
     .addMany(markDeckPracticals(groundDressing(s.originalDressing)))
-    .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, false))
-    .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint, false))
+    .addMany(combatOverlayNodes(o.liveFlipbooks === true))
+    .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, true))
+    .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint, true))
     .addMany([
       ...lightNodes,
       ...weatherNodes,
       ...(look.prayerFlags ? prayerFlagNodes(s.id, o.reducedMotion) : []),
       koScorchNode(),
-      ...(o.contactShadows ? [effects.contactShadows({ intensity: look.contact?.intensity ?? 0.8, length: look.contact?.length ?? 0.3 }).toJSON()] : []),
+      effects.ambientOcclusion({ name: "iron crown gtao", intensity: 0.56, radius: 0.5, falloff: 0.6 }).toJSON(),
+      ...(o.contactShadows ? [effects.contactShadows({ intensity: look.contact?.intensity ?? 0.85, length: look.contact?.length ?? 0.35 }).toJSON()] : []),
       effects.vignette({ name: "iron crown vignette", intensity: look.vignette, smoothness: 0.65 }).toJSON(),
-      effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
+      effects.cinematicBloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
       ...(look.mirror ? [{ ...ssrNode(), intensity: look.mirror } as AuraSceneNode] : []),
       ...(look.cones
         ? [
-            effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.2, length: 8.5, coneAngle: 0.34, softness: 0.6 }).toJSON(),
-            effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.16, length: 8.5, coneAngle: 0.32, softness: 0.6 }).toJSON()
+            effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.22, length: 8.5, coneAngle: 0.34, softness: 0.6 }).toJSON(),
+            effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.18, length: 8.5, coneAngle: 0.32, softness: 0.6 }).toJSON(),
+            effects.volumetricBeam({ name: "crown center forge shaft", position: [0, 7.6, -0.4], direction: [0, -1, 0.06], color: "#ffe7bd", intensity: 0.18, length: 7.4, endRadius: 1.65 }).toJSON()
           ]
         : []),
       lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color, ...photometry(o) }).toJSON(),
       lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringFill.intensity, color: look.ringFill.color, ...photometry(o) }).toJSON()
     ])
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.86, 0], fov: 43 }));
 }
 
 /** The venue's base vignette for the cinematic post cue (4.6.2, refined or GU47 look). */
@@ -268,10 +398,11 @@ export function buildArenaScene(o: ArenaOptions) {
     .add(stageLookNode(row))
     .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0]))
     .addMany(s.dressing)
+    .addMany(combatOverlayNodes(o.liveFlipbooks === true))
     .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint))
     .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint))
     .addMany([
-      ...stageLightNodes(row, rims, { p1: o.playerStart[0], p2: o.rivalStart[0] }),
+      ...stageLightNodes(row, rims, { p1: o.playerStart[0], p2: o.playerStart[0] === o.rivalStart[0] ? 2.2 : o.rivalStart[0] }),
       ...arenaShaftNodes(row),
       ...arenaWeatherNodes(row, o.reducedMotion, o.lowTier === true),
       ...prayerFlagNodes(s.id, o.reducedMotion),
@@ -279,5 +410,5 @@ export function buildArenaScene(o: ArenaOptions) {
       koScorchNode(),
       ...arenaPostNodes(row, o.contactShadows)
     ])
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 1.6, 5.6], target: [0, 0.86, 0], fov: 43 }));
 }

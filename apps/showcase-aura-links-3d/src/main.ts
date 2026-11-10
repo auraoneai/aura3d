@@ -37,8 +37,10 @@ import {
   world
 } from "@aura3d/engine";
 import {
+  createFixedStepPresenter,
   createJuice,
   createOverlayDriver,
+  createRecordBlend,
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
@@ -48,6 +50,9 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
+import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
+import { createImpactRig } from "../../showcase-port-shared/feel";
+import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { formatBackendSelection, publishBackendReport } from "../../showcase-port-shared/backend-report";
@@ -259,13 +264,54 @@ function surfaceMaterial(course: CourseSpec, slot: LinksSurfaceSlot, color: stri
   const s = TURF_SURFACES[course.dressing.theme][slot];
   const mask = s.mask ? turfTexture(s.mask) : null;
   const normal = s.normal && presentationTier === "high" ? turfTexture(s.normal) : null;
-  return material.pbr({
+  return material.physical({
     color: mask && s.mask ? shade(color, MASK_COLOR_LIFT[s.mask.kind]) : color,
     roughness: s.roughness,
     ...(mask ? { texture: mask as any } : {}),
     ...(normal && s.normal ? { normal: normal as any, normalScale: s.normal.scale } : {}),
-    ...(s.sheen > 0 ? { sheen: s.sheen, sheenRoughness: 0.6, sheenColor: shade(color, 1.35) } : {})
+    ...(s.sheen > 0 ? { sheen: s.sheen, sheenRoughness: slot === "green" ? 0.44 : 0.58, sheenColor: shade(color, 1.38) } : {}),
+    ...(s.clearcoat && s.clearcoat > 0 ? { clearcoat: s.clearcoat, clearcoatRoughness: s.clearcoatRoughness ?? 0.42 } : {})
   });
+}
+
+function hexLinearRgb(hex: string): [number, number, number] {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return [0.1, 0.35, 0.48];
+  const n = parseInt(m[1]!, 16);
+  const toLin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  return [toLin((n >> 16) & 255), toLin((n >> 8) & 255), toLin(n & 255)];
+}
+
+let cachedDustSheetUrl: string | null | undefined;
+function dustFlipbookDataUrl(): string | null {
+  if (cachedDustSheetUrl !== undefined) return cachedDustSheetUrl;
+  if (typeof document === "undefined") {
+    cachedDustSheetUrl = null;
+    return null;
+  }
+  try {
+    const atlas = createFlipbookAtlas("dust", [232, 212, 166]);
+    const spec = atlas.texture as unknown as { width: number; height: number; data: Uint8Array };
+    const canvas = document.createElement("canvas");
+    canvas.width = spec.width;
+    canvas.height = spec.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      cachedDustSheetUrl = null;
+      return null;
+    }
+    const img = ctx.createImageData(spec.width, spec.height);
+    img.data.set(spec.data);
+    ctx.putImageData(img, 0, 0);
+    cachedDustSheetUrl = canvas.toDataURL("image/png");
+    return cachedDustSheetUrl;
+  } catch {
+    cachedDustSheetUrl = null;
+    return null;
+  }
 }
 
 /**
@@ -323,6 +369,99 @@ function buildConiferNodes(
   trees: readonly { x: number; z: number; h: number; yaw: number }[],
   theme: string
 ): any[] {
+  if (turfOn) {
+    // WP-05 botanical trees: multi-limb forked trunks + organic wind-sculpted canopy clusters with leaf mottle,
+    // micro-normals and grazing velvet sheen (replaces coaxial lollipop spheres in 2 instanced draws).
+    const limbs: any[] = [];
+    const canopy: any[] = [];
+    const canopyColors: string[] = [];
+    const tones = theme === "parkland"
+      ? ["#b8452c", "#d0702a", "#c9962e", "#8f3a22", "#5f7a3a"]
+      : theme === "dunes"
+        ? ["#395d49", "#466c52", "#2f5142", "#517558"]
+        : theme === "nightCity"
+          ? ["#1e5a50", "#24685a", "#174a44"]
+          : ["#336b3d", "#3b7442", "#2b5f36"];
+    const roughSurf = TURF_SURFACES.dunes.rough;
+    const leafMask = roughSurf.mask ? turfTexture(roughSurf.mask) : null;
+    const leafNormal = roughSurf.normal && presentationTier === "high" ? turfTexture(roughSurf.normal) : null;
+    const isConifer = theme !== "parkland";
+
+    trees.forEach((tr, i) => {
+      const s = tr.h / 6.2;
+      const y = terrain.height(tr.x, tr.z) - 0.12;
+      const lean = theme === "dunes" ? 0.11 : 0.04;
+      const lx = Math.sin(tr.yaw) * lean;
+      const lz = Math.cos(tr.yaw) * lean;
+      limbs.push({ position: [tr.x, y + 1.45 * s, tr.z], rotation: [lx, tr.yaw, lz], scale: [s * 0.92, s * 1.12, s * 0.92] });
+      limbs.push({
+        position: [tr.x + Math.cos(tr.yaw) * 0.42 * s, y + 2.35 * s, tr.z - Math.sin(tr.yaw) * 0.42 * s],
+        rotation: [0.38, tr.yaw + 0.55, 0.28],
+        scale: [s * 0.46, s * 0.62, s * 0.46]
+      });
+      limbs.push({
+        position: [tr.x - Math.cos(tr.yaw) * 0.38 * s, y + 2.65 * s, tr.z + Math.sin(tr.yaw) * 0.38 * s],
+        rotation: [-0.34, tr.yaw - 0.65, -0.26],
+        scale: [s * 0.42, s * 0.56, s * 0.42]
+      });
+
+      const baseTone = tones[i % tones.length]!;
+      if (isConifer) {
+        const tiers = [
+          { dy: 2.15, r: 0.18, sx: 1.08, sy: 0.72, sz: 0.96, k: 0.78 },
+          { dy: 2.95, r: 0.28, sx: 0.96, sy: 0.68, sz: 0.88, k: 0.9 },
+          { dy: 3.72, r: 0.22, sx: 0.82, sy: 0.66, sz: 0.76, k: 1.02 },
+          { dy: 4.42, r: 0.14, sx: 0.64, sy: 0.62, sz: 0.6, k: 1.12 },
+          { dy: 5.02, r: 0.08, sx: 0.44, sy: 0.58, sz: 0.44, k: 1.2 }
+        ];
+        tiers.forEach((tSpec, ti) => {
+          const a = tr.yaw + ti * 2.15;
+          canopy.push({
+            position: [tr.x + Math.cos(a) * tSpec.r * s + lx * tSpec.dy * 0.4, y + tSpec.dy * s, tr.z + Math.sin(a) * tSpec.r * s + lz * tSpec.dy * 0.4],
+            rotation: [lx * 0.8 + Math.sin(a) * 0.07, a, lz * 0.8 + Math.cos(a) * 0.07],
+            scale: [s * tSpec.sx, s * tSpec.sy, s * tSpec.sz]
+          });
+          canopyColors.push(shade(baseTone, tSpec.k));
+        });
+      } else {
+        const lobes = [
+          { a: 0.0, r: 0.78, dy: 2.65, sx: 0.76, sy: 0.54, sz: 0.68, k: 0.84 },
+          { a: 1.95, r: 0.82, dy: 2.85, sx: 0.74, sy: 0.52, sz: 0.7, k: 0.94 },
+          { a: 3.9, r: 0.74, dy: 2.75, sx: 0.72, sy: 0.5, sz: 0.66, k: 0.88 },
+          { a: 0.95, r: 0.48, dy: 3.65, sx: 0.7, sy: 0.56, sz: 0.64, k: 1.04 },
+          { a: 3.05, r: 0.46, dy: 3.8, sx: 0.66, sy: 0.54, sz: 0.62, k: 1.1 },
+          { a: 5.1, r: 0.16, dy: 4.45, sx: 0.58, sy: 0.48, sz: 0.56, k: 1.18 }
+        ];
+        lobes.forEach((lb) => {
+          const ang = tr.yaw + lb.a;
+          canopy.push({
+            position: [tr.x + Math.cos(ang) * lb.r * s, y + lb.dy * s, tr.z + Math.sin(ang) * lb.r * s],
+            rotation: [Math.sin(ang) * 0.14, ang, Math.cos(ang) * 0.14],
+            scale: [s * lb.sx, s * lb.sy, s * lb.sz]
+          });
+          canopyColors.push(shade(baseTone, lb.k));
+        });
+      }
+    });
+
+    const bark = material.physical({ color: "#4d3b2c", roughness: 0.92, ...(leafNormal ? { normal: leafNormal as any, normalScale: 0.35 } : {}) });
+    const foliage = material.physical({
+      color: "#ffffff",
+      roughness: 0.8,
+      sheen: 0.32,
+      sheenRoughness: 0.58,
+      sheenColor: "#dfe8c8",
+      ...(leafMask ? { texture: leafMask as any } : {}),
+      ...(leafNormal ? { normal: leafNormal as any, normalScale: 0.42 } : {})
+    });
+    return [
+      instances.cylinder({ name: "conifer-trunks", size: [0.24, 2.6, 0.24], material: bark, transforms: limbs, castShadow: true }),
+      isConifer
+        ? instances.cone({ name: "conifer-canopy", size: [3.5, 2.2, 3.5], material: foliage, transforms: canopy, colors: canopyColors, castShadow: true })
+        : instances.sphere({ name: "maple-canopy", size: [3.2, 2.4, 3.2], material: foliage, transforms: canopy, colors: canopyColors, castShadow: true })
+    ];
+  }
+
   const trunks: any[] = [];
   const low: any[] = [];
   const mid: any[] = [];
@@ -330,19 +469,9 @@ function buildConiferNodes(
   const lowColors: string[] = [];
   const midColors: string[] = [];
   const topColors: string[] = [];
-  // GU47 phase 3 (until the WP-36 maple/marram/palm models land): each course paints its own canopy, Maple Hollow in
-  // autumn reds, oranges and golds, the dunes a wind-dark sea green, the harbour a deep teal; tiers shade dark to light
-  // so the stacks read as lit volumes. `?look=original` keeps the 4.6.2 greens.
-  const tones = turfOn && theme === "parkland"
-    ? ["#b8452c", "#d0702a", "#c9962e", "#8f3a22", "#5f7a3a"]
-    : turfOn && theme === "dunes"
-      ? ["#3f6450", "#4a6f55", "#36584a"]
-      : turfOn && theme === "nightCity"
-        ? ["#1e5a50", "#24685a", "#174a44"]
-        : theme === "dunes"
-          ? ["#4f7549", "#5a7f4e", "#446742"]
-          : ["#336b3d", "#3b7442", "#2b5f36"];
-  const tier = (tone: string, k: number) => (turfOn ? shade(tone, k) : tone);
+  const tones = theme === "dunes"
+    ? ["#4f7549", "#5a7f4e", "#446742"]
+    : ["#336b3d", "#3b7442", "#2b5f36"];
   trees.forEach((tr, i) => {
     const s = tr.h / 6.2;
     const y = terrain.height(tr.x, tr.z) - 0.12;
@@ -351,9 +480,9 @@ function buildConiferNodes(
     mid.push({ position: [tr.x, y + 3.65 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.78, s * 0.9, s * 0.78] });
     top.push({ position: [tr.x, y + 4.8 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.54, s * 0.74, s * 0.54] });
     const tone = tones[i % tones.length]!;
-    lowColors.push(tier(tone, 0.82));
+    lowColors.push(tone);
     midColors.push(tone);
-    topColors.push(tier(tone, 1.14));
+    topColors.push(tone);
   });
   const bark = material.pbr({ color: "#5a4634", roughness: 0.94 });
   const bough = material.pbr({ color: "#ffffff", roughness: 0.88 });
@@ -1075,21 +1204,61 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     }
   }
 
-  // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
+  // --- Bunkers (bright sand bowls + dark, crisp grass lip + coastal marram eyebrows) ---
+  const bunkerEyebrowTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
   lay.bunkers.forEach((b, i) => {
     const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
     const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
     nodes.push(
-      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }), ...overlayShadow }),
+      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.physical({ color: shade(pal.sand, 0.62), roughness: 0.94 }), ...overlayShadow }),
       geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84), ...overlayShadow })
     );
+    if (turfOn && course.dressing.theme === "dunes" && presentationTier === "high" && i < 4) {
+      for (let k = 0; k < 4; k++) {
+        const ang = terrain.lineYaw - 0.55 + k * 0.36 + i * 0.4;
+        const rx = b.center[0] + Math.sin(ang) * (b.radius + 0.68);
+        const rz = b.center[1] + Math.cos(ang) * (b.radius + 0.68);
+        const sc = 0.72 + ((i + k) % 3) * 0.12;
+        bunkerEyebrowTransforms.push({
+          position: [rx, terrain.height(rx, rz) - 0.03, rz],
+          rotation: [0, ang * 1.7, 0],
+          scale: [sc, sc, sc]
+        });
+      }
+    }
   });
+  if (bunkerEyebrowTransforms.length > 0) {
+    nodes.push(
+      instances.model(assets.links_marram, {
+        name: "bunker-eyebrow-marram",
+        transforms: bunkerEyebrowTransforms,
+        targetHeight: 0.95,
+        castShadow: true
+      })
+    );
+  }
 
   // --- Water (dark wet bank, shadow rim, then a reflective pond surface) ---
-  // LINKS-17 (GU47): the two largest ponds of a hole reflect (E-G world.water lake, planar on High; game/water.ts), the
-  // rest keep the 4.6.2 water; Cinder Rim's pools are scrolling emissive lava on every tier.
+  // LINKS-17 (GU47): the two largest ponds of a hole reflect (E-G world.water lake, planar on High; game/water.ts),
+  // secondary ponds render via paired GLSL+WGSL dualAnimatedWaterSpec, and Cinder Rim's pools are scrolling emissive lava.
   const reflecting = reflectivePonds(terrain, hole, course.dressing.theme, { tier: presentationTier, look: lookMode });
   const lava = lookMode !== "original" && theme4(course) === "volcanic" ? material.custom(lavaSpec(state.reducedMotion) as any) : null;
+  const lookSun = COURSE_LOOKS[course.id].sun;
+  const sunAz = (lookSun.azimuthDeg * Math.PI) / 180;
+  const sunEl = (lookSun.elevationDeg * Math.PI) / 180;
+  const sunDirVec: [number, number, number] = [Math.sin(sunAz) * Math.cos(sunEl), Math.sin(sunEl), Math.cos(sunAz) * Math.cos(sunEl)];
+  const dualPondWater = turfOn && !lava
+    ? material.custom(
+        dualAnimatedWaterSpec({
+          deepColor: hexLinearRgb(shade(pal.water, 0.52)),
+          shallowColor: hexLinearRgb(shade(pal.water, 1.34)),
+          sunDir: sunDirVec,
+          waveScale: 0.42,
+          waveSpeed: state.reducedMotion ? 0 : 1.1,
+          opacity: 0.94
+        }) as any
+      )
+    : null;
   lay.water.forEach((w, i) => {
     const { surfaceY: y, pondDiameter, rimDiameter } = pondGeometry(terrain, w);
     const pond = reflecting.find((p) => p.index === i);
@@ -1098,15 +1267,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
       nodes.push(
         geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-        // GU47 phase 3: the floor sits 0.3 m down (the engine "calm" swell dipped below it at y - 0.03 and its glossy top
-        // showed through as pale wavy bands, run g10p3-r5-2; the ponds now ripple about 2 cm, game/water.ts)
         primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.3, w.center[1]),
         world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
       );
       return;
     }
     const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
-    const waterMat = material.pbr({
+    const waterMat = dualPondWater ?? material.pbr({
       color: shade(pal.water, 1.22),
       roughness: 0.09,
       metalness: 0.38,
@@ -1116,7 +1283,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     nodes.push(
       geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
       primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
-      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, ...(lava ? { castShadow: false } : {}) }).position(w.center[0], y, w.center[1])
+      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, ...(lava || dualPondWater ? { castShadow: false } : {}) }).position(w.center[0], y, w.center[1])
     );
   });
 
@@ -1127,22 +1294,54 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   );
 
   // --- Ball + trail + shadow + aim aids ---
-  // (the GU47 look draws the shot tracer as a runtime trail per shot, startTracer(); `?look=original` keeps the
-  // authored ribbon node, which E-F now draws)
   nodes.push(
-    model(assets.linksGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
+    model(assets.linksGolfBall, {
+      name: "golf-ball",
+      targetHeight: BALL_R * 2,
+      ...(turfOn
+        ? {
+            materialOverrides: [
+              {
+                color: "#fcfdfa",
+                colorMode: "multiply" as const,
+                roughness: 0.16,
+                clearcoat: 1,
+                clearcoatRoughness: 0.05,
+                envMapIntensity: 1.55
+              }
+            ]
+          }
+        : {})
+    }).runtime(game.runtimeNode("golf-ball")),
     primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
   );
+  if (turfOn) {
+    const dustSheet = dustFlipbookDataUrl();
+    nodes.push(
+      effects
+        .flipbook({
+          name: "vfx-sand-puff",
+          ...(dustSheet ? { texture: dustSheet } : { sprite: "smoke-a" }),
+          spriteColumns: 8,
+          spriteRows: 4,
+          frameRate: 28,
+          loop: true,
+          size: [0.85, 1.35],
+          color: shade(pal.sand, 1.08),
+          blend: "alpha",
+          visible: false
+        } as any)
+        .position(terrain.tee[0], terrain.tee[1] + 0.25, terrain.tee[2])
+        .runtime(game.runtimeNode("vfx-sand-puff"))
+    );
+  }
   if (lookMode === "original") {
     nodes.push(effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any));
   }
   nodes.push(
-    // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
     primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
-    // Crisp white aim line + predicted landing ring (aim phase only)
     primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: aimLineMaterial() }).runtime(game.runtimeNode("aim-line")),
     primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
-    // putt-aim helper
     primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }) }).runtime(game.runtimeNode("cup-pulse"))
   );
   for (let i = 0; i < TRAIL_COUNT; i++) {
@@ -1153,10 +1352,10 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     );
   }
 
-  // --- Green read grid arrows (putting lab / on-green) ---
-  for (let i = 0; i < 12; i++) {
+  // --- Green read contour grid (5x5 slope break arrows between ball and cup) ---
+  for (let i = 0; i < 25; i++) {
     nodes.push(
-      primitives.box({ name: `read-arrow-${i}`, size: [0.06, 0.02, 0.9], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.8, opacity: 0.55 }) })
+      primitives.box({ name: `read-arrow-${i}`, size: [0.05, 0.016, 0.68], material: material.emissive({ color: "#a8f0b0", emissive: "#a8f0b0", emissiveIntensity: 0.72, opacity: 0.58 }) })
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(`read-arrow-${i}`))
     );
@@ -1216,9 +1415,10 @@ function holeOpeningCamera(terrain: HoleTerrain) {
 function buildOriginalLookScene(course: CourseSpec, terrain: HoleTerrain, nodes: any[]): any {
   const isNight = course.look === "night-city" || course.look === "space";
   const fill = courseFill(course);
-  nodes.push(lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }));
   if (fill.hemiI > 0) {
-    nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }));
+    nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI + fill.ambientI * 0.65, position: [0, 30, 0] }));
+  } else if (fill.ambientI > 0) {
+    nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.ambient, groundColor: shade(fill.ambient, 0.55), intensity: fill.ambientI * 0.85, position: [0, 30, 0] }));
   }
   nodes.push(lights.directional({ name: "course rim fill", color: fill.rim, intensity: fill.rimI, position: fill.rimPos }));
   if (fill.flood) {
@@ -1269,10 +1469,42 @@ let cupPulseHandle: any = null;
 let ballMarkerHandle: any = null;
 let flagRotation: [number, number, number] = [0, 0, 0];
 let flagstickHandle: any = null;
+let sandPuffHandle: any = null;
+let sandPuffUntil = 0;
 let trailHandles: any[] = [];
 let readArrowHandles: any[] = [];
 let rangeRingHandles: any[] = [];
 const tryReq = (id: string) => { try { return (auraApp as any)?.nodes?.require(id); } catch { return null; } };
+const FIXED_BALL_DT = 1 / 120;
+let ballStepAccum = 0;
+let shotPeakApexM = 0;
+let shotLaunchSpeedMps = 0;
+let impactRig = createImpactRig({ reducedMotion: false });
+let impactFrameState: ReturnType<typeof impactRig.step> = {
+  simDt: 1 / 60,
+  frozen: false,
+  shakeOffset: [0, 0, 0],
+  shakeRoll: 0,
+  fovDeltaDeg: 0
+};
+const ballPresenter = createFixedStepPresenter<{ pos: Vec3 }>({
+  snapshot: () => ({
+    pos: state.ball
+      ? ([state.ball.pos[0], state.ball.pos[1], state.ball.pos[2]] as Vec3)
+      : state.round
+        ? ([state.round.ballPos[0], state.round.ballPos[1], state.round.ballPos[2]] as Vec3)
+        : ([0, 0, 0] as Vec3)
+  }),
+  blend: createRecordBlend<{ pos: Vec3 }>({ snapDistance: 8, position: (s) => s.pos })
+});
+const isCoarseViewport = (): boolean =>
+  (window.matchMedia?.("(pointer: coarse)")?.matches ?? false) || (window.innerWidth > 0 && window.innerWidth <= 760);
+
+function triggerDustFlipbook(pos: Vec3): void {
+  if (!sandPuffHandle || state.reducedMotion) return;
+  sandPuffHandle.setPosition?.(pos[0], pos[1] + 0.28, pos[2])?.setVisible?.(true);
+  sandPuffUntil = nowMs() + 780;
+}
 
 /** true while frame() runs inside the engine's onFrame callback (scene swaps are deferred until it returns) */
 let inEngineFrame = false;
@@ -1297,8 +1529,11 @@ function resolveHoleHandles(): void {
   cupPulseHandle = req("cup-pulse");
   ballMarkerHandle = tryReq("ball-marker");
   flagstickHandle = tryReq("flagstick");
+  sandPuffHandle = tryReq("vfx-sand-puff");
+  sandPuffUntil = 0;
+  sandPuffHandle?.setVisible?.(false);
   trailHandles = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
-  readArrowHandles = Array.from({ length: 12 }, (_, i) => req(`read-arrow-${i}`));
+  readArrowHandles = Array.from({ length: 25 }, (_, i) => req(`read-arrow-${i}`));
   rangeRingHandles = Array.from({ length: 4 }, (_, i) => tryReq(`range-ring-${i}`)).filter(Boolean);
   // a new hole scene re-creates its depth-of-field node: keep it off outside the flyover and the cup cam (LINKS-12)
   if (!flyover && broadcastCam?.kind !== "cup") setBroadcastDof(false);
@@ -1464,7 +1699,15 @@ const cam = {
 };
 
 function camApply(): void {
-  (auraApp as any)?.camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
+  const applyJuice = !qaPondView && !isStillMode && !state.reducedMotion;
+  const sx = applyJuice ? impactFrameState.shakeOffset[0] : 0;
+  const sy = applyJuice ? impactFrameState.shakeOffset[1] : 0;
+  const df = applyJuice ? impactFrameState.fovDeltaDeg : 0;
+  (auraApp as any)?.camera?.setPose?.({
+    position: [cam.eye[0] + sx, cam.eye[1] + sy, cam.eye[2]],
+    target: cam.target,
+    fov: clamp(cam.fov + df, 24, 68)
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -1871,8 +2114,12 @@ function beginAddress(): void {
     setBroadcastDof(false);
   }
   cam.mode = "aim";
-  setPrompt("SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
+  setPrompt(isCoarseViewport() ? "TAP SWING · AIM ◀ ▶ · CLUB / PIN" : "SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
+  $("shot-telemetry")?.classList.remove("show");
+  ballStepAccum = 0;
+  ballPresenter.reset();
+  syncMobileDock();
   updateCardHud();
   if (golferRig) {
     const g = golferAt();
@@ -1896,8 +2143,9 @@ function startSwing(): void {
   swingDrive.topHold = 0;
   pendingCommit = null;
   $("swing-meter")?.classList.add("show");
-  $("sw-label")!.textContent = "SPACE — SET POWER";
+  $("sw-label")!.textContent = isCoarseViewport() ? "TAP — LOCK POWER" : "SPACE — SET POWER";
   setPrompt(null);
+  syncMobileDock();
 }
 
 /**
@@ -1950,11 +2198,24 @@ function fireImpact(): void {
   // launchBall spawns on the tee — reposition for non-tee lies (sim contract)
   state.ball = { ...launchBall(commit, env), pos: [...r.ballPos] as Vec3 };
   r.prevPos = [...r.ballPos] as Vec3;
+  shotLaunchSpeedMps = Math.hypot(state.ball.vel[0], state.ball.vel[1], state.ball.vel[2]);
+  shotPeakApexM = 0;
+  ballStepAccum = 0;
+  ballPresenter.reset();
   state.phase = "flight";
   $("swing-meter")?.classList.remove("show");
+  syncMobileDock();
   const qual = Math.abs(commit.accuracy);
   pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${contactLabel(qual)} · ${shapeLabel(commit.spin)}`, qual < 0.3 ? "success" : "warning");
   juiceFire("hit", { position: r.ballPos });
+  if (!commit.club.putter) {
+    impactRig.trigger({
+      freezeSeconds: qual === 0 ? 0.025 : 0.012,
+      trauma: qual === 0 ? 0.32 : 0.16,
+      fovKickDeg: IMPACT_FOV_KICK_DEG
+    });
+    triggerDustFlipbook(r.ballPos);
+  }
   shotLanded = false;
   if (lookMode !== "original") {
     if (!commit.club.putter) linksBurst(state.courseId === "mareCourse" ? "links-lowg-dust" : "links-strike", r.ballPos);
@@ -2010,7 +2271,10 @@ function onBallEvents(events: BallEvent[]): void {
       const zone = ev.zone;
       if (zone === "sand") { pushEvent("lie", "sand splash", "info"); }
       if (lookMode === "original") spawnTurfPuff(ev.pos, zone);
-      else if (!shotLanded || zone === "sand") linksBurst(landingVfxFor(state.courseId, zone), ev.pos);
+      else if (!shotLanded || zone === "sand") {
+        linksBurst(landingVfxFor(state.courseId, zone), ev.pos);
+        if (zone === "sand" || zone === "fairway" || zone === "rough") triggerDustFlipbook(ev.pos);
+      }
       shotLanded = true;
     } else if (ev.kind === "holed") {
       onHoled();
@@ -2422,12 +2686,46 @@ function selectCourse(id: CourseId, restart = true): void {
  *  Swing meter DOM                                                    *
  * ------------------------------------------------------------------ */
 
+function syncMobileDock(): void {
+  const dock = $("mobile-golf-dock");
+  const swingBtn = $("mobile-swing-btn");
+  if (!dock || !swingBtn) return;
+  const active = state.phase === "address" || state.phase === "swing";
+  dock.classList.toggle("active", active);
+  if (state.phase === "address") {
+    swingBtn.textContent = "SWING";
+  } else if (state.phase === "swing") {
+    const ph = state.swing.state().phase;
+    swingBtn.textContent = ph === "power" ? "LOCK PWR" : ph === "accuracy" ? "ACCURACY" : "STRIKE";
+  }
+}
+
+function updateShotTelemetry(): void {
+  const box = $("shot-telemetry");
+  if (!box) return;
+  const show = lookMode !== "original" && (state.phase === "flight" || state.phase === "between") && Boolean(state.commit) && !state.commit?.club.putter;
+  box.classList.toggle("show", show);
+  if (!show) return;
+  const ball = state.ball;
+  const t = state.terrain;
+  if (ball && t) {
+    const agl = Math.max(0, ball.pos[1] - t.height(ball.pos[0], ball.pos[2]));
+    if (agl > shotPeakApexM) shotPeakApexM = agl;
+  }
+  const speedKmh = Math.round(shotLaunchSpeedMps * 3.6);
+  const carryM = Math.round(ball?.carry ?? 0);
+  setText("st-speed", `${speedKmh}`);
+  setText("st-apex", `${Math.round(shotPeakApexM)}M`);
+  setText("st-carry", `${carryM}M`);
+}
+
 function updateSwingMeter(): void {
   const s = state.swing.state();
   const fill = $("sw-fill"), needle = $("sw-needle"), green = $("sw-green"), perfect = $("sw-perfect");
   const label = $("sw-label");
   const rl = $("sw-readout-l"), rr = $("sw-readout-r");
   if (!fill || !needle || !green || !perfect) return;
+  const touch = isCoarseViewport();
   const gz = DIFF_GREEN_ZONE[state.difficulty];
   green.style.left = `${(0.5 - gz) * 100}%`;
   green.style.width = `${gz * 2 * 100}%`;
@@ -2437,7 +2735,7 @@ function updateSwingMeter(): void {
     needle.style.left = `${s.meter * 100}%`;
     green.style.opacity = "0";
     perfect.style.opacity = "0";
-    if (label) label.textContent = "SPACE — SET POWER";
+    if (label) label.textContent = touch ? "TAP — LOCK POWER" : "SPACE — SET POWER";
     if (rl) rl.textContent = "";
     if (rr) rr.textContent = `${Math.round(s.meter * 100)}%`;
   } else if (s.phase === "accuracy") {
@@ -2446,7 +2744,7 @@ function updateSwingMeter(): void {
     needle.style.left = `${((1 - s.meter) / 2) * 100}%`;
     green.style.opacity = "1";
     perfect.style.opacity = "1";
-    if (label) label.textContent = "SPACE — SET ACCURACY · CENTER = PURE";
+    if (label) label.textContent = touch ? "TAP — LOCK ACCURACY · CENTER = PURE" : "SPACE — SET ACCURACY · CENTER = PURE";
     if (rl) rl.textContent = "◀ DRAW";
     if (rr) rr.textContent = "FADE ▶";
   } else if (s.phase === "committed") {
@@ -2455,6 +2753,7 @@ function updateSwingMeter(): void {
     if (rl) rl.textContent = `PWR ${Math.round((s.power ?? 0) * 100)}%`;
     if (rr) rr.textContent = `ACC ${Math.round((s.accuracy ?? 0) * 100)}`;
   }
+  syncMobileDock();
 }
 
 /* ------------------------------------------------------------------ *
@@ -2566,12 +2865,20 @@ function golferAt(): { pos: Vec3; yaw: number } {
   return { pos: [bp[0], t.height(bp[0], bp[2]), bp[2]], yaw: aimYaw() };
 }
 
-function frame(dt: number): void {
+function frame(realDt: number): void {
   if (!appReady) return;
   framesRendered += 1;
+  // Step hit-stop & camera trauma on REAL frame dt (never frozen simDt!)
+  impactFrameState = impactRig.step(realDt);
+  const deterministicMode = isStillMode || qaHold || bootUrlParams.get("qa") === "1";
+  const dt = deterministicMode ? realDt : impactFrameState.simDt;
   simTime += dt;
-  if (framesRendered === 1) diagLog("[links] first frame tick", dt);
+  if (framesRendered === 1) diagLog("[links] first frame tick", realDt);
   const now = nowMs();
+  if (sandPuffUntil > 0 && now >= sandPuffUntil) {
+    sandPuffUntil = 0;
+    sandPuffHandle?.setVisible?.(false);
+  }
   const r = state.round;
   const t = state.terrain;
 
@@ -2671,7 +2978,7 @@ function frame(dt: number): void {
   // --- visual swing drive: backswing → top → downswing → IMPACT → follow ---
   advanceSwingDrive(dt);
 
-  // --- ball step ---
+  // --- ball step (120 Hz fixed-step simulation + interpolated presentation on live displays) ---
   if (state.phase === "flight" && state.ball && t && state.commit) {
     const env = {
       terrain: t,
@@ -2681,12 +2988,27 @@ function frame(dt: number): void {
       lie: state.commit.club.putter ? ("green" as LieKind) : "fairway",
       liePenalty: 1
     };
-    const { ball, events } = stepBall(state.ball, env, dt);
-    state.ball = ball;
-    trailPts.push(ball.pos);
-    if (trailPts.length > TRAIL_COUNT) trailPts.shift();
-    if (events.length) onBallEvents(events);
+    if (deterministicMode) {
+      const { ball, events } = stepBall(state.ball, env, dt);
+      state.ball = ball;
+      trailPts.push(ball.pos);
+      if (trailPts.length > TRAIL_COUNT) trailPts.shift();
+      if (events.length) onBallEvents(events);
+      ballPresenter.reset();
+    } else {
+      ballStepAccum = Math.min(ballStepAccum + dt, FIXED_BALL_DT * 8);
+      while (ballStepAccum >= FIXED_BALL_DT && state.phase === "flight" && state.ball) {
+        ballStepAccum -= FIXED_BALL_DT;
+        const { ball, events } = stepBall(state.ball, env, FIXED_BALL_DT);
+        state.ball = ball;
+        ballPresenter.afterStep();
+        trailPts.push(ball.pos);
+        if (trailPts.length > TRAIL_COUNT) trailPts.shift();
+        if (events.length) onBallEvents(events);
+      }
+    }
   }
+  updateShotTelemetry();
 
   // --- between → next lie ---
   if (state.phase === "between" && now > betweenUntil) {
@@ -2698,7 +3020,12 @@ function frame(dt: number): void {
 
   // --- visuals ---
   if (r && t) {
-    const bp = state.ball ? state.ball.pos : r.ballPos;
+    const bp =
+      !deterministicMode && state.phase === "flight" && state.ball
+        ? ballPresenter.present({ alpha: ballStepAccum / FIXED_BALL_DT }, true).pos
+        : state.ball
+          ? state.ball.pos
+          : r.ballPos;
     ballHandle?.setPosition(bp[0], Math.max(bp[1] - BALL_R, t.height(bp[0], bp[2]) - 0.01), bp[2]);
     const bh = bp[1] - t.height(bp[0], bp[2]);
     const ss = clamp(1 - bh * 0.05, 0.4, 1);
@@ -2763,23 +3090,37 @@ function frame(dt: number): void {
       else ballMarkerHandle.setScale(HIDDEN_SCALE).setVisible(false);
     }
 
-    // green read arrows on the green
+    // 5x5 green read slope contour grid between ball and cup on the green
     const onGreen = r.lie === "green" || r.lie === "fringe" || state.mode === "puttinglab";
-    readArrowHandles.forEach((h, i) => {
-      if (!h) return;
-      if (onGreen) {
-        const a = (i / 12) * Math.PI * 2;
-        const rr2 = state.hole.layout.greenRadius * 0.55;
-        const x = t.cup[0] + Math.cos(a) * rr2;
-        const z = t.cup[2] + Math.sin(a) * rr2;
+    if (onGreen) {
+      const dxCup = t.cup[0] - r.ballPos[0];
+      const dzCup = t.cup[2] - r.ballPos[2];
+      const distCup = Math.max(2.4, Math.min(18, Math.hypot(dxCup, dzCup)));
+      const fwdX = dxCup / (Math.hypot(dxCup, dzCup) || 1);
+      const fwdZ = dzCup / (Math.hypot(dxCup, dzCup) || 1);
+      const rightX = fwdZ;
+      const rightZ = -fwdX;
+      const lateralSpan = Math.max(1.8, Math.min(4.6, distCup * 0.42));
+      readArrowHandles.forEach((h, i) => {
+        if (!h) return;
+        const row = Math.floor(i / 5); // 0..4 along ball -> cup
+        const col = (i % 5) - 2; // -2..+2 across putt corridor
+        const alongFrac = (row + 0.6) / 5.2;
+        const latOffset = (col / 2) * lateralSpan;
+        const x = r.ballPos[0] + fwdX * distCup * alongFrac + rightX * latOffset;
+        const z = r.ballPos[2] + fwdZ * distCup * alongFrac + rightZ * latOffset;
         const [sx2, sz2] = t.slope(x, z);
-        const yaw = Math.atan2(sx2, sz2);
-        const mag = clamp(Math.hypot(sx2, sz2) * 8, 0.25, 1);
-        h.setPosition(x, t.height(x, z) + 0.06, z).setRotation(0, yaw, 0).setScale([1, 1, mag]).setVisible(Math.hypot(sx2, sz2) > 0.01);
-      } else {
-        h.setScale(HIDDEN_SCALE).setVisible(false);
-      }
-    });
+        const slopeMag = Math.hypot(sx2, sz2);
+        const yaw = Math.atan2(-sx2, -sz2); // points downhill along break direction
+        const mag = clamp(slopeMag * 9.5, 0.28, 1.15);
+        h.setPosition(x, t.height(x, z) + 0.045, z)
+          .setRotation(0, yaw, 0)
+          .setScale([1, 1, mag])
+          .setVisible(slopeMag > 0.004);
+      });
+    } else {
+      readArrowHandles.forEach((h) => h?.setScale(HIDDEN_SCALE)?.setVisible(false));
+    }
 
     // golfer pose — the swing drive owns the animation through the shot
     if (golferRig) {
@@ -2808,14 +3149,22 @@ function frame(dt: number): void {
       checkClubContact(dt, g.yaw);
     }
 
-    // flag flutter (held still under reduced motion). GU47 LINKS-13: the amplitude follows the hole's wind and the
-    // course's air (stiff on airless Mare); `?look=original` keeps the 4.6.2 fixed flutter.
+    // flag flutter (held still under reduced motion). GU47 LINKS-13 + WP-05: flagstick banner yaws with wind direction
+    // and flutters proportionally to wind speed (stiff on airless Mare).
     const flutter = lookMode === "original" ? (state.reducedMotion ? 0 : 1) : flagFlutterAmplitude(COURSE_LOOKS[state.courseId], state.wind.speed, state.reducedMotion);
-    flagRotation = flutter === 0 ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05 * flutter, Math.sin(now / 700) * 0.03 * flutter];
+    flagRotation = flutter === 0
+      ? [0, 0, 0]
+      : lookMode === "original"
+        ? [0, Math.sin(now / 900) * 0.05 * flutter, Math.sin(now / 700) * 0.03 * flutter]
+        : [
+            Math.cos(state.wind.yaw) * 0.03 * flutter,
+            state.wind.yaw + Math.sin(now / 520) * 0.12 * flutter,
+            Math.sin(state.wind.yaw) * 0.03 * flutter + Math.sin(now / 390) * 0.03 * flutter
+          ];
     flagstickHandle?.setRotation?.(flagRotation[0], flagRotation[1], flagRotation[2]);
   }
 
-  updateCamera(dt);
+  updateCamera(realDt);
   touchControls?.update?.();
   justPressed.clear();
 }
@@ -2987,6 +3336,40 @@ function bindUi(): void {
   }
   $("menu-close")?.addEventListener("click", () => { closeMenu(); resumeFromMenu(); });
   $("menu-run")?.addEventListener("click", () => { closeMenu(); menuReturn = null; setMode(!tourFinished(state.tour) ? "tour" : "quick"); });
+
+  // WP-05 mobile golf caddy dock (>= 64x64px SWING thumb button + >= 44x44px AIM / CLUB / PIN controls)
+  const bindHoldKey = (id: string, code: string) => {
+    const el = $(id);
+    if (!el) return;
+    const press = (ev: Event) => {
+      ev.preventDefault();
+      lastManualInputAt = simTime;
+      pressedKeys.add(code);
+      justPressed.add(code);
+    };
+    const release = () => pressedKeys.delete(code);
+    el.addEventListener("pointerdown", press);
+    el.addEventListener("pointerup", release);
+    el.addEventListener("pointercancel", release);
+    el.addEventListener("pointerleave", release);
+  };
+  bindHoldKey("mob-aim-l", "KeyA");
+  bindHoldKey("mob-aim-r", "KeyD");
+  $("mob-club")?.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    lastManualInputAt = simTime;
+    justPressed.add("KeyE");
+  });
+  $("mob-pin")?.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    lastManualInputAt = simTime;
+    justPressed.add("KeyP");
+  });
+  $("mobile-swing-btn")?.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    lastManualInputAt = simTime;
+    justPressed.add("Space");
+  });
 
   // keys
   window.addEventListener("keydown", (ev) => {
@@ -3355,6 +3738,7 @@ function boot(): void {
   // accessibility first: the course look halves its ambient emission under reduced motion (PRD §6.3)
   state.reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
   state.reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+  impactRig = createImpactRig({ reducedMotion: state.reducedMotion });
   // LINKS-14: the course accent, and the lower third without its fade and rise under reduced motion
   applyCourseAccent();
   const holeCardEl = $("hole-card");
@@ -3366,16 +3750,22 @@ function boot(): void {
   const lab = readLabFlags();
   // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
   const labFragment = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
-  const labOptions: Record<string, unknown> = {};
-  if (labFragment.renderer || labFragment.output) {
-    const base = looks.appOptions(state.course.look) as Record<string, any>;
-    if (labFragment.renderer) labOptions.renderer = { ...(base.renderer ?? {}), ...labFragment.renderer };
-    if (labFragment.output) labOptions.output = { ...(base.output ?? {}), ...labFragment.output };
+  const baseAppOpts = looks.appOptions(state.course.look) as Record<string, any>;
+  const labOptions: Record<string, unknown> = {
+    output: {
+      ...(baseAppOpts.output ?? {}),
+      toneMapping: "agx",
+      dither: true,
+      ...(labFragment.output ?? {})
+    }
+  };
+  if (labFragment.renderer) {
+    labOptions.renderer = { ...(baseAppOpts.renderer ?? {}), ...labFragment.renderer };
   }
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
-    ...looks.appOptions(state.course.look),
+    ...baseAppOpts,
     ...labOptions,
     ...(labFragment.worker ? { worker: labFragment.worker } : {}),
     qualityRebuild: { flags: ["game"] }

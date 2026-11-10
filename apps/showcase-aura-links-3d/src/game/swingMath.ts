@@ -768,12 +768,15 @@ function solveArmsAnatomic(key: SwingKey, T: TorsoPose, gripM: V3, dirM: V3): An
   const lat = unit(vSub(shoulderL, shoulderR)); // toward the lead (left) shoulder
   const psi = T.shoulderYaw;
   const facing: V3 = [Math.sin(psi), 0, Math.cos(psi)];
-  // elbows hang down and out of the turned chest, a touch behind the facing line, never across the sternum
-  // through the finish the hands fold up beside the head: the elbows then point down and FORWARD (toward the target), not up
+  // elbows hang down and out of the turned chest, never across the sternum or into the neck:
+  // during backswing the lead elbow drops forward-down in front of the ribcage; through finish both fold forward
+  const backW = key.turn ? Math.max(0, Math.min(1, (key.turn.shoulders * (180 / Math.PI) - 30) / 48)) : 0;
   const finishW = key.turn ? Math.max(0, Math.min(1, (key.turn.shoulders * (-180) / Math.PI - 60) / 30)) : 0;
-  const fwd = -0.12 + 1.1 * finishW;
-  const poleL: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, 0.45)), vScale(facing, fwd)));
-  const poleR: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, -0.45)), vScale(facing, fwd)));
+  const fwdR = -0.12 + 1.1 * finishW;
+  const fwdL = -0.06 + 0.55 * backW + 1.05 * finishW;
+  const latL = 0.45 * (1 - 0.85 * backW);
+  const poleL: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, latL)), vScale(facing, fwdL)));
+  const poleR: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, -0.45)), vScale(facing, fwdR)));
   const L1r = UPPER_ARM_LEN, L2r = FOREARM_PALM_LEN;
   const L1l = vLen(RIG.tForearmL), L2l = vLen(RIG.palmL);
 
@@ -827,8 +830,8 @@ const ANAT_SPECS = {
   addr: { turn: [0, 0], flex: 0, bend: -0.05, hipY: -0.02, shift: 0, toe: 0, ball: [-0.37, -0.92, -0.03] },
   take: { turn: [10, 28], flex: 0, bend: 0.03, hipY: -0.025, shift: -0.04, toe: 0, hand: [0.10, -0.40, 0.34], shaft: [-0.96, 0.10, 0.25] },
   mid: { turn: [28, 62], flex: 0.01, bend: 0.06, hipY: -0.028, shift: -0.065, toe: 0, hand: [0.13, 0.00, 0.40], shaft: [-0.30, 0.94, 0.15] },
-  top: { turn: [45, 88], flex: 0.02, bend: 0.10, hipY: -0.03, shift: -0.08, toe: 0, hand: [0.07, 0.22, 0.30], shaft: [0.95, 0.20, 0.15] },
-  trans: { turn: [28, 76], flex: 0.03, bend: 0.08, hipY: -0.032, shift: -0.05, toe: 0, hand: [0.18, 0.06, 0.34], shaft: [0.45, 0.45, 0.20] },
+  top: { turn: [45, 88], flex: 0.02, bend: 0.10, hipY: -0.03, shift: -0.08, toe: 0, hand: [0.05, 0.21, 0.37], shaft: [0.95, 0.20, 0.15] },
+  trans: { turn: [28, 76], flex: 0.03, bend: 0.08, hipY: -0.032, shift: -0.05, toe: 0, hand: [0.16, 0.06, 0.37], shaft: [0.45, 0.45, 0.20] },
   lag: { turn: [-6, 34], flex: 0.05, bend: 0.03, hipY: -0.028, shift: -0.01, toe: 0, hand: [0.05, -0.40, 0.34], shaft: [-0.80, -0.20, 0.30] },
   impact: { turn: [-34, -6], flex: 0.03, bend: -0.08, hipY: -0.025, shift: 0.015, toe: 0.15, ball: [-0.27, -0.96, -0.08] },
   thru1: { turn: [-50, -46], flex: 0.04, bend: -0.04, hipY: -0.025, shift: 0.015, toe: 0.5, hand: [-0.04, -0.38, 0.34], shaft: [0.95, 0.05, 0.10] },

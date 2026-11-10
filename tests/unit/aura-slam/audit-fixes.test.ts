@@ -231,16 +231,15 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
     const tape = original.nodes.find((n) => (n as { name?: string }).name === "static-netTape") as { material?: Record<string, unknown> };
     expect(tape.material?.opacity ?? 1).toBe(1);
     const worldTourNet = snapshot.nodes.find((n) => (n as { name?: string }).name === "net-mesh") as { material?: Record<string, unknown>; castShadow?: boolean };
-    expect(worldTourNet.material).toMatchObject({ alphaMode: "blend", depthWrite: true, doubleSided: true });
+    expect(worldTourNet.material).toMatchObject({ kind: "custom", custom: { transparent: true, depthWrite: false } });
     expect(worldTourNet.castShadow).toBe(false);
     const worldTourTape = snapshot.nodes.find((n) => (n as { name?: string }).name === "static-netTape") as { material?: Record<string, unknown> };
     expect(worldTourTape.material?.opacity ?? 1).toBe(1);
   });
   it("C10: the grandstand is turned to run along the back and fitted by length; the floodlights stand on masts", () => {
-    const stand = snapshot.nodes.find((n) => (n as { name?: string }).name === "stadium-grandstand-rear") as { rotation?: number[]; targetLength?: number; targetMaxDimension?: number };
+    const stand = snapshot.nodes.find((n) => (n as { name?: string }).name === "stadium-grandstand-rear") as { rotation?: number[]; size?: number[] };
     expect(stand.rotation?.[1]).toBeCloseTo(Math.PI / 2, 9);
-    expect(stand.targetLength).toBe(24);
-    expect(stand.targetMaxDimension).toBeUndefined();
+    expect(stand.size?.[2]).toBe(24);
     // GU47 TT-A2 (wave 10): the World Tour look stands the generated lattice tower on the plain (no cylinder mast, no lamp head).
     for (const side of ["left", "right"]) {
       expect(snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`)).toBeUndefined();
@@ -248,14 +247,14 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
       expect(tower.position?.[1]).toBe(0);
       expect(tower.targetHeight).toBe(9.5);
     }
-    // ?look=original keeps the C10 cylinder mast with the rooftop lamp head on top.
+    // ?look=original keeps the C10 cylinder mast with the procedural lamp head on top (0 borrowed rooftop assets).
     const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;
     for (const side of ["left", "right"]) {
       const mast = original.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`) as { size?: number[] };
       expect(mast.size?.[1]).toBe(9);
-      const head = original.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetMaxDimension?: number };
+      const head = original.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; size?: number[] };
       expect(head.position?.[1]).toBe(9);
-      expect(head.targetMaxDimension).toBe(2.2);
+      expect(head.size?.[0]).toBe(2.2);
     }
   });
   it("C13: one instanced particle node", () => {

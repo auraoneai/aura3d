@@ -85,14 +85,18 @@ struct GroundVarying {
   return out;
 }`);
 
-export const GROUND_FRAGMENT_WGSL = stage([NOISE, LIGHT_AND_FOG], /* wgsl */ `
+export const GROUND_FRAGMENT_WGSL = stage([POW, NOISE, LIGHT_AND_FOG], /* wgsl */ `
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>, @location(1) vNormal: vec3<f32>, @location(2) vTone: vec3<f32>) -> @location(0) vec4<f32> {
   var N = normalize(vNormal);
-  if (dot(N, aura.u_cameraPosition - vWorld) < 0.0) { N = -N; }
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  if (dot(N, V) < 0.0) { N = -N; }
   let n = fbm(vWorld.xz * 0.42);
   let speck = vnoise(vWorld.xz * 3.1);
-  let albedo = vTone * (0.78 + 0.34 * n) * (0.94 + 0.12 * speck);
-  return vec4<f32>(applyFog(shade(albedo, N), vWorld), 1.0);
+  let moss = smoothstep(0.54, 0.78, fbm(vWorld.xz * 0.19 + vec2<f32>(3.7, -5.1))) * smoothstep(0.65, 0.95, N.y);
+  let base = mix(vTone, vTone * vec3<f32>(0.72, 0.88, 0.68), moss * 0.42);
+  let albedo = base * (0.78 + 0.34 * n) * (0.94 + 0.12 * speck);
+  let wet = a3dPow(1.0 - max(0.0, dot(N, V)), 3.0) * 0.08 * smoothstep(0.4, 0.9, n);
+  return vec4<f32>(applyFog(shade(albedo, N) + vec3<f32>(0.72, 0.82, 0.96) * wet, vWorld), 1.0);
 }`);
 
 export const SOLID_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
@@ -325,4 +329,56 @@ export const PARTICLE_FRAGMENT_WGSL = stage([], /* wgsl */ `
   let a = vAlpha;
   if (a < 0.005) { discard; }
   return vec4<f32>(vColor, a);
+}`);
+
+export const SLASH_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+struct SlashVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> SlashVarying {
+  var out: SlashVarying;
+  out.vUv = a_uv;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const SLASH_FRAGMENT_WGSL = stage([NOISE], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let head = clamp(aura.u_slashProgress * 1.35, 0.0, 1.25);
+  let sweep = smoothstep(head - 0.78, head - 0.06, vUv.x) * (1.0 - smoothstep(head - 0.04, head + 0.06, vUv.x));
+  let streak = 0.65 + 0.35 * vnoise(vec2<f32>(vUv.x * 14.0 - aura.u_slashTime * 16.0, vUv.y * 5.0));
+  let blade = smoothstep(0.24, 0.90, vUv.y) * (1.0 - smoothstep(0.93, 1.0, vUv.y));
+  let glint = smoothstep(0.72, 0.94, vUv.y);
+  let col = mix(aura.u_slashInk, aura.u_slashEdge * 1.65, glint * 0.85 + 0.15 * streak);
+  let alpha = clamp(sweep * blade * streak * (1.15 - aura.u_slashProgress * 0.55), 0.0, 1.0);
+  if (alpha < 0.01) { discard; }
+  return vec4<f32>(col, alpha);
+}`);
+
+export const THREAT_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+struct ThreatVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> ThreatVarying {
+  var out: ThreatVarying;
+  out.vUv = a_uv;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const THREAT_FRAGMENT_WGSL = stage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let p = (vUv - vec2<f32>(0.5)) * 2.0;
+  let r = length(p);
+  let ang = atan2(p.y, p.x);
+  let brush = 0.78 + 0.22 * sin(ang * 4.0 + aura.u_ringTime * 3.2) * cos(ang * 3.0 - aura.u_ringTime * 1.8);
+  let outer = smoothstep(0.68, 0.78, r) * (1.0 - smoothstep(0.88, 0.97, r));
+  let inner = smoothstep(0.36, 0.42, r) * (1.0 - smoothstep(0.46, 0.52, r));
+  let ticks = step(0.65, cos(ang * 4.0 - aura.u_ringTime * 2.2)) * smoothstep(0.52, 0.58, r) * (1.0 - smoothstep(0.68, 0.74, r));
+  let mask = clamp(outer * brush + inner * 0.65 + ticks * 0.75, 0.0, 1.0);
+  if (mask < 0.04) { discard; }
+  let col = mix(aura.u_inkColor, aura.u_ringColor * (1.05 + 0.55 * aura.u_glow), clamp(outer + ticks * 0.8, 0.0, 1.0));
+  return vec4<f32>(col, clamp(mask * (0.68 + 0.28 * aura.u_glow), 0.0, 1.0));
 }`);

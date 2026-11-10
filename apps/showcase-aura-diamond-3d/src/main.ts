@@ -31,18 +31,19 @@ import {
 } from "@aura3d/engine";
 import {
   createJuice,
+  createHitStop,
   createOverlayDriver,
   createFixedStepPresenter,
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
-  mountTouchControls,
   installGameBeacon,
   attachToBone,
   boneWorldPosition,
   type AttachableActor
 } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets.route";
@@ -254,13 +255,13 @@ const STUDIO_COLORS: readonly { id: string; label: string; color: string }[] = [
   { id: "chalk", label: "Chalk White", color: "#f2eee3" }
 ];
 
-const STUDIO_BATS: readonly { id: string; label: string; color: string; emissive: number }[] = [
-  { id: "ash", label: "Natural Ash", color: "#b98a4e", emissive: 0 },
-  { id: "blackout", label: "Blackout Maple", color: "#1d2028", emissive: 0 },
-  { id: "ember", label: "Ember Grain", color: "#c2542a", emissive: 0.35 },
-  { id: "neon", label: "Neon Teal", color: "#35d6ff", emissive: 0.9 },
-  { id: "lunar", label: "Lunar White", color: "#dfe6ee", emissive: 0.25 },
-  { id: "gilded", label: "Gilded", color: "#ffd76a", emissive: 0.55 }
+const STUDIO_BATS: readonly { id: string; label: string; color: string; emissive: number; wood: "ash" | "maple" | "ember" | null }[] = [
+  { id: "ash", label: "Lacquered Ash", color: "#dfc49e", emissive: 0, wood: "ash" },
+  { id: "blackout", label: "Blackout Maple", color: "#1d2028", emissive: 0, wood: null },
+  { id: "ember", label: "Torched Maple", color: "#c2542a", emissive: 0.12, wood: "ember" },
+  { id: "neon", label: "Neon Teal", color: "#35d6ff", emissive: 0.9, wood: null },
+  { id: "lunar", label: "Golden Maple", color: "#d6a468", emissive: 0, wood: "maple" },
+  { id: "gilded", label: "Gilded Barrel", color: "#ffd76a", emissive: 0.42, wood: null }
 ];
 
 const STUDIO_FLAIR: readonly { id: string; label: string }[] = [
@@ -389,17 +390,26 @@ function boot(): void {
     reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false)
   };
   let auraApp: ReturnType<typeof createAuraApp>;
+  const labFlags = readLabFlags();
+  const lab = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
   try {
-    // Lab flags (EXPERIMENTAL, default OFF): `?backend=webgpu`, `?gamut=p3`, `?worker=1`. With no flag the fragments are empty and the
-    // options below are exactly what shipped before.
-    // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
-    const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
+    const bootPlan = lookPlan(bootPark, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
+    const bootOutput =
+      lab.output ??
+      (bootPlan.output
+        ? ({
+            preset: bootPlan.output.preset,
+            toneMapping: bootPlan.output.toneMapping,
+            exposure: bootPlan.output.exposure,
+            dither: true
+          } as any)
+        : undefined);
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
       qualityRebuild: { flags: ["game", "animation", "post"] },
       renderer: { quality: sceneCtx.tier, ...lab.renderer },
-      ...(lab.output ? { output: lab.output } : {}),
+      ...(bootOutput ? { output: bootOutput } : {}),
       // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
       ...(lab.worker ? { worker: lab.worker } : {})
     });
@@ -414,9 +424,8 @@ function boot(): void {
   const app = auraApp;
 
   /**
-   * The park's broadcast output (DIA-P1): output preset, operator and exposure through C-05 `setOutput` (app state, so
-   * it is re-applied on every park switch). The cinematic-film preset carries a DOF stage; live play never blurs
-   * (DIA-P2: DOF only in the walk-up and home-run shots). `?look=original` leaves the output untouched.
+   * The park's broadcast output (DIA-P1 + WP-03): AgX on day/golden-hour parks (`sandlot`, `ivy`) and calibrated ACES on
+   * night/dome/lunar venues, with dithered HDR film output and DOF disabled during live play.
    */
   function applyParkLook(id: ParkId): void {
     const plan = lookPlan(id, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
@@ -424,11 +433,18 @@ function boot(): void {
     document.documentElement.style.setProperty("--amber", hudAccent(id, sceneCtx.variant));
     if (!plan.output) return;
     try {
-      // Lane 521: the plan's output (preset, operator, exposure) never reached the post chain through 4.7.18, so every
-      // park shipped at the engine default (ACES, exposure 1, no preset stages). 5.0 forwards setOutput to the post
-      // chain, which turned the parks murky (AgX) or hazy. Pin the output the parks were tuned and judged under.
-      (app as any).setOutput?.({ toneMapping: "aces", exposure: 1 });
+      if (!lab.output) {
+        const outSpec = {
+          preset: plan.output.preset,
+          toneMapping: plan.output.toneMapping,
+          exposure: plan.output.exposure,
+          dither: true
+        };
+        if (typeof (app as any).output?.setOutput === "function") (app as any).output.setOutput(outSpec);
+        else (app as any).setOutput?.(outSpec);
+      }
       (app as any).post?.setEffectEnabled?.("depth-of-field", false);
+      (app as any).effects?.setEffectEnabled?.("depth-of-field", false);
     } catch {
       /* output is presentation only; a missing surface keeps the default output */
     }
@@ -455,6 +471,9 @@ function boot(): void {
     contact: getEl("h-contact"),
     contactGrade: getEl("h-contact-grade"),
     contactData: getEl("h-contact-data"),
+    ctEv: getEl("h-ct-ev"),
+    ctLa: getEl("h-ct-la"),
+    ctDist: getEl("h-ct-dist"),
     catchPrompt: getEl("h-catch-prompt"),
     derbyCard: getEl("h-derby-card"),
     derbyHr: getEl("h-derby-hr"),
@@ -493,6 +512,13 @@ function boot(): void {
     timingMs: getEl("h-timing-ms"),
     timing: getEl("h-timing"),
     pitchPad: getEl("h-pitch-pad"),
+    touchDeck: getEl("h-touch-deck"),
+    touchPad: getEl("h-touch-pad"),
+    touchDot: getEl("h-touch-dot"),
+    touchPadLabel: getEl("h-touch-pad-lbl"),
+    touchAction: getEl("h-touch-action"),
+    touchActionMain: getEl("h-touch-act-main"),
+    touchActionSub: getEl("h-touch-act-sub"),
     srResult: getEl("sr-result"),
     goBox: getEl("go-box"),
     goBests: getEl("go-bests"),
@@ -562,7 +588,10 @@ function boot(): void {
       confetti: tryReq("confetti"),
       hrBurst: tryReq("hr-burst"),
       flairBurst: tryReq("flair-burst"),
-      lunarEarth: tryReq("lunar-earth")
+      lunarEarth: tryReq("lunar-earth"),
+      harborWater: tryReq("harbor-water"),
+      vfxDust: tryReq("vfx-plate-dust"),
+      vfxSparks: tryReq("vfx-bat-sparks")
     };
     for (const id of FIELDER_IDS) H[id] = req(id);
     for (const id of GLOVE_OWNERS) H[`glove-${id}`] = tryReq(`glove-${id}`);
@@ -668,7 +697,28 @@ function boot(): void {
     fxLayer.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:26;background:transparent;";
     document.body.appendChild(fxLayer);
   }
-  let hitStopUntil = 0;
+  void createHitStop;
+  const impactRig = createImpactRig({ reducedMotion });
+  let lastImpactFrame: ReturnType<typeof impactRig.step> = {
+    simDt: 0.016,
+    frozen: false,
+    shakeOffset: [0, 0, 0],
+    shakeRoll: 0,
+    fovDeltaDeg: 0
+  };
+  let flipbookDustUntil = 0;
+  let flipbookSparksUntil = 0;
+  function triggerFlipbookBurst(kind: "dust" | "sparks", pos: Vec3, dur = 0.36): void {
+    if (sceneCtx.variant !== "gu47" || reducedFlash) return;
+    const nowSec = performance.now() / 1000;
+    if (kind === "dust") {
+      H.vfxDust?.setPosition(pos[0], Math.max(0.12, pos[1]), pos[2]).setVisible(true);
+      flipbookDustUntil = nowSec + dur;
+    } else {
+      H.vfxSparks?.setPosition(pos[0], pos[1], pos[2]).setVisible(true);
+      flipbookSparksUntil = nowSec + dur;
+    }
+  }
   /** GU47 DIA-V2: time of the last home run, for the board's 2 s HOME RUN card. */
   let boardHrAt = -Infinity;
   const fxCtl = (game as any).effects({ app, reducedMotion, reducedFlash });
@@ -778,7 +828,12 @@ function boot(): void {
   const juice = createJuice({
     events: JUICE_EVENTS as any,
     camera: (app as any).camera,
-    session: { reducedMotion, reducedFlash, hitStop: (s: number) => (hitStopUntil = performance.now() / 1000 + s), slowMo: () => {} } as any,
+    session: {
+      reducedMotion,
+      reducedFlash,
+      hitStop: (s: number) => impactRig.trigger({ freezeSeconds: s, trauma: 0.45, fovKickDeg: 2.2 }),
+      slowMo: () => {}
+    } as any,
     fx,
     overlay: createOverlayDriver({ domElement: fxLayer }),
     tweens: createTweenEngine(),
@@ -859,16 +914,7 @@ function boot(): void {
   });
   window.addEventListener("pointerdown", skipShot);
 
-  let touchControls: any = null;
-  try {
-    touchControls = mountTouchControls(
-      input as any,
-      { preset: "dpad-4btn", bindings: { "stick.left": "pciL", "stick.right": "pciR", "stick.up": "pciU", "stick.down": "pciD", light: "swing", heavy: "swing", jump: "swing", special: "swing" }, haptics: { ms: 14 } } as any,
-      { doc: document as any, root: document.body as any, coarsePointer: () => window.matchMedia?.("(pointer: coarse)")?.matches ?? false } as any
-    );
-  } catch {
-    /* touch controls optional */
-  }
+  let touchControls: { update?: () => void; evidence?: () => object } | null = null;
 
   /* ---------- Game state ---------- */
   interface GameState {
@@ -1077,12 +1123,21 @@ function boot(): void {
   let confettiUntil = 0;
   let hrBurstUntil = 0;
 
-  function showContact(grade: string, data: string, dur = 1.4): void {
+  function showContact(
+    grade: string,
+    data: string,
+    dur = 1.4,
+    metrics?: { evMph: number; launchDeg: number; distFt: number }
+  ): void {
     if (el.contactGrade) {
       el.contactGrade.textContent = grade;
       el.contactGrade.className = `grade ${grade.toLowerCase().replace(/\s.*/, "")}`;
     }
     if (el.contactData) el.contactData.textContent = data;
+    if (el.ctEv) el.ctEv.textContent = metrics ? metrics.evMph.toFixed(1) : "—";
+    if (el.ctLa) el.ctLa.textContent = metrics ? `${metrics.launchDeg >= 0 ? "+" : ""}${metrics.launchDeg.toFixed(0)}°` : "—";
+    if (el.ctDist) el.ctDist.textContent = metrics ? String(metrics.distFt) : "—";
+    el.contact?.classList.toggle("has-metrics", Boolean(metrics));
     el.contact?.classList.add("show");
     contactHideAt = performance.now() / 1000 + dur;
   }
@@ -1406,11 +1461,17 @@ function boot(): void {
 
   /* ---------- Uniforms / studio ---------- */
   const uniformCache = new Map<string, unknown>();
-  function uniformMaterial(color: string): any {
-    let m = uniformCache.get(color);
+  function uniformMaterial(color: string, isCap = true): any {
+    const key = `${color}:${isCap ? "cap" : "belt"}:${sceneCtx.variant}`;
+    let m = uniformCache.get(key);
     if (!m) {
-      m = material.pbr({ color, roughness: CAP_ROUGHNESS });
-      uniformCache.set(color, m);
+      m =
+        sceneCtx.variant === "gu47"
+          ? isCap
+            ? material.clearcoatPaint({ color, roughness: CAP_ROUGHNESS, clearcoat: 0.86, clearcoatRoughness: 0.12 })
+            : material.physical({ color, roughness: 0.48, clearcoat: 0.24, clearcoatRoughness: 0.42 })
+          : material.pbr({ color, roughness: CAP_ROUGHNESS });
+      uniformCache.set(key, m);
     }
     return m;
   }
@@ -1419,17 +1480,28 @@ function boot(): void {
     const batterColor = G.mode === "studio" ? G.studio.color : battingClub().color;
     const fieldColor = fieldingClub().color;
     for (const id of ["pitcher", ...FIELDER_IDS]) {
-      H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor));
-      H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor));
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor, true));
+      H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor, false));
     }
     for (const id of ["batter", "runner-0", "runner-1", "runner-2"]) {
-      H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor));
-      H[`${id}-belt`]?.setMaterial(uniformMaterial(batterColor));
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor, true));
+      H[`${id}-belt`]?.setMaterial(uniformMaterial(batterColor, false));
     }
     G.lastBatColor = batterColor;
     G.lastFieldColor = fieldColor;
     const batSpec = STUDIO_BATS.find((b) => b.id === G.studio.bat) ?? STUDIO_BATS[0]!;
-    H.bat?.setMaterial(batSpec.emissive > 0 ? material.emissive({ color: batSpec.color, emissive: batSpec.color, emissiveIntensity: batSpec.emissive }) : material.pbr({ color: batSpec.color, roughness: 0.55 }));
+    H.bat?.setMaterial(
+      batSpec.emissive > 0.3
+        ? material.emissive({ color: batSpec.color, emissive: batSpec.color, emissiveIntensity: batSpec.emissive })
+        : material.physical({
+            color: batSpec.color,
+            roughness: batSpec.id === "blackout" ? 0.28 : 0.22,
+            metallic: batSpec.id === "gilded" ? 0.65 : 0.04,
+            clearcoat: 0.92,
+            clearcoatRoughness: 0.08,
+            ...(batSpec.emissive > 0 ? { emissive: batSpec.color, emissiveIntensity: batSpec.emissive } : {})
+          })
+    );
   }
 
   /** Keep uniforms honest when the half flips (batter takes fielding colors). */
@@ -1458,6 +1530,7 @@ function boot(): void {
    */
   function fireHrBurst(landPos?: Vec3): void {
     boardHrAt = performance.now() / 1000;
+    impactRig.trigger({ freezeSeconds: 0.068, trauma: 0.76, fovKickDeg: 3.4 });
     if (gu47Fx && landPos) {
       const kind = juiceFxKind("homer", G.park);
       const at: Vec3 =
@@ -1465,6 +1538,7 @@ function boot(): void {
         : kind === "diamond-regolith-arc" ? [landPos[0], 0.2, landPos[2]]
         : [landPos[0] * 0.8, 16, landPos[2] * 0.8];
       burstVfx(kind, at);
+      triggerFlipbookBurst("sparks", [landPos[0] * 0.45, 8.5, landPos[2] * 0.45], 0.48);
       return;
     }
     hrBurstUntil = performance.now() / 1000 + 2.4;
@@ -1632,9 +1706,23 @@ function boot(): void {
       ball.catchFielder = best;
     }
 
-    showContact(grade, `${evMph.toFixed(1)} MPH · ${la.toFixed(0)}° · ${Math.round(mToFt(ball.landDist))} FT`, foul ? 1.0 : 1.6);
+    const distFt = Math.round(mToFt(ball.landDist));
+    showContact(
+      grade,
+      `${evMph.toFixed(1)} MPH · ${la.toFixed(0)}° · ${distFt} FT`,
+      foul ? 1.15 : 2.1,
+      { evMph, launchDeg: la, distFt }
+    );
     cue(isPlayer ? "crack" : "contact");
     juiceFire("crack", { position: contactPos });
+    if (grade === "PERFECT" || evMph >= 100) {
+      impactRig.trigger({ freezeSeconds: 0.048, trauma: 0.62, fovKickDeg: 2.8 });
+      triggerFlipbookBurst("sparks", contactPos, 0.28);
+    } else if (grade === "GOOD" || evMph >= 88) {
+      impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.34, fovKickDeg: 1.4 });
+      triggerFlipbookBurst("sparks", contactPos, 0.22);
+    }
+    triggerFlipbookBurst("dust", [-0.72 + G.batterAimX, 0.14, 0.34 + G.batterAimZ], 0.34);
 
     G.batted = ball;
     G.batterRunning = true; // sprint to first during the flight
@@ -2293,6 +2381,7 @@ function boot(): void {
   function triggerSwing(power = 0.84): void {
     lastManualInputAt = simTime;
     cue("swing");
+    triggerFlipbookBurst("dust", [-0.78 + G.batterAimX, 0.12, 0.32 + G.batterAimZ], 0.24);
     const p = G.pitch;
     if (p && !p.swung && !p.resolved && (G.phase === "windup" || G.phase === "pitch")) {
       const toPlane = timeToContactPlane(G.phase, G.phaseT, p.t, p.flightSec);
@@ -2303,6 +2392,113 @@ function boot(): void {
       // Practice swing between pitches.
       startBatterSwing({ power, isPlayer: true, durPre: 0.42, durPost: 0.45 });
     }
+  }
+
+  /* ---------- Dedicated Baseball Mobile Touch Deck (PCI/AIM Pad + Primary Trigger) ---------- */
+  {
+    let padPtrId: number | null = null;
+    let touchCount = 0;
+    const applyPadPointer = (clientX: number, clientY: number): void => {
+      const pad = el.touchPad;
+      if (!pad) return;
+      const rect = pad.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      const nx = clamp(((clientX - rect.left) / rect.width - 0.5) * 2.5, -1.25, 1.25);
+      const ny = clamp((0.5 - (clientY - rect.top) / rect.height) * 2.5, -1.25, 1.25);
+      lastManualInputAt = simTime;
+      if (playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter")) {
+        G.aim = [clamp(nx, -1.2, 1.2), clamp(ny, -1.2, 1.2)];
+      } else {
+        G.pci = [nx, ny];
+      }
+    };
+    if (el.touchPad) {
+      el.touchPad.addEventListener("pointerdown", (e: PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        padPtrId = e.pointerId;
+        touchCount += 1;
+        try {
+          el.touchPad?.setPointerCapture(e.pointerId);
+        } catch {
+          /* capture optional */
+        }
+        applyPadPointer(e.clientX, e.clientY);
+      });
+      el.touchPad.addEventListener("pointermove", (e: PointerEvent) => {
+        if (padPtrId !== e.pointerId) return;
+        e.preventDefault();
+        applyPadPointer(e.clientX, e.clientY);
+      });
+      const releasePad = (e: PointerEvent): void => {
+        if (padPtrId === e.pointerId) padPtrId = null;
+      };
+      el.touchPad.addEventListener("pointerup", releasePad);
+      el.touchPad.addEventListener("pointercancel", releasePad);
+    }
+    if (el.touchAction) {
+      el.touchAction.addEventListener("pointerdown", (e: PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        touchCount += 1;
+        edges.swing = true;
+        lastManualInputAt = simTime;
+        try {
+          if ((navigator as unknown as { userActivation?: { hasBeenActive?: boolean } }).userActivation?.hasBeenActive) {
+            navigator.vibrate?.(12);
+          }
+        } catch {
+          /* haptics optional */
+        }
+      });
+      el.touchAction.addEventListener("pointercancel", () => {});
+    }
+    touchControls = {
+      update: () => {
+        const menuOpen = !(el.menu?.classList.contains("hidden") ?? true);
+        const showDeck = G.phase !== "menu" && !G.over && !menuOpen;
+        el.touchDeck?.classList.toggle("show", showDeck);
+        if (!showDeck) return;
+        const pitching = playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter");
+        const coords = pitching ? G.aim : G.pci;
+        if (el.touchDot) {
+          el.touchDot.style.left = `${(clamp(coords[0], -1.25, 1.25) / 2.5 + 0.5) * 100}%`;
+          el.touchDot.style.top = `${(0.5 - clamp(coords[1], -1.25, 1.25) / 2.5) * 100}%`;
+        }
+        if (el.touchPadLabel) {
+          const padLbl = pitching ? "AIM ZONE" : "PCI ZONE";
+          if (el.touchPadLabel.textContent !== padLbl) el.touchPadLabel.textContent = padLbl;
+        }
+        if (el.touchActionMain && el.touchActionSub) {
+          let mainLbl = "SWING";
+          let subLbl = "CONTACT";
+          if (G.catchPrompt && G.phase === "batted") {
+            mainLbl = "CATCH";
+            subLbl = "WEB GEM";
+          } else if (G.phase === "runners" && !G.pushUsed && G.runnerBase.some((x) => x >= 0)) {
+            mainLbl = "ADVANCE";
+            subLbl = "EXTRA BASE";
+          } else if (playerPitchingTurn() && G.phase === "pitchSelect") {
+            mainLbl = "PITCH";
+            subLbl = PITCHES[G.selPitch].short;
+          } else if (playerPitchingTurn() && G.phase === "pitchMeter") {
+            mainLbl = "RELEASE";
+            subLbl = "SNAP METER";
+          } else if (G.phase === "between" && battingIsPlayer()) {
+            mainLbl = "SWING";
+            subLbl = "CALL PITCH";
+          }
+          if (el.touchActionMain.textContent !== mainLbl) el.touchActionMain.textContent = mainLbl;
+          if (el.touchActionSub.textContent !== subLbl) el.touchActionSub.textContent = subLbl;
+        }
+      },
+      evidence: () => ({
+        preset: "diamond-pci-deck",
+        coarse: window.matchMedia?.("(pointer: coarse)")?.matches ?? false,
+        touches: touchCount,
+        padActive: padPtrId !== null
+      })
+    };
   }
 
   /** Seconds of stance before the CPU pitcher delivers when the player does not ask for the pitch. */
@@ -2509,7 +2705,10 @@ function boot(): void {
     if (landed && !ball.dead) {
       // DIA-V1: what a ball landing in the park kicks up (clay, chalk on a foul line, canyon dust, regolith). Reads the
       // ball only; the sim state and G.rng are untouched.
-      if (ball.pos[1] <= 0.05 && !ball.crossedFence) burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], 0.05, ball.pos[2]]);
+      if (ball.pos[1] <= 0.05 && !ball.crossedFence) {
+        burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], 0.05, ball.pos[2]]);
+        triggerFlipbookBurst("dust", [ball.pos[0], 0.14, ball.pos[2]], 0.38);
+      }
       ball.dead = true;
       classifyBatted(ball);
       el.catchPrompt?.classList.remove("show");
@@ -3012,11 +3211,15 @@ function boot(): void {
     if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") return [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
     return G.lastBallPos;
   }
-  const presenter = createFixedStepPresenter<{ ball: Vec3 }>({
-    snapshot: () => ({ ball: simBallWorld() }),
+  const presenter = createFixedStepPresenter<{ ball: Vec3; pci: [number, number] }>({
+    snapshot: () => ({ ball: simBallWorld(), pci: [G.pci[0], G.pci[1]] }),
     // A jump of more than 4 m in one step is a new pitch or a reset: show it, do not smear across it.
-    blend: (a, b, t) => (Math.hypot(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]) > 4 ? b : { ball: mix3(a.ball, b.ball, t) })
+    blend: (a, b, t) => ({
+      ball: Math.hypot(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]) > 4 ? b.ball : mix3(a.ball, b.ball, t),
+      pci: [lerp(a.pci[0], b.pci[0], t), lerp(a.pci[1], b.pci[1], t)]
+    })
   });
+  let presentedPci: [number, number] = [0, 0];
 
   /** Sim-side timers and the swing clock: one fixed step (C14). Contact resolves exactly when the bat meets the plane. */
   function stepSwingClock(dt: number): void {
@@ -3163,15 +3366,19 @@ function boot(): void {
         }
       }
     }
-    FIELDER_IDS.forEach((id) => {
+    FIELDER_IDS.forEach((id, idx) => {
       const spot = FIELDER_SPOTS[id]!;
       let x = spot[0];
       let z = spot[2];
       const y = spot[1];
       let yaw = Math.atan2(-x, -z);
-      // The catcher must read as a catcher, not a second batter standing at the plate.
-      let clip = id === "f-c" ? "Crouch_Idle_Loop" : "Ready";
-      let speed = 1.0;
+      const isInfielder = id === "f-1b" || id === "f-2b" || id === "f-ss" || id === "f-3b";
+      const isOutfielder = id === "f-lf" || id === "f-cf" || id === "f-rf";
+      const pitchDelivery = G.phase === "windup" || G.phase === "pitch";
+      // The catcher crouches behind the plate; infielders drop into an athletic split-step crouch as the pitch is delivered;
+      // outfielders run de-synchronized Ready cycles so no two fielders pose as synchronous clones.
+      let clip = id === "f-c" ? "Crouch_Idle_Loop" : isInfielder && pitchDelivery ? "Crouch_Idle_Loop" : "Ready";
+      let speed = id === "f-c" ? 1.0 : isInfielder ? 0.91 + (idx % 4) * 0.06 : isOutfielder ? 0.88 + (idx - 5) * 0.09 : 1.0;
 
       const distToLanding = b ? Math.hypot(spot[0] - b.landPos[0], spot[2] - b.landPos[2]) : Infinity;
       const shouldChase = G.phase === "batted" && b && !b.dead && id !== "f-c" && (id === activeFielderId || distToLanding < 22);
@@ -3202,6 +3409,13 @@ function boot(): void {
       } else if (G.fielderThrowTimer > 0 && G.activeThrowerId === id) {
         clip = "Release";
         speed = 1.35;
+      } else if (isInfielder && pitchDelivery && !reducedMotion) {
+        const creep = G.phase === "pitch" ? 0.22 : clamp(G.phaseT / WINDUP_RELEASE_T, 0, 1) * 0.16;
+        const inv = 1 / Math.max(1, Math.hypot(x, z));
+        x -= x * inv * creep;
+        z -= z * inv * creep;
+      } else if (isOutfielder && !reducedMotion) {
+        yaw += Math.sin(t * 1.35 + idx * 1.9) * 0.035;
       }
       setAthlete(id, x, y, z, yaw, clip, speed);
     });
@@ -3236,10 +3450,11 @@ function boot(): void {
       setActorAnimation(`waver-${i}`, w, "Ready", hop > 0 ? 1.6 : 1.0);
     });
     if (sceneCtx.variant === "gu47" && pk.id === "lunar") (H.lunarEarth as AnyHandle)?.setRotation(0, earthYaw(performance.now() / 1000, reducedMotion), 0);
-    void t;
 
     // Ball + shadow + trail dots: drawn between the last two sim steps (fixed-step presenter, C14).
-    let ballWorld: Vec3 = presenter.present(simLoop, appReady && !simLoop.manual && !simPaused()).ball;
+    const presented = presenter.present(simLoop, appReady && !simLoop.manual && !simPaused());
+    presentedPci = presented.pci;
+    let ballWorld: Vec3 = presented.ball;
     if (G.caughtBy && G.phase === "runners") {
       const glove = H[`glove-${G.caughtBy}`]?.position as Vec3 | undefined;
       if (glove) ballWorld = [glove[0], glove[1], glove[2]];
@@ -3274,8 +3489,8 @@ function boot(): void {
 
     // PCI ring (batting) + aim dot (pitching) + landing ring + zone frame
     const pciVisible = (playerBatting && (G.phase === "pitch" || G.phase === "between" || G.phase === "windup") && G.mode !== "bullpen") || G.mode === "studio" || G.mode === "derby";
-    const pciX = clamp(G.pci[0], -1.25, 1.25) * ZONE_HW;
-    const pciY = ZONE_CY + clamp(G.pci[1], -1.25, 1.25) * ZONE_HH;
+    const pciX = clamp(presentedPci[0], -1.25, 1.25) * ZONE_HW;
+    const pciY = ZONE_CY + clamp(presentedPci[1], -1.25, 1.25) * ZONE_HH;
     H.pci?.setPosition(pciX, pciY, 0.06).setRotation(0, 0, 0).setVisible(pciVisible);
     const aimVisible = playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter");
     H.aim?.setPosition(G.aim[0] * ZONE_HW, ZONE_CY + G.aim[1] * ZONE_HH, 0.08).setVisible(aimVisible);
@@ -3308,6 +3523,14 @@ function boot(): void {
     if (flairOnUntil && now > flairOnUntil) {
       H.flairBurst?.setVisible(false);
       flairOnUntil = 0;
+    }
+    if (flipbookDustUntil && now > flipbookDustUntil) {
+      H.vfxDust?.setVisible(false);
+      flipbookDustUntil = 0;
+    }
+    if (flipbookSparksUntil && now > flipbookSparksUntil) {
+      H.vfxSparks?.setVisible(false);
+      flipbookSparksUntil = 0;
     }
 
     if (el.catchPrompt) el.catchPrompt.classList.toggle("show", !!G.catchPrompt && G.phase === "batted");
@@ -3354,7 +3577,7 @@ function boot(): void {
       fov = 47;
     } else {
       c.mode = "batting";
-      const drift = clamp(G.pci[0] * 0.9, -1.2, 1.2);
+      const drift = clamp(presentedPci[0] * 0.9, -1.2, 1.2);
       const pitchPush = G.phase === "pitch" && G.pitch ? G.pitch.t * 1.4 : 0;
       // Frames the WHOLE batter and bat through the swing: the follow-through
       // tip reaches y≈2.4 m, x≈[-1.8, 0.5] — NDC extents stay under ±0.3 x /
@@ -3395,8 +3618,12 @@ function boot(): void {
     c.eye = mix3(c.eye, eye, k);
     c.target = mix3(c.target, target, k);
     c.fov = lerp(c.fov, fov, k);
+    const sh = qaCam ? ([0, 0, 0] as const) : lastImpactFrame.shakeOffset;
+    const fovPunch = qaCam ? 0 : lastImpactFrame.fovDeltaDeg;
+    const poseEye: Vec3 = [c.eye[0] + sh[0] * 0.22, c.eye[1] + sh[1] * 0.22, c.eye[2] + sh[2] * 0.14];
+    const poseTarget: Vec3 = [c.target[0] + sh[0] * 0.08, c.target[1] + sh[1] * 0.08, c.target[2]];
     try {
-      (app as any).camera?.setPose?.({ position: c.eye, target: c.target, fov: c.fov });
+      (app as any).camera?.setPose?.({ position: poseEye, target: poseTarget, fov: clamp(c.fov - fovPunch * 0.45, 28, 62) });
     } catch {
       /* camera override best-effort */
     }
@@ -3857,11 +4084,12 @@ function boot(): void {
     }
 
     input.update(dt);
+    lastImpactFrame = impactRig.step(dt);
     captureEdges();
     if (simPaused()) {
       consumeEdges();
     } else if (!simLoop.manual) {
-      simClockMs += dt * 1000 * (hitStopUntil > now ? 0.12 : 1);
+      simClockMs += (lastImpactFrame.frozen ? Math.max(dt * 0.08, lastImpactFrame.simDt) : dt) * 1000;
       simLoop.tick(simClockMs);
     }
 

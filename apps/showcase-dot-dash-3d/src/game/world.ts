@@ -14,7 +14,7 @@ import {
   GHOST_TINT, st, normPos, normGhostPos, type GhostId
 } from "./sim.js";
 import type { FruitKind } from "./grid.js";
-import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
+import { fitPlayRig, projectNdc, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
   BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_HAZE, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
@@ -28,6 +28,12 @@ import {
 } from "./motion.js";
 import { BOARD_BAKE, BOARD_BAKE_LOW, bakeBoardMaps, type BoardMaps } from "./boardMaterial.js";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
+import { createFlipbookAtlas, createGradingLut } from "../../../showcase-port-shared/vfx-pack";
+import { dualCircuitBusSpec, dualEnergyFieldSpec, dualSparkFlipbookSpec } from "./shaders.js";
+
+/** Procedural cyber-neon grading LUT (vfx-pack) alongside per-board `.cube` display LUTs. */
+export const CYBER_NEON_LUT = createGradingLut("cyber-neon");
+const SPARKS_ATLAS = createFlipbookAtlas("sparks", [255, 214, 118]);
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
 const lookAssets = defineAuraAssets({
@@ -72,7 +78,7 @@ function courierPod(name: string) {
     scale: [COURIER_POD.scale, COURIER_POD.scale, COURIER_POD.scale],
     castShadow: true,
     receiveShadow: true,
-    materialOverrides: [{ rim: { ...COURIER_POD.rim }, emissive: COURIER_POD.emissive, emissiveIntensity: COURIER_POD.emissiveIntensity, envMapIntensity: 1.4, clearcoat: 0.6, clearcoatRoughness: 0.2 }]
+    materialOverrides: [{ rim: { ...COURIER_POD.rim }, emissive: COURIER_POD.emissive, emissiveIntensity: COURIER_POD.emissiveIntensity, envMapIntensity: 1.55, clearcoat: 0.92, clearcoatRoughness: 0.1 }]
   }).runtime(game.runtimeNode(name));
 }
 
@@ -103,7 +109,6 @@ const GEM_COLOR: Record<FruitKind, string> = {
   melon: "#3de7ff",
   star: "#e9d6ff"
 };
-const TROPHY_COLORS = ["#ff3b5c", "#ffb23e", "#3dff9a", "#3de7ff", "#b78bff", "#ff8fc7"] as const;
 
 let app: AuraApp | null = null;
 export function bindApp(a: AuraApp): void { app = a; }
@@ -142,23 +147,29 @@ export function tileToScreen(tx: number, ty: number, y = 0.6): { x: number; y: n
 // ---------------------------------------------------------------------------
 const CAP = {
   wall: 420,
-  rail: 1700,     // silver gull-wing pins: two per corridor-facing chip side (DD47-M2)
-  trace: 640,     // copper traces between corridor tile centres (signature, DD47-M1)
+  wallTrim: 420,  // luminous bevel trim crowning each lacquer wall module
+  rail: 1700,     // brushed-metal gull-wing pins: two per corridor-facing chip side (DD47-M2)
+  trace: 640,     // brushed copper traces between corridor tile centres (signature, DD47-M1)
   traceLit: 640,  // the lit overlay over the traces the courier passed or a surge pulse crosses
-  dot: 220,
-  orb: 8,         // capacitor-can bodies (surge cells, DD47-M3)
-  vent: 8,        // the glowing vent on top of each can
+  dot: 220,       // faceted glint pellets
+  orb: 8,         // brushed-metal power-prism collars (surge cells, DD47-M3)
+  prism: 8,       // studioGlass power prisms
+  vent: 8,        // glowing plasma cores inside each power prism
   marker: 8,      // ghost-school target tiles
   eyes: 12,       // eyes-only specter state (2 per ghost max + margin)
-  dress: 140,
-  glow: 120,
-  hero: 2,       // courier faceted shell (+ wrap echo)
-  halo: 2,       // courier spinning ring
-  shC: 2,        // sentry silhouettes: cone, cube, ring, saucer (+ wrap echo each)
+  dress: 140,     // anodized heatsink & Nixie socket bases
+  cap: 80,        // brushed-metal electrolytic capacitor cans
+  glow: 120,      // Nixie cathode filaments & component LEDs
+  hero: 2,        // courier forward prow visor (+ wrap echo)
+  halo: 2,        // courier spinning induction ring
+  shC: 2,         // sentry silhouettes: cone, cube, ring, saucer (+ wrap echo each)
   shB: 2,
   shT: 2,
   shY: 2,
-  trophy: 12     // perimeter gems on pedestals + the cache gem
+  visor: 8,       // directional glowing sentry optic visors (+ wrap echoes)
+  scan: 8,        // translucent sentry forward scan cones (+ wrap echoes)
+  trophy: 12,     // studioGlass Nixie tube envelopes on perimeter sockets
+  gem: 2          // faceted bonus cache gem
 } as const;
 
 type Pool = { mat: Float32Array; col: Float32Array; n: number };
@@ -193,7 +204,7 @@ function instRgb(k: keyof typeof CAP, x: number, y: number, z: number, sx: numbe
 }
 
 /** Pools that only change with the board: painted and submitted once per board, not every frame. */
-const STATIC_POOLS = ["wall", "rail", "trace", "dress", "glow"] as const satisfies readonly (keyof typeof CAP)[];
+const STATIC_POOLS = ["wall", "wallTrim", "rail", "trace", "dress", "cap", "glow"] as const satisfies readonly (keyof typeof CAP)[];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !(STATIC_POOLS as readonly string[]).includes(k));
 
 const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
@@ -263,11 +274,11 @@ const boardMaterial = (look: BoardLookRow, baked: BoardTextures | null) => baked
   ? material.pbr({
     color: "#ffffff", texture: baked.maps[0]!.handle as never, normal: baked.maps[1]!.handle, normalScale: 1,
     occlusionMap: baked.maps[2]!.handle, occlusionStrength: 1, textureAnisotropy: 8,
-    roughness: look.maskRoughness, metalness: 0.04, clearcoat: 0.75, clearcoatRoughness: 0.14
+    roughness: look.maskRoughness, metalness: 0.06, clearcoat: 0.92, clearcoatRoughness: 0.08
   })
-  : material.pbr({ color: look.mask, roughness: look.maskRoughness, metalness: 0.04, clearcoat: 0.75, clearcoatRoughness: 0.14 });
-/** Copper traces between the corridor tiles: bare metal, no glow until the courier passes (traceLit). */
-const traceMaterial = () => material.pbr({ color: "#ffffff", roughness: 0.34, metalness: 0.9 });
+  : material.pbr({ color: look.mask, roughness: look.maskRoughness, metalness: 0.06, clearcoat: 0.92, clearcoatRoughness: 0.08 });
+/** Brushed copper traces between the corridor tiles: bare metal, no glow until the courier passes (traceLit). */
+const traceMaterial = () => material.brushedMetal({ color: "#ffffff", roughness: 0.28, anisotropy: 0.55 });
 
 /** Instances that glow their own colour (E-D `instanceColorTarget: "both"`): LED lenses, vents, lit traces. */
 const glowing = (emissiveIntensity: number, roughness = 0.3) =>
@@ -282,7 +293,7 @@ export function buildScene(): unknown {
   const s = scene()
     // DD47-P2 lens stack: bloom only on what glows (threshold 0.92), a soft frame, a hair of fringing and grain; the
     // per-board grade (DD47-P3) rides on top. ACES is set explicitly on the output at boot (main.ts).
-    .add(effects.bloom({ name: "lamp bloom", intensity: LENS.bloom.intensity, threshold: LENS.bloom.threshold, radius: LENS.bloom.radius }))
+    .add(effects.cinematicBloom({ name: "lamp bloom", intensity: LENS.bloom.intensity, threshold: LENS.bloom.threshold, radius: LENS.bloom.radius }))
     .add(effects.vignette({ intensity: LENS.vignette.intensity, smoothness: LENS.vignette.smoothness }))
     .add(effects.chromaticAberration({ intensity: LENS.chromaticAberration }))
     .add(effects.filmGrain({ intensity: LENS.grain }))
@@ -333,29 +344,35 @@ export function buildScene(): unknown {
   // takes the instance colour on pools with `instanceColorTarget: "both" | "emissive"` (E-D). Never set a white
   // emissive on a "base" pool, or every instance emits pure white regardless of its colour.
   const P = BOARD_PARTS;
-  // DD47-M2: black epoxy chip bodies (rounded) and silver gull-wing pins; lit by the lamp, no emissive fill.
-  const wallMat = material.pbr({ color: "#ffffff", roughness: P.epoxy.roughness, metalness: 0.05, clearcoat: P.epoxy.clearcoat, clearcoatRoughness: 0.3 });
-  const pinMat = material.pbr({ color: "#ffffff", roughness: P.pin.roughness, metalness: P.pin.metalness });
-  // DD47-M3: SMD LED shards (a glowing lens in the board's LED colour) and capacitor cans with glowing vents.
-  const dotMat = glowing(1.35, 0.2);
-  const canMat = material.pbr({ color: P.can.color, roughness: P.can.roughness, metalness: P.can.metalness });
-  const ventMat = glowing(1.6, 0.4);
+  // WP-13: beveled high-gloss lacquer maze walls + luminous top bevel trim + brushed-metal gull-wing pins.
+  const wallMat = material.lacquer({ color: "#ffffff", roughness: P.epoxy.roughness, clearcoatRoughness: 0.1 });
+  const wallTrimMat = glowing(0.92, 0.24);
+  const pinMat = material.brushedMetal({ color: "#ffffff", roughness: P.pin.roughness, anisotropy: 0.68 });
+  // Faceted glint pellets + studioGlass power prisms with brushed-metal collars and pulsing plasma cores.
+  const dotMat = glowing(1.55, 0.15);
+  const canMat = material.brushedMetal({ color: P.can.color, roughness: 0.24, anisotropy: 0.6 });
+  const prismMat = material.physical({ color: "#ffe0b2", roughness: 0.04, metallic: 0.08, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 1, opacity: 0.48, alphaMode: "blend", depthWrite: false });
+  const ventMat = glowing(2.1, 0.2);
   const markerMat = material.pbr({ color: "#ffffff", roughness: 0.4, metalness: 0.05 });
-  const eyesMat = material.pbr({ color: "#ffffff", roughness: 0.25, metalness: 0.05 });
-  const dressMat = material.pbr({ color: "#ffffff", roughness: 0.46, metalness: 0.2 });
-  const glowMat = glowing(1.1, 0.35);
-  const traceLitMat = glowing(1.8, 0.3);
+  const eyesMat = glowing(1.4, 0.2);
+  const dressMat = material.pbr({ color: "#ffffff", roughness: 0.34, metalness: 0.68, clearcoat: 0.35 });
+  const capMat = material.brushedMetal({ color: "#ffffff", roughness: 0.24, anisotropy: 0.65 });
+  const glowMat = glowing(1.65, 0.22);
+  const traceLitMat = glowing(1.9, 0.24);
 
-  // Courier: a bright cyan-white core inside a faceted glass shell and a spinning copper-lit ring.
-  const coreMat = material.emissive({ color: "#bffcff", emissive: "#6ff2ff", emissiveIntensity: 2.2 });
-  const shellMat = material.pbr({ color: "#ffffff", emissive: "#2fb8c8", emissiveIntensity: 0.1, roughness: 0.12, metalness: 0.2, clearcoat: 1, opacity: 0.72 });
-  const haloMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 0.9, roughness: 0.3, metalness: 0.3, practical: true });
-  // Sentries: one distinct silhouette each; per-instance colour carries identity and the surge state; a cool rim keeps
-  // them readable in the lamp's shadow side without glowing.
-  const sentryMat = material.pbr({ color: "#ffffff", roughness: 0.32, metalness: 0.35, rim: { color: "#cfe3ff", power: 2.6, intensity: 0.7 } });
-  // Phase 3 (4.7.1): the gems are cut glass under a clearcoat so the workshop IBL and the probe catch their facets.
-  // Round 4: less self-glow (0.4 -> 0.18) and more metal (0.1 -> 0.35) so the facets show the room instead of a flat tint.
-  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.18, roughness: 0.06, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
+  // Courier: bright plasma core, sleek directional prow visor (no opaque shell obscuring the pod), spinning induction ring.
+  const coreMat = material.emissive({ color: "#bffcff", emissive: "#6ff2ff", emissiveIntensity: 2.35 });
+  const visorHeroMat = glowing(1.9, 0.14);
+  const haloMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 1.05, roughness: 0.24, metalness: 0.4, practical: true });
+  // Sentries: lacquered armored drone chassis + directional optic visor + additive forward scan cone.
+  const sentryMat = material.lacquer({ color: "#ffffff", roughness: 0.22, clearcoatRoughness: 0.08, rim: { color: "#d8ebff", power: 2.4, intensity: 0.82 } });
+  const visorMat = glowing(2.1, 0.14);
+  const scanMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85, opacity: 0.22, blend: "additive", depthWrite: false, roughness: 0.5, metalness: 0, practical: true });
+  const nixieGlassMat = material.physical({ color: "#ffe6cc", roughness: 0.05, metallic: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, specularIntensity: 1, opacity: 0.42, alphaMode: "blend", depthWrite: false });
+  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.28, roughness: 0.05, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.04, practical: true });
+  const portalMat = material.custom(dualEnergyFieldSpec({ coreColor: [0.14, 0.78, 1.0], edgeColor: [0.68, 0.98, 1.0], pulseSpeed: 3.2, scanScale: 12.0, opacity: 0.58 }));
+  const doorMat = material.custom(dualEnergyFieldSpec({ coreColor: [1.0, 0.62, 0.18], edgeColor: [1.0, 0.92, 0.58], pulseSpeed: 3.4, scanScale: 15.0, opacity: 0.72 }));
+  const beamMat = material.custom(dualEnergyFieldSpec({ coreColor: [1.0, 0.68, 0.22], edgeColor: [1.0, 0.94, 0.64], pulseSpeed: 4.0, scanScale: 10.0, opacity: 0.5 }));
 
   s.addMany([
     // DD47-E2: walnut bench top and the anti-static mat under the board reach past every camera edge.
@@ -367,54 +384,71 @@ export function buildScene(): unknown {
     primitives.box({ name: "board", size: [...BENCH.board.size], material: boardMaterial(look, paintBoardTextures(st.maze)), receiveShadow: true })
       .position(0, BENCH.board.y, 0)
       .runtime(game.runtimeNode("board")),
-    // instanced pools
-    instances.roundedBox({ name: "walls", params: { radius: 0.12, widthSegments: 2 }, size: [1, 1, 1], material: wallMat, transforms: pad(CAP.wall), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-wall")),
+    // instanced pools (strictly positive scales for single-draw GPU instancing)
+    instances.roundedBox({ name: "walls", params: { radius: 0.14, widthSegments: 3 }, size: [1, 1, 1], material: wallMat, transforms: pad(CAP.wall), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-wall")),
+    instances.box({ name: "wall-trim", size: [1, 1, 1], material: wallTrimMat, instanceColorTarget: "both", transforms: pad(CAP.wallTrim), castShadow: false }).runtime(game.runtimeNode("pool-wallTrim")),
     instances.box({ name: "pins", size: [1, 1, 1], material: pinMat, transforms: pad(CAP.rail), castShadow: false }).runtime(game.runtimeNode("pool-rail")),
     instances.box({ name: "traces", size: [1, 1, 1], material: traceMaterial(), transforms: pad(CAP.trace), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-trace")),
     instances.box({ name: "traces lit", size: [1, 1, 1], material: traceLitMat, instanceColorTarget: "emissive", transforms: pad(CAP.traceLit), castShadow: false }).runtime(game.runtimeNode("pool-traceLit")),
-    instances.box({ name: "shards", size: [1, 1, 1], material: dotMat, instanceColorTarget: "both", transforms: pad(CAP.dot), castShadow: false }).runtime(game.runtimeNode("pool-dot")),
+    instances.polyhedron({ name: "shards", params: { variant: "octahedron" }, size: [1, 1, 1], material: dotMat, instanceColorTarget: "both", transforms: pad(CAP.dot), castShadow: false }).runtime(game.runtimeNode("pool-dot")),
     instances.cylinder({ name: "cells", size: [1, 1, 1], material: canMat, transforms: pad(CAP.orb), castShadow: true }).runtime(game.runtimeNode("pool-orb")),
-    instances.cylinder({ name: "cell vents", size: [1, 1, 1], material: ventMat, instanceColorTarget: "both", transforms: pad(CAP.vent), castShadow: false }).runtime(game.runtimeNode("pool-vent")),
+    instances.polyhedron({ name: "prisms", params: { variant: "octahedron" }, size: [1, 1, 1], material: prismMat, transforms: pad(CAP.prism), castShadow: false }).runtime(game.runtimeNode("pool-prism")),
+    instances.polyhedron({ name: "cell vents", params: { variant: "icosahedron" }, size: [1, 1, 1], material: ventMat, instanceColorTarget: "both", transforms: pad(CAP.vent), castShadow: false }).runtime(game.runtimeNode("pool-vent")),
     instances.box({ name: "markers", size: [1, 1, 1], material: markerMat, transforms: pad(CAP.marker), castShadow: false }).runtime(game.runtimeNode("pool-marker")),
-    instances.sphere({ name: "eyes", size: [1, 1, 1], material: eyesMat, transforms: pad(CAP.eyes), castShadow: false }).runtime(game.runtimeNode("pool-eyes")),
+    instances.sphere({ name: "eyes", size: [1, 1, 1], material: eyesMat, instanceColorTarget: "both", transforms: pad(CAP.eyes), castShadow: false }).runtime(game.runtimeNode("pool-eyes")),
     instances.box({ name: "dress", size: [1, 1, 1], material: dressMat, transforms: pad(CAP.dress), castShadow: true }).runtime(game.runtimeNode("pool-dress")),
-    instances.box({ name: "glow", size: [1, 1, 1], material: glowMat, instanceColorTarget: "both", transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
-    instances.polyhedron({ name: "courier-shell", params: { variant: "octahedron" }, size: [1, 1, 1], material: shellMat, transforms: pad(CAP.hero), castShadow: true }).runtime(game.runtimeNode("pool-hero")),
+    instances.cylinder({ name: "capacitors", size: [1, 1, 1], material: capMat, transforms: pad(CAP.cap), castShadow: true }).runtime(game.runtimeNode("pool-cap")),
+    instances.cylinder({ name: "glow", size: [1, 1, 1], material: glowMat, instanceColorTarget: "both", transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
+    instances.box({ name: "courier-visor", size: [1, 1, 1], material: visorHeroMat, instanceColorTarget: "both", transforms: pad(CAP.hero), castShadow: false }).runtime(game.runtimeNode("pool-hero")),
     instances.torus({ name: "courier-halo", size: [1, 1, 1], material: haloMat, transforms: pad(CAP.halo), castShadow: false }).runtime(game.runtimeNode("pool-halo")),
     instances.cone({ name: "sentry-hunter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shC), castShadow: true }).runtime(game.runtimeNode("pool-shC")),
-    instances.box({ name: "sentry-ambusher", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shB), castShadow: true }).runtime(game.runtimeNode("pool-shB")),
+    instances.roundedBox({ name: "sentry-ambusher", params: { radius: 0.14, widthSegments: 2 }, size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shB), castShadow: true }).runtime(game.runtimeNode("pool-shB")),
     instances.torus({ name: "sentry-drifter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shT), castShadow: true }).runtime(game.runtimeNode("pool-shT")),
     instances.cylinder({ name: "sentry-skittish", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shY), castShadow: true }).runtime(game.runtimeNode("pool-shY")),
-    instances.polyhedron({ name: "gems", params: { variant: "icosahedron" }, size: [1, 1, 1], material: gemMat, instanceColorTarget: "both", transforms: pad(CAP.trophy), castShadow: true }).runtime(game.runtimeNode("pool-trophy")),
+    instances.box({ name: "sentry-visors", size: [1, 1, 1], material: visorMat, instanceColorTarget: "both", transforms: pad(CAP.visor), castShadow: false }).runtime(game.runtimeNode("pool-visor")),
+    instances.cone({ name: "sentry-scans", size: [1, 1, 1], material: scanMat, instanceColorTarget: "both", transforms: pad(CAP.scan), castShadow: false }).runtime(game.runtimeNode("pool-scan")),
+    instances.cylinder({ name: "nixie-tubes", size: [1, 1, 1], material: nixieGlassMat, transforms: pad(CAP.trophy), castShadow: true }).runtime(game.runtimeNode("pool-trophy")),
+    instances.polyhedron({ name: "cache-gem", params: { variant: "icosahedron" }, size: [1, 1, 1], material: gemMat, instanceColorTarget: "both", transforms: pad(CAP.gem), castShadow: true }).runtime(game.runtimeNode("pool-gem")),
 
-    // courier core: a small bright sphere (also the trail anchor); shell, halo, sentries and gems are instanced pools above
-    primitives.sphere({ name: "byte", size: [0.34, 0.34, 0.34], material: coreMat, castShadow: false })
+    // courier core: hovering plasma sphere + Meshy courier pod
+    primitives.sphere({ name: "byte", size: [0.28, 0.28, 0.28], material: coreMat, castShadow: false })
       .position(wx(st.maze.spawn.x), COURIER_POD.coreHeight, wz(st.maze.spawn.y))
       .runtime(game.runtimeNode("byte")),
-    primitives.sphere({ name: "byte-echo", size: [0.34, 0.34, 0.34], material: coreMat, castShadow: false })
+    primitives.sphere({ name: "byte-echo", size: [0.28, 0.28, 0.28], material: coreMat, castShadow: false })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("byte-echo")),
-    // Phase 4 (4.7.2) DD47-A1: the Meshy courier pod under the core (and its wrap echo), driven in syncWorld.
     courierPod("courier-pod").position(wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)),
     courierPod("courier-pod-echo").position(0, -999, 0),
 
-    // ghost house door slab + school beacon (both are light sources in the fiction: a gate LED bar and a beam)
-    primitives.box({ name: "door", size: [1.02, 0.5, 0.12], material: material.pbr({ color: "#ffd9a0", emissive: "#ffb23e", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.78, practical: true }) })
+    // paired GLSL + WGSL custom shader nodes: sentry hub reactor pad, phase gate, telemetry beam, wrap-tunnel portals, spark flipbooks
+    primitives.plane({ name: "hub-pad", size: [2.8, 2.8], material: material.custom(dualCircuitBusSpec()), castShadow: false, receiveShadow: false })
+      .position(0, -999, 0).rotate(-Math.PI / 2, 0, 0)
+      .runtime(game.runtimeNode("hub-pad")),
+    primitives.box({ name: "door", size: [1.02, 0.52, 0.1], material: doorMat, castShadow: false })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("door")),
-    primitives.cylinder({ name: "school-beam", size: [0.35, 3.2, 0.35], material: material.pbr({ color: "#ffb23e", emissive: "#ffb23e", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.45, practical: true }) })
+    primitives.cylinder({ name: "school-beam", size: [0.34, 3.2, 0.34], material: beamMat, castShadow: false })
       .position(0, -999, 0)
-      .runtime(game.runtimeNode("school-beam"))
+      .runtime(game.runtimeNode("school-beam")),
+    ...Array.from({ length: 4 }, (_, i) =>
+      primitives.box({ name: `wrap-portal-${i}`, size: [0.12, 0.72, 0.96], material: portalMat, castShadow: false })
+        .position(0, -999, 0)
+        .runtime(game.runtimeNode(`portal-${i}`))
+    ),
+    ...Array.from({ length: SPARK_POOL_SIZE }, (_, i) =>
+      primitives.plane({ name: `spark-burst-${i}`, size: [1, 1], material: material.custom(dualSparkFlipbookSpec(SPARKS_ATLAS)), castShadow: false, receiveShadow: false })
+        .position(0, -999, 0).rotate(-0.92, 0, 0)
+        .runtime(game.runtimeNode(`spark-burst-${i}`))
+    )
   ]);
 
   s.addMany(roomNodes());
 
-  // DD47-W1 silkscreen and mounting holes (+3 draws): two SDF labels laid flat on the mask in the board's silk ink and
-  // four gold plated mounting rings in one instanced draw, inside the board margin clear of the maze and the kit.
+  // DD47-W1 silkscreen and mounting holes (+3 draws)
   const silk = material.pbr({ color: look.silk, roughness: 0.7, metalness: 0 });
   const holes = BENCH.board.size[0] / 2 - 1, holesZ = BENCH.board.size[2] / 2 - 1;
   s.addMany([
-    text3D("GLINT COURIER  REV 4.7", { name: "silk title", size: 0.42, depth: 0.004, letterSpacing: 0.08, backend: "sdf", material: silk })
+    text3D("GLINT COURIER  REV 5.5", { name: "silk title", size: 0.42, depth: 0.004, letterSpacing: 0.08, backend: "sdf", material: silk })
       // Phase 3 (4.7.1): on the far margin beside the refs; at the near edge (z 11.7) the camera cropped it on every board.
       .position(2.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
     text3D("U1  J2  C14  R7", { name: "silk refs", size: 0.3, depth: 0.004, letterSpacing: 0.1, backend: "sdf", material: silk })
@@ -514,64 +548,173 @@ const PIN_SIDES = [
   [0, -1], [0, 1], [-1, 0], [1, 0]
 ] as const;
 
+const SPARK_POOL_SIZE = 6;
+interface SparkBurstSlot {
+  active: boolean;
+  x: number;
+  z: number;
+  y: number;
+  age: number;
+  duration: number;
+  scale: number;
+  tint: readonly [number, number, number];
+}
+const sparkPool: SparkBurstSlot[] = Array.from({ length: SPARK_POOL_SIZE }, () => ({
+  active: false, x: 0, z: 0, y: -999, age: 0, duration: 0.36, scale: 0.9, tint: [1, 0.85, 0.45]
+}));
+let sparkCursor = 0;
+
+/** Spawns an 8x4 sprite-sheet spark flipbook burst (`createFlipbookAtlas("sparks")`) at tile `(tx, ty)`. */
+export function spawnSparkBurst(tx: number, ty: number, hexColor = "#ffd27a", scale = 0.88): void {
+  const slot = sparkPool[sparkCursor % SPARK_POOL_SIZE]!;
+  sparkCursor++;
+  slot.active = true;
+  slot.x = wx(tx);
+  slot.z = wz(ty);
+  slot.y = 0.36;
+  slot.age = 0;
+  slot.duration = calmMotion ? 0.24 : 0.38;
+  slot.scale = calmMotion ? scale * 0.72 : scale;
+  slot.tint = hexToRgb(hexColor);
+}
+
+function syncSparkBursts(dt: number): void {
+  const nodes = app?.nodes;
+  if (!nodes) return;
+  for (let i = 0; i < SPARK_POOL_SIZE; i++) {
+    const slot = sparkPool[i]!;
+    const h = nodes.get(`spark-burst-${i}`) as (ReturnType<typeof nodes.get> & { setUniform?(n: string, v: unknown): void }) | undefined;
+    if (!h) continue;
+    if (!slot.active) {
+      h.setVisible(false);
+      continue;
+    }
+    slot.age += Math.max(0, dt);
+    const t = slot.age / Math.max(0.05, slot.duration);
+    if (t >= 1) {
+      slot.active = false;
+      h.setVisible(false);
+      h.setPosition(0, -999, 0);
+      continue;
+    }
+    h.setVisible(true);
+    h.setPosition(slot.x, slot.y + t * 0.14, slot.z);
+    const s = slot.scale * (0.72 + 0.52 * Math.sin(Math.min(1, t * 1.4) * Math.PI * 0.5));
+    h.setScale([s, s, s]);
+    try {
+      h.setUniform?.("frame", Math.min(31, Math.floor(t * 32)));
+      h.setUniform?.("tint", [...slot.tint]);
+      h.setUniform?.("opacity", calmFlash ? (1 - t) * 0.55 : 1 - t * t);
+    } catch { /* custom uniform optional */ }
+  }
+}
+
 function paintMaze(m: ParsedMaze): void {
   const look = BOARD_LOOKS[m.def.id as MazeId];
   const epoxy = BOARD_PARTS.epoxy.color;
+  const trimCol = mixHex(look.copper, look.led, 0.42);
   const pin = BOARD_PARTS.pin.color;
   for (let y = 0; y < m.height; y++) {
     for (let x = 0; x < m.width; x++) {
       const i = idx(m.width, x, y);
       const X = wx(x), Z = wz(y);
       if (!m.wall[i]) continue;
-      inst("wall", X, 0.3, Z, 0.9, 0.6, 0.9, epoxy);
+      inst("wall", X, 0.31, Z, 0.9, 0.62, 0.9, epoxy);
+      inst("wallTrim", X, 0.625, Z, 0.78, 0.026, 0.78, trimCol);
       for (const [dx, dy] of PIN_SIDES) {
         const nx = x + dx, ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= m.width || ny >= m.height || m.wall[idx(m.width, nx, ny)]) continue;
         for (const t of [-0.22, 0.22]) {
-          // a pin leaves the body at its foot and bends down to the pad: one flat box per pin
           const px = X + (dx !== 0 ? dx * 0.5 : t), pz = Z + (dy !== 0 ? dy * 0.5 : t);
           inst("rail", px, 0.05, pz, dx !== 0 ? 0.16 : 0.09, 0.05, dy !== 0 ? 0.16 : 0.09, pin);
         }
       }
     }
   }
-  // copper traces between corridor tile centres (the lit overlay follows them, syncTraces)
+  // brushed copper traces between corridor tile centres (the lit overlay follows them, syncTraces)
   traces = new TraceField(m);
   for (const e of traces.edges) {
     inst("trace", wx(e.x), 0.004, wz(e.y), e.horizontal ? 1.02 : 0.12, 0.012, e.horizontal ? 0.12 : 1.02, look.copper);
   }
-  // ghost-house door slab position + non-emissive interior floor pad
+  // sentry-hub floor tiles + dual-backend reactor bus pad + energy phase door + wrap-tunnel portals
   const d = m.door;
+  let hxSum = 0, hySum = 0, hCount = 0;
   for (const i of m.houseTiles) {
     const hx = i % m.width, hy = (i / m.width) | 0;
-    inst("dress", wx(hx), 0.0, wz(hy), 0.96, 0.02, 0.96, "#2a2a22");
+    hxSum += hx; hySum += hy; hCount++;
+    inst("dress", wx(hx), 0.002, wz(hy), 0.96, 0.018, 0.96, "#1c2226");
   }
   try {
     app?.nodes?.require("door").setPosition(wx(d.x), 0.28, wz(d.y) + 0.46);
+    const hub = app?.nodes?.get("hub-pad");
+    if (hub && hCount > 0) hub.setPosition(wx(hxSum / hCount), 0.016, wz(hySum / hCount));
+    const portals: { pos: [number, number, number]; rotY: number }[] = [];
+    if (m.def.wrapX) {
+      for (let y = 0; y < m.height && portals.length < 4; y++) {
+        if (!m.wall[idx(m.width, 0, y)] && !m.wall[idx(m.width, m.width - 1, y)]) {
+          portals.push({ pos: [wx(-0.46), 0.36, wz(y)], rotY: 0 });
+          portals.push({ pos: [wx(m.width - 0.54), 0.36, wz(y)], rotY: 0 });
+        }
+      }
+    }
+    if (m.def.wrapY) {
+      for (let x = 0; x < m.width && portals.length < 4; x++) {
+        if (!m.wall[idx(m.width, x, 0)] && !m.wall[idx(m.width, x, m.height - 1)]) {
+          portals.push({ pos: [wx(x), 0.36, wz(-0.46)], rotY: Math.PI / 2 });
+          portals.push({ pos: [wx(x), 0.36, wz(m.height - 0.54)], rotY: Math.PI / 2 });
+        }
+      }
+    }
+    for (let i = 0; i < 4; i++) {
+      const pNode = app?.nodes?.get(`portal-${i}`);
+      if (!pNode) continue;
+      const spec = portals[i];
+      if (spec) {
+        pNode.setVisible(true);
+        pNode.setPosition(...spec.pos);
+        pNode.setRotation(0, spec.rotY, 0);
+      } else {
+        pNode.setVisible(false);
+        pNode.setPosition(0, -999, 0);
+      }
+    }
   } catch { /* boot race */ }
 }
 
 
-/** Perimeter components per board theme: epoxy pedestals under spinning gems with LED caps, plus component stubs. */
+/** Perimeter macro electronics: Nixie cathode sockets + brushed electrolytic capacitors + anodized finned heatsinks. */
 function paintDressing(m: ParsedMaze): void {
   const look = BOARD_LOOKS[m.def.id as MazeId];
-  const body = BOARD_PARTS.epoxy.color;
-  PEDESTALS.forEach(([px, pz]) => {
-    inst("dress", px, 0.22, pz, 1.25, 0.44, 1.25, body);
-    inst("glow", px, 0.45, pz, 1.05, 0.06, 1.05, look.led);
+  const socketCol = "#22262d";
+  const canSilver = "#b9c2cc";
+  PEDESTALS.forEach(([px, pz], idxPed) => {
+    inst("dress", px, 0.16, pz, 1.16, 0.32, 1.16, socketCol);
+    inst("cap", px, 0.34, pz, 0.88, 0.08, 0.88, look.copper);
+    const nixieTint = idxPed % 2 === 0 ? "#ff9d3b" : look.led;
+    inst("glow", px, 0.92, pz, 0.24, 0.86, 0.24, nixieTint);
   });
-  // component stubs: layout seeded from the board id, height and count from its theme
+  let stubIdx = 0;
   for (const py of pylonLayout(m.def.id, m.def.theme)) {
-    inst("dress", py.x, py.h * 0.5, py.z, py.w, py.h, py.w, body);
-    if (py.cap) inst("glow", py.x, py.h + 0.06, py.z, py.w * 0.76, 0.1, py.w * 0.76, look.led);
+    if (stubIdx % 2 === 0) {
+      // cylindrical brushed-metal electrolytic capacitor can with copper top relief
+      inst("cap", py.x, py.h * 0.5, py.z, py.w * 0.88, py.h, py.w * 0.88, canSilver);
+      if (py.cap) inst("glow", py.x, py.h + 0.03, py.z, py.w * 0.52, 0.05, py.w * 0.52, look.copper);
+    } else {
+      // anodized aluminum heatsink block with cooling fins
+      inst("dress", py.x, py.h * 0.26, py.z, py.w, py.h * 0.52, py.w, socketCol);
+      for (const f of [-0.28, 0, 0.28]) {
+        inst("dress", py.x + f * py.w, py.h * 0.68, py.z, py.w * 0.16, py.h * 0.64, py.w * 0.94, "#303844");
+      }
+      if (py.cap) inst("glow", py.x, py.h + 0.04, py.z, py.w * 0.46, 0.05, py.w * 0.46, look.led);
+    }
+    stubIdx++;
   }
 }
 
-/** Spinning trophy gems on the pedestals (dynamic: they bob and turn; steady on reduced motion). */
+/** Studio-glass vacuum envelopes over the 10 perimeter Nixie cathode columns. */
 function paintTrophies(): void {
-  PEDESTALS.forEach(([px, pz], i) => {
-    const bob = calmMotion ? 0 : Math.sin(st.time * 2 + i) * 0.06;
-    inst("trophy", px, 1.05 + bob, pz, 0.78, 0.78, 0.78, TROPHY_COLORS[i % TROPHY_COLORS.length]!, st.time * (calmMotion ? 0.3 : 1.1) + i);
+  PEDESTALS.forEach(([px, pz]) => {
+    inst("trophy", px, 0.96, pz, 0.68, 1.14, 0.68, "#ffe6cc");
   });
 }
 
@@ -750,15 +893,56 @@ function syncFocus(pose: CameraPose): void {
   try { app?.post?.setEffect("depthOfField", { focusDistance: d }); } catch { /* post optional */ }
 }
 
+export interface ActorPoseSample {
+  readonly x: number;
+  readonly y: number;
+}
+export interface ActorBlendState {
+  readonly mazeId: MazeId;
+  readonly courier: ActorPoseSample;
+  readonly ghosts: Readonly<Record<GhostId, ActorPoseSample>>;
+}
+export interface FrameFeel {
+  readonly shakeOffset: readonly [number, number, number];
+  readonly fovDeltaDeg: number;
+}
+
+export function snapshotActors(): ActorBlendState {
+  const m = st.maze;
+  const pp = normPos(m);
+  const ghosts = {} as Record<GhostId, ActorPoseSample>;
+  for (const g of st.ghosts) {
+    const gp = normGhostPos(g);
+    ghosts[g.id] = { x: gp.x, y: gp.y };
+  }
+  return { mazeId: st.mazeId, courier: { x: pp.x, y: pp.y }, ghosts };
+}
+
+function lerpActor(a: ActorPoseSample | undefined, b: ActorPoseSample, t: number): ActorPoseSample {
+  if (!a || Math.hypot(b.x - a.x, b.y - a.y) > 2.4) return b;
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+export function blendActors(a: ActorBlendState, b: ActorBlendState, t: number): ActorBlendState {
+  if (a.mazeId !== b.mazeId) return b;
+  const ghosts = {} as Record<GhostId, ActorPoseSample>;
+  for (const id of ["blitz", "sly", "flick", "dim"] as const) {
+    const target = b.ghosts[id];
+    if (target) ghosts[id] = lerpActor(a.ghosts[id], target, t);
+  }
+  return { mazeId: b.mazeId, courier: lerpActor(a.courier, b.courier, t), ghosts };
+}
+
+let fittedRig: CameraPose = { position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov };
+
 // ---------------------------------------------------------------------------
 // Per-frame visual sync
 // ---------------------------------------------------------------------------
-export function syncVisuals(dt: number): void {
+export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFeel): void {
   if (!app) return;
   const nodes = app.nodes;
   const m = st.maze;
   if (builtFor !== m.def.id) {
-    // board change: repaint the static pools and apply this board's palette (slab, wall glow, background)
     for (const k of STATIC_POOLS) POOL[k].n = 0;
     paintMaze(m);
     paintDressing(m);
@@ -766,90 +950,93 @@ export function syncVisuals(dt: number): void {
   }
   for (const k of DYNAMIC_POOLS) POOL[k].n = 0;
   paintTrophies();
+  syncSparkBursts(dt);
 
-  // dots & power orbs: SMD LED shards in the board's LED colour; surge cells are capacitor cans whose vents breathe
+  // Faceted glint pellets + studioGlass power prisms with brushed-metal collars & pulsing plasma cores
   const pulse = 0.5 + 0.5 * Math.sin(st.time * (calmFlash ? 2 : 6));
   const look = BOARD_LOOKS[m.def.id as MazeId];
-  const ventCol = mixHex(BOARD_PARTS.vent, "#fff1c9", pulse * 0.6);
+  const ventCol = mixHex(BOARD_PARTS.vent, "#fff4d6", pulse * 0.65);
   for (let y = 0; y < m.height; y++) {
     for (let x = 0; x < m.width; x++) {
       const i = idx(m.width, x, y);
-      if (st.dots[i]) inst("dot", wx(x), 0.12, wz(y), 0.28, 0.08, 0.18, look.led, calmMotion ? (x + y) * 0.4 : st.time * 1.6 + x * 0.7 + y * 0.3);
+      if (st.dots[i]) {
+        const spin = calmMotion ? (x + y) * 0.4 : st.time * 1.8 + x * 0.7 + y * 0.3;
+        inst("dot", wx(x), 0.14, wz(y), 0.22, 0.16, 0.22, look.led, spin);
+      }
       if (st.orbs[i]) {
-        inst("orb", wx(x), 0.3, wz(y), 0.44, 0.6, 0.44, BOARD_PARTS.can.color);
-        inst("vent", wx(x), 0.61, wz(y), 0.32, 0.03, 0.32, ventCol);
+        const orbSpin = calmMotion ? 0.4 : st.time * 1.4 + x;
+        const coreScale = 0.22 + pulse * 0.05;
+        inst("orb", wx(x), 0.08, wz(y), 0.48, 0.16, 0.48, BOARD_PARTS.can.color);
+        inst("prism", wx(x), 0.38, wz(y), 0.48, 0.56, 0.48, "#ffe0b2", orbSpin);
+        inst("vent", wx(x), 0.38, wz(y), coreScale, coreScale, coreScale, ventCol, -orbSpin * 1.5);
       }
     }
   }
   syncTraces();
-  // ghost-school target markers
   if (st.school) {
     for (const g of st.ghosts) {
       inst("marker", wx(g.target.x), 0.035, wz(g.target.y), 0.92, 0.03, 0.92, GHOST_TINT[g.id]);
     }
   }
-  // eyes (eaten specters)
   for (const g of st.ghosts) {
     if (g.state !== "eyes") continue;
-    const gp = normGhostPos(g);
+    const gp = blend?.mazeId === st.mazeId && blend.ghosts[g.id] ? blend.ghosts[g.id] : normGhostPos(g);
     const bob = 0.45 + Math.sin(st.time * 9 + g.px) * 0.05 * (calmMotion ? REDUCED_AMPLITUDE : 1);
-    inst("eyes", wx(gp.x), bob, wz(gp.y), 0.2, 0.2, 0.2, CORE_COLOR);
+    inst("eyes", wx(gp.x) - 0.08, bob, wz(gp.y), 0.14, 0.14, 0.14, CORE_COLOR);
+    inst("eyes", wx(gp.x) + 0.08, bob, wz(gp.y), 0.14, 0.14, 0.14, CORE_COLOR);
   }
 
-  // ---- actors
+  const pp = blend?.mazeId === st.mazeId ? blend.courier : normPos(m);
   try {
-    const pp = normPos(m);
     const moving = st.autopilot || st.hasMoved;
     const motionAmplitude = calmMotion ? REDUCED_AMPLITUDE : 1;
     const chomp = moving ? Math.abs(Math.sin(st.time * 14)) : Math.sin(st.time * 4) * 0.25;
-    const bob = (moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025) * motionAmplitude;
-    const pitch = moving ? Math.sin(st.time * 14) * 0.16 * motionAmplitude : 0;
+    const bob = (moving ? chomp * 0.075 : Math.sin(st.time * 4) * 0.025) * motionAmplitude;
+    const pitch = moving ? Math.sin(st.time * 14) * 0.14 * motionAmplitude : 0;
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
     const pod = nodes.get("courier-pod");
     const podEcho = nodes.get("courier-pod-echo");
-    // Phase 4 (4.7.2): the core hovers over the pod's dome; the pod carries the travel yaw and the bank.
     const coreY = COURIER_POD.coreHeight;
     byte.setPosition(wx(pp.x), coreY + (dead ? 0 : bob), wz(pp.y));
-    // DD47-AN1: the drawn yaw eases toward the travel direction (90 ms) and the courier banks into the turn
     courierPose = stepCourierPose(courierPose, yawOf(st.player.dir) + Math.PI, dt, calmMotion);
     byte.setRotation(dead ? 0 : pitch, courierPose.yaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
     let podK = 1;
     if (dead) {
-      byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76)); // a steady shrink; the flicker below is skipped when calm
+      byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.72));
       podK = Math.max(0.05, st.deathT / 1.6);
     } else if (st.player.dashT > 0) {
-      const ds = 0.82 + Math.sin(st.time * 40) * 0.05 * motionAmplitude;
-      byte.setScale([ds * 1.06, ds * 0.94, ds * 1.06]);
+      const ds = 0.8 + Math.sin(st.time * 40) * 0.05 * motionAmplitude;
+      byte.setScale([ds * 1.08, ds * 0.92, ds * 1.08]);
     } else if (moving) {
-      byte.setScale([0.76 * (1 + chomp * 0.08 * motionAmplitude), 0.76 * (1 - chomp * 0.06 * motionAmplitude), 0.76 * (1 + chomp * 0.08 * motionAmplitude)]);
+      byte.setScale([0.72 * (1 + chomp * 0.08 * motionAmplitude), 0.72 * (1 - chomp * 0.06 * motionAmplitude), 0.72 * (1 + chomp * 0.08 * motionAmplitude)]);
     } else {
-      byte.setScale(0.76);
+      byte.setScale(0.72);
     }
     const flickerOn = !dead || calmMotion || calmFlash || Math.sin(st.time * 24) > -0.2;
     byte.setVisible(flickerOn);
     const podS = COURIER_POD.scale * podK;
     const podLean = dead ? 0 : pitch * 0.35;
+    const travelYaw = courierPose.yaw - Math.PI;
     if (pod) {
       pod.setVisible(flickerOn);
       pod.setPosition(wx(pp.x), COURIER_POD.lift - (1 - podK) * COURIER_POD.lift + (dead ? 0 : bob * 0.5), wz(pp.y));
-      pod.setRotation(podLean, courierPose.yaw - Math.PI, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
+      pod.setRotation(podLean, travelYaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
       pod.setScale(podS);
     }
-    // wrap echo copy
     const ex = echoOffset(m, pp.x, pp.y);
     const echo = nodes.require("byte-echo");
     if (ex) {
       echo.setVisible(!dead);
       echo.setPosition(wx(ex.x), coreY + bob, wz(ex.y));
       echo.setRotation(dead ? 0 : pitch, courierPose.yaw, courierPose.roll);
-      echo.setScale(0.76);
+      echo.setScale(0.72);
     } else echo.setVisible(false);
     if (podEcho) {
       if (ex && !dead) {
         podEcho.setVisible(true);
         podEcho.setPosition(wx(ex.x), COURIER_POD.lift + bob * 0.5, wz(ex.y));
-        podEcho.setRotation(podLean, courierPose.yaw - Math.PI, courierPose.roll);
+        podEcho.setRotation(podLean, travelYaw, courierPose.roll);
         podEcho.setScale(COURIER_POD.scale);
       } else {
         podEcho.setVisible(false);
@@ -857,44 +1044,45 @@ export function syncVisuals(dt: number): void {
       }
     }
 
-    // courier glass bubble (Courier Studio tint) and halo ring ride on the hovering core
-    {
-      const hpos = [wx(pp.x), coreY + (dead ? 0 : bob), wz(pp.y)] as const;
-      const shell = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.2 : COURIER_POD.shell;
-      if (flickerOn) {
-        inst("hero", hpos[0], hpos[1], hpos[2], shell, shell * 1.15, shell, st.profile.orbColor, st.time * (st.player.dashT > 0 ? 7 : 2.4));
-        const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
-        inst("halo", hpos[0], COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), hpos[2], COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
-        if (ex) {
-          inst("hero", wx(ex.x), coreY + bob, wz(ex.y), shell, shell * 1.15, shell, st.profile.orbColor, st.time * 2.4);
-          inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
-        }
+    // Courier directional forward prow visor (Courier Studio orbColor) + copper induction waist halo
+    if (flickerOn) {
+      const fx = Math.sin(travelYaw), fz = Math.cos(travelYaw);
+      const vScale = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.25 : COURIER_POD.shell;
+      const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
+      inst("hero", wx(pp.x) + fx * 0.31, 0.54 + (dead ? 0 : bob * 0.5), wz(pp.y) + fz * 0.31, vScale, 0.085, 0.09, st.profile.orbColor, travelYaw);
+      inst("halo", wx(pp.x), COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), wz(pp.y), COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffb23e", travelYaw + st.time * 3.2);
+      if (ex && !dead) {
+        inst("hero", wx(ex.x) + fx * 0.31, 0.54 + bob * 0.5, wz(ex.y) + fz * 0.31, vScale, 0.085, 0.09, st.profile.orbColor, travelYaw);
+        inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffb23e", travelYaw + st.time * 3.2);
       }
     }
 
-    // sentries — one silhouette each (cone, cube, ring, saucer); colour carries identity and the surge state
+    // Multi-part directional micro-drone sentries: distinct chassis + forward glowing optic visor + patrol scan cone
     for (const g of st.ghosts) {
-      const gp = normGhostPos(g);
+      const gp = blend?.mazeId === st.mazeId && blend.ghosts[g.id] ? blend.ghosts[g.id] : normGhostPos(g);
       const wob = Math.sin(st.time * 7 + g.px) * 0.04 * (calmMotion ? REDUCED_AMPLITUDE : 1);
       const frightened = st.fright > 0 && g.state === "active";
-      // surge ending: a white strobe, or a slow 1 Hz pulse between slate and white when motion/flash is reduced
       const ending = frightened && st.fright < 1.8;
       const flash = ending && !calmFlash && Math.sin(st.time * 18) > 0;
       const col = !frightened ? GHOST_TINT[g.id] : flash ? OVERLOAD_FLASH : ending && calmFlash ? mixHex(OVERLOAD_COLOR, OVERLOAD_FLASH, 0.5 + 0.5 * Math.sin(st.time * Math.PI * 2)) : OVERLOAD_COLOR;
+      const visorCol = frightened ? (flash ? "#ff4d5e" : "#7ee8ff") : "#ffffff";
       const hidden = g.state === "eyes" || g.state === "entering";
       if (hidden) continue;
-      const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.94;
+      const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.96;
       const yaw = yawOf(g.dir);
-      // DD47-AN1: retain the per-sentry rotation styles at full motion, but
-      // replace continuous spins with a small bounded sway on reduced motion.
-      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : st.time * speed;
+      const fx = Math.sin(yaw), fz = Math.cos(yaw);
+      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : yaw + Math.sin(st.time * speed) * 0.28;
       const place = (x: number, z: number): void => {
         const y = 0.42 + wob;
         switch (g.id) {
-          case "blitz": inst("shC", x, y + 0.08, z, 0.62 * k, 0.9 * k, 0.62 * k, col, yaw); break;
-          case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, turn(2.2)); break;
-          case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, turn(3.1)); break;
-          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, turn(1.4)); break;
+          case "blitz": inst("shC", x, y + 0.08, z, 0.64 * k, 0.88 * k, 0.68 * k, col, yaw); break;
+          case "sly": inst("shB", x, y + 0.02, z, 0.62 * k, 0.54 * k, 0.66 * k, col, turn(3.2)); break;
+          case "flick": inst("shT", x, y, z, 0.76 * k, 0.76 * k, 0.76 * k, col, turn(4.1)); break;
+          case "dim": inst("shY", x, y - 0.04, z, 0.78 * k, 0.32 * k, 0.78 * k, col, turn(2.4)); break;
+        }
+        inst("visor", x + fx * 0.27 * k, y + 0.06, z + fz * 0.27 * k, 0.28 * k, 0.09 * k, 0.08 * k, visorCol, yaw);
+        if (!frightened && g.state === "active") {
+          inst("scan", x + fx * 0.72, 0.12, z + fz * 0.72, 0.42, 0.04, 0.68, GHOST_TINT[g.id], yaw);
         }
       };
       place(wx(gp.x), wz(gp.y));
@@ -902,13 +1090,12 @@ export function syncVisuals(dt: number): void {
       if (gx) place(wx(gx.x), wz(gx.y));
     }
 
-    // cache gem (bonus) — an icosahedron in the kind's colour
+    // Bonus cache gem — faceted crystal icosahedron in the kind's colour
     if (st.fruitActive) {
       const kind = m.def.fruit;
-      inst("trophy", wx(m.fruitTile.x), 0.4 + Math.sin(st.time * 4) * 0.06, wz(m.fruitTile.y), 0.52, 0.52, 0.52, GEM_COLOR[kind], st.time * 1.6);
+      inst("gem", wx(m.fruitTile.x), 0.42 + Math.sin(st.time * 4) * 0.06, wz(m.fruitTile.y), 0.5, 0.5, 0.5, GEM_COLOR[kind], st.time * 1.6);
     }
 
-    // school beacon over the active sentry of interest (first active ghost)
     const beam = nodes.get("school-beam");
     if (beam) {
       if (st.school) {
@@ -922,45 +1109,51 @@ export function syncVisuals(dt: number): void {
     }
   } catch { st.nodesOk = false; }
 
-  // camera — slightly lower/wider than the old rig so the lit deck and neon
-  // horizon fill the frame; the whole maze and every hazard stay in view.
-  // Aspect fit (DD-3): the rig pulls back along its own view direction until the whole board is in frame, so a
-  // portrait phone sees all 19 columns instead of the middle 9. Desktop stays within a few percent of the old rig.
+  // Portrait-aware camera framing (`fitPlayRig` enlarges 390x844 mobile board footprint without clipping)
   const aspect = viewAspect();
   if (Math.abs(aspect - fitAspect) > 1e-3) {
     fitAspect = aspect;
-    fitK = fitDistanceScale({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect) * FRAME_PULL_BACK;
+    const fitted = fitPlayRig({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect, FRAME_PULL_BACK);
+    fittedRig = fitted.pose;
+    fitK = fitted.pullBack;
   }
-  const rig = scalePose({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, fitK);
-  const pp2 = normPos(m);
+  const rig = fittedRig;
   if (st.camera === "overhead") {
     lastPose = rig;
   } else {
-    const bx = wx(pp2.x) * CAMERA_RIG.followX, bz = wz(pp2.y) * CAMERA_RIG.followZ;
+    const followScale = aspect < 0.82 ? 0.55 : 1;
+    const bx = wx(pp.x) * CAMERA_RIG.followX * followScale, bz = wz(pp.y) * CAMERA_RIG.followZ * followScale;
     lastPose = {
-      position: [bx, rig.position[1], rig.position[2] + bz],
-      target: [bx * 0.75, 0, rig.target[2] + bz * 0.65],
-      fov: CAMERA_RIG.fov
+      position: [rig.position[0] + bx, rig.position[1], rig.position[2] + bz],
+      target: [rig.target[0] + bx * 0.75, rig.target[1], rig.target[2] + bz * 0.65],
+      fov: rig.fov
     };
   }
   maybePlayCinematic(rig);
-  // DD47-C1 dash fovKick +3 deg while dashing (layer eases it back)
   const dashing = st.player.dashT > 0 && !calmMotion;
   if (dashing !== fovKicked) {
     fovKicked = dashing;
     try { app.camera?.fovKick?.set("dash", dashing ? 3 : 0, 0.08); } catch { /* camera layer optional */ }
   }
-  if (!cinematic) app.camera?.setPose({ position: lastPose.position, target: lastPose.target, fov: lastPose.fov });
+  if (!cinematic) {
+    const sx = feel ? feel.shakeOffset[0] : 0;
+    const sy = feel ? feel.shakeOffset[1] : 0;
+    const fovDelta = feel ? feel.fovDeltaDeg : 0;
+    app.camera?.setPose({
+      position: [lastPose.position[0] + sx, lastPose.position[1] + sy * 0.5, lastPose.position[2] + sy],
+      target: [lastPose.target[0] + sx * 0.35, lastPose.target[1], lastPose.target[2] + sy * 0.35],
+      fov: Math.max(38, Math.min(58, lastPose.fov + fovDelta))
+    });
+  }
   syncFocus(lastPose);
-  syncPracticals(pp2);
-  publishCrops(pp2, aspect);
+  syncPracticals(pp);
+  publishCrops(pp, aspect);
   app.output?.setOutputOverlay(
     st.mode === "dying" && !calmFlash ? { fade: [0.4, 0.02, 0.1, 0.45] }
     : st.fright > 0 && st.fright < 1.8 ? { vignette: [0.05, 0.05, 0.35, 0.5] }
     : {}
   );
 
-  // submit the dynamic pools (the static ones went up once, on the board change)
   submit(DYNAMIC_POOLS);
 }
 
@@ -990,7 +1183,7 @@ function applyBoardLook(id: MazeId): boolean {
   // The aspect-fit camera sees past the bench on tall phones; clear to the room colour so the margin reads as the room.
   try { (app as unknown as { setClearColor?(c: string): void }).setClearColor?.(look.background); } catch { /* optional */ }
   if (!toneMapSet) {
-    try { app?.output?.setOutput({ toneMapping: LENS.toneMapping }); toneMapSet = true; } catch { /* output optional */ }
+    try { app?.output?.setOutput({ toneMapping: LENS.toneMapping, exposure: LENS.exposure, dither: true }); toneMapSet = true; } catch { /* output optional */ }
   }
   if (id === builtLook) return true;
   try {

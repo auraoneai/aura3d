@@ -1,10 +1,10 @@
 /**
- * Splat Rush audio: a small synth built on the shared `AudioContextManager` (the repo allows exactly one owner of an
+ * Splat audio: a procedural synth built on the shared `AudioContextManager` (the repo allows exactly one owner of an
  * AudioContext). Everything is generated here: a bright 132 BPM arpeggio with a sine bass line, and one short effect per
  * game event. Nothing is sampled, no asset is loaded, and `Math.random` is never touched (the simulation's random
  * stream must stay in lock-step with the recorded reference), so the noise buffer uses its own LCG.
  *
- * Effects are triggered from state changes the renderer observes (`SoundEvents.diff`), never from the simulation.
+ * Effects are triggered from state changes the renderer observes (`diffSounds`), never from the simulation.
  */
 import { createCueBank, createStepSequencer, noteFrom, type CueSpec, type StepSequencer, type SynthContext, type SynthCueBank } from "@aura3d/engine/audio";
 
@@ -79,13 +79,15 @@ const CUES: Record<GameSound, CueSpec> = {
   pickup: {
     layers: [
       { freq: 620, type: "sine", dur: 0.22, gain: 0.17, slideTo: 1320 },
-      { freq: 930, type: "triangle", dur: 0.25, gain: 0.11, delay: 0.05, slideTo: 1850 }
+      { freq: 930, type: "triangle", dur: 0.25, gain: 0.11, delay: 0.04, slideTo: 1850 },
+      { freq: 1240, type: "sine", dur: 0.22, gain: 0.08, delay: 0.08, slideTo: 2480 }
     ]
   },
   switch: {
     layers: [
-      { freq: 330, type: "square", dur: 0.14, gain: 0.1, slideTo: 660 },
-      { freq: 495, type: "sine", dur: 0.2, gain: 0.12, delay: 0.06, slideTo: 990 }
+      { freq: 330, type: "triangle", dur: 0.14, gain: 0.12, slideTo: 660 },
+      { freq: 495, type: "sine", dur: 0.2, gain: 0.12, delay: 0.05, slideTo: 990 },
+      { kind: "noise", dur: 0.11, gain: 0.045, freq: 3600, type: "highpass", slideTo: 7200 }
     ]
   },
   burst: {

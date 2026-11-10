@@ -8,26 +8,27 @@ import {
   COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, THEMES,
   themeIndexForRow, type LaneType
 } from "./themes";
-import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
+import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
-import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
+import { critterNodeTransforms, critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { shadeMaterial } from "./shade";
+import { broadcastCrispLutAsset, flipbookQuadMaterial, lavaMagmaMaterial, riverWaterMaterial } from "./surfaceShaders";
 
 // ---------------- pool capacities ----------------
 const CAP = {
-  ground: 56, detail: 260, glow: 140, glowS: 60,
+  ground: 56, detail: 460, glow: 180, glowS: 80,
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
-  truck: 18, tram: 12, train: 6 * TRAIN_CARS, hover: 26,
-  log: 48, logEnd: 96, raft: 96, pad: 48, stone: 48, coin: 26,
-  trunk: 320, canopy: 260, dressB: 220,
-  // GU47 CH47-07: one instanced pool per ground surface (diorama look; empty under ?look=original).
-  felt: 40, asphalt: 40, water: 30, gravel: 24, lava: 24,
+  truck: 18, tram: 28, train: 6 * TRAIN_CARS, hover: 26,
+  log: 48, logEnd: 96, raft: 196, pad: 48, stone: 48, coin: 26,
+  trunk: 360, canopy: 300, dressB: 260,
+  // GU47 CH47-07 + WP-14: one instanced pool per ground surface + distant horizon hills/skyline.
+  felt: 44, asphalt: 44, water: 32, gravel: 26, lava: 26, horizon: 44,
   // GU47 phase 4: sun-cast shadow decals (vivid and 4.6 looks; empty in the diorama).
-  shade: 200
+  shade: 220
 } as const;
 
 /**
@@ -133,6 +134,8 @@ export interface GameState {
   rescues: number;
   /** A rail lane at or just ahead of the player is in its warning window (CH-14 horn). */
   railAlert: boolean;
+  /** Close traffic/train near-misses this run; drives real-time hit-stop + whoosh SFX in main.ts (WP-14). */
+  nearMisses: number;
 }
 
 export const st: GameState = {
@@ -151,7 +154,7 @@ export const st: GameState = {
   autopilot: false, apTimer: 0, dressKey: "",
   forceTheme: undefined,
   seedPinned: false, banked: true, runId: 0, paused: false,
-  runUnlocks: [], newBest: false, rescues: 0, railAlert: false
+  runUnlocks: [], newBest: false, rescues: 0, railAlert: false, nearMisses: 0
 };
 
 const ROW_AHEAD = 26, ROW_BEHIND = 8;
@@ -280,6 +283,11 @@ export function lane(row: number): Lane {
   return l;
 }
 
+let nearMissCooldownUntil = 0;
+let lastHopOriginRow = -1;
+let lastHopOriginTime = -1;
+let lastHopOriginX = 0;
+
 export function startRun(kind: RunKind, drill: DrillDef | null, seed?: number, forceTheme?: number): void {
   // A run that is replaced while still live (R, Quick Play, a World button) banks its coins first (CH-1).
   bankRun();
@@ -292,7 +300,10 @@ export function startRun(kind: RunKind, drill: DrillDef | null, seed?: number, f
   st.hop.active = false; st.hop.t = 0; st.hop.dir = "fwd"; st.idle = 0; st.dead = null; st.deadAt = 0;
   st.lanes.clear(); st.podTaken.clear(); st.coinTaken.clear();
   st.events.length = 0;
-  st.runUnlocks = []; st.newBest = false; st.banked = false; st.paused = false; st.railAlert = false;
+  st.runUnlocks = []; st.newBest = false; st.banked = false; st.paused = false; st.railAlert = false; st.nearMisses = 0;
+  nearMissCooldownUntil = 0;
+  lastHopOriginRow = -1;
+  lastHopOriginTime = -1;
   st.runId++;
   st.critter = CRITTERS.find(c => c.id === st.profile.selected) ?? CRITTERS[0];
   st.dressKey = "";
@@ -300,7 +311,14 @@ export function startRun(kind: RunKind, drill: DrillDef | null, seed?: number, f
   st.themeIdx = forceTheme ?? 0;
   if (appliedLook !== st.themeIdx) swapLook(st.themeIdx);
   st.mode = "run";
-  pushEvent(kind === "drill" ? `Drill: ${drill?.label}` : kind === "tour" ? "World Tour departure" : "Quick Play");
+  st.message = "";
+  st.messageT = 0;
+  if (kind === "drill") pushEvent(`Drill: ${drill?.label}`);
+  else if (kind === "tour") pushEvent("World Tour departure");
+  else {
+    st.events.push("Quick Play");
+    if (st.events.length > 6) st.events.shift();
+  }
 }
 
 /** Restart the current run the way it was started: same kind, drill, World Tour theme and, when pinned, seed (CH-8). */
@@ -486,7 +504,7 @@ export function buildScene(): unknown {
   return lookMode === "original" ? buildOriginalScene() : buildDioramaScene();
 }
 
-/** The 4.6 scene (`?look=original`), unchanged. */
+/** The 4.6 scene (`?look=original`), with hemisphere fill (zero `lights.ambient`). */
 function buildOriginalScene(): unknown {
   const th0 = THEMES[0];
   const s = scene()
@@ -497,7 +515,7 @@ function buildOriginalScene(): unknown {
     // Gentle neon life on coins/pods without blowing out the flat world.
     .add(effects.bloom({ intensity: 0.16, threshold: 0.86, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
-    .add(lights.ambient({ color: "#dce8f5", intensity: 0.42 }))
+    .add(lights.hemisphere({ skyColor: "#dce8f5", groundColor: "#6d8458", intensity: 0.42 }))
     // Warm sun key from camera-left + cool rim from the far horizon give the
     // flat diorama depth and unify the textured critters with the lanes.
     .add(lights.directional({ position: [-9, 10, 9], target: [0, 0, -4], color: "#ffd8a6", intensity: 0.78 }))
@@ -540,27 +558,35 @@ function buildOriginalScene(): unknown {
 }
 
 /**
- * GU47 phase 3 (4.7.1): the vivid look for one theme. The theme's preset brings its IBL and grade; its key, fog and
- * bloom are dropped (the scene's `sun-key` is the one shadowed key, the scene bloom node carries the theme bloom) and a
- * hemisphere fill plus theme-tinted distance haze are added. Same camera, lanes and models as the 4.6 look.
+ * GU47 phase 3 + WP-14: the vivid toy-city diorama look for one theme. The theme's preset brings its IBL and
+ * broadcast-crisp grade; its key, fog and bloom are dropped (the scene's `sun-key` is the one shadowed key, the scene
+ * bloom node carries the theme bloom) and a hemisphere fill plus calibrated horizon haze are added.
  */
 function buildVividLookGroup(ti: number) {
   const th = THEMES[ti]!;
   const V = VIVID_LOOKS[ti]!;
   const lookId = th.look as Parameters<typeof looks.preset>[0];
+  const lutAsset = broadcastCrispLutAsset();
   const group = looks.preset(lookId, {
     fogDensityScale: 0,
     exposureEv: V.exposureEv,
-    grade: { contrast: V.grade.contrast, saturation: V.grade.saturation, temperature: V.grade.temperature },
+    grade: {
+      contrast: V.grade.contrast,
+      saturation: V.grade.saturation,
+      temperature: V.grade.temperature,
+      ...(lutAsset ? { lut: lutAsset } : {})
+    },
     rim: false
   }).runtime(game.runtimeNode("look")).toJSON();
+  const hazeNode = V.fog.density > 0
+    ? effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()
+    : looks.fogForExtent({ name: "cross-hop horizon haze", extent: 58, haze: 0.28, color: V.fog.color, mode: "exp2" }).toJSON();
   const children = group.children
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
-    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
+    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog" || child.effect === "ambient-occlusion")))
     .map((child) => (child.kind === "environment" ? { ...child, intensity: V.environmentIntensity, background: false } : child))
     .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: V.hemi.sky, groundColor: V.hemi.ground, intensity: V.hemi.intensity }).toJSON()])
-    // Distance haze only where the panel liked it (dusk, night); the day views read washed out with it (g14p3r2).
-    .concat(V.fog.density > 0 ? [effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()] : []);
+    .concat([hazeNode]);
   return { ...group, background: V.sky.horizon, children };
 }
 
@@ -591,11 +617,24 @@ function buildVividSunKey(ti: number) {
     target: [0, 0, 0],
     color: V.sun.color,
     intensity: V.sun.intensity,
-    shadow: { cascades: 2, filter: "pcss", mapSize: 2048, maxDistance: 40, lightSize: 0.8, fit: "camera" }
+    shadow: { cascades: 2, filter: "pcss", mapSize: 2048, maxDistance: 44, lightSize: 0.9, fit: "camera" }
   }).runtime(game.runtimeNode("sun-key"));
 }
 
-/** GU47 phase 3: the vivid scene, the 4.6 chase camera with the vivid light, sky, haze and a flat world floor. */
+const FLIPBOOK_SLOTS = 4;
+
+function buildGodRaysNode() {
+  return effects.godRays({
+    name: "cross-hop god rays",
+    source: "sun",
+    intensity: 0.42,
+    decay: 0.94,
+    samples: 48,
+    color: "#ffe1ad"
+  }).runtime(game.runtimeNode("god-rays")).toJSON();
+}
+
+/** GU47 phase 3 + WP-14: crisp sunlit toy-city diorama with contactShadows, GTAO, SSR, cinematicBloom & flipbooks. */
 function buildVividScene(): unknown {
   const V0 = VIVID_LOOKS[0]!;
   const s = scene()
@@ -603,14 +642,41 @@ function buildVividScene(): unknown {
     .add(buildLookGroup(THEMES[0]))
     .add(buildVividSky(0))
     .add(buildVividSunKey(0))
-    .add(effects.contactShadows({ intensity: 0.6, length: 0.3 }))
-    .add(effects.bloom({ intensity: V0.bloom.intensity, threshold: V0.bloom.threshold, radius: 0.3 }))
-    .add(effects.vignette({ intensity: 0.18, smoothness: 0.6 }))
+    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.65 }))
+    .add(effects.ambientOcclusion({ intensity: 0.52, radius: 0.42, multiBounce: true }))
+    .add(effects.screenSpaceReflections({ intensity: 0.56, maxDistance: 14, roughness: 0.22, thickness: 0.25 }))
+    .add(effects.cinematicBloom({ name: "bloom", intensity: V0.bloom.intensity, threshold: V0.bloom.threshold, color: "#fff8eb", radius: 0.34 }))
+    .add(effects.vignette({ intensity: 0.16, smoothness: 0.62 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
       position: [0, CAM.y, CAM.back],
       target: [0, CAM.targetY, -CAM.ahead],
       fov: CAM.fov
     }));
+  if (!reducedMotion) {
+    s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: 1.7, tiltShift: { bandCenter: 0.6, bandWidth: 0.48 } }));
+  }
+  const amb = ambientNode(0);
+  if (amb) s.add(amb);
+  for (let i = 0; i < FLIPBOOK_SLOTS; i++) {
+    s.add(
+      primitives.plane({
+        name: `vfx-ripple-${i}`,
+        size: [1, 1, 1],
+        material: flipbookQuadMaterial("ripple", [210, 244, 255]),
+        castShadow: false,
+        receiveShadow: false
+      }).position(0, -999, 0).scale([0.001, 1, 0.001]).runtime(game.runtimeNode(`vfx-ripple-${i}`))
+    );
+    s.add(
+      primitives.plane({
+        name: `vfx-dust-${i}`,
+        size: [1, 1, 1],
+        material: flipbookQuadMaterial("dust", [246, 234, 208]),
+        castShadow: false,
+        receiveShadow: false
+      }).position(0, -999, 0).rotate(Math.PI * 0.36, 0, 0).scale([0.001, 1, 0.001]).runtime(game.runtimeNode(`vfx-dust-${i}`))
+    );
+  }
   s.addMany(poolNodes(false, true, V0.floor) as never[]);
   return s.toJSON();
 }
@@ -624,12 +690,20 @@ function swapVividLook(ti: number): void {
   attempt(() => n0.add(buildVividLookGroup(ti) as never));
   attempt(() => n0.remove("sky"));
   attempt(() => n0.add(buildVividSky(ti) as never));
+  attempt(() => n0.remove("ambient"));
+  const amb = ambientNode(ti);
+  if (amb) attempt(() => n0.add(amb as never));
+  attempt(() => n0.remove("god-rays"));
+  if (ti === 2 && !reducedMotion) attempt(() => n0.add(buildGodRaysNode() as never));
   attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: V.floor, roughness: 0.96, metalness: 0 })));
   try {
     (n0.get("sun-key") as LightHandleLike | undefined)?.setLight?.({ color: V.sun.color, intensity: V.sun.intensity, direction: sunDirection(V.sun.elevationDeg, V.sun.azimuthDeg) }, { transitionSeconds: reducedMotion ? 0 : 0.6 });
   } catch { /* setLight needs A3D_QR_LIGHTING */ }
   try { post()?.setEffect?.("bloom", { intensity: V.bloom.intensity, threshold: V.bloom.threshold }); } catch { /* post v2 only */ }
+  syncLamps(ti, true);
   appliedLook = ti;
+  themeChangedAt = st.time;
+  lastKeyRow = -1;
 }
 
 /** Tilt-shift band centre at boot (the player row sits low in the diorama frame); updated every frame. */
@@ -648,7 +722,9 @@ function buildDioramaScene(): unknown {
     .add(buildLookGroup(THEMES[0]))
     .add(buildSky(0, 0))
     .add(buildSunKey(0))
-    .add(effects.contactShadows({ intensity: 0.55, length: 0.3 }))
+    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.6 }))
+    .add(effects.ambientOcclusion({ intensity: 0.46, radius: 0.42, multiBounce: true }))
+    .add(effects.screenSpaceReflections({ intensity: 0.52, maxDistance: 14, roughness: 0.22, thickness: 0.25 }))
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: pose.position, target: pose.target, fov: pose.fov }));
@@ -720,26 +796,22 @@ function ambientNode(ti: number): AuraSceneNode | null {
   }).runtime(game.runtimeNode("ambient")).toJSON() as AuraSceneNode;
 }
 
-/** Instanced pools, the critters and the floor; `diorama` picks the GU47 materials and the surface pools. */
+/** Instanced pools, the critters and the floor; `diorama` + `vivid` share the 10/10 materials and surface pools. */
 function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   const th0 = THEMES[0];
+  const rich = diorama || lookMode === "vivid";
   const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04 });
-  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.06 });
+  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.62, metalness: 0.06, clearcoat: rich ? 0.25 : 0, clearcoatRoughness: 0.24 });
   // Signals, lamp heads, neon strips and the coin are practicals in the diorama look (art direction: no emissive fill).
   const practical = diorama ? { practical: true } : {};
-  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85, roughness: 0.45, ...practical });
+  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.05, roughness: 0.38, ...practical });
   const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
 
   const out = [
-    // A wide meadow/ground plane beneath the lane strips so the course reads
-    // as one landscape rather than separate floating bands. Theme re-tints it.
-    // primitives.plane already lies in XZ: the original look keeps its 4.6 transform (rotated upright into a 1 m
-    // strip, so the sky colour showed below the lanes); the diorama lays it flat as the felt tabletop that fills the
-    // frame bottom behind the start row (GU47 phase 2).
     primitives.plane({
       name: "world-floor",
       size: [1, 1, 1],
-      material: material.pbr({ color: floorColor ?? th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
+      material: material.pbr({ color: floorColor ?? th0.palette.dressingA, roughness: 0.94, metalness: 0 }),
       castShadow: false,
       receiveShadow: true
     }).position(0, -0.16, -20).rotate(flatFloor ? 0 : -Math.PI / 2, 0, 0).scale(flatFloor ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
@@ -747,46 +819,44 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
     instances.box({ name: "scenery-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glowS), castShadow: false }).runtime(game.runtimeNode("pool-glowS")),
+    instances.roundedBox({ name: "horizon-ridge", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.94, metalness: 0 }), transforms: pad(CAP.horizon), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-horizon")),
     // Full fleet of 3D Meshy traffic vehicles (length is along X in GLB local space)
     // Drawn lengths come from MOVER_LENGTH, the same table the hitboxes use (CH-5).
-    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetMaxDimension: MOVER_LENGTH.car, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-car")),
-    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetMaxDimension: MOVER_LENGTH.hatch, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-hatch")),
-    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetMaxDimension: MOVER_LENGTH.suv, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-suv")),
-    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetMaxDimension: MOVER_LENGTH.taxi, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-taxi")),
-    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetMaxDimension: MOVER_LENGTH.van, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-van")),
-    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetMaxDimension: MOVER_LENGTH.pickup, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-pickup")),
-    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetMaxDimension: MOVER_LENGTH.truck, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-truck")),
-    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetMaxDimension: MOVER_LENGTH.tram, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-tram")),
-    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetMaxDimension: TRAIN_CAR_LENGTH, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-train")),
-    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetMaxDimension: MOVER_LENGTH.hover, castShadow: true, ...vehicleMaterial(diorama) }).runtime(game.runtimeNode("pool-hover")),
+    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetMaxDimension: MOVER_LENGTH.car, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-car")),
+    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetMaxDimension: MOVER_LENGTH.hatch, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-hatch")),
+    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetMaxDimension: MOVER_LENGTH.suv, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-suv")),
+    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetMaxDimension: MOVER_LENGTH.taxi, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-taxi")),
+    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetMaxDimension: MOVER_LENGTH.van, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-van")),
+    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetMaxDimension: MOVER_LENGTH.pickup, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-pickup")),
+    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetMaxDimension: MOVER_LENGTH.truck, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-truck")),
+    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetMaxDimension: MOVER_LENGTH.tram, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-tram")),
+    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetMaxDimension: TRAIN_CAR_LENGTH, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-train")),
+    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetMaxDimension: MOVER_LENGTH.hover, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-hover")),
     // Round bark logs lying across the river, half sunk, with pale cut ends (CH-E4).
     instances.cylinder({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
     instances.cylinder({ name: "m-log-ends", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
     instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
     instances.cylinder({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.85 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
-    // GU47 phase 4 (WP-36 CH47-09): the game's own Meshy toy coin (key xhopCoin), upright, its face in the XY plane;
-    // the pickup rule and its column are unchanged (presentation only).
-    // Views without the phase-4 dressing keep the 4.6.2 cylinder coin (panel g14p4r2: theme0 1/1/1, not better).
     p4Dress && !diorama
       ? instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin"))
       : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
-    instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
-    instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), ...(diorama ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
-    instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
-    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", diorama) })
+    instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-trunk")),
+    instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
+    instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
+    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", rich) })
       .position(0, 0.17, 0).rotate(0, Math.PI, 0)
       .animate({ clip: "Idle", loop: true })
       .runtime(game.runtimeNode("player")),
-    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true, ...critterMaterial("hawk", diorama) })
+    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true, ...critterMaterial("hawk", rich) })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
-    model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true })
+    model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true, ...(rich ? { materialOverrides: critterOverrides("rescuePod") } : {}) })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("pod")),
     // 3D Meshy spectator critters cheering along the outer meadow banks! The diorama look mounts them after the
     // first frame (CH47-18 lazy load, `mountSpectators`).
     ...(diorama ? [] : SPECTATOR_CRITTERS).map((key, idx) =>
-      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, diorama) })
+      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, rich) })
         .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
         .animate({ clip: "Idle", loop: true })
@@ -798,25 +868,24 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     out.push(instances.plane({ name: "sun-shade", size: [1, 1, 1], material: shadeMaterial(), transforms: pad(CAP.shade), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-shade")));
   }
   if (!diorama && p4Dress) {
-    // GU47 phase 4: lacquered toy rafts instead of round logs (the sibling judge matched the cylinder logs with
-    // cloud-runner-port, g14p4r1 0.786); same length and top height as the log hitbox.
-    out.push(instances.roundedBox({ name: "m-rafts", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.4, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.15 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
+    // Damp wet-bark timber rafters & rope lashings (kept named `m-rafts` for GU47 phase-4 parity).
+    out.push(instances.roundedBox({ name: "m-rafts", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.56, metalness: 0, clearcoat: 0.62, clearcoatRoughness: 0.22 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
   }
   if (!diorama && lookMode === "vivid") {
-    // GU47 phase 4: the vivid look's reflective river (ibl_reflections): clearcoat water that picks up the sky IBL
-    // (+1 draw). A satin road and brighter water read washed out to the g14p4r1 panel.
     out.push(
-      instances.box({ name: "v-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 0.7 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.14, envMapIntensity: 0.36 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.02 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
+      instances.box({ name: "v-water", size: [1, 1, 1], material: riverWaterMaterial(), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.95, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
+      instances.box({ name: "s-lava", size: [1, 1, 1], material: lavaMagmaMaterial(), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false }).runtime(game.runtimeNode("pool-lava"))
     );
   }
   if (diorama) {
     const L0 = THEME_LOOKS[0]!;
     out.push(
-      // CH47-07: felt meadow, matte asphalt (lacquer dashes ride the detail pool), glossy clearcoat water,
-      // gravel railbed and emissive lava, each one instanced pool (+5 draws).
-      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.06, envMapIntensity: 0.3 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
-      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92, metalness: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
-      instances.box({ name: "s-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.08, envMapIntensity: 0.55 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.08, envMapIntensity: 0.3 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
+      instances.box({ name: "s-water", size: [1, 1, 1], material: riverWaterMaterial(), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
       instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.97, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
       instances.box({ name: "s-lava", size: [1, 1, 1], material: material.emissive({ color: "#ffffff", emissive: "#ff6a2a", emissiveIntensity: L0.surfaces.lavaEmissive, roughness: 0.6 }), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false, instanceColorTarget: "both" }).runtime(game.runtimeNode("pool-lava"))
     );
@@ -842,9 +911,18 @@ export function mountSpectators(): void {
   });
 }
 
-/** CH47-08: the diorama keeps each critter's textures with a per-surface override; the original look paints them cream. */
-function critterMaterial(key: string, diorama: boolean): { material?: typeof CRITTER_MAT; materialOverrides?: ReturnType<typeof critterOverrides> } {
-  return diorama ? { materialOverrides: critterOverrides(key) } : { material: CRITTER_MAT };
+/** CH47-08 + WP-14: vivid & diorama keep each critter's textures + rim/clearcoat + amphibian crouch; original paints cream. */
+function critterMaterial(key: string, rich: boolean): {
+  material?: typeof CRITTER_MAT;
+  materialOverrides?: ReturnType<typeof critterOverrides>;
+  nodeTransforms?: ReturnType<typeof critterNodeTransforms>;
+} {
+  if (!rich) return { material: CRITTER_MAT };
+  const nodeTransforms = critterNodeTransforms(key);
+  return {
+    materialOverrides: critterOverrides(key),
+    ...(nodeTransforms ? { nodeTransforms } : {})
+  };
 }
 /** Drawn heights and depths (metres) of the movers, for their shadow decals. */
 const SHADE_SIZE: Record<string, readonly [number, number]> = {
@@ -860,8 +938,8 @@ function shade(x: number, groundY: number, z: number, len: number, dep: number, 
   inst("shade", f.x, groundY + 0.008, f.z, f.len, 1, f.dep, "#000000");
 }
 
-function vehicleMaterial(diorama: boolean): { materialOverrides?: typeof VEHICLE_OVERRIDES } {
-  return diorama ? { materialOverrides: VEHICLE_OVERRIDES } : {};
+function vehicleMaterial(rich: boolean): { materialOverrides?: typeof VEHICLE_OVERRIDES } {
+  return rich ? { materialOverrides: VEHICLE_OVERRIDES } : {};
 }
 
 // -------------------- per-frame --------------------
@@ -874,8 +952,7 @@ let appliedLook = 0;
 
 export function bindApp(a: AuraApp): void {
   app = a;
-  // CH47-13 preset pack; CH47-05 tilt-shift off under reduced motion (the scene authors none, and this drops a preset's).
-  if (lookMode === "diorama") {
+  if (lookMode !== "original") {
     try { registerCrossHopVfx(a.effects as never, reducedMotion); } catch { /* vfx lane off */ }
     if (reducedMotion) { try { post()?.setEffectEnabled?.("depthOfField", false); } catch { /* post v2 only */ } }
   }
@@ -975,19 +1052,106 @@ function runFrame(dt: number, input: GameInput): void {
     if (laneType === "road" || laneType === "tram" || laneType === "rail") {
       const n = laneMovers(l, st.time, XS);
       for (let i = 0; i < n; i++) {
-        if (Math.abs(XS[i] - p) < moverHalf(l) + 0.3) {
+        const dist = Math.abs(XS[i] - p);
+        if (dist < moverHalf(l) + 0.3) {
           if (laneType === "rail") die("flattened", "Flattened by the train");
           else die("squashed", "Squashed");
           break;
+        }
+        if (!st.dead && st.time >= nearMissCooldownUntil && dist < moverHalf(l) + 0.98) {
+          st.nearMisses++;
+          nearMissCooldownUntil = st.time + 0.85;
+          pushEvent("Near miss!");
         }
       }
     }
     // screen-edge drown
     if (!st.dead && Math.abs(p) > FIELD_HALF) die("drowned", "Swept away");
   }
+
+  // WP-14 near-miss check on the hazard row Hop just vaulted off within 260 ms
+  if (!st.dead && st.time >= nearMissCooldownUntil && lastHopOriginRow >= 0 && st.time - lastHopOriginTime <= 0.26) {
+    const prevLane = lane(lastHopOriginRow);
+    if (prevLane.type === "road" || prevLane.type === "tram" || prevLane.type === "rail") {
+      const nPrev = laneMovers(prevLane, st.time, XS);
+      for (let i = 0; i < nPrev; i++) {
+        if (Math.abs(XS[i] - lastHopOriginX) < moverHalf(prevLane) + 0.45) {
+          st.nearMisses++;
+          nearMissCooldownUntil = st.time + 0.85;
+          lastHopOriginRow = -1;
+          pushEvent("Close shave!");
+          break;
+        }
+      }
+    }
+  }
+}
+
+interface ActiveFlipbook {
+  kind: "ripple" | "dust";
+  slot: number;
+  x: number;
+  y: number;
+  z: number;
+  age: number;
+  duration: number;
+  startScale: number;
+  endScale: number;
+  tint: readonly [number, number, number];
+}
+const activeFlipbooks: ActiveFlipbook[] = [];
+let nextRippleSlot = 0;
+let nextDustSlot = 0;
+
+function spawnFlipbook(
+  kind: "ripple" | "dust",
+  x: number,
+  y: number,
+  z: number,
+  duration: number,
+  startScale: number,
+  endScale: number,
+  tint: readonly [number, number, number]
+): void {
+  if (lookMode !== "vivid" || reducedMotion || !app?.nodes) return;
+  const slot = kind === "ripple" ? (nextRippleSlot++ % 4) : (nextDustSlot++ % 4);
+  const existing = activeFlipbooks.findIndex((f) => f.kind === kind && f.slot === slot);
+  const entry: ActiveFlipbook = { kind, slot, x, y, z, age: 0, duration, startScale, endScale, tint };
+  if (existing >= 0) activeFlipbooks[existing] = entry;
+  else activeFlipbooks.push(entry);
+}
+
+function syncFlipbooks(dt: number): void {
+  if (lookMode !== "vivid" || !app?.nodes || activeFlipbooks.length === 0) return;
+  for (let i = activeFlipbooks.length - 1; i >= 0; i--) {
+    const f = activeFlipbooks[i]!;
+    f.age += dt;
+    const h = app.nodes.get(`vfx-${f.kind}-${f.slot}`);
+    if (!h) { activeFlipbooks.splice(i, 1); continue; }
+    const p = Math.max(0, Math.min(1, f.age / Math.max(0.05, f.duration)));
+    if (p >= 1) {
+      h.setPosition(0, -999, 0);
+      activeFlipbooks.splice(i, 1);
+      continue;
+    }
+    const ease = 1 - (1 - p) * (1 - p);
+    const sc = f.startScale + (f.endScale - f.startScale) * ease;
+    const alpha = (1 - p) * 0.88;
+    h.setPosition(f.x, f.y, f.z);
+    h.setScale([sc, 1, sc]);
+    try {
+      h.setMaterial?.(flipbookQuadMaterial(f.kind, f.tint, p, alpha) as never);
+    } catch { /* custom material hot-update best-effort */ }
+  }
 }
 
 function tryHop(dir: string): void {
+  const originLane = lane(st.playerRow);
+  const originX = st.playerCol * COL_W;
+  const originZ = laneZ(st.playerRow);
+  lastHopOriginRow = st.playerRow;
+  lastHopOriginTime = st.time;
+  lastHopOriginX = originX;
   let nr = st.playerRow, nc = Math.round(st.playerCol);
   if (dir === "fwd") nr++;
   else if (dir === "back") nr = Math.max(0, nr - 1);
@@ -1008,9 +1172,14 @@ function tryHop(dir: string): void {
     }
     if (!hasMoverUnder && bestDist <= PLATFORM_SNAP) nc = bestX / COL_W;
   }
-  const fromY = playerBaseY(lane(st.playerRow));
+  const fromY = playerBaseY(originLane);
   const toY = playerBaseY(targetLane);
-  st.hop = { active: true, t: 0, fromX: st.playerCol * COL_W, fromY, fromZ: laneZ(st.playerRow), toX: nc * COL_W, toY, toZ: laneZ(nr), dir };
+  if (originLane.type === "river") {
+    spawnFlipbook("ripple", originX, 0.024, originZ, 0.44, 0.42, 1.38, [188, 238, 255]);
+  } else {
+    spawnFlipbook("dust", originX, surfaceTopY(originLane) + 0.026, originZ, 0.32, 0.38, 0.96, [242, 234, 214]);
+  }
+  st.hop = { active: true, t: 0, fromX: originX, fromY, fromZ: originZ, toX: nc * COL_W, toY, toZ: laneZ(nr), dir };
   st.playerRow = nr; st.playerCol = nc;
   st.idle = 0;
   // Score counts new rows only, so hopping back and forth cannot farm points (CH-2).
@@ -1025,7 +1194,7 @@ function landHop(): void {
   if (l.hasCoin && !st.coinTaken.has(l.row) && l.coinCol === Math.round(st.playerCol)) {
     st.coinTaken.add(l.row); st.coins += 10; st.score += 10;
     pushEvent("+10 coin");
-    if (lookMode === "diorama") { app?.effects?.burst(CROSS_HOP_VFX.coin, [x, 0.6, laneZ(st.playerRow)]); comboTrail(); }
+    if (lookMode !== "original") { app?.effects?.burst(CROSS_HOP_VFX.coin, [x, 0.6, laneZ(st.playerRow)]); comboTrail(); }
     else app?.effects?.burst("pickup", [x, 0.6, laneZ(st.playerRow)], { count: 14, speed: 2.2, scale: 0.5, color: COLORS.coin });
   }
   if (l.hasPod && !st.podTaken.has(l.row) && l.podCol === Math.round(st.playerCol)) {
@@ -1037,7 +1206,7 @@ function landHop(): void {
       st.runUnlocks.push(pick.label);
       pushEvent(`+50 rescue pod — ${pick.label} unlocked!`);
     } else pushEvent("+50 rescue pod");
-    if (lookMode === "diorama") app?.effects?.burst(CROSS_HOP_VFX.rescue, [x, 0.8, laneZ(st.playerRow)]);
+    if (lookMode !== "original") app?.effects?.burst(CROSS_HOP_VFX.rescue, [x, 0.8, laneZ(st.playerRow)]);
     else app?.effects?.burst("aura-burst", [x, 0.8, laneZ(st.playerRow)], { count: 30, speed: 3, scale: 0.7, color: COLORS.pod });
   }
   if (l.type === "river" || l.type === "lava") {
@@ -1068,9 +1237,17 @@ function landHop(): void {
   }
 }
 
-/** CH47-13: theme-coloured landing dust, log splash or lily-pad ring, lava sparks (diorama look only). */
+/** CH47-13 / WP-14: theme-coloured landing dust, log splash + ripple flipbook, lily-pad ring, lava sparks. */
 function landingEffect(l: Lane, x: number, z: number): void {
-  if (lookMode !== "diorama" || !app?.effects) return;
+  if (lookMode === "original") return;
+  if (l.type === "river") {
+    spawnFlipbook("ripple", x, 0.026, z, 0.54, 0.52, 1.78, [196, 244, 255]);
+  } else if (l.type === "lava") {
+    spawnFlipbook("dust", x, 0.18, z, 0.42, 0.48, 1.24, [255, 146, 68]);
+  } else {
+    spawnFlipbook("dust", x, surfaceTopY(l) + 0.028, z, 0.36, 0.45, 1.14, [244, 236, 218]);
+  }
+  if (!app?.effects) return;
   const kind = landingVfx(l.type, l.moverKind === "log");
   if (!kind) return;
   try { app.effects.burst(kind, [x, surfaceTopY(l), z], kind === CROSS_HOP_VFX.landDust ? { color: THEME_LOOKS[l.theme]!.dust } : undefined); } catch { /* vfx off */ }
@@ -1095,7 +1272,7 @@ function syncCombo(): void {
 /** The death effect for a death kind (CH47-13), fired by main.ts. */
 export function deathEffect(kind: Death["kind"], at: [number, number, number]): void {
   if (!app?.effects) return;
-  if (lookMode === "diorama") app.effects.burst(DEATH_VFX[kind], at, { color: DEATH_COLORS[kind] });
+  if (lookMode !== "original") app.effects.burst(DEATH_VFX[kind], at, { color: DEATH_COLORS[kind] });
   else app.effects.burst("debris", at, { count: 26, speed: 4, scale: 0.7 });
 }
 
@@ -1233,10 +1410,10 @@ function syncSunKey(): void {
   } catch { /* setLight needs A3D_QR_LIGHTING */ }
 }
 
-/** CH47-02: places the lamp pool along the rows ahead on lamp themes and hides it elsewhere. */
+/** CH47-02 / WP-14: places the lamp pool along the rows ahead on lamp themes and hides it elsewhere. */
 let lampRow = -1;
 function syncLamps(ti: number, force = false): void {
-  if (!app || lookMode !== "diorama") return;
+  if (!app || lookMode === "original") return;
   const L = THEME_LOOKS[ti]!;
   const n0 = app.nodes as unknown as { add(n: never): void; get(id: string): unknown };
   if (L.lamps.count > 0 && !lampsAdded) {
@@ -1313,9 +1490,10 @@ function swapLook(ti: number): void {
 }
 
 const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
+const TRUCK_STRIPES = ["#ef476f", "#118ab2", "#ffb703", "#06d6a0"] as const;
 
 /** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
-const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB", "felt", "asphalt", "water", "gravel", "lava"];
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB", "felt", "asphalt", "water", "gravel", "lava", "horizon"];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
 let staticKey = "";
 /** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
@@ -1324,6 +1502,16 @@ const emptySubmitted = new Set<keyof typeof CAP>();
 /** Reduced motion (CH-15): no hawk FOV widening. main.ts sets it from `prefers-reduced-motion`. */
 let reducedMotion = false;
 export function setReducedMotion(on: boolean): void { reducedMotion = on; }
+
+/** WP-14 real-time impact rig camera shake & FOV kick (driven by real frame dt in main.ts). */
+const camImpactOffset: [number, number, number] = [0, 0, 0];
+let camImpactFov = 0;
+export function setCameraImpact(offset: readonly [number, number, number], fovDeltaDeg: number): void {
+  camImpactOffset[0] = offset[0];
+  camImpactOffset[1] = offset[1];
+  camImpactOffset[2] = offset[2];
+  camImpactFov = fovDeltaDeg;
+}
 
 /**
  * Simulation time drawn this frame: between the last two fixed steps, `alpha` of the way (CH-E1). Movers are pure
@@ -1419,23 +1607,42 @@ export function syncVisuals(alpha = 1): void {
       const ry = l.dir > 0 ? 0 : Math.PI;
       if (l.moverKind === "log") {
         // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
-        // Vivid look: lacquered terracotta toy logs with butter-yellow ends (the PRD G14 palette), not bark brown.
-        const vivid = lookMode === "vivid";
         if (p4Dress && lookMode !== "diorama") {
-          // Toy raft: terracotta deck (top at 0.22, the log's top) on two butter-yellow pontoons.
           const candy = candyRaftFor(lookMode, p4Dress, THEMES[appliedLook]?.id ?? "");
-          inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, candy ? P5_CANDY_RAFT.deck : CROSS_HOP_PALETTE.terracotta);
-          for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, candy ? P5_CANDY_RAFT.pontoon : CROSS_HOP_PALETTE.butterYellow);
+          if (candy) {
+            inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, P5_CANDY_RAFT.deck);
+            for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, P5_CANDY_RAFT.pontoon);
+          } else {
+            // WP-14 damp dark-bark multi-timber log raft with hemp rope lashings & heartwood grain ends.
+            inst("raft", x, 0.22 - 0.075, z, MOVER_LENGTH.log, 0.15, 0.30, "#633d22");
+            inst("raft", x, 0.22 - 0.085, z - 0.27, MOVER_LENGTH.log * 0.96, 0.15, 0.24, "#764b2c");
+            inst("raft", x, 0.22 - 0.085, z + 0.27, MOVER_LENGTH.log * 0.96, 0.15, 0.24, "#58351d");
+            for (const strap of [-1, 1]) {
+              inst("raft", x + strap * (MOVER_LENGTH.log * 0.31), 0.22 - 0.068, z, 0.14, 0.165, 0.80, "#dfc086");
+              inst("logEnd", x + strap * (MOVER_LENGTH.log / 2 + 0.008), 0.14, z, 0.26, 0.025, 0.26, "#ebd19e", 0, Math.PI / 2);
+            }
+          }
           shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.7, 0.22);
           continue;
         }
-        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, vivid ? CROSS_HOP_PALETTE.terracotta : "#7a4a24", 0, Math.PI / 2);
-        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, vivid ? CROSS_HOP_PALETTE.butterYellow : "#e2c08a", 0, Math.PI / 2);
+        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#6b4223", 0, Math.PI / 2);
+        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e6c792", 0, Math.PI / 2);
       }
       // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
-      else if (l.moverKind === "pad") inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.92, PAD_H, 0.92, "#4f9e4f");
+      else if (l.moverKind === "pad") {
+        inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.94, PAD_H, 0.94, "#3d9950", (r * 1.7 + i) % (Math.PI * 2));
+        if (lookMode !== "original") {
+          inst("detail", x, PAD_TOP + 0.004, z, 0.56, 0.012, 0.56, "#69c46e", (r + i) * 0.8);
+          if ((r + i) % 3 === 0) {
+            inst("canopy", x + 0.18, PAD_TOP + 0.07, z - 0.14, 0.22, 0.13, 0.22, (r + i) % 2 === 0 ? "#ff8fab" : "#ffd166");
+          }
+        }
+      }
       // Lava stones: center y = 0.06, sy = 0.20 -> top surface at y = 0.16, sz = 0.88 fits inside LANE_D = 1.15
-      else if (l.moverKind === "stone") inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#565660");
+      else if (l.moverKind === "stone") {
+        inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#4b4b56");
+        if (lookMode !== "original") inst("detail", x, 0.162, z, 0.76, 0.014, 0.62, "#636472");
+      }
       else {
         const th2 = THEMES[l.theme];
         const kind = th2.vehicleSet === "hover" && l.moverKind === "car" ? "hover" : l.moverKind;
@@ -1444,15 +1651,34 @@ export function syncVisuals(alpha = 1): void {
         const lift = kind === "hover" ? 0.32 : 0;
         const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#f4ead9";
         if (pool === "train") {
-          // One train is TRAIN_CARS coupled cars; the hitbox covers all of them (CH-5).
+          // One train is TRAIN_CARS coupled cars; lead locomotive + passenger coaches share exact hitbox (CH-5).
+          const leadIdx = l.dir > 0 ? TRAIN_CARS - 1 : 0;
+          const coachScaleX = TRAIN_CAR_LENGTH / MOVER_LENGTH.tram;
           for (let c = 0; c < TRAIN_CARS; c++) {
             const cx = x + (c - (TRAIN_CARS - 1) / 2) * TRAIN_CAR_LENGTH;
-            inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
+            if (lookMode !== "original" && c !== leadIdx) {
+              inst("tram", cx, roadTopY, z, coachScaleX, 0.96, 0.96, c === 1 ? "#dbe7f6" : "#e8f0fa", ry);
+              inst("glow", cx, roadTopY + 0.56, z, TRAIN_CAR_LENGTH * 0.68, 0.14, 0.84, "#ffe29a");
+            } else {
+              inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
+              if (lookMode !== "original") {
+                inst("glow", cx + l.dir * (TRAIN_CAR_LENGTH * 0.48), roadTopY + 0.52, z, 0.08, 0.18, 0.44, "#fff4bd");
+              }
+            }
+            if (lookMode !== "original" && c < TRAIN_CARS - 1) {
+              inst("detail", cx + TRAIN_CAR_LENGTH * 0.5, roadTopY + 0.24, z, 0.22, 0.12, 0.34, "#252830");
+            }
           }
           const [th, td] = SHADE_SIZE.train!;
           shade(x, roadTopY, z, TRAIN_CARS * TRAIN_CAR_LENGTH * 0.98, td, th);
         } else {
           inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
+          if (lookMode !== "original" && pool === "truck") {
+            const stripe = TRUCK_STRIPES[(r + i) % TRUCK_STRIPES.length]!;
+            for (const sgn of [-1, 1] as const) {
+              inst("detail", x - l.dir * 0.18, roadTopY + 0.62, z + sgn * 0.48, 1.36, 0.12, 0.025, stripe);
+            }
+          }
           const [sh, sd] = SHADE_SIZE[pool] ?? [0.8, 0.95];
           const lengths = MOVER_LENGTH as Record<string, number>;
           shade(x, roadTopY, z, (lengths[pool] ?? lengths[kind] ?? 2) * 0.96, sd, sh + lift);
@@ -1480,8 +1706,8 @@ export function syncVisuals(alpha = 1): void {
   try {
     const h = nodes.require("player");
     h.setPosition(px, pose.y, pz);
-    if (lookMode === "diorama") {
-      // CH47-12: anticipation squash, take-off stretch and landing squash (never a uniform 1.25), 70 ms turns.
+    if (lookMode !== "original") {
+      // CH47-12 / WP-14: anticipation squash, take-off stretch and landing squash, 70 ms damped yaw turns.
       if (pose.hopping && !wasHopping) landedAt = -1;
       if (!pose.hopping && wasHopping) landedAt = tr;
       wasHopping = pose.hopping;
@@ -1501,8 +1727,8 @@ export function syncVisuals(alpha = 1): void {
     const targetClip = pose.hopping ? "Regular_Jump" : "Idle";
     if (targetClip !== activePlayerClip) {
       activePlayerClip = targetClip;
-      // CH47-12: one jump clip per hop in the diorama look (speed fits the clip to HOP_DUR, played once).
-      h.setAnimation(lookMode === "diorama" && targetClip === "Regular_Jump"
+      // CH47-12: one jump clip per hop (speed fits the clip to HOP_DUR, played once).
+      h.setAnimation(lookMode !== "original" && targetClip === "Regular_Jump"
         ? { clip: targetClip, loop: false, speed: 2.2 }
         : { clip: targetClip, loop: true, speed: targetClip === "Regular_Jump" ? 2.2 : 1.0 });
     }
@@ -1535,6 +1761,8 @@ export function syncVisuals(alpha = 1): void {
     if (sun) sun.setPosition(px * 0.3 - 17, 6.4, pz - 46);
     const floor = nodes.get("world-floor");
     if (floor) floor.setPosition(px * 0.3, FLOOR_Y, pz - 20);
+    const amb = nodes.get("ambient");
+    if (amb) amb.setPosition(px, 2.2, pz - 5);
   } catch { /* no-op */ }
 
   // hawk
@@ -1569,17 +1797,26 @@ export function syncVisuals(alpha = 1): void {
 
   // camera — tighter, lower chase rig: the critter reads larger, lane edges
   // frame the shot, and the horizon replaces the empty foreground.
+  syncFlipbooks(frameDt);
   if (lookMode === "diorama") {
     syncCombo();
     syncDioramaCamera(px, pz, pose.y, warn);
     syncSunKey();
     syncLamps(appliedLook);
   } else {
+    if (lookMode === "vivid") {
+      syncCombo();
+      syncLamps(appliedLook);
+    }
     const camZ = pz + CAM.back, camY = CAM.y + st.playerRow * 0.0012;
+    const sx = reducedMotion ? 0 : camImpactOffset[0];
+    const sy = reducedMotion ? 0 : camImpactOffset[1];
+    const sz = reducedMotion ? 0 : camImpactOffset[2];
+    const kickFov = reducedMotion ? 0 : camImpactFov;
     app.camera?.setPose({
-      position: [px * CAM.followX, camY, camZ],
-      target: [px * CAM.targetX, CAM.targetY, pz - CAM.ahead],
-      fov: CAM.fov + (reducedMotion ? 0 : warn * 6)
+      position: [px * CAM.followX + sx, camY + sy, camZ + sz],
+      target: [px * CAM.targetX + sx * 0.45, CAM.targetY + sy * 0.35, pz - CAM.ahead],
+      fov: CAM.fov + (reducedMotion ? 0 : warn * 6) + kickFov
     });
   }
   if (warn > 0.5) app.output?.setOutputOverlay({ vignette: [0.02, 0.02, 0.06, warn * 0.85] });
@@ -1607,11 +1844,19 @@ export function syncVisuals(alpha = 1): void {
 
 }
 
-/** CH47-07: one pool per ground surface in the diorama look, felt tiles slightly inset so the bevels read. */
+/** CH47-07 / WP-14: one pool per ground surface in vivid and diorama looks; felt tiles slightly inset so bevels read. */
 function paintDioramaGround(l: Lane, z: number): boolean {
   if (lookMode === "vivid") {
     const pal = THEMES[l.theme].palette;
-    if (l.type === "river") { inst("water", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water); return true; }
+    const S = THEME_LOOKS[l.theme]!.surfaces;
+    switch (l.type) {
+      case "meadow": inst("felt", 0, 0, z, STRIP_W, 0.24, LANE_D * 0.975, pal.meadow); return true;
+      case "road": inst("asphalt", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.road); return true;
+      case "tram": inst("asphalt", 0, 0, z, STRIP_W, 0.24, LANE_D, S.gravel); return true;
+      case "river": inst("water", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water); return true;
+      case "rail": inst("gravel", 0, -0.02, z, STRIP_W, 0.2, LANE_D, pal.railbed); return true;
+      case "lava": inst("lava", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.lava); return true;
+    }
     return false;
   }
   if (lookMode !== "diorama") return false;
@@ -1638,7 +1883,7 @@ function paintLane(l: Lane, r: number, tr: number, statics: boolean, playerX: nu
 }
 
 function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, playerX: number, z: number, withGround = false): void {
-  const dio = lookMode === "diorama";
+  const rich = lookMode !== "original";
   const S = THEME_LOOKS[l.theme]!.surfaces;
   const th = THEMES[l.theme];
   const pal = th.palette;
@@ -1649,10 +1894,15 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
     case "road": {
       if (!statics) break;
       if (withGround) inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.road);
-      // center dashes flush on road top (0.12); lacquer-yellow toy dashes in the diorama look
-      for (let x = -16; x < 17; x += 4) inst("detail", x, 0.121, z, 1.4, 0.008, 0.09, dio ? S.dash : "#cfd6de");
-      inst("detail", 0, 0.121, z - LANE_D * 0.44, STRIP_W, 0.008, 0.07, pal.shoulder);
-      inst("detail", 0, 0.121, z + LANE_D * 0.44, STRIP_W, 0.008, 0.07, pal.shoulder);
+      // Crisp painted highway dashes + edge markings + crosswalk bars at meadow-to-road transitions (WP-14).
+      for (let x = -16; x < 17; x += 4) inst("detail", x, 0.121, z, 1.48, 0.008, 0.095, rich ? S.dash : "#cfd6de");
+      inst("detail", 0, 0.121, z - LANE_D * 0.44, STRIP_W, 0.008, 0.075, rich ? "#edf2f8" : pal.shoulder);
+      inst("detail", 0, 0.121, z + LANE_D * 0.44, STRIP_W, 0.008, 0.075, rich ? "#edf2f8" : pal.shoulder);
+      if (rich && r > 0 && lane(r - 1).type === "meadow" && r % 3 === 1) {
+        for (let zb = -0.32; zb <= 0.34; zb += 0.16) {
+          inst("detail", 0, 0.122, z + zb, 0.82, 0.008, 0.08, "#f4f7fc");
+        }
+      }
       break;
     }
     case "tram": {
@@ -1679,29 +1929,48 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
     case "rail": {
       if (statics) {
         if (withGround) inst("ground", 0, -0.02, z, STRIP_W, 0.2, LANE_D, pal.railbed);
-        // brushed rails in the diorama look
-        inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, dio ? S.rail : "#2c2c30");
-        inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, dio ? S.rail : "#2c2c30");
+        // Brushed steel rails & timber sleepers
+        inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
+        inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
         for (let x = -16; x < 17; x += 1.6) inst("detail", x, 0.09, z, 0.24, 0.03, 0.88, "#241f1a");
-        // Crossing posts at both signals (CH-E5).
-        inst("trunk", -8, 0.4, z - LANE_D * 0.42, 0.1, 0.8, 0.1, "#3a3d44");
-        inst("trunk", 8, 0.4, z + LANE_D * 0.42, 0.1, 0.8, 0.1, "#3a3d44");
+        // Crossing posts & crossbuck sign housing at both signals (CH-E5).
+        inst("trunk", -8, 0.44, z - LANE_D * 0.42, 0.11, 0.88, 0.11, "#3a3d44");
+        inst("trunk", 8, 0.44, z + LANE_D * 0.42, 0.11, 0.88, 0.11, "#3a3d44");
       }
-      // Lights and lowered arms come before the train and stay while it crosses (CH-4, CH-E5).
-      const lit = railWarning(l, tr) > 0;
+      // Smooth hinged crossing arms & dual alternating crossbuck strobes (CH-4, CH-E5, WP-14).
+      const cyc = railCycle(l);
+      const u = ((tr + l.phase) % cyc.period + cyc.period) % cyc.period;
+      const activeEnd = cyc.warn + cyc.cross;
+      const lit = u < activeEnd;
+      let gate = 0;
+      if (u < 0.34) {
+        const t0 = Math.max(0, Math.min(1, u / 0.34));
+        gate = t0 * t0 * (3 - 2 * t0);
+      } else if (u <= activeEnd) {
+        gate = 1;
+      } else if (u < activeEnd + 0.36) {
+        const t1 = Math.max(0, Math.min(1, (u - activeEnd) / 0.36));
+        gate = 1 - t1 * t1 * (3 - 2 * t1);
+      }
+      const ang = (1 - gate) * 1.43; // 82 deg upright -> 0 deg lowered horizontal
       const blink = Math.sin(tr * 16) > 0;
       for (const side of [-1, 1] as const) {
         const sz = z + side * LANE_D * 0.42;
         if (lit) {
-          inst("glow", side * 8, 0.86, sz, 0.24, 0.24, 0.24, blink ? "#ff3355" : "#551122");
-          // Arm lowered across the approach: red and white segments reaching toward the track centre.
-          for (let seg = 0; seg < 4; seg++) {
-            inst("glow", side * (8 - 0.3 - seg * 0.5), 0.62, sz, 0.48, 0.08, 0.08, seg % 2 === 0 ? "#ff3355" : "#f4f1ea");
-          }
+          inst("glow", side * 8 - 0.12, 0.88, sz, 0.17, 0.17, 0.17, blink ? "#ff2e4c" : "#44101c");
+          inst("glow", side * 8 + 0.12, 0.88, sz, 0.17, 0.17, 0.17, !blink ? "#ff2e4c" : "#44101c");
         } else {
-          inst("glow", side * 8, 0.86, sz, 0.24, 0.24, 0.24, "#3a1016");
-          // Arm raised: upright beside the post.
-          inst("glow", side * 8.12, 1.3, sz, 0.08, 0.9, 0.08, "#f4f1ea");
+          inst("glow", side * 8 - 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
+          inst("glow", side * 8 + 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
+        }
+        const rz = -side * ang;
+        const cosA = Math.cos(ang);
+        const sinA = Math.sin(ang);
+        for (let seg = 0; seg < 4; seg++) {
+          const d = 0.28 + seg * 0.48;
+          const ax = side * 8 - side * d * cosA;
+          const ay = 0.64 + d * sinA;
+          inst("glow", ax, ay, sz, 0.48, 0.075, 0.075, seg % 2 === 0 ? "#ff3355" : "#f4f1ea", 0, rz);
         }
       }
       break;
@@ -1717,6 +1986,37 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
   }
 }
 
+function paintHorizonRidge(hi: number): void {
+  if (lookMode !== "vivid") return;
+  const th = THEMES[st.themeIdx];
+  const urban = th.dress === "city" || th.dress === "neon";
+  const volcanic = th.dress === "basalt";
+  const baseZ = laneZ(hi + 8);
+  const b = FLOOR_Y;
+  for (let i = 0; i < 18; i++) {
+    const x = -44 + i * 5.2 + ((i % 3) - 1) * 0.8;
+    const z = baseZ - (i % 3) * 3.4;
+    const wave = Math.abs(Math.sin(i * 1.73 + st.themeIdx * 0.9));
+    if (urban) {
+      const h = 3.8 + wave * 6.4;
+      const w = 3.2 + (i % 2) * 1.4;
+      const col = th.dress === "neon"
+        ? (i % 2 === 0 ? "#1f2544" : "#2c2f58")
+        : (i % 2 === 0 ? "#4a5b78" : "#5b6d8c");
+      inst("horizon", x, b + h * 0.5, z, w, h, 2.8, col);
+    } else if (volcanic) {
+      const h = 3.2 + wave * 5.6;
+      inst("horizon", x, b + h * 0.42, z, 5.6, h, 4.4, i % 2 === 0 ? "#2e2226" : "#3d2b2e", i * 0.3, 0.22);
+    } else {
+      const h = 2.4 + wave * 3.8;
+      const col = th.id === "crittercore"
+        ? (i % 2 === 0 ? "#7a5ca8" : "#936ec0")
+        : (i % 2 === 0 ? "#5a9c6e" : "#4b8864");
+      inst("horizon", x, b + h * 0.35, z, 7.6, h, 5.4, col, i * 0.2);
+    }
+  }
+}
+
 function paintDressing(lo: number, hi: number): void {
   const th = THEMES[st.themeIdx];
   const pal = th.palette;
@@ -1725,14 +2025,15 @@ function paintDressing(lo: number, hi: number): void {
   const fenceX = FIELD_HALF + 2.1;
   const softTheme = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy";
   const b = FLOOR_Y;
-  if (lookMode === "diorama") paintDioramaKit(lo, hi);
+  if (lookMode === "vivid") paintHorizonRidge(hi);
+  if (lookMode !== "original") paintDioramaKit(lo, hi);
   for (let r = lo; r <= hi; r++) {
     const z = laneZ(r);
     const meadow = lane(r).type === "meadow";
     const rndA = Math.abs(Math.sin(r * 12.9898 + st.seed * 0.37)) % 1;
     const rndB = Math.abs(Math.sin(r * 78.233 + st.seed * 0.11)) % 1;
     const side = rndA < 0.5 ? -1 : 1;
-    if (lookMode === "diorama") {
+    if (lookMode !== "original") {
       paintLaneFurniture(r, z);
       if (meadow) paintMeadowEdge(r, z, fenceX, softTheme, side, rndA, rndB);
       continue;
@@ -1812,11 +2113,12 @@ function paintDioramaKit(lo: number, hi: number): void {
   }
 }
 
-/** CH47-16: lane furniture: tram poles, river reeds, lava crust, road kerbs (primitive stand-ins until WP-36). */
+/** CH47-16 / WP-14: lane furniture: tram poles, river reeds, lava crust, road kerbs + reflective bollards. */
 function paintLaneFurniture(r: number, z: number): void {
   const l = lane(r);
   const S = THEME_LOOKS[l.theme]!.surfaces;
   const edge = STRIP_W / 2 - 0.25;
+  const bollardX = FIELD_HALF + 1.45;
   switch (l.type) {
     case "tram":
       if (r % 2 === 0) for (const sd of [-1, 1]) inst("trunk", sd * edge, 0.9, z, 0.08, 1.8, 0.08, "#6a6e78");
@@ -1831,7 +2133,13 @@ function paintLaneFurniture(r: number, z: number): void {
       for (const sd of [-1, 1]) inst("detail", sd * edge, 0.04, z, 0.5, 0.1, LANE_D * 0.9, "#2a1c18");
       break;
     case "road":
-      for (const sd of [-1, 1]) inst("detail", sd * edge, 0.15, z, 0.3, 0.08, LANE_D, S.gravel);
+      for (const sd of [-1, 1]) {
+        inst("detail", sd * edge, 0.15, z, 0.3, 0.08, LANE_D, S.gravel);
+        if (r % 2 === 0) {
+          inst("trunk", sd * bollardX, 0.28, z, 0.13, 0.44, 0.13, "#f1f4f9");
+          inst("detail", sd * bollardX, 0.43, z, 0.145, 0.08, 0.145, "#ff9f1c");
+        }
+      }
       break;
   }
 }
@@ -1872,7 +2180,7 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode === "diorama") })
+      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode !== "original") })
         .position(st.playerCol * COL_W, py, pz).rotate(0, Math.PI, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode("player"))
@@ -1886,7 +2194,7 @@ export function evidenceExtra(): Record<string, unknown> {
   const lo = Math.max(0, st.playerRow - ROW_BEHIND), hi = st.playerRow + ROW_AHEAD;
   for (let r = lo; r <= hi; r++) movers += laneMovers(lane(r), st.time, XS);
   return {
-    state: { mode: st.mode, paused: st.paused, runKind: st.runKind, score: st.score, coins: st.coins, bank: st.profile.coins, best: st.profile.best, row: st.playerRow, bestRow: st.row, critter: st.critter.id, theme: THEMES[st.themeIdx].label, lookTheme: THEMES[appliedLook].label, dead: st.dead?.kind ?? null, time: +st.time.toFixed(2) },
+    state: { mode: st.mode, paused: st.paused, runKind: st.runKind, score: st.score, coins: st.coins, bank: st.profile.coins, best: st.profile.best, row: st.playerRow, bestRow: st.row, nearMisses: st.nearMisses, critter: st.critter.id, theme: THEMES[st.themeIdx].label, lookTheme: THEMES[appliedLook].label, dead: st.dead?.kind ?? null, time: +st.time.toFixed(2) },
     movers,
     lanesBuffered: st.lanes.size,
     events: st.events.slice(-6),

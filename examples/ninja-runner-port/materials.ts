@@ -6,12 +6,13 @@
 import type { material, texture } from "@aura3d/engine";
 import {
   AURA_FRAGMENT, BALL_FRAGMENT, BALL_VERTEX, FALLS_FRAGMENT, FALLS_VERTEX, FLAME_FRAGMENT, FLAME_VERTEX, GROUND_FRAGMENT, GROUND_VERTEX, PARTICLE_FRAGMENT,
-  PARTICLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, SPARKS_FRAGMENT, SPARKS_VERTEX, WATER_FRAGMENT, WATER_VERTEX
+  PARTICLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SLASH_FRAGMENT, SLASH_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, SPARKS_FRAGMENT, SPARKS_VERTEX, THREAT_FRAGMENT,
+  THREAT_VERTEX, WATER_FRAGMENT, WATER_VERTEX
 } from "./shaders";
 import {
   AURA_FRAGMENT_WGSL, BALL_FRAGMENT_WGSL, BALL_VERTEX_WGSL, FALLS_FRAGMENT_WGSL, FALLS_VERTEX_WGSL, FLAME_FRAGMENT_WGSL, FLAME_VERTEX_WGSL, GROUND_FRAGMENT_WGSL,
-  GROUND_VERTEX_WGSL, PARTICLE_FRAGMENT_WGSL, PARTICLE_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL, SPARKS_FRAGMENT_WGSL,
-  SPARKS_VERTEX_WGSL, WATER_FRAGMENT_WGSL, WATER_VERTEX_WGSL
+  GROUND_VERTEX_WGSL, PARTICLE_FRAGMENT_WGSL, PARTICLE_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SLASH_FRAGMENT_WGSL, SLASH_VERTEX_WGSL, SOLID_FRAGMENT_WGSL,
+  SOLID_VERTEX_WGSL, SPARKS_FRAGMENT_WGSL, SPARKS_VERTEX_WGSL, THREAT_FRAGMENT_WGSL, THREAT_VERTEX_WGSL, WATER_FRAGMENT_WGSL, WATER_VERTEX_WGSL
 } from "./shaders-wgsl";
 import type { Rgb } from "./palette";
 import { ORIGINAL_SKY } from "./districtLook";
@@ -127,6 +128,35 @@ export const particleSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
+export const slashSpec = (): CustomSpec => ({
+  glsl: { vertex: SLASH_VERTEX, fragment: SLASH_FRAGMENT },
+  wgsl: { vertex: SLASH_VERTEX_WGSL, fragment: SLASH_FRAGMENT_WGSL },
+  uniforms: {
+    slashTime: { type: "f32", value: 0 },
+    slashProgress: { type: "f32", value: 0 },
+    slashEdge: { type: "color3", value: [0.92, 0.97, 1.0] },
+    slashInk: { type: "color3", value: [0.16, 0.34, 0.68] }
+  },
+  transparent: true,
+  depthWrite: false,
+  side: "double",
+  blending: "additive"
+});
+
+export const threatRingSpec = (): CustomSpec => ({
+  glsl: { vertex: THREAT_VERTEX, fragment: THREAT_FRAGMENT },
+  wgsl: { vertex: THREAT_VERTEX_WGSL, fragment: THREAT_FRAGMENT_WGSL },
+  uniforms: {
+    glow: { type: "f32", value: 0.8 },
+    ringTime: { type: "f32", value: 0 },
+    ringColor: { type: "color3", value: [0.92, 0.22, 0.14] },
+    inkColor: { type: "color3", value: [0.08, 0.10, 0.18] }
+  },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
+
 /** One of each distinct program the scene draws (the flame needs a texture, so callers pass one in). */
 export const allProgramSpecs = (flameMap: TextureHandle): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "ground", spec: groundSpec() },
@@ -139,5 +169,7 @@ export const allProgramSpecs = (flameMap: TextureHandle): readonly { readonly na
   { name: "aura", spec: auraSpec() },
   { name: "sparks", spec: sparksSpec() },
   { name: "flame", spec: flameSpec(flameMap) },
-  { name: "particles", spec: particleSpec() }
+  { name: "particles", spec: particleSpec() },
+  { name: "slash", spec: slashSpec() },
+  { name: "threat-ring", spec: threatRingSpec() }
 ];

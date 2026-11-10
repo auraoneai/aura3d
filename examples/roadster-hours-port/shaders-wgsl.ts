@@ -99,7 +99,9 @@ fn skyAt(v: vec3<f32>) -> vec3<f32> {
   let up = clamp(v.y, 0.0, 1.0);
   var col = mix(aura.u_horizonColor, aura.u_zenithColor, a3dPow(clamp(up, 0.0, 1.0), 0.36));
   let sa = max(dot(v, aura.u_sunDir), 0.0);
-  col = col + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 4.0) * 0.07 + a3dPow(clamp(sa, 0.0, 1.0), 24.0) * 0.14 + a3dPow(clamp(sa, 0.0, 1.0), 220.0) * 0.9) * (1.0 - aura.u_nightAmt * 0.6);
+  let sunsetBelt = mix(vec3<f32>(0.86, 0.40, 0.56), vec3<f32>(1.0, 0.60, 0.32), a3dPow(clamp(sa, 0.0, 1.0), 1.5));
+  col = col + sunsetBelt * exp(-up * 6.2) * 0.26 * (1.0 - aura.u_nightAmt);
+  col = col + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 4.0) * 0.085 + a3dPow(clamp(sa, 0.0, 1.0), 24.0) * 0.17 + a3dPow(clamp(sa, 0.0, 1.0), 220.0) * 0.95) * (1.0 - aura.u_nightAmt * 0.6);
   col = col + smoothstep(0.99955, 0.99985, sa) * aura.u_sunColor * 3.0;
   col = col + aura.u_horizonColor * exp(-up * 14.0) * 0.45;
   return col;
@@ -340,21 +342,25 @@ export const WATER_FRAGMENT_WGSL = stage([MATH, ATMOS], /* wgsl */ `
   var sunSpec = aura.u_sunColor * min(glitter, 30.0);
 
   let depthMix = clamp(0.5 + crest * 1.4, 0.0, 1.0);
-  let shoal = smoothstep(0.45, 0.8, rhFbm(p * 0.0032 + vec2<f32>(3.7))) * min(aura.u_whitecaps * 2.0, 1.0);
-  let body = mix(aura.u_deepWater, aura.u_shallowWater, clamp(depthMix * 0.6 + shoal * 0.45, 0.0, 1.0));
-  let sss = a3dPow(clamp(dot(-V, aura.u_sunDir), 0.0, 1.0), 3.0) * smoothstep(-0.2, 0.9, crest) * 0.45;
-  let lit = body * (aura.u_ambSky * 1.5 + aura.u_sunColor * 0.22 * max(aura.u_sunDir.y, 0.0)) + aura.u_shallowWater * aura.u_sunColor * sss * 0.3;
+  let shoal = smoothstep(0.42, 0.78, rhFbm(p * 0.0032 + vec2<f32>(3.7))) * min(aura.u_whitecaps * 2.0, 1.0);
+  let c1 = rhNoise(p * 0.085 + vec2<f32>(aura.u_time * 0.22, -aura.u_time * 0.17));
+  let c2 = rhNoise(p * 0.115 - vec2<f32>(aura.u_time * 0.19, aura.u_time * 0.24));
+  let caustic = a3dPow(clamp(1.0 - abs(c1 - c2) * 2.3, 0.0, 1.0), 3.0) * shoal * clamp(6.0 / (foot * 12.0 + 1.0), 0.0, 1.0);
+  let body = mix(aura.u_deepWater, aura.u_shallowWater, clamp(depthMix * 0.62 + shoal * 0.48, 0.0, 1.0));
+  let sss = a3dPow(clamp(dot(-V, aura.u_sunDir), 0.0, 1.0), 3.0) * smoothstep(-0.2, 0.9, crest) * 0.52;
+  let lit = body * (aura.u_ambSky * 1.5 + aura.u_sunColor * 0.24 * max(aura.u_sunDir.y, 0.0)) + aura.u_shallowWater * aura.u_sunColor * (sss * 0.34 + caustic * 0.28);
   let Rg = reflect(-V, N);
-  let path = a3dPow(max(dot(Rg, aura.u_sunDir), 0.0), 48.0) * min(aura.u_whitecaps * 1.5, 1.0) * max(aura.u_sunDir.y + 0.1, 0.0);
-  sunSpec = sunSpec + aura.u_sunColor * path * 0.6;
+  let path = a3dPow(max(dot(Rg, aura.u_sunDir), 0.0), 42.0) * min(aura.u_whitecaps * 1.5, 1.0) * max(aura.u_sunDir.y + 0.12, 0.0);
+  sunSpec = sunSpec + aura.u_sunColor * path * 0.72;
   var col = mix(lit, reflected, clamp(F, 0.0, 1.0)) + sunSpec;
   if (aura.u_whitecaps > 0.0) {
     let wdir = normalize(aura.u_windVec + vec2<f32>(1e-4, 0.0));
     let fq = vec2<f32>(dot(p, wdir) * 0.05, dot(p, vec2<f32>(-wdir.y, wdir.x)) * 0.16) + aura.u_windVec * aura.u_time * 0.02;
-    var caps = smoothstep(0.62, 0.86, rhFbm(fq) + crest * 0.55);
-    caps = caps * clamp(9.0 / (foot * 40.0 + 1.0), 0.15, 1.0);
-    let foamLit = vec3<f32>(0.92, 0.93, 0.9) * (aura.u_ambSky * 1.6 + aura.u_sunColor * 0.32 * max(aura.u_sunDir.y, 0.0) + vec3<f32>(0.04));
-    col = mix(col, foamLit, caps * aura.u_whitecaps * 0.85);
+    var caps = smoothstep(0.60, 0.85, rhFbm(fq) + crest * 0.58);
+    let breaker = smoothstep(0.76, 0.95, sin(dot(p, wdir) * 0.042 - aura.u_time * 1.15 + rhNoise(p * 0.016) * 3.0)) * shoal * 0.65;
+    caps = clamp(caps + breaker, 0.0, 1.0) * clamp(9.0 / (foot * 40.0 + 1.0), 0.15, 1.0);
+    let foamLit = vec3<f32>(0.94, 0.95, 0.93) * (aura.u_ambSky * 1.6 + aura.u_sunColor * 0.34 * max(aura.u_sunDir.y, 0.0) + vec3<f32>(0.04));
+    col = mix(col, foamLit, caps * aura.u_whitecaps * 0.88);
   }
   return vec4<f32>(finish(fogIt(col, vWorld)), 1.0);
 }`);
@@ -451,20 +457,24 @@ export const TERRAIN_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS, DETAIL], /* wgs
   }
   let foot = length(fwidth(vWorld)) + 1e-4;
   let fade = 1.0 - smoothstep(0.5, 6.0, foot);
-  let blotch = rhFbm(vWorld.xz * 0.03 + vec2<f32>(vWorld.y * 0.02));
-  let warp = rhFbm(vec2<f32>(vWorld.x * 0.02 + vWorld.z * 0.017, vWorld.y * 0.05));
-  let strata = 0.5 + 0.5 * sin(vWorld.y * 0.42 + warp * 9.0 + blotch * 4.0);
-  let bands = smoothstep(0.3, 0.7, strata);
-  var rock = mix(aura.u_rockA, aura.u_rockB, clamp(bands * 0.5 + blotch * 0.55 - 0.08, 0.0, 1.0));
-  let fine = rhNoise(vWorld.xz * 1.3 + vec2<f32>(vWorld.y * 0.9));
-  let fine2 = rhNoise(vec2<f32>(vWorld.x + vWorld.z, vWorld.y) * 2.6);
-  rock = rock * (1.0 + ((fine - 0.5) * 0.32 + (fine2 - 0.5) * 0.18) * fade);
+  let blotch = rhFbm(vWorld.xz * 0.024 + vec2<f32>(vWorld.y * 0.015));
+  let warp = rhFbm(vec2<f32>(vWorld.x * 0.018 + vWorld.z * 0.015, vWorld.y * 0.045));
+  let layerCoord = vWorld.y * 0.28 + warp * 2.2 + blotch * 0.85;
+  let within = fract(layerCoord);
+  let strata = 0.5 + 0.5 * sin(layerCoord * 6.2831853);
+  let bands = smoothstep(0.24, 0.76, strata);
+  let seamMask = smoothstep(0.0, 0.08, within) * (1.0 - smoothstep(0.92, 1.0, within));
+  var rock = mix(aura.u_rockA, aura.u_rockB, clamp(bands * 0.62 + blotch * 0.42 - 0.06, 0.0, 1.0));
+  rock = rock * mix(0.68, 1.0, mix(1.0, seamMask, fade * 0.75));
+  let fine = rhNoise(vec2<f32>((vWorld.x + vWorld.z) * 0.38, vWorld.y * 2.1));
+  let fine2 = rhNoise(vec2<f32>((vWorld.x - vWorld.z) * 0.75, vWorld.y * 4.2));
+  rock = rock * (1.0 + ((fine - 0.5) * 0.14 + (fine2 - 0.5) * 0.08) * fade);
   let flatness = smoothstep(0.55, 0.88, N.y);
   let high = smoothstep(3.0, 9.0, vWorld.y);
-  let turf = aura.u_grass * (0.75 + 0.5 * blotch);
+  let turf = aura.u_grass * (0.78 + 0.44 * blotch);
   var albedo = mix(rock, turf, flatness * high * 0.85);
   albedo = mix(albedo, aura.u_sand, flatness * (1.0 - high) * 0.9);
-  albedo = albedo * (1.0 + dAlb * 0.9);
+  albedo = albedo * (1.0 + dAlb * 0.55);
   var foam = 0.0;
   if (aura.u_surfAmt > 0.0) {
     let tt = aura.u_time * aura.u_surfSpeed;
@@ -478,6 +488,32 @@ export const TERRAIN_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS, DETAIL], /* wgs
   let ao = mix(0.62, 1.0, smoothstep(-2.0, 14.0, vWorld.y)) * (0.8 + 0.2 * blotch);
   gSunShadow = a3dSunShadowAuto(vWorld, N);
   let lit = lightSurface(albedo * mix(ao, 1.0, foam), N, V, mix(0.9, 0.6, foam), 0.0, vec3<f32>(0.0));
+  return vec4<f32>(finish(fogIt(lit, vWorld)), 1.0);
+}`);
+
+export const STRATA_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS], /* wgsl */ `
+@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  var N = normalize(vNormal);
+  if (dot(N, V) < 0.0) { N = -N; }
+  let foot = length(fwidth(vWorld)) + 1e-4;
+  let fade = 1.0 - smoothstep(0.6, 7.0, foot);
+  let warp = (rhFbm(vec2<f32>(vWorld.x * 0.025 + vWorld.z * 0.021, vWorld.y * 0.06)) - 0.5) * 2.2;
+  let f = (vWorld.y / max(aura.u_strataScale, 0.5)) + warp * 0.85;
+  let layer = floor(f);
+  let within = f - layer;
+  let jitter = rhHash(vec2<f32>(layer * 3.17, 11.3)) - 0.5;
+  let toneMix = clamp(0.5 + 0.5 * sin(layer * 1.9 + warp) + jitter * 0.35, 0.0, 1.0);
+  var albedo = mix(aura.u_rockA, aura.u_rockB, toneMix);
+  albedo = albedo * (1.0 + jitter * 0.26);
+  let seam = smoothstep(0.0, 0.08, within) * (1.0 - smoothstep(0.92, 1.0, within));
+  albedo = albedo * mix(1.0, 0.58 + 0.42 * seam, aura.u_strataSeam * fade);
+  let grain = rhNoise(vec2<f32>((vWorld.x + vWorld.z) * 0.55, vWorld.y * 2.6)) - 0.5;
+  albedo = albedo * (1.0 + grain * 0.18 * fade);
+  let capMix = smoothstep(0.62, 0.9, N.y);
+  albedo = mix(albedo, mix(aura.u_sand, aura.u_grass, smoothstep(4.0, 14.0, vWorld.y)), capMix * 0.72);
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
+  let lit = lightSurface(albedo, N, V, 0.88, 0.0, vec3<f32>(0.0));
   return vec4<f32>(finish(fogIt(lit, vWorld)), 1.0);
 }`);
 

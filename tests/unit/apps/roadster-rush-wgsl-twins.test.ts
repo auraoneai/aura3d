@@ -2,8 +2,10 @@ import { describe, it } from "vitest";
 import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import { skySpec } from "../../../apps/showcase-roadster-rush/src/art/sky.js";
 import { groundSpec } from "../../../apps/showcase-roadster-rush/src/art/ground.js";
+import { asphaltRutSpec } from "../../../apps/showcase-roadster-rush/src/art/surfaces.js";
 import { shieldSpec } from "../../../apps/showcase-roadster-rush/src/art/shield.js";
 import { APEX_PLUMES, plumeSpec } from "../../../apps/showcase-roadster-rush/src/art/plume.js";
+import { createApexSmokeAtlas, createApexSparkAtlas, flipbookBurstSpec } from "../../../apps/showcase-roadster-rush/src/art/vfx.js";
 import { TOWER_VARIANTS, towerGlassSpec } from "../../../apps/showcase-roadster-rush/src/render/towers.js";
 import { decalSpec } from "../../../apps/showcase-roadster-rush/src/render/decals.js";
 import { wakeSpec } from "../../../apps/showcase-roadster-rush/src/render/wakes.js";
@@ -12,9 +14,12 @@ import { checkGlslUnchanged, checkWgslTwin } from "./wgslTwinChecks.js";
 const specs: readonly (readonly [string, AuraCustomMaterialSpec, boolean])[] = [
   ["sky", skySpec() as AuraCustomMaterialSpec, false],
   ["ground", groundSpec() as AuraCustomMaterialSpec, false],
+  ["asphalt-ruts", asphaltRutSpec() as AuraCustomMaterialSpec, false],
   ["shield", shieldSpec() as AuraCustomMaterialSpec, false],
   ["plume", plumeSpec(APEX_PLUMES.rear, false) as AuraCustomMaterialSpec, false],
   ["plume-instanced", plumeSpec(APEX_PLUMES.sky, false, true) as AuraCustomMaterialSpec, true],
+  ["flipbook-sparks", flipbookBurstSpec(createApexSparkAtlas(), "#ff8a3d", true) as AuraCustomMaterialSpec, false],
+  ["flipbook-smoke", flipbookBurstSpec(createApexSmokeAtlas(), "#dce6f5", false) as AuraCustomMaterialSpec, false],
   ...TOWER_VARIANTS.map((variant) => [`tower-${variant}`, towerGlassSpec(variant) as AuraCustomMaterialSpec, true] as const),
   ["decal", decalSpec() as AuraCustomMaterialSpec, true],
   ["wake", wakeSpec("#4df0ff", 0.2, [40, 90]) as AuraCustomMaterialSpec, true]

@@ -1,3 +1,5 @@
+/* AuraOne canonical licensed font stack — self-hosted .woff2 only, no Google Fonts or system UI stacks. */
+
 @font-face {
   font-family: "Whitney";
   src: url("./whitney-regular.woff2") format("woff2");
@@ -23,8 +25,17 @@
 }
 
 @font-face {
+  font-family: "Whitney Fallback";
+  src: local("Helvetica Neue"), local("Arial");
+  size-adjust: 95.8%;
+  ascent-override: 96%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+@font-face {
   font-family: "DIN Pro";
-  src: url("./dinpro-regular.woff") format("woff");
+  src: url("./dinpro-regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -32,25 +43,33 @@
 
 @font-face {
   font-family: "DIN Pro";
-  src: url("./dinpro-medium.woff") format("woff");
+  src: url("./dinpro-medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Arial Narrow"), local("Helvetica Neue");
+  size-adjust: 98%;
+  ascent-override: 98%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+@font-face {
   font-family: "Monument Grotesk Mono";
-  src: url("./monument-mono.ttf") format("truetype");
+  src: url("./monument-mono.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --font-ui: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-smallcaps: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-metric: "DIN Pro", "Whitney", sans-serif;
-  --font-code: "Monument Grotesk Mono", ui-monospace, Menlo, monospace;
+  --font-ui: "Whitney", "Whitney Fallback", "Graphik", sans-serif;
+  --font-metric: "DIN Pro", "DIN Pro Fallback", sans-serif;
+  --font-mono: "Monument Grotesk Mono", monospace;
 }
 
 html {

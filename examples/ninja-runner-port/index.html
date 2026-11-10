@@ -2,148 +2,228 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/fonts/local.css" />
+    <link rel="stylesheet" href="../../apps/showcase-port-shared/hud-tokens.css" />
     <link rel="stylesheet" href="../../apps/showcase-ninja-runner-port/public/fonts/ink-scroll.css" />
     <title>Shadowstep Gauntlet</title>
     <style>
-      :root { color-scheme: dark; --ink: #fff0cc; --muted: #cbd5d1; --panel: rgba(16, 30, 40, 0.74); --panel-solid: #14232d; --line: rgba(255, 240, 204, 0.2); --warm: #ffa135; --warm-deep: #ff7a1f; --cyan: #83ebff; --danger: #ff5a4a; }
+      :root {
+        color-scheme: dark;
+        --ink: #f4ecdc;
+        --muted: rgba(232, 226, 212, 0.72);
+        --panel: rgba(14, 22, 36, 0.76);
+        --panel-solid: #111a2c;
+        --line: rgba(244, 236, 220, 0.18);
+        --warm: #ffb45e;
+        --warm-deep: #d4553a;
+        --cyan: #51dfff;
+        --danger: #ff5a4a;
+      }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #11202b; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0e1626;
+        color: var(--ink);
+        font: 400 13px/1.4 var(--font-ui);
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+      }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
-      .num { font-variant-numeric: tabular-nums; }
+      .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+      .metric { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; letter-spacing: -0.015em; }
+      .unit { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      kbd.desk-key { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
       .aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; overflow: hidden; border-radius: 2px; background: rgba(128, 128, 128, 0.28); color: var(--warm); }
       .aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 120ms linear; }
       .aura3d-loading[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 200ms; }
       @media (prefers-reduced-motion: reduce) { .aura3d-loading::after, .aura3d-loading[data-complete="true"] { transition: none; } }
-      .meta { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
-      h1, h2 { margin: 0; line-height: 1.15; font-weight: 500; }
-      h1 { font-size: 30px; letter-spacing: 0.12em; }
-      h2 { font-size: 20px; }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(255, 240, 204, 0.1); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
-      button:hover:not(:disabled) { background: rgba(255, 240, 204, 0.18); }
-      button.primary { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #1d1a17; border-color: transparent; padding: 11px 20px; }
+      .meta { font-family: var(--font-ui); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; color: var(--muted); letter-spacing: 0.05em; }
+      h1, h2 { margin: 0; font-family: var(--font-ui); line-height: 1.15; font-weight: 600; }
+      h1 { font-size: 28px; letter-spacing: 0.08em; }
+      h2 { font-size: 20px; letter-spacing: 0.02em; }
+      button {
+        font: 500 13px/1.15 var(--font-ui);
+        color: var(--ink);
+        background: rgba(244, 236, 220, 0.08);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        min-height: 44px;
+        padding: 9px 14px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      button:hover:not(:disabled) { background: rgba(244, 236, 220, 0.16); }
+      button.primary { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #191512; font-weight: 600; border-color: transparent; padding: 11px 20px; }
       button:disabled { opacity: 0.45; cursor: default; }
-      .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+      .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 
-      #progress { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: min(46vw, 560px); height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.18); overflow: visible; }
+      #progress { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 16px); left: 50%; transform: translateX(-50%); width: min(44vw, 540px); height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.18); overflow: visible; }
       #progress > i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #ffd27a, var(--warm-deep)); }
-      #progress > b { position: absolute; top: -3px; width: 2px; height: 12px; background: rgba(255, 240, 204, 0.7); }
-      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 12px; color: var(--ink); white-space: nowrap; padding: 1px 6px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-      #stats { position: fixed; top: 14px; right: 14px; text-align: right; display: grid; gap: 6px; padding: 10px 14px; }
-      #stats strong { font-size: 22px; font-weight: 500; }
-      #combo { color: var(--warm); font-size: 15px; min-height: 18px; }
-      #vitals { position: fixed; top: 14px; left: 14px; width: 210px; padding: 10px 12px; }
-      .bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.14); overflow: hidden; margin: 6px 0 8px; }
-      .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #4cc9ff, var(--cyan)); }
-      #hearts { letter-spacing: 3px; color: var(--danger); font-size: 16px; }
-      #district { margin-top: 6px; }
-      #forms { position: fixed; left: 14px; bottom: 14px; display: flex; gap: 6px; padding: 8px; }
-      #forms button { min-width: 92px; text-align: left; display: grid; gap: 3px; }
-      #forms button small { font-size: 12px; color: var(--muted); }
-      #forms button.selected { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #1d1a17; border-color: transparent; }
-      #forms button.selected small { color: #3a2a18; }
-      #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
-      #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 3px; }
-      #abilities button small { font-size: 12px; color: var(--muted); }
+      #progress > b { position: absolute; top: -3px; width: 2px; height: 12px; background: rgba(244, 236, 220, 0.7); }
+      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 12px; font-weight: 500; color: var(--ink); white-space: nowrap; padding: 1px 6px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+      #stats { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 12px); right: 14px; min-width: 172px; display: grid; gap: 5px; padding: 9px 13px; }
+      #stats > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      #stats strong { font-family: var(--font-metric); font-size: 21px; font-weight: 500; line-height: 1.05; font-variant-numeric: tabular-nums; }
+      #combo { justify-content: flex-end; font-family: var(--font-metric); color: var(--warm); font-size: 14px; font-weight: 500; min-height: 16px; }
+      #combo:empty { display: none; }
+      #vitals { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 12px); left: 14px; width: 206px; padding: 9px 12px; }
+      .vital-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+      #spirit { font-family: var(--font-metric); font-size: 13px; font-weight: 500; color: var(--ink); }
+      .bar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); overflow: hidden; margin: 5px 0 7px; }
+      .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #3fb8e8, var(--cyan)); }
+      .vital-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      #hearts { letter-spacing: 2px; color: var(--danger); font-size: 15px; line-height: 1; }
+      #district { margin-top: 5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #forms { position: fixed; left: 14px; bottom: 14px; display: flex; gap: 6px; padding: 7px; }
+      #forms button { min-width: 94px; text-align: left; display: grid; gap: 2px; }
+      #forms button small { font-size: 12px; font-weight: 400; color: var(--muted); }
+      #forms button.selected { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #191512; font-weight: 600; border-color: transparent; }
+      #forms button.selected small { color: #342314; }
+      #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 7px; }
+      #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 2px; }
+      #abilities button small { font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--muted); }
       #abilities button.phone-only { display: none; }
       #abilities .short { display: none; }
       #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
       #abilities button.poor { opacity: 0.55; }
-      #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(131, 235, 255, 0.45); }
-      #announce { position: fixed; top: 74px; left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
-      #announce strong { display: block; font-size: 24px; font-weight: 500; letter-spacing: 0.1em; }
-      #district-banner { position: fixed; left: 0; right: 0; top: 34%; text-align: center; pointer-events: none; font-size: 30px; letter-spacing: 0.22em; font-weight: 500; text-shadow: 0 2px 14px #000b; opacity: 0; transition: opacity 0.6s; }
+      #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(81, 223, 255, 0.42); }
+      #announce { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 74px); left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
+      #announce strong { display: block; font-size: 22px; font-weight: 600; letter-spacing: 0.08em; }
+      #district-banner { position: fixed; left: 0; right: 0; top: 34%; text-align: center; pointer-events: none; font-size: 28px; letter-spacing: 0.18em; font-weight: 600; text-shadow: 0 2px 14px #000b; opacity: 0; transition: opacity 0.6s; }
       #district-banner.show { opacity: 0.95; }
       #hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 30px rgba(255, 60, 40, 0.75); opacity: 0; transition: opacity 0.5s ease-out; }
       #hurt.on { opacity: 1; transition: none; }
       .reduced-motion #hurt { transition: opacity 0.2s ease-out; }
       .reduced-motion #hurt.on { opacity: 0.4; }
       .reduced-motion #district-banner { transition: none; }
-      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 120px; font-weight: 500; text-shadow: 0 4px 24px #000c; }
-      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(8, 16, 22, 0.35), rgba(8, 16, 22, 0.75)); }
-      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px 28px; max-width: 460px; display: grid; gap: 14px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
-      .keys dt { color: var(--warm); font-weight: 500; white-space: nowrap; }
+      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-family: var(--font-metric); font-size: 112px; font-weight: 500; font-variant-numeric: tabular-nums; text-shadow: 0 4px 24px #000c; }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.35), rgba(10, 16, 28, 0.78)); }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 26px; max-width: 452px; width: 100%; display: grid; gap: 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 12px; }
+      .keys dt { color: var(--warm); font-weight: 600; white-space: nowrap; }
       .keys dd { margin: 0; color: var(--muted); }
       .row { display: flex; gap: 8px; flex-wrap: wrap; }
-      #controls { position: fixed; z-index: 5; top: 6px; left: calc(50% + min(23vw, 280px) + 16px); display: flex; gap: 6px; }
+      #controls { position: fixed; z-index: 5; top: calc(var(--a3d-bar-space, 0px) + 10px); left: calc(50% + min(22vw, 270px) + 14px); display: flex; gap: 6px; }
       #controls button { min-width: 44px; min-height: 44px; padding: 0 12px; font-size: 13px; }
-      #intro-card .goal { color: var(--ink); font-size: 14px; }
+      #intro-card .goal { color: var(--ink); font-size: 14px; margin: 0; }
+      #intro-card p { margin: 0; }
       #intro-card a { color: var(--cyan); text-decoration: none; }
       #intro-card a:hover { text-decoration: underline; }
       #result-best:empty, #best:empty { display: none; }
-      @media (max-width: 760px) {
-        #progress { top: 168px; width: calc(100vw - 32px); }
-        #progress > span { top: 10px; }
-        #stats { top: max(10px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); padding: 6px 10px; gap: 2px; }
-        #stats strong { font-size: 17px; }
-        #vitals { top: max(10px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); width: 150px; padding: 6px 8px; }
-        /* one bottom row on phones: the four abilities plus a form button (Space on desktop); the form row is hidden */
+
+      @media (pointer: coarse), (max-width: 760px) {
+        kbd.desk-key { display: none; }
+        .keys { display: none; }
+        #vitals {
+          top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
+          left: max(8px, env(safe-area-inset-left));
+          width: 168px;
+          padding: 6px 9px;
+        }
+        .vital-label-health { display: none; }
+        #district { margin-top: 3px; }
+        #stats {
+          top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
+          right: max(8px, env(safe-area-inset-right));
+          min-width: 148px;
+          padding: 6px 9px;
+          gap: 2px;
+        }
+        #stats strong { font-size: 16px; }
+        #progress {
+          top: calc(var(--a3d-bar-space, 0px) + max(96px, env(safe-area-inset-top) + 88px));
+          width: calc(100vw - 24px);
+        }
+        #progress > span { display: none; }
+        #announce { top: calc(var(--a3d-bar-space, 0px) + max(124px, env(safe-area-inset-top) + 116px)); }
         #forms { display: none; }
-        #abilities { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 4px; }
-        #abilities button { min-width: 0; min-height: 44px; padding: 4px 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #abilities {
+          left: max(8px, env(safe-area-inset-left));
+          right: max(8px, env(safe-area-inset-right));
+          bottom: max(8px, env(safe-area-inset-bottom));
+          grid-template-columns: repeat(5, 1fr);
+          gap: 5px;
+          padding: 5px;
+        }
+        #abilities button {
+          min-width: 48px;
+          min-height: 48px;
+          padding: 5px 6px;
+          font-size: 12px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         #abilities button small { font-size: 12px; }
         #abilities button.phone-only { display: grid; }
         #abilities .full { display: none; }
         #abilities .short { display: inline; }
-        #controls { top: auto; left: auto; right: max(8px, env(safe-area-inset-right)); bottom: calc(66px + env(safe-area-inset-bottom)); }
+        #controls {
+          top: auto;
+          left: auto;
+          right: max(8px, env(safe-area-inset-right));
+          bottom: calc(70px + env(safe-area-inset-bottom));
+        }
+        #controls button { min-width: 48px; min-height: 48px; padding: 0 12px; }
       }
     </style>
     <style>
       /* GU47 NR-19 ink-scroll HUD (E-J theme "ink-scroll"): mist-paper panels, indigo ink text, vermilion seals, brush
-         district card. Scoped to html.ink-scroll, which main.ts sets for the evening look; ?look=original keeps the HUD above. */
+         district card, paired with AuraOne Whitney UI + DIN Pro tabular metrics (WP-23). Scoped to html.ink-scroll. */
       .ink-scroll { --a3g-font: "A3G Suisse Works Italic", "Suisse Works", Georgia, serif; --a3g-font-display: "A3G Domaine Display", "Domaine Display", Georgia, serif;
-        --ink: #1f1d24; --muted: #524f5b; --panel: rgba(237, 230, 214, 0.94); --panel-solid: #ede6d6; --line: rgba(31, 29, 36, 0.6); --warm: #c23b22; --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: #9e1b1b; --indigo: #2b3550; }
-      .ink-scroll body { font-family: var(--a3g-font); }
-      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; box-shadow: 0 1px 0 rgba(31, 29, 36, 0.45); backdrop-filter: none; -webkit-backdrop-filter: none; color: var(--ink); }
-      .ink-scroll h1, .ink-scroll h2, .ink-scroll #stats strong, .ink-scroll #countdown { font-family: var(--a3g-font-display); font-weight: 700; }
-      .ink-scroll button { font-family: var(--a3g-font); color: var(--ink); background: rgba(31, 29, 36, 0.06); border-color: var(--line); border-radius: 2px; min-height: 44px; }
+        --ink: #1f1d24; --muted: #524f5b; --panel: rgba(237, 230, 214, 0.93); --panel-solid: #ede6d6; --line: rgba(31, 29, 36, 0.42); --warm: #c23b22; --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: #9e1b1b; --indigo: #2b3550; }
+      .ink-scroll body { font-family: var(--font-ui); }
+      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 4px 16px rgba(17, 22, 36, 0.24); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--ink); }
+      .ink-scroll h1, .ink-scroll h2 { font-family: var(--font-ui); font-weight: 600; }
+      .ink-scroll #stats strong, .ink-scroll #countdown, .ink-scroll #spirit, .ink-scroll #combo { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; }
+      .ink-scroll button { font-family: var(--font-ui); font-weight: 500; color: var(--ink); background: rgba(31, 29, 36, 0.06); border-color: var(--line); border-radius: 5px; min-height: 44px; }
       .ink-scroll button:hover:not(:disabled) { background: rgba(31, 29, 36, 0.12); }
-      .ink-scroll button.primary, .ink-scroll #forms button.selected { background: var(--warm); color: #f6efe0; border-color: var(--warm-deep); }
+      .ink-scroll button.primary, .ink-scroll #forms button.selected { background: var(--warm); color: #f6efe0; font-weight: 600; border-color: var(--warm-deep); }
       .ink-scroll #forms button.selected small { color: #f6efe0; }
       .ink-scroll #abilities button::after { background: var(--indigo); }
-      .ink-scroll #abilities button.live { border-color: var(--warm); box-shadow: 0 0 0 2px rgba(194, 59, 34, 0.45); }
-      .ink-scroll .bar { background: rgba(31, 29, 36, 0.14); border-radius: 1px; }
+      .ink-scroll #abilities button.live { border-color: var(--warm); box-shadow: 0 0 0 2px rgba(194, 59, 34, 0.42); }
+      .ink-scroll .bar { background: rgba(31, 29, 36, 0.14); border-radius: 2px; }
       .ink-scroll .bar > i { background: linear-gradient(90deg, #2f7f9a, #51dfff); }
       .ink-scroll #combo { color: var(--warm); }
       /* the paper progress scroll: rolled ends, a vermilion ink fill and one seal per district */
-      .ink-scroll #progress { height: 10px; border-radius: 1px; background: #ede6d6; border: 1px solid var(--line); box-shadow: -6px 0 0 -1px var(--indigo), 6px 0 0 -1px var(--indigo); }
+      .ink-scroll #progress { height: 8px; border-radius: 2px; background: #ede6d6; border: 1px solid var(--line); box-shadow: -5px 0 0 -1px var(--indigo), 5px 0 0 -1px var(--indigo); }
       .ink-scroll #progress > i { border-radius: 0; background: linear-gradient(90deg, #e07a4e, var(--warm)); }
-      .ink-scroll #progress > b { background: var(--indigo); top: -4px; height: 16px; }
-      .ink-scroll #progress > span { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 2px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      .ink-scroll #progress > b { background: var(--indigo); top: -4px; height: 14px; }
+      .ink-scroll #progress > span { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 4px; backdrop-filter: none; -webkit-backdrop-filter: none; }
       #progress > em { display: none; }
-      .ink-scroll #progress > em { display: grid; place-items: center; position: absolute; top: -18px; width: 14px; height: 14px; transform: translateX(-50%); font: 700 9px/1 var(--a3g-font-display); font-style: normal; color: var(--warm); border: 1px solid var(--warm); background: #ede6d6; border-radius: 1px; }
+      .ink-scroll #progress > em { display: grid; place-items: center; position: absolute; top: -20px; width: 16px; height: 16px; transform: translateX(-50%); font: 600 12px/1 var(--font-ui); font-style: normal; color: var(--warm); border: 1px solid var(--warm); background: #ede6d6; border-radius: 2px; }
       .ink-scroll #progress > em.passed { color: #f6efe0; background: var(--warm); }
       /* the brush district card */
-      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 700 30px/1.1 var(--a3g-font-display); letter-spacing: 0.16em; color: #1b2236; text-shadow: none;
+      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 600 28px/1.15 var(--font-ui); letter-spacing: 0.16em; color: #1b2236; text-shadow: none;
         background: linear-gradient(90deg, rgba(237, 230, 214, 0), rgba(237, 230, 214, 0.92) 14%, rgba(237, 230, 214, 0.92) 86%, rgba(237, 230, 214, 0)); border-top: 2px solid rgba(27, 34, 54, 0.75); border-bottom: 2px solid rgba(27, 34, 54, 0.75); }
       .ink-scroll #announce { text-shadow: 0 1px 0 rgba(237, 230, 214, 0.9); color: #1b2236; }
-      .ink-scroll #announce strong { font-family: var(--a3g-font-display); font-weight: 700; }
+      .ink-scroll #announce strong { font-family: var(--font-ui); font-weight: 600; }
       .ink-scroll #countdown { color: #ede6d6; text-shadow: 0 0 0 #1b2236, 0 3px 0 #1b2236; }
-      .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(27, 34, 54, 0.25), rgba(27, 34, 54, 0.7)); }
+      .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(20, 28, 48, 0.28), rgba(14, 20, 36, 0.74)); }
       .ink-scroll .keys dt { color: var(--warm); }
       .ink-scroll #intro-card a { color: var(--indigo); }
       /* NR-18 shot bars on the title-to-chase blend and the win shots (set by world.ts; never with reduced motion) */
       html::before, html::after { content: ""; position: fixed; left: 0; right: 0; height: 0; background: #0d1328; z-index: 1; pointer-events: none; transition: height 0.5s ease; }
       html::before { top: 0; } html::after { bottom: 0; }
       html.shot-bars::before, html.shot-bars::after { height: 9vh; }
-      @media (max-width: 760px) {
-        /* the bottom HUD on phones is the single ability row (<= 90 px); pause and mute move up under the scroll */
-        .ink-scroll #controls { bottom: auto; top: calc(204px + env(safe-area-inset-top)); }
-        .ink-scroll #district-banner { font-size: 22px; padding: 8px 28px; }
+      @media (pointer: coarse), (max-width: 760px) {
+        .ink-scroll #district-banner { font-size: 20px; padding: 8px 26px; }
       }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
     <div id="progress" class="hidden"><i id="progress-fill"></i><b style="left:22.7%"></b><span style="left:22.7%">Sunfire</span><b style="left:61.4%"></b><span style="left:61.4%">Ember</span><em data-seal="0" style="left:0%" aria-hidden="true">V</em><em data-seal="470" style="left:17.8%" aria-hidden="true">R</em><em data-seal="1120" style="left:42.4%" aria-hidden="true">C</em><em data-seal="1510" style="left:57.2%" aria-hidden="true">F</em><em data-seal="2260" style="left:85.6%" aria-hidden="true">G</em></div>
-    <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div><div id="combo" class="num"></div></div>
-    <div id="vitals" class="hidden glass"><span class="meta">SPIRIT</span><div class="bar"><i id="spirit-bar"></i></div><span class="num" id="spirit">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Lantern Village</div></div>
-    <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small>Space cycles</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="beast">Ember<small>from 1,620 m</small></button></div>
-    <div id="abilities" class="hidden glass"><button data-action="clones"><span class="full">Echo clones</span><span class="short">Clones</span><small>1 &middot; 60</small></button><button data-action="spiralorb"><span class="full">Spiral orb</span><span class="short">Orb</span><small>2 &middot; 14</small></button><button data-action="dash"><span class="full">Surge dash</span><span class="short">Dash</span><small>Shift &middot; 38</small></button><button data-action="spiralstar"><span class="full">Gale star</span><span class="short">Gale</span><small>3 &middot; 75</small></button><button data-action="cycleForm" class="phone-only" title="Cycle form (Space)"><span id="form-cycle">Runner</span><small>form</small></button></div>
+    <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance" class="metric">0</span><span class="unit">m</span></strong></div><div><span class="meta">DEFEATED</span><strong class="num metric" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num metric" id="score">0</strong></div><div id="combo" class="num metric"></div></div>
+    <div id="vitals" class="hidden glass"><div class="vital-head"><span class="meta">SPIRIT</span><span class="num metric" id="spirit">300 / 300</span></div><div class="bar"><i id="spirit-bar"></i></div><div class="vital-row"><span class="meta vital-label-health">HEALTH</span><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div></div><div class="meta" id="district">Lantern Village</div></div>
+    <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small><kbd class="desk-key">Space &middot; </kbd>base</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="beast">Ember<small>from 1,620 m</small></button></div>
+    <div id="abilities" class="hidden glass"><button data-action="clones"><span class="full">Echo clones</span><span class="short">Clones</span><small><kbd class="desk-key">1 &middot; </kbd>60</small></button><button data-action="spiralorb"><span class="full">Spiral orb</span><span class="short">Orb</span><small><kbd class="desk-key">2 &middot; </kbd>14</small></button><button data-action="dash"><span class="full">Surge dash</span><span class="short">Dash</span><small><kbd class="desk-key">Shift &middot; </kbd>38</small></button><button data-action="spiralstar"><span class="full">Gale star</span><span class="short">Gale</span><small><kbd class="desk-key">3 &middot; </kbd>75</small></button><button data-action="cycleForm" class="phone-only" title="Cycle form (Space)"><span id="form-cycle">Runner</span><small>form</small></button></div>
     <div id="announce"><strong id="announce-title"></strong><span class="meta" id="announce-small"></span></div>
     <div id="hurt"></div>
     <div id="district-banner"></div>

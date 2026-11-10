@@ -17,7 +17,7 @@
     <meta name="twitter:title" content="Aura FC 3D — Street &amp; Stadium Football · Aura3D Showcase" />
     <meta name="twitter:description" content="Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout &amp; Touch Labs, a 32-team World Circuit, and a Player Studio." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/aura-fc-3d@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura FC 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/","description":"5v5 street-and-stadium soccer — driven passes, curling finishers, and skill-move flicks across six pitches from the Favela Cage to the aurora-lit Glacier…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-fc-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura FC 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/","description":"5v5 street-and-stadium soccer — driven passes, curling finishers, and skill-move flicks across six pitches from the Favela Cage to the aurora-lit Glacier…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-fc-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/fonts/aura-fonts.css" />
     <style>
@@ -28,15 +28,17 @@
         --rule: rgba(243, 240, 220, 0.14);
         --accent: #d8ff3e;
         --cyan: #7dfcff;
-        --font-display: "DIN Pro", "Whitney", -apple-system, sans-serif;
-        --font-sans: "Whitney", -apple-system, sans-serif;
-        --font-mono: "Monument Grotesk Mono", ui-monospace, monospace;
+        --font-display: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+        --font-sans: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
       }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-synthesis: none; }
       html, body {
         width: 100%; height: 100%;
         background: var(--bg); color: var(--ink);
-        font-family: var(--font-sans); font-size: 13px; line-height: 1.4;
+        font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px; line-height: 1.4;
         overflow: hidden; user-select: none;
         -webkit-font-smoothing: antialiased;
       }
@@ -55,22 +57,29 @@
         --a3d-bg: rgba(5, 12, 10, 0.92);
       }
       .aura3d-top-bar .title {
-        font-family: var(--font-display); font-weight: 800; font-size: 14px;
-        letter-spacing: 0.12em; white-space: nowrap; margin-right: 6px;
+        font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+        font-weight: 600; font-size: 14px;
+        letter-spacing: 0.1em; white-space: nowrap; margin-right: 6px;
       }
       .aura3d-top-bar .title em { font-style: normal; color: var(--accent); }
-      .aura3d-top-bar button.venue { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; }
+      .aura3d-top-bar button.venue {
+        font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+        font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.07em;
+      }
 
       .hint {
         position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
-        font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
-        color: rgba(243, 240, 220, 0.55); z-index: 25; pointer-events: none;
+        font-family: var(--font-mono, "Monument Grotesk Mono", monospace);
+        font-size: 12px; font-weight: 400; letter-spacing: 0.04em;
+        color: rgba(243, 240, 220, 0.62); z-index: 25; pointer-events: none;
         text-align: center; white-space: nowrap;
-        background: rgba(5, 12, 10, 0.55); padding: 4px 14px; border-radius: 8px;
+        background: rgba(5, 12, 10, 0.64); border: 1px solid rgba(243, 240, 220, 0.1);
+        padding: 4px 14px; border-radius: 8px;
       }
       #render-error {
         position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;
-        background: #0a0d0b; color: var(--ink); font-family: var(--font-mono); font-size: 13px;
+        background: #0a0d0b; color: var(--ink);
+        font-family: var(--font-mono, "Monument Grotesk Mono", monospace); font-size: 13px;
       }
       #render-error[hidden] { display: none; }
       @media (max-width: 760px) { .hint { display: none; } }
@@ -78,12 +87,17 @@
       .venue-pick { display: none; }
       .venue-pick .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .venue-pick select {
-        font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--ink);
-        background: rgba(255, 255, 255, 0.07); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 8px; min-height: 44px;
+        font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
+        font-size: 12px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);
+        background: rgba(255, 255, 255, 0.07); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 8px; min-height: 44px; min-width: 44px;
+      }
+      @media (pointer: coarse), (max-width: 760px) {
+        .aura3d-top-bar button { min-height: 44px; min-width: 44px; padding: 6px 9px; font-size: 12px; }
       }
       @media (max-width: 760px) {
         .aura3d-top-bar button.venue { display: none; }
         .venue-pick { display: inline-flex; align-items: center; }
+        .aura3d-top-bar .a3d-credit { display: none; }
       }
     </style>
   </head>

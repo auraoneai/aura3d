@@ -1,5 +1,5 @@
 /** Game event → screen flash mapping over the kit ScreenFx (DOM only; the sim never sees any of it). */
-import { ScreenFx, flashStrength, REDUCED_FLASH_CAP } from "../../../examples/shared/runner-kit/index";
+import { ScreenFx, flashStrength, REDUCED_FLASH_CAP } from "../../../examples/shared/runner-kit/screen-fx";
 import type { PolaritySound } from "./audio";
 import { LOOK } from "./look";
 

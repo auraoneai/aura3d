@@ -229,13 +229,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondCanyonArch",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "diamondRock",
         "triangles": 0,
         "textures": 0,
@@ -445,6 +438,14 @@
         "practical": false
       },
       {
+        "node": "pitcher-mound",
+        "practical": false
+      },
+      {
+        "node": "batter-box-clay",
+        "practical": false
+      },
+      {
         "node": "field-clay",
         "practical": false
       },
@@ -513,6 +514,29 @@
         "practical": false
       },
       {
+        "node": "sandlot-brick-arcade",
+        "practical": false
+      },
+      {
+        "node": "sandlot-arcade-coping",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "sandlot-bay-bridge",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "sandlot-sailboats-hulls",
+        "practical": false
+      },
+      {
+        "node": "sandlot-sailboats-sails",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
         "node": "pitcher-cap",
         "practical": false
       },
@@ -521,6 +545,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-c-cap",
         "practical": false
       },
@@ -529,6 +554,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-1b-cap",
         "practical": false
       },
@@ -537,6 +563,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-2b-cap",
         "practical": false
       },
@@ -545,6 +572,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-ss-cap",
         "practical": false
       },
@@ -553,6 +581,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-3b-cap",
         "practical": false
       },
@@ -561,6 +590,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-lf-cap",
         "practical": false
       },
@@ -569,6 +599,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-cf-cap",
         "practical": false
       },
@@ -577,6 +608,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "f-rf-cap",
         "practical": false
       },
@@ -585,6 +617,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "batter-cap",
         "practical": false
       },
@@ -593,6 +626,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "runner-0-cap",
         "practical": false
       },
@@ -601,6 +635,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "runner-1-cap",
         "practical": false
       },
@@ -609,11 +644,16 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "runner-2-cap",
         "practical": false
       },
       {
         "node": "runner-2-belt",
+        "practical": false
+      },
+      {
+        "node": "bat",
         "practical": false
       },
       {

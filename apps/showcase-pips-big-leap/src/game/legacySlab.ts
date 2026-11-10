@@ -10,7 +10,7 @@
 //
 // The engine stays correct. For the worlds that keep the 4.7.18 look, the slabs of one kind are
 // lowered into one world-space custom mesh instead of an instanced draw: the same rounded box
-// (the 4.7.18 generator below, which matches three's RoundedBoxGeometry, UVs included), placed by
+// (the 4.7.18 unit rounded-box generator below, UVs included), placed by
 // each instance transform, with the normal written exactly as 4.7.18 computed it. Still one draw
 // per kind.
 
@@ -25,7 +25,7 @@ interface Mesh {
   uvs: number[];
 }
 
-/** three's BoxGeometry, expanded to non-indexed triangles in index order. */
+/** Subdivided unit box mesh, expanded to non-indexed triangles in index order. */
 function boxMesh(segments: number): Mesh {
   const indices: number[] = [];
   const vertices: number[] = [];
@@ -93,7 +93,7 @@ function arcUv(faceDir: Vec3, normal: Vec3, uvAxis: Axis, projectionAxis: Axis, 
 
 const FACE_DIRS: readonly Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 
-/** The 4.7.18 unit rounded box (three's RoundedBoxGeometry, `segments` 2), non-indexed. */
+/** The 4.7.18 unit rounded box (`segments` = 2), non-indexed. */
 export function legacyRoundedBoxMesh(radiusIn: number, segments = 2): Mesh {
   const total = segments * 2 + 1;
   const radius = Math.min(0.5, radiusIn);

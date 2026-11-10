@@ -3,13 +3,24 @@
  * and compile exactly what the app draws with.
  */
 import type { material } from "@aura3d/engine";
+import {
+  createFlipbookAtlas,
+  createGradingLut,
+  type FlipbookAtlasSpec,
+  type FlipbookKind
+} from "../../apps/showcase-port-shared/vfx-pack";
 import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, ISLAND_INSTANCED_FRAGMENT, ISLAND_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, BOOST_GATE_FRAGMENT, BOOST_GATE_VERTEX,
+  FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, FLIPBOOK_FRAGMENT, FLIPBOOK_VERTEX,
+  GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX, ISLAND_INSTANCED_FRAGMENT, ISLAND_INSTANCED_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
 import {
-  AURA_FRAGMENT_WGSL, AURA_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, FLAG_INSTANCED_FRAGMENT_WGSL, FLAG_INSTANCED_VERTEX_WGSL, FLAT_FRAGMENT_WGSL, FLAT_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_INSTANCED_FRAGMENT_WGSL, GLOW_INSTANCED_VERTEX_WGSL, GLOW_VERTEX_WGSL, ISLAND_INSTANCED_FRAGMENT_WGSL, ISLAND_INSTANCED_VERTEX_WGSL, ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL
+  AURA_FRAGMENT_WGSL, AURA_VERTEX_WGSL, BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, BOOST_GATE_FRAGMENT_WGSL, BOOST_GATE_VERTEX_WGSL,
+  FLAG_INSTANCED_FRAGMENT_WGSL, FLAG_INSTANCED_VERTEX_WGSL, FLAT_FRAGMENT_WGSL, FLAT_VERTEX_WGSL, FLIPBOOK_FRAGMENT_WGSL, FLIPBOOK_VERTEX_WGSL,
+  GLOW_FRAGMENT_WGSL, GLOW_INSTANCED_FRAGMENT_WGSL, GLOW_INSTANCED_VERTEX_WGSL, GLOW_VERTEX_WGSL, ISLAND_INSTANCED_FRAGMENT_WGSL, ISLAND_INSTANCED_VERTEX_WGSL,
+  ROAD_FRAGMENT_WGSL, ROAD_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, SOLID_FRAGMENT_WGSL, SOLID_VERTEX_WGSL
 } from "./shaders-wgsl";
 
 /**
@@ -87,8 +98,8 @@ export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, 
   blending: "additive"
 });
 
-/** GU47 SSR-11: instanced spire islands for the mid / far parallax bands (instance colour .r = extra fog). */
-export const islandInstancedSpec = (): CustomSpec => ({
+/** GU47 SSR-11 + WP-27: instanced spire islands (`cloudMode = 0`) and 3D subsurface-lit cumulus cloud billows (`cloudMode = 1`). */
+export const islandInstancedSpec = (cloudMode = 0): CustomSpec => ({
   glsl: { vertex: ISLAND_INSTANCED_VERTEX, fragment: ISLAND_INSTANCED_FRAGMENT },
   wgsl: { vertex: ISLAND_INSTANCED_VERTEX_WGSL, fragment: ISLAND_INSTANCED_FRAGMENT_WGSL },
   uniforms: {
@@ -96,9 +107,14 @@ export const islandInstancedSpec = (): CustomSpec => ({
     islandDark: { type: "color3", value: [...hexLinear(0x2a1c3a)] },
     islandSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
     islandSunColor: { type: "color3", value: [1, 0.8, 0.6] },
-    islandFogColor: { type: "color3", value: [0.8, 0.62, 0.8] }
+    islandFogColor: { type: "color3", value: [0.8, 0.62, 0.8] },
+    cloudMid: { type: "color3", value: [...hexLinear(PALETTE.cloud)] },
+    cloudMode: { type: "f32", value: cloudMode },
+    cloudTime: { type: "f32", value: 0 }
   }
 });
+
+export const cloudBillowInstancedSpec = (): CustomSpec => islandInstancedSpec(1);
 
 /** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
 export const flagInstancedSpec = (): CustomSpec => ({
@@ -142,7 +158,7 @@ export const roadSpec = (): CustomSpec => ({
      */
     gateSun: { type: "vec3", value: [0, 0, 0] },
     gateSpacing: { type: "f32", value: 54 },
-    gatePost: { type: "f32", value: 5.6 },
+    gatePost: { type: "f32", value: 7.4 },
     gateSkip: { type: "vec2", value: [-1e6, -1e6] }
   },
   side: "double"
@@ -213,6 +229,66 @@ export const skySpec = (): CustomSpec => ({
   depthWrite: false
 });
 
+export const boostGateSpec = (core: Rgb = hexLinear(0xfff2c4), edge: Rgb = hexLinear(0x7fe0c4)): CustomSpec => ({
+  glsl: { vertex: BOOST_GATE_VERTEX, fragment: BOOST_GATE_FRAGMENT },
+  wgsl: { vertex: BOOST_GATE_VERTEX_WGSL, fragment: BOOST_GATE_FRAGMENT_WGSL },
+  uniforms: {
+    gateTime: { type: "f32", value: 0 },
+    gateCore: { type: "color3", value: [...core] },
+    gateEdge: { type: "color3", value: [...edge] },
+    gatePulse: { type: "f32", value: 0.25 }
+  },
+  side: "double",
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
+const flipbookAtlasCache = new Map<string, FlipbookAtlasSpec>();
+let warmLutCache: ReturnType<typeof createGradingLut> | null = null;
+
+function cachedFlipbookAtlas(kind: FlipbookKind, tintRgb: readonly [number, number, number]): FlipbookAtlasSpec {
+  const key = `${kind}:${tintRgb.join(",")}`;
+  let hit = flipbookAtlasCache.get(key);
+  if (!hit) {
+    hit = createFlipbookAtlas(kind, tintRgb);
+    flipbookAtlasCache.set(key, hit);
+  }
+  return hit;
+}
+
+function cachedCinemaWarmLut(): ReturnType<typeof createGradingLut> {
+  if (!warmLutCache) warmLutCache = createGradingLut("cinema-warm");
+  return warmLutCache;
+}
+
+export const flipbookSpec = (
+  kind: FlipbookKind = "plasma",
+  tintRgb: readonly [number, number, number] = [127, 224, 196],
+  lutMix = 0.28
+): CustomSpec => {
+  const atlas = cachedFlipbookAtlas(kind, tintRgb);
+  const warmLut = cachedCinemaWarmLut();
+  return {
+    glsl: { vertex: FLIPBOOK_VERTEX, fragment: FLIPBOOK_FRAGMENT },
+    wgsl: { vertex: FLIPBOOK_VERTEX_WGSL, fragment: FLIPBOOK_FRAGMENT_WGSL },
+    uniforms: {
+      flipFrame: { type: "f32", value: 0 },
+      flipCols: { type: "f32", value: atlas.columns },
+      flipRows: { type: "f32", value: atlas.rows },
+      flipAlpha: { type: "f32", value: 1 },
+      flipTint: { type: "color3", value: [1, 1, 1] },
+      flipMap: { type: "texture2d", value: atlas.texture },
+      gradeLut: { type: "texture2d", value: warmLut.texture },
+      lutMix: { type: "f32", value: lutMix }
+    },
+    side: "double",
+    transparent: true,
+    depthWrite: false,
+    blending: kind === "plasma" ? "additive" : "normal"
+  };
+};
+
 /** Every distinct program the app draws with, for the GLSL compile test. */
 export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
   const c = hexLinear;
@@ -226,6 +302,8 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
     { name: "sky", spec: skySpec() },
     { name: "flat", spec: flatSpec(c(PALETTE.kiCore), 0.4) },
-    { name: "blob", spec: blobSpec(1.6, 0.5) }
+    { name: "blob", spec: blobSpec(1.6, 0.5) },
+    { name: "boost-gate", spec: boostGateSpec() },
+    { name: "flipbook", spec: flipbookSpec() }
   ];
 }

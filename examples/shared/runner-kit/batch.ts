@@ -31,8 +31,16 @@ export const scrollFrameZ = (z: number, scroll: number): number => z - scroll;
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
-/** Batches are moved by node transforms and their vertices span the whole run, so their culling bounds are unbounded. */
-const OPEN_BOUNDS = { min: [-1e5, -1e4, -1e7] as [number, number, number], max: [1e5, 1e4, 1e7] as [number, number, number] };
+/** Batches are moved by node transforms and their vertices span the whole run, so their culling bounds are unbounded by default. */
+export const OPEN_BOUNDS = { min: [-1e5, -1e4, -1e7] as [number, number, number], max: [1e5, 1e4, 1e7] as [number, number, number] };
+
+/** Tight corridor frustum bounds for scrolling lane runners whose active segment pool stays within [-420, 60] m of scroll. */
+export const CORRIDOR_BOUNDS = { min: [-48, -24, -420] as [number, number, number], max: [48, 64, 60] as [number, number, number] };
+
+export interface BatchBounds {
+  readonly min: [number, number, number];
+  readonly max: [number, number, number];
+}
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
@@ -55,7 +63,12 @@ export class Batch {
   /** Vertex uploads issued by `flush` so far (for tests and upload budgets). */
   uploadedVertices = 0;
 
-  constructor(private readonly template: MeshData, readonly max: number, tone: Rgb | readonly number[] | null = null) {
+  constructor(
+    private readonly template: MeshData,
+    readonly max: number,
+    tone: Rgb | readonly number[] | null = null,
+    private readonly bounds: BatchBounds = OPEN_BOUNDS
+  ) {
     this.vertsPer = template.positions.length / 3;
     this.dirty = new Uint8Array(max);
     this.toneDirty = new Uint8Array(max);
@@ -132,7 +145,7 @@ export class Batch {
 
   geometry() {
     return geometry.dynamic({
-      positions: this.positions.slice(), normals: this.normals.slice(), uvs: f32(this.mesh.uvs), indices: Uint32Array.from(this.mesh.indices), bounds: OPEN_BOUNDS,
+      positions: this.positions.slice(), normals: this.normals.slice(), uvs: f32(this.mesh.uvs), indices: Uint32Array.from(this.mesh.indices), bounds: this.bounds,
       ...(this.tones ? { attributes: { tone: { itemSize: 3, data: this.tones.slice() } } } : {})
     });
   }
@@ -143,15 +156,15 @@ export class Batch {
     if (this.anyDirty) {
       for (const [first, count] of Batch.runs(this.dirty)) {
         const from = first * span, to = (first + count) * span, offset = first * this.vertsPer;
-        h.updateAttribute?.("position", { array: this.positions.subarray(from, to), offset });
-        if (normals) h.updateAttribute?.("normal", { array: this.normals.subarray(from, to), offset });
+        h.updateAttribute?.("position", { array: this.positions.subarray(from, to), offset, skipBoundsRefresh: true });
+        if (normals) h.updateAttribute?.("normal", { array: this.normals.subarray(from, to), offset, skipBoundsRefresh: true });
         this.uploadedVertices += count * this.vertsPer;
       }
       this.anyDirty = false;
     }
     if (this.tones && this.anyToneDirty) {
       for (const [first, count] of Batch.runs(this.toneDirty)) {
-        h.updateAttribute?.("tone", { array: this.tones.subarray(first * span, (first + count) * span), offset: first * this.vertsPer });
+        h.updateAttribute?.("tone", { array: this.tones.subarray(first * span, (first + count) * span), offset: first * this.vertsPer, skipBoundsRefresh: true });
       }
       this.anyToneDirty = false;
     }

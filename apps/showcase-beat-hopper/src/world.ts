@@ -1,47 +1,61 @@
 /**
- * Beat Hopper world on the public engine surface: toon `material.custom` surfaces, `geometry.dynamic` batches,
- * a synthwave night stage (`stage.ts`: striped sunset sun, neon grid floor, city, palms, arches, floating islands,
- * LED equalizer meters, searchlights, haze) around an elevated track, plus bloom, grade and vignette. Road tiles live in a scrolling frame (written once, node moved by
- * `dist % SEGMENT_LENGTH`); beat stripes and obstacles are placed per frame from the deterministic beat-grid formula
- * `z = (crossTime - t) * speed`. Three lanes read from dashed lavender dividers; every obstacle row draws one lane-wide
- * piece per blocked lane (crates, trenches, duck bars, tall red walls) so the open lanes are obvious, and beat orbs
- * float in their lanes. Particles and pulse rings are presentation-only pools with their own LCG — they never
- * consume gameplay RNG draws. The whole world pulses on the sim beat; PERFECT judgements fire expanding timing rings.
+ * Beat Hopper world on `@aura3d/engine`:
+ *   - Concert-stage volumetric night rig (`environments.preset("night")`, shadowed 2-cascade `lights.directional`,
+ *     magenta + cyan stage practicals, zero `lights.ambient`)
+ *   - Eevee post stack (`contactShadows`, `ambientOcclusion`, mirrored Acrylic `screenSpaceReflections`,
+ *     `looks.fogForExtent`, beat-reactive `cinematicBloom`, `colorGrade`, `vignette`)
+ *   - Wet dark-glass LED equalizer runway (`deckRunwaySpec`) + `material.studioGlass` beat-threshold pad & crystal
+ *     beat orbs + anodized `material.lacquer` beat pads, rails, sub-bass speaker crates, plasma crossbars (`chrome`
+ *     stanchions), and equalizer monolith walls + interior-mapped 4.2 m laser-abyss `gapChasmSpec` trenches
+ *   - Articulated 132 BPM synth-skater bot (`clearcoatPaint` chassis, `chrome` LED visor, continuous welded headphone
+ *     band + `glowingEmissive` ear-cups, hover-skates + twin scrolling `effects.trail` ribbons)
+ *   - Paired GLSL+WGSL `ringShockwaveSpec` + `createFlipbookAtlas("ripple")` & `createFlipbookAtlas("sparks")` VFX
+ *   - Tight `CORRIDOR_BOUNDS` on all dynamic corridor batches.
  */
-import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, looks, material, scene, type AuraApp, type AuraMaterialSpec } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
-  Batch, flatSpec, shadowSpec, toonSpec,
+  Batch, CORRIDOR_BOUNDS, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
 } from "../../../examples/shared/runner-kit/index";
+import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type ObstacleType } from "./sim";
 import { LOOK, beatPulse, linear } from "./look";
 import {
-  DASH_SIZE, ORB_RADIUS, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
-  barMesh, blockMesh, boxMesh, gapMesh, mergeMeshes, playerMesh, ringMesh, sphereMesh, wallMesh
+  DASH_SIZE, ORB_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
+  boxMesh, crystalOrbMesh, flatQuadXZMesh, gapChasmQuadMesh, mergeMeshes, monolithWallMesh,
+  plasmaCrossbarMesh, ringMesh, skaterBotMeshes, speakerBlockMesh, sphereMesh, stanchionPostsMesh,
+  translateMesh, uprightQuadXYMesh
 } from "./meshes";
 import { poseScale, type CameraPose, type Shown } from "./presentation";
-import { addStage, transformMesh } from "./stage";
+import { addStage } from "./stage";
 import { addDressing, bindDressing } from "./dressing";
-import { glowSpec, heroSpec, stageLitSpec, stageSkySpec, type Haze } from "./stage-shaders";
+import {
+  deckRunwaySpec, flipbookBurstSpec, gapChasmSpec, glowSpec, heroSpec, ringShockwaveSpec,
+  stageLitSpec, stageSkySpec, type Haze
+} from "./stage-shaders";
 
 type Scene = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 const STRIPES = 40;
-/** Lane divider dashes: two lines, DASHES each, one every DASH_PERIOD metres. */
 const DASHES = 36;
 const DASH_PERIOD = 4;
-/** Obstacle pieces: one per lane per pool slot. */
 const PIECES = CONFIG.POOL_OBSTACLES * 3;
-const ORB_Y = 0.95;
+const ORB_Y = 0.96;
 const SKY_RADIUS = 360;
+const POOL_RIPPLES = 10;
+const POOL_SPARK_CARDS = 16;
 
-/** Distance haze bands (presentation): near layers, the static far skyline and the horizon ridges. */
-export const HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0085 };
-const FAR_HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0052 };
-const RIDGE_HAZE: Haze = { color: linear("#7a1c6c"), density: 0.0026 };
+export const HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0082 };
+const FAR_HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0050 };
+const RIDGE_HAZE: Haze = { color: linear("#7a1c6c"), density: 0.0025 };
 export const CAMERA_FAR = 400;
+
+let cachedRippleAtlas: ReturnType<typeof createFlipbookAtlas> | null = null;
+let cachedSparksAtlas: ReturnType<typeof createFlipbookAtlas> | null = null;
+const rippleAtlas = () => (cachedRippleAtlas ??= createFlipbookAtlas("ripple", [255, 240, 210]));
+const sparksAtlas = () => (cachedSparksAtlas ??= createFlipbookAtlas("sparks", [255, 248, 232]));
 
 export interface WorldOptions {
   readonly sim: BeatHopperSim;
@@ -52,6 +66,9 @@ export interface WorldView {
   readonly shown?: Shown;
   readonly camera?: CameraPose;
   readonly reducedMotion?: boolean;
+  readonly fovKickDeg?: number;
+  readonly shakeOffset?: readonly [number, number, number];
+  readonly shakeRoll?: number;
 }
 
 export interface WorldRuntime {
@@ -66,7 +83,7 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
-/** Presentation-only LCG (particle jitter, tower heights): never the gameplay stream. */
+/** Presentation-only LCG (particle jitter): never the gameplay stream. */
 function lcg(seed: number): () => number {
   let s = seed >>> 0;
   return () => {
@@ -84,19 +101,48 @@ interface Ring {
   alive: boolean; x: number; y: number; z: number;
   age: number; color: string;
 }
+interface FlipCard {
+  alive: boolean; x: number; y: number; z: number;
+  vx: number; vy: number; vz: number;
+  age: number; life: number; size0: number; size1: number;
+  rgb: readonly [number, number, number];
+}
 
-const dynamicFrom = (m: MeshData) => geometry.dynamic({
-  positions: Float32Array.from(m.positions), normals: Float32Array.from(m.normals),
-  uvs: Float32Array.from(m.uvs), indices: Uint32Array.from(m.indices)
+const normPeakRgb = (hex: string): readonly [number, number, number] => {
+  const c = linear(hex);
+  const m = Math.max(c[0], c[1], c[2], 1e-4);
+  return [c[0] / m, c[1] / m, c[2] / m];
+};
+
+const dynamicFrom = (m: MeshData, bounds = CORRIDOR_BOUNDS) => geometry.dynamic({
+  positions: Float32Array.from(m.positions),
+  normals: Float32Array.from(m.normals),
+  uvs: Float32Array.from(m.uvs),
+  indices: Uint32Array.from(m.indices),
+  bounds
 });
 
-export const BATCH_IDS = ["stripes", "lane-dashes", "blocks", "bars", "gaps", "walls", "orbs", "rings", "particles"] as const;
+export const BATCH_IDS = [
+  "stripes", "lane-dashes", "blocks", "bars", "bar-posts", "gaps", "walls", "orbs", "rings", "particles", "vfx-ripples", "vfx-sparks"
+] as const;
 
-/** Every custom program the world draws (the shaders-compile test bakes each one). */
+const deckSpec = (): CustomSpec => deckRunwaySpec({
+  haze: HAZE,
+  tiles: [linear(LOOK.road), linear("#24164d")]
+});
+
+const stagePrograms = (): { name: string; spec: CustomSpec }[] =>
+  addStage(() => undefined, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE }).programs();
+
+/** Every custom program the world draws (`tests/unit/beat-hopper/shaders-compile.test.ts` bakes & links each one). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
     { name: "sky", spec: stageSkySpec() },
     { name: "deck", spec: deckSpec() },
+    { name: "gap-chasm", spec: gapChasmSpec(HAZE) },
+    { name: "ring-shockwave", spec: ringShockwaveSpec() },
+    { name: "flipbook-ripple", spec: flipbookBurstSpec(rippleAtlas(), 1.85) },
+    { name: "flipbook-sparks", spec: flipbookBurstSpec(sparksAtlas(), 1.95) },
     { name: "hero", spec: heroSpec(linear(LOOK.player)) },
     ...stagePrograms(),
     { name: "toon", spec: toonSpec(linear(LOOK.road)) },
@@ -107,69 +153,103 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
   ];
 }
 
-/** Road deck: one long slab whose alternating 2 m tiles are shaded from world z and the run scroll (`uTileShift`),
- * with the stage lighting and haze so the far track melts into the horizon. */
-const deckSpec = (): CustomSpec => stageLitSpec({ base: [1, 1, 1], haze: HAZE, toneless: true, rim: [0.25, 0.04, 0.2], tiles: [linear(LOOK.road), linear("#221748")] });
+const translateBox3 = (w: number, h: number, d: number, x: number, y: number, z: number): MeshData =>
+  translateMesh(boxMesh(w, h, d), x, y, z);
 
-const stagePrograms = (): { name: string; spec: CustomSpec }[] =>
-  addStage(() => undefined, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE }).programs();
+const translateBox = (w: number, h: number, d: number, y: number, z: number): MeshData =>
+  translateMesh(boxMesh(w, h, d), 0, y, z);
 
-const translateBox3 = (w: number, h: number, d: number, x: number, y: number, z: number): MeshData => {
-  const m = boxMesh(w, h, d);
-  for (let i = 0; i < m.positions.length; i += 3) {
-    m.positions[i] = (m.positions[i] as number) + x;
-    m.positions[i + 1] = (m.positions[i + 1] as number) + y;
-    m.positions[i + 2] = (m.positions[i + 2] as number) + z;
-  }
-  return m;
-};
-
-const translateBox = (w: number, h: number, d: number, y: number, z: number): MeshData => {
-  const m = boxMesh(w, h, d);
-  for (let i = 0; i < m.positions.length; i += 3) {
-    m.positions[i + 1] = (m.positions[i + 1] as number) + y;
-    m.positions[i + 2] = (m.positions[i + 2] as number) + z;
-  }
-  return m;
-};
-
-/** Headphones on the hopper (presentation): a band over the top and two ear cups, in the player's frame. */
-function headphonesMesh(): MeshData {
-  const top = PLAYER_RADIUS * 2 + PLAYER_LENGTH;
-  const parts: MeshData[] = [];
-  const steps = 9;
-  for (let k = 0; k <= steps; k++) {
-    const a = Math.PI * (k / steps);
-    const r = PLAYER_RADIUS + 0.06;
-    parts.push(transformMesh(boxMesh(0.07, 0.07, 0.12), 0, 0, Math.cos(a) * r, top - PLAYER_RADIUS * 0.75 + Math.sin(a) * r * 0.9, 0, a));
-  }
-  for (const side of [-1, 1]) parts.push(transformMesh(boxMesh(0.12, 0.3, 0.3), 0, 0, side * (PLAYER_RADIUS + 0.03), top - PLAYER_RADIUS * 0.85, 0));
-  return mergeMeshes(parts);
-}
-
-export function buildWorld(options: WorldOptions): World {
+export function buildWorld(_options: WorldOptions): World {
   const builder: Scene = scene()
     .background(LOOK.background)
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 4.6, 8.5], target: [0, 1, -10], fov: 55, near: 0.1, far: CAMERA_FAR }));
+    .camera(camera.perspective({
+      ...labCameraOptions(readLabFlags(), "reversed"),
+      position: [0, 4.6, 8.5],
+      target: [0, 1, -10],
+      fov: 55,
+      near: 0.1,
+      far: CAMERA_FAR
+    }));
 
-  /* Night key + neutral IBL: the toon programs carry their own light ramp, but the scene keeps one shadowed key and
-   * an environment so the art-direction audit (C-35) sees a legitimate rig. */
-  builder.add(environments.neutral({ name: "stage-environment", intensity: 0.3 }));
+  /* Concert-stage volumetric night lighting: night IBL + 1 shadowed 2-cascade key + 2 neon stage practicals (zero ambient). */
+  builder.add(environments.preset("night", {
+    name: "stage-environment",
+    intensity: 0.72,
+    diffuseIntensity: 0.50,
+    specularIntensity: 1.22,
+    background: false
+  }));
   builder.add(lights.directional({
-    name: "moon-key", position: [-12, 18, 10], target: [0, 0, -10], intensity: 0.9, color: "#bcd2ff",
-    shadow: { cascades: 1, maxDistance: 60 }
+    name: "moon-key",
+    position: [-14, 22, 12],
+    target: [0, 0, -12],
+    intensity: 1.15,
+    color: "#bcd2ff",
+    shadow: { cascades: 2, maxDistance: 85, mapSize: 2048 }
+  }));
+  builder.add(lights.point({
+    name: "stage-magenta-kicker",
+    position: [0, 6.2, -16],
+    color: "#ff2fb3",
+    intensity: 2.1,
+    distance: 38
+  }));
+  builder.add(lights.point({
+    name: "stage-cyan-rim",
+    position: [0, 2.4, 5.2],
+    color: "#23e6ff",
+    intensity: 1.7,
+    distance: 24
   }));
 
-  const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
-    builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
+  const addCustom = (id: string, mesh: MeshData, spec: CustomSpec, bounds = CORRIDOR_BOUNDS): void => {
+    builder.add(
+      geometry.custom(dynamicFrom(mesh, bounds), {
+        name: id,
+        material: material.custom(spec),
+        castShadow: false,
+        receiveShadow: false
+      }).runtime({ id })
+    );
   };
-  const addBatch = (id: string, batch: Batch, spec: CustomSpec): void => {
-    builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
+  const addPbrMesh = (id: string, mesh: MeshData, mat: AuraMaterialSpec, shadow = false): void => {
+    builder.add(
+      geometry.custom(dynamicFrom(mesh, CORRIDOR_BOUNDS), {
+        name: id,
+        material: mat,
+        castShadow: shadow,
+        receiveShadow: shadow
+      }).runtime({ id })
+    );
+  };
+  const addBatchCustom = (id: string, batch: Batch, spec: CustomSpec): void => {
+    builder.add(
+      geometry.custom(batch.geometry(), {
+        name: id,
+        material: material.custom(spec),
+        castShadow: false,
+        receiveShadow: false
+      }).runtime({ id })
+    );
+  };
+  const addBatchPbr = (id: string, batch: Batch, mat: AuraMaterialSpec, castShadow = false): void => {
+    builder.add(
+      geometry.custom(batch.geometry(), {
+        name: id,
+        material: mat,
+        castShadow,
+        receiveShadow: true
+      }).runtime({ id })
+    );
   };
 
-  add("sky", sphereMesh(SKY_RADIUS, 32, 20), stageSkySpec());
+  /* Sky dome */
+  addCustom("sky", sphereMesh(SKY_RADIUS, 32, 20), stageSkySpec(), {
+    min: [-SKY_RADIUS, -SKY_RADIUS, -SKY_RADIUS],
+    max: [SKY_RADIUS, SKY_RADIUS, SKY_RADIUS]
+  });
 
-  /* synthwave stage: floor, ridges, city, palms, arches, islands, equalizer meters, searchlights, motes */
+  /* Synthwave stage: floor, ridges, city, pylons, palms, raised chamfered arches, islands, equalizer, volumetric beams, motes */
   const stageGroups = new Map<string, ReturnType<typeof geometry.custom>[]>();
   const stage = addStage((id, geom, spec, mount) => {
     const g = geometry.custom(geom, { name: id, material: material.custom(spec), castShadow: false, receiveShadow: false });
@@ -183,61 +263,229 @@ export function buildWorld(options: WorldOptions): World {
   }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
   for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
-  /* Meshy club dressing: speaker stacks and a floating DJ deck beside the track (presentation only) */
+  /* GPU-instanced Meshy club dressing: 3 `instances.model` groups (`bhSpeakerStack`, `bhSpeakerStackB`, `bhTurntable`) */
   addDressing(builder);
 
-  /* elevated track girder with a cyan under-glow strip (uniform along z, so it never scrolls) */
+  /* Elevated track girder + cyan under-glow strip */
   const trackLen = CONFIG.POOL_SEGMENTS * SEGMENT_LENGTH;
-  add("girder", translateBox(ROAD_WIDTH + 0.7, 0.55, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
-  add("underglow", translateBox(ROAD_WIDTH + 0.78, 0.07, trackLen, -0.42, 18 - trackLen / 2), stageLitSpec({ base: [0, 0, 0], haze: HAZE, emissive: linear("#23e6ff"), toneless: true }));
+  addCustom("girder", translateBox(ROAD_WIDTH + 0.72, 0.56, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
+  addCustom("underglow", translateBox(ROAD_WIDTH + 0.80, 0.07, trackLen, -0.42, 18 - trackLen / 2), stageLitSpec({ base: [0, 0, 0], haze: HAZE, emissive: linear("#23e6ff"), toneless: true }));
 
-  /* road deck + neon rails: single slabs along the whole track (the tiles scroll in the deck shader). One node per
-   * slab instead of a 220-tile batch: the renderer snapshots every runtime node's vertices each frame. */
+  /* Wet dark-glass Acrylic equalizer deck + anodized `lacquer` side rails */
   const deckZ = 19 - trackLen / 2;
-  add("deck", translateBox(ROAD_WIDTH, 0.3, trackLen, -0.15, deckZ), deckSpec());
-  add("rails", mergeMeshes([
-    translateBox3(0.18, 0.34, trackLen, -(ROAD_WIDTH / 2 + 0.12), 0.05, deckZ),
-    translateBox3(0.18, 0.34, trackLen, ROAD_WIDTH / 2 + 0.12, 0.05, deckZ)
-  ]), toonSpec(linear(LOOK.rail), undefined, linear(LOOK.rail)));
+  addCustom("deck", translateBox(ROAD_WIDTH, 0.3, trackLen, -0.15, deckZ), deckSpec());
+  addPbrMesh("rails", mergeMeshes([
+    translateBox3(0.20, 0.34, trackLen, -(ROAD_WIDTH / 2 + 0.12), 0.05, deckZ),
+    translateBox3(0.20, 0.34, trackLen, ROAD_WIDTH / 2 + 0.12, 0.05, deckZ)
+  ]), material.lacquer({
+    name: "rail-lacquer",
+    color: LOOK.rail,
+    emissive: LOOK.rail,
+    emissiveIntensity: 1.05,
+    practical: true,
+    roughness: 0.14,
+    clearcoat: 0.94,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.5
+  }), false);
 
-  /* beat-grid stripes (world space, placed per frame from the sim clock) */
-  const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.02, 0.22), STRIPES, linear(LOOK.roadLine));
-  addBatch("stripes", stripes, flatSpec([1, 1, 1], 0.85, true));
+  /* `studioGlass` + anodized `lacquer` 3-lane beat-judgement threshold pads at z = 0 pulsing on quantized 132 BPM phase */
+  addPbrMesh("beat-pad-glass", mergeMeshes([
+    translateBox3(1.76, 0.032, 0.86, laneX(-1), 0.016, 0),
+    translateBox3(1.76, 0.032, 0.86, laneX(0), 0.016, 0),
+    translateBox3(1.76, 0.032, 0.86, laneX(1), 0.016, 0)
+  ]), material.studioGlass({
+    name: "beat-pad-studio-glass",
+    tint: "#7df9ff",
+    roughness: 0.03,
+    ior: 1.52,
+    thickness: 0.65,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.04,
+    envMapIntensity: 1.75
+  }), false);
 
-  /* lane dividers: dashed neon lines between the three lanes, scrolling with the run */
-  const dashes = new Batch(boxMesh(DASH_SIZE.w, DASH_SIZE.h, DASH_SIZE.d), DASHES * 2, linear(LOOK.laneLine));
-  addBatch("lane-dashes", dashes, flatSpec([1, 1, 1], 0.95, true));
+  addPbrMesh("beat-pad-lacquer", mergeMeshes([
+    translateBox3(1.90, 0.022, 0.12, laneX(-1), 0.014, -0.45),
+    translateBox3(1.90, 0.022, 0.12, laneX(0), 0.014, -0.45),
+    translateBox3(1.90, 0.022, 0.12, laneX(1), 0.014, -0.45),
+    translateBox3(1.90, 0.022, 0.12, laneX(-1), 0.014, 0.45),
+    translateBox3(1.90, 0.022, 0.12, laneX(0), 0.014, 0.45),
+    translateBox3(1.90, 0.022, 0.12, laneX(1), 0.014, 0.45)
+  ]), material.lacquer({
+    name: "beat-pad-lacquer",
+    color: "#23e6ff",
+    emissive: "#23e6ff",
+    emissiveIntensity: 1.2,
+    practical: true,
+    roughness: 0.12,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.6
+  }), false);
 
-  /* the hopper + contact shadow */
-  add("player", playerMesh(), heroSpec(linear(LOOK.player)));
-  add("player-gear", headphonesMesh(), stageLitSpec({ base: linear("#2a1a5a"), haze: HAZE, emissive: linear("#ff2fb3"), rim: linear("#ff8fd8"), toneless: true }));
-  add("player-shadow", boxMesh(1.7, 0.002, 1.7), shadowSpec());
+  /* Beat-grid stripes & lane dividers (`CORRIDOR_BOUNDS`) */
+  const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.018, 0.20), STRIPES, linear(LOOK.roadLine), CORRIDOR_BOUNDS);
+  addBatchCustom("stripes", stripes, flatSpec([1, 1, 1], 0.88, true));
 
-  /* obstacles: one batch per type, one lane-wide piece per blocked lane (instance = slot * 3 + lane + 1) */
-  const blocks = new Batch(blockMesh(), PIECES);
-  const bars = new Batch(barMesh(), PIECES);
-  const gaps = new Batch(gapMesh(), PIECES);
-  const walls = new Batch(wallMesh(), PIECES);
-  addBatch("blocks", blocks, toonSpec(linear(LOOK.block), undefined, linear(LOOK.block)));
-  addBatch("bars", bars, toonSpec(linear(LOOK.bar), undefined, linear(LOOK.bar)));
-  addBatch("gaps", gaps, flatSpec(linear(LOOK.gap), 1));
-  addBatch("walls", walls, toonSpec(linear(LOOK.wall), undefined, linear(LOOK.wall)));
+  const dashes = new Batch(boxMesh(DASH_SIZE.w, DASH_SIZE.h, DASH_SIZE.d), DASHES * 2, linear(LOOK.laneLine), CORRIDOR_BOUNDS);
+  addBatchCustom("lane-dashes", dashes, flatSpec([1, 1, 1], 0.94, true));
 
-  /* beat orbs: glowing pickups floating in their lanes */
-  const orbs = new Batch(sphereMesh(ORB_RADIUS, 12, 8), CONFIG.POOL_ORBS, linear(LOOK.orb));
-  addBatch("orbs", orbs, flatSpec([1, 1, 1], 1, true));
+  /* Articulated 132 BPM synth-skater bot rig (replaces plain Tic-Tac capsule + 9 disconnected headphone cubes!) */
+  const bot = skaterBotMeshes();
+  const botChassisMat = material.clearcoatPaint({
+    name: "bot-chassis",
+    color: LOOK.player,
+    emissive: LOOK.player,
+    emissiveIntensity: 0.52,
+    practical: true,
+    roughness: 0.08,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.65
+  });
+  const botDuckAccentMat = material.lacquer({
+    name: "bot-lacquer-trim",
+    color: "#24134a",
+    roughness: 0.14,
+    clearcoat: 0.94,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.5
+  });
+  const botChromeMat = material.chrome({
+    name: "bot-visor-chrome",
+    color: "#eaf6ff",
+    roughness: 0.025,
+    envMapIntensity: 2.1
+  });
+  const botEarGlowMat = material.glowingEmissive({
+    name: "bot-ear-glow",
+    color: "#ff2fb3",
+    emissive: "#ff2fb3",
+    emissiveIntensity: 2.6,
+    roughness: 0.16
+  });
+  const botBladeGlowMat = material.glowingEmissive({
+    name: "bot-blade-glow",
+    color: "#23e6ff",
+    emissive: "#23e6ff",
+    emissiveIntensity: 2.8,
+    roughness: 0.14
+  });
 
-  /* PERFECT timing rings + event particles (presentation pools) */
-  const rings = new Batch(ringMesh(0.8, 1, 32), CONFIG.POOL_RINGS, linear(LOOK.perfect));
-  addBatch("rings", rings, glowSpec({ beam: false, wobble: 0, gain: [1.2, 1.2, 1.2] }));
-  const particles = new Batch(sphereMesh(0.1, 4, 3), CONFIG.POOL_PARTICLES, [1, 1, 1]);
-  addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+  const partNode = (id: string, m: MeshData, mat: AuraMaterialSpec, cast = true) =>
+    geometry.custom(dynamicFrom(m, CORRIDOR_BOUNDS), { name: id, material: mat, castShadow: cast, receiveShadow: false });
 
-  /* post: bloom on the sun, neon and meters; a cool-magenta grade and a soft vignette (tone mapping stays off) */
+  builder.add(
+    group("player", [
+      partNode("bot-torso", bot.torso, botChassisMat).position(0, 0.62, 0).runtime({ id: "bot-torso" }),
+      group("bot-head", [
+        partNode("bot-head-shell", bot.head, botChassisMat),
+        partNode("bot-visor", bot.visor, botChromeMat, false),
+        partNode("bot-headband", bot.headband, botDuckAccentMat, false),
+        partNode("bot-earcups", bot.earCups, botEarGlowMat, false)
+      ]).position(0, 1.07, 0).runtime({ id: "bot-head" }),
+      partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.31, 0.78, 0).runtime({ id: "bot-arm-l" }),
+      partNode("bot-arm-r", bot.arm, botChassisMat).position(0.31, 0.78, 0).runtime({ id: "bot-arm-r" }),
+      group("bot-skate-l", [
+        partNode("bot-boot-l", bot.skate, botDuckAccentMat),
+        partNode("bot-blade-l", bot.skateBlade, botBladeGlowMat, false)
+      ]).position(-0.16, 0, 0).runtime({ id: "bot-skate-l" }),
+      group("bot-skate-r", [
+        partNode("bot-boot-r", bot.skate, botDuckAccentMat),
+        partNode("bot-blade-r", bot.skateBlade, botBladeGlowMat, false)
+      ]).position(0.16, 0, 0).runtime({ id: "bot-skate-r" })
+    ]).runtime({ id: "player" })
+  );
+  addCustom("player-shadow", boxMesh(1.65, 0.002, 1.65), shadowSpec());
+
+  /* Obstacles (`CORRIDOR_BOUNDS`): anodized `lacquer` speaker crates, `chrome` + `lacquer` plasma bars, interior-mapped chasm gaps, equalizer monoliths */
+  const blocks = new Batch(speakerBlockMesh(), PIECES, null, CORRIDOR_BOUNDS);
+  const barPosts = new Batch(stanchionPostsMesh(), PIECES, null, CORRIDOR_BOUNDS);
+  const bars = new Batch(plasmaCrossbarMesh(), PIECES, null, CORRIDOR_BOUNDS);
+  const gaps = new Batch(gapChasmQuadMesh(), PIECES, null, CORRIDOR_BOUNDS);
+  const walls = new Batch(monolithWallMesh(), PIECES, null, CORRIDOR_BOUNDS);
+
+  addBatchPbr("blocks", blocks, material.lacquer({
+    name: "block-speaker-lacquer",
+    color: LOOK.block,
+    emissive: LOOK.block,
+    emissiveIntensity: 0.72,
+    practical: true,
+    roughness: 0.18,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.10,
+    envMapIntensity: 1.45
+  }), true);
+  addBatchPbr("bar-posts", barPosts, material.chrome({
+    name: "bar-stanchion-chrome",
+    color: "#e6f2ff",
+    roughness: 0.05,
+    envMapIntensity: 1.85
+  }), true);
+  addBatchPbr("bars", bars, material.lacquer({
+    name: "bar-plasma-lacquer",
+    color: LOOK.bar,
+    emissive: LOOK.bar,
+    emissiveIntensity: 1.35,
+    practical: true,
+    roughness: 0.12,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.5
+  }), false);
+  addBatchCustom("gaps", gaps, gapChasmSpec(HAZE));
+  addBatchPbr("walls", walls, material.lacquer({
+    name: "wall-monolith-lacquer",
+    color: LOOK.wall,
+    emissive: LOOK.wall,
+    emissiveIntensity: 0.88,
+    practical: true,
+    roughness: 0.16,
+    clearcoat: 0.94,
+    clearcoatRoughness: 0.09,
+    envMapIntensity: 1.45
+  }), true);
+
+  /* Faceted `studioGlass` crystal beat orbs (`CORRIDOR_BOUNDS`) */
+  const orbs = new Batch(crystalOrbMesh(ORB_RADIUS), CONFIG.POOL_ORBS, null, CORRIDOR_BOUNDS);
+  addBatchPbr("orbs", orbs, material.studioGlass({
+    name: "orb-studio-glass",
+    tint: LOOK.orb,
+    color: "#d4ffff",
+    emissive: "#23e6ff",
+    emissiveIntensity: 1.25,
+    practical: true,
+    roughness: 0.025,
+    ior: 1.56,
+    thickness: 0.78,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.95
+  }), false);
+
+  /* Concentric beat rings + `createFlipbookAtlas("ripple")` & `createFlipbookAtlas("sparks")` sprite-sheet bursts + 3D sparks */
+  const rings = new Batch(ringMesh(0.76, 1.04, 36), CONFIG.POOL_RINGS, linear(LOOK.perfect), CORRIDOR_BOUNDS);
+  addBatchCustom("rings", rings, ringShockwaveSpec([1.45, 1.45, 1.45]));
+
+  const rippleCards = new Batch(flatQuadXZMesh(1), POOL_RIPPLES, [0, 0, 0], CORRIDOR_BOUNDS);
+  addBatchCustom("vfx-ripples", rippleCards, flipbookBurstSpec(rippleAtlas(), 1.85));
+
+  const sparkCards = new Batch(uprightQuadXYMesh(1), POOL_SPARK_CARDS, [0, 0, 0], CORRIDOR_BOUNDS);
+  addBatchCustom("vfx-sparks", sparkCards, flipbookBurstSpec(sparksAtlas(), 1.95));
+
+  const particles = new Batch(sphereMesh(0.09, 4, 3), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
+  addBatchCustom("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
+
+  /* Eevee concert-stage post stack: fogForExtent + contactShadows + AO + mirrored Acrylic SSR + beat-reactive cinematicBloom + grade + vignette */
   builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.72, threshold: 0.62, scatter: 0.7 }))
-    .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.1, temperature: -0.04, gain: 1.04 }))
-    .add(effects.vignette({ name: "vignette", intensity: 0.32, color: "#0b0620" }));
+    .add(looks.fogForExtent({ name: "stage-fog", extent: 260, color: "#2d0c4e", haze: 0.58, mode: "exp2" }))
+    .add(effects.contactShadows({ length: 0.25, thickness: 0.18, steps: 12, intensity: 0.6 }))
+    .add(effects.ambientOcclusion({ name: "ao", intensity: 0.4, radius: 0.6 }))
+    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.68, roughness: 0.18, maxDistance: 32 }))
+    .add(effects.cinematicBloom({ name: "bloom", intensity: 0.62, threshold: 0.72, radius: 0.44, color: "#ffd8ff" }))
+    .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.10, temperature: -0.04, tint: 0.06, gain: 1.03 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.28, color: "#0b0620" }));
 
   return {
     scene: builder,
@@ -256,18 +504,45 @@ export function buildWorld(options: WorldOptions): World {
       if (!maybeController) throw new Error("beat-hopper: the app exposes no camera controller");
       const controller: NonNullable<typeof maybeController> = maybeController;
 
+      /* Twin hover-blade ribbons shifted along +Z by `dt * speed` so trails stream down the scrolling runway */
+      type TrailHandle = { translate?: (dx: number, dy: number, dz: number) => void; clear?: () => void };
+      const skateTrails: TrailHandle[] = [];
+      try {
+        const fxApi = (app as unknown as { effects?: { trail?: (target: string, opts: Record<string, unknown>) => TrailHandle } }).effects;
+        if (fxApi?.trail) {
+          skateTrails.push(
+            fxApi.trail("bot-skate-l", { color: "#23e6ff", width: 0.13, life: 0.28, maxPoints: 24, intensity: 1.3 }),
+            fxApi.trail("bot-skate-r", { color: "#ff2fb3", width: 0.13, life: 0.28, maxPoints: 24, intensity: 1.3 })
+          );
+        }
+      } catch {
+        /* optional runtime ribbon surface */
+      }
+
       const parts: Particle[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => ({
         alive: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, age: 0, life: 1, color: "#ffffff", size: 1
       }));
-      const ringPool: Ring[] = Array.from({ length: CONFIG.POOL_RINGS }, () => ({ alive: false, x: 0, y: 0, z: 0, age: 0, color: LOOK.perfect }));
+      const ringPool: Ring[] = Array.from({ length: CONFIG.POOL_RINGS }, () => ({
+        alive: false, x: 0, y: 0, z: 0, age: 0, color: LOOK.perfect
+      }));
+      const ripplePool: FlipCard[] = Array.from({ length: POOL_RIPPLES }, () => ({
+        alive: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, age: 0, life: 0.55, size0: 1.2, size1: 4.8, rgb: [1, 0.85, 0.4]
+      }));
+      const sparkPool: FlipCard[] = Array.from({ length: POOL_SPARK_CARDS }, () => ({
+        alive: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, age: 0, life: 0.45, size0: 0.9, size1: 2.4, rgb: [1, 0.85, 0.4]
+      }));
       const jitter = lcg(0x51a7e);
       let lastT = -1;
+      let lastX = 0;
+      let lastPose = "run";
       let lastJudgeAt = -10;
       let lastMilestones = 0;
       let lastOrbs = 0;
       const partShown: boolean[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => false);
       const partColor: string[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => "");
       const ringShown: boolean[] = Array.from({ length: CONFIG.POOL_RINGS }, () => false);
+      const rippleShown: boolean[] = Array.from({ length: POOL_RIPPLES }, () => false);
+      const sparkShown: boolean[] = Array.from({ length: POOL_SPARK_CARDS }, () => false);
       const obstacleShown: Record<ObstacleType, boolean[]> = {
         gap: Array.from({ length: PIECES }, () => false),
         block: Array.from({ length: PIECES }, () => false),
@@ -304,6 +579,38 @@ export function buildWorld(options: WorldOptions): World {
         slot.age = 0;
         slot.color = color;
       };
+      const spawnFlipRipple = (color: string, size1 = 4.9, life = 0.52): void => {
+        const slot = ripplePool.find((r) => !r.alive) ?? ripplePool[0];
+        if (!slot) return;
+        slot.alive = true;
+        slot.x = px; slot.y = 0.042; slot.z = 0;
+        slot.vx = 0; slot.vy = 0; slot.vz = 0;
+        slot.age = 0; slot.life = life;
+        slot.size0 = 1.15; slot.size1 = size1;
+        slot.rgb = normPeakRgb(color);
+      };
+      const spawnFlipSparks = (count: number, color: string, y: number, spread = 1.6): void => {
+        const rgb = normPeakRgb(color);
+        let n = 0;
+        for (const s of sparkPool) {
+          if (n >= count) break;
+          if (s.alive) continue;
+          s.alive = true;
+          const a = jitter() * Math.PI * 2;
+          s.x = px + Math.cos(a) * 0.18;
+          s.y = y + (jitter() - 0.3) * 0.25;
+          s.z = 0.08;
+          s.vx = Math.cos(a) * spread;
+          s.vy = 0.8 + jitter() * spread;
+          s.vz = 0;
+          s.age = 0;
+          s.life = 0.38 + jitter() * 0.14;
+          s.size0 = 0.85;
+          s.size1 = 2.35;
+          s.rgb = rgb;
+          n++;
+        }
+      };
 
       function update(sim: BeatHopperSim, aspect: number, view: WorldView = {}): void {
         const o = sim.o;
@@ -315,130 +622,215 @@ export function buildWorld(options: WorldOptions): World {
         px = shown?.x ?? o.laneOffset;
         const reduced = view.reducedMotion === true;
         if (t < lastT) {
-          /* restart or reset: clear the presentation pools so the last run's rings and sparks never linger */
           for (const r of ringPool) r.alive = false;
           for (const p of parts) p.alive = false;
+          for (const r of ripplePool) r.alive = false;
+          for (const s of sparkPool) s.alive = false;
+          for (const tr of skateTrails) tr.clear?.();
+          lastX = px;
         }
         const dt = lastT < 0 || t < lastT ? 0 : Math.min(0.1, t - lastT);
+        const vx = dt > 1e-4 ? (px - lastX) / dt : 0;
+        lastX = px;
         lastT = t;
+        const beatPhase = t / CONFIG.BEAT;
         const pulse = reduced ? 0 : beatPulse(t, CONFIG.BEAT);
         const gain = LOOK.pulseGain * pulse;
 
-        /* road: the deck shader scrolls its tiles; rails are uniform along z */
-        node("deck").setUniform?.("uTileShift", dist % (SEGMENT_LENGTH * 2));
-        node("rails").setUniform?.("emissive", [linear(LOOK.rail)[0] * (0.35 + gain), linear(LOOK.rail)[1] * (0.35 + gain), linear(LOOK.rail)[2] * (0.35 + gain)]);
-        node("deck").setUniform?.("emissive", [0.02 * gain, 0.05 * gain, 0.09 * gain]);
+        if (!reduced && dt > 0 && o.phase === "playing") {
+          const scrollDz = dt * o.speed;
+          for (const tr of skateTrails) tr.translate?.(0, 0, scrollDz);
+        }
 
-        /* beat stripes: one per beat, exactly on the obstacle grid */
+        /* Wet dark-glass equalizer deck + pulsing `studioGlass` / `lacquer` beat-threshold pads */
+        node("deck").setUniform?.("uTileShift", dist % (SEGMENT_LENGTH * 2));
+        node("deck").setUniform?.("uBeatPhase", beatPhase);
+        node("deck").setUniform?.("uPulse", pulse);
+        node("deck").setUniform?.("emissive", [0.015 * gain, 0.045 * gain, 0.085 * gain]);
+        node("beat-pad-glass").setScale([1, 1 + 0.35 * pulse, 1 + 0.06 * pulse]);
+        node("beat-pad-lacquer").setScale([1 + 0.02 * pulse, 1 + 0.45 * pulse, 1]);
+
+        /* Beat-grid stripes */
         const beatNow = Math.floor(t / CONFIG.BEAT + 1e-9);
         for (let i = 0; i < STRIPES; i++) {
           const b = beatNow - 2 + i;
           if (b < 0) { stripes.collapse(i); continue; }
-          /* the camera looks down -z, so "ahead" is negative z (same as the scrolling deck and stage) */
           const z = -(b * CONFIG.BEAT - t) * o.speed;
-          stripes.place(i, 0, 0.012, z, 0, 1, 1, b % 4 === 0 ? 1.8 : 1);
-          const k = b % 4 === 0 ? 1 : 0.45 + 0.55 * pulse;
+          stripes.place(i, 0, 0.011, z, 0, 1, 1, b % 4 === 0 ? 1.7 : 0.95);
+          const k = b % 4 === 0 ? 1.05 : 0.40 + 0.55 * pulse;
           const c = linear(LOOK.roadLine);
           stripes.setTone(i, [c[0] * k, c[1] * k, c[2] * k]);
         }
         stripes.flush(node("stripes"), false);
 
-        /* lane dividers between the lanes, scrolling with the run */
+        /* Scrolling lane dividers */
         const dashShift = dist % DASH_PERIOD;
         for (let i = 0; i < DASHES; i++) {
           const z = 12 - i * DASH_PERIOD + dashShift;
-          dashes.place(i, -CONFIG.LANE_WIDTH / 2, 0.014, z, 0, 1, 1, 1);
-          dashes.place(DASHES + i, CONFIG.LANE_WIDTH / 2, 0.014, z, 0, 1, 1, 1);
+          dashes.place(i, -CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
+          dashes.place(DASHES + i, CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
         }
         dashes.flush(node("lane-dashes"), false);
 
-        /* stage scenery: presentation clock from the wall clock (never the sim) */
+        /* Stage scenery + Meshy GPU-instanced speaker stacks & DJ decks */
         const wall = typeof performance !== "undefined" ? performance.now() / 1000 : t;
         clock += lastWall < 0 ? 0 : Math.min(0.1, Math.max(0, wall - lastWall));
         lastWall = wall;
-        stageRt.update(dist, t / CONFIG.BEAT, pulse, reduced ? 0 : clock, reduced);
+        const animClock = reduced ? 0 : clock;
+        stageRt.update(dist, beatPhase, pulse, animClock, reduced);
         dressingRt.update(dist, pulse);
-        node("sky").setUniform?.("uClock", reduced ? 0 : clock);
+        node("sky").setUniform?.("uClock", animClock);
         node("sky").setUniform?.("uPulse", pulse);
-        node("underglow").setUniform?.("emissive", [linear("#23e6ff")[0] * (0.6 + gain), linear("#23e6ff")[1] * (0.6 + gain), linear("#23e6ff")[2] * (0.6 + gain)]);
+        node("gaps").setUniform?.("uClock", animClock);
+        node("gaps").setUniform?.("uPulse", pulse);
+        node("rings").setUniform?.("uClock", animClock);
+        node("underglow").setUniform?.("emissive", [linear("#23e6ff")[0] * (0.65 + gain), linear("#23e6ff")[1] * (0.65 + gain), linear("#23e6ff")[2] * (0.65 + gain)]);
 
-        /* hopper */
+        /* Articulated 132 BPM synth-skater bot choreography */
         const scale = poseScale(pose, sim.o.vy);
-        const bodyColor = pose === "duck" ? LOOK.playerDuck : LOOK.player;
-        const rgb = linear(bodyColor);
-        node("player").setPosition(px, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
-        node("player-gear").setPosition(px, y, 0).setScale([scale.sx, scale.sy, scale.sz]);
-        node("player").setUniform?.("baseColor", [...rgb]);
-        node("player").setUniform?.("emissive", [rgb[0] * (0.3 + gain * 0.7), rgb[1] * (0.3 + gain * 0.7), rgb[2] * (0.3 + gain * 0.7)]);
-        node("player-shadow").setPosition(px, 0.02, 0).setScale(1 / (1 + 0.25 * y));
-        node("player-shadow").setUniform?.("alpha", 0.34 / (1 + 0.4 * y));
+        const stride = reduced ? 0 : Math.sin(beatPhase * Math.PI);
+        const headNod = reduced ? 0 : 0.12 * pulse;
+        const bankRoll = reduced ? 0 : Math.max(-0.28, Math.min(0.28, -vx * 0.042));
+        const bodyPitch = pose === "duck" ? 0.34 : pose === "air" ? Math.max(-0.26, Math.min(0.26, -sim.o.vy * 0.032)) : -0.06;
 
-        /* obstacles: deterministic beat-grid distance ahead (world -z, towards the horizon), collapsed when the slot is free */
-        const batches: Record<ObstacleType, Batch> = { gap: gaps, block: blocks, bar: bars, wall: walls };
+        node("player")
+          .setPosition(px, y, 0)
+          .setRotation(bodyPitch, 0, bankRoll)
+          .setScale([scale.sx, scale.sy, scale.sz]);
+        node("bot-torso").setPosition(0, 0.62 + (reduced ? 0 : 0.035 * pulse), 0);
+        node("bot-head")
+          .setPosition(0, 1.07 + (reduced ? 0 : 0.03 * pulse), 0)
+          .setRotation(headNod + (pose === "duck" ? -0.22 : 0), 0, -bankRoll * 0.35);
+
+        if (pose === "duck") {
+          node("bot-arm-l").setPosition(-0.33, 0.72, 0.04).setRotation(0.75, 0, 0.24);
+          node("bot-arm-r").setPosition(0.33, 0.72, 0.04).setRotation(0.75, 0, -0.24);
+          node("bot-skate-l").setPosition(-0.22, 0.02, -0.08).setRotation(0, 0.14, 0.12);
+          node("bot-skate-r").setPosition(0.22, 0.02, 0.08).setRotation(0, -0.14, -0.12);
+        } else if (pose === "air") {
+          node("bot-arm-l").setPosition(-0.32, 0.84, -0.04).setRotation(-0.85, 0, 0.38);
+          node("bot-arm-r").setPosition(0.32, 0.84, -0.04).setRotation(-0.85, 0, -0.38);
+          node("bot-skate-l").setPosition(-0.17, 0.12, -0.06).setRotation(-0.32, 0.08, 0.10);
+          node("bot-skate-r").setPosition(0.17, 0.10, 0.06).setRotation(0.24, -0.08, -0.10);
+        } else {
+          node("bot-arm-l").setPosition(-0.31, 0.78, 0).setRotation(stride * 0.46, 0, 0.10);
+          node("bot-arm-r").setPosition(0.31, 0.78, 0).setRotation(-stride * 0.46, 0, -0.10);
+          node("bot-skate-l").setPosition(-0.16, Math.max(0, stride) * 0.05, -stride * 0.14).setRotation(stride * 0.12, 0, 0);
+          node("bot-skate-r").setPosition(0.16, Math.max(0, -stride) * 0.05, stride * 0.14).setRotation(-stride * 0.12, 0, 0);
+        }
+
+        if (lastPose === "air" && pose !== "air" && o.phase === "playing") {
+          spawnFlipRipple(LOOK.player, 3.2, 0.38);
+        }
+        lastPose = pose;
+
+        node("player-shadow").setPosition(px, 0.018, 0).setScale(1 / (1 + 0.25 * y));
+        node("player-shadow").setUniform?.("alpha", 0.32 / (1 + 0.4 * y));
+
+        /* Obstacles: quantized 132 BPM speaker thump on crates & monoliths */
+        const cratePulse = 1 + 0.042 * pulse;
         for (let i = 0; i < CONFIG.POOL_OBSTACLES; i++) {
           const slot = o.obstacles[i];
           for (const lane of LANES) {
             const piece = i * 3 + lane + 1;
-            for (const type of ["gap", "block", "bar", "wall"] as const) {
-              const batch = batches[type];
-              const shownHere = slot && slot.active && slot.type === type && (slot.lanes & laneBit(lane)) !== 0;
-              if (shownHere) {
-                batch.place(piece, laneX(lane), 0, -obstacleZ(o, slot), 0, 1, 1, 1);
-                obstacleShown[type][piece] = true;
-              } else if (obstacleShown[type][piece]) {
-                batch.collapse(piece);
-                obstacleShown[type][piece] = false;
-              }
+            const lx = laneX(lane);
+            const oz = slot ? -obstacleZ(o, slot) : 0;
+
+            const showGap = Boolean(slot && slot.active && slot.type === "gap" && (slot.lanes & laneBit(lane)) !== 0);
+            if (showGap) {
+              gaps.place(piece, lx, 0, oz, 0, 1, 1, 1);
+              obstacleShown.gap[piece] = true;
+            } else if (obstacleShown.gap[piece]) {
+              gaps.collapse(piece);
+              obstacleShown.gap[piece] = false;
+            }
+
+            const showBlock = Boolean(slot && slot.active && slot.type === "block" && (slot.lanes & laneBit(lane)) !== 0);
+            if (showBlock) {
+              blocks.place(piece, lx, 0, oz, 0, cratePulse, 1 + 0.03 * pulse, cratePulse);
+              obstacleShown.block[piece] = true;
+            } else if (obstacleShown.block[piece]) {
+              blocks.collapse(piece);
+              obstacleShown.block[piece] = false;
+            }
+
+            const showBar = Boolean(slot && slot.active && slot.type === "bar" && (slot.lanes & laneBit(lane)) !== 0);
+            if (showBar) {
+              barPosts.place(piece, lx, 0, oz, 0, 1, 1, 1);
+              bars.place(piece, lx, 0, oz, 0, 1, 1 + 0.14 * pulse, 1 + 0.10 * pulse);
+              obstacleShown.bar[piece] = true;
+            } else if (obstacleShown.bar[piece]) {
+              barPosts.collapse(piece);
+              bars.collapse(piece);
+              obstacleShown.bar[piece] = false;
+            }
+
+            const showWall = Boolean(slot && slot.active && slot.type === "wall" && (slot.lanes & laneBit(lane)) !== 0);
+            if (showWall) {
+              walls.place(piece, lx, 0, oz, 0, 1 + 0.025 * pulse, 1 + 0.02 * pulse, 1);
+              obstacleShown.wall[piece] = true;
+            } else if (obstacleShown.wall[piece]) {
+              walls.collapse(piece);
+              obstacleShown.wall[piece] = false;
             }
           }
         }
         blocks.flush(node("blocks"));
+        barPosts.flush(node("bar-posts"));
         bars.flush(node("bars"));
         gaps.flush(node("gaps"), false);
         walls.flush(node("walls"));
-        node("walls").setUniform?.("emissive", [linear(LOOK.wall)[0] * (0.4 + gain * 0.6), linear(LOOK.wall)[1] * (0.4 + gain * 0.6), linear(LOOK.wall)[2] * (0.4 + gain * 0.6)]);
 
-        /* beat orbs: bob and swell on the beat; collected or passed orbs fold away */
+        /* Faceted `studioGlass` beat orbs: spin and swell on the 132 BPM beat */
         for (let i = 0; i < CONFIG.POOL_ORBS; i++) {
           const orb = o.orbSlots[i];
           if (orb && orb.active && !orb.collected && o.t <= orb.crossTime + 0.25) {
-            const k = 1 + 0.25 * pulse;
-            orbs.place(i, laneX(orb.lane), ORB_Y + (reduced ? 0 : 0.12 * Math.sin(orb.beat * 1.7 + t * 4)), -obstacleZ(o, orb), 0, k, k, k);
+            const k = 1 + 0.24 * pulse;
+            const spin = reduced ? 0.4 : orb.beat * 1.1 + t * 2.6;
+            orbs.place(i, laneX(orb.lane), ORB_Y + (reduced ? 0 : 0.12 * Math.sin(orb.beat * 1.7 + t * 4)), -obstacleZ(o, orb), spin, k, k, k);
             orbShown[i] = true;
           } else if (orbShown[i]) {
             orbs.collapse(i);
             orbShown[i] = false;
           }
         }
-        orbs.flush(node("orbs"), false);
-        node("blocks").setUniform?.("emissive", [linear(LOOK.block)[0] * (0.25 + gain * 0.5), linear(LOOK.block)[1] * (0.25 + gain * 0.5), linear(LOOK.block)[2] * (0.25 + gain * 0.5)]);
-        node("bars").setUniform?.("emissive", [linear(LOOK.bar)[0] * (0.3 + gain * 0.5), linear(LOOK.bar)[1] * (0.3 + gain * 0.5), linear(LOOK.bar)[2] * (0.3 + gain * 0.5)]);
+        orbs.flush(node("orbs"));
 
-        /* judgement events → rings + particles (presentation only) */
+        /* Judgement events → concentric harmonic rings + `createFlipbookAtlas("ripple" | "sparks")` + 3D sparks */
         const j = o.lastJudge;
         if (j.kind && j.at > lastJudgeAt) {
           lastJudgeAt = j.at;
           if (j.kind === "perfect") {
-            spawnRing(LOOK.perfect, 0.06);
+            spawnRing(LOOK.perfect, 0.055);
+            spawnFlipRipple(LOOK.perfect, 5.4, 0.56);
+            spawnFlipSparks(4, LOOK.perfect, 0.9 + y, 1.9);
             burst(16, LOOK.perfect, 0.8 + y, 3.2);
           } else if (j.kind === "good") {
-            spawnRing(LOOK.good, 0.06);
+            spawnRing(LOOK.good, 0.055);
+            spawnFlipRipple(LOOK.good, 4.2, 0.48);
+            spawnFlipSparks(2, LOOK.good, 0.8 + y, 1.4);
             burst(8, LOOK.good, 0.7 + y, 2.2);
           } else if (j.kind === "dodge") {
+            spawnFlipRipple(LOOK.laneLine, 3.8, 0.44);
+            spawnFlipSparks(2, LOOK.laneLine, 0.85 + y, 1.5);
             burst(8, LOOK.laneLine, 0.8 + y, 2.4);
           } else if (j.kind === "miss") {
+            spawnFlipSparks(4, LOOK.miss, 0.85 + y, 2.2);
             burst(14, LOOK.miss, 0.8 + y, 3.6);
           }
         }
         if (o.orbs > lastOrbs) {
           lastOrbs = o.orbs;
+          spawnFlipSparks(2, LOOK.orb, ORB_Y, 1.5);
           burst(10, LOOK.orb, ORB_Y, 2.6);
         }
         if (o.orbs < lastOrbs) lastOrbs = o.orbs;
         if (o.milestones > lastMilestones) {
           lastMilestones = o.milestones;
+          spawnFlipRipple(LOOK.gold, 6.2, 0.62);
+          spawnFlipSparks(5, LOOK.gold, 1.25, 2.4);
           burst(20, LOOK.gold, 1.2, 4);
-          spawnRing(LOOK.gold, 0.06);
+          spawnRing(LOOK.gold, 0.055);
         }
         if (o.phase === "splash" && lastMilestones !== 0) {
           lastMilestones = 0;
@@ -467,6 +859,53 @@ export function buildWorld(options: WorldOptions): World {
         }
         rings.flush(node("rings"), false);
 
+        for (let i = 0; i < ripplePool.length; i++) {
+          const r = ripplePool[i] as FlipCard;
+          if (!r.alive) {
+            if (rippleShown[i]) { rippleCards.collapse(i); rippleShown[i] = false; }
+            continue;
+          }
+          r.age += dt;
+          if (r.age >= r.life) {
+            r.alive = false;
+            rippleCards.collapse(i);
+            rippleShown[i] = false;
+            continue;
+          }
+          const prog = r.age / r.life;
+          const rem = Math.max(0.01, 1 - prog);
+          const sz = r.size0 + (r.size1 - r.size0) * (1 - Math.pow(1 - prog, 2));
+          rippleCards.place(i, r.x, r.y, r.z, prog * 0.8, sz, 1, sz);
+          rippleCards.setTone(i, [r.rgb[0] * rem, r.rgb[1] * rem, r.rgb[2] * rem]);
+          rippleShown[i] = true;
+        }
+        rippleCards.flush(node("vfx-ripples"), false);
+
+        for (let i = 0; i < sparkPool.length; i++) {
+          const s = sparkPool[i] as FlipCard;
+          if (!s.alive) {
+            if (sparkShown[i]) { sparkCards.collapse(i); sparkShown[i] = false; }
+            continue;
+          }
+          s.age += dt;
+          if (s.age >= s.life) {
+            s.alive = false;
+            sparkCards.collapse(i);
+            sparkShown[i] = false;
+            continue;
+          }
+          s.vy -= 4.5 * dt;
+          s.x += s.vx * dt;
+          s.y = Math.max(0.12, s.y + s.vy * dt);
+          const prog = s.age / s.life;
+          const rem = Math.max(0.01, 1 - prog);
+          const sz = s.size0 + (s.size1 - s.size0) * Math.pow(prog, 0.55);
+          sparkCards.place(i, s.x, s.y, s.z, 0, sz, sz, 1);
+          sparkCards.setTone(i, [s.rgb[0] * rem, s.rgb[1] * rem, s.rgb[2] * rem]);
+          sparkShown[i] = true;
+        }
+        sparkCards.flush(node("vfx-sparks"), false);
+
         for (let i = 0; i < parts.length; i++) {
           const p = parts[i] as Particle;
           if (!p.alive) {
@@ -494,23 +933,34 @@ export function buildWorld(options: WorldOptions): World {
         }
         particles.flush(node("particles"));
 
-        /* camera */
+        /* Camera pose + 132 BPM subtle nod + real-time `createImpactRig` PERFECT FOV kick & MISS trauma shake */
         const c = view.camera ?? { x: 0, y: 4.6, z: 8.5, lookX: 0, lookY: 1, lookZ: -10 };
-        const fov = (aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5)) + (reduced ? 0 : 2.5 * pulse);
-        controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [0, 1, 0], fov }, { cut: false });
+        const sx = view.shakeOffset?.[0] ?? 0;
+        const sy = view.shakeOffset?.[1] ?? 0;
+        const roll = reduced ? 0 : (view.shakeRoll ?? 0);
+        const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);
+        const fov = baseFov + (reduced ? 0 : 1.15 * pulse + (view.fovKickDeg ?? 0));
+        controller.setPose(
+          {
+            position: [c.x + sx, c.y + sy, c.z],
+            target: [c.lookX + sx * 0.35, c.lookY + sy * 0.35, c.lookZ],
+            up: [Math.sin(roll), Math.cos(roll), 0],
+            fov
+          },
+          { cut: false }
+        );
       }
 
-      const parked = ["blocks", "bars", "gaps", "walls", "orbs", "rings", "particles"];
+      const parked = ["blocks", "bar-posts", "bars", "gaps", "walls", "orbs", "rings", "vfx-ripples", "vfx-sparks", "particles"];
       function warm(on: boolean): void {
         for (const id of parked) {
-          /* parked far away while the programs warm, then back in place and visible (they were left hidden) */
           const h = node(id).setVisible(true);
           if (on) h.setPosition(0, -50, -60);
           else h.setPosition(0, 0, 0);
         }
       }
 
-      const batches = [stripes, dashes, blocks, bars, gaps, walls, orbs, rings, particles];
+      const batches = [stripes, dashes, blocks, barPosts, bars, gaps, walls, orbs, rings, rippleCards, sparkCards, particles];
       return {
         update,
         warm,

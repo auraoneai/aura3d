@@ -31,7 +31,7 @@ export default defineArtDirection({
     }
   ],
   palette: {
-    primary: ["#ff5a4e", "#4ea8ff", "#63303a", "#2f4a6e"],
+    primary: ["#ff5468", "#38bdf8", "#4c2234", "#1d3d5e"],
     accent: "#ffd24e",
     reservedObjective: "#7ef0c8"
   },

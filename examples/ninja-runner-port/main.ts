@@ -1,6 +1,6 @@
 /**
- * Ninja Runner on Aura3D: boot, fixed-step loop, input, HUD and capture hooks. The simulation lives in
- * `sim.ts` (pure, transcribed from the original); `world.ts` renders it through the public engine surface.
+ * Shadowstep Gauntlet on Aura3D: boot, fixed-step loop, input, HUD and capture hooks. The simulation lives in
+ * `sim.ts` (pure, deterministic); `world.ts` renders it through the public engine surface.
  *
  * Timing matches the original: real time feeds an accumulator and the sim advances in 1/120 s steps
  * (`pf(z, 1/120)`), with key presses applied between steps. Query parameters (all optional):
@@ -19,6 +19,7 @@ import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } fr
 import { GameAudio } from "./audio";
 import { ENEMY_HINT, FORM_SHORT, announcement, districtLabel, resultCopy } from "./labels";
 import { createCameraShake, createHitStop, createImpactFeedback } from "@aura3d/engine/game";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, type DebrisTier } from "./impact";
 import {
   DEFAULT_SEED, SIM_STEP, TUNING, dailySeed, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
@@ -48,12 +49,10 @@ const config = {
   look: lookMode(params),
   /** GU47 NR-22: `?at=<metres>` district target, or null. */
   at: atDistance(params),
-  // GU47 phase 2 (second pass): the pooled lantern/spirit point lights and the film grain are opt-in (`?lanterns=1`,
-  // `?grain=1`). Measured on the software-WebGL2 runner (perfProbe.ts, title shot): evening 84 s per frame, 4.6.2 44 s,
-  // evening without ink, grain, pool lights and cones 39 s. Six pooled points put every lit shader on the 8-light loop.
-  lanterns: params.get("lanterns") === "1",
+  // WP-23: Pooled lantern/spirit practical lights and clean screen-space radial god rays are enabled by default unless opted out (`?lanterns=0`, `?godrays=0`).
+  lanterns: params.get("lanterns") !== "0",
   scarf: params.get("scarf") !== "0",
-  godRays: params.get("godrays") === "1",
+  godRays: params.get("godrays") !== "0",
   cones: params.get("cones") !== "0",
   vfx: params.get("vfx") !== "0",
   // The full-frame ink line read the grass and cobble textures as edges (a dark dot field over the whole village in the
@@ -111,6 +110,8 @@ const charged = new Set<number>();
 const hitStop = createHitStop();
 /** Camera shake is off with prefers-reduced-motion. */
 const shake = createCameraShake({ maxOffset: reducedMotion ? 0 : 0.6 });
+/** WP-23 visual-only katana-deflect / dash micro-freeze & camera FOV rig (stepped on real dt in world.update). */
+const impactRig = createImpactRig({ reducedMotion });
 const impactFeedback = Object.fromEntries((Object.keys(TIER_FEEDBACK) as DebrisTier[]).map((tier) => {
   const t = TIER_FEEDBACK[tier];
   return [tier, createImpactFeedback({ hitStop, shake, cue: (name) => audio.play(name as Parameters<GameAudio["play"]>[0]), cueName: t.cue, fullSpeed: t.fullSpeed, hitStopMs: t.hitStopMs })];
@@ -137,6 +138,10 @@ function handle(events: readonly SimEvent[]): void {
     if (ev.type === "damage") flashHurt();
     if (ev.type === "break") feel("smash", z.speed);
     if (ev.type === "ram") feel(ev.tier as DebrisTier, ev.speed as number);
+    if (ev.type === "deflect" || ev.type === "interrupt" || ev.type === "armorBreak") impactRig.trigger({ freezeSeconds: 0.048, trauma: 0.42, fovKickDeg: 2.6 });
+    else if (ev.type === "kill") impactRig.trigger(ev.heavy ? { freezeSeconds: 0.055, trauma: 0.52, fovKickDeg: 3.2 } : { freezeSeconds: 0.032, trauma: 0.28, fovKickDeg: 1.8 });
+    else if (ev.type === "dash") impactRig.trigger({ freezeSeconds: 0.022, trauma: 0.2, fovKickDeg: 3.4 });
+    else if (ev.type === "cloneStrike" || ev.type === "windImpact") impactRig.trigger({ freezeSeconds: 0.036, trauma: 0.34, fovKickDeg: 2.2 });
     if (ev.type === "pickup") audio.play("pickup", renderTime);
     else if (ev.type === "kill") audio.play(ev.heavy ? "heavyKill" : "kill");
     else { const sfx = SFX_FOR_EVENT[ev.type]; if (sfx) audio.play(sfx); }
@@ -603,7 +608,7 @@ async function boot(): Promise<void> {
   actors = await loadActors(canvas, (done, total) => { loading.set(0.6 * (done / Math.max(1, total))); status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; }, config.look);
   status.textContent = "Building the village…";
   loading.set(0.65);
-  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain, impactRig });
   // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. ?gamut= stays off by default; depth is not wired for this port.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
@@ -611,9 +616,8 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    // GU47 NR-08 woodblock grade; tone mapping per WOODBLOCK_POST (aces since the phase-2 second pass: agx read the
-    // village ~2 EV under 4.6.2 in software WebGL2); `?look=original` keeps aces at exposure 1.
-    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false, ...lab.output },
+    // WP-23: AgX toneMapping + dither on the evening look; `?look=original` keeps aces at exposure 1.
+    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

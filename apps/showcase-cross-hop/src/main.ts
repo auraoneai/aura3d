@@ -1,13 +1,14 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
+import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, setCameraImpact, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
 import { assets } from "./aura-assets";
 import { modelUrls, modelProgressFraction, modelLabel, watchModelDownloads, MODEL_PROGRESS_CEIL } from "./game/loadingUx";
 import { defaultLookFor, p4DressFor } from "./game/look";
-import { mountUI, tickUI, setUiSound } from "./game/ui";
+import { mountUI, tickUI, setUiSound, setUiHop, type HopAction } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
+import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
 import "./styles.css";
@@ -82,7 +83,7 @@ const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOp
 
 const g = createGame({
   ...(labRenderer ? { renderer: labRenderer } : {}),
-  ...(labOutput ? { output: labOutput } : {}),
+  output: { toneMapping: "agx", exposure: 1.02, dither: true, ...(labOutput ?? {}) },
   ...(labWorker ? { worker: labWorker } : {}),
   id: "cross-hop",
   target: "#app",
@@ -132,15 +133,29 @@ bindApp(app);
 g.start();
 
 const rawInput = g.input;
+const uiQueuedUntil: Record<HopAction, number> = { up: 0, down: 0, left: 0, right: 0 };
 const input = {
-  buffered: (d: string, _w: number) => (rawInput ? rawInput.buffered(d) : false),
-  consume: (d: string) => (rawInput ? rawInput.consume(d) : false)
+  buffered: (d: string, _w: number) => {
+    const key = d as HopAction;
+    if (key in uiQueuedUntil && uiQueuedUntil[key] > performance.now()) return true;
+    return rawInput ? rawInput.buffered(d) : false;
+  },
+  consume: (d: string) => {
+    const key = d as HopAction;
+    if (key in uiQueuedUntil) uiQueuedUntil[key] = 0;
+    return rawInput ? rawInput.consume(d) : false;
+  }
 };
 
 const eventLog = game.eventLog({ label: "cross hop events", maxEvents: 40 });
+const impactRig = createImpactRig({ reducedMotion: REDUCED_MOTION });
+const procSfx = createProceduralSfx();
 
 mountUI(document.getElementById("hud") ?? document.body);
 setUiSound(() => g.sound?.cue("ui"));
+setUiHop((dir) => {
+  uiQueuedUntil[dir] = performance.now() + 180;
+});
 
 let appReady = false;
 
@@ -186,7 +201,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) setPa
 window.addEventListener("blur", () => setPaused(true));
 
 let frames = 0;
-let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0, prevRescues = 0, prevRailAlert = false;
+let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0, prevRescues = 0, prevRailAlert = false, prevNearMisses = 0;
 
 function fireTransitions(): void {
   if (st.hop.active && !prevHop) { g.sound?.cue("hop"); g.juice.fire("hop"); }
@@ -198,11 +213,22 @@ function fireTransitions(): void {
   if (st.rescues !== prevRescues) { g.sound?.cue("rescue"); g.juice.fire("rescue"); prevRescues = st.rescues; }
   if (st.railAlert && !prevRailAlert) g.sound?.cue("horn");
   prevRailAlert = st.railAlert;
+  if (st.nearMisses !== prevNearMisses) {
+    if (st.nearMisses > prevNearMisses) {
+      impactRig.trigger({ freezeSeconds: 0.052, trauma: 0.24, fovKickDeg: 1.8 });
+      procSfx.play("whoosh", 0.92);
+      eventLog.push({ type: "near-miss", label: `Near miss #${st.nearMisses} @${st.score}` });
+    }
+    prevNearMisses = st.nearMisses;
+  }
   if (!prevDead && st.dead) {
     const cueMap = { squashed: "splat", flattened: "splat", drowned: "splash", burned: "burn", snatched: "hawk" } as const;
     const c = cueMap[st.dead.kind];
     g.sound?.cue(c);
     g.juice.fire(c);
+    if (st.dead.kind === "squashed" || st.dead.kind === "flattened") {
+      impactRig.trigger({ freezeSeconds: 0.065, trauma: 0.36, fovKickDeg: 2.3 });
+    }
     deathEffect(st.dead.kind, [st.playerCol, 0.6, -st.playerRow * 1.15]);
     eventLog.push({ type: "death", label: `${st.dead.label} @${st.score}` });
   }
@@ -210,7 +236,8 @@ function fireTransitions(): void {
 }
 
 // CH-E1: the run advances in fixed 60 Hz steps (collision is tested every step, whatever the display rate) and is
-// drawn between the last two steps (`loop.alpha`). The engine frame callback drives the loop clock.
+// drawn between the last two steps (`loop.alpha`). Real frame time drives `impactRig.step(realDt)` so near-miss
+// micro-freezes pause sim time without freezing their own countdown.
 const loop = createFixedStepLoop({
   stepSeconds: SIM_STEP,
   step: (dt) => { step(dt, input); fireTransitions(); },
@@ -220,15 +247,23 @@ const loop = createFixedStepLoop({
 });
 
 let lastBeacon = -Infinity;
+let lastWallNow = -1;
+let virtualSimMs = 0;
 app.onFrame(() => {
   if (!appReady) return;
   frames++;
-  loop.tick(performance.now());
+  const wallNow = performance.now();
+  const realDt = lastWallNow < 0 ? SIM_STEP : Math.min(0.1, Math.max(0, (wallNow - lastWallNow) / 1000));
+  lastWallNow = wallNow;
+  const impact = impactRig.step(realDt);
+  setCameraImpact(impact.shakeOffset, impact.fovDeltaDeg);
+  virtualSimMs += impact.simDt * 1000;
+  loop.tick(virtualSimMs);
   syncVisuals(loop.alpha);
   tickUI();
 
   // CH-E3: the evidence beacon is rebuilt at most every 250 ms instead of every frame.
-  const now = performance.now();
+  const now = wallNow;
   if (now - lastBeacon < 250) return;
   lastBeacon = now;
   const extra = evidenceExtra();

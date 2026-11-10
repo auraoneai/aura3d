@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DIMS } from "../../../apps/showcase-number-surge/src/meshes";
-import { ROADSIDE, ROADSIDE_SPAN, roadsidePose } from "../../../apps/showcase-number-surge/src/roadside";
+import { ROADSIDE, ROADSIDE_KINDS, ROADSIDE_SPAN, roadsidePose } from "../../../apps/showcase-number-surge/src/roadside";
 import { NumberSurgeSim } from "../../../apps/showcase-number-surge/src/sim";
 import { buildWorld } from "../../../apps/showcase-number-surge/src/world";
 
@@ -19,10 +19,18 @@ describe("number surge Meshy roadside dressing", () => {
     }
   });
 
-  it("mounts one typed model node per piece", () => {
+  it("batches all pieces into 4 GPU-instanced model nodes (one per asset kind) with positive scales", () => {
     const world = buildWorld({ sim: new NumberSurgeSim(7), aspect: 16 / 9 });
-    const nodes = world.scene.toJSON().nodes as unknown as { kind: string; name?: string }[];
+    const nodes = world.scene.toJSON().nodes as unknown as { kind: string; name?: string; instances?: { scale?: number | number[] }[] }[];
     const models = nodes.filter((n) => n.kind === "model");
-    expect(models.map((n) => n.name).sort()).toEqual(ROADSIDE.map((p) => p.id).sort());
+    expect(models.map((n) => n.name).sort()).toEqual(ROADSIDE_KINDS.map((k) => `roadside-${k}`).sort());
+    const totalInstances = models.reduce((sum, m) => sum + (m.instances?.length ?? 0), 0);
+    expect(totalInstances).toBe(ROADSIDE.length);
+    for (const m of models) {
+      for (const inst of m.instances ?? []) {
+        const s = typeof inst.scale === "number" ? inst.scale : (inst.scale?.[0] ?? 1);
+        expect(s).toBeGreaterThan(0);
+      }
+    }
   });
 });

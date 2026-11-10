@@ -92,34 +92,48 @@
         "practical": false
       },
       {
+        "name": "lacquer",
         "node": "walls",
         "practical": false
       },
       {
+        "node": "wall-trim",
+        "emissiveIntensity": 0.92,
+        "practical": true
+      },
+      {
+        "name": "brushed metal",
         "node": "pins",
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "traces",
         "practical": false
       },
       {
         "node": "traces lit",
-        "emissiveIntensity": 1.8,
+        "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "node": "shards",
-        "emissiveIntensity": 1.35,
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {
+        "name": "brushed metal",
         "node": "cells",
         "practical": false
       },
       {
+        "name": "studio glass",
+        "node": "prisms",
+        "practical": false
+      },
+      {
         "node": "cell vents",
-        "emissiveIntensity": 1.6,
+        "emissiveIntensity": 2.1,
         "practical": true
       },
       {
@@ -128,67 +142,134 @@
       },
       {
         "node": "eyes",
-        "practical": false
+        "emissiveIntensity": 1.4,
+        "practical": true
       },
       {
         "node": "dress",
         "practical": false
       },
       {
-        "node": "glow",
-        "emissiveIntensity": 1.1,
-        "practical": true
-      },
-      {
-        "node": "courier-shell",
-        "emissiveIntensity": 0.1,
+        "name": "brushed metal",
+        "node": "capacitors",
         "practical": false
       },
       {
-        "node": "courier-halo",
-        "emissiveIntensity": 0.9,
+        "node": "glow",
+        "emissiveIntensity": 1.65,
         "practical": true
       },
       {
+        "node": "courier-visor",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "courier-halo",
+        "emissiveIntensity": 1.05,
+        "practical": true
+      },
+      {
+        "name": "lacquer",
         "node": "sentry-hunter",
         "practical": false
       },
       {
+        "name": "lacquer",
         "node": "sentry-ambusher",
         "practical": false
       },
       {
+        "name": "lacquer",
         "node": "sentry-drifter",
         "practical": false
       },
       {
+        "name": "lacquer",
         "node": "sentry-skittish",
         "practical": false
       },
       {
-        "node": "gems",
-        "emissiveIntensity": 0.18,
+        "node": "sentry-visors",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
+        "node": "sentry-scans",
+        "emissiveIntensity": 0.85,
+        "practical": true
+      },
+      {
+        "name": "studio glass",
+        "node": "nixie-tubes",
+        "practical": false
+      },
+      {
+        "node": "cache-gem",
+        "emissiveIntensity": 0.28,
         "practical": true
       },
       {
         "node": "byte",
-        "emissiveIntensity": 2.2,
+        "emissiveIntensity": 2.35,
         "practical": true
       },
       {
         "node": "byte-echo",
-        "emissiveIntensity": 2.2,
+        "emissiveIntensity": 2.35,
         "practical": true
+      },
+      {
+        "node": "hub-pad",
+        "practical": false
       },
       {
         "node": "door",
-        "emissiveIntensity": 0.65,
-        "practical": true
+        "practical": false
       },
       {
         "node": "school-beam",
-        "emissiveIntensity": 0.65,
-        "practical": true
+        "practical": false
+      },
+      {
+        "node": "wrap-portal-0",
+        "practical": false
+      },
+      {
+        "node": "wrap-portal-1",
+        "practical": false
+      },
+      {
+        "node": "wrap-portal-2",
+        "practical": false
+      },
+      {
+        "node": "wrap-portal-3",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-0",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-1",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-2",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-3",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-4",
+        "practical": false
+      },
+      {
+        "node": "spark-burst-5",
+        "practical": false
       },
       {
         "node": "workshop wall",

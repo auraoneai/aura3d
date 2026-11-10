@@ -17,16 +17,14 @@
     <meta name="twitter:title" content="Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase" />
     <meta name="twitter:description" content="Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Hoops 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/","description":"5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab,…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Hoops 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/","description":"5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab,…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" href="/fonts/hoops-calibre-600.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/fonts/hoops-fonts.css" />
     <style>
       :root {
         --bg: #0b0d12;
         --asphalt: #171a21;
         --ink: #f5efe2;
-        --muted: #8d919e;
+        --muted: #9fa5b4;
         --faint: #454a56;
         --rule: rgba(245, 239, 226, 0.14);
         --rule-strong: rgba(245, 239, 226, 0.3);
@@ -35,10 +33,9 @@
         --cyan: #39d7ff;
         --danger: #ff3b5c;
         --ok: #66e37f;
-        /* GU47 H47-H1: licensed self-hosted faces only (public/fonts/hoops-fonts.css); no system stack. */
-        --font-display: "Hoops Calibre", sans-serif;
-        --font-sans: "Hoops Calibre", sans-serif;
-        --font-mono: "Hoops Mono", monospace;
+        /* Licensed AuraOne typography via showcase-port-shared/hud-tokens.css */
+        --font-display: var(--font-ui);
+        --font-sans: var(--font-ui);
       }
 
       *,
@@ -49,14 +46,20 @@
         padding: 0;
       }
 
+      html {
+        font-synthesis: none;
+      }
+
       html,
       body {
         width: 100%;
         height: 100%;
         background: var(--bg);
         color: var(--ink);
-        font-family: var(--font-sans);
+        font-family: var(--font-ui);
+        font-variant-numeric: tabular-nums;
         font-size: 13px;
+        font-weight: 400;
         line-height: 1.4;
         overflow: hidden;
         user-select: none;
@@ -118,11 +121,12 @@
       }
 
       .aura3d-top-bar .bar-label {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        letter-spacing: 0.16em;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
-        text-transform: uppercase;
         margin: 0 2px 0 4px;
       }
 
@@ -135,19 +139,22 @@
         z-index: 58;
         padding: 7px 16px;
         border-radius: 999px;
-        background: rgba(10, 11, 15, 0.82);
+        background: rgba(10, 11, 15, 0.86);
         border: 1px solid var(--rule);
         backdrop-filter: blur(10px);
-        font-family: var(--font-mono);
-        font-size: 11px;
-        letter-spacing: 0.12em;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
         color: var(--muted);
         white-space: nowrap;
       }
 
       .aura3d-controls-hint b {
         color: var(--accent-2);
-        font-weight: 500;
+        font-weight: 600;
       }
 
       /* ---------- HUD ---------- */
@@ -156,7 +163,8 @@
         inset: 0;
         pointer-events: none;
         z-index: 15;
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
+        font-variant-numeric: tabular-nums;
       }
 
       .hud-top-left {
@@ -170,21 +178,25 @@
 
       .hud-mode-tag {
         align-self: flex-start;
-        font-size: 11px;
-        letter-spacing: 0.22em;
-        padding: 3px 9px;
-        background: rgba(255, 122, 26, 0.2);
-        border-left: 2px solid var(--accent);
-        color: var(--accent);
-        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        padding: 3px 10px;
+        border-radius: 4px;
+        background: rgba(12, 10, 8, 0.92);
+        border: 1px solid rgba(255, 122, 26, 0.55);
+        border-left: 3px solid var(--accent);
+        color: #ffe3b3;
       }
 
       .scoreboard {
         display: flex;
         align-items: stretch;
         gap: 0;
-        background: rgba(8, 9, 12, 0.7);
+        background: rgba(8, 9, 12, 0.78);
         border: 1px solid var(--rule);
+        border-radius: 6px;
         backdrop-filter: blur(8px);
       }
 
@@ -197,16 +209,18 @@
       }
 
       .sb-team .sb-name {
-        font-size: 11px;
-        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
-        text-transform: uppercase;
       }
 
       .sb-team .sb-score {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
+        font-variant-numeric: tabular-nums;
         font-size: 34px;
-        font-weight: 600;
+        font-weight: 500;
         line-height: 0.95;
         color: var(--ink);
       }
@@ -220,10 +234,12 @@
       }
 
       .sb-team .sb-poss {
-        font-size: 11px;
-        letter-spacing: 0.1em;
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
         color: var(--accent-2);
-        height: 12px;
+        height: 14px;
       }
 
       .sb-mid {
@@ -237,47 +253,56 @@
       }
 
       .sb-mid .sb-target {
-        font-size: 11px;
-        letter-spacing: 0.16em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--accent-2);
-        text-transform: uppercase;
       }
 
       .sb-mid .sb-clock {
-        font-family: var(--font-display);
-        font-size: 15px;
+        font-family: var(--font-metric);
+        font-variant-numeric: tabular-nums;
+        font-size: 16px;
+        font-weight: 500;
         color: var(--ink);
       }
 
       .sb-mid .sb-venue {
-        font-size: 11px;
-        letter-spacing: 0.14em;
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
         color: var(--muted);
-        margin-top: 2px;
+        margin-top: 1px;
       }
 
       .jam-meter-wrap {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(8, 9, 12, 0.64);
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid var(--rule);
+        border-radius: 6px;
         padding: 6px 10px;
         backdrop-filter: blur(8px);
       }
 
       .jam-meter-wrap .k {
-        font-size: 11px;
-        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
       }
 
       .jam-meter-wrap .bar {
         width: 150px;
         height: 7px;
-        background: rgba(245, 239, 226, 0.1);
+        background: rgba(245, 239, 226, 0.12);
         position: relative;
         overflow: hidden;
+        border-radius: 999px;
       }
 
       .jam-meter-wrap .fill {
@@ -293,8 +318,10 @@
       }
 
       .jam-meter-wrap .ready {
-        font-size: 11px;
-        letter-spacing: 0.16em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--accent-2);
         display: none;
       }
@@ -370,13 +397,18 @@
         to { filter: brightness(1.7); }
       }
 
-      /* Shot meter */
+      /* Shot meter — curved green-window shot-release arc bar */
       .shot-meter {
         position: absolute;
-        bottom: 86px;
+        bottom: 88px;
         left: 50%;
         transform: translateX(-50%);
-        width: 220px;
+        width: 244px;
+        padding: 8px 12px 6px;
+        border-radius: 999px;
+        background: radial-gradient(120% 180% at 50% 0%, rgba(28, 32, 42, 0.92), rgba(8, 10, 14, 0.88));
+        border: 1px solid rgba(245, 239, 226, 0.24);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.14);
         opacity: 0;
         transition: opacity 0.08s ease;
       }
@@ -387,27 +419,30 @@
 
       .shot-meter .sm-track {
         position: relative;
-        height: 14px;
-        background: rgba(8, 9, 12, 0.8);
+        height: 15px;
+        background: linear-gradient(90deg, rgba(255, 122, 26, 0.18) 0%, rgba(16, 20, 28, 0.92) 48%, rgba(255, 59, 92, 0.2) 100%);
         border: 1px solid var(--rule-strong);
-        border-radius: 3px;
+        border-radius: 999px;
         overflow: hidden;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
       }
 
       .shot-meter .sm-green {
         position: absolute;
         top: 0;
         bottom: 0;
-        background: linear-gradient(180deg, rgba(102, 227, 127, 0.75), rgba(102, 227, 127, 0.45));
+        background: linear-gradient(180deg, rgba(114, 242, 142, 0.92), rgba(62, 198, 98, 0.68));
         border-left: 1px solid var(--ok);
         border-right: 1px solid var(--ok);
+        box-shadow: 0 0 10px rgba(102, 227, 127, 0.55);
       }
 
       .shot-meter .sm-perfect {
         position: absolute;
         top: 0;
         bottom: 0;
-        background: rgba(255, 255, 255, 0.85);
+        background: linear-gradient(180deg, #ffffff, #ffe49c);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
       }
 
       .shot-meter .sm-needle {
@@ -415,17 +450,19 @@
         top: -2px;
         bottom: -2px;
         width: 3px;
+        border-radius: 999px;
         background: var(--ink);
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 9px rgba(255, 255, 255, 0.95);
       }
 
       .shot-meter .sm-label {
         text-align: center;
-        font-size: 11px;
-        letter-spacing: 0.2em;
-        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        color: var(--ink);
         margin-top: 4px;
-        text-transform: uppercase;
       }
 
       /* Top right venue / tour chip */
@@ -440,29 +477,32 @@
       }
 
       .hud-chip {
-        background: rgba(8, 9, 12, 0.66);
+        background: rgba(8, 9, 12, 0.74);
         border: 1px solid var(--rule);
         border-right: 2px solid var(--cyan);
+        border-radius: 5px;
         padding: 5px 10px;
-        font-size: 11px;
-        letter-spacing: 0.14em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--ink);
-        text-transform: uppercase;
         backdrop-filter: blur(8px);
       }
 
       .hud-chip .sub {
         display: block;
-        font-size: 11px;
+        font-size: 12px;
+        font-weight: 500;
         color: var(--muted);
-        letter-spacing: 0.12em;
+        letter-spacing: 0.06em;
         margin-top: 1px;
       }
 
       /* Event ticker */
       .hud-ticker {
         position: absolute;
-        top: 18px;
+        top: calc(var(--a3d-bar-space) + 6px);
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -473,13 +513,15 @@
       }
 
       .hud-ticker .tick {
-        font-size: 11px;
-        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         padding: 2px 12px;
-        background: rgba(8, 9, 12, 0.78);
+        border-radius: 4px;
+        background: rgba(8, 9, 12, 0.84);
         border: 1px solid var(--rule);
         color: var(--muted);
-        text-transform: uppercase;
         opacity: 0;
         transform: translateY(-4px);
         transition: opacity 0.16s, transform 0.16s;
@@ -516,33 +558,37 @@
       }
 
       .center-msg .big {
-        font-family: var(--font-display);
-        font-size: 42px;
+        font-family: var(--font-ui);
+        font-size: 40px;
         font-weight: 600;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.04em;
         color: var(--ink);
         text-shadow: 0 2px 22px rgba(0, 0, 0, 0.85);
       }
 
       .center-msg .small {
-        font-size: 11px;
-        letter-spacing: 0.26em;
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.12em;
         color: var(--accent-2);
         margin-top: 3px;
       }
 
       .action-prompt {
         position: absolute;
-        bottom: 128px;
+        bottom: 138px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 11px;
-        letter-spacing: 0.22em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         padding: 5px 16px;
-        background: rgba(255, 122, 26, 0.16);
+        border-radius: 999px;
+        background: rgba(16, 12, 8, 0.88);
         border: 1px solid var(--accent);
         color: var(--accent-2);
-        text-transform: uppercase;
         opacity: 0;
         transition: opacity 0.15s ease;
       }
@@ -556,16 +602,17 @@
         top: 112px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 11px;
-        letter-spacing: 0.24em;
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.12em;
         padding: 4px 16px;
-        background: rgba(8, 9, 12, 0.8);
+        background: rgba(8, 9, 12, 0.86);
         border-top: 1px solid var(--accent-2);
         border-bottom: 1px solid var(--accent-2);
         color: var(--accent-2);
         opacity: 0;
         transition: opacity 0.18s ease;
-        text-transform: uppercase;
       }
 
       .banner.show {
@@ -611,9 +658,10 @@
       }
 
       .menu-head h1 {
-        font-family: var(--font-display);
-        font-size: 30px;
-        letter-spacing: 0.1em;
+        font-family: var(--font-ui);
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         color: var(--ink);
       }
 
@@ -623,11 +671,12 @@
       }
 
       .menu-head .menu-sub {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        letter-spacing: 0.2em;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
-        text-transform: uppercase;
       }
 
       .menu-grid {
@@ -656,18 +705,18 @@
       }
 
       .mode-card .mc-name {
-        font-family: var(--font-display);
+        font-family: var(--font-ui);
         font-size: 15px;
-        letter-spacing: 0.08em;
+        font-weight: 600;
+        letter-spacing: 0.03em;
         color: var(--accent-2);
-        text-transform: uppercase;
       }
 
       .mode-card .mc-desc {
-        font-size: 10.5px;
+        font-size: 12px;
         color: var(--muted);
         margin-top: 4px;
-        line-height: 1.35;
+        line-height: 1.4;
       }
 
       .menu-section {
@@ -675,11 +724,12 @@
       }
 
       .menu-section .ms-label {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        letter-spacing: 0.22em;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
-        text-transform: uppercase;
         margin-bottom: 7px;
       }
 
@@ -694,14 +744,15 @@
         border: 1px solid var(--rule-strong);
         background: rgba(255, 255, 255, 0.06);
         color: var(--ink);
-        font-size: 11px;
-        font-family: var(--font-sans);
-        letter-spacing: 0.05em;
-        padding: 6px 13px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: var(--font-ui);
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
+        padding: 7px 14px;
         border-radius: 999px;
         cursor: pointer;
         transition: all 0.14s;
-        text-transform: uppercase;
       }
 
       .menu-pill:hover {
@@ -716,8 +767,8 @@
       }
 
       .swatch {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
         border-radius: 8px;
         border: 2px solid transparent;
         cursor: pointer;
@@ -741,14 +792,14 @@
         border: none;
         border-radius: 10px;
         padding: 10px 22px;
-        font-family: var(--font-display);
+        font-family: var(--font-ui);
         font-size: 14px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         cursor: pointer;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
         color: #1a1206;
-        font-weight: 700;
       }
 
       .menu-cta.ghost {
@@ -763,7 +814,8 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 8px;
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
+        font-variant-numeric: tabular-nums;
       }
 
       .bracket-round {
@@ -773,17 +825,18 @@
       }
 
       .bracket-round .br-title {
-        font-size: 11px;
-        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
-        text-transform: uppercase;
         margin-bottom: 2px;
       }
 
       .bracket-cell {
-        font-size: 11px;
-        letter-spacing: 0.04em;
-        padding: 3px 6px;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        padding: 4px 7px;
         border: 1px solid var(--rule);
         border-radius: 5px;
         color: var(--muted);
@@ -841,14 +894,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 52px;
+        min-height: 52px;
         border-radius: 50%;
         border: 1px solid var(--rule-strong);
-        background: rgba(10, 11, 15, 0.62);
+        background: rgba(10, 11, 15, 0.72);
         color: var(--ink);
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.05em;
         -webkit-user-select: none;
         user-select: none;
       }
@@ -876,7 +932,7 @@
         height: 128px;
         border-radius: 50%;
         border: 1px solid var(--rule-strong);
-        background: rgba(10, 11, 15, 0.45);
+        background: rgba(10, 11, 15, 0.5);
         pointer-events: auto;
         touch-action: none;
       }
@@ -888,7 +944,7 @@
         height: 52px;
         margin: -26px 0 0 -26px;
         border-radius: 50%;
-        background: rgba(245, 239, 226, 0.28);
+        background: rgba(245, 239, 226, 0.3);
         border: 1px solid var(--rule-strong);
       }
       .touch-btn {
@@ -896,17 +952,26 @@
         pointer-events: auto;
         touch-action: manipulation;
         appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        min-height: 44px;
         border: 1px solid var(--rule-strong);
-        background: rgba(10, 11, 15, 0.7);
+        background: rgba(10, 11, 15, 0.84);
         color: var(--ink);
-        font-family: var(--font-display);
+        font-family: var(--font-ui);
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
         letter-spacing: 0.08em;
         padding: 8px 14px;
         border-radius: 999px;
       }
-      #touch-menu { right: 12px; top: calc(var(--a3d-bar-space, 56px) + 96px); }
+      #touch-menu {
+        top: calc(var(--a3d-bar-space, 44px) + 6px);
+        right: max(10px, env(safe-area-inset-right, 0px));
+      }
 
       /* ---------- Results card ---------- */
       #results {
@@ -919,24 +984,33 @@
         max-width: calc(100vw - 24px);
         padding: 18px 20px 16px;
         border-radius: 14px;
-        background: rgba(10, 11, 15, 0.9);
+        background: rgba(10, 11, 15, 0.92);
         border: 1px solid var(--rule-strong);
         backdrop-filter: blur(10px);
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
+        font-variant-numeric: tabular-nums;
         text-align: center;
       }
       #results[hidden] { display: none; }
       #results h2 {
-        font-family: var(--font-display);
-        font-size: 26px;
-        letter-spacing: 0.08em;
+        font-family: var(--font-ui);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         color: var(--accent-2);
       }
-      #results .res-score { font-size: 18px; margin: 4px 0 12px; color: var(--ink); }
+      #results .res-score {
+        font-family: var(--font-metric);
+        font-variant-numeric: tabular-nums;
+        font-size: 20px;
+        font-weight: 500;
+        margin: 4px 0 12px;
+        color: var(--ink);
+      }
       #results table { width: 100%; border-collapse: collapse; font-size: 12px; }
       #results th, #results td { padding: 4px 6px; border-top: 1px solid var(--rule); }
       #results th { color: var(--muted); font-weight: 500; text-align: left; }
-      #results .res-tour { margin-top: 10px; font-size: 12px; color: var(--cyan); letter-spacing: 0.1em; }
+      #results .res-tour { margin-top: 10px; font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; color: var(--cyan); letter-spacing: 0.08em; }
       #results .menu-actions { margin-top: 14px; justify-content: center; }
       .squad-pill .sq-chip {
         display: inline-block;
@@ -949,30 +1023,67 @@
       .squad-pill .sq-stats {
         display: block;
         font-family: var(--font-mono);
-        font-size: 11px;
-        opacity: 0.75;
-        letter-spacing: 0.04em;
+        font-size: 12px;
+        font-weight: 400;
+        opacity: 0.8;
+        letter-spacing: 0.02em;
       }
 
-      @media (max-width: 760px) {
+      @media (pointer: coarse), (max-width: 760px) {
         .aura3d-controls-hint {
           display: none;
         }
+        .hud-top-left {
+          top: calc(var(--a3d-bar-space) + 6px);
+          left: max(10px, env(safe-area-inset-left, 0px));
+          max-width: calc(100vw - 82px);
+          gap: 5px;
+        }
+        .sb-team {
+          min-width: 58px;
+          padding: 5px 8px 4px;
+        }
+        .sb-team .sb-score,
+        body[data-look="tour"] .sb-team .sb-score {
+          font-size: 28px;
+        }
+        .sb-mid {
+          padding: 4px 8px;
+        }
+        .sb-mid .sb-venue {
+          max-width: 106px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .jam-meter-wrap {
+          padding: 5px 8px;
+        }
+        .jam-meter-wrap .bar {
+          width: 112px;
+        }
+        .shot-meter {
+          bottom: calc(158px + env(safe-area-inset-bottom, 0px));
+          width: 214px;
+        }
+        .action-prompt {
+          bottom: calc(212px + env(safe-area-inset-bottom, 0px));
+        }
         .banner {
-          top: calc(var(--a3d-bar-space) + 156px);
+          top: calc(var(--a3d-bar-space) + 150px);
         }
         .center-msg {
-          top: calc(var(--a3d-bar-space) + 214px);
+          top: calc(var(--a3d-bar-space) + 206px);
           width: max-content;
           max-width: calc(100vw - 24px);
         }
         .center-msg .big {
-          font-size: 28px;
+          font-size: 26px;
           white-space: nowrap;
         }
         .center-msg .small {
-          font-size: 11px;
-          letter-spacing: 0.16em;
+          font-size: 12px;
+          letter-spacing: 0.1em;
         }
         .hud-top-right {
           display: none;
@@ -982,6 +1093,22 @@
         }
         .bracket {
           grid-template-columns: repeat(3, 1fr);
+        }
+        .menu-pill,
+        .menu-cta {
+          min-height: 44px;
+          min-width: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .squad-pill {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .swatch {
+          width: 44px;
+          height: 44px;
         }
       }
     </style>

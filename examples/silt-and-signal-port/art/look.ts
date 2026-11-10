@@ -105,14 +105,14 @@ const NIGHT_INK = { color: SILT_PALETTE.inkIndigo, bands: 6 } as const;
 export const CHAPTER_LOOKS: readonly ChapterLook[] = [
   {
     chapter: 0, hour: "amber dusk (19:10)", night: false,
-    key: { elevationDeg: 9, azimuthDeg: 250, color: "#ffb26a", intensity: 2.6 },
-    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.55 },
-    hdri: "belfast_sunset_puresky", environmentIntensity: 0.9, environmentRotationDeg: 250, practicals: 0, pcss: true,
-    sky: { top: "#6d7ca6", horizon: "#f2a35c", discSize: 0.035, glow: 0.9, cirrus: 0.75, dust: 0.7, storm: 0, stars: 0 },
-    fog: { color: "#d8b898", density: 0.00048, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
-    grade: { exposure: 1.02, contrast: 1.2, saturation: 1.16, temperature: 0.03 },
-    bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
-    wake: { color: "#e8b678", rate: 140 }, motes: { kind: "sand", color: "#f0c58a" },
+    key: { elevationDeg: 9, azimuthDeg: 250, color: "#ffae62", intensity: 2.75 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.62 },
+    hdri: "belfast_sunset_puresky", environmentIntensity: 0.94, environmentRotationDeg: 250, practicals: 0, pcss: true,
+    sky: { top: "#5c6f9e", horizon: "#f59e52", discSize: 0.036, glow: 0.98, cirrus: 0.82, dust: 0.78, storm: 0, stars: 0 },
+    fog: { color: "#dfa97c", density: 0.00046, heightFalloff: 0.052, heightReference: 0, maxOpacity: 0.42 },
+    grade: { exposure: 1.04, contrast: 1.18, saturation: 1.16, temperature: 0.05 },
+    bloom: { intensity: 0.42, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#eebc7a", rate: 145 }, motes: { kind: "sand", color: "#f4c98e" },
     ground: "sand", rain: false, godRays: true, lensFlare: true
   },
   {
@@ -261,5 +261,19 @@ export function inkPassOptions(chapter: number, size: readonly [number, number])
     fadeDistance: INK_FADE_METRES,
     inkColor: look.ink.color,
     size
+  };
+}
+
+/**
+ * Clean depth-silhouette ink options for live WebGPU/WebGL2 runs: uses `inkSource: "depth"` with soft luma banding
+ * so cobbled plazas and wind-rippled dunes stay crisp without normal/albedo ink static, while keeping the 600 m fade.
+ */
+export function liveInkPassOptions(chapter: number, size: readonly [number, number]) {
+  const base = inkPassOptions(chapter, size);
+  return {
+    ...base,
+    bandMix: chapterLook(chapter).night ? 0.34 : 0.36,
+    outline: 0.48,
+    inkSource: "depth" as const
   };
 }

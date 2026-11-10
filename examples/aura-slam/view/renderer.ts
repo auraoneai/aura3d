@@ -22,9 +22,10 @@ import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { GRASS_STRIPE_NODE_IDS, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+import { GRASS_STRIPE_NODE_IDS, racketStringsMaterial, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 import { createNetCordMotion, NET_MESH_ID, NET_TAPE_ID } from "./net";
+import { createImpactRig } from "../../../apps/showcase-port-shared/feel";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
 function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMaterialRole, null>): AuraRuntimeNodeHandle {
@@ -136,10 +137,16 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let pan = 0;
   let posedPan = 0;
   let cameraPose: CameraPose = panPose(cameraRig, 0);
-  // TT-V2: seconds since the last ace's lens punch (Infinity = none running); the drawn FOV is cameraFov minus the punch.
+  // TT-V2 + WP-01: seconds since the last ace's lens punch + real-time `createImpactRig` hit-stop & FOV punch on heavy strikes.
   let punchT = Number.POSITIVE_INFINITY;
   let punchSent = 0;
   let acesPunched = 0;
+  const impactRig = createImpactRig({ reducedMotion: false });
+  let impactFovDelta = 0;
+  let impactFovSent = 0;
+  let lastImpactWallMs = Number.NaN;
+  let lastImpactHits = 0;
+  let lastImpactServeSeq = -1;
   let lastShake = 0;
   let particlesDrawn = 0;
   let resizeObserver: ResizeObserver | null = null;
@@ -236,11 +243,11 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     if (ready) applyCameraFov();
   }
 
-  /** The FOV the frame uses: the aspect-aware rig FOV, narrowed while an ace punch runs. */
+  /** The FOV the frame uses: the aspect-aware rig FOV, narrowed while an ace or sweet-spot impact punch runs. */
   function drawnFov(): number {
     // A cut keeps the aspect compensation of the rig (portrait canvases widen it by the same ratio).
     if (cutFrame) return Math.min(90, cutFrame.fov * (cameraFov / cameraRig.fovDeg));
-    return cameraFov - acePunchOffset(punchT);
+    return cameraFov - acePunchOffset(punchT) - (reducedMotion() ? 0 : impactFovDelta);
   }
 
   /** TT-C2: ends a running cut now and hands the frame back to the broadcast camera (key, pointer or touch). */
@@ -339,11 +346,21 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       canvas = target;
       const progress = (fraction: number, label?: string): void => { try { options.onBootProgress?.(fraction, label); } catch { /* cosmetic */ } };
       progress(0.1, "scene");
+      const rawGamut = new URLSearchParams(pageSearch).get("gamut")?.trim().toLowerCase();
+      const prefersP3 =
+        rawGamut === "srgb"
+          ? false
+          : rawGamut === "p3" || (typeof window !== "undefined" && window.matchMedia?.("(color-gamut: p3)").matches === true);
       app = createAuraApp(target, {
         scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
-        ...(options.appOptions?.output ? { output: options.appOptions.output } : {}),
+        output: {
+          toneMapping: "agx",
+          dither: true,
+          ...(prefersP3 ? { outputColorSpace: "display-p3" as const } : {}),
+          ...(options.appOptions?.output ?? {})
+        },
         ...(options.appOptions?.worker ? { worker: options.appOptions.worker } : {}),
         qualityRebuild: QUALITY_REBUILD,
         // C2: the page sizes the canvas (portrait phones put it between the score band and the control band). The engine's own
@@ -366,6 +383,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
               return inertHandle(handle);
             }
             const role = rigMaterialRole(id);
+            if (role === "strings") handle.setMaterial(racketStringsMaterial());
             return role ? materialUpgradeHandle(handle, role) : handle;
           }
         : req;
@@ -516,7 +534,43 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         boards.step(Number.isFinite(dt) ? dt! : 1 / 60, VENUE_PALETTES[currentVenueKey]?.trim ?? "#d8ff3e");
       }
 
-      // C13: the sim's screen shake drives a small camera trauma, skipped under reduced motion.
+      // C13 + WP-01: real-time hit-stop + micro-FOV punch via `createImpactRig` on REAL wall-clock frame dt (never frozen simDt).
+      const nowWallMs = typeof performance !== "undefined" ? performance.now() : Number.NaN;
+      const realFrameDt =
+        Number.isFinite(lastImpactWallMs) && Number.isFinite(nowWallMs) && nowWallMs >= lastImpactWallMs
+          ? Math.min(0.1, (nowWallMs - lastImpactWallMs) / 1000)
+          : Number.isFinite(dt)
+            ? Math.max(0, Math.min(0.1, dt!))
+            : 1 / 60;
+      lastImpactWallMs = nowWallMs;
+
+      const rallyHits = Number(state.rallyHits ?? 0);
+      const serveSeq = Number(state.serveSequence ?? -1);
+      const newStrike = rallyHits > lastImpactHits && rallyHits > 0;
+      const newServeContact = Boolean(b.isServe && b.active && serveSeq >= 0 && serveSeq !== lastImpactServeSeq);
+      if (worldTour && !reducedMotion() && state.mode === "playing" && (newStrike || newServeContact)) {
+        const shotKph = Math.max(Number(state.lastShotSpeed ?? 0), Number(b.speedKph ?? 0));
+        if (newServeContact) {
+          lastImpactServeSeq = serveSeq;
+          if ((state.serveNumber === 1 || state.serveAttempt?.number === 1) && shotKph > 195) {
+            impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.22, fovKickDeg: 1.35 });
+            try { app.camera?.shake.add(0.22); } catch { /* optional */ }
+          }
+        } else if (state.lastStroke === "smash") {
+          impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.28, fovKickDeg: 0.95 });
+          try { app.camera?.shake.add(0.28); } catch { /* optional */ }
+        } else if (state.lastShotPower || shotKph >= 138) {
+          impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.16, fovKickDeg: 0.55 });
+        }
+      }
+      lastImpactHits = rallyHits;
+      const impactStep = impactRig.step(realFrameDt);
+      impactFovDelta = reducedMotion() ? 0 : impactStep.fovDeltaDeg;
+      if (Math.abs(impactFovDelta - impactFovSent) > 1e-4) {
+        impactFovSent = impactFovDelta;
+        pushCameraPose();
+      }
+
       const shake = Number(s.screenShake ?? 0);
       if (shake > lastShake + 1e-4 && !reducedMotion()) {
         try { app.camera?.shake.add(Math.min(1, shake * SHAKE_TRAUMA_PER_UNIT)); } catch { /* optional */ }

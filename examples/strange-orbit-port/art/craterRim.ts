@@ -75,29 +75,102 @@ export interface RockTransform {
 }
 
 /**
- * Rocks on the rim's inner foot and spires rising out of the mist between the course and the wall.
- * High: 260 rocks + 80 spires; Low: 130 + 40 (still one draw each).
+ * Exact crater-basin and stratified wall elevation (metres) at world `(x, z)`.
+ * Matches `buildCraterRim`'s radial profile from the central basin floor up through the inner foot,
+ * shoulder, jagged crest, and outer flank so instanced boulders and outcrops sit planted in terrain.
  */
-export function rimScatter(high: boolean): { readonly rocks: readonly RockTransform[]; readonly spires: readonly RockTransform[] } {
+export function rimHeight(x: number, z: number): number {
+  const r = Math.hypot(x, z);
+  const rawAngle = Math.atan2(z, x);
+  const a = rawAngle < 0 ? rawAngle + Math.PI * 2 : rawAngle;
+  const crest = crestHeight(a);
+  const r0 = RIM.innerRadius;
+  const r1 = RIM.innerRadius + 60;
+  const r2 = RIM.innerRadius + 120;
+  const r3 = RIM.outerRadius;
+  const y0 = RIM.baseY;
+  const y1 = RIM.baseY + (crest - RIM.baseY) * 0.62;
+  const y2 = crest;
+  const y3 = RIM.baseY;
+  if (r < r0) {
+    // Crater basin floor gently dishes from -72 m near the inner ring down to -90 m at the wall foot,
+    // with subtle radial ejecta ridges so sea-stack outcrops sit rooted in the regolith basin.
+    const t = Math.max(0, Math.min(1, (r - 320) / Math.max(1, r0 - 320)));
+    const ridge = Math.sin(a * 5 + r * 0.018) * 3.5 + Math.cos(a * 11 - r * 0.011) * 2.0;
+    return -72 + (y0 - -72) * t + ridge;
+  }
+  if (r < r1) {
+    const t = (r - r0) / (r1 - r0);
+    return y0 + (y1 - y0) * t;
+  }
+  if (r < r2) {
+    const t = (r - r1) / (r2 - r1);
+    return y1 + (y2 - y1) * t;
+  }
+  if (r < r3) {
+    const t = (r - r2) / (r3 - r2);
+    return y2 + (y3 - y2) * t;
+  }
+  return y3;
+}
+
+/**
+ * Grounded lunar boulders on the rim's inner slope, jagged basalt sea-stacks rising out of the crater basin,
+ * and scattered regolith apron moon-rocks — each planted 0.8 m below `rimHeight(x, z)` so zero boulders float.
+ * High: 260 rim boulders + 80 basin outcrops + 120 moon-rock clusters; Low: half (one instanced draw per asset).
+ */
+export function rimScatter(high: boolean): {
+  readonly rocks: readonly RockTransform[];
+  readonly spires: readonly RockTransform[];
+  readonly moonRocks: readonly RockTransform[];
+} {
   const rand = lehmer(9173);
   const rocks: RockTransform[] = [];
   const spires: RockTransform[] = [];
+  const moonRocks: RockTransform[] = [];
   const rockCount = high ? 260 : 130;
   const spireCount = high ? 80 : 40;
+  const moonRockCount = high ? 120 : 60;
   for (let i = 0; i < rockCount; i++) {
     const a = rand() * Math.PI * 2;
-    const r = RIM.innerRadius - 30 + rand() * 110;
-    const size = 6 + rand() * 18;
-    const y = RIM.baseY + (r - RIM.innerRadius + 30) * 0.9 + rand() * 25;
-    rocks.push({ position: [Math.cos(a) * r, y, Math.sin(a) * r], rotation: [rand() * 6.28, rand() * 6.28, rand() * 6.28], scale: [size, size * (0.6 + rand() * 0.5), size * (0.8 + rand() * 0.4)] });
+    const r = RIM.innerRadius + 16 + rand() * 102;
+    const x = Math.cos(a) * r;
+    const z = Math.sin(a) * r;
+    const size = 9 + rand() * 20;
+    const y = rimHeight(x, z) - 0.8;
+    rocks.push({
+      position: [x, y, z],
+      rotation: [(rand() - 0.5) * 0.36, rand() * Math.PI * 2, (rand() - 0.5) * 0.36],
+      scale: [size * (0.9 + rand() * 0.45), size * (0.68 + rand() * 0.52), size * (0.85 + rand() * 0.45)]
+    });
   }
   for (let i = 0; i < spireCount; i++) {
     const a = rand() * Math.PI * 2;
-    // Keep out of the course corridor (the ring sits near radius 225 +- 60 m).
-    const r = 330 + rand() * 240;
-    const h = 30 + rand() * 90;
-    const w = 5 + rand() * 9;
-    spires.push({ position: [Math.cos(a) * r, -70 + h * 0.5, Math.sin(a) * r], rotation: [(rand() - 0.5) * 0.25, rand() * 6.28, (rand() - 0.5) * 0.25], scale: [w, h, w] });
+    // Keep clear of the course corridor (the ring sits near radius 225 +- 60 m; r > 300 m).
+    const r = 335 + rand() * 235;
+    const x = Math.cos(a) * r;
+    const z = Math.sin(a) * r;
+    const h = 28 + rand() * 68;
+    const w = 10 + rand() * 16;
+    const y = rimHeight(x, z) - 0.8;
+    spires.push({
+      position: [x, y, z],
+      rotation: [(rand() - 0.5) * 0.18, rand() * Math.PI * 2, (rand() - 0.5) * 0.18],
+      scale: [w, h, w * (0.82 + rand() * 0.36)]
+    });
   }
-  return { rocks, spires };
+  for (let i = 0; i < moonRockCount; i++) {
+    const a = rand() * Math.PI * 2;
+    const r = 355 + rand() * 265;
+    const x = Math.cos(a) * r;
+    const z = Math.sin(a) * r;
+    const s = 7 + rand() * 15;
+    const y = rimHeight(x, z) - 0.8;
+    moonRocks.push({
+      position: [x, y, z],
+      rotation: [(rand() - 0.5) * 0.28, rand() * Math.PI * 2, (rand() - 0.5) * 0.28],
+      scale: [s * (0.95 + rand() * 0.4), s * (0.62 + rand() * 0.45), s * (0.9 + rand() * 0.4)]
+    });
+  }
+  return { rocks, spires, moonRocks };
 }

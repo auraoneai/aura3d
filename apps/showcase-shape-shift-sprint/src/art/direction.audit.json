@@ -1,10 +1,10 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-shape-shift-sprint/src/art/direction.ts",
-  "sourceSha256": "8110a0d68267a8d52ba7816f54d4edc1b93362310ce88ac1d1a83bf6a6c364d1",
+  "sourceSha256": "7efe8f121e55fdd75b9158e9b5380a66704b2661b807426e3e852eb3ad11c2bc",
   "id": "shape-shift-sprint",
   "genre": "platformer",
-  "signatureEffect": "Candy primaries on cream: morph burst and shape-confetti trail behind the player, hole rims glowing in the matching shape colour under a day gradient sky.",
+  "signatureEffect": "Candy primaries on cream: plasma morph burst and shape-confetti trail behind the multi-lobe player forms, with bevelled 3D hole rims glowing in the matching shape colour under a 6-world Toybox skyway.",
   "palette": {
     "primary": [
       "#e8453c",
@@ -16,7 +16,7 @@
     "reservedObjective": "#b45ae8"
   },
   "environment": {
-    "preset": "neutral",
+    "preset": "studio",
     "background": "sky"
   },
   "violations": [],
@@ -25,7 +25,12 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.4
+        "intensity": 1.85
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.44
       }
     ],
     "hasAmbient": false,
@@ -39,27 +44,27 @@
   "direction": {
     "id": "shape-shift-sprint",
     "genre": "platformer",
-    "fantasy": "Sprint a shape-shifting toy along a candy sky bridge past floating toy islands, fitting through the hole that matches your form.",
+    "fantasy": "Sprint a shape-shifting toy along a glossy candy sky bridge past floating islands, fitting through 3D gates across six Toybox Worlds.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: wooden shape-sorter toys (sphere, cube, cone cut-outs in a bright board)",
+        "source": "generic reference: wooden and lacquered vinyl shape-sorter toys (sphere, cube, cone cut-outs in a bright board)",
         "licence": "reference-only",
-        "why": "Wall rows read as shape-sorter boards: three outlined holes, exactly one fits the current form"
+        "why": "Molded 3D cutout wall blocks with bevelled rims read immediately: three outlined holes, one fits the active form"
       },
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: candy-coloured playground equipment on warm cream surfaces",
+        "source": "generic reference: candy-coloured clearcoat playground toys on warm cream skyway surfaces",
         "licence": "reference-only",
-        "why": "Candy primaries (red sphere, yellow cube, blue cone) on a cream road keep every entity readable at speed"
+        "why": "Multi-lobe primaries (crimson carPaint sphere, solar clearcoatPaint cube, cobalt lacquer cone) stay readable at speed"
       },
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: confetti bursts at children's party games",
+        "source": "generic reference: plasma shockwaves and confetti bursts at party arcade games",
         "licence": "reference-only",
-        "why": "Morph burst plus a shape-confetti trail and glowing matched hole rims mark every success"
+        "why": "Plasma morph burst plus a shape-confetti trail and hole rims glowing in the matching colour reward every fit"
       }
     ],
     "palette": {
@@ -79,12 +84,12 @@
         "shadow": true
       },
       "fill": "ibl",
-      "practicals": 0,
+      "practicals": 1,
       "environment": {
-        "preset": "neutral",
+        "preset": "studio",
         "background": "sky"
       },
-      "exposureEV": 0
+      "exposureEV": 0.08
     },
     "framing": {
       "rig": "chase",
@@ -168,7 +173,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Candy primaries on cream: morph burst and shape-confetti trail behind the player, hole rims glowing in the matching shape colour under a day gradient sky.",
+    "signatureEffect": "Candy primaries on cream: plasma morph burst and shape-confetti trail behind the multi-lobe player forms, with bevelled 3D hole rims glowing in the matching shape colour under a 6-world Toybox skyway.",
     "criticalCategories": [
       "lighting",
       "environment_world",
@@ -191,13 +196,13 @@
       "high": {
         "particles": 228,
         "shadowMap": 2048,
-        "cascades": 1,
+        "cascades": 2,
         "textureMax": 1024
       },
       "ultra": {
         "particles": 228,
         "shadowMap": 2048,
-        "cascades": 1,
+        "cascades": 2,
         "textureMax": 2048
       }
     }

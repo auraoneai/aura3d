@@ -54,10 +54,7 @@ export default defineArtDirection({
   },
   framing: { rig: "static", subjectHeightFraction: [0.06, 0.16], fovDeg: [15, 60], mobile: "both" },
   assets: [
-    { role: "set-dressing", assetKey: "showcaseStadiumSeats", kit: "K4", maxTriangles: 60000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "rooftopScoreboardRigMeshy", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "rooftopFloodlightTowerMeshy", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    // GU47 wave 10 (TT-A2): generated lattice floodlight tower for the World Tour look (counts read from the GLB).
+    // GU47 wave 10 (TT-A2) + WP-01: owned lattice floodlight tower (`tennisFloodMast`); grandstand & scoreboard gantry are sculpted procedural geometry.
     { role: "prop", assetKey: "tennisFloodMast", maxTriangles: 26506, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
@@ -68,7 +65,8 @@ export default defineArtDirection({
     { event: "ball-mark", kind: "decal" },
     { event: "out-call", kind: "out-ring" },
     { event: "ball-flight", kind: "trail" },
-    { event: "ace", kind: "ace-flash" }
+    { event: "ace", kind: "ace-flash" },
+    { event: "racket-sweetspot", kind: "felt-burst" }
   ],
   audio: [
     { event: "racket-hit", cue: "racket", variants: 1 },

@@ -17,8 +17,7 @@ export interface WetCtx {
 }
 
 /** Roughness values (0..1) the map encodes. */
-/** GU47 phase 3: damp asphalt 0.62 (0.42 mirrored the warm sky into a pink-brown sheen the panel read as muddy haze). */
-export const WET = { asphalt: 0.62, puddle: 0.04, pavement: 0.85, block: 0.8 } as const;
+export const WET = { asphalt: 0.44, puddle: 0.04, pavement: 0.85, block: 0.8 } as const;
 
 const grey = (v: number): string => {
   const b = Math.round(Math.max(0, Math.min(1, v)) * 255);
@@ -63,9 +62,17 @@ export function wetRoad(g: WetCtx, px: number): void {
   const m = (v: number): number => v * S;
   g.globalCompositeOperation = "multiply";
   g.globalAlpha = 1;
-  g.fillStyle = "#6d717a";
+  g.fillStyle = "#686d77";
   asphaltBands(g, m);
-  g.fillStyle = "#8a8f98";
+  g.globalAlpha = 0.65;
+  g.fillStyle = "#565d68";
+  for (const p of puddles()) {
+    g.beginPath();
+    g.ellipse(m(p.x), m(p.z), m(p.rx * 1.12), m(p.rz * 1.12), p.rot, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.globalAlpha = 1;
+  g.fillStyle = "#3e444f";
   for (const p of puddles()) {
     g.beginPath();
     g.ellipse(m(p.x), m(p.z), m(p.rx), m(p.rz), p.rot, 0, Math.PI * 2);

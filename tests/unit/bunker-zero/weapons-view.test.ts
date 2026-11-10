@@ -22,12 +22,33 @@ describe("bunker zero weapon view", () => {
   });
 });
 
-import { VIEWMODEL_YAW_OFFSET } from "../../../apps/showcase-bunker-zero/src/weapons-view";
+import { VIEWMODEL_YAW_OFFSET, formatTacticalFeed, viewmodelFraming } from "../../../apps/showcase-bunker-zero/src/weapons-view";
 
 describe("bunker zero viewmodel orientation", () => {
   it("has a yaw offset for every weapon, and turns the sidearm and the rifle (their muzzles are at +X) around", () => {
     expect(Object.keys(VIEWMODEL_YAW_OFFSET).sort()).toEqual([...IDS].sort());
     expect(VIEWMODEL_YAW_OFFSET.pistol).toBeCloseTo(Math.PI, 6);
     expect(VIEWMODEL_YAW_OFFSET.mg).toBeCloseTo(Math.PI, 6);
+  });
+
+  it("frames portrait 390x844 inside screen bounds (Hor+) while preserving desktop 1280x720 weapon placement", () => {
+    const portrait = viewmodelFraming(390 / 844, 66);
+    expect(portrait.fov).toBe(82);
+    const portraitTanHalfX = Math.tan((portrait.fov * Math.PI) / 360) * (390 / 844);
+    const portraitNdcX = portrait.side / (portrait.forward * portraitTanHalfX);
+    expect(portraitNdcX).toBeLessThan(0.65);
+
+    const desktop = viewmodelFraming(1280 / 720, 66);
+    expect(desktop.fov).toBe(66);
+    expect(desktop.side).toBeCloseTo(0.26, 6);
+    expect(desktop.forward).toBeCloseTo(0.62, 6);
+    expect(desktop.drop).toBeCloseTo(0.3, 6);
+  });
+
+  it("humanizes internal pickup/kill feed tokens into tactical visor callouts", () => {
+    expect(formatTacticalFeed("health collected")).toBe("Field Medkit +25 HP");
+    expect(formatTacticalFeed("treasure-big collected")).toBe("Gold Bullion +500");
+    expect(formatTacticalFeed("kill confirmed — guard")).toBe("Patrol Guard Neutralized");
+    expect(formatTacticalFeed("push-wall revealed a secret")).toBe("Secret Bulkhead Breached");
   });
 });

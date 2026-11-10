@@ -27,7 +27,8 @@ export const assets = {
     millpond: catalog.leapBaseMillpond,
     meadow: catalog.leapBaseMeadow
   },
-  hawk: shared.heatsinkDroneNighthawk,
+  // Woodland flyer replaces the borrowed sci-fi quadcopter so forest skies stay storybook-cohesive.
+  hawk: catalog.leapBeetleAnim,
   sidekick: shared.showcaseSidekickRunner,
   helper: shared.helperChar,
   // Backdrop kits are not mounted; certify.ts reads their hash only.

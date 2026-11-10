@@ -156,16 +156,22 @@ export const TOWER_FRAGMENT_WGSL = wgslStage([H21, FOG], /* wgsl */ `
 
 export const DECK_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ `
 @fragment fn fs_main(${LIT_INPUTS}) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let L = normalize(aura.u_nsSunDir);
+  let H = normalize(L + V);
   let g = vec2<f32>(vLocal.x / 1.85, vLocal.z / 2.0);
   let w = fwidth(g) * 1.1;
   let a = abs(fract(g - vec2<f32>(0.5)) - vec2<f32>(0.5)) / max(w, vec2<f32>(1e-4));
   let line = 1.0 - min(min(a.x, a.y), 1.0);
-  let V = normalize(aura.u_cameraPosition - vWorld);
-  let fres = a3dPow(1.0 - clamp(V.y, 0.0, 1.0), 4.0);
-  var col = aura.u_nsBase * 0.85;
-  col = col + aura.u_nsLine * line * 0.18;
-  col = col + vec3<f32>(0.9, 0.25, 0.5) * 0.32 * fres;
-  col = col + aura.u_nsLine * 0.05 * (1.0 - smoothstep(0.0, 3.2, abs(vWorld.x)));
+  let fres = a3dPow(1.0 - clamp(V.y, 0.0, 1.0), 3.6);
+  let spec = a3dPow(max(dot(N, H), 0.0), 64.0) * 0.42;
+  let laneRail = exp(-abs(abs(vWorld.x) - 1.55) * 5.5);
+  var col = aura.u_nsBase * (0.78 + 0.34 * max(dot(N, L), 0.0));
+  col = col + aura.u_nsLine * line * 0.22;
+  col = col + aura.u_nsLine * laneRail * 0.14;
+  col = col + vec3<f32>(0.95, 0.88, 1.0) * spec;
+  col = col + vec3<f32>(0.42, 0.62, 1.0) * 0.36 * fres;
   col = nsFogMix(col, vWorld, aura.u_nsDensity);
   return vec4<f32>(col, 1.0);
 }`);
@@ -272,4 +278,103 @@ fn a3dPow3(x: vec3<f32>, y: vec3<f32>) -> vec3<f32> { return pow(max(abs(x), vec
   let t = textureSample(u_mapTexture, u_mapSampler, vUv);
   let lin = mix(t.rgb / 12.92, a3dPow3((t.rgb + vec3<f32>(0.055)) / 1.055, vec3<f32>(2.4)), step(vec3<f32>(0.04045), t.rgb));
   return vec4<f32>(aura.u_baseColor * lin, aura.u_alpha * t.a);
+}`);
+
+/** Translucent refractive/holographic gate panel (`FROSTED_GATE_FRAGMENT`). */
+export const FROSTED_GATE_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ `
+@fragment fn fs_main(${LIT_INPUTS}, @location(4) vTone: vec3<f32>) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let ndotv = clamp(abs(dot(N, V)), 0.0, 1.0);
+  let fres = 0.0426 + 0.9574 * a3dPow(1.0 - ndotv, 3.8);
+  let pUv = vUv + V.xy * 0.04;
+  let gc = pUv * vec2<f32>(10.0, 12.0);
+  let gw = fwidth(gc) * 1.15;
+  let ga = abs(fract(gc - vec2<f32>(0.5)) - vec2<f32>(0.5)) / max(gw, vec2<f32>(1e-4));
+  let grid = 1.0 - min(min(ga.x, ga.y), 1.0);
+  let scan = 0.5 + 0.5 * sin(vWorld.y * 16.0 - aura.u_time * 3.4);
+  let scanBand = smoothstep(0.45, 0.96, scan);
+  let edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  let border = 1.0 - smoothstep(0.016, 0.058, edgeDist);
+  let core = vTone * (0.38 + 0.22 * vUv.y);
+  let rimCol = mix(vTone, vec3<f32>(1.0), 0.36);
+  var col = core + rimCol * (fres * 1.45 + border * 0.92 + scanBand * 0.16 + grid * 0.18);
+  col = nsFogMix(col, vWorld, aura.u_nsDensity * 0.8);
+  let alpha = clamp(0.28 + fres * 0.50 + border * 0.42 + grid * 0.08 + scanBand * 0.06, 0.22, 0.92);
+  return vec4<f32>(col, alpha);
+}`);
+
+/** Glossy metallic gate stanchion (`STANCHION_FRAGMENT`). */
+export const STANCHION_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ `
+@fragment fn fs_main(${LIT_INPUTS}, @location(4) vTone: vec3<f32>) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let L = normalize(aura.u_nsSunDir);
+  let H = normalize(L + V);
+  let ndotl = max(dot(N, L), 0.0);
+  let spec = a3dPow(max(dot(N, H), 0.0), 48.0);
+  let fres = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0);
+  let edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  let bevel = 1.0 - smoothstep(0.02, 0.09, edgeDist);
+  let chrome = vec3<f32>(0.62, 0.68, 0.82) * (0.42 + 0.68 * ndotl);
+  var col = chrome + vec3<f32>(1.0, 0.96, 0.92) * (spec * 0.85) + vTone * (bevel * 0.85 + fres * 0.45);
+  col = nsFogMix(col, vWorld, aura.u_nsDensity);
+  return vec4<f32>(col, 1.0);
+}`);
+
+/** Segmented crystal-masonry boss wall (`CRYSTAL_WALL_FRAGMENT`). */
+export const CRYSTAL_WALL_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ `
+@fragment fn fs_main(${LIT_INPUTS}, @location(4) vTone: vec3<f32>) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let L = normalize(aura.u_nsSunDir);
+  let H = normalize(L + V);
+  let ndotl = max(dot(N, L), 0.0);
+  let spec = a3dPow(max(dot(N, H), 0.0), 42.0);
+  let fres = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.2);
+  let edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+  let mortar = 1.0 - smoothstep(0.02, 0.085, edgeDist);
+  let veinCoord = vLocal.x * 1.45 + sin(vLocal.y * 2.8) * 0.35;
+  let vw = fwidth(veinCoord) * 1.4 + 1e-4;
+  let vein = 1.0 - smoothstep(0.0, vw * 2.2, abs(fract(veinCoord) - 0.5));
+  let smashable = smoothstep(0.96, 1.04, aura.u_nsBreakRatio);
+  let warnPulse = 0.72 + 0.28 * sin(aura.u_time * 5.2);
+  let goldPulse = 0.86 + 0.18 * sin(aura.u_time * 6.8 + vLocal.y * 2.0);
+  let dangerGlow = vec3<f32>(1.35, 0.14, 0.32) * warnPulse;
+  let smashGlow = vec3<f32>(1.45, 1.05, 0.26) * goldPulse;
+  let fissureCol = mix(dangerGlow, smashGlow, smashable);
+  let crystalBase = mix(vTone * 0.78, vec3<f32>(0.16, 0.36, 0.44), smashable * 0.45);
+  let fissureMask = clamp(mortar * 0.85 + vein * (0.35 + 0.45 * smashable), 0.0, 1.0);
+  var col = crystalBase * (0.38 + 0.72 * ndotl) + vec3<f32>(1.0, 0.95, 0.9) * (spec * 0.65) + fissureCol * (fissureMask * 0.92 + fres * 0.35);
+  col = nsFogMix(col, vWorld, aura.u_nsDensity);
+  return vec4<f32>(col, 1.0);
+}`);
+
+/** Hexagonal Fresnel energy barrier (`HEX_SHIELD_FRAGMENT`). */
+export const HEX_SHIELD_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+@fragment fn fs_main(${LIT_INPUTS}) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let fres = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.5);
+  let hp = vec2<f32>(atan2(vLocal.x, vLocal.z) * 5.0, vLocal.y * 9.0);
+  let hw = fwidth(hp) * 1.2 + vec2<f32>(1e-4);
+  let ha = abs(fract(hp - vec2<f32>(0.5)) - vec2<f32>(0.5)) / hw;
+  let hexLine = 1.0 - min(min(ha.x, ha.y), 1.0);
+  let wave = 0.5 + 0.5 * sin(vLocal.y * 10.0 - aura.u_time * 4.5);
+  let col = mix(aura.u_baseColor, vec3<f32>(0.85, 1.0, 0.96), fres * 0.55 + hexLine * 0.35) * (1.05 + fres * 1.25 + wave * 0.25);
+  let alpha = clamp(0.14 + fres * 0.56 + hexLine * 0.22 + wave * 0.06, 0.10, 0.84);
+  return vec4<f32>(col, alpha);
+}`);
+
+/** Procedural sparks sprite-sheet flipbook (`SPARKS_FLIPBOOK_FRAGMENT`). */
+export const SPARKS_FLIPBOOK_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+fn a3dPow3s(x: vec3<f32>, y: vec3<f32>) -> vec3<f32> { return pow(max(abs(x), vec3<f32>(1e-30)), y); }
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let f = floor(max(aura.u_nsFrame, 0.0));
+  let colIdx = f - aura.u_nsCols * floor(f / aura.u_nsCols);
+  let rowIdx = floor(f / aura.u_nsCols);
+  let cellUv = (vec2<f32>(colIdx, rowIdx) + clamp(vUv, vec2<f32>(0.02), vec2<f32>(0.98))) / vec2<f32>(aura.u_nsCols, aura.u_nsRows);
+  let s = textureSample(u_mapTexture, u_mapSampler, cellUv);
+  let lin = mix(s.rgb / 12.92, a3dPow3s((s.rgb + vec3<f32>(0.055)) / 1.055, vec3<f32>(2.4)), step(vec3<f32>(0.04045), s.rgb));
+  return vec4<f32>(lin * aura.u_nsTint * (aura.u_alpha * s.a), aura.u_alpha * s.a);
 }`);

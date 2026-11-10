@@ -1,78 +1,323 @@
 /**
  * Presentation layer for the title, HUD, pause and result screens. It injects its own stylesheet and enhances the
  * existing DOM by id, so the example page and the live showcase wrapper (which carries its own HTML copy) both get it.
+ * Uses strictly AuraOne licensed self-hosted font tokens (`var(--font-ui)` Whitney, `var(--font-metric)` DIN Pro,
+ * `var(--font-mono)` Monument Grotesk Mono) with zero synthetic weights and `>= 44x44px` touch ergonomics.
  */
 const CSS = /* css */ `
-:root { --ink: #f4ead6; --muted: #a9bdb9; --panel: rgba(11, 28, 34, 0.78); --line: rgba(160, 222, 214, 0.2); --warm: #f3e6cb; --jade: #7fe0cf; --ember: #f0a56b; }
-html, body { background: #070b12; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(10px); box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45); }
-h1, h2, .value, #count, button, .kicker, .brand, .tagline { font-family: "Graphik Web", sans-serif; }
-h2 { font-size: 24px; font-weight: 500; color: var(--warm); }
-button { border-radius: 6px; background: rgba(160, 222, 214, 0.08); border: 1px solid var(--line); font-size: 14px; font-weight: 500; padding: 10px 16px; transition: background 0.15s, transform 0.15s; }
-button:hover:not(:disabled) { background: rgba(160, 222, 214, 0.2); transform: translateY(-1px); }
-button.primary { background: var(--warm); color: #14201f; font-size: 16px; padding: 12px 22px; }
-button.primary:hover:not(:disabled) { background: #fff4de; }
-button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 230, 203, 0.16); color: var(--warm); }
-.overlay { background: rgba(5, 10, 16, 0.5); }
-#menu { background: linear-gradient(90deg, rgba(5, 11, 18, 0.9) 0%, rgba(5, 11, 18, 0.55) 38%, rgba(5, 11, 18, 0) 72%); padding-left: 6vw; }
-#menu .panel { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; width: min(480px, 92vw); gap: 10px; padding: 0; }
-#menu h1 { font-size: clamp(48px, 8vw, 84px); line-height: 0.95; font-weight: 500; color: var(--warm); letter-spacing: -0.02em; text-transform: uppercase; text-shadow: 0 6px 40px rgba(0, 0, 0, 0.55); }
-#menu .kicker { font-size: 13px; color: var(--muted); }
-#menu .tagline { font-size: 16px; color: var(--ink); }
-.orbit-brand { position: fixed; top: 18px; left: 6vw; font-family: "Graphik Web", sans-serif; font-size: 13px; color: var(--muted); pointer-events: none; }
-.orbit-tag { position: fixed; right: 36px; bottom: 30px; font-family: "Graphik Web", sans-serif; font-size: 34px; font-weight: 500; letter-spacing: -0.02em; text-transform: uppercase; color: rgba(244, 234, 214, 0.5); pointer-events: none; }
-#hud .block { background: var(--panel); border-radius: 10px; backdrop-filter: blur(8px); }
-#hud .meta { font-size: 12px; color: var(--muted); }
-#hud .value { font-size: 26px; font-weight: 500; color: var(--warm); }
-#speed { font-size: 46px !important; line-height: 1; }
-#order li.you { color: var(--ember); }
-#banner { font-family: "Graphik Web", sans-serif; font-size: 20px; font-weight: 500; color: var(--jade); text-shadow: 0 0 16px rgba(127, 224, 207, 0.55); }
-#notice { font-family: "Graphik Web", sans-serif; font-size: 22px; font-weight: 500; color: var(--warm); top: 150px; bottom: auto; }
-/* GU47 phase 4 (rubric ui_hud/composition): tips sit under the banner, never over the bike; the HUD draws above the
-   countdown/results letterbox bars (z 2) instead of being clipped by them; the countdown digit sits in the lower third,
-   off the gas giant. */
-#hud { z-index: 3; }
-#countdown { place-items: end center; padding-bottom: 12vh; box-sizing: border-box; }
-.meter { height: 8px; border-radius: 4px; background: rgba(160, 222, 214, 0.14); }
-.meter > i { background: linear-gradient(90deg, var(--jade), var(--ember)); box-shadow: 0 0 12px rgba(127, 224, 207, 0.5); }
-#progress { height: 4px; }
-#progress > i { background: linear-gradient(90deg, var(--jade), var(--warm)); }
-#count { font-size: 160px; font-weight: 500; letter-spacing: -0.02em; color: var(--warm); text-shadow: 0 0 60px rgba(243, 230, 203, 0.45); }
-#loading { background: #070b12; }
-#difficulty-row { gap: 8px; }
-.orbit-hint { font-size: 12px; color: var(--muted); margin: 0; }
-#menu .meta { font-size: 12px; margin: 0; }
-@media (max-height: 640px) { .orbit-brand { display: none; } #menu h1 { font-size: 60px; } #menu .tagline { font-size: 14px; } }
-#order, #banner { top: 104px; }
-#hud-tools { position: absolute; top: 104px; left: 12px; display: flex; gap: 8px; pointer-events: auto; }
-#hud-tools button { min-width: 44px; min-height: 44px; padding: 0 12px; font-size: 13px; background: var(--panel); }
-.menu-row-label { font-size: 12px; color: var(--muted); min-width: 52px; }
-#menu .row button { min-height: 40px; }
-#best-time, #result-best { margin: 0; }
-@media (max-width: 720px) {
-  #hud .top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
-  #hud .top .block { min-width: 0; flex: 1 1 0; padding: 6px 8px; }
-  #hud .top .value { font-size: 18px; white-space: nowrap; }
-  #hud .meta { font-size: 11px; }
-  #order, #banner { top: 96px; }
-  #hud-tools { top: 96px; left: max(8px, env(safe-area-inset-left)); }
-  #banner { top: 150px; }
-  #order { right: max(8px, env(safe-area-inset-right)); min-width: 128px; padding: 6px 8px; }
-  #banner { left: max(8px, env(safe-area-inset-left)); transform: none; max-width: calc(100% - 148px); font-size: 16px; }
-  #hud .bottom { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); gap: 8px; }
-  #speed { font-size: 34px !important; }
-  #notice { font-size: 16px; max-width: 86vw; top: 292px; }
-  .keys { display: none; }
-  #menu .panel { background: linear-gradient(180deg, rgba(7, 11, 18, 0.62), rgba(7, 11, 18, 0.5)); border-radius: 14px; padding: 14px; width: min(480px, calc(100vw - 24px)); backdrop-filter: blur(6px); }
-  .orbit-tag { left: max(14px, env(safe-area-inset-left)); right: auto; bottom: max(16px, env(safe-area-inset-bottom)); font-size: 20px; }
-  .orbit-brand { left: max(14px, env(safe-area-inset-left)); }
+:root {
+  --ink: #eef3fa;
+  --muted: #a8b6ca;
+  --panel: rgba(9, 13, 24, 0.80);
+  --line: rgba(255, 255, 255, 0.15);
+  --warm: #f3e4c6;
+  --jade: #7fe0cf;
+  --ember: #f0a56b;
 }
+html { font-synthesis: none; }
+html, body {
+  background: #060911;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.aura-credit { font-family: var(--font-ui) !important; font-size: 12px !important; }
+.panel, #hud .block, #order {
+  background: var(--hud-glass-bg, var(--panel));
+  border: 1px solid var(--hud-glass-border, var(--line));
+  box-shadow: var(--hud-glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.12)), var(--hud-shadow, 0 10px 28px rgba(2, 6, 16, 0.42));
+  border-radius: 10px;
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
+}
+h1, h2, button, .kicker, .orbit-brand, .orbit-tag, .tagline, #banner, #notice, #lap, #section, #best-lap, #gravity {
+  font-family: var(--font-ui);
+}
+#speed, #timer, #place, #count, #result-place, #result-time, #result-score, #energy-value, #dust {
+  font-family: var(--font-metric);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+h2 { font-size: 20px; font-weight: 600; color: var(--warm); letter-spacing: -0.01em; }
+button {
+  font-family: var(--font-ui);
+  border-radius: 6px;
+  background: rgba(238, 243, 250, 0.08);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  min-height: 36px;
+  padding: 9px 14px;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+button:hover:not(:disabled) { background: rgba(238, 243, 250, 0.16); transform: translateY(-1px); }
+button.primary { background: var(--warm); color: #101622; font-size: 15px; font-weight: 600; min-height: 44px; padding: 11px 22px; border-color: transparent; }
+button.primary:hover:not(:disabled) { background: #fff5e2; }
+button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 228, 198, 0.18); color: var(--warm); }
+
+.overlay { background: rgba(5, 9, 17, 0.56); padding-bottom: var(--a3d-bar-space, 0px); }
+#menu {
+  background: linear-gradient(90deg, rgba(5, 9, 18, 0.92) 0%, rgba(5, 9, 18, 0.62) 40%, rgba(5, 9, 18, 0) 74%);
+  padding-left: 6vw;
+  padding-bottom: calc(var(--a3d-bar-space, 0px) + 16px);
+}
+#menu .panel { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; width: min(472px, 92vw); gap: 10px; padding: 0; }
+#menu h1 {
+  font-size: clamp(44px, 7vw, 76px);
+  line-height: 0.96;
+  font-weight: 600;
+  color: var(--warm);
+  letter-spacing: -0.02em;
+  text-shadow: 0 8px 36px rgba(0, 0, 0, 0.6);
+}
+#menu .kicker {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  color: var(--jade);
+}
+#menu .tagline { font-size: 15px; font-weight: 400; color: var(--ink); margin: 0; }
+.orbit-brand {
+  position: fixed;
+  top: 18px;
+  left: 6vw;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  pointer-events: none;
+}
+.orbit-tag {
+  position: fixed;
+  right: 32px;
+  bottom: calc(var(--a3d-bar-space, 0px) + 24px);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: rgba(238, 243, 250, 0.44);
+  pointer-events: none;
+}
+
+#hud { z-index: 3; }
+#hud .top {
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  gap: 10px;
+}
+#hud .block { padding: 8px 12px; min-width: 124px; }
+#hud .meta { font-size: 12px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+#hud .top .block > .meta:first-child { font-variant-caps: all-small-caps; letter-spacing: 0.03em; line-height: 1.15; }
+#hud .value { font-size: 22px; font-weight: 500; line-height: 1.15; color: var(--warm); font-variant-numeric: tabular-nums; }
+#lap { font-family: var(--font-ui); font-weight: 600; font-variant-numeric: tabular-nums; }
+#speed { font-size: 42px !important; line-height: 1; }
+#hud.hud-gouache > .bottom { display: none; }
+#hud > .bottom {
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(var(--a3d-bar-space, 0px) + max(12px, env(safe-area-inset-bottom)));
+}
+
+/* Unified orbital telemetry cluster (.gouache-hud) */
+.gouache-hud {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(var(--a3d-bar-space, 0px) + max(14px, env(safe-area-inset-bottom)));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+body.touch-on .gouache-hud {
+  bottom: auto;
+  top: 236px;
+}
+.gouache-telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+  text-align: right;
+}
+.gouache-sector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(238, 243, 250, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--ink);
+}
+.gouache-sector-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.gouache-gap { font-size: 12px; line-height: 1.2; color: var(--warm); }
+.gouache-status { display: flex; gap: 8px; font-size: 12px; line-height: 1.2; color: var(--muted); }
+.gouache-grav { color: var(--jade); font-weight: 500; }
+.gouache-gauge { position: relative; width: 88px; height: 88px; flex: 0 0 auto; }
+.gouache-gauge svg { display: block; }
+.gouache-gauge-readout {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 6px;
+}
+.gouache-speed-num { font-size: 25px; line-height: 1; color: var(--ink); }
+.gouache-speed-unit { font-family: var(--font-ui); font-size: 12px; font-weight: 500; line-height: 1.1; color: var(--muted); }
+.gouache-map { flex: 0 0 auto; display: block; }
+
+#order { top: 88px; right: max(12px, env(safe-area-inset-right)); min-width: 156px; padding: 7px 11px; }
+#order li { font-family: var(--font-ui); font-size: 12px; font-weight: 400; line-height: 1.6; font-variant-numeric: tabular-nums; }
+#order li.you { color: var(--ember); font-weight: 600; }
+#order li span:last-child { font-family: var(--font-mono); font-size: 12px; }
+#hud-tools { position: absolute; top: 88px; left: max(12px, env(safe-area-inset-left)); display: flex; gap: 8px; pointer-events: auto; }
+#hud-tools button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 13px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--hud-glass-bg, var(--panel));
+  touch-action: manipulation;
+}
+#banner {
+  top: 96px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--jade);
+  text-shadow: 0 2px 14px rgba(2, 8, 18, 0.85);
+}
+#notice {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--warm);
+  top: 142px;
+  bottom: auto;
+  text-shadow: 0 2px 12px rgba(2, 8, 18, 0.88);
+}
+
+#countdown { place-items: end center; padding-bottom: calc(var(--a3d-bar-space, 0px) + 12vh); box-sizing: border-box; }
+.meter { height: 7px; border-radius: 4px; background: rgba(238, 243, 250, 0.14); }
+.meter > i { background: linear-gradient(90deg, var(--jade), var(--ember)); }
+#progress { bottom: var(--a3d-bar-space, 0px); height: 3px; }
+#progress > i { background: linear-gradient(90deg, var(--jade), var(--warm)); }
+#count { font-size: 144px; font-weight: 500; letter-spacing: -0.02em; color: var(--warm); text-shadow: 0 4px 48px rgba(0, 0, 0, 0.65); }
+#loading { background: #060911; }
+#difficulty-row { gap: 8px; }
+.orbit-hint { font-size: 12px; color: var(--muted); margin: 0; font-variant-numeric: tabular-nums; }
+#menu .meta { font-size: 12px; margin: 0; }
+.menu-row-label { font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.03em; color: var(--muted); min-width: 52px; }
+#menu .row button { min-height: 40px; }
+#best-time, #result-best { margin: 0; font-variant-numeric: tabular-nums; }
+
+@media (max-height: 640px) {
+  .orbit-brand { display: none; }
+  #menu h1 { font-size: 52px; }
+  #menu .tagline { font-size: 14px; }
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  button, #menu .row button, .overlay button, #hud-tools button {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 760px) {
+  #hud .top {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+  #hud .top .block { min-width: 0; flex: 1 1 0; padding: 6px 8px; }
+  #hud .top .value { font-size: 17px; white-space: nowrap; }
+  #hud .meta { font-size: 12px; }
+  #hud-tools { top: 72px; left: max(8px, env(safe-area-inset-left)); gap: 6px; }
+  #order {
+    top: 72px;
+    right: max(8px, env(safe-area-inset-right));
+    min-width: 126px;
+    padding: 5px 8px;
+  }
+  #order li { line-height: 1.45; }
+  #order li:nth-child(n+4):not(.you) { display: none; }
+  #banner {
+    top: 122px;
+    left: max(8px, env(safe-area-inset-left));
+    transform: none;
+    max-width: calc(100% - 148px);
+    font-size: 15px;
+  }
+  .gouache-hud, body.touch-on .gouache-hud {
+    top: 156px;
+    bottom: auto;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+  }
+  .gouache-telemetry { align-items: flex-start; text-align: left; min-width: 0; flex: 1 1 auto; }
+  .gouache-gauge { width: 74px; height: 74px; }
+  .gouache-gauge svg { width: 74px; height: 74px; }
+  .gouache-speed-num { font-size: 21px; }
+  .gouache-map { width: 62px; height: 62px; }
+  #notice, body.touch-on #notice {
+    top: 246px;
+    bottom: auto;
+    font-size: 15px;
+    max-width: 90vw;
+  }
+  #hud > .bottom {
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-bottom)));
+    gap: 8px;
+  }
+  #speed { font-size: 32px !important; }
+  .keys { display: none; }
+  #menu .panel {
+    background: var(--hud-glass-bg, rgba(9, 13, 24, 0.80));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: min(460px, calc(100vw - 20px));
+    gap: 7px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .orbit-tag { display: none; }
+  .orbit-brand { left: max(12px, env(safe-area-inset-left)); }
+}
+
 /* Portrait phones (SO-5): the menu sits at the top and the menu camera frames the riders in the lower third. */
 @media (max-aspect-ratio: 17/20) {
-  #menu { place-items: start center; padding: max(44px, env(safe-area-inset-top)) 12px 0; }
-  #menu .panel { gap: 8px; }
-  #menu h1 { font-size: 44px; }
-  .orbit-brand { top: max(14px, env(safe-area-inset-top)); }
+  #menu {
+    place-items: start center;
+    padding: max(38px, env(safe-area-inset-top)) 10px calc(var(--a3d-bar-space, 0px) + 10px);
+  }
+  #menu .panel { gap: 6px; }
+  #menu h1 { font-size: 36px; }
+  #menu .h1-br { display: none; }
+  .orbit-brand { top: max(12px, env(safe-area-inset-top)); }
 }
 `;
 
@@ -139,7 +384,7 @@ export function installOrbitUi(params: URLSearchParams, choices: OrbitUiChoices)
   const brand = document.createElement("div");
   brand.className = "orbit-brand";
   brand.id = "orbit-brand";
-  brand.textContent = "Craterline Cup";
+  brand.textContent = "Craterline Cup · Low-G Lunar Circuit";
   const tag = document.createElement("div");
   tag.className = "orbit-tag";
   tag.id = "orbit-tag";
@@ -152,15 +397,19 @@ export function installOrbitUi(params: URLSearchParams, choices: OrbitUiChoices)
     if (panel && h1) {
       const kicker = document.createElement("div");
       kicker.className = "kicker";
-      kicker.textContent = "One impossible world";
+      kicker.textContent = "Lunar crater rim grand prix";
       panel.insertBefore(kicker, h1);
-      h1.innerHTML = "Craterline<br>GP.";
+      h1.innerHTML = 'Craterline <br class="h1-br">GP';
       const lead = panel.querySelector("p.meta");
-      if (lead) { lead.className = "tagline"; lead.textContent = "Ride the rings. Find your own way."; }
+      if (lead) { lead.className = "tagline"; lead.textContent = "Carve the regolith rings. Sling across zero-G gaps."; }
       const startRow = byId("start")?.parentElement ?? null;
       const row = document.createElement("div");
       row.className = "row";
       row.id = "difficulty-row";
+      const diffTag = document.createElement("span");
+      diffTag.className = "menu-row-label";
+      diffTag.textContent = "Class";
+      row.appendChild(diffTag);
       for (const d of DIFFICULTIES) {
         const button = document.createElement("button");
         button.type = "button";
@@ -187,7 +436,7 @@ export function installOrbitUi(params: URLSearchParams, choices: OrbitUiChoices)
     }
   }
   const start = byId("start");
-  if (start) start.textContent = "Let's ride";
+  if (start) start.textContent = "Launch race";
   const vehicle = (id: string, active: boolean): void => byId(id)?.setAttribute("aria-pressed", String(active));
   const current = params.get("vehicle") === "skate" ? "skate" : "bike";
   vehicle("vehicle-bike", current === "bike");

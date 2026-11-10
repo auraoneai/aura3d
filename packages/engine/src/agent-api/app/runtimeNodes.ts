@@ -2079,14 +2079,16 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       const raw = update.array;
       const offset = update.offset ?? 0;
       if (!Number.isInteger(offset) || offset < 0) throw new RangeError("Aura3D attribute update offset must be a non-negative integer vertex index.");
-      if (!Array.from(raw).every(Number.isFinite)) throw new RangeError(`Aura3D attribute "${name}" update must contain finite values.`);
+      for (let i = 0, len = raw.length; i < len; i += 1) {
+        if (!Number.isFinite(raw[i])) throw new RangeError(`Aura3D attribute "${name}" update must contain finite values.`);
+      }
       const querySpec = runtimeQueryGeometry.get(this) ?? queryGeometryForUpdate(node);
       if (querySpec) runtimeQueryGeometry.set(this, updatedQueryGeometry(querySpec, name, { array: raw, offset }, node.kind === "line"));
       // Copy the input: mutation by a caller after the update must not race the next frame.
       const array = Array.isArray(raw) ? Float32Array.from(raw) : raw.slice();
-      const pending = { name, array, offset };
+      const pending = { name, array, offset, skipBoundsRefresh: update.skipBoundsRefresh === true };
       const self = this as unknown as {
-        __parityL2AttributeUpdates?: { name: string; array: typeof array; offset: number }[];
+        __parityL2AttributeUpdates?: { name: string; array: typeof array; offset: number; skipBoundsRefresh?: boolean }[];
       };
       (self.__parityL2AttributeUpdates ??= []).push(pending);
       bumpVersion();

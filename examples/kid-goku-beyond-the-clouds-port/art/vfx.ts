@@ -9,7 +9,7 @@
  * speed lines 10 + landing dust 10 + falls spray 5 = 85; splash and landing dust never fire together); reduced motion halves every
  * emission (PRD §6.3). These run beside the port's pooled point sprites (fx.ts), which stay for the per-step dust and wisps.
  */
-import type { AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
+import { texture, type AuraTrailOptions, type AuraVfxEffectSpec } from "@aura3d/engine";
 import { CUMULUS_PALETTE } from "./look";
 
 export type CumulusVfxKind = "pearl-spark" | "cloud-puff" | "puddle-splash" | "storm-mist" | "speed-lines" | "landing-dust" | "falls-spray";
@@ -113,3 +113,50 @@ export function registerCumulusVfx(effects: CumulusPresetRegistry | undefined, r
 
 /** Glider trail behind the cloud mount (E-F `app.effects.trail`, followed per frame): silver, widening with speed. */
 export const CUMULUS_GLIDER_TRAIL: AuraTrailOptions = { width: 0.5, life: 0.45, color: CUMULUS_PALETTE.silver, widthOverSpeed: [8, 24] };
+
+export interface SkyFlipbookAtlasSpec {
+  readonly texture: ReturnType<typeof texture.data>;
+  readonly columns: number;
+  readonly rows: number;
+  readonly frameCount: number;
+}
+
+/** Procedural 8×4 RGBA8 flipbook atlas (`dust` cloud-puff wakes & `sparks` pearl/clash star bursts) for `effects.flipbook`. */
+export function createSkyFlipbookAtlas(kind: "dust" | "sparks", tint: readonly [number, number, number]): SkyFlipbookAtlasSpec {
+  const columns = 8, rows = 4, cell = 48;
+  const width = columns * cell, height = rows * cell, frameCount = columns * rows;
+  const data = new Uint8Array(width * height * 4);
+  for (let frame = 0; frame < frameCount; frame++) {
+    const col = frame % columns, row = Math.floor(frame / columns);
+    const t = frame / (frameCount - 1);
+    const fade = Math.pow(1 - t, kind === "dust" ? 1.35 : 1.75);
+    const radius = 0.18 + 0.68 * Math.pow(t, 0.62);
+    for (let y = 0; y < cell; y++) {
+      const ny = ((y + 0.5) / cell) * 2 - 1;
+      for (let x = 0; x < cell; x++) {
+        const nx = ((x + 0.5) / cell) * 2 - 1;
+        const r = Math.hypot(nx, ny), theta = Math.atan2(ny, nx);
+        let alpha = 0, coreBoost = 0;
+        if (kind === "sparks") {
+          const rays = Math.pow(Math.max(0, Math.cos(theta * 9 + frame * 0.35)), 4);
+          const shell = Math.exp(-Math.pow((r - radius * 0.65) / 0.28, 2));
+          const core = Math.exp(-Math.pow(r / Math.max(0.12, 0.35 * (1 - t)), 2));
+          alpha = Math.min(1, (rays * shell * 0.95 + core) * fade);
+          coreBoost = core;
+        } else {
+          const puff = 0.75 + 0.25 * Math.sin(theta * 3 + r * 4.5);
+          const env = Math.max(0, 1 - r / Math.max(0.22, radius));
+          alpha = Math.min(1, Math.pow(env, 1.4) * puff * fade * 0.85);
+          coreBoost = env * 0.18;
+        }
+        if (alpha <= 0.004) continue;
+        const idx = ((row * cell + y) * width + (col * cell + x)) * 4;
+        data[idx] = Math.min(255, Math.round(tint[0] + (255 - tint[0]) * coreBoost));
+        data[idx + 1] = Math.min(255, Math.round(tint[1] + (255 - tint[1]) * coreBoost));
+        data[idx + 2] = Math.min(255, Math.round(tint[2] + (255 - tint[2]) * coreBoost));
+        data[idx + 3] = Math.min(255, Math.round(alpha * 255));
+      }
+    }
+  }
+  return { texture: texture.data({ data, width, height, format: "rgba8", colorSpace: "srgb" }), columns, rows, frameCount };
+}

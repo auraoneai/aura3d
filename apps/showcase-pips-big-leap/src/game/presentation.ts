@@ -11,7 +11,7 @@
 
 import { camera, type AuraApp, type AuraCustomPostPass, type AuraCameraSequencePlayback, type AuraVec3 } from "@aura3d/engine";
 import { focusDistanceFor, heightFogFor, miniatureFramingFor, presentationScale, type PipLookMode, type PresentationScale } from "./looks.js";
-import { heatShimmerPass } from "./diorama.js";
+import { dioramaName, heatShimmerPass } from "./diorama.js";
 import { createPipVfx, registerPipVfx, type PipEffectsLike, type PipVfxController } from "./vfx.js";
 import type { PlayerEvent } from "./player.js";
 import type { MoveState, WorldId } from "./types.js";
@@ -211,6 +211,42 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
   let removeShimmer: (() => void) | null = null;
   const counts = { mounted: 0, flyovers: 0, gateCuts: 0, focusWrites: 0, flickerWrites: 0, shimmerPasses: 0 };
 
+  interface FlipbookSlot {
+    readonly kind: "dust" | "sparks";
+    readonly name: string;
+    active: boolean;
+    age: number;
+    life: number;
+    x: number;
+    y: number;
+    z: number;
+    vy: number;
+    startScale: number;
+    endScale: number;
+  }
+  const flipbookPool: FlipbookSlot[] = [
+    ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "dust", name: dioramaName.flipbookDust(i), active: false, age: 0, life: 0.42, x: 0, y: -120, z: 0, vy: 0.55, startScale: 0.48, endScale: 1.15 })),
+    ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "sparks", name: dioramaName.flipbookSparks(i), active: false, age: 0, life: 0.36, x: 0, y: -120, z: 0, vy: 0.85, startScale: 0.42, endScale: 1.05 }))
+  ];
+  let dustCursor = 0;
+  let sparksCursor = 0;
+
+  const spawnFlipbook = (kind: "dust" | "sparks", at: AuraVec3, sizeBoost = 1): void => {
+    if (!diorama) return;
+    const base = kind === "dust" ? 0 : 3;
+    const idx = kind === "dust" ? (dustCursor = (dustCursor + 1) % 3) : (sparksCursor = (sparksCursor + 1) % 3);
+    const slot = flipbookPool[base + idx]!;
+    slot.active = true;
+    slot.age = 0;
+    slot.life = (kind === "dust" ? 0.42 : 0.36) * (options.reducedMotion ? 0.75 : 1);
+    slot.x = at[0];
+    slot.y = at[1] + (kind === "dust" ? 0.14 : 0.28);
+    slot.z = at[2];
+    slot.vy = (kind === "dust" ? 0.45 : 0.75) * scale.motion;
+    slot.startScale = (kind === "dust" ? 0.45 : 0.4) * sizeBoost;
+    slot.endScale = (kind === "dust" ? 1.12 : 1.04) * sizeBoost;
+  };
+
   const ensureVfx = (): PipVfxController | null => {
     if (!diorama || !fx || typeof fx.burst !== "function") return null;
     if (!registered && typeof fx.registerPreset === "function") {
@@ -285,15 +321,28 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       const look = built.presentation.look;
       outputTouched = true;
       counts.mounted += 1;
-      // PBL-P1 / lane 521: through 4.7.18 this call wrote `{ preset: look.post.preset, exposure:
-      // 2^exposureEv }`, but app.setOutput never reached the post chain on the LegacyPost route,
-      // so every world (and every blind-panel frame) rendered with the engine default output:
-      // ACES, exposure 1, no preset effects. 5.0 forwards setOutput to the post chain, which
-      // switched w1-w3/w5 to the preset's AgX operator and pushed w4/w6 to 2.2-2.6x exposure
-      // (the 5.0.3 frames: near-black forest, washed-out ember cellar and starfall). The world
-      // look (grade, bloom, vignette, height fog) is authored on the scene; the output stays
-      // pinned to what those looks were tuned and judged under.
-      app.setOutput?.({ toneMapping: "aces", exposure: 1 });
+      // WP-11: AgX filmic tone-mapping + calibrated per-world exposure + broadcast-crisp HDR linear grade,
+      // paired with a gentle high-threshold cinematic bloom so sun-seeds and lava cracks gleam cleanly.
+      app.setOutput?.({
+        toneMapping: "agx",
+        exposure: Number(Math.pow(2, look.exposureEv).toFixed(4)),
+        dither: true
+      });
+      try {
+        app.post?.setEffect?.("bloom", { threshold: 1.02, intensity: 0.24 });
+        app.post?.setEffect?.("colorGrade", {
+          vibrance: 0.08,
+          shadows: [1.0, 0.99, 1.02],
+          midtones: [1.02, 1.01, 0.99],
+          highlights: [1.03, 1.01, 0.98]
+        });
+      } catch {
+        // Stub post surface in unit fakes.
+      }
+      for (const slot of flipbookPool) {
+        slot.active = false;
+        slot.y = -120;
+      }
       // PBL-E1: keep the live fog on the base height fog after the swap.
       if (built.presentation.baseTop !== null) {
         try {
@@ -330,6 +379,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         case "land":
         case "pound-land":
           v.fire("land", at, look.dust);
+          spawnFlipbook("dust", at, e.kind === "pound-land" ? 1.35 : 1);
           squashAmp = SQUASH.land * scale.motion;
           squashT = 0;
           // PBL-C2 pound shake; off under reduced motion (PRD 6.3), like the pack's camera layers.
@@ -339,22 +389,29 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         case "double-jump":
         case "spring":
           v.fire("jump", at, look.dust);
+          spawnFlipbook("dust", at, e.kind === "spring" ? 1.15 : 0.78);
           squashAmp = SQUASH.jump * scale.motion;
           squashT = 0;
           break;
         case "seed": {
           const seed = built.seeds.find((s) => s.id === e.id);
-          v.fire("seed", seed ? [seed.x, seed.y, seed.z] : at);
+          const pos: AuraVec3 = seed ? [seed.x, seed.y, seed.z] : at;
+          v.fire("seed", pos);
+          spawnFlipbook("sparks", pos, 1.15);
           break;
         }
         case "acorn": {
           const acorn = built.acorns.find((a) => a.id === e.id);
-          v.fire("acorn", acorn ? [acorn.x, acorn.y, acorn.z] : at);
+          const pos: AuraVec3 = acorn ? [acorn.x, acorn.y, acorn.z] : at;
+          v.fire("acorn", pos);
+          spawnFlipbook("sparks", pos, 0.85);
           break;
         }
         case "checkpoint": {
           const cp = built.checkpoints.find((c) => c.id === e.id);
-          v.fire("checkpoint", cp ? [cp.x, cp.y + 1.2, cp.z] : at);
+          const pos: AuraVec3 = cp ? [cp.x, cp.y + 1.2, cp.z] : at;
+          v.fire("checkpoint", pos);
+          spawnFlipbook("sparks", pos, 1.05);
           break;
         }
         case "hurt":
@@ -426,6 +483,22 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       }
       const bob = padBob(f.time, scale.motion);
       for (const name of built.presentation.bobNodes) node(name)?.setPosition?.(0, bob, 0);
+      for (const slot of flipbookPool) {
+        if (!slot.active) continue;
+        slot.age += f.dt;
+        const h = node(slot.name);
+        if (slot.age >= slot.life) {
+          slot.active = false;
+          slot.y = -120;
+          h?.setPosition?.(0, -120, 0);
+          continue;
+        }
+        const u = Math.min(1, slot.age / slot.life);
+        const eased = 1 - (1 - u) * (1 - u);
+        const s = slot.startScale + (slot.endScale - slot.startScale) * eased;
+        h?.setPosition?.(slot.x, slot.y + slot.vy * slot.age, slot.z);
+        h?.setScale([s, s, s]);
+      }
       // PBL-V2: the unlocked Sun-Gate ring breathes.
       const ring = f.gateUnlocked ? 1 + 0.06 * Math.sin(f.time * 4) * scale.motion : 1;
       node(options.gateRingNode)?.setScale([ring, ring, ring]);

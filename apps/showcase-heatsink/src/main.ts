@@ -1,7 +1,9 @@
 import "../../showcase-port-shared/quickbar.css";
-import { readLabFlags, labAppOptions, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
+import { readLabFlags, labAppOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
-import { createAuraApp, createFixedStepLoop, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { createImpactRig } from "../../showcase-port-shared/feel";
+import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
+import { createAuraApp, createFixedStepLoop, type AuraOutputOptions, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
 import { createThermalDriftAudio } from "./audio";
@@ -31,6 +33,7 @@ import {
   HEADLIGHT,
   HEADLIGHT_DIRECTION,
   HEADLIGHT_ID,
+  HEATSINK_FIN,
   IDS,
   INSTANCE_COUNTS,
   LAVA_POOL,
@@ -40,10 +43,21 @@ import {
   RIG_IDS,
   ROAD_TILE_COUNT,
   ROAD_TILE_SPACING,
+  ROTOR_DISC,
+  SCENERY_BATCHES,
+  SINGLE_SCENERY_ANCHORS,
+  THERMAL_VENT,
+  THRUSTER_PLUME,
   WALL_SEGMENT_COUNT,
   WALL_SPACING
 } from "./scene";
-import { CHEVRON_HEAT_UNIFORM, quantisedHeat } from "./shaders";
+import {
+  CHEVRON_HEAT_UNIFORM,
+  FLIPBOOK_BURST_UNIFORM,
+  quantisedHeat,
+  THRUSTER_BOOST_UNIFORM,
+  THRUSTER_HEAT_UNIFORM
+} from "./shaders";
 import { SECTOR_CROSSFADE_SECONDS, sectorTargets } from "./sectors";
 import { droneBob, holoVisible, stepBoostPitch } from "./motion";
 import {
@@ -72,18 +86,11 @@ const NEAR_LENS_METRES = 5.5;
 
 const params = new URLSearchParams(window.location.search);
 const qaManual = params.get("qaManual") === "1";
-/**
- * `?autostart=1` skips the title card: the race is started as soon as the scene is ready (as if Start were pressed,
- * without unlocking audio). With `?qaManual=1` the fixed-step sim then stays at the first countdown beat, so the
- * countdown "3" shot holds still for a capture. Without the parameter the title card waits for the player as before.
- */
 const autostart = params.get("autostart") === "1";
 const qaEvRaw = Number(params.get("qaEv"));
 const qaEv = params.has("qaEv") && Number.isFinite(qaEvRaw) ? Math.min(2, Math.max(-2, qaEvRaw)) : undefined;
 const qaAoOff = params.get("qaAo") === "off";
-/** HS-11 QA on/off pair: `?qaHaze=off` keeps the heat-haze pass registered but disabled. */
 const qaHazeOff = params.get("qaHaze") === "off";
-/** Lab flags (EXPERIMENTAL, default OFF): `?hazeNormal=1` heat haze reads the engine normal input (A6); `?clustered=1` clustered local lights (A5). */
 const labHazeNormal = params.get("hazeNormal") === "1";
 const labClustered = params.get("clustered") === "1";
 const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -92,7 +99,6 @@ const hud = createHud(document);
 const audio = createThermalDriftAudio((muted) => hud.setMuted(muted));
 
 let selectedDrone: DroneId = "orion";
-// GU47 HS-21 / E-I variant param: `?circuit=grand|dustfall|vesper` boots that circuit (default MEGACITY).
 let selectedCircuit: CircuitId = circuitFromParam(params.get("circuit")) ?? "grand";
 let selectedMode: ModeId = "race";
 let autopilotOn = params.get("autoplay") === "1" || params.get("demo") === "1";
@@ -107,40 +113,62 @@ let race = newRace();
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 
+/** Rotate a drone-local offset `[ox, oy, oz]` by `Ry(yaw) * Rx(pitch) * Rz(roll)` into `[out]`. */
+function placeLocalOffset(
+  cx: number,
+  cy: number,
+  cz: number,
+  pitch: number,
+  yaw: number,
+  roll: number,
+  ox: number,
+  oy: number,
+  oz: number,
+  out: [number, number, number]
+): void {
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const cyw = Math.cos(yaw), syw = Math.sin(yaw);
+  const cr = Math.cos(roll), sr = Math.sin(roll);
+  const x1 = ox * cr - oy * sr;
+  const y1 = ox * sr + oy * cr;
+  const z1 = oz;
+  const x2 = x1;
+  const y2 = y1 * cp - z1 * sp;
+  const z2 = y1 * sp + z1 * cp;
+  out[0] = cx + x2 * cyw + z2 * syw;
+  out[1] = cy + y2;
+  out[2] = cz - x2 * syw + z2 * cyw;
+}
+
 async function boot(): Promise<void> {
   let sceneReducedMotion = reducedMotionQuery?.matches ?? false;
   const sceneOptions = (id: CircuitId) => {
     sceneReducedMotion = reducedMotionQuery?.matches ?? false;
     return { circuit: CIRCUITS[id], reducedMotion: sceneReducedMotion, ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) };
   };
-  // A1: shared loading helper. It only keeps `--aura3d-loading` / aria-valuenow on the existing boot card in step; no new pixels.
   const loading = createLoadingProgress({ ...(document.getElementById("boot") ? { element: document.getElementById("boot") as HTMLElement } : {}) });
-  // W-8 lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu, ?gamut=p3 and ?worker=1 (worker rendering, main-thread fallback kept). The depth flag is not wired here.
   const lab = readLabFlags();
-  // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
   const labOptions = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
+  const cyberNeonLut = createGradingLut("cyber-neon");
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
-    // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
-    // quality-tier lane is on; a fixed "high" would keep phones on the desktop tier and logs RENDERER_QUALITY_STRING.
     renderer: { quality: { tier: "auto" } },
-    // Lab flag ?backend= (default OFF): replaces the renderer block, keeping the same auto tier.
     ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
-    ...(labOptions.output ? { output: labOptions.output } : {}),
-    // A WebGPU backend (?backend=webgpu, or ?backend=auto when it resolves to WebGPU) cannot capture the pit-lane reflection
-    // probe on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so WebGPU (the default since WebGPU
-    // perf round 3) also asks for async frames; ?backend=webgl2 keeps synchronous frames.
-    ...(resolveLabBackend(lab, "auto") ? { frameMode: "async" as const } : {}),
+    output: {
+      toneMapping: "agx",
+      exposure: 1.05,
+      dither: true,
+      lut: { ...cyberNeonLut, intensity: 0.35 },
+      ...(labOptions.output ?? {})
+    } as AuraOutputOptions,
     ...(labOptions.worker ? { worker: labOptions.worker } : {}),
     qualityRebuild: { flags: ["game"] },
     ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),
-    // A2: the engine diagnostics overlay only with ?diag=1 (off by default, nothing drawn otherwise).
     diagnostics: params.get("diag") === "1" ? { overlay: true } : false
   });
   loading.set(0.2);
   const req = (id: string): AuraRuntimeNodeHandle => auraApp.nodes.require(id);
 
-  // Every handle the draw writes; rebound after a circuit remount (HS-03).
   const makeDrones = () => Object.fromEntries(DRONE_ORDER.map((id) => [id, req(DRONE_SPECS[id].nodeId)])) as Record<DroneId, AuraRuntimeNodeHandle>;
   const makeWriters = () => ({
     deckEven: new InstanceWriter(req(IDS.deckEven), INSTANCE_COUNTS.deckEven),
@@ -149,25 +177,36 @@ async function boot(): Promise<void> {
     spineB: new InstanceWriter(req(IDS.spineB), INSTANCE_COUNTS.spineB),
     lanes: new InstanceWriter(req(IDS.lanes), INSTANCE_COUNTS.lanes),
     walls: new InstanceWriter(req(IDS.walls), INSTANCE_COUNTS.walls),
+    fins: new InstanceWriter(req(IDS.fins), INSTANCE_COUNTS.fins),
+    vents: new InstanceWriter(req(IDS.vents), INSTANCE_COUNTS.vents),
     chevA: new InstanceWriter(req(IDS.chevA), INSTANCE_COUNTS.chevA),
     chevB: new InstanceWriter(req(IDS.chevB), INSTANCE_COUNTS.chevB),
     gutters: new InstanceWriter(req(IDS.gutters), INSTANCE_COUNTS.gutters),
     bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts),
-    shadows: new InstanceWriter(req(IDS.shadows), INSTANCE_COUNTS.shadows)
+    shadows: new InstanceWriter(req(IDS.shadows), INSTANCE_COUNTS.shadows),
+    thrusters: new InstanceWriter(req(IDS.thrusters), INSTANCE_COUNTS.thrusters),
+    rotors: new InstanceWriter(req(IDS.rotors), INSTANCE_COUNTS.rotors)
   });
-  const makeScenery = () => SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
+  const makeScenery = () => SINGLE_SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
+  const makeSceneryBatches = () => SCENERY_BATCHES.map((batch) => ({ batch, writer: new InstanceWriter(req(batch.id), batch.anchors.length) }));
+
   let droneHandles = makeDrones();
   let writers = makeWriters();
   let ringHandle = req(IDS.ring);
   let missileHandle = req(IDS.missile);
   let incomingHandle = req(IDS.incoming);
   let mineHandle = req(IDS.mine);
+  let plasmaBurstHandle = req(IDS.plasmaBurst);
+  let sparksBurstHandle = req(IDS.sparksBurst);
+  let thrusterHandle = req(IDS.thrusters);
+  let rotorHandle = req(IDS.rotors);
   let sceneryHandles = makeScenery();
-  // HS-15: the two chevron nodes share one custom program; `u_heat` is written when the quantised core heat changes.
-  let chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
+  let sceneryBatches = makeSceneryBatches();
+  let chevronHandles = [req(IDS.chevA), req(IDS.chevB), req(IDS.vents)];
   let chevronHeat = -1;
-  // HS-02: the headlight and the anchored local lights carry a fixed direction (E-B: an explicit direction stays fixed
-  // while the light moves), so moving them never re-aims them at their authored mount-time target.
+  let thrusterHeat = -1;
+  let thrusterBoost = -1;
+
   const anchorById = new Map(SCENERY_ANCHORS.map((anchor) => [anchor.id, anchor] as const));
   const bindLocalLights = (circuit: CircuitId) => {
     const head = req(HEADLIGHT_ID);
@@ -180,10 +219,10 @@ async function boot(): Promise<void> {
     return { head, anchored };
   };
   let localLights = bindLocalLights(selectedCircuit);
-  // HS-16: the sector the fog and key last cross-faded to ("" = the mounted circuit values, no fade on mount).
   let keyHandle = req(RIG_IDS.key);
   let shownSector = "";
   const anchorDistance: Record<string, number> = {};
+
   function bindHandles(circuit: CircuitId): void {
     droneHandles = makeDrones();
     writers = makeWriters();
@@ -191,9 +230,16 @@ async function boot(): Promise<void> {
     missileHandle = req(IDS.missile);
     incomingHandle = req(IDS.incoming);
     mineHandle = req(IDS.mine);
+    plasmaBurstHandle = req(IDS.plasmaBurst);
+    sparksBurstHandle = req(IDS.sparksBurst);
+    thrusterHandle = req(IDS.thrusters);
+    rotorHandle = req(IDS.rotors);
     sceneryHandles = makeScenery();
-    chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
+    sceneryBatches = makeSceneryBatches();
+    chevronHandles = [req(IDS.chevA), req(IDS.chevB), req(IDS.vents)];
     chevronHeat = -1;
+    thrusterHeat = -1;
+    thrusterBoost = -1;
     localLights = bindLocalLights(circuit);
     keyHandle = req(RIG_IDS.key);
     shownSector = "";
@@ -201,17 +247,42 @@ async function boot(): Promise<void> {
 
   const track = new TrackView();
   const chase = new ChaseCamera();
+  const impactRig = createImpactRig();
+  let impactState = impactRig.step(0);
+  let simClockMs = performance.now();
+  let wasBoosting = false;
+
+  const plasmaBurst = { active: false, age: 0, duration: 0.42 };
+  const sparksBurst = { active: false, age: 0, duration: 0.3, side: 1 };
+  function triggerPlasmaBurst(duration = 0.42): void {
+    plasmaBurst.active = true;
+    plasmaBurst.age = 0;
+    plasmaBurst.duration = duration;
+  }
+  function triggerSparksBurst(side: number, duration = 0.3): void {
+    sparksBurst.active = true;
+    sparksBurst.age = 0;
+    sparksBurst.duration = duration;
+    sparksBurst.side = side >= 0 ? 1 : -1;
+  }
+
   const pose: TrackPose = { x: 0, y: 0, z: 0, heading: 0 };
   const pose2: TrackPose = { x: 0, y: 0, z: 0, heading: 0 };
+  const attachPt: [number, number, number] = [0, 0, 0];
   const screen: ScreenPoint = { x: 0, y: 0, depth: 0 };
   const rivalSlots = new Map<number, DroneId>();
   const slotOut = new Map<DroneId, number>();
   const rivalModelsFor = Object.fromEntries(DRONE_ORDER.map((d) => [d, DRONE_ORDER.filter((o) => o !== d)])) as unknown as Record<DroneId, readonly DroneId[]>;
   const SIDES = [-1, 1] as const;
+  const ROTOR_CORNERS: readonly (readonly [number, number])[] = [
+    [-ROTOR_DISC.lateral, -ROTOR_DISC.foreAft],
+    [ROTOR_DISC.lateral, -ROTOR_DISC.foreAft],
+    [-ROTOR_DISC.lateral, ROTOR_DISC.foreAft],
+    [ROTOR_DISC.lateral, ROTOR_DISC.foreAft]
+  ];
   let shownCircuit: CircuitId = selectedCircuit;
 
   // ------------------------------------------------------------------------------------------ VFX (HS-13)
-  // Sim events queue bursts during the fixed step; the draw fires them at the presented poses (presentation only).
   const vfxLedger = new VfxLedger();
   const pendingVfx: { kind: TdVfxKind; anchor: VfxAnchor }[] = [];
   const vfxAt: [number, number, number] = [0, 0, 0];
@@ -222,7 +293,6 @@ async function boot(): Promise<void> {
   let missileWasActive = false;
   let incomingWasActive = false;
   let plume: { drone: DroneId; reduced: boolean; handle: { stop(o?: { immediate?: boolean }): void } | undefined } | null = null;
-  /** The exhaust plume follows the player's drone node; respawned when the drone or the motion preference changes. */
   function syncPlume(drone: DroneId, reduced: boolean): void {
     if (plume && plume.drone === drone && plume.reduced === reduced) return;
     plume?.handle?.stop({ immediate: true });
@@ -249,12 +319,9 @@ async function boot(): Promise<void> {
   const missileAt: [number, number, number] = [0, 0, 0];
   const incomingAt: [number, number, number] = [0, 0, 0];
   const exhaustAt: [number, number, number] = [0, 0, 0];
-  /** Named crops for the phase-2 capture (E-I crop contract), re-projected every frame. */
   let qaCrops: readonly GameQaCrop[] = [];
   (window as unknown as { __AURA_QA__?: { crops: () => readonly GameQaCrop[] } }).__AURA_QA__ = { crops: () => qaCrops };
 
-  // HS-12: motion blur only while boosting (E-C runtime post control; the engine drops it below High; never on
-  // reduced motion).
   let boostBlurOn = false;
   function syncBoostBlur(on: boolean): void {
     if (on === boostBlurOn) return;
@@ -267,10 +334,6 @@ async function boot(): Promise<void> {
     }
   }
 
-  /**
-   * HS-03: a circuit change remounts the scene with that circuit's sky, rig, fog, post and weather (the GLB cache makes
-   * the second mount fetch-free), rebinds every handle and restarts the trails and the plume on the new nodes.
-   */
   function remountCircuit(id: CircuitId): void {
     syncBoostBlur(false);
     auraApp.setScene(buildThermalDriftScene(sceneOptions(id)));
@@ -310,13 +373,20 @@ async function boot(): Promise<void> {
   function resetView(): void {
     presenter.reset();
     loop.resetAccumulator();
+    simClockMs = performance.now();
     chase.reset();
+    impactRig.reset();
+    impactState = impactRig.step(0);
+    wasBoosting = false;
+    plasmaBurst.active = false;
+    sparksBurst.active = false;
+    plasmaBurstHandle.setVisible(false);
+    sparksBurstHandle.setVisible(false);
     rivalSlots.clear();
     pendingActions.length = 0;
     hud.resetRace(race);
   }
 
-  /** The one full reset (C16): every value comes from createRace, the boot path included. */
   function restart(): void {
     race = newRace();
     hud.hideResults();
@@ -374,31 +444,86 @@ async function boot(): Promise<void> {
       if (fx && pendingVfx.length < 16) pendingVfx.push({ kind: fx.kind, anchor: fx.anchor });
       switch (e.type) {
         case "countdown": hud.countdown(String(e.value)); break;
-        case "go": hud.countdown("GO"); break;
+        case "go":
+          hud.countdown("GO");
+          impactRig.trigger({ fovKickDeg: 4.5, trauma: 0.14 });
+          break;
         case "lap":
           if (e.best || e.trace) saveRecord(race.circuit, race.drone, { bestLap: race.bestLap, ghost: race.ghost as GhostTrace | null });
           if (race.lapsDone < TOTAL_LAPS || race.mode === "elim") hud.centerMessage(race.mode === "elim" ? `LAP ${race.lapsDone + 1}` : `LAP ${race.lapsDone + 1}/${TOTAL_LAPS}`, e.best ? "NEW BEST LAP" : CIRCUITS[race.circuit].name, 1.8);
           break;
         case "finish": hud.showResults(e.result, race); break;
-        case "takedown": hud.banner(`${e.by === "missile" ? "MISSILE " : e.by === "shock" ? "EMP " : e.by === "mine" ? "MINE " : ""}TAKEDOWN · ${e.name.toUpperCase()}`); break;
+        case "takedown":
+          impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.32, fovKickDeg: 3 });
+          hud.banner(`${e.by === "missile" ? "MISSILE " : e.by === "shock" ? "EMP " : e.by === "mine" ? "MINE " : ""}TAKEDOWN · ${e.name.toUpperCase()}`);
+          break;
         case "incoming": hud.banner(`${e.name.toUpperCase()} FIRED`); break;
         case "evaded": hud.banner("MISSILE EVADED"); break;
-        case "damage": chase.addTrauma(e.source === "missile" ? 0.6 : e.source === "barrel" ? 0.5 : 0.3); hud.flashDamage(); break;
-        case "scrape": chase.addTrauma(0.25); hud.banner("WALL SCRAPE"); break;
-        case "bump": chase.addTrauma(0.3); hud.banner(`CONTACT · ${e.name.toUpperCase()}`); break;
+        case "damage": {
+          const heavy = e.source === "missile" || e.source === "barrel";
+          chase.addTrauma(e.source === "missile" ? 0.6 : e.source === "barrel" ? 0.5 : 0.3);
+          impactRig.trigger({ freezeSeconds: heavy ? 0.045 : 0.025, trauma: heavy ? 0.52 : 0.25, fovKickDeg: heavy ? -2.5 : 0 });
+          hud.flashDamage();
+          break;
+        }
+        case "scrape":
+          chase.addTrauma(0.25);
+          impactRig.trigger({ freezeSeconds: 0.024, trauma: 0.24 });
+          triggerSparksBurst(race.player.x >= 0 ? 1 : -1, 0.28);
+          hud.banner("WALL SCRAPE");
+          break;
+        case "bump":
+          chase.addTrauma(0.3);
+          impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.32 });
+          triggerSparksBurst(race.player.x >= 0 ? 1 : -1, 0.32);
+          hud.banner(`CONTACT · ${e.name.toUpperCase()}`);
+          break;
         case "pickup":
-          hud.banner(e.kind === "boost" ? "BOOST PAD" : e.kind === "coolant" ? "COOLANT" : e.kind === "shield" ? "SHIELD CELL" : "SHOCK RECHARGED");
+          if (e.kind === "coolant") {
+            impactRig.trigger({ fovKickDeg: 6, trauma: 0.16 });
+            triggerPlasmaBurst(0.44);
+          } else if (e.kind === "boost") {
+            impactRig.trigger({ fovKickDeg: 6, trauma: 0.2 });
+            triggerPlasmaBurst(0.36);
+          } else {
+            impactRig.trigger({ fovKickDeg: 3.5, trauma: 0.12 });
+            triggerPlasmaBurst(0.34);
+          }
+          hud.banner(e.kind === "boost" ? "BOOST PAD" : e.kind === "coolant" ? "COOLANT PURGE" : e.kind === "shield" ? "SHIELD CELL" : "SHOCK RECHARGED");
           if (e.item) hud.banner(`ITEM · ${e.item}`);
           break;
-        case "barrel": hud.banner("BARREL HIT"); break;
-        case "destroyed": chase.addTrauma(0.9); hud.centerMessage("DRONE DOWN", "RESPAWNING", 1.8); break;
+        case "barrel":
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.55, fovKickDeg: -3 });
+          triggerPlasmaBurst(0.45);
+          hud.banner("BARREL HIT");
+          break;
+        case "destroyed":
+          chase.addTrauma(0.9);
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.85, fovKickDeg: -4 });
+          triggerPlasmaBurst(0.52);
+          hud.centerMessage("DRONE DOWN", "RESPAWNING", 1.8);
+          break;
         case "respawn": hud.banner("BACK IN THE RACE"); break;
         case "eliminated": if (!e.player) hud.banner(`ELIMINATED · ${e.name.toUpperCase()}`); break;
-        case "overheat": hud.banner("THERMAL OVERLOAD · VENTING"); break;
-        case "shock": if (e.hits === 0) hud.banner("SHOCKWAVE PULSE"); break;
+        case "overheat":
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.45, fovKickDeg: 6 });
+          triggerPlasmaBurst(0.5);
+          hud.banner("THERMAL OVERLOAD · VENTING");
+          break;
+        case "shock":
+          impactRig.trigger({ fovKickDeg: 5, trauma: 0.26 });
+          triggerPlasmaBurst(0.4);
+          if (e.hits === 0) hud.banner("SHOCKWAVE PULSE");
+          break;
         case "roll": hud.banner("BARREL ROLL"); break;
         case "mine": hud.banner("PROXIMITY MINE DEPLOYED"); break;
-        case "item": hud.banner(e.item); break;
+        case "item":
+          if (e.item === "CRYO FLUSH" || e.item === "TURBO CELL" || e.item === "HYPERDRIVE") {
+            impactRig.trigger({ fovKickDeg: 6, trauma: 0.18 });
+            triggerPlasmaBurst(0.42);
+          }
+          hud.banner(e.item);
+          break;
         default: break;
       }
     }
@@ -427,8 +552,27 @@ async function boot(): Promise<void> {
     handle.setRotation(pitch, -heading + yaw, roll);
   }
 
-  /** HUD timers (banners, messages, countdown digits) run on wall-clock time, so they clear on time even when the
-   *  page draws a frame every few seconds; the camera smoothing keeps the clamped frame time. */
+  function writeDronePlumesAndRotors(
+    cx: number,
+    cy: number,
+    cz: number,
+    pitch: number,
+    worldYaw: number,
+    roll: number,
+    plumeLengthScale: number
+  ): void {
+    const halfLen = THRUSTER_PLUME.length * 0.5 * plumeLengthScale;
+    const plumePitch = Math.PI * 0.5 + pitch;
+    for (const side of SIDES) {
+      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * THRUSTER_PLUME.lateral, THRUSTER_PLUME.y, THRUSTER_PLUME.back + halfLen, attachPt);
+      writers.thrusters.pushPose(attachPt[0], attachPt[1], attachPt[2], plumePitch, worldYaw, roll, 1, plumeLengthScale, 1);
+    }
+    for (const [rx, rz] of ROTOR_CORNERS) {
+      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, ROTOR_DISC.y, rz, attachPt);
+      writers.rotors.pushPose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, 1, 1, 1);
+    }
+  }
+
   let lastHudAt = performance.now();
   let resultsSeconds = 0;
   let boostPitch = 0;
@@ -438,14 +582,17 @@ async function boot(): Promise<void> {
     lastHudAt = now;
     const circuit = CIRCUITS[race.circuit];
     const reduced = reducedMotionQuery?.matches ?? false;
-    // HS-06: weather is a scene node per circuit (rain, dust or embers), so a change of the motion preference remounts
-    // like a circuit change (before any handle is written this frame).
     if (shownCircuit !== race.circuit || reduced !== sceneReducedMotion) remountCircuit(race.circuit);
     const shown = presenter.present(loop, !qaManual && race.phase === "racing");
     const p = race.player;
+    const isBoosting = race.phase === "racing" && p.boosting;
+    if (isBoosting && !wasBoosting) {
+      impactRig.trigger({ fovKickDeg: 6, trauma: 0.14 });
+    }
+    wasBoosting = isBoosting;
     track.update(circuit, shown.player[0]!);
 
-    // HS-16: cross-fade fog and key to the player's sector over 1.5 s (first frame after a mount: no fade).
+    // HS-16: cross-fade fog and key to the player's sector over 1.5 s.
     const sectorName = sectorNameAt(circuit, Math.max(0, p.progress));
     if (sectorName !== shownSector) {
       const target = sectorTargets(CIRCUIT_LOOKS[race.circuit], sectorName);
@@ -455,23 +602,33 @@ async function boot(): Promise<void> {
       shownSector = sectorName;
     }
 
-    // Player
+    // Player drone + instanced plumes, rotors, and contact shadows
     const playerHandle = droneHandles[race.drone];
     track.place(0.4, shown.player[1]!, shown.player[2]!, pose);
     const blink = p.respawn <= 0 && race.time - p.lastHitTime < 0.6 && Math.floor(race.time * 20) % 2 === 0;
-    // HS-19: hover bob and the smoothed boost pitch (presentation only).
-    boostPitch = stepBoostPitch(boostPitch, race.phase === "racing" && p.boosting, frameSeconds, reduced);
-    playerHandle.setPosition(pose.x, pose.y + droneBob(now / 1000, reduced), pose.z).setVisible(p.respawn <= 0 && !blink);
-    droneRotation(playerHandle, pose.heading, shown.player[4]! + boostPitch, shown.player[5]!, shown.player[3]! + (reduced ? 0 : rollAngle(race)));
-    const dronePos: [number, number, number] = [pose.x, pose.y, pose.z];
-    // GU47 phase 3: a soft contact shadow on the deck under every drawn drone (presentation only).
+    boostPitch = stepBoostPitch(boostPitch, isBoosting, frameSeconds, reduced);
+    const bobY = pose.y + droneBob(now / 1000, reduced);
+    const pPitch = shown.player[4]! + boostPitch;
+    const pWorldYaw = -pose.heading + shown.player[5]!;
+    const pRoll = shown.player[3]! + (reduced ? 0 : rollAngle(race));
+    const playerVisible = p.respawn <= 0 && !blink;
+    playerHandle.setPosition(pose.x, bobY, pose.z).setVisible(playerVisible);
+    droneRotation(playerHandle, pose.heading, pPitch, shown.player[5]!, pRoll);
+    const dronePos: [number, number, number] = [pose.x, bobY, pose.z];
+
     writers.shadows.begin();
+    writers.thrusters.begin();
+    writers.rotors.begin();
     if (p.respawn <= 0) {
       track.place(0.4, shown.player[1]!, CONTACT_SHADOW.y, pose2);
       writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
+      if (playerVisible) {
+        const playerPlumeScale = p.hyper > 0 ? 1.85 : isBoosting ? 1.48 : 0.95;
+        writeDronePlumesAndRotors(pose.x, bobY, pose.z, pPitch, pWorldYaw, pRoll, playerPlumeScale);
+      }
     }
 
-    // Rivals: drawn set onto the six other drone models; a rival keeps its model while it stays drawn.
+    // Rivals: drawn set onto the six other drone models + their instanced plumes, rotors, and contact shadows
     const slots = slotRivals(race.drawn, rivalSlots, rivalModelsFor[race.drone], slotOut);
     hotRivalCount = 0;
     for (const id of DRONE_ORDER) {
@@ -483,8 +640,6 @@ async function boot(): Promise<void> {
       const base = rivalIndex * 3;
       const d = shown.rivals[base]! - shown.player[0]!;
       track.place(d + 0.4, shown.rivals[base + 1]!, shown.rivals[base + 2]!, pose2);
-      // GU47 phase 3: a rival drawn just behind the player can sit inside the chase lens (the card retake showed one filling
-      // the frame); hide a rival within NEAR_LENS_METRES of last frame's camera (presentation only, the sim still has it).
       const lens = chase.pose.position;
       const nearLens = Math.hypot(pose2.x - lens[0], pose2.y - lens[1], pose2.z - lens[2]) < NEAR_LENS_METRES;
       h.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!nearLens);
@@ -492,15 +647,19 @@ async function boot(): Promise<void> {
         const hot = hotRivals[hotRivalCount++]!;
         hot[0] = pose2.x; hot[1] = pose2.y + 0.1; hot[2] = pose2.z + 1.5;
       }
-      droneRotation(h, pose2.heading, -0.04, 0, Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22)));
+      const rRoll = Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22));
+      droneRotation(h, pose2.heading, -0.04, 0, rRoll);
       if (!nearLens) {
+        writeDronePlumesAndRotors(pose2.x, pose2.y, pose2.z, -0.04, -pose2.heading, rRoll, 1.0);
         track.place(d + 0.4, shown.rivals[base + 1]!, CONTACT_SHADOW.y, pose2);
         writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }
     }
     writers.shadows.end();
+    writers.thrusters.end();
+    writers.rotors.end();
 
-    // Road tiles: fixed world positions every 12 m; colour by absolute tile index so nothing flips while scrolling.
+    // Road tiles
     const progress = shown.player[0]!;
     const firstTile = Math.floor((progress - 20) / ROAD_TILE_SPACING);
     writers.deckEven.begin(); writers.deckOdd.begin(); writers.spineA.begin(); writers.spineB.begin(); writers.lanes.begin();
@@ -516,24 +675,24 @@ async function boot(): Promise<void> {
     }
     writers.deckEven.end(); writers.deckOdd.end(); writers.spineA.end(); writers.spineB.end(); writers.lanes.end();
 
-    // Walls, chevrons and the HS-15 slag gutters at the wall feet every 13.5 m (the gutter node ends after the scenery,
-    // which adds the lava pool).
+    // Brushed-metal barrier walls, anodized heatsink cooling-fin pylons, thermal vents, chevrons, and slag gutters
     const firstWall = Math.floor((progress - 20) / WALL_SPACING);
-    writers.walls.begin(); writers.chevA.begin(); writers.chevB.begin(); writers.gutters.begin();
+    writers.walls.begin(); writers.fins.begin(); writers.vents.begin(); writers.chevA.begin(); writers.chevB.begin(); writers.gutters.begin();
     for (let i = 0; i < WALL_SEGMENT_COUNT; i += 1) {
       const n = firstWall + i;
       const d = n * WALL_SPACING + WALL_SPACING / 2 - progress;
       const chev = (n & 1) === 0 ? writers.chevA : writers.chevB;
       for (const side of SIDES) {
         track.place(d, side * 11.3, 0.55, pose2); writers.walls.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
+        track.place(d, side * HEATSINK_FIN.lateral, HEATSINK_FIN.y, pose2); writers.fins.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
+        track.place(d, side * THERMAL_VENT.lateral, THERMAL_VENT.y, pose2); writers.vents.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
         track.place(d, side * 10.72, 0.72, pose2); chev.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
         track.place(d, side * GUTTER.lateral, GUTTER.y, pose2); writers.gutters.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }
     }
-    writers.walls.end(); writers.chevA.end(); writers.chevB.end();
+    writers.walls.end(); writers.fins.end(); writers.vents.end(); writers.chevA.end(); writers.chevB.end();
 
-    // Scenery: the copy in the window [-(10 + maxDim/2), period - (10 + maxDim/2)) metres around the player. A copy is
-    // hidden only once it is behind the camera (C4), or after its pickup was collected on this pass (C14).
+    // Unique single scenery anchors
     lavaVisible = false;
     for (const { anchor, handle } of sceneryHandles) {
       const behind = 10 + anchor.maxDim / 2;
@@ -542,23 +701,41 @@ async function boot(): Promise<void> {
       track.place(d, anchor.lateralX, anchor.baseY, pose2);
       anchorDistance[anchor.id] = d;
       const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
-      // HS-19: the holo billboards flicker (never on reduced motion).
       const flickerOff = anchor.assetKey === "heatsinkHoloBillboard" && !holoVisible(now / 1000, anchor.s, reduced);
       handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected && !flickerOff);
       if (anchor.kind === "lava" && d > 0) {
-        // HS-11: the lava curtain is a heat source; its hot core sits about a third of the way up.
         lavaVisible = true;
         lavaAt[0] = pose2.x; lavaAt[1] = pose2.y + anchor.maxDim * 0.35; lavaAt[2] = pose2.z;
       }
       if (anchor.kind === "lava" && !collected) {
-        // HS-15: the molten pool the curtain pours into (the last gutter instance, scaled).
         writers.gutters.pushScaled(pose2.x, pose2.y + LAVA_POOL.y, pose2.z, -pose2.heading + anchor.yaw, LAVA_POOL_SCALE[0], LAVA_POOL_SCALE[1], LAVA_POOL_SCALE[2]);
       }
       handle.setRotation(0, -pose2.heading + anchor.yaw + (anchor.spinSpeed && !reduced ? race.time * anchor.spinSpeed : 0), 0);
     }
     writers.gutters.end();
 
-    // HS-02 local lights: the headlight rides with the player, sodium lamps and tunnel strips with their anchors.
+    // Batched repeated scenery GLBs (`instances.model`, strictly positive uniform scales)
+    for (const { batch, writer } of sceneryBatches) {
+      writer.begin();
+      for (const anchor of batch.anchors) {
+        const behind = 10 + anchor.maxDim / 2;
+        const k = Math.ceil((progress - behind - anchor.s) / anchor.period);
+        const d = anchor.s + k * anchor.period - progress;
+        track.place(d, anchor.lateralX, anchor.baseY, pose2);
+        anchorDistance[anchor.id] = d;
+        const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
+        const flickerOff = anchor.assetKey === "heatsinkHoloBillboard" && !holoVisible(now / 1000, anchor.s, reduced);
+        if (!collected && !flickerOff) {
+          const uniformScale = Math.max(0.01, anchor.maxDim / batch.baseMaxDim);
+          writer.push(pose2.x, pose2.y, pose2.z, -pose2.heading + anchor.yaw, uniformScale);
+        } else {
+          writer.park();
+        }
+      }
+      writer.end();
+    }
+
+    // Local lights
     localLights.head.setPosition(dronePos[0] + HEADLIGHT.offset[0], dronePos[1] + HEADLIGHT.offset[1], dronePos[2] + HEADLIGHT.offset[2]).setVisible(p.respawn <= 0);
     for (const { spec, handle } of localLights.anchored) {
       const anchor = anchorById.get(spec.anchorId)!;
@@ -566,7 +743,7 @@ async function boot(): Promise<void> {
       handle.setPosition(pose2.x, pose2.y, pose2.z);
     }
 
-    // Mine: drawn at its track position while deployed, hidden otherwise (C8).
+    // Proximity mine
     const mine = race.mine;
     const mineD = mine.progress - progress;
     if (mine.active && mineD > -24 && mineD < 220) {
@@ -591,7 +768,7 @@ async function boot(): Promise<void> {
       missileAt[0] = pose2.x; missileAt[1] = pose2.y; missileAt[2] = pose2.z + 1;
     } else missileHandle.setVisible(false);
 
-    // Incoming missile: flies from the shooter to the player over the warning time.
+    // Incoming missile
     const inc = race.incoming;
     if (inc.active && inc.from >= 0) {
       const shooter = race.rivals[inc.from]!;
@@ -608,13 +785,56 @@ async function boot(): Promise<void> {
       ringHandle.setPosition(dronePos[0], dronePos[1], dronePos[2]).setScale([s, s, 1]).setVisible(true);
     } else ringHandle.setVisible(false);
 
-    // VFX (HS-13): missile trails restart on launch, the exhaust plume follows the player, queued bursts fire here.
+    // Procedural 8x4 sprite-sheet flipbook bursts (`createFlipbookAtlas("plasma")` & `createFlipbookAtlas("sparks")`)
+    if (plasmaBurst.active) {
+      plasmaBurst.age += frameSeconds;
+      if (plasmaBurst.age >= plasmaBurst.duration || p.respawn > 0) {
+        plasmaBurst.active = false;
+        plasmaBurstHandle.setVisible(false);
+      } else {
+        const t = plasmaBurst.age / plasmaBurst.duration;
+        const frameIdx = Math.min(31, Math.floor(t * 32));
+        const opacity = (1 - Math.pow(t, 1.7)) * (reduced ? 0.45 : 1);
+        const s = 0.85 + t * 0.65;
+        plasmaBurstHandle
+          .setPosition(dronePos[0], dronePos[1] + 0.12, dronePos[2] + 1.35)
+          .setRotation(0, 0, 0)
+          .setScale([s, s, 1])
+          .setVisible(true);
+        plasmaBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 2.8, 0]);
+      }
+    } else {
+      plasmaBurstHandle.setVisible(false);
+    }
+
+    if (sparksBurst.active) {
+      sparksBurst.age += frameSeconds;
+      if (sparksBurst.age >= sparksBurst.duration || p.respawn > 0) {
+        sparksBurst.active = false;
+        sparksBurstHandle.setVisible(false);
+      } else {
+        const t = sparksBurst.age / sparksBurst.duration;
+        const frameIdx = Math.min(31, Math.floor(t * 32));
+        const opacity = (1 - Math.pow(t, 1.5)) * (reduced ? 0.45 : 1);
+        const s = 0.8 + t * 0.5;
+        sparksBurstHandle
+          .setPosition(dronePos[0] + sparksBurst.side * 1.35, dronePos[1] - 0.08, dronePos[2] - 0.25)
+          .setRotation(0, 0, 0)
+          .setScale([s, s, 1])
+          .setVisible(true);
+        sparksBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 3.1, 0]);
+      }
+    } else {
+      sparksBurstHandle.setVisible(false);
+    }
+
+    // VFX (HS-13)
     if (m.active && !missileWasActive) missileTrail?.clear();
     missileWasActive = m.active;
     if (inc.active && !incomingWasActive) incomingTrail?.clear();
     incomingWasActive = inc.active;
     syncPlume(race.drone, reduced);
-    syncBoostBlur(!reduced && race.phase === "racing" && p.boosting);
+    syncBoostBlur(!reduced && isBoosting);
     if (pendingVfx.length > 0) {
       let target: [number, number, number] | null = null;
       if (race.locked >= 0) {
@@ -625,10 +845,11 @@ async function boot(): Promise<void> {
       fireVfx(target, dronePos, reduced);
     }
 
-    // Camera
+    // Camera + WP-07 `createImpactRig` FOV kick, trauma, and high-heat (>85%) shudder
+    const heat01 = Math.min(1, Math.max(0, p.heat / 100));
+    const heatShudder = race.phase === "racing" && heat01 > 0.85 ? (heat01 - 0.85) / 0.15 : 0;
     track.place(18, shown.player[1]! * 0.4, 1.8, pose2);
     const aspect = (auraApp.canvas?.clientWidth || innerWidth) / Math.max(1, auraApp.canvas?.clientHeight || innerHeight);
-    // HS-17 shots: title pose, one countdown shot per digit, the results orbit (wall-clock seconds since results).
     if (race.phase === "results") resultsSeconds += frameSeconds; else resultsSeconds = 0;
     const shot: CameraShot = !started ? { kind: "title" }
       : race.phase === "countdown" ? { kind: "countdown", digit: Math.ceil(race.countdown) }
@@ -637,17 +858,20 @@ async function boot(): Promise<void> {
     const cam = chase.update(frameSeconds, {
       drone: dronePos,
       lookAt: [pose2.x, pose2.y, pose2.z],
-      boosting: race.phase === "racing" && p.boosting,
+      boosting: isBoosting,
       hyper: p.hyper > 0,
       aspect,
       reducedMotion: reduced,
-      shot
+      shot,
+      fovDeltaDeg: impactState.fovDeltaDeg,
+      shakeOffset: impactState.shakeOffset,
+      shakeRoll: impactState.shakeRoll,
+      heatShudder
     });
     auraApp.camera?.setPose({ position: [...cam.position], target: [...cam.target], up: [...cam.up], roll: cam.roll, fov: cam.fov }, chase.cut ? { cut: true } : undefined);
 
-    // Lock bracket through the real camera (C7).
+    // Lock bracket
     const presented = auraApp.camera?.presented?.();
-    // The presented pose carries position, target and fov; the rolled up vector is the chase camera's (HS-17 bank).
     const camPose = presented && presented.position ? { position: presented.position, target: presented.target, up: cam.up, fov: presented.fov } : cam;
     let lock: { x: number; y: number; offscreen: boolean; name: string; dist: number } | null = null;
     if (race.locked >= 0) {
@@ -659,18 +883,28 @@ async function boot(): Promise<void> {
       lock = { x: Math.min(0.96, Math.max(0.04, screen.x)), y: Math.min(0.92, Math.max(0.08, screen.y)), offscreen: off, name: lr.name, dist: Math.round(lr.progress - p.progress) };
     }
 
-    // HS-11 heat haze: project the heat sources through the presented camera and write the pass uniforms.
-    const heat01 = Math.min(1, Math.max(0, p.heat / 100));
-    // HS-15: the chevrons follow the core heat (read-only sim value) through a uniform; no program change.
+    // Heat-reactive uniforms on wall chevrons, heatsink vents, thruster plumes, and rotor discs
     const heatQ = quantisedHeat(heat01);
     if (heatQ !== chevronHeat) {
       chevronHeat = heatQ;
       for (const h of chevronHandles) h.setUniform?.(CHEVRON_HEAT_UNIFORM, heatQ);
     }
+    if (heatQ !== thrusterHeat) {
+      thrusterHeat = heatQ;
+      thrusterHandle.setUniform?.(THRUSTER_HEAT_UNIFORM, heatQ);
+      rotorHandle.setUniform?.(THRUSTER_HEAT_UNIFORM, heatQ);
+    }
+    const boostVal = p.hyper > 0 ? 1 : isBoosting ? 0.72 : 0;
+    if (boostVal !== thrusterBoost) {
+      thrusterBoost = boostVal;
+      thrusterHandle.setUniform?.(THRUSTER_BOOST_UNIFORM, boostVal);
+    }
+
+    // Heat haze sources
     const hs = haze.sources;
     hs.begin();
     exhaustAt[0] = dronePos[0]; exhaustAt[1] = dronePos[1] + 0.15; exhaustAt[2] = dronePos[2] + 1.5;
-    if (p.respawn <= 0) hs.add(camPose, aspect, exhaustAt, 1.3, 0.55 + (p.boosting ? 0.25 : 0) + heat01 * 0.35);
+    if (p.respawn <= 0) hs.add(camPose, aspect, exhaustAt, 1.3, 0.55 + (isBoosting ? 0.25 : 0) + heat01 * 0.35);
     for (let i = 0; i < hotRivalCount; i += 1) hs.add(camPose, aspect, hotRivals[i]!, 1.1, 0.5);
     if (lavaVisible) hs.add(camPose, aspect, lavaAt, 6, 0.9);
     if (m.active) hs.add(camPose, aspect, missileAt, 0.8, 0.7);
@@ -685,9 +919,9 @@ async function boot(): Promise<void> {
       lock,
       autopilot: autopilotOn,
       reducedMotion: reduced,
-      boosting: race.phase === "racing" && p.boosting
+      boosting: isBoosting
     }, hudSeconds);
-    audio.update({ racing: race.phase === "racing" && p.respawn <= 0, speedKmh: p.speedKmh, boosting: race.phase === "racing" && p.boosting });
+    audio.update({ racing: isBoosting || (race.phase === "racing" && p.respawn <= 0), speedKmh: p.speedKmh, boosting: isBoosting });
     publish(false);
   }
 
@@ -714,7 +948,6 @@ async function boot(): Promise<void> {
     result: race.result,
     modelNodeCount: MODEL_NODE_COUNT,
     admittedAssetKeyCount: 26,
-    // HS-13: bursts fired this race, per preset (phase 2 matches them to the beacon events of an autopilot lap).
     vfx: { fired: vfxLedger.total, byKind: { ...vfxLedger.fired }, live: auraApp.effects?.liveCount ?? 0 }
   });
   function publish(force: boolean): void {
@@ -754,7 +987,6 @@ async function boot(): Promise<void> {
     resetRace: restart,
     getState,
     qa: {
-      /** Run the fixed-step sim for `seconds` now (starts the race if needed), then draw once. */
       advance(seconds: number): void {
         startRace();
         loop.advance(Math.max(0, Math.round(seconds / STEP)));
@@ -776,9 +1008,15 @@ async function boot(): Promise<void> {
     hud.hideStart();
   }
   if (!started) hud.showStart(inputs.touch);
+  simClockMs = performance.now();
+  loop.resetAccumulator();
+  // Real-time `dt` advances `createImpactRig` hit-stop & camera trauma; `simClockMs` advances only by `impactState.simDt`.
   auraApp.onFrame(({ dt }) => {
-    loop.tick(performance.now());
-    draw(Math.min(0.1, Math.max(0, dt)));
+    const realDt = Math.min(0.1, Math.max(0, dt));
+    impactState = impactRig.step(realDt);
+    simClockMs += impactState.simDt * 1000;
+    loop.tick(simClockMs);
+    draw(realDt);
   });
   draw(STEP);
   auraApp.step(1 / 60);

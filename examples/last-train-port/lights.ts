@@ -64,14 +64,22 @@ export function headlampPose(here: { x: number; y: number; z: number }, f: V3): 
 export const STATION_PROBE_RESOLUTION = 128;
 export interface StationProbe { readonly name: string; readonly position: V3; readonly box: { readonly min: V3; readonly max: V3 } }
 
-/** The world AABB of each platform (track to the canopy, 16 m either side of the stop, deck to roof) and its centre. */
+const stationProbeCache = new WeakMap<SimData["route"], readonly StationProbe[]>();
+
+/** Static world AABB of each platform (track to the canopy, 16 m either side of the stop, deck to roof) and its centre; memoized once per route. */
 export function stationProbes(data: SimData): StationProbe[] {
-  return data.tables.towns.map((_, town) => {
-    const { o, f, s } = townFrame(data, town);
-    const corners: V3[] = [];
-    for (const lat of [-1, 9]) for (const along of [-16, 16]) for (const up of [-0.5, 8]) corners.push([o[0] + s[0] * lat + f[0] * along, o[1] + up, o[2] + s[2] * lat + f[2] * along]);
-    const min = [0, 1, 2].map((k) => Math.min(...corners.map((c) => c[k]!))) as unknown as V3;
-    const max = [0, 1, 2].map((k) => Math.max(...corners.map((c) => c[k]!))) as unknown as V3;
-    return { name: `station-probe-${town}`, position: [o[0] + s[0] * 4, o[1] + 2.4, o[2] + s[2] * 4], box: { min, max } };
-  });
+  let cached = stationProbeCache.get(data.route);
+  if (!cached) {
+    cached = Object.freeze(data.tables.towns.map((_, town) => {
+      const { o, f, s } = townFrame(data, town);
+      const corners: V3[] = [];
+      for (const lat of [-1, 9]) for (const along of [-16, 16]) for (const up of [-0.5, 8]) corners.push([o[0] + s[0] * lat + f[0] * along, o[1] + up, o[2] + s[2] * along]);
+      const min = Object.freeze([0, 1, 2].map((k) => Math.min(...corners.map((c) => c[k]!)))) as unknown as V3;
+      const max = Object.freeze([0, 1, 2].map((k) => Math.max(...corners.map((c) => c[k]!)))) as unknown as V3;
+      const position = Object.freeze([o[0] + s[0] * 4, o[1] + 2.4, o[2] + s[2] * 4]) as unknown as V3;
+      return Object.freeze({ name: `station-probe-${town}`, position, box: Object.freeze({ min, max }) });
+    }));
+    stationProbeCache.set(data.route, cached);
+  }
+  return [...cached];
 }

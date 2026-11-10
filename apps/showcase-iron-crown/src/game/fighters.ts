@@ -486,6 +486,24 @@ export function fighterFacingYaw(facing: 1 | -1): number {
   return facing > 0 ? Math.PI / 2 : -Math.PI / 2;
 }
 
+/** Multi-lobe material tuning per fighter archetype (forged brushed plate, grained leather clearcoat, martial cloth sheen). */
+function fighterMaterialOverrides(fighter: FighterDef, surface: ReturnType<typeof fighterSurface>) {
+  const rim = { ...surface.rim, intensity: Math.max(surface.rim.intensity, 0.48), power: 2.35 };
+  switch (fighter.id) {
+    case "sovereign":
+      return [{ metallic: 0.78, roughness: 0.26, clearcoat: 0.28, clearcoatRoughness: 0.18, rim }];
+    case "boulder":
+      return [{ metallic: 0.68, roughness: 0.32, clearcoat: 0.2, clearcoatRoughness: 0.26, rim }];
+    case "volt":
+      return [{ clearcoat: 0.36, clearcoatRoughness: 0.24, roughness: 0.4, rim: { ...rim, intensity: 0.56 } }];
+    case "jinx":
+      return [{ clearcoat: 0.3, clearcoatRoughness: 0.26, roughness: 0.44, rim }];
+    case "kenji":
+    case "seraph":
+      return [{ sheen: 0.42, sheenColor: fighter.palette.emissive, sheenRoughness: 0.52, roughness: 0.54, rim }];
+  }
+}
+
 export function createFighterNode(
   nodeId: string,
   fighter: FighterDef,
@@ -512,7 +530,7 @@ export function createFighterNode(
       targetHeight: FIGHTER_RENDER_HEIGHT,
       ...(tint
         ? {
-            material: material.pbr({
+            material: material.physical({
               color: tint.color,
               roughness: tint.roughness,
               metallic: tint.metallic,
@@ -521,7 +539,7 @@ export function createFighterNode(
             })
           }
         : surfaceExtras
-          ? { materialOverrides: [{ rim: surface.rim }] }
+          ? { materialOverrides: fighterMaterialOverrides(fighter, surface) }
           : {})
     })
       .position(position[0], position[1], position[2])

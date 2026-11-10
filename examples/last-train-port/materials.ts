@@ -1,11 +1,20 @@
-/** `material.custom` specs for the port's custom surfaces, kept apart so a unit test can bake exactly what the app draws with. */
+/** `material.custom` specs for Lamplight Line's custom surfaces, kept apart so unit tests can bake and verify both GLSL + WGSL stages. */
 import { material as materialFactory, type material, type AuraMaterialSpec } from "@aura3d/engine";
 import type { ShaderGraphDocument } from "@aura3d/engine/shader-graph-runtime";
-import { CLOUD_FRAGMENT, CLOUD_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, RAIN_FRAGMENT, RAIN_VERTEX, SKY_FRAGMENT, SKY_VERTEX } from "./shaders";
 import {
-  CLOUD_FRAGMENT_WGSL, CLOUD_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL, RAIN_FRAGMENT_WGSL, RAIN_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL
+  CATENARY_FRAGMENT, CATENARY_VERTEX, CLOUD_FRAGMENT, CLOUD_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX,
+  RAIN_FRAGMENT, RAIN_VERTEX, SIGNAL_LENS_FRAGMENT, SIGNAL_LENS_VERTEX, SKY_FRAGMENT, SKY_VERTEX,
+  SPARK_CARD_FRAGMENT, SPARK_CARD_VERTEX
+} from "./shaders";
+import {
+  CATENARY_FRAGMENT_WGSL, CATENARY_VERTEX_WGSL, CLOUD_FRAGMENT_WGSL, CLOUD_VERTEX_WGSL, POINTS_FRAGMENT_WGSL, POINTS_VERTEX_WGSL,
+  RAIN_FRAGMENT_WGSL, RAIN_VERTEX_WGSL, SIGNAL_LENS_FRAGMENT_WGSL, SIGNAL_LENS_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL,
+  SPARK_CARD_FRAGMENT_WGSL, SPARK_CARD_VERTEX_WGSL
 } from "./shaders-wgsl";
 import { POINT_QUAD_SHADERS } from "./point-quads";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
+
+export const FLANGE_SPARKS_ATLAS: FlipbookAtlasSpec = createFlipbookAtlas("sparks", [255, 208, 118]);
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 
@@ -51,12 +60,57 @@ export const rainSpec = (tint: readonly [number, number, number]): CustomSpec =>
   depthWrite: false
 });
 
+/** Overhead bronze-copper catenary contact wire with grazed metallic highlight and travelling pantograph corona. */
+export const catenarySpec = (arcBoost = 0.35): CustomSpec => ({
+  glsl: { vertex: CATENARY_VERTEX, fragment: CATENARY_FRAGMENT },
+  wgsl: { vertex: CATENARY_VERTEX_WGSL, fragment: CATENARY_FRAGMENT_WGSL },
+  uniforms: {
+    wireTint: { type: "color3", value: [0.36, 0.29, 0.22] },
+    arcTint: { type: "color3", value: [0.78, 0.9, 1.0] },
+    wirePhase: { type: "f32", value: 0 },
+    arcBoost: { type: "f32", value: arcBoost }
+  },
+  side: "double"
+});
+
+/** Fresnel optical bullseye lens for station approach (stop) and departure (clear) railway signals. */
+export const signalLensSpec = (nightBoost = 0.6): CustomSpec => ({
+  glsl: { vertex: SIGNAL_LENS_VERTEX, fragment: SIGNAL_LENS_FRAGMENT },
+  wgsl: { vertex: SIGNAL_LENS_VERTEX_WGSL, fragment: SIGNAL_LENS_FRAGMENT_WGSL },
+  uniforms: {
+    lensWarm: { type: "color3", value: [1.0, 0.24, 0.16] },
+    lensClear: { type: "color3", value: [0.22, 1.0, 0.54] },
+    signalPhase: { type: "f32", value: 0 },
+    nightBoost: { type: "f32", value: nightBoost }
+  },
+  side: "double",
+  transparent: true,
+  depthWrite: false
+});
+
+/** Dual-backend 8x4 sprite-sheet flipbook burst card sampling `createFlipbookAtlas("sparks")` for wheel-flange sparks. */
+export const flangeSparkSpec = (atlas: FlipbookAtlasSpec = FLANGE_SPARKS_ATLAS, gain = 1.65): CustomSpec => ({
+  glsl: { vertex: SPARK_CARD_VERTEX, fragment: SPARK_CARD_FRAGMENT },
+  wgsl: { vertex: SPARK_CARD_VERTEX_WGSL, fragment: SPARK_CARD_FRAGMENT_WGSL },
+  uniforms: {
+    sheet: { type: "texture2d", value: atlas.texture },
+    burstState: { type: "vec4", value: [0, 0, gain, 0] }
+  },
+  side: "double",
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "sky", spec: skySpec() },
   { name: "clouds", spec: cloudSpec() },
   { name: "snow", spec: pointsSpec([0.7, 0.8, 1]) },
   { name: "snow-quads", spec: pointQuadSpec([0.7, 0.8, 1]) },
-  { name: "rain-streaks", spec: rainSpec([0.75, 0.85, 1]) }
+  { name: "rain-streaks", spec: rainSpec([0.75, 0.85, 1]) },
+  { name: "catenary-wire", spec: catenarySpec() },
+  { name: "signal-lens", spec: signalLensSpec() },
+  { name: "flange-sparks", spec: flangeSparkSpec() }
 ];
 
 /**

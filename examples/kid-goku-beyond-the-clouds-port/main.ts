@@ -6,6 +6,7 @@
  * Query parameters: `manual=1` (the sim advances only through the hooks, and the run starts at once), `menu=1` (show the title
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
 import { hudThemeFontFaces, registerGameFonts, warmPrograms } from "@aura3d/engine/game";
 import { ACTIVE_LOOK } from "./art/look";
@@ -16,6 +17,7 @@ import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "./sim";
 import { Ui } from "./ui";
+import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { buildWorld, type WorldRuntime } from "./world";
 
@@ -324,13 +326,14 @@ async function boot(): Promise<void> {
   const grassMap = await progress.track(texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb", flipY: false }), 1);
   grassMap.wrapS = "repeat"; grassMap.wrapT = "repeat";
   const world = buildWorld(CH, rockMap, grassMap);
-  /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); absent = default WebGL2 path */
-  const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown>; worker?: { fallback: "main-thread"; createWorker?: () => Worker } } }).__AURA_LAB_APP_OPTIONS__ ?? {};
+  /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); standalone defaults to WebGPU auto + AgX */
+  const fallbackLab = labAppOptions(readLabFlags(), { backend: "auto" });
+  const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown>; worker?: { fallback: "main-thread"; createWorker?: () => Worker } } }).__AURA_LAB_APP_OPTIONS__ ?? fallbackLab;
   app = createAuraApp(canvas, {
     autoStart: false,
     pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "aces", dither: false, ...lab.output },
+    output: { toneMapping: "agx", exposure: 1.0, dither: true, ...lab.output },
     // `?worker=1` (lab, default off; the showcase wrapper supplies createWorker): render in a worker, fallback kept.
     // A worker fragment without createWorker (no wrapper) stays on the main thread.
     ...(lab.worker?.createWorker ? { worker: { fallback: lab.worker.fallback, createWorker: lab.worker.createWorker } } : {}),

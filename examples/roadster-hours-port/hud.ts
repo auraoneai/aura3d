@@ -1,5 +1,5 @@
 /**
- * Saltwind Highway HUD helpers (pure, unit tested): the priority coach line ported from the original game's hint logic, the
+ * Saltwind Highway HUD helpers (pure, unit tested): the priority coach line, the
  * nitro-window cue, best-time persistence and the change-only DOM writer.
  */
 import { actAt, levelLayout } from "./course";
@@ -7,7 +7,7 @@ import { keyLabel, type Bindings, DEFAULT_BINDINGS } from "./input";
 import type { Career, MedalResult, Run } from "./sim";
 
 /**
- * The coach line: one hint at a time, highest priority first (original order): nitro window, gap crossing, ramp ahead, jump
+ * The coach line: one hint at a time, highest priority first: nitro window, gap crossing, ramp ahead, jump
  * line ahead, full-tank shockwave, then the act's own hint early in the act. Empty while overheated or after a missed relay
  * (the toast covers those). Key names follow the current bindings; on touch they name the buttons.
  */
@@ -35,7 +35,7 @@ export function coachLine(run: Run, touch = false, bindings: Bindings = DEFAULT_
 /** Act hints are written for the default keys; rewrite them for touch. */
 function touchHint(text: string): string {
   return text
-    .replace("W to accelerate · A / D to steer", "Hold Drive · Left / Right to steer")
+    .replace("W to accelerate · A / D to steer", "Hold Drive · Tap Left / Right to steer")
     .replace("Correct with A / D", "Correct with Left / Right")
     .replace(/SPACE/g, "THRUST");
 }

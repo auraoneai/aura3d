@@ -45,7 +45,99 @@ interface PickItem {
   readonly label: string;
   readonly sub?: string;
   readonly swatch?: string;
+  readonly portraitId?: FighterId;
   readonly disabled?: boolean;
+}
+
+let svgSeq = 0;
+
+/** Bespoke stylized dark-fantasy rim-lit bust portraits for the HUD plates and fighter picker cards. */
+export function fighterPortraitSvg(id: FighterId): string {
+  const uid = `icp-${id}-${++svgSeq}`;
+  const themes: Record<FighterId, { bg: string; rim: string; glow: string; crest: string }> = {
+    kenji: {
+      bg: "#0e1a2e",
+      rim: "#57c8ff",
+      glow: "#1f5aa6",
+      crest:
+        /* Martial gi shoulders + storm headband + trailing ribbon + sharp brow */
+        `<path d="M10 58c3-11 11-16 22-16s19 5 22 16H10Z" fill="#182b49" stroke="#57c8ff" stroke-width="1.4"/>` +
+        `<path d="M22 42l10 13 10-13" fill="none" stroke="#bfeaff" stroke-width="1.8"/>` +
+        `<path d="M22 26c0-7 4.5-12 10-12s10 5 10 12c0 6.5-4.2 12-10 12s-10-5.5-10-12Z" fill="#23385c" stroke="#8ad8ff" stroke-width="1.3"/>` +
+        `<path d="M20 22h24l9-4-5 6 7 2-11-1H20Z" fill="#ffd76a"/>` +
+        `<path d="M26 26l4 1.5M38 26l-4 1.5" stroke="#e8f7ff" stroke-width="1.8" stroke-linecap="round"/>`
+    },
+    volt: {
+      bg: "#16112b",
+      rim: "#38e8ff",
+      glow: "#5a2ca8",
+      crest:
+        /* High tech-collar + sleek cyber visor + twin lightning conduits */
+        `<path d="M11 58l6-15 15-3 15 3 6 15H11Z" fill="#211a3e" stroke="#38e8ff" stroke-width="1.4"/>` +
+        `<path d="M19 40l5-9h16l5 9" fill="#141029" stroke="#7d6bff" stroke-width="1.4"/>` +
+        `<path d="M23 25c0-6.8 4-11.5 9-11.5s9 4.7 9 11.5-4 11.5-9 11.5-9-4.7-9-11.5Z" fill="#28224a" stroke="#7defff" stroke-width="1.3"/>` +
+        `<polygon points="21,23 43,23 40,28 24,28" fill="#38e8ff"/>` +
+        `<polyline points="32,43 29,50 34,50 31,57" fill="none" stroke="#ffd76a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
+    },
+    boulder: {
+      bg: "#23160e",
+      rim: "#f5a638",
+      glow: "#7a3b12",
+      crest:
+        /* Massive riveted iron pauldrons + horned colossus brow + forge core */
+        `<path d="M6 58c2-14 11-20 26-20s24 6 26 20H6Z" fill="#332218" stroke="#f5a638" stroke-width="1.6"/>` +
+        `<circle cx="16" cy="48" r="2" fill="#ffd76a"/><circle cx="48" cy="48" r="2" fill="#ffd76a"/>` +
+        `<path d="M21 27c0-7 4.8-12 11-12s11 5 11 12-4.8 11-11 11-11-4-11-11Z" fill="#473022" stroke="#ffc978" stroke-width="1.4"/>` +
+        `<path d="M20 22l-6-8 8 4h20l8-4-6 8Z" fill="#d9a441"/>` +
+        `<polygon points="32,43 37,49 32,55 27,49" fill="#ff7a2f" stroke="#ffe08a" stroke-width="1.2"/>`
+    },
+    seraph: {
+      bg: "#241b12",
+      rim: "#ffe08a",
+      glow: "#8a6120",
+      crest:
+        /* Solar halo arc + winged valkyrie circlet + gilded gorget */
+        `<circle cx="32" cy="25" r="16" fill="none" stroke="#ffe08a" stroke-width="1.3" stroke-dasharray="4 2.5"/>` +
+        `<path d="M11 58c4-12 11-17 21-17s17 5 21 17H11Z" fill="#36291c" stroke="#ffe08a" stroke-width="1.4"/>` +
+        `<path d="M23 26c0-6.5 4-11.5 9-11.5s9 5 9 11.5-4 11.5-9 11.5-9-5-9-11.5Z" fill="#4a3926" stroke="#fff2c6" stroke-width="1.3"/>` +
+        `<path d="M21 21l-7-6 3 9 15-3 15 3 3-9-7 6-11-3Z" fill="#ffe08a"/>` +
+        `<path d="M32 41v15M27 46l5-4 5 4" fill="none" stroke="#fff2c6" stroke-width="1.6" stroke-linecap="round"/>`
+    },
+    jinx: {
+      bg: "#240f1d",
+      rim: "#ff5478",
+      glow: "#7a1842",
+      crest:
+        /* Shadow cowl + twin-horn trickster mask + glowing slit eyes */
+        `<path d="M10 58c4-13 11-18 22-18s18 5 22 18H10Z" fill="#2e1427" stroke="#ff5478" stroke-width="1.4"/>` +
+        `<path d="M22 27c0-6.8 4.4-12 10-12s10 5.2 10 12-4.4 11.5-10 11.5-10-4.7-10-11.5Z" fill="#3c1a33" stroke="#ff96ad" stroke-width="1.3"/>` +
+        `<path d="M24 17l-5-9 9 6M40 17l5-9-9 6" fill="#ff5478"/>` +
+        `<path d="M25 26l5 2-5 1.5ZM39 26l-5 2 5 1.5Z" fill="#ffe08a"/>` +
+        `<path d="M25 44l7 8 7-8" fill="none" stroke="#ff96ad" stroke-width="1.5"/>`
+    },
+    sovereign: {
+      bg: "#1c1214",
+      rim: "#d9a441",
+      glow: "#9e1b22",
+      crest:
+        /* Spiked regal mantle + five-spire Iron Crown helm + burning visor slit */
+        `<path d="M8 58c3-13 11-18 24-18s21 5 24 18H8Z" fill="#26181b" stroke="#d9a441" stroke-width="1.6"/>` +
+        `<path d="M21 28c0-6.5 4.8-11 11-11s11 4.5 11 11-4.8 11.5-11 11.5-11-5-11-11.5Z" fill="#1f1618" stroke="#f4cf7a" stroke-width="1.4"/>` +
+        `<polygon points="19,21 21,10 26,18 32,7 38,18 43,10 45,21" fill="#d9a441" stroke="#ffe08a" stroke-width="1"/>` +
+        `<polygon points="24,27 40,27 37,30 27,30" fill="#ff4d1f"/>` +
+        `<path d="M24 44l8 10 8-10" fill="none" stroke="#ffe08a" stroke-width="1.6"/>`
+    }
+  };
+  const t = themes[id] ?? themes.kenji;
+  return (
+    `<svg viewBox="0 0 64 64" width="100%" height="100%" focusable="false" aria-hidden="true">` +
+    `<defs><radialGradient id="${uid}" cx="50%" cy="32%" r="65%">` +
+    `<stop offset="0%" stop-color="${t.glow}"/><stop offset="100%" stop-color="${t.bg}"/>` +
+    `</radialGradient></defs>` +
+    `<rect x="2" y="2" width="60" height="60" rx="8" fill="url(#${uid})" stroke="${t.rim}" stroke-opacity="0.72" stroke-width="1.6"/>` +
+    t.crest +
+    `</svg>`
+  );
 }
 
 const DIFFICULTIES: readonly { id: Difficulty; label: string; sub: string }[] = [
@@ -56,6 +148,7 @@ const DIFFICULTIES: readonly { id: Difficulty; label: string; sub: string }[] = 
 
 export interface Hud {
   setNames(p1: string, p2: string): void;
+  setPortraits(p1: FighterId, p2: FighterId): void;
   setBars(side: "p1" | "p2", healthPct: number, meterPct: number): void;
   setPips(p1: number, p2: number): void;
   setTimer(seconds: number | null): void;
@@ -92,10 +185,18 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   const chipP1 = el<HTMLDivElement>(doc, "fh-health-chip-p1");
   const meterP1 = el<HTMLDivElement>(doc, "fh-meter-p1");
   const meterBoxP1 = meterP1.parentElement!;
+  const meterRowP1 = meterBoxP1.parentElement;
   const healthP2 = el<HTMLDivElement>(doc, "fh-health-p2");
   const chipP2 = el<HTMLDivElement>(doc, "fh-health-chip-p2");
   const meterP2 = el<HTMLDivElement>(doc, "fh-meter-p2");
   const meterBoxP2 = meterP2.parentElement!;
+  const meterRowP2 = meterBoxP2.parentElement;
+  const portraitP1 = doc.getElementById("fh-portrait-p1");
+  const portraitP2 = doc.getElementById("fh-portrait-p2");
+  const hpValP1 = doc.getElementById("fh-hp-val-p1");
+  const hpValP2 = doc.getElementById("fh-hp-val-p2");
+  if (portraitP1) portraitP1.innerHTML = fighterPortraitSvg("kenji");
+  if (portraitP2) portraitP2.innerHTML = fighterPortraitSvg("volt");
   const nameP1 = el<HTMLDivElement>(doc, "fh-name-p1");
   const nameP2 = el<HTMLDivElement>(doc, "fh-name-p2");
   // On phones the plates are too narrow for full names: show the first name, keep the full name as a tooltip.
@@ -128,15 +229,15 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   const frameDataTxt = el<HTMLSpanElement>(doc, "fh-framedata");
   const cancelLine = el<HTMLDivElement>(doc, "fh-cancel");
   const labReset = el<HTMLButtonElement>(doc, "fh-lab-reset");
-  const topBar = doc.querySelector<HTMLElement>(".ic-topbar");
+  const topBar = doc.querySelector<HTMLElement>(".aura3d-top-bar");
   const fhTop = doc.querySelector<HTMLElement>(".fh-top");
   const syncTopbarOffset = (): void => {
     if (!topBar || !fhTop) return;
     const rect = topBar.getBoundingClientRect();
     if (rect.height > 0) {
-      const nextTop = Math.max(46, Math.round(rect.bottom + 8));
+      const nextTop = Math.max(46, Math.round(rect.bottom + 6));
       fhTop.style.top = `${nextTop}px`;
-      lab.style.top = `${nextTop + 72}px`;
+      lab.style.top = `${nextTop + 82}px`;
     }
   };
   syncTopbarOffset();
@@ -173,7 +274,12 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       btn.dataset.pick = item.id;
       btn.setAttribute("aria-pressed", String(selections[gridName] === item.id));
       if (item.disabled) btn.disabled = true;
-      if (item.swatch) {
+      if (item.portraitId) {
+        const bust = doc.createElement("span");
+        bust.className = "ic-bust";
+        bust.innerHTML = fighterPortraitSvg(item.portraitId);
+        btn.append(bust);
+      } else if (item.swatch) {
         const sw = doc.createElement("span");
         sw.className = "ic-sw";
         sw.style.background = item.swatch;
@@ -201,6 +307,7 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       id: f.id,
       label: f.name,
       sub: f.title,
+      portraitId: f.id,
       swatch: f.palette.emissive || f.palette.color
     }));
 
@@ -226,8 +333,14 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
     const f = FIGHTERS.find((fighter) => fighter.id === id);
     if (!f) return;
     bio.innerHTML = "";
+    const head = doc.createElement("div");
+    head.className = "ic-bio-head";
+    const bust = doc.createElement("span");
+    bust.className = "ic-bust ic-bust-bio";
+    bust.innerHTML = fighterPortraitSvg(f.id);
     const title = doc.createElement("b");
     title.textContent = `${f.name} · ${f.title}`;
+    head.append(bust, title);
     const blurb = doc.createElement("p");
     blurb.textContent = f.bio;
     const stats = doc.createElement("div");
@@ -248,7 +361,7 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       val.textContent = v;
       stats.append(key, val);
     }
-    bio.append(title, blurb, stats);
+    bio.append(head, blurb, stats);
   }
   renderBio("kenji");
 
@@ -334,19 +447,28 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       fullNames = [p1, p2];
       paintNames();
     },
+    setPortraits(p1, p2) {
+      if (portraitP1) portraitP1.innerHTML = fighterPortraitSvg(p1);
+      if (portraitP2) portraitP2.innerHTML = fighterPortraitSvg(p2);
+    },
     setBars(side, healthPct, meterPct) {
       const h = Math.max(0, Math.min(1, healthPct));
       const m = Math.max(0, Math.min(1, meterPct));
+      const hpPct = String(Math.max(0, Math.ceil(h * 100)));
       if (side === "p1") {
         healthP1.style.width = `${h * 100}%`;
         chipP1.style.width = `${h * 100}%`;
         meterP1.style.width = `${m * 100}%`;
         meterBoxP1.classList.toggle("full", m >= 1);
+        meterRowP1?.classList.toggle("full", m >= 1);
+        if (hpValP1) hpValP1.textContent = hpPct;
       } else {
         healthP2.style.width = `${h * 100}%`;
         chipP2.style.width = `${h * 100}%`;
         meterP2.style.width = `${m * 100}%`;
         meterBoxP2.classList.toggle("full", m >= 1);
+        meterRowP2?.classList.toggle("full", m >= 1);
+        if (hpValP2) hpValP2.textContent = hpPct;
       }
     },
     setPips(p1, p2) {

@@ -14,8 +14,58 @@
  *
  * Reduced motion and Low tier halve every particle count (PRD §6.3, §6.4); reduced flash drops the impact light.
  */
-import type { AuraBurstOptions, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
+import { texture, type AuraBurstOptions, type AuraVec3, type AuraVfxEffectSpec } from "@aura3d/engine";
 import { BRAKE_RED, OBJECTIVE_TEAL, SODIUM } from "./look";
+
+/**
+ * Procedural 8x4 (32-frame, 384x192 RGBA8) concentric kerb-beacon ripple sprite sheet (`texture.data`),
+ * strictly typed for `material.custom` `texture2d` uniforms across headless, WebGPU, and WebGL2.
+ */
+export function createBeaconRippleTexture(tint: readonly [number, number, number]) {
+  const columns = 8;
+  const rows = 4;
+  const cell = 48;
+  const width = columns * cell;
+  const height = rows * cell;
+  const data = new Uint8Array(width * height * 4);
+  const frameCount = columns * rows;
+
+  for (let frame = 0; frame < frameCount; frame += 1) {
+    const col = frame % columns;
+    const row = Math.floor(frame / columns);
+    const t = frame / (frameCount - 1);
+    const fade = Math.pow(1 - t, 1.55);
+    const radius = 0.16 + 0.74 * t;
+    const innerRadius = Math.max(0.08, radius * 0.56);
+
+    for (let y = 0; y < cell; y += 1) {
+      const ny = ((y + 0.5) / cell) * 2 - 1;
+      for (let x = 0; x < cell; x += 1) {
+        const nx = ((x + 0.5) / cell) * 2 - 1;
+        const r = Math.hypot(nx, ny);
+        const outerRing = Math.exp(-Math.pow((r - radius) / 0.1, 2));
+        const innerRing = Math.exp(-Math.pow((r - innerRadius) / 0.075, 2)) * 0.55;
+        const alpha = Math.min(1, (outerRing + innerRing) * fade);
+        if (alpha <= 0.004) continue;
+        const coreBoost = outerRing * 0.48;
+        const px = col * cell + x;
+        const py = row * cell + y;
+        const idx = (py * width + px) * 4;
+        data[idx] = Math.min(255, Math.round(tint[0] + (255 - tint[0]) * coreBoost));
+        data[idx + 1] = Math.min(255, Math.round(tint[1] + (255 - tint[1]) * coreBoost));
+        data[idx + 2] = Math.min(255, Math.round(tint[2] + (255 - tint[2]) * coreBoost));
+        data[idx + 3] = Math.min(255, Math.round(alpha * 255));
+      }
+    }
+  }
+
+  return texture.data({
+    data,
+    width,
+    height,
+    colorSpace: "srgb"
+  });
+}
 
 export type GridVfxKind = "grid-impact" | "grid-objective-ring" | "grid-tyre-splash" | "grid-manhole-steam";
 

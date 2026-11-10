@@ -157,14 +157,23 @@ describe("LINKS-14 accents and faces", () => {
       }
     }
     expect(html).toContain('href="./fonts/fonts.css"');
-    // every face the stylesheet declares is a committed web font (WOFF2 or WOFF magic)
+    // every face the stylesheet declares is a committed WOFF2 web font
     const files = [...css.matchAll(/url\("\.\/([^"]+)"\)/g)].map((m) => m[1]!);
-    expect(new Set(files)).toEqual(new Set(["whitney-regular.woff2", "whitney-medium.woff2", "dinpro-regular.woff", "dinpro-medium.woff"]));
+    expect(new Set(files)).toEqual(
+      new Set([
+        "whitney-regular.woff2",
+        "whitney-medium.woff2",
+        "whitney-semibold.woff2",
+        "dinpro-regular.woff2",
+        "dinpro-medium.woff2",
+        "monument-mono.woff2"
+      ])
+    );
     for (const file of files) {
       const magic = readFileSync(resolve(app, "public/fonts", file)).subarray(0, 4).toString("latin1");
-      expect(magic, file).toBe(file.endsWith(".woff2") ? "wOF2" : "wOFF");
+      expect(magic, file).toBe("wOF2");
     }
-    // product weights only: 400 and 500
-    for (const m of css.matchAll(/font-weight:\s*(\d+)/g)) expect(["400", "500"]).toContain(m[1]);
+    // product weights only: 400, 500 and 600 (never 700+ bold)
+    for (const m of css.matchAll(/font-weight:\s*(\d+)/g)) expect(["400", "500", "600"]).toContain(m[1]);
   });
 });

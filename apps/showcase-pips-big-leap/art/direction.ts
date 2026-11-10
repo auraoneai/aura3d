@@ -90,8 +90,7 @@ const direction: GameArtDirection = {
     { role: "set-dressing", assetKey: "heatsinkArch", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "galleryShiftPedestal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "reactorFusionTurbineMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "blockfallReactorContainmentPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "heatsinkDroneNighthawk", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "set-dressing", assetKey: "blockfallReactorContainmentPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   // One entry per gameplay event; the pack lives in src/game/vfx.ts.
   vfx: [

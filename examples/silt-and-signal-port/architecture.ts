@@ -143,7 +143,7 @@ function windowQuad(m: ColoredMesh, centre: V3, u: V3, n: V3, w: number, h: numb
 }
 
 function archRelief(m: ColoredMesh, centre: V3, u: V3, n: V3, w: number, h: number, lift: number): void {
-  const segs = 10, r = w / 2, spring = Math.max(0, h - r);
+  const segs = 28, r = w / 2, spring = Math.max(0, h - r);
   const pt = (x: number, y: number, off: number): V3 => [centre[0] + u[0] * x + n[0] * off, centre[1] + y, centre[2] + u[2] * x + n[2] * off];
   const arch = (rr: number, off: number, color: Rgb, ringInner?: number): void => {
     const ring: V3[] = [];
@@ -160,13 +160,19 @@ function archRelief(m: ColoredMesh, centre: V3, u: V3, n: V3, w: number, h: numb
     } else {
       const inner: V3[] = [];
       for (let i = 0; i <= segs; i++) { const a = Math.PI - (i / segs) * Math.PI; inner.push(pt(Math.cos(a) * ringInner, spring + Math.sin(a) * ringInner, off)); }
-      const o = ring.map((p, i) => pushVertex(m, p, n, [i / segs, 1], color));
-      const q = inner.map((p, i) => pushVertex(m, p, n, [i / segs, 0], color));
+      const o = ring.map((p, i) => {
+        const voussoir = 0.94 + 0.1 * ((i % 2 === 0) ? 1 : 0);
+        return pushVertex(m, p, n, [i / segs, 1], scale(color, voussoir));
+      });
+      const q = inner.map((p, i) => {
+        const voussoir = 0.94 + 0.1 * ((i % 2 === 0) ? 1 : 0);
+        return pushVertex(m, p, n, [i / segs, 0], scale(color, voussoir));
+      });
       for (let i = 0; i < segs; i++) m.indices.push(q[i]!, q[i + 1]!, o[i + 1]!, q[i]!, o[i + 1]!, o[i]!);
     }
   };
-  arch(r + 0.55, lift, FRAME, r);
-  arch(r, lift + 0.03, WINDOW_DARK);
+  arch(r + 0.62, lift, FRAME, r);
+  arch(r, lift + 0.035, WINDOW_DARK);
 }
 
 export const isAqueduct = (w: Wall): boolean => {
@@ -322,13 +328,13 @@ export function terrainColors(positions: readonly number[], inked = false): numb
  */
 export function inkedTerrainColors(positions: readonly number[]): number[] {
   const out: number[] = [];
-  const sand: Rgb = [1.62, 1.18, 0.74], crest: Rgb = [1.85, 1.5, 1.05], scrub: Rgb = [0.92, 0.7, 0.44];
+  const sand: Rgb = [1.66, 1.19, 0.72], crest: Rgb = [1.94, 1.54, 1.03], scrub: Rgb = [0.92, 0.68, 0.43];
   for (let i = 0; i < positions.length; i += 3) {
     const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
-    const ripple = 0.94 + 0.12 * Math.sin(x * 0.21 + z * 0.08 + fbm(x * 0.02, z * 0.02, 2) * 4);
+    const ripple = 0.92 + 0.16 * Math.sin(x * 0.24 + z * 0.09 + fbm(x * 0.022, z * 0.022, 3) * 4.5);
     const bank = (1 - smooth(-1, 5, y)) * smooth(0.4, 0.62, fbm(x * 0.03 + 4.2, z * 0.03 - 1.7, 3));
-    const high = smooth(10, 40, y);
-    const c = scale(mix(mix(sand, crest, high * 0.6), scrub, bank * 0.75), ripple);
+    const high = smooth(8, 38, y);
+    const c = scale(mix(mix(sand, crest, high * 0.68), scrub, bank * 0.75), ripple);
     out.push(c[0], c[1], c[2], 1);
   }
   return out;

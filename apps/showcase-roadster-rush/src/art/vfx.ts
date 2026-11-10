@@ -5,8 +5,10 @@
  * Counts are sized so a dense moment stays under the art direction's 96 live particles on High (crash 28 + land 10 + bolt 8
  * + skykill 14 + rocket 18 = 78), and reduced motion halves every emission (PRD §6.3).
  */
-import type { AuraVfxEffectSpec, AuraTrailOptions } from "@aura3d/engine";
-import { APEX_PALETTE } from "./look";
+import type { AuraVfxEffectSpec, AuraTrailOptions, material } from "@aura3d/engine";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import { APEX_PALETTE, hexToUnit } from "./look";
+import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, wgslStage } from "./wgsl";
 
 export type ApexVfxKind = "apex-crash" | "apex-bolt" | "apex-land" | "apex-rocket" | "apex-skykill";
 
@@ -77,3 +79,85 @@ export function registerApexVfx(effects: ApexPresetRegistry | undefined, reduced
  */
 export const APEX_PLAYER_TRAIL: AuraTrailOptions = { width: 0.32, life: 0.28, color: APEX_PALETTE.cyan, widthOverSpeed: [30, 60] };
 export const APEX_RIVAL_TRAIL: AuraTrailOptions = { width: 0.28, life: 0.22, color: APEX_PALETTE.rival, widthOverSpeed: [10, 40] };
+
+type CustomSpec = Parameters<typeof material.custom>[0];
+
+/** Pre-baked 8x4 RGBA8 sprite-sheet atlases for guardrail/landing sparks and drift/touchdown tire smoke. */
+export function createApexSparkAtlas(): FlipbookAtlasSpec {
+  return createFlipbookAtlas("sparks", [255, 168, 76]);
+}
+
+export function createApexSmokeAtlas(): FlipbookAtlasSpec {
+  return createFlipbookAtlas("dust", [206, 220, 242]);
+}
+
+const FLIPBOOK_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * viewMatrix * w;
+}`;
+
+const FLIPBOOK_FRAGMENT = /* glsl */ `
+#include <a3d_math>
+#include <colorspace_decode>
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float cols = max(burstGrid.x, 1.0);
+  float rows = max(burstGrid.y, 1.0);
+  float idx = floor(clamp(burstState.x, 0.0, cols * rows - 1.0));
+  float col = mod(idx, cols);
+  float row = floor(idx / cols);
+  vec2 cellUv = vec2((col + clamp(vUv.x, 0.02, 0.98)) / cols, (row + clamp(1.0 - vUv.y, 0.02, 0.98)) / rows);
+  vec4 texel = texture(atlasTex, cellUv);
+  vec3 rgb = a3dSrgbToLinear(texel.rgb) * a3dSrgbToLinear(burstTint) * max(burstState.z, 0.0);
+  float a = a3dSaturate(texel.a * burstState.y);
+  outColor = vec4(a3dFinite(rgb), a);
+}`;
+
+const FLIPBOOK_WGSL_VERTEX = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct FlipVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(2) a_uv: vec2<f32>) -> FlipVarying {
+  var out: FlipVarying;
+  out.uv = a_uv;
+  let w = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
+  out.position = a3dRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * w);
+  return out;
+}`);
+
+const FLIPBOOK_WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_COLOR], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let cols = max(aura.u_burstGrid.x, 1.0);
+  let rows = max(aura.u_burstGrid.y, 1.0);
+  let idx = floor(clamp(aura.u_burstState.x, 0.0, cols * rows - 1.0));
+  let col = a3dModF(idx, cols);
+  let row = floor(idx / cols);
+  let cellUv = vec2<f32>((col + clamp(vUv.x, 0.02, 0.98)) / cols, (row + clamp(1.0 - vUv.y, 0.02, 0.98)) / rows);
+  let texel = textureSample(u_atlasTexTexture, u_atlasTexSampler, cellUv);
+  let rgb = a3dSrgbToLinear(texel.rgb) * a3dSrgbToLinear(aura.u_burstTint) * max(aura.u_burstState.z, 0.0);
+  let a = a3dSaturate(texel.a * aura.u_burstState.y);
+  return vec4<f32>(a3dFinite3(rgb), a);
+}`);
+
+/** Paired GLSL 3.00 + WGSL 8x4 sprite-sheet flipbook burst shader driven by `burstState = [frame, opacity, gain, 0]`. */
+export function flipbookBurstSpec(atlas: FlipbookAtlasSpec, tintHex: string, additive: boolean): CustomSpec {
+  return {
+    glsl: { vertex: FLIPBOOK_VERTEX, fragment: FLIPBOOK_FRAGMENT },
+    wgsl: { vertex: FLIPBOOK_WGSL_VERTEX, fragment: FLIPBOOK_WGSL_FRAGMENT },
+    uniforms: {
+      atlasTex: { type: "texture2d", value: atlas.texture },
+      burstGrid: { type: "vec2", value: [atlas.columns, atlas.rows] },
+      burstState: { type: "vec4", value: [0, 0, 1.8, 0] },
+      burstTint: { type: "vec3", value: hexToUnit(tintHex) }
+    },
+    transparent: true,
+    depthWrite: false,
+    blending: additive ? "additive" : "normal",
+    side: "double"
+  };
+}

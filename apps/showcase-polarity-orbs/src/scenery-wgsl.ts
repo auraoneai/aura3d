@@ -1,13 +1,12 @@
 /**
- * A3/W6: WGSL twins of Polarity Orbs' game-local `material.custom` programs (scenery.ts), line for line, so a WebGPU
- * frame computes the same values. WebGL2 keeps drawing the untouched GLSL. Mapping notes: runner-kit/shaders-wgsl.ts.
- * The flat scenery normal comes from `cross(dpdx, dpdy)` and is then turned to face the camera, as in the GLSL, so the
- * opposite window-y direction of WebGPU's derivatives cannot flip it.
+ * WGSL twins of Polarity Orbs' game-local `material.custom` programs (`scenery.ts`), paired 1:1 with GLSL 300 es so
+ * `backend: "auto"` renders identically on WebGPU and WebGL2.
  */
-import { WGSL_CLIP, WGSL_POW, hexToLinear, wgslStage } from "../../../examples/shared/runner-kit/index";
+import { hexToLinear } from "../../../examples/shared/runner-kit/look-utils";
+import { WGSL_CLIP, WGSL_POW, wgslStage } from "../../../examples/shared/runner-kit/shaders-wgsl";
 import { LOOK } from "./look";
 
-/** `hexVec`: linear-RGB constant for an sRGB hex, the same digits as the GLSL. */
+/** `hexVec`: linear-RGB constant for an sRGB hex, matching the GLSL constants. */
 const hexVec = (hex: string): string => {
   const [r, g, b] = hexToLinear(hex);
   return `vec3<f32>(${r.toFixed(5)}, ${g.toFixed(5)}, ${b.toFixed(5)})`;
@@ -17,7 +16,9 @@ const hexVec = (hex: string): string => {
 const gradient = (stops: readonly { t: number; hex: string }[], name: string): string => {
   const s = [...stops].sort((a, b) => a.t - b.t);
   const out = [`var ${name} = ${hexVec(s[0]!.hex)};`];
-  for (let i = 1; i < s.length; i++) out.push(`${name} = mix(${name}, ${hexVec(s[i]!.hex)}, smoothstep(${s[i - 1]!.t.toFixed(4)}, ${s[i]!.t.toFixed(4)}, t));`);
+  for (let i = 1; i < s.length; i++) {
+    out.push(`${name} = mix(${name}, ${hexVec(s[i]!.hex)}, smoothstep(${s[i - 1]!.t.toFixed(4)}, ${s[i]!.t.toFixed(4)}, t));`);
+  }
   return out.join("\n  ");
 };
 
@@ -36,26 +37,27 @@ fn skyColor(d: vec3<f32>) -> vec3<f32> {
   let M = ${MOON_DIR};
   let sd = max(dot(d, S), 0.0);
   let md = max(dot(d, M), 0.0);
-  c = c + ${hexVec("#ff8a4a")} * (a3dPow(sd, 6.0) * 0.55 + a3dPow(sd, 40.0) * 0.6) * (1.0 - 0.45 * aura.u_uMix);
-  c = c + ${hexVec("#6ab8ff")} * (a3dPow(md, 8.0) * 0.4 + a3dPow(md, 60.0) * 0.5) * (0.55 + 0.45 * aura.u_uMix);
-  let h = exp(-abs(d.y - 0.01) * 22.0);
-  c = c + mix(${hexVec("#ffb48a")}, ${hexVec("#bfe0ff")}, side(d)) * h * 0.22;
+  c = c + ${hexVec("#ff7854")} * (a3dPow(sd, 6.0) * 0.52 + a3dPow(sd, 42.0) * 0.62) * (1.0 - 0.45 * aura.u_uMix);
+  c = c + ${hexVec("#4ec4ff")} * (a3dPow(md, 8.0) * 0.42 + a3dPow(md, 64.0) * 0.54) * (0.55 + 0.45 * aura.u_uMix);
+  let h = exp(-abs(d.y - 0.01) * 24.0);
+  c = c + mix(${hexVec("#ff9882")}, ${hexVec("#9ee6ff")}, side(d)) * h * 0.2;
   return c;
 }
 `;
 
-/** `FOG_FN` (needs SKY_FN). */
+/** `FOG_FN` (needs SKY_FN): deep magnetosphere indigo-tinted sky-matched fog without muddy brown haze. */
 const FOG_FN = /* wgsl */ `
 fn fogAt(world: vec3<f32>) -> vec4<f32> {
   let toP = world - aura.u_cameraPosition;
   let dist = length(toP);
   let dir = toP / max(dist, 1e-3);
-  var f = 1.0 - exp(-a3dPow(dist * aura.u_uFogDensity, 1.35));
+  var f = 1.0 - exp(-a3dPow(dist * aura.u_uFogDensity, 1.4));
   f = max(f, smoothstep(aura.u_uFogEnd * 0.78, aura.u_uFogEnd, dist));
-  let low = smoothstep(-4.0, -18.0, world.y) * smoothstep(20.0, 90.0, dist);
-  f = clamp(f + low * 0.35, 0.0, 1.0);
-  let fogDir = normalize(vec3<f32>(dir.x, max(dir.y, -0.04) * 0.6, dir.z));
-  return vec4<f32>(skyColor(fogDir), f);
+  let low = smoothstep(-5.0, -19.0, world.y) * smoothstep(24.0, 96.0, dist);
+  f = clamp(f + low * 0.32, 0.0, 1.0);
+  let fogDir = normalize(vec3<f32>(dir.x, max(dir.y, -0.02) * 0.65, dir.z));
+  let fogTint = mix(skyColor(fogDir), ${hexVec("#161530")}, 0.22);
+  return vec4<f32>(fogTint, f);
 }
 `;
 
@@ -90,26 +92,26 @@ fn noise1(x: f32) -> f32 { let i = floor(x); var f = fract(x); f = f * f * (3.0 
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let d = normalize(vWorld - aura.u_cameraPosition);
   var c = skyColor(d);
-  let p = d * 210.0;
+  let p = d * 220.0;
   let cell = floor(p);
   let h = hash3(cell);
-  let star = step(0.9965, h) * smoothstep(0.42, 0.0, length(fract(p) - vec3<f32>(0.5))) * smoothstep(0.12, 0.5, d.y);
-  c = c + vec3<f32>(star) * (0.6 + 0.6 * hash3(cell + vec3<f32>(7.0)));
+  let star = step(0.9962, h) * smoothstep(0.42, 0.0, length(fract(p) - vec3<f32>(0.5))) * smoothstep(0.08, 0.48, d.y);
+  c = c + vec3<f32>(star) * (0.65 + 0.65 * hash3(cell + vec3<f32>(7.0)));
   let a = atan2(d.x, -d.z);
-  let wave = 0.24 + 0.05 * sin(a * 4.0 + aura.u_uDrift * 0.15) + 0.03 * sin(a * 11.0 - aura.u_uDrift * 0.1);
-  let band = smoothstep(wave - 0.12, wave, d.y) * smoothstep(wave + 0.22, wave + 0.02, d.y);
-  let rays = 0.55 + 0.45 * noise1(a * 38.0 + aura.u_uDrift * 0.2);
-  let auroraCol = mix(${hexVec("#ff4a8a")}, ${hexVec("#3ae0ff")}, smoothstep(-0.5, 0.5, d.x));
-  c = c + auroraCol * band * rays * 0.22;
+  let wave = 0.25 + 0.055 * sin(a * 4.0 + aura.u_uDrift * 0.16) + 0.032 * sin(a * 11.0 - aura.u_uDrift * 0.11);
+  let band = smoothstep(wave - 0.13, wave, d.y) * smoothstep(wave + 0.24, wave + 0.02, d.y);
+  let rays = 0.55 + 0.45 * noise1(a * 38.0 + aura.u_uDrift * 0.22);
+  let auroraCol = mix(${hexVec("#ff4d7e")}, ${hexVec("#38d8ff")}, smoothstep(-0.48, 0.48, d.x));
+  c = c + auroraCol * band * rays * 0.3;
   let sd = dot(d, ${SUN_DIR});
   let md = dot(d, ${MOON_DIR});
-  c = c + ${hexVec("#ffd890")} * smoothstep(0.9993, 0.9996, sd) * 2.4 + ${hexVec("#ff9a50")} * a3dPow(max(sd, 0.0), 900.0) * 0.8;
+  c = c + ${hexVec("#ffd890")} * smoothstep(0.9993, 0.9996, sd) * 2.4 + ${hexVec("#ff8858")} * a3dPow(max(sd, 0.0), 900.0) * 0.8;
   let moon = smoothstep(0.99965, 0.9998, md) * (1.0 - 0.85 * smoothstep(0.99972, 0.99986, dot(d, normalize(${MOON_DIR} + vec3<f32>(0.006, 0.004, 0.0)))));
-  c = c + ${hexVec("#d8ecff")} * moon * 1.8 + ${hexVec("#6ab8ff")} * a3dPow(max(md, 0.0), 1200.0) * 0.6;
-  let bank = 0.035 + 0.03 * noise1(a * 9.0) + 0.018 * noise1(a * 27.0);
+  c = c + ${hexVec("#ddf0ff")} * moon * 1.9 + ${hexVec("#54bfff")} * a3dPow(max(md, 0.0), 1200.0) * 0.65;
+  let bank = 0.032 + 0.028 * noise1(a * 9.0) + 0.016 * noise1(a * 27.0);
   let below = smoothstep(bank + 0.006, bank - 0.006, d.y) * smoothstep(-0.2, 0.0, d.y);
-  let bankCol = mix(${hexVec("#c8708a")}, ${hexVec("#7aa0d8")}, side(d)) * (0.75 + 0.5 * smoothstep(bank - 0.04, bank, d.y));
-  c = mix(c, bankCol, below * 0.85);
+  let bankCol = mix(${hexVec("#9e4268")}, ${hexVec("#4a88cc")}, side(d)) * (0.72 + 0.48 * smoothstep(bank - 0.04, bank, d.y));
+  c = mix(c, bankCol, below * 0.82);
   return vec4<f32>(c, 1.0);
 }`);
 
@@ -140,15 +142,17 @@ export const SCENERY_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
   let V = normalize(aura.u_cameraPosition - vWorld);
   if (dot(N, V) < 0.0) { N = -N; }
   let L = normalize(vec3<f32>(-0.35, 0.82, 0.45));
+  let H = normalize(L + V);
   let d = dot(N, L);
-  let key = mix(0.18, 1.0, smoothstep(-0.05, 0.25, d));
-  let hemi = mix(${hexVec("#3a2450")}, ${hexVec("#c8b8e8")}, 0.5 * N.y + 0.5) * 0.42;
-  let keyCol = mix(${hexVec("#ffd2a8")}, ${hexVec("#d8e4ff")}, aura.u_uMix) * 0.78;
+  let key = mix(0.2, 1.0, smoothstep(-0.08, 0.28, d));
+  let hemi = mix(${hexVec("#24193c")}, ${hexVec("#c2ccf4")}, 0.5 * N.y + 0.5) * 0.44;
+  let keyCol = mix(${hexVec("#ffc8a8")}, ${hexVec("#cfe6ff")}, aura.u_uMix) * 0.82;
   let lit = hemi + keyCol * key;
   let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 3.0);
-  let rimCol = mix(${hexVec("#ff6a5a")}, ${hexVec("#5ab0ff")}, smoothstep(-14.0, 14.0, vWorld.x));
-  var col = vTone * lit + rimCol * fres * 0.45 * (1.0 - vGlow);
-  col = mix(col, vTone * (1.6 + 0.9 * fres), vGlow);
+  let spec = a3dPow(max(dot(N, H), 0.0), 48.0) * 0.25 * (1.0 - vGlow);
+  let rimCol = mix(${hexVec("#ff5468")}, ${hexVec("#38bdf8")}, smoothstep(-14.0, 14.0, vWorld.x));
+  var col = vTone * lit + rimCol * fres * 0.52 * (1.0 - vGlow) + vec3<f32>(spec);
+  col = mix(col, vTone * (1.75 + 0.95 * fres), vGlow);
   return vec4<f32>(mix(col, vFog.rgb, vFog.a), 1.0);
 }`);
 
@@ -174,7 +178,7 @@ export const GLOW_VERTEX_WGSL = wgslStage([WGSL_CLIP, WRAP_FN, GLOW_VARYING], /*
 export const GLOW_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>, @location(1) vTone: vec3<f32>, @location(2) vGlow: f32) -> @location(0) vec4<f32> {
   let dist = length(vWorld - aura.u_cameraPosition);
-  let fade = 1.0 - smoothstep(60.0, 190.0, dist);
+  let fade = 1.0 - smoothstep(60.0, 195.0, dist);
   return vec4<f32>(vTone * vGlow * fade * aura.u_uGlow, 1.0);
 }`);
 
@@ -200,14 +204,14 @@ fn fbm(p0: vec2<f32>) -> f32 {
   let cloud = smoothstep(0.36, 0.72, n * 0.8 + n2v * 0.3);
   let toP = vWorld - aura.u_cameraPosition;
   let dist = length(toP);
-  let dir = toP / dist;
-  let deep = mix(${hexVec("#2a1236")}, ${hexVec("#0e1a3a")}, side(dir));
-  let top = mix(${hexVec("#f0a08a")}, ${hexVec("#a8c8f0")}, side(dir));
+  let dir = toP / max(dist, 1e-3);
+  let deep = mix(${hexVec("#1b0f2e")}, ${hexVec("#0b1634")}, side(dir));
+  let top = mix(${hexVec("#e68a84")}, ${hexVec("#8ec8f8")}, side(dir));
   let ridge = smoothstep(0.55, 0.95, n2v);
-  var c = mix(deep, top * (0.72 + 0.4 * ridge), cloud);
+  var c = mix(deep, top * (0.68 + 0.38 * ridge), cloud);
   let sunGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(-0.42, 0.0, -1.0))), 0.0), 12.0);
   let moonGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(0.52, 0.0, -1.0))), 0.0), 14.0);
-  c = c + (${hexVec("#ff9a5a")} * sunGlint * (1.0 - 0.4 * aura.u_uMix) + ${hexVec("#7ac0ff")} * moonGlint * (0.6 + 0.4 * aura.u_uMix)) * cloud * 0.45;
+  c = c + (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * aura.u_uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * aura.u_uMix)) * cloud * 0.45;
   let f = 1.0 - exp(-a3dPow(dist / 330.0, 1.6));
   let fogDir = normalize(vec3<f32>(dir.x, 0.0, dir.z));
   return vec4<f32>(mix(c, skyColor(fogDir), clamp(f, 0.0, 1.0)), 1.0);
@@ -240,24 +244,225 @@ export const DECK_VERTEX_WGSL = wgslStage([WGSL_CLIP, WGSL_POW, SKY_FN, FOG_FN, 
 }`);
 
 export const DECK_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
-@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vTone: vec3<f32>, @location(3) vLocal: vec3<f32>, @location(4) vFog: vec4<f32>, @location(5) vRefl: vec3<f32>) -> @location(0) vec4<f32> {
+@fragment fn fs_main(
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vTone: vec3<f32>,
+  @location(3) vLocal: vec3<f32>,
+  @location(4) vFog: vec4<f32>,
+  @location(5) vRefl: vec3<f32>
+) -> @location(0) vec4<f32> {
   var N = normalize(vNormal);
   let V = normalize(aura.u_cameraPosition - vWorld);
   if (dot(N, V) < 0.0) { N = -N; }
   let up = step(0.5, N.y);
-  var base = vTone * mix(0.75, 1.0, up);
+  let slateFloor = ${hexVec("#0d1020")};
+  var base = mix(slateFloor, vTone, 0.72) * mix(0.68, 1.0, up);
   let zc = vLocal.z * 0.25 + 0.25;
   let seamZ = abs(fract(zc) - 0.5) * 2.0;
   let fwz = fwidth(zc) * 2.0 + 1e-4;
   let acrossLine = smoothstep(0.965 - fwz, 0.965 + fwz, seamZ);
   let xl = abs(abs(vWorld.x) - 1.15);
   let fwx = fwidth(vWorld.x) + 1e-4;
-  let laneLine = 1.0 - smoothstep(0.02, 0.02 + fwx * 1.5, xl);
-  let seam = max(acrossLine, laneLine * 0.7) * up;
-  base = base * (1.0 - 0.28 * seam);
-  let lit = 0.82 + 0.18 * max(dot(N, normalize(vec3<f32>(-0.35, 0.82, 0.45))), 0.0);
-  var col = base * lit * 1.1;
-  let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 4.0);
-  col = col + vRefl * (0.06 + 0.5 * fres) * up;
+  let laneLine = 1.0 - smoothstep(0.022, 0.022 + fwx * 1.5, xl);
+  let seam = max(acrossLine, laneLine * 0.85) * up;
+  base = base * (1.0 - 0.34 * seam);
+
+  /* Animated magnetic dipole isolines across the polished dark-glass / ferrofluid slate board */
+  let dipolePhase = vWorld.x * 2.15 + sin(vLocal.z * 0.42 - aura.u_uDrift * 2.6) * 0.85;
+  let field = dipolePhase + cos(vLocal.z * 0.28 + vWorld.x * 0.9 - aura.u_uDrift * 1.9) * 0.65;
+  let isoCell = abs(fract(field * 1.35) - 0.5) * 2.0;
+  let isoFw = fwidth(field * 1.35) * 1.8 + 1e-4;
+  let isoLine = (1.0 - smoothstep(0.06, 0.06 + isoFw, isoCell)) * up;
+  let isRight = step(0.0, vWorld.x);
+  let dominance = mix(1.0 - aura.u_uMix, aura.u_uMix, isRight);
+  let poleGlow = mix(${hexVec("#ff5468")}, ${hexVec("#38bdf8")}, isRight);
+  let conduitGlow = poleGlow * (isoLine * (0.14 + 0.34 * dominance) + laneLine * up * (0.12 + 0.24 * dominance));
+
+  let L = normalize(vec3<f32>(-0.35, 0.82, 0.45));
+  let H = normalize(L + V);
+  let lit = 0.78 + 0.24 * max(dot(N, L), 0.0);
+  let spec = a3dPow(max(dot(N, H), 0.0), 84.0) * 0.55 * up;
+  let fres = 0.04 + 0.96 * a3dPow(1.0 - max(dot(N, V), 0.0), 4.2);
+  var col = base * lit + conduitGlow + vRefl * (0.09 + 0.58 * fres) * up + vec3<f32>(0.94, 0.97, 1.0) * spec;
   return vec4<f32>(mix(col, vFog.rgb, vFog.a), 1.0);
+}`);
+
+/* ------------------------------------------------------------------ Plasma-Core Dielectric Glass Orbs (WGSL) */
+
+const ORB_VARYING = /* wgsl */ `
+struct OrbVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vLocal: vec3<f32>,
+  @location(3) vTone: vec3<f32>,
+};`;
+
+export const plasmaOrbVertexWgsl = (withTone: boolean): string =>
+  wgslStage([WGSL_CLIP, ORB_VARYING], /* wgsl */ `
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_normal: vec3<f32>${withTone ? ",\n  @location(3) tone: vec3<f32>" : ""}
+) -> OrbVarying {
+  var out: OrbVarying;
+  out.vLocal = a_position;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.vTone = ${withTone ? "tone" : "vec3<f32>(1.0, 1.0, 1.0)"};
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const PLASMA_ORB_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vLocal: vec3<f32>,
+  @location(3) vTone: vec3<f32>
+) -> @location(0) vec4<f32> {
+  var N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  if (dot(N, V) < 0.0) { N = -N; }
+  let ndotv = clamp(dot(N, V), 0.0, 1.0);
+
+  /* Crisp split-hemisphere gyroscope axis: never mixes red+blue into muddy lavender */
+  let axisDot = N.y * cos(aura.u_uFlipAngle) + N.x * sin(aura.u_uFlipAngle);
+  let splitMask = smoothstep(-0.04, 0.04, axisDot);
+  let northCol = vTone * aura.u_baseColor;
+  let southCol = mix(northCol, aura.u_poleSouthColor, aura.u_uSplitPole);
+  let poleCol = mix(southCol, northCol, splitMask);
+
+  /* Swirling internal dipole plasma filaments inside clear dielectric glass shell */
+  let t = aura.u_time;
+  let swirlA = sin(vLocal.x * 9.5 + vLocal.z * 7.5 + t * 3.8) * cos(vLocal.y * 8.5 - t * 2.9);
+  let swirlB = sin((vLocal.x - vLocal.z) * 13.5 - t * 5.1);
+  let plasma = clamp(0.5 + 0.34 * swirlA + 0.24 * swirlB, 0.0, 1.0);
+  let coreDepth = a3dPow(ndotv, 1.35);
+  let deepGlass = poleCol * 0.24;
+  let hotCore = mix(poleCol * 1.42, vec3<f32>(1.0, 0.97, 0.92), plasma * coreDepth * 0.56);
+  var col = mix(deepGlass, hotCore, 0.34 + 0.66 * coreDepth * (0.45 + 0.55 * plasma));
+
+  /* Precision brushed-metal / plasma equatorial band on split-pole hero orb */
+  let eqBand = (1.0 - smoothstep(0.028, 0.075, abs(axisDot))) * aura.u_uSplitPole;
+  col = mix(col, vec3<f32>(0.88, 0.93, 1.0), eqBand * 0.62);
+
+  /* Dual studio softbox + key clearcoat specular & thin-film cyan/amber iridescence */
+  let L1 = normalize(vec3<f32>(-0.35, 0.84, 0.44));
+  let H1 = normalize(L1 + V);
+  let L2 = normalize(vec3<f32>(0.52, 0.48, 0.68));
+  let H2 = normalize(L2 + V);
+  let specSharp = a3dPow(max(dot(N, H1), 0.0), 136.0) * 1.45;
+  let specCoat = a3dPow(max(dot(N, H1), 0.0), 26.0) * 0.24;
+  let specFill = a3dPow(max(dot(N, H2), 0.0), 64.0) * 0.38;
+  let fres = 0.045 + 0.955 * a3dPow(1.0 - ndotv, 3.4);
+
+  let isWarm = step(poleCol.b, poleCol.r);
+  let iridTint = mix(${hexVec("#66f2ff")}, ${hexVec("#ffbe48")}, isWarm);
+  col = col + mix(poleCol, iridTint, 0.62 * aura.u_uIridescence) * (fres * 0.78);
+  col = col + vec3<f32>(1.0, 0.98, 0.95) * (specSharp + specCoat) + iridTint * specFill;
+
+  /* Smooth highlight shoulder so AgX + bloom glows cleanly without clipping */
+  let k = 0.88;
+  let over = max(col - vec3<f32>(k), vec3<f32>(0.0));
+  let rolled = min(col, vec3<f32>(k)) + (1.0 - k) * (vec3<f32>(1.0) - exp(-over / (1.0 - k)));
+  return vec4<f32>(rolled, 1.0);
+}`);
+
+/* ------------------------------------------------------------------ Feathered Flux Rings & Curved Dipole Arcs (WGSL) */
+
+const UV_WORLD_VARYING = /* wgsl */ `
+struct UvWorldVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vUv: vec2<f32>,
+};`;
+
+export const UV_WORLD_VERTEX_WGSL = wgslStage([WGSL_CLIP, UV_WORLD_VARYING], /* wgsl */ `
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_normal: vec3<f32>,
+  @location(2) a_uv: vec2<f32>
+) -> UvWorldVarying {
+  var out: UvWorldVarying;
+  out.vUv = a_uv;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const FLUX_RING_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vUv: vec2<f32>
+) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let r = clamp(vUv.y, 0.0, 1.0);
+  let feather = smoothstep(0.0, 0.24, r) * (1.0 - smoothstep(0.68, 1.0, r));
+  let waves = 0.52 + 0.48 * cos((r * aura.u_uRingCount - aura.u_time * 3.4) * 6.2831853);
+  let ticks = smoothstep(0.76, 0.97, cos((vUv.x * 8.0 + aura.u_uSpin) * 6.2831853));
+  let crest = smoothstep(0.42, 0.78, r) * (1.0 - smoothstep(0.78, 0.98, r));
+  let fres = a3dPow(1.0 - abs(dot(N, V)), 1.8);
+  let energy = clamp(feather * (0.45 + 0.55 * waves) + crest * 0.55 + feather * ticks * 0.35, 0.0, 1.4);
+  let col = mix(aura.u_baseColor, aura.u_edgeColor, clamp(r * 0.75 + crest * 0.5, 0.0, 1.0)) * (1.25 + fres * 0.85);
+  let alpha = clamp(aura.u_uAlpha * energy, 0.0, 0.96);
+  return vec4<f32>(col, alpha);
+}`);
+
+export const FLUX_ARC_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vUv: vec2<f32>
+) -> @location(0) vec4<f32> {
+  let _n = vNormal;
+  let _w = vWorld;
+  let across = abs(vUv.y * 2.0 - 1.0);
+  let ribbon = 1.0 - smoothstep(0.05, 0.98, across);
+  let ends = sin(clamp(vUv.x, 0.0, 1.0) * 3.14159265);
+  let pulse = 0.52 + 0.48 * sin(vUv.x * 22.0 - aura.u_time * 18.0);
+  let hot = smoothstep(0.55, 0.98, pulse) * (1.0 - smoothstep(0.0, 0.55, across));
+  let col = mix(aura.u_coreColor, aura.u_edgeColor, clamp(hot + 0.28 * pulse, 0.0, 1.0)) * (1.35 + hot * 0.9);
+  let alpha = clamp(aura.u_uAlpha * ribbon * ends * (0.48 + 0.52 * pulse), 0.0, 0.96);
+  return vec4<f32>(col, alpha);
+}`);
+
+/* ------------------------------------------------------------------ Plasma Flipbook Burst + Cyber-Neon LUT (WGSL) */
+
+const BURST_VARYING = /* wgsl */ `
+struct BurstVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+  @location(1) vTone: vec3<f32>,
+};`;
+
+export const PLASMA_BURST_VERTEX_WGSL = wgslStage([WGSL_CLIP, BURST_VARYING], /* wgsl */ `
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(2) a_uv: vec2<f32>,
+  @location(3) tone: vec3<f32>
+) -> BurstVarying {
+  var out: BurstVarying;
+  out.vUv = a_uv;
+  out.vTone = tone;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const PLASMA_BURST_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vUv: vec2<f32>,
+  @location(1) vTone: vec3<f32>
+) -> @location(0) vec4<f32> {
+  let texel = textureSample(u_plasmaMapTexture, u_plasmaMapSampler, vUv);
+  let raw = clamp(texel.rgb * vTone * 1.2, vec3<f32>(0.0), vec3<f32>(1.0));
+  let bSlice = floor(raw.b * 15.0);
+  let lutUv = vec2<f32>((bSlice * 16.0 + raw.r * 15.0 + 0.5) / 256.0, (raw.g * 15.0 + 0.5) / 16.0);
+  let graded = textureSample(u_lutMapTexture, u_lutMapSampler, lutUv).rgb;
+  let col = mix(raw, graded, 0.65) * 1.65;
+  return vec4<f32>(col * texel.a, texel.a);
 }`);

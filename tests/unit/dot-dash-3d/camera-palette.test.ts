@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { boardFits, fitDistanceScale, projectNdc, scalePose, type CameraPose } from "../../../apps/showcase-dot-dash-3d/src/game/camera";
+import { material } from "@aura3d/engine";
+import { boardFits, fitDistanceScale, fitPlayRig, projectNdc, scalePose, type CameraPose } from "../../../apps/showcase-dot-dash-3d/src/game/camera";
+import { dualCircuitBusSpec, dualEnergyFieldSpec, dualSparkFlipbookSpec } from "../../../apps/showcase-dot-dash-3d/src/game/shaders";
+import { createFlipbookAtlas } from "../../../apps/showcase-port-shared/vfx-pack";
 import { boardLook, luma, pylonLayout, REFERENCE_LOOK, withLuma } from "../../../apps/showcase-dot-dash-3d/src/game/palette";
 import { MAZES, MAZE_ORDER } from "../../../apps/showcase-dot-dash-3d/src/game/mazes";
 
@@ -33,6 +36,27 @@ describe("camera fit (DD-3)", () => {
     const p = scalePose(RIG, 2);
     expect(p.position[1] / p.position[2]).toBeCloseTo(17.2 / 13.8, 6);
     expect(p.target).toEqual(RIG.target);
+  });
+
+  it("fitPlayRig keeps every corner inside 390x844 portrait while enlarging the board vs naive pull-back", () => {
+    const aspect = 390 / 844;
+    const fitted = fitPlayRig(RIG, aspect, 1.06);
+    expect(boardFits(fitted.pose, aspect, 0.99)).toBe(true);
+    const naivePose = scalePose(RIG, fitDistanceScale(RIG, aspect) * 1.06);
+    const fittedSpan = Math.abs(projectNdc(fitted.pose, aspect, [9.5, 0, 0])![0]);
+    const naiveSpan = Math.abs(projectNdc(naivePose, aspect, [9.5, 0, 0])![0]);
+    expect(fittedSpan).toBeGreaterThan(naiveSpan);
+  });
+
+  it("validates paired GLSL + WGSL custom shaders for WebGPU + WebGL2 parity", () => {
+    const bus = material.custom(dualCircuitBusSpec());
+    const portal = material.custom(dualEnergyFieldSpec());
+    const flip = material.custom(dualSparkFlipbookSpec(createFlipbookAtlas("sparks")));
+    for (const m of [bus, portal, flip]) {
+      expect(m.kind).toBe("custom");
+      expect(m.custom?.glsl?.fragment).toBeTruthy();
+      expect(m.custom?.wgsl?.fragment).toContain("@aura3d-bindings");
+    }
   });
 });
 

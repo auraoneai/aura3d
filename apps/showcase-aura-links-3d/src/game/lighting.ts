@@ -366,7 +366,9 @@ export function keyShadowFor(tier: LinksTier): { readonly filter: "pcss" | "pcf"
  * showed no acne and keep the engine defaults.
  */
 export function keyShadowTuning(course: CourseId): { readonly normalBias?: number; readonly maxDistance?: number } {
-  return course === "neonBay" || course === "mareCourse" ? { normalBias: 3, maxDistance: 140 } : {};
+  return course === "neonBay" || course === "mareCourse"
+    ? { normalBias: 3, maxDistance: 140 }
+    : { normalBias: 1.8, maxDistance: 140 };
 }
 
 /** Light position from elevation/azimuth (same basis as the engine looks: azimuth clockwise from +Z, Y up). */

@@ -13,6 +13,9 @@ export default defineConfig({
   resolve: { ...rootConfig.resolve, alias: baseAlias },
   optimizeDeps: rootConfig.optimizeDeps,
   publicDir: path.resolve(appDir, "public"),
+  worker: {
+    format: "es"
+  },
   server: {
     host: "127.0.0.1",
     port: 5199,

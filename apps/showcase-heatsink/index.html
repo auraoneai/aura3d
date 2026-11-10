@@ -17,13 +17,13 @@
     <meta name="twitter:title" content="THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase" />
     <meta name="twitter:description" content="Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3…" />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/heatsink@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Thermal Drift","url":"https://aura3d.auraone.ai/apps/showcase-heatsink/","description":"Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/heatsink@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Thermal Drift","url":"https://aura3d.auraone.ai/apps/showcase-heatsink/","description":"Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/heatsink@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
     <link rel="stylesheet" href="/fonts/aura-fonts.css" />
     <style>
       :root {
         --bg: #08090c;
         --ink: #f4f2ec;
-        --muted: #8b8f99;
+        --muted: #9398a4;
         --faint: #464a54;
         --rule: rgba(244, 242, 236, 0.12);
         --rule-strong: rgba(244, 242, 236, 0.28);
@@ -32,9 +32,9 @@
         --cyan: #35d6ff;
         --danger: #ff2952;
         --ok: #5be37d;
-        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+        --font-sans: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+        --font-display: var(--font-metric, "DIN Pro", "Whitney", sans-serif);
+        --font-mono: "Monument Grotesk Mono", monospace;
       }
 
       *,
@@ -51,9 +51,11 @@
         height: 100%;
         background: var(--bg);
         color: var(--ink);
-        font-family: var(--font-sans);
+        font-family: var(--font-ui);
         font-size: 13px;
         line-height: 1.4;
+        font-synthesis: none;
+        font-variant-numeric: tabular-nums;
         overflow: hidden;
         user-select: none;
         -webkit-font-smoothing: antialiased;
@@ -78,17 +80,6 @@
         display: block;
         width: 100% !important;
         height: 100% !important;
-      }
-
-      /* Atmospheric screen FX overlays */
-      .screen-fx {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 6;
-        background:
-          radial-gradient(circle at 50% 44%, rgba(255, 122, 31, 0.06) 0%, rgba(12, 16, 24, 0.14) 54%, rgba(5, 7, 11, 0.56) 100%),
-          repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.014) 0px, rgba(255, 255, 255, 0.014) 1px, transparent 1px, transparent 3px);
       }
 
       .speed-lines {
@@ -124,9 +115,7 @@
         background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(210, 54, 28, 0.42) 100%);
       }
 
-      /* HS-18 title card: the touch pad, speed lines and glazes hide behind the start card. Foundry look only
-         (`html.td-foundry`, set by src/entry.ts). GU47 phase 3: the HUD and minimap stay visible under the card in both
-         looks (the blind panel penalised the foundry card frame for a missing HUD and minimap). */
+      /* HS-18 title card: the touch pad, speed lines and glazes hide behind the start card; HUD and minimap stay visible. */
       html.td-foundry body.td-card .touch-controls,
       html.td-foundry body.td-card .speed-lines,
       html.td-foundry body.td-card .heat-glaze,
@@ -140,27 +129,46 @@
         --a3d-bg: rgba(8, 10, 15, 0.9);
         --a3d-ink: var(--ink);
         --a3d-dim: rgba(244, 242, 236, 0.78);
-        --a3d-bar-h: 32px;
+        --a3d-bar-h: 34px;
       }
-      .aura3d-top-bar { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; z-index: 24; }
-      .aura3d-top-bar button { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 0; }
+      .aura3d-top-bar { font-family: var(--font-ui); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; z-index: 24; }
+      .aura3d-top-bar button { font-family: var(--font-ui); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; border-radius: 4px; }
       .aura3d-top-bar button.active { background: rgba(255, 77, 31, 0.3); border-color: var(--accent); color: #fff; }
       .aura3d-top-bar button.cyan.active { background: rgba(53, 214, 255, 0.22); border-color: var(--cyan); color: var(--cyan); }
+      .aura3d-top-bar .setup-toggle { display: none; border-color: rgba(244, 242, 236, 0.28); color: var(--accent-2); }
       .brand-chip { display: flex; align-items: center; gap: 7px; padding-right: 8px; border-right: 1px solid rgba(244, 242, 236, 0.14); }
       .brand-dot { width: 8px; height: 8px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-      .brand-name { font-family: var(--font-display); font-size: 13px; font-weight: 500; letter-spacing: 0.14em; color: var(--ink); }
-      .brand-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--accent-2); }
+      .brand-name { font-family: var(--font-ui); font-size: 13px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.1em; color: var(--ink); }
+      .brand-tag { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; color: var(--accent-2); }
       .bar-group { display: flex; align-items: center; gap: 4px; }
-      .bar-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.14em; color: var(--muted); margin-right: 3px; text-transform: uppercase; }
+      .bar-label { font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.1em; color: var(--muted); margin-right: 3px; }
       .bar-sep { width: 1px; height: 16px; background: rgba(244, 242, 236, 0.14); margin: 0 2px; }
 
-      /* HUD R6 - Exact 1:1 THERMAL DRIFT Tactical Flight & Combat HUD */
+      /* Compact setup drawer on narrow/tablet/mobile viewports: keeps 17 pills from crowding the race header */
+      @media (max-width: 1120px) {
+        .aura3d-top-bar .setup-toggle { display: inline-flex; align-items: center; justify-content: center; }
+        .aura3d-top-bar:not(.setup-open) #drone-bar,
+        .aura3d-top-bar:not(.setup-open) #circuit-bar,
+        .aura3d-top-bar:not(.setup-open) #mode-bar > [data-mode],
+        .aura3d-top-bar:not(.setup-open) .bar-sep { display: none; }
+        .aura3d-top-bar.setup-open {
+          height: auto;
+          min-height: var(--a3d-bar-h);
+          flex-wrap: wrap;
+          padding-top: 6px;
+          padding-bottom: 6px;
+          row-gap: 6px;
+        }
+      }
+
+      /* HUD R6 - AuraOne Thermal Tactical Flight & Combat HUD */
       #hud.hud-r6 {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 15;
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
+        font-variant-numeric: tabular-nums;
       }
 
       .hud-r6 .r6-top-left {
@@ -174,14 +182,15 @@
 
       .hud-r6 .r6-mode-tag {
         align-self: flex-start;
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.22em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
         padding: 3px 8px;
         background: rgba(255, 77, 31, 0.18);
         border-left: 2px solid var(--accent);
         color: var(--accent);
-        text-transform: uppercase;
       }
 
       .hud-r6 .r6-row {
@@ -191,7 +200,7 @@
       }
 
       .hud-r6 .r6-chip {
-        background: rgba(8, 9, 12, 0.64);
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.14);
         backdrop-filter: blur(8px);
         padding: 6px 11px;
@@ -209,52 +218,70 @@
       }
 
       .hud-r6 .r6-chip .pos-p {
-        font-family: var(--font-display);
-        font-size: 16px;
-        font-weight: 500;
+        font-family: var(--font-ui);
+        font-size: 15px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
         color: var(--accent);
       }
 
       .hud-r6 .r6-chip .pos-num {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
         font-size: 32px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
         line-height: 0.95;
         color: var(--ink);
       }
 
       .hud-r6 .r6-chip .pos-of {
-        font-size: 12px;
+        font-family: var(--font-metric);
+        font-size: 13px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
         color: var(--muted);
       }
 
       .hud-r6 .r6-chip .k {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.18em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
-        text-transform: uppercase;
       }
 
       .hud-r6 .r6-chip .v {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
         font-size: 20px;
-        font-weight: 500;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
         line-height: 1.08;
         color: var(--ink);
-        letter-spacing: 0.03em;
+        letter-spacing: 0.02em;
       }
 
       .hud-r6 .r6-chip .v .of {
-        font-family: var(--font-mono);
-        font-size: 12px;
+        font-family: var(--font-metric);
+        font-size: 13px;
+        font-weight: 500;
         color: var(--muted);
       }
 
       .hud-r6 .r6-chip .sub {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.1em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
         margin-top: 2px;
+      }
+
+      .hud-r6 .r6-chip .sub #h-best {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
       }
 
       .hud-r6 .r6-chip.elim-chip {
@@ -277,7 +304,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(8, 9, 12, 0.58);
+        background: rgba(8, 9, 12, 0.68);
         border: 1px solid rgba(244, 242, 236, 0.14);
         padding: 5px 10px;
         backdrop-filter: blur(8px);
@@ -285,15 +312,19 @@
 
       .hud-r6 .r6-hull .k,
       .hud-r6 .r6-hull .td-k {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.18em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
       }
 
       .hud-r6 .r6-hull .td-v {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
         font-size: 15px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
         color: var(--accent-2);
       }
 
@@ -333,8 +364,8 @@
       }
 
       .hud-r6 .radar-wrap {
-        width: 154px;
-        background: rgba(8, 9, 12, 0.68);
+        width: 162px;
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.16);
         backdrop-filter: blur(8px);
         padding: 6px 8px 7px;
@@ -347,8 +378,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.18em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.12em;
         color: var(--muted);
       }
 
@@ -370,8 +404,11 @@
       .hud-r6 .radar-legend {
         display: flex;
         justify-content: space-between;
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.1em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
         color: var(--muted);
         border-top: 1px solid rgba(244, 242, 236, 0.09);
         padding-top: 4px;
@@ -401,12 +438,13 @@
         background: var(--cyan);
       }
 
-      /* Active Drone Spec Card under Radar */
+      /* Active Drone Spec Card under Radar — widened with explicit gap so drone & sector never fuse */
       .hud-r6 .drone-telemetry-card {
-        width: 154px;
-        background: rgba(8, 9, 12, 0.64);
+        min-width: 208px;
+        max-width: 232px;
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.14);
-        padding: 6px 8px;
+        padding: 7px 10px;
         backdrop-filter: blur(8px);
       }
 
@@ -414,29 +452,35 @@
         display: flex;
         justify-content: space-between;
         align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
         margin-bottom: 3px;
       }
 
       .drone-telemetry-card .dt-name {
-        font-family: var(--font-display);
+        font-family: var(--font-ui);
         font-size: 14px;
         font-weight: 600;
+        font-variant-caps: all-small-caps;
         letter-spacing: 0.08em;
         color: var(--ink);
       }
 
       .drone-telemetry-card .dt-sector {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.12em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--cyan);
-        text-transform: uppercase;
       }
 
       .drone-telemetry-card .dt-tag {
-        font-family: var(--font-sans);
+        font-family: var(--font-ui);
         font-size: 12px;
+        font-weight: 400;
         color: var(--muted);
-        line-height: 1.25;
+        line-height: 1.3;
       }
 
       /* Bottom Left Item & Tactical Abilities */
@@ -450,7 +494,7 @@
       }
 
       .hud-r6 .r6-item {
-        background: rgba(8, 9, 12, 0.64);
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.16);
         border-left: 2px solid var(--accent-2);
         padding: 6px 12px;
@@ -459,15 +503,19 @@
       }
 
       .hud-r6 .r6-item .k {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.18em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
       }
 
       .hud-r6 .r6-item .v {
-        font-family: var(--font-display);
-        font-size: 18px;
+        font-family: var(--font-ui);
+        font-size: 16px;
         font-weight: 600;
+        font-variant-caps: all-small-caps;
         letter-spacing: 0.06em;
         color: var(--ink);
       }
@@ -482,11 +530,15 @@
       }
 
       .hud-r6 .ab-pill {
-        background: rgba(8, 9, 12, 0.64);
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.15);
         padding: 4px 8px;
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.14em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
         color: var(--ink);
         display: inline-flex;
         align-items: center;
@@ -495,11 +547,11 @@
 
       .hud-r6 .ab-pill b {
         color: var(--accent-2);
-        font-weight: 500;
+        font-weight: 600;
       }
 
       .hud-r6 .ab-pill.cooling {
-        opacity: 0.45;
+        opacity: 0.48;
         border-color: rgba(244, 242, 236, 0.08);
       }
 
@@ -511,7 +563,7 @@
         display: flex;
         align-items: flex-end;
         gap: 14px;
-        background: rgba(8, 9, 12, 0.66);
+        background: rgba(8, 9, 12, 0.74);
         border: 1px solid rgba(244, 242, 236, 0.15);
         border-right: 2px solid var(--accent);
         padding: 10px 14px;
@@ -525,9 +577,10 @@
       }
 
       .hud-r6 .r6-speed .num {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
         font-size: 44px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
         line-height: 0.9;
         letter-spacing: 0.01em;
         color: var(--ink);
@@ -536,8 +589,11 @@
       }
 
       .hud-r6 .r6-speed .u {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.18em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
         color: var(--muted);
       }
 
@@ -545,19 +601,22 @@
         display: flex;
         flex-direction: column;
         gap: 5px;
-        width: 158px;
+        width: 176px;
       }
 
       .hud-r6 .b-row {
         display: grid;
-        grid-template-columns: 38px 1fr;
+        grid-template-columns: 40px 1fr;
         align-items: center;
         gap: 7px;
       }
 
       .hud-r6 .b-row .k {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.16em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
       }
 
@@ -576,7 +635,7 @@
         transition: width 0.06s linear;
       }
 
-      /* HS-18 thermal gauge: soot to molten amber to slag red; ticks at the 80% haze ramp and at overheat. */
+      /* HS-18 thermal gauge: soot -> molten amber -> slag red; 80% haze-ramp tick. */
       .hud-r6 .b-row .fill.heat {
         background: linear-gradient(90deg, #3a2a22, #ff8a1f 62%, #d2361c);
       }
@@ -590,7 +649,7 @@
         bottom: 0;
         left: calc(80% - 1px);
         width: 2px;
-        background: rgba(244, 242, 236, 0.6);
+        background: rgba(244, 242, 236, 0.65);
         z-index: 1;
       }
 
@@ -599,21 +658,34 @@
         align-items: baseline;
         justify-content: flex-end;
         gap: 5px;
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.14em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
       }
 
       .hud-r6 .r6-core .v {
-        font-family: var(--font-display);
+        font-family: var(--font-metric);
         font-size: 20px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
         letter-spacing: 0.02em;
         color: #ffb070;
       }
 
-      .hud-r6 .r6-core .v.hot { color: #d2361c; }
+      .hud-r6 .r6-core .pct {
+        font-family: var(--font-metric);
+        font-size: 14px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent-2);
+        margin-left: 3px;
+      }
+
+      .hud-r6 .r6-core .v.hot,
+      .hud-r6 .r6-core .pct.hot { color: #d2361c; }
 
       .hud-r6 .b-row .fill.shield {
         background: var(--cyan);
@@ -679,15 +751,17 @@
 
       .hud-r6 .lock span {
         position: absolute;
-        top: -16px;
+        top: -18px;
         left: 50%;
         transform: translateX(-50%);
         white-space: nowrap;
+        font-family: var(--font-mono);
         font-size: 12px;
-        letter-spacing: 0.16em;
-        background: rgba(8, 9, 12, 0.85);
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        background: rgba(8, 9, 12, 0.88);
         color: var(--accent-2);
-        padding: 1px 5px;
+        padding: 1px 6px;
         border: 1px solid rgba(255, 77, 31, 0.45);
       }
 
@@ -698,11 +772,14 @@
         left: 50%;
         transform: translateX(-50%);
         padding: 4px 12px;
-        background: rgba(255, 41, 82, 0.22);
+        background: rgba(255, 41, 82, 0.24);
         border: 1px solid var(--danger);
         color: #ff8ca3;
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.22em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
         opacity: 0;
         transition: opacity 0.14s ease;
       }
@@ -726,17 +803,21 @@
       }
 
       .hud-r6 .center-msg .big {
-        font-family: var(--font-display);
-        font-size: 38px;
+        font-family: var(--font-ui);
+        font-size: 36px;
         font-weight: 600;
+        font-variant-caps: all-small-caps;
         letter-spacing: 0.08em;
         color: var(--ink);
         text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
       }
 
       .hud-r6 .center-msg .small {
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.24em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.16em;
         color: var(--accent-2);
         margin-top: 2px;
       }
@@ -746,10 +827,13 @@
         top: calc(var(--a3d-bar-space) + 82px);
         left: 50%;
         transform: translateX(-50%);
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.24em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.16em;
         padding: 4px 14px;
-        background: rgba(8, 9, 12, 0.78);
+        background: rgba(8, 9, 12, 0.82);
         border-top: 1px solid var(--accent-2);
         border-bottom: 1px solid var(--accent-2);
         color: var(--accent-2);
@@ -766,8 +850,11 @@
         bottom: 84px;
         left: 50%;
         transform: translateX(-50%);
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.22em;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
         padding: 3px 12px;
         background: rgba(53, 214, 255, 0.18);
         border: 1px solid var(--cyan);
@@ -793,26 +880,32 @@
         justify-content: center;
         row-gap: 2px;
         column-gap: 10px;
-        /* Fits between the item panel and the speedometer at 1280 px (audit: the strip overlapped the speedometer). */
-        max-width: min(540px, calc(100vw - 700px));
+        max-width: min(540px, calc(100vw - 720px));
         padding: 5px 12px;
-        background: rgba(8, 9, 12, 0.68);
+        background: rgba(8, 9, 12, 0.72);
         border: 1px solid rgba(244, 242, 236, 0.13);
         backdrop-filter: blur(8px);
-        font-family: var(--font-mono);
+        font-family: var(--font-ui);
         font-size: 12px;
-        letter-spacing: 0.12em;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
         color: var(--muted);
         pointer-events: auto;
       }
 
       .controls-strip b {
         color: var(--ink);
-        font-weight: 500;
+        font-weight: 600;
       }
 
       .controls-strip .autopilot-badge {
-        padding: 2px 6px;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        padding: 3px 8px;
         border: 1px solid var(--cyan);
         color: var(--cyan);
         background: rgba(53, 214, 255, 0.12);
@@ -836,11 +929,12 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        background: radial-gradient(circle at 50% 42%, #181c2b 0%, #090b12 100%);
+        background: radial-gradient(circle at 50% 42%, #141928 0%, #080a10 100%);
         color: #f4f2ec;
-        font-family: var(--font-display);
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
         transition: opacity 0.25s ease;
       }
       #boot.boot.done {
@@ -849,36 +943,39 @@
       }
       #boot[hidden], #results[hidden], #start[hidden] { display: none !important; }
 
-      /* Touch controls (phones and tablets): steer pad left, action cluster right, 44 px or larger targets. */
+      /* Touch controls (phones and tablets, >= 48px coarse targets on 390x844) */
       .touch-controls { display: none; }
+      @media (pointer: coarse), (max-width: 760px) {
+        :root { --a3d-bar-h: 48px; }
+        .aura3d-top-bar button { min-height: 44px; min-width: 44px; padding: 0 10px; }
+        .controls-strip .autopilot-badge { min-height: 44px; padding: 0 12px; }
+      }
       @media (pointer: coarse) {
         .touch-controls { display: block; position: fixed; inset: auto 0 0 0; height: 0; z-index: 30; pointer-events: none; }
         .touch-pad, .touch-cluster, .touch-top { pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; }
         .touch-pad {
           position: fixed; left: calc(12px + env(safe-area-inset-left)); bottom: calc(14px + env(safe-area-inset-bottom));
-          width: 168px; height: 104px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
-          background: rgba(8, 9, 12, 0.5); border: 1px solid rgba(244, 242, 236, 0.28); border-radius: 52px;
-          font-family: var(--font-mono); font-size: 18px; color: rgba(244, 242, 236, 0.75);
+          width: 168px; height: 108px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
+          background: rgba(8, 9, 12, 0.58); border: 1px solid rgba(244, 242, 236, 0.28); border-radius: 54px;
+          font-family: var(--font-ui); font-size: 18px; font-weight: 600; color: rgba(244, 242, 236, 0.8);
         }
-        .touch-pad .pad-knob { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(255, 77, 31, 0.45); border: 1px solid var(--accent); }
+        .touch-pad .pad-knob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(255, 77, 31, 0.45); border: 1px solid var(--accent); }
         .touch-pad.held { border-color: var(--accent); }
         .touch-cluster {
           position: fixed; right: calc(12px + env(safe-area-inset-right)); bottom: calc(14px + env(safe-area-inset-bottom));
           display: grid; grid-template-columns: 58px 58px 58px; grid-template-rows: 52px 52px; gap: 8px;
-          /* Three columns keep FIRE (two rows), BOOST, ROLL and ITEM in two rows, below the AUTO and SOUND buttons. */
         }
         .touch-btn, .touch-small {
-          font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--ink);
-          background: rgba(8, 9, 12, 0.62); border: 1px solid rgba(244, 242, 236, 0.32); border-radius: 10px; min-width: 44px; min-height: 44px;
+          font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: var(--ink);
+          background: rgba(8, 9, 12, 0.68); border: 1px solid rgba(244, 242, 236, 0.32); border-radius: 10px; min-width: 48px; min-height: 48px;
         }
-        .touch-btn.fire { grid-row: span 2; background: rgba(255, 77, 31, 0.32); border-color: var(--accent); font-size: 14px; }
+        .touch-btn.fire { grid-row: span 2; background: rgba(255, 77, 31, 0.34); border-color: var(--accent); font-size: 14px; }
         .touch-btn.held, .touch-small.held { background: rgba(255, 184, 0, 0.35); border-color: var(--accent-2); }
-        .touch-top { position: fixed; right: calc(12px + env(safe-area-inset-right)); bottom: calc(144px + env(safe-area-inset-bottom)); display: flex; gap: 8px; }
-        .touch-small { padding: 0 10px; height: 44px; }
+        .touch-top { position: fixed; right: calc(12px + env(safe-area-inset-right)); bottom: calc(134px + env(safe-area-inset-bottom)); display: flex; gap: 8px; }
+        .touch-small { padding: 0 12px; height: 48px; }
         .touch-small.on { border-color: var(--cyan); color: var(--cyan); }
-        /* Make room for the controls: the HUD bottom blocks sit above them. */
-        .hud-r6 .r6-bot-left { bottom: calc(132px + env(safe-area-inset-bottom)) !important; }
-        .hud-r6 .r6-bot-right { bottom: calc(200px + env(safe-area-inset-bottom)) !important; }
+        .hud-r6 .r6-bot-left { bottom: calc(134px + env(safe-area-inset-bottom)) !important; }
+        .hud-r6 .r6-bot-right { bottom: calc(194px + env(safe-area-inset-bottom)) !important; }
         .hud-r6 .r6-abilities { display: none; }
         .controls-strip { display: none; }
       }
@@ -887,58 +984,65 @@
         .controls-strip { max-width: none; }
         .controls-strip > span { display: none; }
       }
-      /* Narrow desktop windows (the 720x450 index card): the gap between the item panel and the speedometer is too
-         small for the autopilot badge, so it sits above the item panel instead of over the speed readout. */
       @media (max-width: 960px) {
         .controls-strip { left: 22px; bottom: 142px; transform: none; }
       }
-      /* Short windows: the drone card under the radar would run into the speedometer. */
       @media (max-height: 520px) {
         .hud-r6 .r6-top-right > :not(.radar-wrap) { display: none; }
       }
 
       /* Countdown, start and results overlays */
       .countdown { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 26; pointer-events: none;
-        font-family: var(--font-display); font-size: 96px; font-weight: 700; color: var(--ink); text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9); opacity: 0; transition: opacity 0.12s ease; }
+        font-family: var(--font-metric); font-size: 92px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9); opacity: 0; transition: opacity 0.12s ease; }
       .countdown.show { opacity: 1; }
-      .overlay { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(5, 7, 11, 0.62); opacity: 0; transition: opacity 0.2s ease; }
+      .overlay { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(5, 7, 11, 0.64); opacity: 0; transition: opacity 0.2s ease; }
       .overlay.show { opacity: 1; }
-      .overlay .card { min-width: min(92vw, 420px); max-width: 92vw; padding: 18px 22px; background: rgba(8, 10, 15, 0.94); border: 1px solid rgba(244, 242, 236, 0.18); border-top: 2px solid var(--accent); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink); }
-      .overlay h2 { font-family: var(--font-display); font-size: 30px; letter-spacing: 0.1em; margin-bottom: 10px; }
-      .overlay .row { display: flex; justify-content: space-between; gap: 18px; padding: 5px 0; border-bottom: 1px solid rgba(244, 242, 236, 0.08); }
-      .overlay .row b { font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: 0.04em; }
-      .overlay .laps { margin-top: 8px; color: var(--muted); }
+      .overlay .card { min-width: min(92vw, 430px); max-width: 92vw; padding: 20px 24px; background: rgba(8, 10, 15, 0.94); border: 1px solid rgba(244, 242, 236, 0.18); border-top: 2px solid var(--accent); font-family: var(--font-ui); font-size: 13px; color: var(--ink); backdrop-filter: blur(12px); }
+      .overlay h2 { font-family: var(--font-ui); font-size: 28px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.1em; margin-bottom: 10px; }
+      .overlay .row { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; padding: 6px 0; border-bottom: 1px solid rgba(244, 242, 236, 0.08); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+      .overlay .row b { font-family: var(--font-metric); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.03em; color: var(--ink); }
+      .overlay .laps { margin-top: 8px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
       .overlay .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-      .overlay button { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; min-height: 44px; padding: 0 16px; color: var(--ink); background: rgba(255, 77, 31, 0.25); border: 1px solid var(--accent); cursor: pointer; }
+      .overlay button { font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.08em; min-height: 44px; min-width: 44px; padding: 0 16px; color: var(--ink); background: rgba(255, 77, 31, 0.25); border: 1px solid var(--accent); cursor: pointer; }
       .overlay button.alt { background: transparent; border-color: rgba(244, 242, 236, 0.3); }
       .garage { display: none; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
       .garage.open { display: flex; }
-      .garage button { min-height: 44px; padding: 0 10px; background: transparent; border-color: rgba(244, 242, 236, 0.3); }
-      #start .card p { margin-top: 8px; line-height: 1.6; color: var(--muted); }
+      .garage button { min-height: 44px; min-width: 44px; padding: 0 10px; background: transparent; border-color: rgba(244, 242, 236, 0.3); }
+      #start .card p { margin-top: 8px; line-height: 1.55; font-size: 13px; color: var(--muted); }
       #start .card .goal { color: var(--ink); }
+      #start #start-how { font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--accent-2); }
 
-      /* Lock bracket corners and the edge arrow when the target is off-screen. */
+      /* Lock bracket corners and edge arrow when target is off-screen. */
       .hud-r6 .lock::before { content: ""; position: absolute; inset: -6px; border: 2px solid transparent; border-top-color: var(--accent-2); border-bottom-color: var(--accent-2); }
       .hud-r6 .lock.offscreen { width: 34px; height: 34px; border-style: dashed; }
       .hud-r6 .lock.offscreen::after { content: "▶"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent-2); font-size: 16px; }
-      .hud-r6 .r6-hull .num { font-family: var(--font-display); font-size: 14px; min-width: 34px; color: var(--ink); }
+      .hud-r6 .r6-hull .num { font-family: var(--font-metric); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 34px; color: var(--ink); }
 
-      /* C21: reduced motion. JS also stops the barrel-roll spin, camera shake, FOV kick and rain. */
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { transition: none !important; animation: none !important; }
         .speed-lines { display: none; }
       }
-      /* Phones: the top bar scrolls sideways; the HUD shrinks so the chip row and radar never overlap. */
+      /* 390x844 mobile portrait: clean non-overlapping HUD layout at >= 12px without sub-pixel scale down */
       @media (max-width: 640px) {
-        .hud-r6 .r6-top-left { left: 8px; max-width: calc(100vw - 128px); }
+        .hud-r6 .r6-top-left { left: 8px; max-width: calc(100vw - 122px); }
         .hud-r6 .r6-row { flex-wrap: wrap; gap: 4px; }
+        .hud-r6 .r6-chip { padding: 4px 8px; }
+        .hud-r6 .r6-chip .pos-num { font-size: 24px; }
+        .hud-r6 .r6-chip .v { font-size: 16px; }
+        .hud-r6 .r6-hull .bar { width: 72px; }
         .hud-r6 .r6-top-right { right: 8px; }
         .hud-r6 .r6-top-right > :not(.radar-wrap) { display: none; }
-        .hud-r6 .radar-wrap { width: 108px; padding: 4px 5px 5px; }
+        .hud-r6 .radar-wrap { width: 100px; padding: 4px 5px 5px; }
+        .hud-r6 #minimap { width: 88px; height: 88px; }
         .hud-r6 .radar-legend { display: none; }
-        .hud-r6 .r6-bot-left { left: 8px; bottom: 8px; transform: scale(0.8); transform-origin: bottom left; }
-        .hud-r6 .r6-abilities { flex-wrap: wrap; max-width: 110px; }
-        .hud-r6 .r6-bot-right { right: 8px; bottom: 8px; transform: scale(0.7); transform-origin: bottom right; }
+        .hud-r6 .r6-bot-left { left: 8px; bottom: 10px; }
+        .hud-r6 .r6-item { min-width: 128px; padding: 5px 8px; }
+        .hud-r6 .r6-item .v { font-size: 13px; }
+        .hud-r6 .r6-abilities { display: none; }
+        .hud-r6 .r6-bot-right { right: 8px; bottom: 10px; gap: 8px; padding: 7px 10px; }
+        .hud-r6 .r6-speed .num { font-size: 30px; min-width: 56px; }
+        .hud-r6 .r6-bars { width: 122px; gap: 4px; }
+        .hud-r6 .r6-core .v { font-size: 16px; }
         .aura3d-top-bar .bar-label, .aura3d-top-bar .brand-tag { display: none; }
       }
     </style>
@@ -946,23 +1050,24 @@
   <body>
     <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Thermal Drift — an Aura3D browser game</h1>
     <div id="boot" class="boot">
-      <div style="font-size:18px;font-weight:700;color:#ff4d1f;">THERMAL DRIFT · SECTOR 09</div>
-      <div style="font-size:12px;opacity:0.78;">LOADING SCENE &amp; COMBAT DRONE RIGS...</div>
+      <div style="font-size:18px;font-weight:600;color:#ff4d1f;">THERMAL DRIFT · SECTOR 09</div>
+      <div style="font-size:12px;font-weight:500;opacity:0.78;">LOADING SCENE &amp; COMBAT DRONE RIGS...</div>
     </div>
     <main id="game-stage">
       <div id="app" aria-label="THERMAL DRIFT 3D combat drone racing viewport"></div>
-      <div class="screen-fx"></div>
       <div id="speed-lines" class="speed-lines"></div>
       <div id="heat-glaze" class="heat-glaze"></div>
       <div id="damage-glaze" class="damage-glaze"></div>
 
-      <!-- Interactive Top Command Bar: Instant Drone Garage, Circuit & Mode Switcher -->
+      <!-- Interactive Top Command Bar: Collapsible Drone Garage, Circuit & Mode Switcher -->
       <nav class="aura3d-top-bar" role="toolbar" aria-label="THERMAL DRIFT Garage, Circuit, and Mode Controls">
         <div class="brand-chip">
           <span class="brand-dot"></span>
           <span class="brand-name">THERMAL DRIFT</span>
           <span class="brand-tag">SECTOR 09</span>
         </div>
+
+        <button type="button" class="bar-pill setup-toggle" id="h-setup-toggle" aria-expanded="false" title="Toggle Drone, Track and Mode Setup">SETUP ▾</button>
 
         <div class="bar-group" id="drone-bar">
           <span class="bar-label">DRONE</span>
@@ -996,7 +1101,7 @@
         <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
       </nav>
 
-      <!-- 1:1 THERMAL DRIFT Tactical HUD (.hud-r6) -->
+      <!-- AuraOne Thermal Tactical HUD (.hud-r6) -->
       <div id="hud" class="hud-r6">
         <div class="r6-top-left">
           <div class="r6-mode-tag" id="h-mode">RACE</div>
@@ -1069,7 +1174,7 @@
             <div class="u">KM/H</div>
           </div>
           <div class="r6-bars">
-            <div class="r6-core" aria-label="Core temperature"><span class="k">CORE</span><span class="v" id="h-core">300</span><span class="u">°C</span></div>
+            <div class="r6-core" aria-label="Core temperature"><span class="k">CORE</span><span class="v" id="h-core">300</span><span class="u">°C</span><span class="pct" id="h-heat-pct">0%</span></div>
             <div class="b-row"><span class="k">AB</span><div class="bar"><div class="fill" id="h-ab"></div></div></div>
             <div class="b-row"><span class="k">HEAT</span><div class="bar thermal"><div class="fill heat" id="h-heat"></div></div></div>
             <div class="b-row"><span class="k">SHLD</span><div class="bar"><div class="fill shield" id="h-shield"></div></div></div>
@@ -1108,7 +1213,7 @@
       <div class="overlay" id="start" hidden>
         <div class="card" role="dialog" aria-label="Start the race">
           <h2>THERMAL DRIFT</h2>
-          <p class="goal">Finish 3 laps ahead of 11 rival drones. Shoot them down, dodge their missiles with a barrel roll, and keep the core cool.</p>
+          <p class="goal">Race 3 high-velocity laps ahead of 11 combat drones. Ride overdrive below the 80% thermal redline, sweep cryo canisters to purge core heat, and barrel-roll incoming seekers.</p>
           <p id="start-how">PRESS ENTER OR CLICK TO START</p>
         </div>
       </div>

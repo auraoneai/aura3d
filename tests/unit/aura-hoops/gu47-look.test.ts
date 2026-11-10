@@ -12,6 +12,13 @@ import {
   lightningFlash
 } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
 import {
+  dualChainLinkFenceSpec,
+  dualCourtSurfaceSpec,
+  dualFlipbookBurstSpec,
+  dualSwishNetSpec
+} from "../../../apps/showcase-aura-hoops-3d/src/hoopsShaders";
+import { createFlipbookAtlas } from "../../../apps/showcase-port-shared/vfx-pack";
+import {
   HOOPS_FX_KINDS,
   HOOPS_FX_PRESETS,
   JUICE_FX,
@@ -81,7 +88,24 @@ describe("Aura Hoops 3D GU47 look table", () => {
     const density = (reduced: boolean) => (courtWeatherNodes(COURT_RIGS.shanghai, reduced).find((n) => (n as { effect?: string }).effect === "rain") as { density: number }).density;
     expect(density(true)).toBeCloseTo(density(false) / 2, 3);
     expect(JSON.stringify(courtWeatherNodes(COURT_RIGS.shanghai, false))).not.toContain("prd07.legacyWeather");
-    expect(JSON.stringify(courtWeatherNodes(COURT_RIGS.shanghai, false))).toContain('"effect":"wetness"');
+    expect(JSON.stringify(courtWeatherNodes(COURT_RIGS.shanghai, false))).not.toContain('"effect":"wetness"');
+    const wetSurface = dualCourtSurfaceSpec({
+      baseHex: "#1c222a",
+      accentHex: "#ff3380",
+      surfaceKind: 2,
+      roughness: 0.14,
+      puddleStrength: COURT_RIGS.shanghai.surface.puddles
+    });
+    expect(wetSurface.glsl.fragment).toContain("voronoiPuddle(");
+    expect(wetSurface.wgsl?.fragment).toContain("/* @aura3d-bindings */");
+    for (const spec of [
+      dualSwishNetSpec(),
+      dualChainLinkFenceSpec(),
+      dualFlipbookBurstSpec(createFlipbookAtlas("sparks"))
+    ]) {
+      expect(spec.glsl.fragment.length).toBeGreaterThan(40);
+      expect(spec.wgsl?.fragment).toContain("/* @aura3d-bindings */");
+    }
     const manila = courtWeatherNodes(COURT_RIGS.manila, true) as unknown as { maxParticles?: number }[];
     for (const n of manila) expect(n.maxParticles).toBe(200);
   });

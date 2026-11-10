@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 /**
  * Audit RR-5 and RR-9 on the page wiring of Apex Overdrive (src/native/index.ts), with a fake AudioContext that, like a
@@ -65,9 +65,13 @@ afterEach(() => {
 });
 
 describe("Apex Overdrive sound and background wiring", () => {
+  let createNativeRoadster!: typeof import("../../../apps/showcase-roadster-rush/src/native/index").createNativeRoadster;
+  beforeAll(async () => {
+    ({ createNativeRoadster } = await import("../../../apps/showcase-roadster-rush/src/native/index"));
+  }, 20000);
+
   it("the first run is not silent: the first pointer or key gesture resumes the context (RR-5)", async () => {
     const { win } = install();
-    const { createNativeRoadster } = await import("../../../apps/showcase-roadster-rush/src/native/index");
     const game = createNativeRoadster({ harness: false });
     game.start(); // boot-time start, outside any gesture
     await flush();
@@ -82,7 +86,6 @@ describe("Apex Overdrive sound and background wiring", () => {
 
   it("a hidden tab pauses the run and suspends the context; showing it resumes sound, the run stays paused (RR-9)", async () => {
     const { win, doc } = install();
-    const { createNativeRoadster } = await import("../../../apps/showcase-roadster-rush/src/native/index");
     const game = createNativeRoadster({ harness: false });
     gesture = true;
     win.dispatchEvent(new Event("keydown"));
@@ -103,7 +106,6 @@ describe("Apex Overdrive sound and background wiring", () => {
 
   it("window blur pauses a live run (RR-9)", async () => {
     const { win } = install();
-    const { createNativeRoadster } = await import("../../../apps/showcase-roadster-rush/src/native/index");
     const game = createNativeRoadster({ harness: false });
     game.start();
     win.dispatchEvent(new Event("blur"));

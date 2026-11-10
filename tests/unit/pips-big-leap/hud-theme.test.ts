@@ -28,10 +28,12 @@ describe("pips-big-leap storybook HUD (PBL-H1)", () => {
     expect(main).toContain("document.documentElement.dataset.pblLook = LOOK_MODE");
   });
 
-  it("dresses the HUD as parchment chips with the Canela display face, scoped to the diorama look", () => {
-    expect(css).toMatch(/:root\[data-pbl-look="diorama"\] \{[^}]*--pbl-display: "A3G Canela"/);
+  it("dresses the HUD as parchment chips on licensed AuraOne Whitney / DIN Pro / Monument Grotesk Mono tokens", () => {
+    expect(css).toMatch(/:root\[data-pbl-look="diorama"\] \{[^}]*--pbl-display: var\(--font-ui\)/);
     expect(css).toMatch(/:root\[data-pbl-look="diorama"\] \.pbl-banner \.big \{[^}]*font-family: var\(--pbl-display\)/);
-    // No unlicensed faces (PRD D9).
-    expect(css).not.toMatch(/font-family:[^;]*\b(Inter|Roboto|Geist|Barlow)\b/);
+    expect(css).toMatch(/#pbl-timer \{[^}]*font-family: var\(--font-metric\)/);
+    expect(css).toMatch(/\.aura3d-controls-hint kbd \{[^}]*var\(--font-mono\)/);
+    // No unlicensed or OS system faces (PRD D9 + AuraOne font policy).
+    expect(css).not.toMatch(/font-family:[^;]*\b(Inter|Roboto|Geist|Barlow|system-ui|-apple-system|BlinkMacSystemFont|Segoe UI)\b/);
   });
 });

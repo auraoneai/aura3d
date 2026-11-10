@@ -3,10 +3,11 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, text3D, world, type AuraLookOverrides } from "@aura3d/engine";
+import { camera, effects, game, geometry, instances, lights, looks, material, model, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
-import { ivyBrickTexture, turfTextures } from "./turfTextures";
+import { baseballSeamTextures, batWoodTexture, flipbookAtlasDataUrl, ivyBrickTexture, turfTextures } from "./turfTextures";
+import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
@@ -73,52 +74,135 @@ const chalkMat = (park: ParkSpec, ctx: DiamondSceneContext) =>
     ? material.pbr({ color: "#f5f1e4", roughness: 0.6, emissive: "#f5f1e4", emissiveIntensity: 0.18 })
     : material.pbr({ color: PARK_LOOKS[park.id].turf.chalk, roughness: 0.7, emissive: PARK_LOOKS[park.id].turf.chalk, emissiveIntensity: 0.05 });
 
+let cachedMoundGeo: AuraCustomGeometrySpec | undefined;
+
+/** Smoothly graded cosine-bell pitcher's mound (2.85 m radius, 0.65 m rubber plateau, zero vertical step into infield grass). */
+function pitcherMoundGeometry(): AuraCustomGeometrySpec {
+  if (cachedMoundGeo) return cachedMoundGeo;
+  const radial = 40;
+  const rings = 14;
+  const outerR = 2.85;
+  const plateauR = 0.65;
+  const topY = MOUND_TOP + 0.01;
+  const skirtY = 0.006;
+  const vCount = (rings + 1) * (radial + 1);
+  const positions = new Float32Array(vCount * 3);
+  const uvs = new Float32Array(vCount * 2);
+  const indices: number[] = [];
+  for (let j = 0; j <= rings; j++) {
+    const t = j / rings;
+    const r = t * outerR;
+    const slopeT = r <= plateauR ? 0 : Math.min(1, (r - plateauR) / (outerR - plateauR));
+    const y = skirtY + (topY - skirtY) * (0.5 + 0.5 * Math.cos(Math.PI * slopeT));
+    for (let i = 0; i <= radial; i++) {
+      const a = (i / radial) * Math.PI * 2;
+      const cx = Math.cos(a) * r;
+      const cz = Math.sin(a) * r;
+      const vi = j * (radial + 1) + i;
+      positions[vi * 3] = cx;
+      positions[vi * 3 + 1] = y;
+      positions[vi * 3 + 2] = cz;
+      uvs[vi * 2] = 0.5 + cx / (outerR * 2);
+      uvs[vi * 2 + 1] = 0.5 + cz / (outerR * 2);
+      if (j < rings && i < radial) {
+        const v0 = vi;
+        const v1 = vi + 1;
+        const v2 = vi + radial + 1;
+        const v3 = vi + radial + 2;
+        indices.push(v0, v2, v1, v1, v2, v3);
+      }
+    }
+  }
+  cachedMoundGeo = geometry.define({
+    positions,
+    normals: geometry.computeNormals({ positions, indices }),
+    uvs,
+    indices,
+    bounds: { min: [-outerR, 0, -outerR], max: [outerR, topY + 0.01, outerR] }
+  });
+  return cachedMoundGeo;
+}
+
 export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
   const gu47 = ctx.variant === "gu47";
   const turf = PARK_LOOKS[park.id].turf;
-  // GU47 DIA-M1: one mown-turf plane (the mowing mask multiplied over the park's turf, grass blade normals at 2 m) and
-  // pebbled clay; without a DOM (unit tests) the same materials fall back to plain colour.
+  // GU47 DIA-M1 + WP-03: mown-turf physical sheen plane (checkerboard mowing mask + 2 m grass blade normals + fiber sheen)
+  // and damp-vs-dry raked clay; without a DOM (unit tests) the materials fall back cleanly to plain colour.
   const tex = gu47 ? turfTextures() : null;
+  const grassSheenColor = park.id === "dome" ? "#6ec0f0" : park.id === "lunar" ? "#8c95b0" : park.id === "canyon" ? "#a8986c" : "#89ba68";
   const grass = gu47
-    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: turf.normalScale?.grass ?? 0.6 } : {}) })
+    ? material.physical({
+        color: tex ? turf.stripe : turf.grass,
+        roughness: 0.88,
+        metallic: 0,
+        sheen: 0.42,
+        sheenRoughness: 0.54,
+        sheenColor: grassSheenColor,
+        ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: turf.normalScale?.grass ?? 0.6 } : {})
+      })
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
+  const clayClearcoat = park.id === "skyline" ? 0.24 : 0.09;
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex && (turf.normalScale?.clay ?? 0.5) > 0 ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
+    ? material.physical({
+        color: turf.clay,
+        roughness: turf.clayRoughness ?? 0.86,
+        metallic: 0,
+        clearcoat: clayClearcoat,
+        clearcoatRoughness: 0.56,
+        ...(tex && (turf.normalScale?.clay ?? 0.5) > 0
+          ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5, roughnessMap: tex.clayRoughness as any }
+          : {})
+      })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
+  const moundDirt = gu47
+    ? material.physical({
+        color: turf.clay,
+        roughness: Math.max(0.48, (turf.clayRoughness ?? 0.86) - 0.14),
+        metallic: 0,
+        clearcoat: clayClearcoat + 0.07,
+        clearcoatRoughness: 0.48,
+        ...(tex && (turf.normalScale?.clay ?? 0.5) > 0
+          ? { normal: tex.clayNormal as any, normalScale: (turf.normalScale?.clay ?? 0.5) * 1.15, roughnessMap: tex.clayRoughness as any }
+          : {})
+      })
+    : dirt;
   const ivyBrick = gu47 && park.id === "ivy" ? ivyBrickTexture() : null;
   const wallMat = ivyBrick
-    ? material.pbr({ color: "#ffffff", roughness: 0.9, texture: ivyBrick as any })
-    : material.pbr({ color: park.wall, roughness: 0.7 });
+    ? material.physical({ color: "#ffffff", roughness: 0.86, metallic: 0, texture: ivyBrick as any })
+    : material.physical({ color: park.wall, roughness: 0.68, metallic: 0.06, clearcoat: 0.08, clearcoatRoughness: 0.5 });
   const accent = PARK_LOOKS[park.id].accent;
   const wallTopMat = !gu47
     ? material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 })
     : NIGHT_LOOK[park.id]
       ? material.emissive({ color: accent, emissive: accent, emissiveIntensity: 0.6 })
-      : material.pbr({ color: accent, roughness: 0.55 });
-  const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.42 });
+      : material.physical({ color: accent, roughness: 0.48, clearcoat: 0.16, clearcoatRoughness: 0.4 });
+  const bagMat = material.physical({ color: "#ece8d8", roughness: 0.42, sheen: 0.24, sheenRoughness: 0.62 });
   const chalk = () => chalkMat(park, ctx);
 
   // GU47 DIA-W2 / DIA-A1: the field's repeated pieces are instanced, one draw per shape and material, in both looks (the
-  // same meshes, transforms and materials as the 4.6.2 nodes, so `?look=original` keeps its look): the clay circles and
-  // the mound (6 -> 1), the base paths (4 -> 1), the chalk (6 -> 1), the plate and the rubber (2 -> 1), the base bags
-  // (3 -> 1), the foul poles and their glow (4 -> 2), the dugouts (2 -> 1): -17 draws before shadow passes.
+  // same meshes, transforms and materials as the 4.6.2 nodes, so `?look=original` keeps its look). In GU47, the vertical
+  // hockey-puck 6th clay cylinder is replaced by a smoothly graded cosine-bell pitcher's mound (`pitcher-mound`).
   const t = fieldInstanceTransforms(park);
+  const clayTransforms = gu47 ? t.clay.slice(0, -1) : t.clay;
   // GU47 phase 6 (draw budget, PRD D7): pieces 2-4 cm thick lying on the ground cast no visible shadow, so GU47 leaves
   // them out of the key's shadow pass (one depth draw each).
   const flush = gu47 ? ({ castShadow: false } as const) : {};
   nodes.push(
     primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
     ...(gu47
-      ? []
+      ? [
+          geometry.custom(pitcherMoundGeometry(), { name: "pitcher-mound", material: moundDirt, castShadow: false, receiveShadow: true }).position(0, 0.01, MOUND_Z),
+          primitives.cylinder({ name: "batter-box-clay", size: [4.2, 0.022, 3.6], params: { radialSegments: 32 }, material: moundDirt, castShadow: false } as any).position(0, 0.02, 0.35)
+        ]
       : Array.from({ length: 9 }, (_, i) =>
           primitives
             .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
             .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
         )),
-    // Infield, home circle, the three base circles and the mound, then the four base paths.
-    instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: t.clay }),
+    // Infield, home circle, the three base circles (and the cylindrical mound in ?look=original), then the four base paths.
+    instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: clayTransforms }),
     instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths, ...flush }),
     instances.model(assets.diamondBase, { name: "base-bags", targetHeight: 0.16, scaleMode: "fit", transforms: t.bags }),
     instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates, ...flush }),
@@ -534,15 +618,129 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   switch (park.id) {
     case "sandlot": {
       const W = HARBOR_WATER;
+      const harborBrick = gu47 ? ivyBrickTexture() : null;
+      const harborWaterMat = gu47
+        ? material.custom(
+            dualAnimatedWaterSpec({
+              deepColor: [0.045, 0.145, 0.245],
+              shallowColor: [0.115, 0.335, 0.455],
+              foamColor: [1.0, 0.82, 0.54],
+              sunDir: [-0.42, 0.25, -0.87],
+              waveScale: 0.12,
+              waveSpeed: 0.85,
+              opacity: 0.97
+            })
+          )
+        : material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 });
+
+      // Right-field weathered brick bayside arcade (replaces the smeared Meshy canyon arch in GU47)
+      const arcadeBoxes: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+      const arcadeCaps: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+      if (gu47) {
+        const bays = 6;
+        for (let i = 0; i <= bays; i++) {
+          const theta = 15 + (24 * i) / bays;
+          const p = fencePoint(park, theta, 0, 5.2);
+          const yaw = ((theta * Math.PI) / 180);
+          // Brick pier column
+          arcadeBoxes.push({ position: [p[0], 3.4, p[2]], rotation: [0, yaw, 0], scale: [1.35, 6.8, 1.35] });
+          if (i < bays) {
+            const thetaNext = 15 + (24 * (i + 1)) / bays;
+            const pNext = fencePoint(park, thetaNext, 0, 5.2);
+            const mid: Vec3 = [(p[0] + pNext[0]) * 0.5, 6.1, (p[2] + pNext[2]) * 0.5];
+            const span = Math.hypot(pNext[0] - p[0], pNext[2] - p[2]) + 0.3;
+            const spanYaw = Math.atan2(pNext[0] - p[0], pNext[2] - p[2]) + Math.PI / 2;
+            // Upper brick spandrel beam framing the harbor cove arches
+            arcadeBoxes.push({ position: mid, rotation: [0, spanYaw, 0], scale: [span, 1.5, 1.4] });
+            arcadeCaps.push({ position: [mid[0], 7.02, mid[2]], rotation: [0, spanYaw, 0], scale: [span + 0.18, 0.34, 1.62] });
+          }
+        }
+      }
+
+      // Distant bayside steel suspension bridge spanning behind the cove horizon
+      const bridgeSteel: { position: Vec3; rotation?: Vec3; scale: Vec3 }[] = gu47
+        ? [
+            // West tower legs + crossbars
+            { position: [86, 18, -242], scale: [2.2, 36, 2.2] },
+            { position: [93, 18, -240], scale: [2.2, 36, 2.2] },
+            { position: [89.5, 24, -241], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
+            { position: [89.5, 33, -241], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
+            // East tower legs + crossbars
+            { position: [194, 18, -234], scale: [2.2, 36, 2.2] },
+            { position: [201, 18, -232], scale: [2.2, 36, 2.2] },
+            { position: [197.5, 24, -233], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
+            { position: [197.5, 33, -233], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
+            // Suspension truss road deck
+            { position: [144, 11.5, -237], rotation: [0, -0.074, 0], scale: [188, 1.8, 5.2] }
+          ]
+        : [];
+
+      // Moored sailboats in the right-field harbor cove
+      const boatSpots: readonly [number, number, number, number][] = [
+        [76, -142, 0.45, 1.0],
+        [98, -154, -0.25, 1.12],
+        [124, -148, 0.72, 0.94],
+        [148, -162, 0.18, 1.08],
+        [172, -150, -0.52, 0.98]
+      ];
+
       nodes.push(
         model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
-        // GU47 blind panel: world.water's swell read as glittery blue pixel noise at this distance (software WebGL2), so
-        // the bay is the calm 4.6.2 plane again, a touch deeper and smoother in GU47 to hold the sunset.
-        primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr(gu47 ? { color: "#2a5470", roughness: 0.22, metalness: 0.2 } : { color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
+        primitives
+          .plane({ name: "harbor-water", size: [W.w, W.d] as any, castShadow: false, material: harborWaterMat })
+          .position(W.x, W.y, W.z)
+          .runtime(game.runtimeNode("harbor-water")),
         model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
-        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
         ...(gu47
           ? [
+              instances.box({
+                name: "sandlot-brick-arcade",
+                size: [1, 1, 1],
+                castShadow: false,
+                material: material.physical({
+                  color: harborBrick ? "#e6c6b8" : "#8b4636",
+                  roughness: 0.84,
+                  metallic: 0,
+                  ...(harborBrick ? { texture: harborBrick as any } : {})
+                }),
+                transforms: arcadeBoxes
+              }),
+              instances.box({
+                name: "sandlot-arcade-coping",
+                size: [1, 1, 1],
+                castShadow: false,
+                material: material.physical({ color: "#cbbba4", roughness: 0.72, metallic: 0 }),
+                transforms: arcadeCaps
+              }),
+              instances.box({
+                name: "sandlot-bay-bridge",
+                size: [1, 1, 1],
+                castShadow: false,
+                material: material.brushedMetal({ color: "#9e3b2b", roughness: 0.42, metallic: 0.76 }),
+                transforms: bridgeSteel
+              }),
+              instances.box({
+                name: "sandlot-sailboats-hulls",
+                size: [1, 1, 1],
+                castShadow: false,
+                material: material.clearcoatPaint({ color: "#22384f", roughness: 0.26, clearcoat: 0.75, clearcoatRoughness: 0.14 }),
+                transforms: boatSpots.map(([bx, bz, byaw, s]) => ({
+                  position: [bx, W.y + 0.32 * s, bz] as Vec3,
+                  rotation: [0, byaw, 0] as Vec3,
+                  scale: [1.55 * s, 0.68 * s, 5.2 * s] as Vec3
+                }))
+              }),
+              instances.cone({
+                name: "sandlot-sailboats-sails",
+                size: [1, 1, 1],
+                castShadow: false,
+                material: material.physical({ color: "#e8d5b8", roughness: 0.64, sheen: 0.38, sheenRoughness: 0.58, sheenColor: "#ffdca8" }),
+                transforms: boatSpots.map(([bx, bz, byaw, s]) => ({
+                  position: [bx, W.y + 3.6 * s, bz] as Vec3,
+                  rotation: [0, byaw, 0] as Vec3,
+                  scale: [0.32 * s, 6.2 * s, 2.8 * s] as Vec3
+                }))
+              }),
               // GU47 phase 6 (draw budget): the two rocks as one instanced draw, each instance in its 4.6.2 override colour
               // over a white replace override (pine-b's 6.5 m fit is pine-a's 7 m fit scaled by 6.5/7).
               instances.model(assets.diamondRock, {
@@ -556,6 +754,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
               })
             ]
           : [
+              model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
               model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
               model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0)
             ]),
@@ -833,8 +1032,14 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
     model(assets.diamondGlove, { name: "dugout-glove-ref", targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit", visible: false })
       .position(0, -80, 0)
       .scale(HIDDEN_SCALE),
-    // Catcher's mitt — socketed to the crouched catcher's left forearm at runtime
-    model(assets.diamondGlove, { name: "catcher-mitt", targetMaxDimension: 0.36, role: "setDressing", scaleMode: "fit" })
+    // Catcher's mitt — oiled saddle-leather physical finish socketed to the crouched catcher's left forearm at runtime
+    model(assets.diamondGlove, {
+      name: "catcher-mitt",
+      targetMaxDimension: 0.36,
+      role: "setDressing",
+      scaleMode: "fit",
+      ...(gu47 ? { materialOverrides: [{ color: "#784224", colorMode: "multiply", roughness: 0.36, metallic: 0.02 }] } : {})
+    })
       .position(0.25, 0.55, 2.1)
       .rotate(0, Math.PI, 0.3)
       .runtime(game.runtimeNode("catcher-mitt"))
@@ -843,26 +1048,54 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   // Fielder and pitcher gloves — each rides its owner's left forearm through the kit attach (no world-authored spot).
   for (const id of GLOVE_OWNERS) {
     nodes.push(
-      model(assets.diamondGlove, { name: `glove-${id}`, targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit" })
+      model(assets.diamondGlove, {
+        name: `glove-${id}`,
+        targetMaxDimension: 0.34,
+        role: "setDressing",
+        scaleMode: "fit",
+        ...(gu47 ? { materialOverrides: [{ color: "#7c4628", colorMode: "multiply", roughness: 0.38, metallic: 0.02 }] } : {})
+      })
         .position(0, -80, 0)
         .runtime(game.runtimeNode(`glove-${id}`))
     );
   }
 
-  // Team cap and belt per athlete (C5): primitives that ride the Head and Hips bones (attached in attachBatSocket) and take the
-  // team colour through setMaterial in applyUniforms. The athlete GLB has one mesh and one material, so a tint would recolour skin too.
+  // Team cap and belt per athlete (C5): clearcoat batting helmets/caps and belts that ride Head and Hips bones at runtime.
   for (const id of KIT_OWNERS) {
     nodes.push(
-      primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: CAP_ROUGHNESS }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
+      primitives
+        .sphere({
+          name: `${id}-cap`,
+          size: [0.205, 0.11, 0.225],
+          material: gu47
+            ? material.clearcoatPaint({ color: "#f2eee3", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
+            : material.pbr({ color: "#f2eee3", roughness: CAP_ROUGHNESS })
+        })
+        .position(0, -80, 0)
+        .runtime(game.runtimeNode(`${id}-cap`)),
       // GU47 phase 6 (draw budget): the 5 cm belt sits inside the torso's shadow, so GU47 drops its depth draw.
-      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }), ...(gu47 ? { castShadow: false } : {}) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
+      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.physical({ color: "#f2eee3", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 }), ...(gu47 ? { castShadow: false } : {}) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
     );
   }
 
-  // Bat — socketed to the batter's right forearm (knob at the palm); authored
-  // transform is only a sane first frame before the socket takes ownership.
+  // Bat — lacquered ash barrel socketed to the batter's right forearm (knob at the palm).
+  void batWoodTexture;
   nodes.push(
-    model(assets.diamondBat, { name: "bat", targetMaxDimension: 1.02, scaleMode: "fit" })
+    model(assets.diamondBat, {
+      name: "bat",
+      targetMaxDimension: 1.02,
+      scaleMode: "fit",
+      ...(gu47
+        ? {
+            materialOverrides: [{
+              color: "#e6cfac",
+              colorMode: "multiply",
+              roughness: 0.24,
+              metallic: 0.04
+            }]
+          }
+        : {})
+    })
       .position(-0.51, 1.52, 0.18)
       .rotate(0, BATTER_YAW + 0.15, 1.0)
       .runtime(game.runtimeNode("bat")),
@@ -875,12 +1108,63 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
       .runtime(game.runtimeNode("bat-cal"))
   );
 
-  // Ball: a 16x12 sphere (about 360 triangles) instead of the 20,326-triangle GLB (C12); at 15 cm on the broadcast
-  // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
+  // Ball: stitched cowhide sphere with figure-8 seam normals & roughness; strictly preserves reserved `#f5f1e4` objective colour.
+  const ballSeams = gu47 ? baseballSeamTextures() : null;
   nodes.push(
-    primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: ballColor, roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
+    primitives
+      .sphere({
+        name: "ball",
+        size: [0.15, 0.15, 0.15],
+        params: gu47 ? { widthSegments: 24, heightSegments: 18 } : { widthSegments: 16, heightSegments: 12 },
+        material: gu47
+          ? material.physical({
+              color: ballColor,
+              roughness: 0.44,
+              metallic: 0.02,
+              clearcoat: 0.22,
+              clearcoatRoughness: 0.36,
+              ...(ballSeams ? { normal: ballSeams.normal as any, normalScale: 0.55, roughnessMap: ballSeams.roughness as any } : {})
+            })
+          : material.pbr({ color: ballColor, roughness: 0.55 })
+      } as any)
+      .position(0, -60, 0)
+      .runtime(game.runtimeNode("ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }), ...(gu47 ? { castShadow: false } : {}) }).runtime(game.runtimeNode("ball-shadow"))
   );
+
+  // Pooled 4x4 procedural flipbook sprites (`createFlipbookAtlas("dust" | "sparks")`) for swing chalk/clay puffs & bat-crack flashes.
+  if (gu47) {
+    const dustSheet = flipbookAtlasDataUrl("dust");
+    const sparksSheet = flipbookAtlasDataUrl("sparks");
+    nodes.push(
+      effects
+        .flipbook({
+          name: "vfx-plate-dust",
+          ...(dustSheet ? { texture: dustSheet, spriteColumns: 8, spriteRows: 4 } : { sprite: "smoke-a", spriteColumns: 4, spriteRows: 4 }),
+          frameRate: 30,
+          loop: true,
+          size: [0.7, 1.25],
+          color: "#dcc5a6",
+          blend: "alpha",
+          visible: false
+        } as any)
+        .position(0, 0.14, 0.35)
+        .runtime(game.runtimeNode("vfx-plate-dust")),
+      effects
+        .flipbook({
+          name: "vfx-bat-sparks",
+          ...(sparksSheet ? { texture: sparksSheet, spriteColumns: 8, spriteRows: 4 } : { sprite: "spark-streak", spriteColumns: 4, spriteRows: 4 }),
+          frameRate: 36,
+          loop: true,
+          size: [0.55, 0.95],
+          color: "#ffe1a6",
+          blend: "additive",
+          visible: false
+        } as any)
+        .position(0, 1.05, 0.32)
+        .runtime(game.runtimeNode("vfx-bat-sparks"))
+    );
+  }
 
   // 4.6.2 ball tracer: a scene ribbon plus 16 glowing spheres. Scene trails with a target now draw (E-F), so GU47 keeps
   // neither and main.ts runs one runtime `app.effects.trail` on the ball that it clears whenever the ball teleports.
@@ -924,7 +1208,16 @@ const QA_FLAGS = (() => {
 function lookGroupNode(plan: DiamondLookPlan): any {
   const group = looks.preset(plan.baseLook, plan.overrides as AuraLookOverrides).toJSON() as any;
   let children: any[] = group.children ?? [];
-  if (QA_FLAGS.noAo) children = children.filter((c: any) => c.effect !== "ambient-occlusion");
+  if (QA_FLAGS.noAo) {
+    children = children.filter((c: any) => c.effect !== "ambient-occlusion");
+  } else if (plan.variant === "gu47") {
+    const hasAo = children.some((c: any) => c.effect === "ambient-occlusion");
+    if (hasAo) {
+      children = children.map((c: any) => (c.effect === "ambient-occlusion" ? { ...c, intensity: 0.48, radius: 0.65 } : c));
+    } else {
+      children = [...children, effects.ambientOcclusion({ intensity: 0.48, radius: 0.65 }).toJSON()];
+    }
+  }
   const keyShadow = plan.keyShadow;
   if (keyShadow) {
     children = children.map((c: any) => (c.kind === "light" && c.name === "look key light" && c.shadow ? { ...c, shadow: { ...keyShadow } } : c));
@@ -980,7 +1273,15 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   if (skyN) sc.add(skyN);
   // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
   // GU47 phase 3 (rubric: "the batter and catcher look like they float"): denser, longer contact shadows in the new look.
-  if (!QA_FLAGS.noContact) sc.add(effects.contactShadows(ctx.variant === "gu47" ? { intensity: 1.0, length: 0.45 } : { intensity: 0.75, length: 0.3 }));
+  if (!QA_FLAGS.noContact) {
+    sc.add(
+      effects.contactShadows(
+        ctx.variant === "gu47"
+          ? { intensity: 1.0, length: 0.46, thickness: 0.09, steps: 16, lights: "sun" }
+          : { intensity: 0.75, length: 0.3 }
+      )
+    );
+  }
   // GU47 phase 4: the wet track, the sealed Dome infield and the harbour mirror the park (rubric ibl_reflections).
   if (plan.ssr !== null && ctx.tier !== "low") sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 30, roughness: 0.3 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));

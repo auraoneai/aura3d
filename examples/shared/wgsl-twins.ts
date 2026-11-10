@@ -35,6 +35,7 @@ fn a3dFinite1(x: f32) -> f32 {
 }
 fn a3dFinite3(v: vec3<f32>) -> vec3<f32> { return vec3<f32>(a3dFinite1(v.x), a3dFinite1(v.y), a3dFinite1(v.z)); }
 fn a3dPow(x: f32, y: f32) -> f32 { return pow(max(abs(x), 1e-30), y); }
+fn a3dPow3(x: vec3<f32>, y: vec3<f32>) -> vec3<f32> { return pow(max(abs(x), vec3<f32>(1e-30)), y); }
 fn a3dModF(x: f32, y: f32) -> f32 { return x - y * floor(x / y); }
 `;
 
@@ -150,6 +151,49 @@ fn a3dApplyEnvironmentFog(linearColor: vec3<f32>, worldPosition: vec3<f32>, frag
 /** The four `material.custom` instance-matrix columns (locations 8-11) as vertex-entry parameters. */
 export const WGSL_INSTANCE_INPUTS = "@location(8) a_instanceMatrix0: vec4<f32>, @location(9) a_instanceMatrix1: vec4<f32>, " +
   "@location(10) a_instanceMatrix2: vec4<f32>, @location(11) a_instanceMatrix3: vec4<f32>";
+
+/** `a3d_toon` WGSL twin: anti-aliased multi-band cel ramp + crisp Fresnel rim + soft highlight shoulder. */
+export const WGSL_TOON = /* wgsl */ `
+fn a3dToonRamp(ndotl: f32, threshold: f32, shadowFloor: f32) -> f32 {
+  let c = ndotl * 0.5 + 0.5;
+  let fw = fwidth(c) * 0.6 + 1e-4;
+  return mix(shadowFloor, 1.0, smoothstep(threshold - fw, threshold + fw, c));
+}
+fn a3dToonRim(normal: vec3<f32>, viewDir: vec3<f32>, width: f32, sharpness: f32) -> f32 {
+  let rim = 1.0 - clamp(dot(normal, viewDir), 0.0, 1.0);
+  let fw = fwidth(rim) * 0.5 + 1e-4;
+  let edge = clamp(1.0 - width, 0.05, 0.98);
+  return mix(pow(rim, max(sharpness, 1.0)), smoothstep(edge - fw, edge + fw, rim), 0.65);
+}
+fn a3dHighlightShoulder(c: vec3<f32>, knee: f32) -> vec3<f32> {
+  let k = clamp(knee, 0.5, 0.98);
+  let over = max(c - vec3<f32>(k), vec3<f32>(0.0));
+  return min(c, vec3<f32>(k)) + (1.0 - k) * (vec3<f32>(1.0) - exp(-over / (1.0 - k)));
+}
+`;
+
+/** Fresnel Schlick + GGX microfacet specular helper for custom energy/water/glass shaders. */
+export const WGSL_PBR_MICRO = /* wgsl */ `
+fn a3dFresnelSchlick(cosTheta: f32, f0: vec3<f32>) -> vec3<f32> {
+  let m = clamp(1.0 - cosTheta, 0.0, 1.0);
+  let m2 = m * m;
+  return f0 + (vec3<f32>(1.0) - f0) * (m2 * m2 * m);
+}
+fn a3dGgxDistribution(ndoth: f32, roughness: f32) -> f32 {
+  let a = max(roughness * roughness, 0.002);
+  let a2 = a * a;
+  let d = (ndoth * ndoth) * (a2 - 1.0) + 1.0;
+  return a2 / max(3.14159265 * d * d, 1e-6);
+}
+`;
+
+/** World-space triplanar blend weights for procedural rock/cliff/turf shaders without UV seams. */
+export const WGSL_TRIPLANAR = /* wgsl */ `
+fn a3dTriplanarWeights(worldNormal: vec3<f32>, sharpness: f32) -> vec3<f32> {
+  let an = pow(max(abs(worldNormal), vec3<f32>(1e-4)), vec3<f32>(max(sharpness, 1.0)));
+  return an / max(an.x + an.y + an.z, 1e-5);
+}
+`;
 
 /** One WGSL stage: the engine binding marker, then the helper chunks, then the stage body. */
 export function wgslStage(chunks: readonly string[], body: string): string {

@@ -1,22 +1,23 @@
 /**
- * Where the Wind Wanders — meadow world on the public `@aura3d/engine` surface only.
+ * The Bellkeeper's Walk — highland meadow sanctuary on the public `@aura3d/engine` surface.
  *
- * The original draws painted sprite art fetched from a remote bucket; the port recreates the
- * look procedurally: a painted terrain with baked tree shadows, wind-swayed grass/flower/fern/reed/
- * shrub cards, merged trees and buildings with procedural wood, plaster, tile and leaf materials,
- * a painted sky with clouds and light shafts, water with foam, an animated traveller, glowing
- * letters and a bell. Gameplay state comes from `sim.ts`; this module only draws it.
+ * Painterly gouache terrain with baked canopy shadows, wind-rippled grass/wildflower/heather/fern/reed
+ * foliage, mossy stone shrines and limewash cottages, patinated bronze bell with harmonic resonance,
+ * mountain tarn water with shoreline feathering and boat wake, catenary linen kite thread, and
+ * golden-hour to moonlit-night atmosphere. Gameplay state comes from `sim.ts`; this module only draws it.
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraActorAnimationApi, type AuraApp } from "@aura3d/engine";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { createCameraSequencer, type SequenceId } from "./camera-seq";
 import { WIND_DIR, gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
-import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
+import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, RIPPLE_FRAGMENT, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, THREAD_FRAGMENT, THREAD_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import {
   BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_VERTEX_WGSL, HAZE_FRAGMENT_WGSL, HAZE_VERTEX_WGSL, MOTE_FRAGMENT_WGSL, MOTE_VERTEX_WGSL, PAINT_VERTEX_WGSL, PROP_VERTEX_WGSL,
-  SHAFT_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STREAM_FRAGMENT_WGSL, TRAVELLER_VERTEX_WGSL, WIND_VERTEX_WGSL, paintFragmentWgsl, propFragmentWgsl, seaFragmentWgsl, windFragmentWgsl
+  RIPPLE_FRAGMENT_WGSL, SHAFT_FRAGMENT_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STREAM_FRAGMENT_WGSL, THREAD_FRAGMENT_WGSL, THREAD_VERTEX_WGSL, TRAVELLER_VERTEX_WGSL, WIND_VERTEX_WGSL, paintFragmentWgsl, propFragmentWgsl, seaFragmentWgsl, windFragmentWgsl
 } from "./shaders-wgsl";
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
@@ -86,7 +87,7 @@ export const seaSpec = (shoreReflection = true): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
   wgsl: { vertex: PAINT_VERTEX_WGSL, fragment: seaFragmentWgsl(shoreReflection) },
   ...(shoreReflection ? { defines: { SHORE_REFLECTION: 1 } } : {}),
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, boatWake: { type: "vec4", value: [0, 0, 0, 0] } },
   transparent: true,
   depthWrite: false
 });
@@ -191,6 +192,33 @@ export const blobSpec = (): CustomSpec => ({
   depthWrite: false,
   side: "double"
 });
+export const bellRippleSpec = (): CustomSpec => ({
+  glsl: { vertex: BLOB_VERTEX, fragment: RIPPLE_FRAGMENT },
+  wgsl: { vertex: BLOB_VERTEX_WGSL, fragment: RIPPLE_FRAGMENT_WGSL },
+  uniforms: {
+    rippleMap: { type: "texture2d", value: bellRippleAtlas().texture },
+    windTime: { type: "f32", value: 0 },
+    rippleAlpha: { type: "f32", value: 0.72 }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
+  side: "double"
+});
+export const threadSpec = (): CustomSpec => ({
+  glsl: { vertex: THREAD_VERTEX, fragment: THREAD_FRAGMENT },
+  wgsl: { vertex: THREAD_VERTEX_WGSL, fragment: THREAD_FRAGMENT_WGSL },
+  uniforms: {
+    ...daylightUniforms(),
+    windTime: { type: "f32", value: 0 },
+    threadAnchor: { type: "vec3", value: [START.x + 0.25, 2.2, START.z] },
+    threadTip: { type: "vec3", value: [START.x + 3.5, 6.2, START.z - 2.0] },
+    threadSag: { type: "f32", value: 0.45 }
+  },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
 
 interface FoliageCards {
   positions: number[];
@@ -267,8 +295,8 @@ export function bellLightIntensity(complete: boolean, swing: number, lanterns: n
  * only the shaft density (`godRayDensity`, clamped to the engine's 0.05..1) moves with the sun.
  */
 export const SHAFT_INTENSITY = 0.22;
-/** GU47 phase 2: the volumetricFog shafts stage is not mounted (see the post block in `buildWorld`). */
-export const SHAFTS_ENABLED: boolean = false;
+/** Golden-hour screen-space god-rays stage (uses `effects.godRays`, never `volumetric-fog`). */
+export const SHAFTS_ENABLED: boolean = true;
 /** WW47-P4: a shallow lens reserved for the title and voyage. */
 export const STORY_DOF = { focusDistance: 16, fStop: 2.8, focalLength: 50, maxBlur: 6 } as const;
 export function shaftPatch(godRays: number): { intensity: number; godRayDensity: number } | null {
@@ -314,9 +342,9 @@ export function followFraming(amount: number, aspect: number): { y: number; fov:
   return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : 43 + (40 - 43) * a, lead: a };
 }
 /** Applies one look post (DAY_POST / DUSK_POST) through the runtime post surface. */
-function applyLookPost(app: AuraApp, post: LookPost, high: boolean): void {
+function applyLookPost(app: AuraApp, post: LookPost, high: boolean, dusk = false): void {
   app.post?.setEffect?.("bloom", { ...post.bloom });
-  app.post?.setEffect?.("colorGrade", { ...post.grade });
+  app.post?.setEffect?.("colorGrade", { ...post.grade, temperature: dusk ? 0.12 : 0.07 });
   app.post?.setEffect?.("vignette", { ...post.vignette });
   // grain and the paper pass exist on High only; patching grain on Low would add the effect
   if (!high) return;
@@ -446,7 +474,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const flowerCols: Rgb[] = ["#f2d84a", "#f6f1e2", "#7fa6f0", "#ea8fb2", "#a98be0", "#f2a043", "#e8695a"].map(lin);
   const rosetteCols: Rgb[] = ["#4c9158", "#5aa05a", "#3d7e4c", "#6aa856"].map(lin);
   const spikeCols: Rgb[] = ["#5b7be0", "#8a63d6", "#c05ad0", "#e8e8f2", "#4f8ae8"].map(lin);
-  const shrubCols: Rgb[] = ["#3c7a30", "#2f6a2a", "#4a8a36", "#3f7f45"].map(lin);
+  const shrubCols: Rgb[] = ["#447e36", "#376d30", "#528c3c", "#3e7844"].map(lin);
   let cardCount = 0;
   const lowX = (x: number): boolean => x > -58 && x < 58;
   const put = (x: number, z: number, w: number, h: number, color: Rgb, sway: number, kind: number, phaseOverride?: number): void => {
@@ -521,10 +549,10 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     if (blocked(x, z, 0)) continue;
     put(x, z, 0.8 + rand() * 0.4, 1.5 + rand() * 0.9, grassCols[Math.floor(rand() * grassCols.length)]!, 0.16, rand() < 0.65 ? FOLIAGE_KIND.reed : FOLIAGE_KIND.rosette);
   }
-  // flowering shrubs: the valley's signature, scattered across the whole meadow
+  // highland heather & golden gorse clusters: compact low-profile tufts across the meadow
   scatter(330, { x0: -58, x1: 58, z0: -14, z1: 22 }, (x, z) => {
     if (onPath(x, z, 1.4)) return;
-    put(x, z, 2.2 + rand() * 0.9, 1.4 + rand() * 0.6, shrubCols[Math.floor(rand() * shrubCols.length)]!, 0.04, FOLIAGE_KIND.shrub);
+    put(x, z, 0.78 + rand() * 0.36, 0.68 + rand() * 0.34, shrubCols[Math.floor(rand() * shrubCols.length)]!, 0.09, FOLIAGE_KIND.shrub);
   }, SEA_LEVEL + 0.4, 1.0);
   const foliageGeometry = geometry.dynamic({
     positions: f32(f.positions),
@@ -585,7 +613,41 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const kite = phase4 && set.kite === true;
   if (!set.wisp && !kite) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("wisp") }));
   addAnimatedModels(builder, { ...set, kite }, LETTERS.length, shadows, !original);
-  if (!kite) builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
+  if (kite) {
+    builder.add(geometry.custom(geometry.dynamic(threadRibbon(16)), { name: "kite-thread", material: material.custom(threadSpec()) }).runtime({ id: lit("kite-thread") }));
+  } else {
+    builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
+  }
+
+  /* ---- golden-hour raking meadow shafts & bell harmonic resonance shimmer (High GU47 only) ---- */
+  const hasHighVfx = !original && options.quality !== "low";
+  const MEADOW_SHAFTS: readonly [number, number, number][] = [[-18, 9.2, -2.5], [11, 9.6, 1.5], [41, 10.2, 2.2]];
+  if (hasHighVfx) {
+    MEADOW_SHAFTS.forEach((pos, i) => {
+      builder.add(geometry.custom(geometry.dynamic(beam(2.4, 16)), {
+        name: `meadow-shaft-${i}`,
+        position: pos,
+        rotation: [0.08, 0.36 - i * 0.08, -0.44],
+        material: material.custom(shaftSpec(1.1 + i * 2.4, 0.04))
+      }).runtime({ id: lit(`meadow-shaft-${i}`) }));
+    });
+    builder.add(effects.flipbook({
+      name: "bell-resonance-ripple",
+      sprite: "ring-thin",
+      frameRate: 18,
+      size: 3.4,
+      intensity: 1.25,
+      loop: true,
+      blend: "additive",
+      color: "#ffe29a",
+      position: [sc.bellHang.x, sc.bellHang.y - 0.38, sc.bellHang.z + 0.16]
+    }).runtime({ id: "bell-ripple" }));
+    builder.add(geometry.custom(geometry.dynamic(ground(2.3)), {
+      name: "bell-ripple-ground",
+      position: [BELL.x, terrainHeight(BELL.x, BELL.z) + 0.08, BELL.z],
+      material: material.custom(bellRippleSpec())
+    }).runtime({ id: "bell-ripple-ground" }));
+  }
 
   /* ---- floating pollen ---- */
   {
@@ -613,15 +675,19 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     // WW47-P1: dusk and night keep the softer gouache palette (warm bloom on the glows, umber vignette); phase 3 gives
     // daylight a clean post (lookPostFor). The scene authors the boot key's post; `bind` patches it when the light crosses.
     const post = lookPostFor(options.daylightKey ?? 0);
+    const duskBoot = isDuskKey(options.daylightKey ?? 0);
     builder
-      .add(effects.bloom({ name: "bloom", ...post.bloom }))
-      .add(effects.colorGrade({ name: "grade", ...post.grade }))
+      .add(effects.bloom({ name: "bloom", ...post.bloom, knee: 0.35, clampLuminance: 8 }))
+      .add(effects.colorGrade({ name: "grade", ...post.grade, temperature: duskBoot ? 0.12 : 0.07, shadows: [0.97, 0.99, 1.03], highlights: [1.03, 1.01, 0.97] }))
       .add(effects.vignette({ name: "vignette", ...post.vignette }));
     if (options.quality !== "low") {
-      // WW47-P3: grain 0.02 under the paper pass. WW47-P2 (volumetricFog golden shafts) is off: on the GU47 engine its stage
-      // painted every GLB (cottage, trees, traveller) as a flat cream silhouette while the custom-shader meadow stayed
-      // clean (phase-2 A/B capture g23ab1, found0 = fog off only); the sun sits behind the follow camera, so no shafts
-      // were visible either. `shaftPatch` stays as the per-key table for when the stage is re-enabled.
+      builder.add(effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 16, intensity: 0.65, lights: "sun" }));
+      builder.add(effects.ambientOcclusion({ name: "valley-ao", intensity: 0.42, radius: 0.72, multiBounce: true }));
+      builder.add(effects.screenSpaceReflections({ name: "tarn-ssr", intensity: 0.52, maxDistance: 32, roughness: 0.16, thickness: 0.25 }));
+      const bootShafts = shaftPatch(DAYLIGHT_KEYS[options.daylightKey ?? 0]?.godRays ?? 0);
+      if (bootShafts) {
+        builder.add(effects.godRays({ name: "meadow-shafts", source: "sun", intensity: bootShafts.intensity, decay: 0.94, samples: 48, color: "#ffe7bd", density: bootShafts.godRayDensity, medium: 0.16 }));
+      }
       builder.add(effects.filmGrain({ name: "paper grain", intensity: post.grain }));
       builder.add(effects.depthOfField({ name: "story-dof", ...STORY_DOF }));
     }
@@ -667,6 +733,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         gazeTarget = id;
       };
       if (set.bell) node("bell").setVisible(false);
+      if (hasHighVfx) {
+        node("bell-ripple").setVisible(false);
+        node("bell-ripple-ground").setVisible(false);
+      }
+      const impactRig = createImpactRig({ reducedMotion: options.reducedMotion?.() === true });
+      const handMat = new Float32Array(16);
       const cam = app.camera;
       if (!cam) throw new Error("where-the-wind-wanders-port: the app exposes no camera controller");
       const look = { x: START.x + 2, y: 2.2, z: START.z - 3.5 };
@@ -679,9 +751,13 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let bellAngle = 0;
       let swayTime = 0, lastTime = 0;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
-      /** WW47-A1/AN1: the kite rides downwind of the traveller, its face turned toward the view, bobbing and rolling with the gust. */
+      /** WW47-A1/AN1: the kite rides downwind of the traveller, its face turned toward the view, bobbing and rolling with the gust; a catenary linen thread links RightHand to the kite bridle. */
       const kitePos = { x: Number.NaN, y: 0, z: 0 };
-      const poseKite = (hx: number, hy: number, hz: number, t: number): void => {
+      const poseKite = (hx: number, hy: number, hz: number, t: number, onBoat: boolean): void => {
+        node("kite").setVisible(!onBoat);
+        const thread = node("kite-thread");
+        thread.setVisible(!onBoat);
+        if (onBoat) return;
         const g = gustAt(hx, hz, t);
         const m = motion();
         const reach = KITE_FLIGHT.downwind * (0.85 + 0.1 * g);
@@ -693,6 +769,22 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const upwindYaw = Math.atan2(-WIND_DIR[0], -WIND_DIR[1]);
         const yawK = upwindYaw + Math.sign(-upwindYaw) * (KITE_FLIGHT.towardViewDeg * Math.PI) / 180 + 0.1 * m * Math.sin(t * 0.9);
         node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(-0.35 - 0.06 * m * Math.sin(t * 1.7), yawK, 0.14 * m * Math.sin(t * 1.1 + 0.4 * g));
+        let ax = hx + Math.cos(yaw) * 0.26;
+        let ay = hy + 1.42;
+        let az = hz - Math.sin(yaw) * 0.26;
+        const handSock = heroActor?.animation?.socket("RightHand");
+        if (handSock?.valid) {
+          const m4 = handSock.worldMatrix(handMat);
+          ax = m4[12]!;
+          ay = m4[13]!;
+          az = m4[14]!;
+        }
+        const sag = Math.max(0.18, 0.5 + 0.12 * m * Math.sin(t * 1.4) - 0.12 * (g - 1));
+        thread.setPosition(hx, hy, hz);
+        thread.setUniform?.("windTime", t);
+        thread.setUniform?.("threadAnchor", [ax, ay, az]);
+        thread.setUniform?.("threadTip", [kitePos.x, kitePos.y - 0.1, kitePos.z]);
+        thread.setUniform?.("threadSag", sag);
       };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream", "terrain"];
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
@@ -708,6 +800,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       const sequencer = createCameraSequencer({ reducedMotion: () => original || options.sequences !== true || motion() < 1 });
       let seqComplete = false;
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
+      let feelFound = 0, feelComplete = false;
       let shownDaylight: DaylightFrame | null = null;
       // phase 3: dusk-ness of the shown light (post table and storybook framing), and the eased framing amount
       let shownDusk = isDuskKey(options.daylightKey ?? 0);
@@ -715,8 +808,6 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       const cinematicPost = !original && options.quality !== "low";
       let dofOn: boolean | null = null, dofFocus: number | null = null;
       // WW47-P4 (title/epilogue DOF only): the lens is on for the title card and the epilogue voyage, off in play.
-      // The mirrored sun ghost is not shipped: the WSW sun is behind the camera in every view (follow, intro crane, bell
-      // finale and voyage), so a ghost that needs the sun in frame never drew; its uniform and shader lines were removed.
       const applyStoryPost = (eye: readonly number[], target: readonly number[]): void => {
         if (!cinematicPost) return;
         const active = options.titleVisible?.() === true || epilogue !== null;
@@ -732,7 +823,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           }
         } else dofFocus = null;
       };
-      // WW47-P2: the shaft patch last sent (only on High; written when the density moves, not every eased frame)
+      // WW47-P2: raking meadow shafts follow the daylight `godRays` level on High (off on the moonlit voyage)
       const shafts = SHAFTS_ENABLED && !original && options.quality !== "low";
       let shownShaft: string | null = null;
       const applyDaylight = (f: DaylightFrame): void => {
@@ -754,17 +845,18 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const dusk = isDuskKey(daylight.target);
         if (dusk !== shownDusk) {
           shownDusk = dusk;
-          applyLookPost(app, lookPostFor(daylight.target), options.quality !== "low");
+          applyLookPost(app, lookPostFor(daylight.target), options.quality !== "low", dusk);
           node("traveller-fill").setLight?.({ intensity: dusk ? 0 : TRAVELLER_FILL.intensity });
         }
-        if (shafts) {
+        if (shafts && hasHighVfx) {
           const patch = shaftPatch(f.godRays);
           const token = patch ? patch.godRayDensity.toFixed(2) : "off";
           if (token !== shownShaft) {
-            if (patch) {
-              if (shownShaft === "off") app.post?.setEffectEnabled?.("volumetricFog", true);
-              app.post?.setEffect?.("volumetricFog", patch);
-            } else app.post?.setEffectEnabled?.("volumetricFog", false);
+            for (let i = 0; i < MEADOW_SHAFTS.length; i++) {
+              const shaftNode = node(`meadow-shaft-${i}`);
+              shaftNode.setVisible(patch !== null);
+              if (patch) shaftNode.setUniform?.("shaftOpacity", (0.22 + 0.04 * i) * f.godRays);
+            }
             shownShaft = token;
           }
         }
@@ -780,7 +872,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { sequencer.skip(); clearGaze(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
+        snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
         playSequence(id) { sequencer.start(id); },
@@ -788,8 +880,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         reset() {
           daylight.snap(options.daylightKey ?? 0);
           clearGaze();
+          impactRig.reset();
+          if (hasHighVfx) {
+            node("bell-ripple").setVisible(false);
+            node("bell-ripple-ground").setVisible(false);
+          }
           sequencer.skip(); seqComplete = false;
           vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
+          feelFound = 0; feelComplete = false;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
           lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); bodyDrive = 0; footCell = -1; gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
@@ -851,6 +949,9 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           if (time < lastTime) swayTime = time;
           lastTime = time;
           for (const id of allUniformNodes) node(id).setUniform?.("windTime", id === "foliage" || id === "props" ? swayTime : time);
+          if (hasHighVfx) {
+            for (let i = 0; i < MEADOW_SHAFTS.length; i++) node(`meadow-shaft-${i}`).setUniform?.("windTime", time);
+          }
           node("foliage").setUniform?.("playerPos", [x, y, z]);
           node("props").setUniform?.("playerPos", [x, y, z]);
           // GU47 phase 4: the traveller's traced shadow on the grass and the ground (High GU47 look only; 0 keeps 4.6)
@@ -860,7 +961,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           // the companion wisp drifts after the traveller
           const wk = 1 - Math.exp(-3.5 * dt);
           wisp.x += (x - 1.1 - wisp.x) * wk; wisp.z += (z + 0.6 - wisp.z) * wk; wisp.y += (y + hop * 0.6 + 2.0 + 0.18 * Math.sin(time * 2.4) - wisp.y) * wk;
-          if (kite) poseKite(x, y + hop * 0.4, z, swayTime);
+          if (kite) poseKite(x, y + hop * 0.4, z, swayTime, onBoat);
           else {
             node("wisp").setPosition(wisp.x, wisp.y, wisp.z);
             const wg = node("wisp-glow");
@@ -871,6 +972,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           if (original) sailAngle = time * 0.38;
           else sailAngle += Math.max(0, Math.min(0.25, dt)) * 0.38 * gustAt(sc.windmillHub.x, sc.windmillHub.z, time) * motion();
           node("sails").setPosition(sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z).setRotation(0, 0, sailAngle);
+          // Visual-only harmonic resonance feel on real frame dt (sim state is untouched)
+          if (!original) {
+            if (state.found.length > feelFound) impactRig.trigger({ trauma: 0.045, fovKickDeg: 0.45 });
+            if (state.complete && !feelComplete) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.16, fovKickDeg: 1.8 });
+            feelFound = state.found.length;
+            feelComplete = state.complete;
+          }
+          const impact = !original ? impactRig.step(Math.max(0, Math.min(0.25, dt))) : null;
           if (vfx) {
             if (state.found.length > vfxFound) { const l = LETTERS[state.found[state.found.length - 1]!]; if (l) vfx.letterFound([l.x, terrainHeight(l.x, l.z) + 1.3, l.z]); }
             if (state.complete && !vfxComplete) vfx.bellRing([sc.bellHang.x, sc.bellHang.y - 0.4, sc.bellHang.z]);
@@ -883,6 +992,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             vfxFound = state.found.length; vfxComplete = state.complete; vfxHop = state.hop.phase; vfxTime = time;
           }
           const complete = state.complete;
+          if (hasHighVfx) {
+            node("bell-ripple").setVisible(complete);
+            const rg = node("bell-ripple-ground");
+            rg.setVisible(complete);
+            if (complete) rg.setUniform?.("windTime", time);
+          }
           if (set.bellModel) {
             bellAngle = bellSwing(time, complete, MODEL_BELL_AMPLITUDE, motion());
             node("bell-model").setRotation(0, 0, bellAngle);
@@ -919,9 +1034,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             g.setPosition(p.x, p.y, p.z);
             g.setUniform?.("windTime", time);
           });
-          // the boat bobs at its mooring, or sails on the epilogue
+          // the boat bobs at its mooring, or sails on the epilogue (writing a gentle V-wake behind the stern)
           const bp = epilogue !== null ? boatPose(epilogue) : { x: sc.boatMoor.x, y: sc.boatMoor.y, z: sc.boatMoor.z, yaw: 0.06 };
           node("boat").setPosition(bp.x, bp.y + 0.05 * Math.sin(time * 1.3), bp.z).setRotation(0.03 * Math.sin(time * 0.9), bp.yaw, 0.04 * Math.sin(time * 1.1));
+          const wakeStrength = epilogue !== null && epilogue > 4 ? Math.min(1, (epilogue - 4) / 4) : 0;
+          node("sea").setUniform?.("boatWake", [bp.x, bp.z, bp.yaw, wakeStrength]);
 
           if (epilogue !== null) {
             // slow voyage: pull back over the jetty, then follow the boat towards the far isle
@@ -932,9 +1049,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             look.x += (tx - look.x) * (1 - Math.exp(-1.5 * dt));
             look.y += (b.y + 2.2 - look.y) * (1 - Math.exp(-1.5 * dt));
             look.z += (tz - look.z) * (1 - Math.exp(-1.5 * dt));
-            // 6.4 above the look target clears every tree top on the way from the bell to the jetty and out to sea (at 3.2 the
-            // camera passed through the oak at (22.8, -1.4) by the jetty); checked against the scenery placements in
-            // tests/unit/where-the-wind-wanders-port/footsteps-bell.test.ts
+            // 6.4 above the look target clears every tree top on the way from the bell to the jetty and out to sea
             const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + EPILOGUE_CAMERA_RISE, look.z + 14];
             node("sky").setPosition(ep[0], ep[1], ep[2]);
             cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: aspect < 1 ? 52 : 45 }, { cut: false });
@@ -942,8 +1057,6 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             return;
           }
           // camera follow: the look target eases toward the traveller (original: lerp 1 - exp(-2.5 dt))
-          // WW47-C2: on the GU47 look the target leads the walk by up to STORYBOOK_LEAD and the camera sits lower
-          // (storybookOffset), so the horizon settles near the upper third; ?look=original keeps the 4.6 follow
           if (!original) storybookLead(lead, x, z, dt, motion());
           story += ((shownDusk ? 1 : 0) - story) * (1 - Math.exp(-dt / 1.2));
           const framing = original ? null : followFraming(story, aspect);
@@ -962,14 +1075,18 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
           const shownSeq = sequencer.update(dt, follow) ?? follow;
           const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : shownSeq;
-          node("sky").setPosition(shown.position[0], shown.position[1], shown.position[2]);
+          const eyePos: [number, number, number] = impact && !CAPTURE_CAMVIEW
+            ? [shown.position[0] + impact.shakeOffset[0] * 0.35, shown.position[1] + impact.shakeOffset[1] * 0.35, shown.position[2] + impact.shakeOffset[2] * 0.35]
+            : shown.position;
+          const eyeFov = impact && !CAPTURE_CAMVIEW ? shown.fov + impact.fovDeltaDeg : shown.fov;
+          node("sky").setPosition(eyePos[0], eyePos[1], eyePos[2]);
           cam.setPose({
-            position: shown.position,
+            position: eyePos,
             target: shown.target,
             up: [0, 1, 0],
-            fov: shown.fov
+            fov: eyeFov
           }, { cut: false });
-          applyStoryPost(shown.position, shown.target);
+          applyStoryPost(eyePos, shown.target);
         }
       };
       function boatPose(e: number): { x: number; y: number; z: number; yaw: number } {
@@ -984,6 +1101,29 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       }
     }
   };
+}
+
+let cachedBellRipple: ReturnType<typeof createFlipbookAtlas> | null = null;
+function bellRippleAtlas() {
+  return (cachedBellRipple ??= createFlipbookAtlas("ripple", [255, 214, 130]));
+}
+
+function threadRibbon(segments: number): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] } {
+  const pos: number[] = [], nrm: number[] = [], uv: number[] = [], idx: number[] = [];
+  for (let i = 0; i <= segments; i++) {
+    const s = i / segments;
+    const bx = (s - 0.5) * 12;
+    const by = s * 8;
+    const bz = (0.5 - s) * 10;
+    pos.push(bx - 0.1, by, bz, bx + 0.1, by, bz);
+    nrm.push(0, 1, 0, 0, 1, 0);
+    uv.push(0, s, 1, s);
+    if (i < segments) {
+      const b = i * 2;
+      idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+    }
+  }
+  return { positions: f32(pos), normals: f32(nrm), uvs: f32(uv), indices: idx };
 }
 
 function quad(size: number): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] } {

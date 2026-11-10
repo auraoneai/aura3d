@@ -29,7 +29,54 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+@font-face {
+  font-family: "Monument Grotesk Mono";
+  src: url("/fonts/monument-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
-html {
+:root, html {
   font-synthesis: none;
+  font-synthesis-weight: none;
+  font-synthesis-style: none;
+  font-synthesis-small-caps: none;
 }

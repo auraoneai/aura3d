@@ -1,5 +1,5 @@
 /**
- * Splat Rush on Aura3D: boot, fixed-step loop, pointer input, HUD and capture hooks. The game lives in `sim.ts`
+ * Splat on Aura3D: boot, fixed-step loop, pointer input, HUD and capture hooks. The game lives in `sim.ts`
  * (pure); `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `seed=N`, `manual=1` (the sim only advances through
@@ -14,8 +14,11 @@
  * GU47 WP-26: `look=original|carnival` (default carnival, `look.ts`) is presentation only; the sim, its random stream,
  * replays and traces are identical across looks.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
+import "../../apps/showcase-port-shared/hud-tokens.css";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp, type AuraOutputOptions } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
+import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { Autopilot } from "./autopilot";
@@ -23,15 +26,17 @@ import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
 import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation";
-import { TITLE_RAIL_SECONDS, buildWorld, type WorldRuntime } from "./world";
+import { TITLE_RAIL_SECONDS, buildWorld, hexLinear, type WorldRuntime } from "./world";
 import { LOOKS, QA_CROPS, parseLook } from "./look";
 import { MOTE_EVERY, fireMote, fireSplashes, moteFor, registerPaintPresets, splashesFor } from "./vfx3d";
-import { HUD_CARNIVAL_CLASS, comboTubeFill, letterbox } from "./hud";
+import {
+  HUD_CARNIVAL_CLASS, ICON_RAINBOW, ICON_SHIELD, ICON_SOUND_OFF, ICON_SOUND_ON, ICON_X2, SHAPE_GLYPHS,
+  comboTubeFill, letterbox, upgradeRuntimeHudDom
+} from "./hud";
 
-
-/* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
+/* Licensed Whitney Semibold (600) mapped onto 'Splat Display' for zero synthetic bold and crisp HUD density */
 if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
-  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700", display: "block" });
+  const face = new FontFace("Splat Display", `url(${new URL("../../apps/showcase-port-shared/fonts/whitney-semibold.woff2", import.meta.url).href})`, { weight: "600", display: "swap" });
   void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
 }
 const config = readQaParams({
@@ -55,6 +60,7 @@ const canvas = $<HTMLCanvasElement>("world");
 const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.search)];
 /* CR-H1: the paint-world HUD rules in index.html are scoped to this body class (carnival only) */
 if (look.id === "carnival") document.body.classList.add(HUD_CARNIVAL_CLASS);
+upgradeRuntimeHudDom();
 /** CR-V1 bursts fired since load (QA). */
 let splashesFired = 0;
 /** CR-V4 mote puffs fired since load (QA) and the step of the last puff (frames that run several steps skip none). */
@@ -65,14 +71,15 @@ let ribbon: { key: string; handle: { stop(o?: { immediate?: boolean }): void } }
 function updateRibbon(): void {
   const row = look.ribbon;
   const fxApi = app?.effects;
-  const want = row && fxApi && !reducedMotion && !config.manual && sim.o.phase === "playing" && !sim.o.isRainbowActive;
-  const key = want ? `c${sim.o.playerColorIndex}` : "";
+  const want = row && fxApi && !reducedMotion && !config.manual && sim.o.phase === "playing";
+  const key = want ? (sim.o.isRainbowActive ? "rainbow" : `c${sim.o.playerColorIndex}`) : "";
   if (ribbon && ribbon.key === key) return;
   ribbon?.handle.stop({ immediate: true });
   ribbon = null;
   if (!want || !row || !fxApi) return;
-  /* life covers the last ~12 ball positions at 60 Hz; width ramps in with road speed */
-  const handle = fxApi.trail("ball", { width: row.width, life: row.points / 60, color: COLORS[sim.o.playerColorIndex] ?? "#ffffff", widthOverSpeed: [2, 12] });
+  /* life covers the last ~14 ball positions at 60 Hz; width ramps in with road speed */
+  const color = sim.o.isRainbowActive ? "#ffc58a" : (COLORS[sim.o.playerColorIndex] ?? "#ffffff");
+  const handle = fxApi.trail("ball", { width: row.width, life: row.points / 60, color, widthOverSpeed: [2, 12] });
   ribbon = { key, handle };
 }
 
@@ -113,6 +120,17 @@ let symbols = config.symbols || store.get("splatRush.symbols") === "1";
 let guided = store.get("splatRush.guided") === "1";
 let paused = false;
 const steady = new SteadyCamera(sim);
+/** Real-frame impact trauma & micro-FOV kick (`createImpactRig`, never read by `sim.ts`). */
+let impactRig = createImpactRig({ reducedMotion });
+let impactState = impactRig.step(0);
+/** Real-frame 32-cell chroma ink-droplet flipbook burst at the ball (presentation only). */
+let inkBurst: { x: number; y: number; z: number; color: readonly [number, number, number]; elapsed: number; duration: number } | null = null;
+let hasSteered = false;
+const resetVisualImpacts = (): void => {
+  impactRig = createImpactRig({ reducedMotion });
+  impactState = impactRig.step(0);
+  inkBurst = null;
+};
 /** C18 results card: best combo and perfects of the current run. */
 const runStats = { maxCombo: 0, perfects: 0 };
 /** A run starts (splash to playing, a restart, or a QA reset): its stats start at zero. */
@@ -132,30 +150,51 @@ let barsPhase = "";
 let barsStart = 0;
 function updateHud(): void {
   const o = sim.o;
-  const score = `SCORE: ${Math.floor(o.score)}`;
-  if (changed("score", score)) $("hud-score").textContent = score;
+  const scoreVal = Math.floor(o.score);
+  const scoreKey = `${look.id}|${scoreVal}`;
+  if (changed("score", scoreKey)) {
+    if (look.id === "carnival") {
+      $("hud-score").innerHTML = `<span class="hud-kicker">Score</span><span class="hud-num">${scoreVal.toLocaleString()}</span>`;
+    } else {
+      $("hud-score").textContent = `SCORE: ${scoreVal}`;
+    }
+  }
   if (changed("lives", String(o.lives))) {
     let lives = "";
     for (let i = 0; i < 3; i++) lives += `<div class="life-icon ${i >= o.lives ? "life-lost" : ""}"></div>`;
     $("hud-lives").innerHTML = lives;
   }
   const combo = $("hud-combo");
-  const comboText = o.combo > 0 ? `${o.combo} COMBO${o.multiplier > 1 ? `  x${o.multiplier}` : ""}` : "";
-  if (changed("combo", comboText)) {
-    if (comboText) {
-      combo.textContent = comboText;
-      combo.style.display = "block";
+  const comboKey = o.combo > 0 ? `${look.id}|${o.combo}|${o.multiplier}` : "";
+  if (changed("combo", comboKey)) {
+    if (comboKey) {
+      if (look.id === "carnival") {
+        combo.innerHTML = `<span class="hud-num">${o.combo}</span><span class="hud-kicker">Streak</span>${o.multiplier > 1 ? `<span class="hud-num">&times;${o.multiplier}</span>` : ""}`;
+        combo.style.display = "inline-flex";
+      } else {
+        combo.textContent = `${o.combo} COMBO${o.multiplier > 1 ? `  x${o.multiplier}` : ""}`;
+        combo.style.display = "block";
+      }
       combo.style.color = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
     } else combo.style.display = "none";
   }
   if (look.id === "carnival") {
-    const swatch = o.isRainbowActive ? "linear-gradient(135deg, #f0433a, #f9c647, #5ecaf0, #b868e8)" : (COLORS[o.playerColorIndex] ?? "#f0433a");
-    if (changed("swatch", swatch)) $("hud-swatch").style.background = swatch;
+    const swatchBg = o.isRainbowActive ? "linear-gradient(135deg, #f0433a, #f9c647, #5ecaf0, #b868e8)" : (COLORS[o.playerColorIndex] ?? "#f0433a");
+    const swatchGlyph = o.isRainbowActive ? "\u2726" : (SHAPE_GLYPHS[o.playerColorIndex] ?? "\u25CF");
+    if (changed("swatch", `${swatchBg}|${swatchGlyph}`)) {
+      const sw = $("hud-swatch");
+      sw.style.background = swatchBg;
+      sw.textContent = swatchGlyph;
+    }
     const fill = `${Math.round(comboTubeFill(o.combo, o.multiplier) * 100)}%|${o.multiplier}`;
     if (changed("tube", fill)) {
       const el = $("hud-tube-fill");
       el.style.width = fill.split("|")[0] as string;
       el.style.background = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
+    }
+    const showCue = o.phase === "playing" && !hasSteered && !pilot && !config.manual && o.distance < 180;
+    if (changed("steer-cue", String(showCue))) {
+      document.getElementById("steer-cue")?.setAttribute("data-hidden", String(!showCue));
     }
   }
   if (look.id === "carnival") {
@@ -165,9 +204,9 @@ function updateHud(): void {
     if (changed("bars", k)) for (const id of ["bars-top", "bars-bottom"]) $(id).style.transform = `scaleY(${k})`;
   }
   let pills = "";
-  if (o.rainbowTimer > 0) pills += `<span class="pu pu-rainbow">🌈 ${Math.ceil(o.rainbowTimer)}s</span>`;
-  if (o.shieldActive) pills += '<span class="pu pu-shield">🛡 SHIELD</span>';
-  if (o.scoreX2Timer > 0) pills += `<span class="pu pu-x2">✦ 2x ${Math.ceil(o.scoreX2Timer)}s</span>`;
+  if (o.rainbowTimer > 0) pills += `<span class="pu pu-rainbow">${ICON_RAINBOW}<span class="hud-num">${Math.ceil(o.rainbowTimer)}</span><span class="hud-unit">s</span></span>`;
+  if (o.shieldActive) pills += `<span class="pu pu-shield">${ICON_SHIELD}<span>SHIELD</span></span>`;
+  if (o.scoreX2Timer > 0) pills += `<span class="pu pu-x2">${ICON_X2}<span class="hud-num">2&times;</span> <span class="hud-num">${Math.ceil(o.scoreX2Timer)}</span><span class="hud-unit">s</span></span>`;
   if (changed("pills", pills)) {
     const bar = $("hud-powerups");
     bar.innerHTML = pills;
@@ -206,11 +245,12 @@ function showResults(score: number): void {
   const isBest = final > best;
   if (isBest) { best = final; store.set("splatRush.best", String(best)); }
   const out = $("final-score");
-  $("final-stats").textContent = `Best combo ${runStats.maxCombo} · Perfects ${runStats.perfects} · ${Math.floor(sim.o.distance).toLocaleString()} m`;
+  $("final-stats").innerHTML =
+    `Best streak <span class="hud-num">${runStats.maxCombo}</span> &middot; Perfects <span class="hud-num">${runStats.perfects}</span> &middot; <span class="hud-num">${Math.floor(sim.o.distance).toLocaleString()}</span> m`;
   const paint = (shown: number, done: boolean): void => {
     out.innerHTML =
-      `Score: ${shown.toLocaleString()}` +
-      (done ? `<br><span class="go-best">${isBest ? `NEW BEST! ${best.toLocaleString()}` : `Best: ${best.toLocaleString()}`}</span>` : "");
+      `<span class="hud-kicker">Score</span><span class="hud-num">${shown.toLocaleString()}</span>` +
+      (done ? `<br><span class="go-best">${isBest ? `NEW BEST <span class="hud-num">${best.toLocaleString()}</span>` : `Best <span class="hud-num">${best.toLocaleString()}</span>`}</span>` : "");
   };
   if (config.manual) { paint(final, true); return; }
   const startedAt = performance.now();
@@ -242,6 +282,23 @@ function reactToFrame(perfect: boolean): void {
     const flash = flashFor(event, o.playerColorIndex);
     if (flash) fx.flash(flash.color, flashStrength(flash.strength, reducedMotion));
     if (event.sound === "burst") fx.reveal(own, reducedMotion);
+    if (!reducedMotion && look.id === "carnival") {
+      if (event.sound === "perfect") {
+        impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.34, fovKickDeg: 2.4 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.36 };
+      } else if (event.sound === "match") {
+        impactRig.trigger({ trauma: 0.16, fovKickDeg: 1.3 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.28 };
+      } else if (event.sound === "pickup" || event.sound === "milestone") {
+        impactRig.trigger({ trauma: 0.2, fovKickDeg: 1.7 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.3 };
+      } else if (event.sound === "hit" || event.sound === "burst") {
+        impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.58, fovKickDeg: -2.2 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear("#f0433a"), elapsed: 0, duration: 0.42 };
+      } else if (event.sound === "block") {
+        impactRig.trigger({ trauma: 0.24, fovKickDeg: 1.1 });
+      }
+    }
   }
   prevFrame = frame;
   fx.vignette(o.multiplier, o.isRainbowActive, own, performance.now() / 1000, reducedMotion);
@@ -258,7 +315,10 @@ function reactToFrame(perfect: boolean): void {
     lastPhase = o.phase;
   }
   const bestEl = document.getElementById("splash-best");
-  if (bestEl) bestEl.textContent = best > 0 ? `Best: ${best.toLocaleString()}` : "";
+  if (bestEl) {
+    const nextBest = best > 0 ? `<span class="hud-kicker">Best</span><span class="hud-num">${best.toLocaleString()}</span>` : "";
+    if (changed("splash-best", nextBest)) bestEl.innerHTML = nextBest;
+  }
 }
 
 const translucent = (hex: string, alpha: number): string => {
@@ -274,8 +334,17 @@ function render(live = false): void {
   try {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = reducedMotion ? steady.at(live ? loop.alpha : 1) : undefined;
+    const activeBurst = !config.manual && !reducedMotion && inkBurst
+      ? { x: inkBurst.x, y: inkBurst.y, z: inkBurst.z, color: inkBurst.color, progress: inkBurst.elapsed / inkBurst.duration }
+      : null;
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
-      ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided, cameraLayers: !config.manual
+      ...(shown ? { shown } : {}),
+      ...(camera ? { camera } : {}),
+      reducedMotion,
+      symbols,
+      guide: !guided,
+      cameraLayers: !config.manual,
+      ...(!config.manual && !reducedMotion ? { impact: impactState, inkBurst: activeBurst } : {})
     });
     updateRibbon();
     app.step(0);
@@ -314,6 +383,13 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    if (!config.manual && !reducedMotion) {
+      impactState = impactRig.step(frameSeconds);
+      if (inkBurst) {
+        inkBurst.elapsed += Math.min(Math.max(frameSeconds, 0), 0.1);
+        if (inkBurst.elapsed >= inkBurst.duration) inkBurst = null;
+      }
+    }
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
     sampleQuality(frameSeconds);
@@ -348,6 +424,16 @@ async function boot(): Promise<void> {
   // WebGPU by default (backend "auto", WebGL2 fallback kept): real-GPU check 2026-11-08 rendered the same frame and kept
   // >= 0.9x the WebGL2 frame rate. `?backend=webgl2` forces WebGL2.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
+  const output: AuraOutputOptions =
+    look.id === "carnival"
+      ? ({
+          toneMapping: "agx",
+          exposure: 1.04,
+          dither: true,
+          lut: { ...createGradingLut("broadcast-crisp"), intensity: 0.45 },
+          ...lab.output
+        } as AuraOutputOptions)
+      : { toneMapping: "none", dither: false, ...lab.output };
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
@@ -355,7 +441,7 @@ async function boot(): Promise<void> {
     pixelRatio: { max: pixelRatio, min: 1 },
     /* lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with no flag `lab` is `{}` and nothing changes */
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "none", dither: false, ...lab.output },
+    output,
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -408,7 +494,9 @@ addEventListener("pointerdown", (e) => {
 });
 addEventListener("pointermove", (e) => {
   if (config.manual || pilot || !dragging) return;
-  pending.dx += e.clientX - lastX;
+  const delta = e.clientX - lastX;
+  if (sim.o.phase === "playing" && Math.abs(delta) > 2) hasSteered = true;
+  pending.dx += delta;
   lastX = e.clientX;
 });
 const release = (): void => {
@@ -461,7 +549,7 @@ function paintSettings(): void {
 }
 function toggleSetting(which: string): void {
   if (which === "symbols") { symbols = !symbols; store.set("splatRush.symbols", symbols ? "1" : "0"); }
-  else { reducedMotion = !reducedMotion; store.set("splatRush.motion", reducedMotion ? "reduced" : "full"); }
+  else { reducedMotion = !reducedMotion; store.set("splatRush.motion", reducedMotion ? "reduced" : "full"); resetVisualImpacts(); }
   paintSettings();
   render();
 }
@@ -471,6 +559,7 @@ paintSettings();
 function restart(): void {
   sim.begin();
   resetRunStats();
+  resetVisualImpacts();
   presenter.reset();
   steady.reset(sim);
   nextPopupSeq = sim.popupSeq;
@@ -481,7 +570,10 @@ $("btn-restart").addEventListener("click", () => {
   restart();
 });
 const muteButton = $("btn-mute");
-const paintMute = (): void => { muteButton.textContent = sound.muted ? "\u{1F507}" : "\u{1F50A}"; muteButton.setAttribute("aria-pressed", String(sound.muted)); };
+const paintMute = (): void => {
+  muteButton.innerHTML = sound.muted ? ICON_SOUND_OFF : ICON_SOUND_ON;
+  muteButton.setAttribute("aria-pressed", String(sound.muted));
+};
 const toggleMute = (): void => { sound.setMuted(!sound.muted); store.set("splatRush.muted", sound.muted ? "1" : "0"); paintMute(); };
 muteButton.addEventListener("click", toggleMute);
 paintMute();
@@ -506,6 +598,7 @@ addEventListener("keydown", (e) => {
     e.preventDefault();
     held.add(e.code);
     keyDir = [...held].reduce((sum, k) => sum + (KEY_DIR[k] ?? 0), 0);
+    if (sim.o.phase === "playing") hasSteered = true;
     if (!keyDragging && sim.o.phase === "playing") { pending.down = true; keyDragging = true; }
   }
 });
@@ -550,6 +643,7 @@ const qa = installQaHooks("splat-rush", {
   reset(seed = config.seed) {
     sim = new SplatRushSim(seed);
     resetRunStats();
+    resetVisualImpacts();
     presenter.reset();
     steady.reset(sim);
     steps = 0;
@@ -581,6 +675,7 @@ const qa = installQaHooks("splat-rush", {
     loadScript(text: string, warmup = config.warmup) {
       sim = new SplatRushSim(config.seed);
       resetRunStats();
+      resetVisualImpacts();
       presenter.reset();
       steady.reset(sim);
       steps = 0;
@@ -634,7 +729,7 @@ const qa = installQaHooks("splat-rush", {
     /** Change a setting without the UI (captures): `symbols`, `motion` or `guide`. */
     setting(which: "symbols" | "motion" | "guide", on: boolean) {
       if (which === "symbols") symbols = on;
-      else if (which === "motion") reducedMotion = on;
+      else if (which === "motion") { reducedMotion = on; resetVisualImpacts(); }
       else guided = !on;
       paintSettings();
       render();

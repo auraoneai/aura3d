@@ -7,7 +7,7 @@
 export type CumulusTier = "low" | "medium" | "high" | "ultra";
 
 /** Shaft density for the volumetric node (E-C `godRayDensity`, decoupled from the look fog). */
-export const CUMULUS_GOD_RAY_DENSITY = 0.08;
+export const CUMULUS_GOD_RAY_DENSITY = 0.32;
 
 /**
  * CD-11: which moment the camera is in. Depth of field runs in the letterboxed title flyover and the finale only (never in

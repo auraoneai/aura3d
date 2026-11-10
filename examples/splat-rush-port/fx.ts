@@ -1,5 +1,5 @@
 /**
- * Screen-space effects for the Splat Rush port: a colour flash on events (`mix-blend-mode: screen`), a circular colour
+ * Screen-space effects for Splat: a colour flash on events (`mix-blend-mode: screen`), a circular colour
  * reveal when the ball bursts, and a speed vignette that grows with the combo multiplier. DOM only, driven by the
  * renderer from state changes (see `audio.ts` `diffSounds`); the simulation never sees any of it.
  */

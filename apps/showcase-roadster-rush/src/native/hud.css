@@ -1,28 +1,31 @@
-/* Apex Overdrive HUD. Uses the licensed display and body faces declared in public/rr-fonts/rr-fonts.css (served at /rr-fonts/). */
-.rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--font, "Whitney", "Graphik", sans-serif); color: #f4f6fb; }
+/* Apex Overdrive HUD — AuraOne licensed typography (Whitney UI/prose, DIN Pro standalone metrics, Monument Grotesk Mono IDs).
+   Identity palette: charcoal #22232a, cobalt #1f3fa8, cyan #4df0ff, tangerine #ff8a3d, bolt gold #ffc61f. Zero rival red. */
+.rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif); font-variant-numeric: tabular-nums; color: #f4f6fb; }
 .rr-hud.rr-idle .rr-run, .rr-hud.rr-idle .rr-right { opacity: 0; }
 .rr-hud .rr-hidden { display: none !important; }
-/* GU47 AO-H2: cards in the identity palette (charcoal #22232a, a cobalt #1f3fa8 edge, a tangerine #ff8a3d top rule). */
-.rr-card { background: rgba(34, 35, 42, 0.78); border: 1px solid rgba(31, 63, 168, 0.55); border-top: 2px solid rgba(255, 138, 61, 0.85); border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
-.rr-micro { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #9fb4c8; }
-.rr-left { position: absolute; top: 64px; left: 16px; display: flex; flex-direction: column; gap: 8px; width: 210px; }
+.rr-card { background: rgba(18, 21, 31, 0.8); border: 1px solid rgba(31, 63, 168, 0.58); border-top: 2px solid rgba(255, 138, 61, 0.88); border-radius: 10px; backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 28px rgba(0, 0, 0, 0.42); }
+.rr-micro { font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 500; line-height: 1.15; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.035em; color: #9fb4c8; }
+.rr-kicker { font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: #4df0ff; text-align: center; }
+.rr-left { position: absolute; top: max(56px, calc(env(safe-area-inset-top) + 48px)); left: max(14px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 8px; width: 224px; }
 .rr-score-card { padding: 10px 12px; }
 .rr-head { display: flex; justify-content: space-between; align-items: baseline; }
-.rr-mult { font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 500; color: #9fb4c8; }
+.rr-mult { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; color: #9fb4c8; }
 .rr-mult.rr-hot { color: #ff8a3d; }
-.rr-score { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 32px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rr-score { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 32px; line-height: 1.06; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .rr-sub { font-size: 13px; color: #cdd8e4; display: flex; gap: 4px; align-items: baseline; }
-.rr-combo { height: 3px; margin: 8px 0; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
+.rr-dist { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; color: #e6edf7; }
+.rr-combo { height: 3px; margin: 7px 0; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
 .rr-combo i { display: block; height: 100%; background: #ff8a3d; transform-origin: left; transform: scaleX(0); }
-/* GU47 AO-H2: motorsport cluster, an arc speedometer beside an AIR ladder (src/native/hudCluster.ts). */
-.rr-cluster { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; margin-top: 6px; }
+
+/* GU47 AO-H2 / WP-06: motorsport telemetry cluster — arc speedometer + AIR ladder + Gear/RPM/Run readout. */
+.rr-cluster { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px 10px; margin-top: 4px; }
 .rr-gauge { position: relative; width: 96px; height: 76px; }
 .rr-gauge-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .rr-gauge-track, .rr-gauge-value { fill: none; stroke-width: 7; stroke-linecap: round; }
 .rr-gauge-track { stroke: rgba(244, 246, 251, 0.14); }
 .rr-gauge-value { stroke-dasharray: 0.5 100; transition: stroke-dasharray 0.12s linear; }
-.rr-gauge .rr-speed { position: absolute; left: 0; right: 0; top: 30px; text-align: center; font-size: 22px; line-height: 1; }
-.rr-gauge-unit { position: absolute; left: 0; right: 0; top: 55px; text-align: center; font-size: 10px; }
+.rr-gauge .rr-speed { position: absolute; left: 0; right: 0; top: 28px; text-align: center; font-size: 22px; line-height: 1; }
+.rr-gauge-unit { position: absolute; left: 0; right: 0; top: 53px; text-align: center; font-size: 12px; }
 .rr-ladder { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .rr-ladder-label { display: inline-flex; align-items: center; gap: 3px; color: #4df0ff; }
 .rr-rungs { display: flex; flex-direction: column-reverse; gap: 2px; }
@@ -31,56 +34,73 @@
 .rr-air.rr-low .rr-ladder-label { color: #ff8a3d; }
 .rr-air.rr-low .rr-rung.rr-on { background: #ff8a3d; box-shadow: 0 0 6px rgba(255, 138, 61, 0.5); animation: rr-rung-pulse 0.8s ease-in-out infinite; }
 @keyframes rr-rung-pulse { 50% { opacity: 0.45; } }
+.rr-telemetry { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; padding-top: 6px; border-top: 1px solid rgba(244, 246, 251, 0.1); }
+.rr-tele-cell { display: flex; flex-direction: column; gap: 1px; }
+.rr-tele-cell:last-child { align-items: flex-end; }
+.rr-gear-val, .rr-rpm-val, .rr-time-val { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 14px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; color: #eef3fa; }
+.rr-gear-val { color: #4df0ff; }
 .rr-glyph { flex: none; display: inline-block; vertical-align: -2px; }
 .rr-air.rr-flash { animation: rr-flash 0.6s ease-out; }
 @keyframes rr-flash { 0% { filter: brightness(2.4); } 100% { filter: none; } }
+
 .rr-powerups { display: flex; flex-direction: column; gap: 6px; }
-.rr-pu { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(255, 255, 255, 0.16); font-size: 12px; }
+.rr-pu { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(11, 12, 20, 0.76); border: 1px solid rgba(255, 255, 255, 0.16); font-size: 12px; }
 .rr-pu div { flex: 1; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 2px; overflow: hidden; }
 .rr-pu i { display: block; height: 100%; background: #4df0ff; transform-origin: left; }
 .rr-pu-rocket i { background: #ff8a3d; } .rr-pu-shield i { background: #4df0ff; } .rr-pu-magnet i { background: #c8d2e0; } .rr-pu-multiplier i { background: #ffc61f; }
 .rr-pu-rocket .rr-glyph { color: #ff8a3d; } .rr-pu-shield .rr-glyph { color: #4df0ff; } .rr-pu-magnet .rr-glyph { color: #c8d2e0; } .rr-pu-multiplier .rr-glyph { color: #ffc61f; }
-.rr-right { position: absolute; top: 64px; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
-/* AO-H2: 44 px targets on every pointer (PRD §6.2). */
-.rr-icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(34, 35, 42, 0.78); color: #f4f6fb; font-size: 14px; cursor: pointer; }
+
+.rr-right { position: absolute; top: max(56px, calc(env(safe-area-inset-top) + 48px)); right: max(14px, env(safe-area-inset-right)); display: flex; gap: 8px; align-items: center; pointer-events: auto; }
+.rr-icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(18, 21, 31, 0.82); color: #f4f6fb; font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.rr-icon-btn .rr-glyph { width: 16px; height: 16px; }
 .rr-icon-btn.rr-off { opacity: 0.55; }
 .rr-bolts { padding: 6px 12px; display: flex; gap: 8px; align-items: baseline; }
-.rr-bolts b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; color: #ffc61f; font-variant-numeric: tabular-nums; }
-.rr-popups { position: absolute; top: 31%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.rr-popup { display: flex; gap: 10px; align-items: baseline; padding: 6px 14px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(77, 240, 255, 0.3); animation: rr-pop 1.8s ease-out forwards; font-size: 15px; }
-.rr-popup b { font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 500; }
-.rr-popup span { color: #ffc61f; font-variant-numeric: tabular-nums; }
+.rr-bolts b { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; color: #ffc61f; font-variant-numeric: tabular-nums; }
+
+.rr-objective { position: absolute; top: max(16px, calc(env(safe-area-inset-top) + 8px)); left: 50%; transform: translateX(-50%); padding: 5px 14px; border-radius: 999px; background: rgba(11, 14, 24, 0.82); border: 1px solid rgba(77, 240, 255, 0.35); font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.04em; color: #e6f4ff; white-space: nowrap; animation: rr-obj-fade 3.4s ease-out forwards; }
+@keyframes rr-obj-fade { 0% { opacity: 0; transform: translate(-50%, -6px); } 12% { opacity: 1; transform: translate(-50%, 0); } 82% { opacity: 1; } 100% { opacity: 0; } }
+
+.rr-popups { position: absolute; top: 28%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rr-popup { display: flex; gap: 10px; align-items: baseline; padding: 6px 14px; border-radius: 999px; background: rgba(11, 12, 20, 0.78); border: 1px solid rgba(77, 240, 255, 0.34); animation: rr-pop 1.8s ease-out forwards; font-size: 14px; }
+.rr-popup b { font-family: var(--font-ui, "Whitney", sans-serif); font-weight: 600; color: #f4f6fb; }
+.rr-popup span { font-family: var(--font-metric, "DIN Pro", sans-serif); font-weight: 500; color: #ffc61f; font-variant-numeric: tabular-nums; }
 .rr-popup.small { font-size: 12px; }
 .rr-popup.hot { border-color: #ff8a3d; }
 @keyframes rr-pop { 0% { opacity: 0; transform: translateY(8px) scale(0.92); } 12% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
-.rr-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 6, 16, 0.45); pointer-events: auto; }
-.rr-dialog { padding: 22px 28px; min-width: 280px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-.rr-dialog h2 { margin: 0; font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 600; font-size: 24px; }
-.rr-dialog p { margin: 0; color: #cdd8e4; font-size: 13px; }
+
+.rr-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(8, 6, 16, 0.48); pointer-events: auto; }
+.rr-dialog { padding: 22px 26px; min-width: min(290px, calc(100vw - 32px)); max-width: min(420px, calc(100vw - 32px)); text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.rr-dialog h2 { margin: 0; font-family: var(--font-ui, "Whitney", sans-serif); font-weight: 600; font-size: 24px; letter-spacing: -0.01em; }
+.rr-dialog p { margin: 0; color: #cdd8e4; font-size: 13px; line-height: 1.45; }
 .rr-dialog small { color: #9fb4c8; font-size: 12px; }
-.rr-big { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 40px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.rr-best { color: #9fb4c8; font-size: 13px; }
-.rr-new { color: #ffc61f; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.rr-big { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 40px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rr-best { color: #9fb4c8; font-size: 13px; font-variant-numeric: tabular-nums; }
+.rr-new { color: #ffc61f; font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; }
 .rr-stats { display: flex; gap: 18px; }
-.rr-stats div { display: flex; flex-direction: column; align-items: center; }
-.rr-stats b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; }
-.rr-stats span { color: #9fb4c8; font-size: 11px; }
-.rr-btn { height: 44px; padding: 0 24px; border-radius: 999px; border: 0; background: #ff8a3d; color: #22232a; font-size: 14px; font-weight: 600; cursor: pointer; }
-.rr-touch { display: none; position: absolute; left: 0; right: 0; bottom: 12px; padding: 0 12px; justify-content: space-between; pointer-events: none; }
+.rr-stats div { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.rr-stats b { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rr-stats span { color: #9fb4c8; font-size: 12px; font-variant-caps: all-small-caps; letter-spacing: 0.03em; }
+.rr-btn { height: 44px; min-width: 132px; padding: 0 24px; border-radius: 999px; border: 0; background: #ff8a3d; color: #22232a; font-family: var(--font-ui, "Whitney", sans-serif); font-size: 14px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+
+/* Ergonomic thumb-edge controls: >= 48x48px targets docked strictly left/right so the centre 65% roadster lane stays clear. */
+.rr-touch { display: none; position: absolute; left: 0; right: 0; bottom: 0; padding: 0 max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); justify-content: space-between; align-items: flex-end; pointer-events: none; }
 .rr-hud.rr-touchy .rr-touch { display: flex; }
-.rr-touch button { pointer-events: auto; touch-action: none; min-width: 54px; height: 44px; margin: 3px; border-radius: 12px; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(11, 12, 20, 0.6); color: #f4f6fb; font-size: 12px; }
-.rr-touch button.active { background: rgba(77, 240, 255, 0.35); }
-.rr-touch .rr-fly { width: 100%; height: 60px; }
-@media (max-width: 760px) { .rr-left { top: 56px; left: 8px; width: 170px; } .rr-score { font-size: 26px; } }
+.rr-touch-left, .rr-touch-right { display: flex; flex-direction: column; gap: 6px; max-width: 34%; }
+.rr-touch-row { display: flex; gap: 6px; }
+.rr-touch button { pointer-events: auto; touch-action: none; min-width: 48px; min-height: 48px; height: 48px; padding: 0 10px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 12px; border: 1px solid rgba(244, 246, 251, 0.24); background: rgba(11, 14, 24, 0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #f4f6fb; font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.02em; }
+.rr-touch button .rr-glyph { width: 15px; height: 15px; }
+.rr-touch button.active { background: rgba(77, 240, 255, 0.34); border-color: #4df0ff; color: #ffffff; }
+.rr-touch .rr-fly { width: 100%; min-height: 54px; height: 54px; flex-direction: row; gap: 6px; border-color: rgba(77, 240, 255, 0.42); color: #4df0ff; }
 
 /* Boot veil shown until the scene and simulation are ready. */
-.boot { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; background: #140b1c; color: #f4f6fb; transition: opacity 0.5s ease; }
+.boot { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; background: #140b1c; color: #f4f6fb; font-family: var(--font-ui, "Whitney", sans-serif); transition: opacity 0.5s ease; }
 .boot.done { opacity: 0; pointer-events: none; }
-.boot-mark { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 28px; font-weight: 600; letter-spacing: 0.04em; }
+.boot-mark { font-family: var(--font-ui, "Whitney", sans-serif); font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
 .boot-meter { width: 220px; }
 .boot-line { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
 .boot-line i { display: block; height: 100%; width: 100%; background: #4df0ff; transform-origin: left; animation: boot-fill 1.4s ease-out forwards; }
-.boot-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #9fb4c8; }
+.boot-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.03em; color: #9fb4c8; }
+.boot-pct { font-family: var(--font-metric, "DIN Pro", sans-serif); font-weight: 500; }
 @keyframes boot-fill { from { transform: scaleX(0.1); } to { transform: scaleX(1); } }
 
 /* Title card (audit RR-10): goal, controls for the current input, best score. */
@@ -89,38 +109,49 @@
 .rr-title-card .rr-btn { align-self: center; }
 .rr-title-card small, .rr-title-card .title-best { text-align: center; }
 .rr-controls { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: #cdd8e4; }
-.rr-controls b { color: #f4f6fb; font-weight: 500; }
+.rr-controls b { color: #f4f6fb; font-weight: 600; }
 .rr-title { cursor: pointer; }
+
 /* Speed (in the AO-H2 arc gauge) and the next-kilometre bar (audit RR-E5). */
 .rr-mile { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 6px; margin-top: 6px; }
-.rr-speed { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rr-speed { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rr-mile-label { justify-self: end; }
 .rr-mile-track { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
 .rr-mile-fill { height: 100%; background: #4df0ff; transform-origin: left; transform: scaleX(0); }
+
 /* Screen-reader only live region for trick popups (audit RR-12). */
 .rr-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* Touch targets of at least 44 px on touch screens (audit RR-E4, checklist U1). */
+
 @media (pointer: coarse) {
-  .rr-icon-btn { font-size: 15px; }
+  .rr-icon-btn { min-width: 44px; min-height: 44px; }
 }
+
 /* Reduced motion: no popup slide, no air flash (the page also stops plume flicker, shield blink and camera shake). */
 @media (prefers-reduced-motion: reduce) {
   .rr-popup { animation: none; }
+  .rr-objective { animation: none; }
   .rr-air.rr-flash { animation: none; }
   .rr-air.rr-low .rr-rung.rr-on { animation: none; }
   .rr-gauge-value { transition: none; }
   .boot { transition: none; }
   .boot-line i { animation: none; }
 }
-/* AO-H2 on phones (last, so it wins over the base rules above): a smaller gauge and ladder and a tighter card, so the HUD stays under 12% of a 390 x 844 canvas. */
+
+/* AO-H2 / WP-06 on 390x844 phones (last, so it wins over the base rules above): compact top-left cluster leaving the lanes clear. */
 @media (max-width: 760px) {
-  .rr-score-card { padding: 8px 10px; }
-  .rr-combo { margin: 6px 0; }
+  .rr-left { top: max(48px, calc(env(safe-area-inset-top) + 40px)); left: 8px; width: 172px; gap: 6px; }
+  .rr-right { top: max(48px, calc(env(safe-area-inset-top) + 40px)); right: 8px; gap: 6px; }
+  .rr-score-card { padding: 7px 9px; }
+  .rr-score { font-size: 24px; }
+  .rr-combo { margin: 4px 0; }
   .rr-gauge { width: 84px; height: 67px; }
-  .rr-gauge .rr-speed { top: 26px; font-size: 19px; }
-  .rr-gauge-unit { top: 48px; }
-  .rr-rung { width: 22px; height: 4px; }
+  .rr-gauge .rr-speed { top: 24px; font-size: 19px; }
+  .rr-gauge-unit { top: 46px; }
+  .rr-rung { width: 20px; height: 4px; }
+  .rr-telemetry { gap: 4px; padding-top: 4px; }
+  .rr-gear-val, .rr-rpm-val, .rr-time-val { font-size: 12px; }
   .rr-mile { margin-top: 4px; gap: 2px 6px; }
+  .rr-objective { display: none; }
+  .rr-touch-left, .rr-touch-right { max-width: 42%; }
 }
-/* GU47 phase 3: form controls do not inherit the page face by default; the Start / Retry buttons fell back to the platform sans. */
 .rr-hud button, .aura3d-top-bar button { font-family: inherit; }

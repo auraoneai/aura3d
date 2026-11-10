@@ -10,7 +10,8 @@ export {
   TOON_TONE_VERTEX_WGSL, SKY_VERTEX_WGSL, gradientSkyFragmentWgsl, FLAT_VERTEX_WGSL, FLAT_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL,
   FLAT_TONE_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SHADOW_FRAGMENT_WGSL, STRIP_SHADOW_FRAGMENT_WGSL
 } from "./shaders-wgsl";
-export { Batch, Slots, mergeMeshes, scrollFrameZ, type MeshData } from "./batch";
+export { Batch, Slots, mergeMeshes, scrollFrameZ, OPEN_BOUNDS, CORRIDOR_BOUNDS, type MeshData, type BatchBounds } from "./batch";
+export { createGpuSplatMap, type GpuSplatMapOptions, type GpuSplatStamp } from "./splat-map";
 export { drainPopups, POPUP_LIMIT, type Popup } from "./popups";
 export { ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP } from "./screen-fx";
 export { luminance, contrastRatio, letterbox, comboTubeFill, LETTERBOX_OUT_SECONDS } from "./hud-utils";

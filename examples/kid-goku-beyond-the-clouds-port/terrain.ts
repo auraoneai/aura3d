@@ -1,5 +1,5 @@
 /**
- * Procedural scenery for the Cloud Runner course: the lofted ground (sandy track, grass shoulders, hill banks or
+ * Procedural scenery for the Cumulus Dash course: the lofted ground (sandy track, grass shoulders, hill banks or
  * sandstone cliffs), canyon walls, gorges, foliage, rocks and flowers. Everything is generated from the course data and a
  * seeded RNG, merged into a few chunked meshes, so the art is original and deterministic.
  */
@@ -104,13 +104,15 @@ export function buildGround(ch: Chapter, from = -40, to = ch.length + 80): Groun
       const frame = frameAt(s);
       const hole = isVoid(ch, s) || isVoid(ch, s + step * 0.5) || isVoid(ch, s - step * 0.5);
       if (!hole) {
-        const cols = [-ROAD_HALF, -ROAD_HALF * 0.34, ROAD_HALF * 0.34, ROAD_HALF];
+        const cols = [-ROAD_HALF, -ROAD_HALF * 0.56, 0, ROAD_HALF * 0.56, ROAD_HALF];
         const idx = cols.map((lat, k) => {
-          const wear = Math.abs(lat) < ROAD_HALF * 0.5 ? 1 : 0;
-          const tone = mix3(SAND_DARK, SAND_LIGHT, 0.55 + 0.25 * wear + 0.2 * (noise1(s * 0.3 + k, 1) - 0.5));
-          return road.vertex(at(s, lat, 0), frame.up, [lat / 5.5, s / 5.5], tone);
+          const edgeDist = 1 - Math.abs(lat) / ROAD_HALF;
+          const rut = k === 1 || k === 3 ? -0.14 : k === 2 ? 0.16 : -0.22;
+          const camber = edgeDist * 0.028;
+          const tone = mix3(SAND_DARK, SAND_LIGHT, Math.min(1, Math.max(0, 0.54 + rut + 0.22 * (noise1(s * 0.32 + k * 1.3, 1) - 0.5))));
+          return road.vertex(at(s, lat, camber), frame.up, [lat / 5.5, s / 5.5], tone);
         });
-        if (prevRoad) for (let k = 0; k < 3; k++) road.quad(prevRoad[k]!, prevRoad[k + 1]!, idx[k + 1]!, idx[k]!);
+        if (prevRoad) for (let k = 0; k < 4; k++) road.quad(prevRoad[k]!, prevRoad[k + 1]!, idx[k + 1]!, idx[k]!);
         prevRoad = idx;
       } else prevRoad = null;
       for (const side of [-1, 1] as const) {
@@ -160,7 +162,7 @@ export function buildGround(ch: Chapter, from = -40, to = ch.length + 80): Groun
 }
 
 /* ---------------------------------------------------------------- foliage, rocks, flowers */
-export interface Placement { pos: V3; scale: number; yaw: number; /** Track distance and lateral offset of the foot (GU47 phase 4 ground shadows drape on these). */ s?: number; lat?: number }
+export interface Placement { pos: V3; scale: number; yaw: number; /** Optional slope pitch/roll for grounded bank boulders. */ pitch?: number; roll?: number; /** Track distance and lateral offset of the foot (GU47 phase 4 ground shadows drape on these). */ s?: number; lat?: number }
 export interface Scatter { trees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[]; roundTrees: Placement[]; pineTrees: Placement[]; boulders: Placement[] }
 const HERO_TREE_CAP = 150, HERO_ROCK_CAP = 90, HERO_NEAR = 24;
 
@@ -168,17 +170,19 @@ let treeParts: { trunk: Mesh; crowns: Mesh[] } | null = null;
 function treeKit(): { trunk: Mesh; crowns: Mesh[] } {
   if (treeParts) return treeParts;
   const rnd = seeded(77);
-  const trunk = cylinder(7, 0.34, 0.2, 1, hex("#6b4a2f"), hex("#8a6340"));
-  const crowns = [hex("#4f9a3a"), hex("#68ad3f"), hex("#3f8a40"), hex("#84bb48")].map((c) => icosphere(1, c, 0.16, rnd, true));
+  const trunk = cylinder(8, 0.4, 0.18, 1, hex("#573a22"), hex("#855d3b"));
+  trunk.append(cylinder(8, 0.52, 0.36, 0.22, hex("#482f1b"), hex("#5e4026")), [0, 0, 0]);
+  const crowns = [hex("#2f722e"), hex("#4c9238"), hex("#65a83e"), hex("#82bc48")].map((c) => icosphere(1, c, 0.18, rnd, true));
   treeParts = { trunk, crowns };
   return treeParts;
 }
 
 function treeAt(trees: Mesh, kit: { trunk: Mesh; crowns: Mesh[] }, rnd: () => number, base: V3, size: number): void {
-  trees.append(kit.trunk, base, [size * 0.28, size * 0.62, size * 0.28], rnd() * 6.28);
-  const crown = kit.crowns[Math.floor(rnd() * kit.crowns.length)]!, crown2 = kit.crowns[Math.floor(rnd() * kit.crowns.length)]!;
-  trees.append(crown, [base[0], base[1] + size * 0.7, base[2]], [size * 0.62, size * 0.5, size * 0.62], rnd() * 6.28);
-  trees.append(crown2, [base[0] + (rnd() - 0.5) * size * 0.35, base[1] + size * 1.0, base[2] + (rnd() - 0.5) * size * 0.3], [size * 0.45, size * 0.4, size * 0.45], rnd() * 6.28);
+  trees.append(kit.trunk, base, [size * 0.27, size * 0.66, size * 0.27], rnd() * 6.28);
+  const c0 = kit.crowns[0]!, c1 = kit.crowns[1 + Math.floor(rnd() * 2)]!, c2 = kit.crowns[2 + Math.floor(rnd() * 2)]!;
+  trees.append(c0, [base[0], base[1] + size * 0.62, base[2]], [size * 0.68, size * 0.42, size * 0.68], rnd() * 6.28);
+  trees.append(c1, [base[0] + (rnd() - 0.5) * size * 0.28, base[1] + size * 0.88, base[2] + (rnd() - 0.5) * size * 0.28], [size * 0.54, size * 0.4, size * 0.54], rnd() * 6.28);
+  trees.append(c2, [base[0] + (rnd() - 0.5) * size * 0.2, base[1] + size * 1.12, base[2] + (rnd() - 0.5) * size * 0.2], [size * 0.38, size * 0.34, size * 0.38], rnd() * 6.28);
 }
 
 /** Bushy forest masses on the valley floor beside the ridge (the dark green clumps the track looks out over). */
@@ -214,14 +218,64 @@ export function buildScatter(ch: Chapter): Scatter {
   const kit = treeKit();
   const rnd = seeded(2024);
   const rockMesh = [0, 1, 2].map((i) => icosphere(1, mix3(hex("#bda27c"), hex("#8f7a5c"), i / 2), 0.22, seeded(90 + i), true));
-  const bushMesh = [0, 1].map((i) => icosphere(1, mix3(hex("#5d9d3b"), hex("#7fb843"), i), 0.2, seeded(40 + i), true));
+  const curbMesh = [0, 1].map((i) => icosphere(0, mix3(hex("#cbb089"), hex("#967858"), i), 0.18, seeded(120 + i), true));
+  const bushMesh = [0, 1].map((i) => {
+    const sr = seeded(40 + i);
+    const m = new Mesh();
+    const dark = icosphere(1, hex("#376d2d"), 0.18, sr, true);
+    const mid = icosphere(1, hex("#59993a"), 0.19, sr, true);
+    const crown = icosphere(1, hex("#7fba46"), 0.16, sr, true);
+    m.append(dark, [0, 0.02, 0], [1.05, 0.72, 1.05], 0.4);
+    m.append(mid, [0.34, 0.22, 0.18], [0.74, 0.66, 0.74], 1.7);
+    m.append(crown, [-0.24, 0.34, -0.14], [0.64, 0.58, 0.64], 3.1);
+    return m;
+  });
   const flowerColours = ["#fff2c8", "#ff8fa3", "#ffd25a", "#b9a3ff", "#ff9d4a", "#ffffff"].map(hex);
-  const flowerTri = ((): Mesh => { const m = new Mesh(); const a = m.vertex([0, 0, 0.12], [0, 1, 0], [0, 0], [1, 1, 1]), b = m.vertex([0.11, 0, -0.07], [0, 1, 0], [1, 0], [1, 1, 1]), c = m.vertex([-0.11, 0, -0.07], [0, 1, 0], [0, 1], [1, 1, 1]), d = m.vertex([0, 0.2, 0], [0, 1, 0], [1, 1], [1, 1, 1]); m.tri(a, b, d); m.tri(b, c, d); m.tri(c, a, d); return m; })();
+  const flowerCluster = ((): Mesh => {
+    const m = new Mesh();
+    const stemBase = hex("#3e752c"), stemTip = hex("#76b042"), petal = [1, 1, 1] as const, heart = hex("#ffbe3b");
+    for (let b = 0; b < 3; b++) {
+      const ang = (b / 3) * Math.PI * 2 + 0.35;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const i0 = m.vertex([-sa * 0.035, 0, ca * 0.035], [ca * 0.4, 0.9, sa * 0.4], [0, 0], stemBase);
+      const i1 = m.vertex([sa * 0.035, 0, -ca * 0.035], [ca * 0.4, 0.9, sa * 0.4], [1, 0], stemBase);
+      const i2 = m.vertex([ca * 0.17, 0.22 + (b % 2) * 0.05, sa * 0.17], [0, 1, 0], [0.5, 1], stemTip);
+      m.tri(i0, i1, i2);
+    }
+    const c = m.vertex([0, 0.23, 0], [0, 1, 0], [0.5, 0.5], heart);
+    const p0 = m.vertex([0.11, 0.26, 0], [0, 1, 0], [1, 0.5], petal);
+    const p1 = m.vertex([0, 0.26, 0.11], [0, 1, 0], [0.5, 1], petal);
+    const p2 = m.vertex([-0.11, 0.26, 0], [0, 1, 0], [0, 0.5], petal);
+    const p3 = m.vertex([0, 0.26, -0.11], [0, 1, 0], [0.5, 0], petal);
+    m.tri(c, p0, p1); m.tri(c, p1, p2); m.tri(c, p2, p3); m.tri(c, p3, p0);
+    return m;
+  })();
+  const grassTuft = ((): Mesh => {
+    const m = new Mesh();
+    const root = hex("#3d722b"), tip = hex("#8ac24e");
+    for (let b = 0; b < 3; b++) {
+      const ang = (b / 3) * Math.PI * 2 + 0.2;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const i0 = m.vertex([-sa * 0.05, 0, ca * 0.05], [ca * 0.3, 0.95, sa * 0.3], [0, 0], root);
+      const i1 = m.vertex([sa * 0.05, 0, -ca * 0.05], [ca * 0.3, 0.95, sa * 0.3], [1, 0], root);
+      const i2 = m.vertex([ca * 0.2, 0.26, sa * 0.2], [0, 1, 0], [0.5, 1], tip);
+      m.tri(i0, i1, i2);
+    }
+    return m;
+  })();
   for (let c0 = -40; c0 < ch.length + 80; c0 += CHUNK) {
     const trees = new Mesh(), bushes = new Mesh(), rocks = new Mesh(), flowers = new Mesh();
     for (let s = c0; s < c0 + CHUNK; s += 1) {
       const cm = canyonMode(ch, s);
+      const roadSolid = !isVoid(ch, s);
       for (const side of [-1, 1] as const) {
+        // weathered sandstone verge curb stones & grass fringe soften the road-to-shoulder seam
+        if (roadSolid && (Math.floor(s) + (side > 0 ? 1 : 0)) % 3 === 0) {
+          const edgeLat = side * (ROAD_HALF + 0.14 + noise1(s * 0.7, side > 0 ? 51 : 52) * 0.32);
+          const edgeBase = at(s, edgeLat, groundHeight(ch, s, edgeLat) - 0.05);
+          rocks.append(curbMesh[Math.abs(Math.floor(s)) % 2]!, edgeBase, [0.42 + noise1(s * 1.1, 53) * 0.28, 0.16, 0.55 + noise1(s * 0.9, 54) * 0.3], yawOfEdge(s) + (noise1(s, 55) - 0.5) * 0.35);
+          flowers.append(grassTuft, at(s + 0.4, side * (ROAD_HALF + 0.28), groundHeight(ch, s, side * (ROAD_HALF + 0.28))), 0.85 + noise1(s * 1.3, 56) * 0.45, s * 1.7);
+        }
         // trees crown the wall tops; at drops only a few stand on the shoulder
         const op = openMode(s);
         const mode = cliffMode(s, side) * (1 - op);
@@ -238,22 +292,33 @@ export function buildScatter(ch: Chapter): Scatter {
           if (!heroTree(base2, size2 * 1.4, lat, rnd(), s)) treeAt(trees, kit, rnd, base2, size2);
         }
         if (rnd() < 0.22) {
-          const gl = side * (ROAD_HALF + 1.3 + rnd() * 5);
-          const base = at(s, gl, groundHeight(ch, s, gl) - 0.1);
-          bushes.append(bushMesh[Math.floor(rnd() * 2)]!, base, [0.7 + rnd() * 0.9, 0.55 + rnd() * 0.6, 0.7 + rnd() * 0.9], rnd() * 6.28);
+          const gl = side * (ROAD_HALF + 1.3 + rnd() * Math.min(5, Math.max(1.5, shoulder - 0.5)));
+          const base = at(s, gl, groundHeight(ch, s, gl) - 0.12);
+          bushes.append(bushMesh[Math.floor(rnd() * 2)]!, base, [0.72 + rnd() * 0.88, 0.58 + rnd() * 0.58, 0.72 + rnd() * 0.88], rnd() * 6.28);
         }
         if (rnd() < 0.07) {
-          const gl = side * (ROAD_HALF + 0.9 + rnd() * 12);
-          const base = at(s, gl, groundHeight(ch, s, gl) - 0.25);
+          const rawOffset = 0.9 + rnd() * 12;
+          const maxSafeOffset = mode >= 0.45 ? Math.max(1.4, shoulder - 0.8) : 12.9;
+          const gl = side * (ROAD_HALF + Math.min(rawOffset, maxSafeOffset));
           const rs: V3 = [0.8 + rnd() * 1.9, 0.6 + rnd() * 1.2, 0.8 + rnd() * 1.7], ry = rnd() * 6.28, rt = (rnd() - 0.5) * 0.3, rk = Math.floor(rnd() * 3);
-          if (Math.abs(gl) - ROAD_HALF < 14 && out.boulders.length < HERO_ROCK_CAP) out.boulders.push({ pos: base, scale: 1.1 + (rs[0] + rs[2]) * 0.55, yaw: ry, s, lat: gl });
-          else rocks.append(rockMesh[rk]!, base, rs, ry, rt);
+          const hCenter = groundHeight(ch, s, gl);
+          const hOut = groundHeight(ch, s, gl + side * 0.9), hIn = groundHeight(ch, s, gl - side * 0.9);
+          const bankSlope = (hOut - hIn) / 1.8;
+          const bScale = 1.1 + (rs[0] + rs[2]) * 0.55;
+          const sink = 0.3 + Math.min(1.1, Math.abs(bankSlope) * 0.42 * bScale);
+          const base = at(s, gl, hCenter - sink);
+          if (Math.abs(gl) - ROAD_HALF < 14 && Math.abs(bankSlope) < 1.35 && out.boulders.length < HERO_ROCK_CAP) {
+            const slopeRoll = Math.max(-0.45, Math.min(0.45, -side * Math.atan(bankSlope) * 0.65));
+            out.boulders.push({ pos: base, scale: bScale, yaw: ry, pitch: rt * 0.5, roll: slopeRoll, s, lat: gl });
+          } else {
+            rocks.append(rockMesh[rk]!, base, rs, ry, rt);
+          }
         }
         for (let k = 0; k < 2; k++) {
           if (rnd() < 0.55) {
-            const gl = side * (ROAD_HALF + 0.6 + rnd() * 7);
-            const base = at(s + rnd(), gl, groundHeight(ch, s, gl) + 0.02);
-            flowers.append(flowerTri, base, 0.7 + rnd() * 0.6, rnd() * 6.28, 0, flowerColours[Math.floor(rnd() * flowerColours.length)]!);
+            const gl = side * (ROAD_HALF + 0.55 + rnd() * Math.min(6.8, shoulder + 0.6));
+            const base = at(s + rnd(), gl, groundHeight(ch, s, gl) + 0.01);
+            flowers.append(flowerCluster, base, 0.72 + rnd() * 0.58, rnd() * 6.28, 0, flowerColours[Math.floor(rnd() * flowerColours.length)]!);
           }
         }
       }
@@ -265,6 +330,8 @@ export function buildScatter(ch: Chapter): Scatter {
   }
   return out;
 }
+
+const yawOfEdge = (s: number): number => { const f = frameAt(s).forward; return Math.atan2(f[0], f[2]); };
 
 /** Position helper for props that stand on the ground at `s`, lateral `lat`. */
 export function groundPoint(ch: Chapter, s: number, lat: number, lift = 0): V3 { return at(s, lat, groundHeight(ch, s, lat) + lift); }

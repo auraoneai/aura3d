@@ -25,22 +25,26 @@ import { assignPoolSlots, fitHalfWidth, orbitAround, quatToEulerZYX, rotQ, type 
 import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./game/levels";
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
-  blockLook, blockNodeId, solidBlockMaterial, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
-  gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
+  ALL_FAR_PIECES, ammoGullLook, barrelNodeId, bladeNodeId, blastNodeId, blockLook, blockNodeId, buildScene,
+  crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
+  plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SLING_IDS,
+  SOLID_BLOCK_MATERIALS, solidBlockMaterial
 } from "./game/stage";
-import { BlockInstancePool } from "./game/blockInstances";
+import { BlockInstancePool, PropInstancePool } from "./game/blockInstances";
+import { islandSurface } from "./art/surfaces";
+import { coastalSeaSpec, dualLimestoneStrataSpec, hexToRgb } from "./game/shaders";
 import { sanitizeRenderParams } from "./game/urlGuard";
-import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
-import { chapterLook, useOriginalLook } from "./game/look";
+import { AMMO_TRAIL_COLOR, FlipbookBurstController, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
+import { chapterLook, sunDirection, useOriginalLook } from "./game/look";
 import { buildSceneOriginal } from "./game/stageOriginal";
 import { SIGN_PARK, signTextNodeId, signTextPlacement } from "./game/sign";
 import {
   INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
   type QaCrop, type TiltShiftBand
 } from "./game/presentation";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { installGameBeacon } from "@aura3d/engine/game";
+import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 sanitizeRenderParams();
@@ -57,8 +61,8 @@ const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVE
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
 /** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
 const AO = params.get("ao") !== "0";
-/** `?surfaces=1` evidence switch: SS47-M2 CC0 detail maps on the island (GU47 phase 2: off by default, the mapped turf read white). */
-const SURFACES = params.get("surfaces") === "1";
+/** `?surfaces=0` opts out; WP-12 enables CC0 sand/turf/wet-rock grain detail maps by default. */
+const SURFACES = params.get("surfaces") !== "0";
 
 // ---------------------------------------------------------- persistence --
 
@@ -98,7 +102,13 @@ const loadingCreep = window.setInterval(() => { loading.set(Math.min(0.9, loadin
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
-  ...(LAB.output ? { output: LAB.output } : {}),
+  output: {
+    preset: chapterLook(chapter.id).post,
+    toneMapping: "agx",
+    exposure: 1.04,
+    dither: true,
+    ...(LAB.output ?? {})
+  },
   ...(LAB.worker ? { worker: LAB.worker } : {}),
   qualityRebuild: { flags: ["game"] },
   input: {
@@ -136,13 +146,36 @@ const animCache = new Map<string, string>();
  */
 const BLOCK_POOL = SOLID_BLOCKS ? new BlockInstancePool(POOL.blocks, SOLID_BLOCK_MATERIALS, (id) => app.nodes.get(id) as AuraRuntimeNodeHandle | undefined) : null;
 const BLOCK_IDS = new Set(Array.from({ length: POOL.blocks }, (_, i) => blockNodeId(i)));
+const PROP_POOL = !ORIGINAL_LOOK
+  ? new PropInstancePool(
+      { crate: POOL.crates, barrel: POOL.barrels, plank: POOL.planks, debris: POOL.debris },
+      (id) => app.nodes.get(id) as AuraRuntimeNodeHandle | undefined
+    )
+  : null;
+const CRATE_IDS = new Set(Array.from({ length: POOL.crates }, (_, i) => crateNodeId(i)));
+const BARREL_IDS = new Set(Array.from({ length: POOL.barrels }, (_, i) => barrelNodeId(i)));
+const PLANK_IDS = new Set(Array.from({ length: POOL.planks }, (_, i) => plankNodeId(i)));
+const DEBRIS_IDS = new Set(Array.from({ length: POOL.debris }, (_, i) => debrisNodeId(i)));
+function isInstancedPropId(id: string): boolean {
+  return PROP_POOL !== null && (CRATE_IDS.has(id) || BARREL_IDS.has(id) || PLANK_IDS.has(id) || DEBRIS_IDS.has(id));
+}
 function node(id: string): AuraRuntimeNodeHandle | undefined {
   if (BLOCK_POOL && BLOCK_IDS.has(id)) return BLOCK_POOL.handle(id) as unknown as AuraRuntimeNodeHandle;
+  if (PROP_POOL) {
+    if (CRATE_IDS.has(id)) return PROP_POOL.handle(id, "crate") as unknown as AuraRuntimeNodeHandle;
+    if (BARREL_IDS.has(id)) return PROP_POOL.handle(id, "barrel") as unknown as AuraRuntimeNodeHandle;
+    if (PLANK_IDS.has(id)) return PROP_POOL.handle(id, "plank") as unknown as AuraRuntimeNodeHandle;
+    if (DEBRIS_IDS.has(id)) return PROP_POOL.handle(id, "debris") as unknown as AuraRuntimeNodeHandle;
+  }
   if (!H.has(id)) {
     const h = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
     if (h) H.set(id, h);
   }
   return H.get(id);
+}
+function flushInstancePools(): void {
+  BLOCK_POOL?.flush();
+  PROP_POOL?.flush();
 }
 function setNodeAnim(id: string, clip: string, speed = 1): void {
   const h = node(id);
@@ -185,6 +218,7 @@ function modelMaterials(id: string): AuraModelMaterialHandle | undefined {
   return m && m.inspectMaterials().length > 0 ? m : undefined;
 }
 function applyLook(id: string, key: string, overrides: readonly AuraModelMaterialOverride[]): void {
+  if (isInstancedPropId(id)) return;
   if (lookKeys.get(id) === key && !pendingLooks.has(id)) return;
   lookKeys.set(id, key);
   const m = modelMaterials(id);
@@ -205,7 +239,135 @@ function flushPendingLooks(): void {
 
 const sim = new SiegeSim({ level: levelById(START_LEVEL), seed: SEED });
 sim.slowmoEnabled = !REDUCED;
+const FIXED_DT = 1 / 60;
+let simAccum = 0;
+
+interface GullPoseSnap {
+  readonly pos: readonly [number, number, number];
+  readonly rot: readonly [number, number, number, number];
+  readonly alive: boolean;
+  readonly squashAge: number;
+}
+interface WindmillPoseSnap {
+  readonly pos: readonly [number, number, number];
+  readonly rot: readonly [number, number, number, number];
+  readonly bladeLength: number;
+}
+interface SimVisualSnapshot {
+  readonly updates: ReadonlyMap<string, VisualUpdate>;
+  readonly gulls: readonly GullPoseSnap[];
+  readonly windmills: readonly WindmillPoseSnap[];
+}
+
+function nlerpQuat(
+  a: readonly [number, number, number, number],
+  b: readonly [number, number, number, number],
+  t: number
+): readonly [number, number, number, number] {
+  const dot = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+  const sign = dot < 0 ? -1 : 1;
+  const x = a[0] + (b[0] * sign - a[0]) * t;
+  const y = a[1] + (b[1] * sign - a[1]) * t;
+  const z = a[2] + (b[2] * sign - a[2]) * t;
+  const w = a[3] + (b[3] * sign - a[3]) * t;
+  const len = Math.hypot(x, y, z, w) || 1;
+  return [x / len, y / len, z / len, w / len];
+}
+
+function blendVec3(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  t: number
+): readonly [number, number, number] {
+  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+  if (dx * dx + dy * dy + dz * dz > 6.25) return b;
+  return [a[0] + dx * t, a[1] + dy * t, a[2] + dz * t];
+}
+
+function captureSimVisualSnapshot(): SimVisualSnapshot {
+  const updates = new Map<string, VisualUpdate>();
+  for (const u of sim.forEachVisual()) {
+    updates.set(u.id, {
+      id: u.id,
+      position: [u.position[0], u.position[1], u.position[2]],
+      rotation: [u.rotation[0], u.rotation[1], u.rotation[2], u.rotation[3]],
+      visible: u.visible
+    });
+  }
+  const gulls: GullPoseSnap[] = sim.gullList().map((rec) => {
+    const p = rec.alive ? rec.body.position : rec.squashAt;
+    const r = rec.alive ? rec.body.rotation : ([0, 0, 0, 1] as const);
+    return {
+      pos: [p[0], p[1], p[2]],
+      rot: [r[0], r[1], r[2], r[3]],
+      alive: rec.alive,
+      squashAge: rec.squashAge
+    };
+  });
+  const windmills: WindmillPoseSnap[] = sim.windmillList().map((wm) => ({
+    pos: [wm.rotor.position[0], wm.rotor.position[1], wm.rotor.position[2]],
+    rot: [wm.rotor.rotation[0], wm.rotor.rotation[1], wm.rotor.rotation[2], wm.rotor.rotation[3]],
+    bladeLength: wm.bladeLength
+  }));
+  return { updates, gulls, windmills };
+}
+
+const presenter = createFixedStepPresenter<SimVisualSnapshot>({
+  snapshot: captureSimVisualSnapshot,
+  blend: (a, b, t) => {
+    if (t <= 0) return a;
+    if (t >= 1) return b;
+    const updates = new Map<string, VisualUpdate>();
+    for (const [id, ub] of b.updates) {
+      const ua = a.updates.get(id);
+      if (!ua || ua.visible !== ub.visible || !ub.visible) {
+        updates.set(id, ub);
+      } else {
+        updates.set(id, {
+          id,
+          position: blendVec3(ua.position, ub.position, t),
+          rotation: nlerpQuat(ua.rotation, ub.rotation, t),
+          visible: true
+        });
+      }
+    }
+    const gulls: GullPoseSnap[] = b.gulls.map((gb, i) => {
+      const ga = a.gulls[i];
+      if (!ga || ga.alive !== gb.alive) return gb;
+      return {
+        pos: blendVec3(ga.pos, gb.pos, t),
+        rot: nlerpQuat(ga.rot, gb.rot, t),
+        alive: gb.alive,
+        squashAge: gb.squashAge >= 0 && ga.squashAge >= 0 ? ga.squashAge + (gb.squashAge - ga.squashAge) * t : gb.squashAge
+      };
+    });
+    const windmills: WindmillPoseSnap[] = b.windmills.map((wb, i) => {
+      const wa = a.windmills[i];
+      if (!wa) return wb;
+      return {
+        pos: blendVec3(wa.pos, wb.pos, t),
+        rot: nlerpQuat(wa.rot, wb.rot, t),
+        bladeLength: wb.bladeLength
+      };
+    });
+    return { updates, gulls, windmills };
+  }
+});
+
+const flipbooks = new FlipbookBurstController(
+  Array.from({ length: POOL.plumes }, (_, i) => plumeNodeId(i)),
+  Array.from({ length: POOL.blasts }, (_, i) => blastNodeId(i)),
+  (id) => node(id),
+  REDUCED
+);
+const impactRig = createImpactRig({ reducedMotion: REDUCED });
+let lastImpactState = impactRig.step(0);
+let bossToppleTimer = 0;
+let bossToppleAt: [number, number, number] = [7.2, 1.5, 0];
+
 let level = sim.level;
+let activeChapterId = chapter.id;
+let activeLookRow = chapterLook(chapter.id);
 let shotsUsed = 0;
 let levelScore = 0;
 let resultOpen = false;
@@ -302,17 +464,89 @@ function showLevelSign(chapterId: number): void {
   }
 }
 
+/** WP-12: live 6-chapter sky, fog, post, water, limestone strata cliff, and far-horizon set-piece swaps on level change. */
+function syncChapterAtmosphere(chapterId: number): void {
+  if (ORIGINAL_LOOK || chapterId === activeChapterId) return;
+  activeChapterId = chapterId;
+  const row = chapterLook(chapterId);
+  activeLookRow = row;
+  lastBand = null;
+
+  try { app.atmosphere?.setSky(row.sky, { transitionSeconds: 0.45 }); } catch { /* presentation only */ }
+  try {
+    app.atmosphere?.setFog(
+      { color: row.fog.color, near: row.fog.near, far: row.fog.far },
+      { transitionSeconds: 0.45, overrideSceneFog: true }
+    );
+  } catch { /* presentation only */ }
+  try {
+    app.post?.setEffect("bloom", { threshold: row.bloom.threshold, intensity: row.bloom.intensity });
+    app.post?.setEffect("vignette", { intensity: row.vignette });
+    app.post?.setEffect("colorGrade", {
+      contrast: row.grade.contrast,
+      saturation: row.grade.saturation,
+      temperature: row.grade.temperature,
+      tint: row.grade.tint
+    });
+  } catch { /* presentation only */ }
+
+  node("stage-ground")?.setMaterial(islandSurface("turf", row.terrain.turf, 0.78, SURFACES));
+  node("stage-ground-rim")?.setMaterial(islandSurface("wetRock", row.terrain.lip, 0.88, SURFACES));
+  node("stage-far-ground")?.setMaterial(islandSurface("sand", row.terrain.sand, 0.92, SURFACES));
+  node("stage-shallows")?.setMaterial(seaGloss(row.terrain.shallows, row.seaReflection));
+
+  const ocean = node("stage-ocean");
+  const waterUniforms = coastalSeaSpec(row, REDUCED).uniforms ?? {};
+  if (ocean) {
+    for (const [uKey, uEntry] of Object.entries(waterUniforms)) {
+      if (uEntry && typeof uEntry === "object" && "value" in uEntry) {
+        try { ocean.setUniform?.(uKey, uEntry.value as number | readonly number[]); } catch { /* shader uniform */ }
+      }
+    }
+  }
+
+  const cliffs = node(PROP_IDS.cliffs);
+  const isNight = row.chapter === 5;
+  const cliffSpec = dualLimestoneStrataSpec({
+    baseColor: isNight ? [0.16, 0.2, 0.3] : hexToRgb(row.terrain.chalk),
+    bandColor: isNight ? [0.09, 0.12, 0.2] : hexToRgb("#b8ae99"),
+    sunDir: sunDirection(row.sun),
+    sunGain: isNight ? 0.55 : 1.05
+  });
+  if (cliffs && cliffSpec.uniforms) {
+    for (const [uKey, uEntry] of Object.entries(cliffSpec.uniforms)) {
+      if (uEntry && typeof uEntry === "object" && "value" in uEntry) {
+        try { cliffs.setUniform?.(uKey, uEntry.value as number | readonly number[]); } catch { /* shader uniform */ }
+      }
+    }
+  }
+
+  for (const { chapter: onlyChapter, piece } of ALL_FAR_PIECES) {
+    const fh = node(farPieceNodeId(piece.key));
+    if (!fh) continue;
+    const active = onlyChapter === null || onlyChapter === chapterId;
+    if (active) fh.setPosition(piece.position[0], piece.position[1], piece.position[2]).setVisible(true);
+    else fh.setPosition(0, -160, 0).setVisible(false);
+  }
+}
+
 function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   // The Trajectory Range sandbox (id 99) is not a campaign level: levelById would clamp it to level 30.
   level = id === SANDBOX_LEVEL.id ? SANDBOX_LEVEL : levelById(id);
   sim.loadLevel(level);
+  simAccum = 0;
+  presenter.reset();
+  impactRig.reset();
+  bossToppleTimer = 0;
   shotsUsed = 0;
   levelScore = 0;
   resultOpen = false;
   settledSinceEmpty = 0;
   clearedSinceSettle = 0;
   clearRuntimeVfx();
+  syncChapterAtmosphere(level.chapter);
   assignPieceVisuals();
+  flushInstancePools();
   hud.setCoach(showCoach());
   hud.hideResult();
   hud.setPaused(false);
@@ -397,11 +631,18 @@ function updateCamera(dt: number, elapsed: number): void {
   let dtg = spec.tgt;
 
   const proj = sim.activeProjectile();
+  if (bossToppleTimer > 0 && !REDUCED) {
+    bossToppleTimer = Math.max(0, bossToppleTimer - dt);
+  }
   if (camState === "follow" && proj && !proj.dead) {
     const p = proj.body.position;
     const v = proj.body.velocity;
-    dp = [p[0] - Math.max(3, v[0] * 0.18) - 1.5, Math.max(2.0, p[1] + 2.1), p[2] + 8.8];
+    const apexLift = Math.max(0, Math.min(2.2, p[1] * 0.35));
+    dp = [p[0] - Math.max(3, v[0] * 0.18) - 1.5, Math.max(2.1, p[1] + 2.0 + apexLift * 0.25), p[2] + 8.9];
     dtg = [p[0] + v[0] * 0.22, p[1] + 0.3, p[2]];
+  } else if (bossToppleTimer > 0 && camState !== "result") {
+    dp = [bossToppleAt[0] - 3.6, Math.max(2.2, bossToppleAt[1] + 1.8), bossToppleAt[2] + 7.6];
+    dtg = [bossToppleAt[0], bossToppleAt[1] + 0.2, bossToppleAt[2]];
   } else if (camState === "orbit") {
     orbitT += dt * 0.14;
     dp = [-2.5 + Math.sin(orbitT) * 1.6, 4.1 + Math.cos(orbitT * 0.7) * 0.3, 15.3 + Math.cos(orbitT) * 0.9];
@@ -411,18 +652,16 @@ function updateCamera(dt: number, elapsed: number): void {
     dtg = [-0.5, 1.5, 0];
   }
 
-  // Portrait phones: the fixed 55° vertical FOV leaves about 28° across, so fit the
-  // framing width instead (sling-to-fort while aiming, the fort on the result card).
-  // The aim frame fits sling (x -7.4) to fort (x 7.2) on every aspect, so the fort is not a speck on desktop.
+  // Portrait phones (390x844): auto-frame wide enough to keep BOTH launcher (x -7.8) and fortress (x +8.4) comfortably on screen.
   const aspect = (stageEl.clientWidth || 1) / (stageEl.clientHeight || 1);
   if (camState === "aim" || camState === "orbit") {
-    dtg = [-0.1, 1.6, 0];
-    dp = fitHalfWidth([dp[0] + 2.4, dp[1], dp[2]], dtg, 55, aspect, aspect < 1 ? 9.4 : 10.6, true);
+    dtg = [0.2, 1.65, 0];
+    dp = fitHalfWidth([dp[0] + 2.7, dp[1], dp[2]], dtg, 55, aspect, aspect < 1 ? 10.1 : 10.6, true);
   } else if (aspect < 1) {
     if (camState === "result") {
-      dp = fitHalfWidth(dp, dtg, 55, aspect, 3.6);
+      dp = fitHalfWidth(dp, dtg, 55, aspect, 4.0);
     } else {
-      dp = fitHalfWidth(dp, dtg, 50, aspect, 4.6);
+      dp = fitHalfWidth(dp, dtg, 50, aspect, 5.2);
     }
   }
   // Sky-drag orbit offsets (eased home once the drag ends).
@@ -433,13 +672,13 @@ function updateCamera(dt: number, elapsed: number): void {
   }
   if (Math.abs(orbitYaw) > 1e-4 || Math.abs(orbitPitch) > 1e-4) dp = orbitAround(dp, dtg, orbitYaw, orbitPitch);
 
-  const k = cutNext ? 1 : 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
+  const k = cutNext ? 1 : 1 - Math.exp(-dt * (camState === "follow" ? 7 : bossToppleTimer > 0 ? 5.5 : 3.2));
   cutNext = false;
   camPos = [camPos[0] + (dp[0] - camPos[0]) * k, camPos[1] + (dp[1] - camPos[1]) * k, camPos[2] + (dp[2] - camPos[2]) * k];
   camTgt = [camTgt[0] + (dtg[0] - camTgt[0]) * k, camTgt[1] + (dtg[1] - camTgt[1]) * k, camTgt[2] + (dtg[2] - camTgt[2]) * k];
 
   trauma = Math.max(0, trauma - dt * 1.9);
-  const sh = REDUCED ? 0 : trauma * trauma * 0.45;
+  const sh = REDUCED ? 0 : trauma * trauma * 0.35;
   // deterministic shake — hash of the frame counter, no Math.random (repo rule)
   const n = (lane: number): number => {
     let h = Math.imul(frames | 0, 0x27d4eb2d) ^ Math.imul((lane + SEED) | 0, 0x165667b1);
@@ -447,16 +686,17 @@ function updateCamera(dt: number, elapsed: number): void {
     h ^= h >>> 13;
     return (h >>> 0) / 4294967296 - 0.5;
   };
-  // Release punch: pull back along the view ray while the kick decays.
+  // Release punch + ImpactRig real-dt shake & FOV kick.
   kick = Math.max(0, kick - dt * 2.8);
   const kk = kick * kick;
   const vx = camPos[0] - camTgt[0], vy = camPos[1] - camTgt[1], vz = camPos[2] - camTgt[2];
   const vl = Math.hypot(vx, vy, vz) || 1;
   const pb = (KICK.punch * kk) / vl;
-  const px = camPos[0] + n(0) * sh + vx * pb;
-  const py = camPos[1] + n(1) * sh + vy * pb;
-  const pz = camPos[2] + n(2) * sh + vz * pb;
-  const fov = (camState === "follow" ? 50 : 55) + KICK.fovDeg * kk;
+  const rigShake = lastImpactState.shakeOffset;
+  const px = camPos[0] + n(0) * sh + rigShake[0] + vx * pb;
+  const py = camPos[1] + n(1) * sh + rigShake[1] + vy * pb;
+  const pz = camPos[2] + n(2) * sh + rigShake[2] + vz * pb;
+  const fov = (camState === "follow" ? 50 : 55) + KICK.fovDeg * kk + lastImpactState.fovDeltaDeg;
 
   app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
   /*
@@ -469,6 +709,7 @@ function updateCamera(dt: number, elapsed: number): void {
   cam.position = [px, py, pz];
   cam.target = camTgt;
   cam.fov = fov;
+  flipbooks.step(dt, [px, py, pz]);
   void elapsed;
 }
 

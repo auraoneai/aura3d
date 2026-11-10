@@ -9,6 +9,7 @@
  * `?look=gu47` the GU47 look; the combat, camera and HUD are identical on both paths.
  */
 import { material, primitives, type AuraSceneNode } from "@aura3d/engine";
+import { floorDetailFields } from "./surfaces";
 import type { StageId, StagePalette } from "./stages";
 
 export type VenueLookMode = "gu47" | "original";
@@ -76,12 +77,13 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
       primitives
         .box({
           name: `${id}-stone-plank-${idx}`,
-          material: material.pbr({
+          material: material.physical({
             color: even ? palette.floor : palette.skyline,
-            roughness: even ? 0.34 : 0.46,
-            metallic: even ? 0.36 : 0.24,
-            clearcoat: even ? 0.18 : 0.08,
-            clearcoatRoughness: 0.42
+            roughness: even ? 0.28 : 0.38,
+            metallic: even ? 0.32 : 0.22,
+            clearcoat: even ? 0.34 : 0.18,
+            clearcoatRoughness: 0.22,
+            ...floorDetailFields(id)
           })
         })
         .position(0, -0.036, z)

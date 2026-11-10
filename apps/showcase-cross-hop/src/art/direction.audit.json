@@ -166,13 +166,17 @@
       },
       {
         "node": "lane-glow",
-        "emissiveIntensity": 0.85,
+        "emissiveIntensity": 1.05,
         "practical": true
       },
       {
         "node": "scenery-glow",
-        "emissiveIntensity": 0.85,
+        "emissiveIntensity": 1.05,
         "practical": true
+      },
+      {
+        "node": "horizon-ridge",
+        "practical": false
       },
       {
         "node": "m-logs",

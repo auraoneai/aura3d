@@ -3,7 +3,7 @@
  * (the generated module extracted from tests/fixtures/aura-slam-original/adapter/main.ts) and once by the native port; both frames are
  * captured through the same app, camera and lights and compared pixel by pixel. Remote runs only.
  */
-import { camera, createAuraApp, effects, game, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, createAuraApp, effects, environments, game, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { createOriginalRig } from "../__generated__/originalRig.js";
 import { buildAthleteNodes, resolveAthleteRig, updateAthleteRig, type AthleteAppearance, type AthleteRigHandles } from "../athleteRig";
 import { pose, type PoseActor, type PoseMatchState } from "../pose";
@@ -59,7 +59,7 @@ async function boot(): Promise<void> {
   const s = scene()
     .background("#0d2230")
     .camera(camera.perspective({ fov: 32, near: 0.1, far: 80, position: [2.2, 1.7, 4.2], target: [0, 0.95, 0] }))
-    .add(lights.ambient({ color: "#dce8f2", intensity: 0.62 }))
+    .add(environments.neutral({ intensity: 0.62 }))
     .add(lights.hemisphere({ skyColor: "#eef6ff", groundColor: "#4d6358", intensity: 0.72 }))
     .add(lights.directional({ color: "#fff6e5", intensity: 1.95, position: [14, 24, 12], shadow: !noShadow }))
     .add(effects.bloom({ intensity: 0.14, threshold: 0.86, radius: 0.45 }))

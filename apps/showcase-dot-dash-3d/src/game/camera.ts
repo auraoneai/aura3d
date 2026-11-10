@@ -80,3 +80,30 @@ export function fitDistanceScale(base: CameraPose, aspect: number, margin = 0.96
   }
   return hi;
 }
+
+/**
+ * Portrait-aware gameplay framing (WP-13): on narrow phones (`aspect < 0.82`, e.g. 390x844), pitch the camera slightly
+ * more overhead and fit with a crisp 0.985 horizontal margin (no extra bench pull-back) so all 19x21 maze tiles fill
+ * maximum vertical play area between the top HUD chips and bottom touch controls without clipping any wall corner.
+ */
+export function fitPlayRig(base: CameraPose, aspect: number, framePullBack = 1.06): { readonly pose: CameraPose; readonly pullBack: number } {
+  if (!(aspect > 0) || !Number.isFinite(aspect)) return { pose: base, pullBack: 1 };
+  if (aspect >= 0.82) {
+    const k = fitDistanceScale(base, aspect, 0.96) * framePullBack;
+    return { pose: scalePose(base, k), pullBack: k };
+  }
+  const portraitBlend = Math.min(1, Math.max(0, (0.82 - aspect) / 0.36));
+  const portraitBase: CameraPose = {
+    position: [
+      base.position[0],
+      base.position[1] + 2.4 * portraitBlend,
+      base.position[2] - 4.4 * portraitBlend
+    ],
+    target: [base.target[0], base.target[1], base.target[2] + 0.35 * portraitBlend],
+    fov: base.fov - 2 * portraitBlend
+  };
+  const margin = 0.96 + 0.024 * portraitBlend;
+  const pull = 1 + (framePullBack - 1) * (1 - portraitBlend);
+  const k = fitDistanceScale(portraitBase, aspect, margin) * pull;
+  return { pose: scalePose(portraitBase, k), pullBack: k };
+}

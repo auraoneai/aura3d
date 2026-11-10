@@ -4,6 +4,7 @@ import {
   game,
   gameFeel,
   games,
+  type AuraOutputOptions,
   type AuraRuntimeNodeHandle,
   type AuraVec3,
   type GameCombatWorldSnapshot,
@@ -13,7 +14,9 @@ import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, parseLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { assets } from "./aura-assets";
 import {
   createCpuBrain,
@@ -70,13 +73,14 @@ import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
-import { buildArenaScene, venueVignette } from "./game/arena";
+import { buildArenaScene, FLIPBOOK_VFX_IDS, SLASH_ARC_IDS, SPAWN_RING_IDS, venueVignette } from "./game/arena";
 import { ringPhotometricProfile } from "./game/ringPhotometry";
 import {
   cinematicPost,
   cinematicShot,
   createCinematicClock,
   FIGHT_LENS,
+  fightCameraFrame,
   hudSlamFor,
   letterboxWanted,
   type CinematicPost,
@@ -278,6 +282,7 @@ function buildArena(cfg: BoutConfig) {
     lowTier,
     // GU47 blind-panel pass: the venues the panel did not judge better default to their 4.6.2 look (`?look=` overrides).
     lookMode: venueLookMode(cfg.stage.id, params),
+    liveFlipbooks: true,
     ...(iesLab ? { ringPhotometry: ringPhotometricProfile(10.5) } : {})
   });
 }
@@ -294,6 +299,8 @@ const initialConfig: BoutConfig = {
 /* createGame mount                                                  */
 /* ================================================================ */
 
+const cinemaWarmLut = createGradingLut("cinema-warm");
+
 const fightingGame = createGame({
   id: "showcase-iron-crown",
   target: "#app",
@@ -302,7 +309,13 @@ const fightingGame = createGame({
   onAssetProgress: (event) => assetLoadProgress?.(event.loaded, event.total),
   // A5 lab: IES profiles need the opt-in renderer flag; scalar spots remain the fallback.
   ...(labRenderer || iesLab ? { renderer: { ...(labRenderer ?? {}), ...(iesLab ? { photometricProfiles: true } : {}) } } : {}),
-  ...(labOutput ? { output: labOutput } : {}),
+  output: {
+    toneMapping: "agx",
+    exposure: 1.06,
+    dither: true,
+    lut: { ...cinemaWarmLut, intensity: 0.24 },
+    ...(labOutput ?? {})
+  } as AuraOutputOptions,
   ...(labWorker ? { worker: labWorker } : {}),
   input: inputOptions,
   loop: { fixedDt: 1 / 60 },
@@ -402,6 +415,109 @@ window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
 const combat = game.combatWorld();
 const runtimeEffects = game.effects({ poolSize: 80, reducedMotion, reducedFlash });
 const director = game.cameraDirector({ reducedMotion });
+const impactRig = createImpactRig({ reducedMotion });
+let impactFrame = impactRig.step(0);
+
+interface TimedWorldVfx {
+  timer: number;
+  duration: number;
+  at: [number, number, number];
+  yaw: number;
+  tilt: number;
+  scale: number;
+}
+const activeSlashArcs: Record<"p1" | "p2" | "parry", TimedWorldVfx> = {
+  p1: { timer: 0, duration: 0.16, at: [0, -40, 0], yaw: 0, tilt: 0, scale: 1 },
+  p2: { timer: 0, duration: 0.16, at: [0, -40, 0], yaw: 0, tilt: 0, scale: 1 },
+  parry: { timer: 0, duration: 0.18, at: [0, -40, 0], yaw: 0, tilt: 0, scale: 1 }
+};
+const activeFlipbooks = {
+  sparks: { timer: 0, duration: 0.24, at: [0, -40, 0] as [number, number, number] },
+  dust: { timer: 0, duration: 0.26, at: [0, -40, 0] as [number, number, number] }
+};
+const fighterFlashTimer: Record<"player" | "rival", { timer: number; color: string; peak: number }> = {
+  player: { timer: 0, color: "#ffd76a", peak: 0 },
+  rival: { timer: 0, color: "#ffd76a", peak: 0 }
+};
+let spawnRingsParked: boolean | null = null;
+
+function triggerSlashArc(slot: "p1" | "p2" | "parry", at: readonly number[], facing: 1 | -1, scale = 1.25, tilt = 0.28, duration = 0.16): void {
+  if (reducedFlash) return;
+  activeSlashArcs[slot] = {
+    timer: duration,
+    duration,
+    at: [(at[0] ?? 0) + facing * 0.45, at[1] ?? 1.05, (at[2] ?? 0) + 0.18],
+    yaw: facing > 0 ? 0 : Math.PI,
+    tilt,
+    scale
+  };
+}
+
+function triggerFlipbook(slot: "sparks" | "dust", at: readonly number[], duration = 0.24): void {
+  if (!vfxLive || (slot === "sparks" && reducedFlash)) return;
+  activeFlipbooks[slot] = {
+    timer: duration,
+    duration,
+    at: [at[0] ?? 0, at[1] ?? 0.9, (at[2] ?? 0) + 0.14]
+  };
+}
+
+function triggerFighterFlash(id: "player" | "rival", color: string, peak = 0.85, duration = 0.11): void {
+  if (reducedFlash) return;
+  fighterFlashTimer[id] = { timer: duration, color, peak };
+}
+
+function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): void {
+  if (spawnRingsParked !== hideSpawnRings) {
+    spawnRingsParked = hideSpawnRings;
+    for (const id of SPAWN_RING_IDS) {
+      const handle = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
+      if (!handle) continue;
+      const isP1 = id.startsWith("player-");
+      const x = isP1 ? PLAYER_START[0] : RIVAL_START[0];
+      const y = hideSpawnRings ? -24 : id.endsWith("-outer") ? 0.012 : 0.016;
+      handle.setPosition(x, y, 0.02);
+    }
+  }
+
+  for (const slot of ["p1", "p2", "parry"] as const) {
+    const entry = activeSlashArcs[slot];
+    const handle = app.nodes.get(SLASH_ARC_IDS[slot]) as AuraRuntimeNodeHandle | undefined;
+    if (!handle) continue;
+    if (entry.timer > 0) {
+      entry.timer = Math.max(0, entry.timer - realDt);
+      const progress = 1 - entry.timer / Math.max(0.01, entry.duration);
+      const grow = entry.scale * (0.82 + 0.36 * progress);
+      handle.setPosition(entry.at[0], entry.timer > 0 ? entry.at[1] : -40, entry.at[2]);
+      handle.setRotation(entry.tilt, entry.yaw, (progress - 0.5) * 0.85);
+      handle.setScale([grow, grow, 1]);
+    }
+  }
+
+  for (const slot of ["sparks", "dust"] as const) {
+    const entry = activeFlipbooks[slot];
+    const handle = app.nodes.get(FLIPBOOK_VFX_IDS[slot]) as (AuraRuntimeNodeHandle & { setUniform?(name: string, value: number): void }) | undefined;
+    if (!handle) continue;
+    if (entry.timer > 0) {
+      entry.timer = Math.max(0, entry.timer - realDt);
+      const progress = 1 - entry.timer / Math.max(0.01, entry.duration);
+      const baseScale = slot === "sparks" ? 0.95 : 1.15;
+      const s = baseScale * (0.78 + 0.45 * progress);
+      handle.setPosition(entry.at[0], entry.timer > 0 ? entry.at[1] : -40, entry.at[2]);
+      handle.setScale([s, s, 1]);
+      handle.setUniform?.("progress", progress);
+    }
+  }
+
+  for (const id of ["player", "rival"] as const) {
+    const flash = fighterFlashTimer[id];
+    if (flash.timer <= 0) continue;
+    flash.timer = Math.max(0, flash.timer - realDt);
+    const handle = app.nodes.get(id) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
+    const intensity = flash.timer > 0 ? flash.peak * (flash.timer / 0.12) : 0;
+    handle?.materials?.setEmissive("*", flash.color, intensity);
+  }
+}
 
 const baseFightingRig = camera.rigs.fighting({
   fighters: ["player", "rival"],
@@ -471,22 +587,43 @@ app.camera?.use({
       applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, venueVignette(state.config.stage.id, venueLookMode(state.config.stage.id, params)), reducedMotion));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }
-    const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
-    const target: [number, number, number] = [pose.target[0], pose.target[1] + FIGHT_LENS.aim, pose.target[2]];
-    // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
-    // frame. Pull the camera back along its view line until both fighters plus a margin fit the horizontal FOV.
     const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    const p1Pos: AuraVec3 = P1 ? [P1.body.position[0], P1.body.position[1], P1.body.position[2]] : [-2.2, 0, 0];
+    const p2Pos: AuraVec3 = CPU ? [CPU.body.position[0], CPU.body.position[1], CPU.body.position[2]] : [2.2, 0, 0];
+    const framed = fightCameraFrame({
+      baseEye: [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.12],
+      baseTarget: [pose.target[0], pose.target[1], pose.target[2]],
+      p1: p1Pos,
+      p2: p2Pos,
+      aspect,
+      fovKickDeg: impactFrame.fovDeltaDeg
+    });
+    const position: [number, number, number] = [
+      framed.position[0] + impactFrame.shakeOffset[0],
+      framed.position[1] + impactFrame.shakeOffset[1],
+      framed.position[2] + impactFrame.shakeOffset[2]
+    ];
+    const target: [number, number, number] = [
+      framed.target[0] + impactFrame.shakeOffset[0] * 0.35,
+      framed.target[1] + impactFrame.shakeOffset[1] * 0.35,
+      framed.target[2]
+    ];
     if (aspect < 1.2 && P1 && CPU) {
-      const halfWidth = Math.abs(CPU.body.position[0] - P1.body.position[0]) / 2 + 0.9;
-      const need = halfWidth / (Math.tan(((pose.fov ?? 40) * Math.PI) / 360) * aspect);
+      const halfWidth = Math.abs(CPU.body.position[0] - P1.body.position[0]) / 2 + 1.05;
+      const need = halfWidth / (Math.tan((framed.fov * Math.PI) / 360) * aspect);
       const off = [position[0] - target[0], position[1] - target[1], position[2] - target[2]];
       const dist = Math.hypot(off[0]!, off[1]!, off[2]!);
       if (dist > 0 && need > dist) {
         const k = Math.min(need, 16) / dist;
-        return { ...pose, position: [target[0] + off[0]! * k, target[1] + off[1]! * k, target[2] + off[2]! * k], target };
+        return {
+          ...pose,
+          position: [target[0] + off[0]! * k, target[1] + off[1]! * k, target[2] + off[2]! * k],
+          target,
+          fov: framed.fov
+        };
       }
     }
-    return { ...pose, position, target };
+    return { ...pose, position, target, fov: framed.fov };
   }
 });
 const feel = gameFeel.create({ app, time: app.time });
@@ -740,6 +877,8 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
     releaseAirstripHaze = app.addPostPass?.(airstripHazePass());
   }
   resetStageLights();
+  spawnRingsParked = null;
+  impactRig.reset();
   // IC47-V3: a re-bout on the mounted scene parks the last bout's scorch again.
   (app.nodes.get(KO_SCORCH_ID) as AuraRuntimeNodeHandle | undefined)?.setPosition(SCORCH_PARKED[0], SCORCH_PARKED[1], SCORCH_PARKED[2]);
   P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
@@ -757,6 +896,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   bindAnimations();
   syncNodes();
   hud.setNames(config.p1.name, config.cpu.name);
+  hud.setPortraits(config.p1.id, config.cpu.id);
   hud.setPips(0, 0);
   hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
   hud.setStageButtons(config.stage.id);
@@ -1047,6 +1187,10 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
   // Damage is scaled by the target's defense before the engine applies it (audit IC-03).
   combat.beginAttack(f.nodeId, moveAgainst(kind, f.def, foe.def));
   startAttackLayer(f, kind);
+  if (kind === "heavy" || kind === "special") {
+    const face = facingTo(f, foe);
+    triggerSlashArc(f.side === "p1" ? "p1" : "p2", [f.body.position[0], f.body.position[1] + 1.05, 0], face, kind === "special" ? 1.65 : 1.28, kind === "special" ? 0.14 : -0.24, kind === "special" ? 0.22 : 0.16);
+  }
   f.attack = { kind, connected: false };
   const holdDuration = kind === "special" ? 0.85 : kind === "heavy" || kind === "throw" ? 0.62 : 0.52;
   f.attackAnim = { kind, timer: holdDuration };
@@ -1170,6 +1314,7 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
 
   if (!ko && !stunned && !busy && !f.guardIntent && !f.crouching && intent.jump && f.body.grounded) {
     f.body.jump();
+    triggerFlipbook("dust", [f.body.position[0], 0.24, 0], 0.24);
   }
 
   const dashingTowardFoe = intent.dash * foeDir > 0;
@@ -1177,6 +1322,7 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
     f.dashT = 0.34;
     f.body.dash([intent.dash, 0, 0], f.def.stats.dashSpeed);
     runtimeEffects.dashTrail([f.body.position[0], f.body.position[1] + 0.7, 0], { ownerId: f.nodeId, intensity: 0.5 });
+    triggerFlipbook("dust", [f.body.position[0], 0.28, 0], 0.26);
     fightingGame.juice.fire("dash");
     void fightingGame.sound?.cue("dash");
   }
@@ -1213,12 +1359,22 @@ function handleEvents(): void {
       const inHitstun = stunBeforeUpdate[tKey] > 1 && lastStunFromHit[tKey];
       lastStunFromHit[tKey] = true;
       if (attacker.attack) attacker.attack.connected = true;
+      const isSpecialHit = Boolean(ev.moveId?.includes("special"));
+      const isHeavyHit = Boolean(ev.moveId?.includes("heavy") || ev.moveId?.includes("throw"));
       runtimeEffects.hitSpark(ev.position, { ownerId: ev.attackerId, intensity: 1.05 });
       fxBurst("ic-forge-spark", ev.position);
+      triggerFlipbook("sparks", ev.position, isSpecialHit ? 0.3 : 0.22);
+      triggerSlashArc(attacker.side === "p1" ? "p1" : "p2", ev.position, facingTo(attacker, target), isSpecialHit ? 1.7 : isHeavyHit ? 1.38 : 1.05, isHeavyHit ? -0.32 : 0.18, isSpecialHit ? 0.22 : 0.15);
+      triggerFighterFlash(target.nodeId, isSpecialHit ? "#ffe08a" : "#ffb36b", isSpecialHit ? 1.15 : isHeavyHit ? 0.92 : 0.65);
+      impactRig.trigger({
+        freezeSeconds: isSpecialHit ? 0.088 : isHeavyHit ? 0.092 : 0.046,
+        trauma: isSpecialHit ? 0.56 : isHeavyHit ? 0.46 : 0.22,
+        fovKickDeg: isSpecialHit ? 2.4 : isHeavyHit ? 1.7 : 0.7
+      });
       director.impact(0.42, 0.16);
       fightingGame.juice.fire("hit");
       void fightingGame.sound?.cue(hitCueFor(ev.moveId));
-      app.feel?.emit(ev.moveId?.includes("special") ? "hit-special" : ev.moveId?.includes("heavy") ? "hit-heavy" : "hit-light", { strength: 0.6 });
+      app.feel?.emit(isSpecialHit ? "hit-special" : isHeavyHit ? "hit-heavy" : "hit-light", { strength: 0.6 });
       if (ev.knockback) {
         target.body.applyKnockback([ev.knockback[0] * 3.0, Math.abs(ev.knockback[1]) * 2.4, 0]);
       }
@@ -1239,6 +1395,10 @@ function handleEvents(): void {
       lastStunFromHit[target.nodeId] = false;
       runtimeEffects.blockSpark(ev.position, { ownerId: ev.attackerId, intensity: 0.7 });
       fxBurst("ic-guard-ember", ev.position);
+      triggerFlipbook("sparks", ev.position, 0.22);
+      triggerSlashArc("parry", ev.position, facingTo(target, attacker), 1.32, 0.05, 0.18);
+      triggerFighterFlash(target.nodeId, "#6ee7ff", 0.78, 0.1);
+      impactRig.trigger({ freezeSeconds: 0.056, trauma: 0.28, fovKickDeg: -0.9 });
       director.impact(0.16, 0.12);
       fightingGame.juice.fire("blocked");
       void fightingGame.sound?.cue("blocked");
@@ -1272,9 +1432,13 @@ function onKnockout(winner: "p1" | "cpu"): void {
   hud.announce("K.O.", "", "hold");
   void fightingGame.sound?.cue("ko");
   void fightingGame.sound?.cue("ko-voice");
+  impactRig.trigger({ freezeSeconds: 0.135, trauma: 0.78, fovKickDeg: 3.1 });
   director.impact(0.7, 0.5);
   runtimeEffects.impactFlash([0, 1.2, -0.4], { intensity: 1.1, color: "#ffd76a" });
   const loser = winner === "p1" ? CPU : P1;
+  triggerFlipbook("sparks", [loser.body.position[0], loser.body.position[1] + 1.0, 0], 0.34);
+  triggerFlipbook("dust", [loser.body.position[0], 0.28, 0], 0.36);
+  triggerFighterFlash(loser.nodeId, "#ff6b4a", 1.25, 0.2);
   fxBurst("ic-ko-shower", [loser.body.position[0], loser.body.position[1] + 1.0, 0]);
   // IC47-V3: the scorch lands under the loser and stays for the rest of the scene.
   const scorch = scorchAt(loser.body.position);
@@ -1776,8 +1940,9 @@ app.onFrame(({ dt }) => {
     }
   }
 
-  // KO slow motion runs through fightingGame.session.slowMo only (audit IC-08), so dt already carries it.
-  const simDt = dt;
+  // Real-time hit-stop + trauma shake + FOV kick (`createImpactRig` advances strictly on real frame `dt`).
+  impactFrame = impactRig.step(dt);
+  const simDt = impactFrame.simDt;
 
   // input trail (throttled DOM writes): read only the events recorded since the last frame.
   const recorded = input.recorded();
@@ -1907,6 +2072,7 @@ app.onFrame(({ dt }) => {
   updateAttackLayer(P1, simDt);
   updateAttackLayer(CPU, simDt);
   syncNodes();
+  updateCombatVisualOverlays(dt, s.phase === "fight" || s.phase === "ko" || s.phase === "boutEnd");
   updateStageLights(dt);
 
   for (const side of ["p1", "cpu"] as const) {

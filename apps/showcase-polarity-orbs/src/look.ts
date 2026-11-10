@@ -3,7 +3,9 @@
  * when the player flips polarity. Sky gradients blend between a warm dusk and a cool dusk; the signature effects are
  * the flip shockwave ring and the magnet attraction streams.
  */
-import { hexToLinear, sunDirection, type Rgb, type SkyStop, type CustomSpec } from "../../../examples/shared/runner-kit/index";
+import { hexToLinear, sunDirection, type Rgb } from "../../../examples/shared/runner-kit/look-utils";
+import type { CustomSpec, SkyStop } from "../../../examples/shared/runner-kit/shaders";
+import { WGSL_CLIP, wgslStage } from "../../../examples/shared/runner-kit/shaders-wgsl";
 
 export interface PolarityLook {
   readonly id: "polarity-orbs";
@@ -31,40 +33,40 @@ export interface PolarityLook {
 
 export const LOOK: PolarityLook = {
   id: "polarity-orbs",
-  red: "#ff5a4e",
-  blue: "#4ea8ff",
+  red: "#ff5468",
+  blue: "#38bdf8",
   gold: "#ffd24e",
   mint: "#7ef0c8",
   purple: "#c79bff",
-  ink: "#fff4ec",
-  paper: "#241226",
-  deckWarm: "#63303a",
-  deckWarmDim: "#3a2030",
-  deckCool: "#2f4a6e",
-  deckCoolDim: "#232c44",
-  railWarm: "#c06a72",
-  railCool: "#6a8ac0",
-  dash: "#ffe8d8",
+  ink: "#f6f7ff",
+  paper: "#121324",
+  deckWarm: "#4c2234",
+  deckWarmDim: "#24162a",
+  deckCool: "#1d3d5e",
+  deckCoolDim: "#152038",
+  railWarm: "#e85d75",
+  railCool: "#48b6f6",
+  dash: "#eef4ff",
   skyWarm: [
-    { t: 0, hex: "#160a26" },
-    { t: 0.28, hex: "#3e1646" },
-    { t: 0.42, hex: "#9a3a5c" },
-    { t: 0.49, hex: "#ff9a6e" },
-    { t: 0.53, hex: "#e07a70" },
-    { t: 1, hex: "#5a2446" }
+    { t: 0, hex: "#090a1a" },
+    { t: 0.28, hex: "#1f1235" },
+    { t: 0.42, hex: "#6e2246" },
+    { t: 0.49, hex: "#ff7a68" },
+    { t: 0.53, hex: "#c84b68" },
+    { t: 1, hex: "#28142e" }
   ],
   skyCool: [
-    { t: 0, hex: "#060b22" },
-    { t: 0.28, hex: "#142a62" },
-    { t: 0.42, hex: "#3a6ab8" },
-    { t: 0.49, hex: "#a6d4ff" },
-    { t: 0.53, hex: "#7aa0d8" },
-    { t: 1, hex: "#22346a" }
+    { t: 0, hex: "#060918" },
+    { t: 0.28, hex: "#0f2148" },
+    { t: 0.42, hex: "#1e5898" },
+    { t: 0.49, hex: "#7cd8ff" },
+    { t: 0.53, hex: "#4a8cd4" },
+    { t: 1, hex: "#122248" }
   ],
   sun: sunDirection(32, -24),
-  shockwave: { seconds: 0.45, maxRadius: 6, alpha: 0.7 },
-  magnet: { streams: 12, color: "#c79bff", alpha: 0.5 },
-  background: "#241226"
+  shockwave: { seconds: 0.48, maxRadius: 6.4, alpha: 0.82 },
+  magnet: { streams: 12, color: "#c79bff", alpha: 0.78 },
+  background: "#121324"
 };
 
 /** Linear-RGB palette for batches and uniforms. */
@@ -129,8 +131,45 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+const wgslStopVec = (stop: SkyStop): string => {
+  const [r, g, b] = hexToLinear(stop.hex);
+  return `vec3<f32>(${r.toFixed(5)}, ${g.toFixed(5)}, ${b.toFixed(5)})`;
+};
+
+const wgslGradientExpr = (stops: readonly SkyStop[], name: string): string => {
+  const sorted = [...stops].sort((a, b) => a.t - b.t);
+  const lines = [`var ${name} = ${wgslStopVec(sorted[0] as SkyStop)};`];
+  for (let i = 1; i < sorted.length; i++) {
+    const a = sorted[i - 1] as SkyStop, b = sorted[i] as SkyStop;
+    lines.push(`${name} = mix(${name}, ${wgslStopVec(b)}, smoothstep(${a.t.toFixed(4)}, ${b.t.toFixed(4)}, t));`);
+  }
+  return lines.join("\n  ");
+};
+
+const SKY_BLEND_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SkyBlendOut {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vWorld: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>) -> SkyBlendOut {
+  var out: SkyBlendOut;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+const SKY_BLEND_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let y = normalize(vWorld - aura.u_cameraPosition).y;
+  let t = clamp(0.5 - y * 0.5, 0.0, 1.0);
+  ${wgslGradientExpr(LOOK.skyWarm, "warm")}
+  ${wgslGradientExpr(LOOK.skyCool, "cool")}
+  return vec4<f32>(mix(warm, cool, aura.u_uMix), 1.0);
+}`);
+
 export const skyBlendSpec = (): CustomSpec => ({
   glsl: { vertex: SKY_BLEND_VERTEX, fragment: SKY_BLEND_FRAGMENT },
+  wgsl: { vertex: SKY_BLEND_VERTEX_WGSL, fragment: SKY_BLEND_FRAGMENT_WGSL },
   uniforms: { uMix: { type: "f32", value: 0 } },
   side: "double",
   depthWrite: false

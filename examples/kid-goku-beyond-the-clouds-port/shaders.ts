@@ -1,7 +1,7 @@
 /**
- * GLSL 300 es for the Cloud Runner's custom materials: the sky dome (gradient, sun, lit cumulus, cirrus, hazy ridge
- * layers), the valley floor far below, running water, the star orbs, pooled glow points and particles. Written from
- * scratch for this port. Built-ins used: `position`, `normal`, `uv`, `modelMatrix`, `modelViewMatrix`,
+ * GLSL 300 es for Cumulus Dash custom materials: the sky dome (gradient, sun, lit cumulus, cirrus, hazy ridge
+ * layers), the valley floor far below, running water, sky pearls, cumulus subsurface banks, pooled glow points and particles.
+ * Built-ins used: `position`, `normal`, `uv`, `modelMatrix`, `modelViewMatrix`,
  * `projectionMatrix`, `modelViewProjectionMatrix`, `cameraPosition`.
  */
 const NOISE = `
@@ -169,17 +169,24 @@ ${NOISE}
 void main() {
   vec2 c = vUv * 2.0 - 1.0;
   float r = length(c);
-  float edge = smoothstep(1.0, 0.72, r + (vn(vUv * 9.0) - 0.5) * 0.18);
+  float edgeNoise = (vn(vUv * 9.0) - 0.5) * 0.18 + (vn(vUv * 21.0 + 3.1) - 0.5) * 0.07;
+  float edge = smoothstep(1.0, 0.68, r + edgeNoise);
+  float dampRim = smoothstep(1.04, 0.86, r + edgeNoise) * (1.0 - smoothstep(0.84, 0.62, r + edgeNoise));
   vec3 v = normalize(cameraPosition - vW);
-  vec2 rip = vec2(vn(vW.xz * 3.1 + tClock * 0.6), vn(vW.zx * 2.7 - tClock * 0.5)) - 0.5;
-  vec3 n = normalize(vec3(rip.x * 0.08, 1.0, rip.y * 0.08));
+  vec2 rip1 = vec2(vn(vW.xz * 3.1 + tClock * 0.6), vn(vW.zx * 2.7 - tClock * 0.5)) - 0.5;
+  vec2 rip2 = vec2(vn(vW.xz * 7.4 - tClock * 0.9), vn(vW.zx * 6.8 + tClock * 0.75)) - 0.5;
+  vec2 rip = rip1 * 0.72 + rip2 * 0.28;
+  vec3 n = normalize(vec3(rip.x * 0.075, 1.0, rip.y * 0.075));
   vec3 rf = reflect(-v, n);
-  float fres = 0.25 + 0.75 * pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
-  vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, 0.6, rf.y));
-  vec3 col = sky * 0.9 + vec3(1.0, 0.92, 0.78) * pow(max(dot(rf, sunDir), 0.0), 220.0) * 3.0;
+  float fres = 0.28 + 0.72 * pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
+  float cloudMirror = smoothstep(0.54, 0.78, fbm(rf.xz / (max(rf.y, 0.0) + 0.22) * 1.4 + vec2(tClock * 0.01, 0.0)));
+  vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, 0.62, rf.y));
+  sky = mix(sky, mix(skyHorizon, vec3(0.96, 0.97, 1.0), 0.7), cloudMirror * 0.55);
+  vec3 col = sky * 0.92 + vec3(1.0, 0.92, 0.78) * pow(max(dot(rf, sunDir), 0.0), 210.0) * 2.6;
+  col = mix(col, vec3(0.24, 0.17, 0.12), dampRim * 0.42);
   float dist = length(vW - cameraPosition);
   col = mix(col, hazeColor, clamp(1.0 - exp(-pow(dist * fogDensity, 2.0)), 0.0, 1.0));
-  outColor = vec4(col, edge * mix(0.45, 0.92, fres));
+  outColor = vec4(col, max(edge * mix(0.48, 0.93, fres), dampRim * 0.32));
 }`;
 
 export const VALLEY_VERTEX = /* glsl */ `
@@ -198,10 +205,21 @@ void main() {
   vec2 p = vW.xz * 0.012;
   float n = fbm(p);
   float m = fbm(p * 3.1 + 7.0);
-  vec3 canopy = mix(vec3(0.16, 0.34, 0.14), vec3(0.34, 0.5, 0.2), n);
-  canopy = mix(canopy, vec3(0.5, 0.52, 0.3), smoothstep(0.6, 0.8, m) * 0.5);
-  float cloudShadow = smoothstep(0.55, 0.75, fbm(p * 0.45 + vec2(cloudPhase * 0.01, 0.0)));
-  canopy *= 1.0 - 0.28 * cloudShadow;
+  float ridgeNoise = fbm(p * 1.75 - 4.2);
+  vec3 deepPine = vec3(0.11, 0.25, 0.13);
+  vec3 sunlitMeadow = vec3(0.35, 0.5, 0.22);
+  vec3 sandstoneTalus = vec3(0.48, 0.37, 0.25);
+  vec3 canopy = mix(deepPine, sunlitMeadow, smoothstep(0.28, 0.76, n));
+  canopy = mix(canopy, sandstoneTalus, smoothstep(0.62, 0.84, m) * 0.45);
+  /* winding valley river glinting through the alpine basin */
+  float riverMeander = abs(fract(p.x * 0.32 + sin(p.y * 1.4) * 0.22 + ridgeNoise * 0.18) - 0.5);
+  float riverMask = smoothstep(0.022, 0.006, riverMeander);
+  canopy = mix(canopy, mix(vec3(0.24, 0.48, 0.62), hazeColor * 1.08, 0.45), riverMask * 0.78);
+  /* drifting valley mist ribbons + cloud shadows */
+  float mist = smoothstep(0.56, 0.82, fbm(p * 0.85 + vec2(cloudPhase * 0.014, -cloudPhase * 0.006)));
+  float cloudShadow = smoothstep(0.52, 0.74, fbm(p * 0.45 + vec2(cloudPhase * 0.01, 0.0)));
+  canopy *= 1.0 - 0.32 * cloudShadow;
+  canopy = mix(canopy, mix(hazeColor, vec3(0.9, 0.94, 0.98), 0.35), mist * 0.38);
   float dist = length(vW - cameraPosition);
   float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
   outColor = vec4(mix(canopy, hazeColor, clamp(f, 0.0, 1.0)), 1.0);
@@ -463,19 +481,73 @@ void main() {
   float sunVis = a3dSunShadow(vW, n, sunDirW);
   lit *= mix(shadowFloor, 1.0, sunVis);
   vec3 hemi = mix(groundFill, skyFill, n.y * 0.5 + 0.5);
-  /* GU47 phase 4: the storm sky's image-based light (spruit_sunrise) as diffuse fill and a Fresnel sky sheen, so rock,
-     bark and moss answer the sky instead of reading as flat vertex colour */
-  vec3 col = albedo * (sunColor * lit * sunStrength + hemi + a3dEnvDiffuse(n) * iblDiffuse);
+  /* GU47 phase 4: the storm sky's image-based light (spruit_sunrise) as diffuse fill and a Fresnel sky sheen, plus crisp
+     cel-rimmed backlit cliff/foliage separation so rock, bark and moss answer the sky with depth */
+  float celStep = smoothstep(0.18, 0.52, lit);
+  float shapedLit = mix(lit, 0.24 + 0.76 * celStep, 0.26);
+  vec3 col = albedo * (sunColor * shapedLit * sunStrength + hemi + a3dEnvDiffuse(n) * iblDiffuse);
   vec3 vdir = normalize(cameraPosition - vW);
   float ndv = clamp(dot(n, vdir), 0.0, 1.0);
   float fres = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
   col += a3dEnvSpecular(reflect(-vdir, n), iblRoughness) * fres * iblSpec * mix(0.5, 1.0, sunVis);
-  float rim = pow(1.0 - ndv, 2.6);
-  col += rimColor * rim * rimStrength * (0.4 + 0.6 * max(n.y, 0.0));
+  float rim = pow(1.0 - ndv, 2.5);
+  float sunBack = 0.65 + 0.65 * clamp(dot(-vdir, sunDirW), 0.0, 1.0);
+  col += rimColor * rim * rimStrength * (0.42 + 0.58 * max(n.y, 0.0)) * sunBack;
   float dist = length(vW - cameraPosition);
   float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
   col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
   outColor = vec4(col, opacity);
+}`;
+
+/** Anisotropic Henyey-Greenstein + Beer-powder subsurface-scattering cumulus banks with gentle vertex billow. */
+export const CLOUD_SSS_VERTEX = /* glsl */ `
+attribute vec3 tone;
+out vec3 vTone;
+out vec3 vN;
+out vec3 vW;
+out vec2 vUv;
+${NOISE}
+void main() {
+  vTone = tone;
+  vUv = uv;
+  vec4 w0 = modelMatrix * vec4(position, 1.0);
+  float billow = (vn(w0.xz * 0.045 + vec2(cloudPhase * 0.14, cloudPhase * 0.08)) - 0.5) * billowAmp;
+  vec3 p = position + normal * billow;
+  vN = normalize(mat3(modelMatrix) * normal);
+  vW = (modelMatrix * vec4(p, 1.0)).xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
+}`;
+
+export const CLOUD_SSS_FRAGMENT = /* glsl */ `
+in vec3 vTone;
+in vec3 vN;
+in vec3 vW;
+in vec2 vUv;
+out vec4 outColor;
+${NOISE}
+void main() {
+  vec3 n0 = normalize(vN);
+  if (!gl_FrontFacing) n0 = -n0;
+  float fluff = fbm(vW.xz * 0.065 + vUv * 1.4 + vec2(cloudPhase * 0.04, -cloudPhase * 0.02));
+  vec3 n = normalize(n0 + vec3((fluff - 0.5) * 0.28, (fluff - 0.45) * 0.16, (0.5 - fluff) * 0.24));
+  vec3 vdir = normalize(cameraPosition - vW);
+  float ndv = clamp(dot(n, vdir), 0.0, 1.0);
+  float ndl = dot(n, sunDirW);
+  float wrap = clamp(ndl * 0.58 + 0.42, 0.0, 1.0);
+  float powder = 1.0 - exp(-max(0.08, 1.0 - ndv) * 3.4);
+  float cosTheta = clamp(dot(-vdir, sunDirW), -1.0, 1.0);
+  float g = 0.62;
+  float hg = (1.0 - g * g) / (4.0 * 3.14159265 * pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
+  float forwardScatter = min(hg * 1.45, 2.1) * (0.3 + 0.7 * pow(1.0 - ndv, 1.7));
+  float trough = smoothstep(-0.45, 0.55, n.y) * (0.78 + 0.22 * fluff);
+  vec3 baseShade = mix(cloudShade * 0.76, cloudLight, clamp(wrap * 0.72 + trough * 0.36, 0.0, 1.0));
+  vec3 col = baseShade * mix(vec3(0.92, 0.95, 1.0), vTone, 0.45);
+  col += sunColor * (max(ndl, 0.0) * 0.36 + forwardScatter * powder * 0.58);
+  col += rimColor * pow(1.0 - ndv, 2.5) * 0.34 * (0.35 + 0.65 * max(n.y, 0.0));
+  float dist = length(vW - cameraPosition);
+  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
+  outColor = vec4(col, 1.0);
 }`;
 
 /** Flat warning decal on the track: pulsing edge glow with hazard stripes. */

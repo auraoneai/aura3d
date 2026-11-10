@@ -189,11 +189,13 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
   parts.head = { p: headC, m: Rhead };
   parts.hairCap = { p: add(headC, apply(Rhead, [0, 0.12, 0.06])), m: Rhead };
 
-  // spiked hair: spikes fan out from the crown, sweep back with speed and flare with the aura
+  // spiked hair: spikes fan out from the crown, sweep back with speed and flare with the aura + harmonic flutter
+  const speed01 = clamp(input.speed / 95, 0, 1);
   const sweep = 0.15 + clamp(input.speed / 110, 0, 0.5) + (input.flying ? 0.25 : 0);
   for (let k = 0; k < SPIKES; k++) {
-    const yaw = (k / SPIKES) * Math.PI * 2 + 0.35;
-    const tilt = 0.42 + 0.32 * input.surge + 0.07 * Math.sin(input.time * 6 + k * 1.9);
+    const yaw = (k / SPIKES) * Math.PI * 2 + 0.35 - input.lean * 0.18;
+    const flutter = 0.07 * Math.sin(input.time * 6 + k * 1.9) + 0.045 * speed01 * Math.sin(input.time * 14.5 + k * 2.3);
+    const tilt = 0.42 + 0.32 * input.surge + flutter;
     const frame = mul(mul(Rhead, rx(sweep)), mul(ry(yaw), rz(-tilt)));
     const base = add(headC, apply(mul(Rhead, mul(rx(sweep * 0.6), ry(yaw))), [0.2, 0.26, 0]));
     parts[`spike${k}`] = { p: add(base, apply(frame, [0, SPIKE_HEIGHT * 0.5, 0])), m: frame };
@@ -225,13 +227,14 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
     parts[`hand${name}`] = { p: add(elbowP, apply(Rfore, [0, -FORE - 0.04, 0])), m: Rfore };
   }
 
-  // sash: overlapping cloth segments that trail straight back in the runner's frame, whipping with the airflow
+  // sash: overlapping cloth segments that trail back in the runner's frame with centrifugal corner whip & traveling wave lag
   const anchor = add(pelvis, apply(Rtorso, [0, TORSO_LEN - 0.22, 0.34]));
   const streamLift = (input.flying ? 0.02 : 0.1) + 0.05 * clamp(input.speed / 120, 0, 0.5);
   for (let j = 0; j < SASH; j++) {
-    const wave = Math.sin(input.time * 11 - j * 1.1);
-    const m = mul(ry(0.25 * wave), rx(0.12 + 0.1 * j));
-    parts[`sash${j}`] = { p: add(anchor, [0.07 * wave * (j + 1), streamLift * (j + 1) + 0.05 * wave, 0.34 * (j + 1)]), m };
+    const wave = Math.sin(input.time * 11 - j * 1.1) + 0.32 * speed01 * Math.sin(input.time * 17.5 - j * 1.65);
+    const whip = -input.lean * 0.22 * (j + 1);
+    const m = mul(mul(ry(0.25 * wave + whip * 0.55), rz(whip * 0.35)), rx(0.12 + 0.1 * j));
+    parts[`sash${j}`] = { p: add(anchor, [(0.07 * wave + -input.lean * 0.16) * (j + 1), streamLift * (j + 1) + 0.05 * wave, 0.34 * (j + 1)]), m };
   }
   return parts;
 }

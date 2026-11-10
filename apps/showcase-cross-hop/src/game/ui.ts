@@ -1,13 +1,19 @@
-/** Cross Hop DOM shell: title menu, HUD, critterdex, drill picker, death card. */
+/** Cross Hop DOM shell: compact side-plaque menu, AuraOne HUD, critter studio, drill picker, death card, mobile D-pad. */
 import { CRITTERS, DRILLS, st, startRun, restartRun, endToTitle, swapCritter, displayCoins, setPaused, type CritterDef } from "./core";
 import { saveProfile } from "./persistence";
 import { THEMES } from "./themes";
 
+export type HopAction = "up" | "down" | "left" | "right";
+
 let root: HTMLElement | null = null;
 let panel: "menu" | "tour" | "school" | "studio" | "dex" | null = null;
 let uiSound: () => void = () => undefined;
+let uiHop: (action: HopAction) => void = () => undefined;
+
 /** Menu and quick-bar buttons play the `ui` cue (CH-14). */
 export function setUiSound(fn: () => void): void { uiSound = fn; }
+/** Coarse-pointer directional hop pad routes buffered actions into main.ts. */
+export function setUiHop(fn: (action: HopAction) => void): void { uiHop = fn; }
 
 /** First-run objective card (CH-E2): shown for this long on the first run, then the profile remembers it. */
 const INTRO_MS = 3000;
@@ -20,50 +26,68 @@ export function mountUI(host: HTMLElement): void {
   root.innerHTML = `
     <div id="ch-top">
       <div id="ch-score-wrap">
-        <span class="ch-cap">SCORE</span>
+        <span class="ch-cap">steps</span>
         <div id="ch-score">0</div>
       </div>
       <div id="ch-theme"></div>
       <div id="ch-meta">
-        <span id="ch-coins" class="ch-pill">◈ 0</span>
-        <span id="ch-best" class="ch-pill">BEST 0</span>
+        <span id="ch-coins" class="ch-pill"><span class="ch-pill-label">coins</span><span id="ch-coins-val">0</span></span>
+        <span id="ch-best" class="ch-pill"><span class="ch-pill-label">best</span><span id="ch-best-val">0</span></span>
+        <span id="ch-seed-pill" class="ch-pill ch-mono"></span>
       </div>
     </div>
     <div id="ch-msg"></div>
-    <div id="ch-ticker"></div>
     <div id="ch-intro" class="hidden" role="status">
-      <b>Hop as far as you can.</b>
-      <span>Dodge cars and trains, ride logs across rivers, and keep moving: the hawk takes critters that stand still.</span>
+      <b>Hop across sunlit lanes.</b>
+      <span>Dodge cars and coupled trains, ride damp bark rafts across rivers, and keep moving before the hawk swoops.</span>
       <span id="ch-intro-keys"></span>
     </div>
     <button id="ch-pause-btn" type="button" aria-label="Pause">II</button>
-    <div id="ch-paused" class="ch-panel hidden">
-      <h2>PAUSED</h2>
-      <button id="ch-resume" type="button">RESUME</button>
-      <button id="ch-home2" type="button">MENU</button>
+    <div id="ch-dpad" class="hidden" role="group" aria-label="Directional hop controls">
+      <button type="button" class="ch-dpad-btn ch-dpad-up" data-hop="up" aria-label="Hop forward">▲</button>
+      <button type="button" class="ch-dpad-btn ch-dpad-left" data-hop="left" aria-label="Hop left">◀</button>
+      <button type="button" class="ch-dpad-btn ch-dpad-down" data-hop="down" aria-label="Hop back">▼</button>
+      <button type="button" class="ch-dpad-btn ch-dpad-right" data-hop="right" aria-label="Hop right">▶</button>
     </div>
-    <div id="ch-menu" class="ch-panel">
-      <h1>CROSS HOP</h1>
-      <p class="ch-sub">Endless lane-hopper — six worlds, twelve critters.</p>
-      <button data-m="quick">QUICK PLAY</button>
-      <button data-m="school">TIMING SCHOOL</button>
-      <button data-m="tour">WORLD TOUR</button>
-      <button data-m="studio">PLAYER STUDIO</button>
-      <button data-m="dex">CRITTERDEX</button>
-      <p class="ch-hint">WASD / arrows / swipe — hop. Don't idle; the hawk is patient.</p>
+    <div id="ch-paused" class="ch-panel ch-modal hidden">
+      <h2>paused</h2>
+      <button id="ch-resume" type="button" class="ch-btn-primary">Resume Run</button>
+      <button id="ch-home2" type="button" class="ch-btn-ghost">Main Menu</button>
     </div>
-    <div id="ch-dead" class="ch-panel hidden">
-      <p id="ch-newbest" class="hidden">NEW BEST!</p>
+    <div id="ch-menu" class="ch-panel ch-plaque">
+      <span class="ch-kicker">isometric lane hopper</span>
+      <h1>Cross Hop</h1>
+      <p class="ch-sub">Six sunlit worlds, twelve critters, rivers, rails, and traffic.</p>
+      <button type="button" data-m="quick" class="ch-btn-primary">Quick Play</button>
+      <div class="ch-menu-grid">
+        <button type="button" data-m="tour">World Tour</button>
+        <button type="button" data-m="studio">Critter Studio</button>
+        <button type="button" data-m="school">Timing School</button>
+        <button type="button" data-m="dex">Critterdex</button>
+      </div>
+      <p class="ch-hint">WASD / arrows / tap or swipe to hop. Keep moving — the hawk watches idle critters.</p>
+    </div>
+    <div id="ch-dead" class="ch-panel ch-modal hidden">
+      <p id="ch-newbest" class="hidden">new best</p>
       <h2 id="ch-death-title"></h2>
+      <div id="ch-death-stats" class="ch-stats-row">
+        <div class="ch-stat"><span class="ch-cap">steps</span><span id="ch-stat-score" class="ch-stat-num">0</span></div>
+        <div class="ch-stat"><span class="ch-cap">coins</span><span id="ch-stat-coins" class="ch-stat-num">0</span></div>
+        <div class="ch-stat"><span class="ch-cap">best</span><span id="ch-stat-best" class="ch-stat-num">0</span></div>
+        <div class="ch-stat"><span class="ch-cap">close</span><span id="ch-stat-near" class="ch-stat-num">0</span></div>
+      </div>
       <p id="ch-death-sub"></p>
       <p id="ch-death-unlocks"></p>
-      <button id="ch-again">HOP AGAIN</button>
-      <button id="ch-home">MENU</button>
+      <div class="ch-modal-actions">
+        <button id="ch-again" type="button" class="ch-btn-primary">Hop Again</button>
+        <button id="ch-home" type="button" class="ch-btn-ghost">Menu</button>
+      </div>
     </div>
-    <div id="ch-sub" class="ch-panel hidden"></div>
-    <div id="ch-help">WASD/arrows hop · P pause · R restart · Esc menu</div>`;
+    <div id="ch-sub" class="ch-panel ch-plaque hidden"></div>
+    <div id="ch-help">WASD / Arrows hop · P pause · R restart · Esc menu</div>`;
   host.appendChild(root);
   root.addEventListener("click", onClick);
+  root.querySelector("#ch-dpad")?.addEventListener("pointerdown", onDpadPointerDown);
   document.addEventListener("keydown", onKey);
   document.querySelector(".aura3d-top-bar")?.addEventListener("click", onBarClick);
 }
@@ -85,6 +109,19 @@ function release(btn: HTMLButtonElement): void {
   uiSound();
 }
 
+function onDpadPointerDown(e: Event): void {
+  const pe = e as PointerEvent;
+  const btn = (pe.target as HTMLElement | null)?.closest?.("button[data-hop]") as HTMLButtonElement | null;
+  if (!btn) return;
+  pe.preventDefault();
+  pe.stopPropagation();
+  btn.blur();
+  const dir = btn.dataset.hop as HopAction | undefined;
+  if (dir === "up" || dir === "down" || dir === "left" || dir === "right") {
+    uiHop(dir);
+  }
+}
+
 function onBarClick(e: Event): void {
   const btn = (e.target as HTMLElement).closest("button") as HTMLButtonElement | null;
   if (!btn) return;
@@ -100,7 +137,7 @@ function onBarClick(e: Event): void {
 function onClick(e: MouseEvent): void {
   const el = e.target as HTMLElement;
   const btn = el.closest("button") as HTMLButtonElement | null;
-  if (!btn) return;
+  if (!btn || btn.dataset.hop) return;
   release(btn);
   const m = btn.dataset.m;
   if (m === "quick") { startRun("quick", null); panel = null; }
@@ -144,21 +181,21 @@ function flash(msg: string): void {
 function renderSub(): void {
   const el = root?.querySelector("#ch-sub") as HTMLElement;
   if (!el) return;
-  let html = `<button id="ch-back" class="ch-back">← BACK</button>`;
+  let html = `<button id="ch-back" type="button" class="ch-back">← Back</button>`;
   if (panel === "school") {
-    html += `<h2>TIMING SCHOOL</h2><p class="ch-hint">Drills are short practice courses. They pay coins but do not count toward Best.</p>` + DRILLS.map(d =>
-      `<button data-drill="${d.id}" class="ch-card"><b>${d.label}</b><i>${d.desc}</i>${st.profile.drills.includes(d.id) ? '<em>CLEARED</em>' : ""}</button>`).join("");
+    html += `<h2>timing school</h2><p class="ch-hint">Short practice courses that pay coins without affecting Best.</p><div class="ch-list">` + DRILLS.map(d =>
+      `<button type="button" data-drill="${d.id}" class="ch-card"><b>${d.label}</b><i>${d.desc}</i>${st.profile.drills.includes(d.id) ? '<em>cleared</em>' : ""}</button>`).join("") + `</div>`;
   } else if (panel === "tour") {
-    html += `<h2>WORLD TOUR</h2>` + THEMES.map((t, i) =>
-      `<button data-theme="${i}" class="ch-card"><b>${t.label}</b><i>Start a run seeded in ${t.label}.</i></button>`).join("");
+    html += `<h2>world tour</h2><div class="ch-list">` + THEMES.map((t, i) =>
+      `<button type="button" data-theme="${i}" class="ch-card"><b>${t.label}</b><i>Seeded departure in ${t.label}.</i></button>`).join("") + `</div>`;
   } else if (panel === "studio" || panel === "dex") {
-    html += `<h2>${panel === "studio" ? "PLAYER STUDIO" : "CRITTERDEX"}</h2><div class="ch-grid">` +
+    html += `<h2>${panel === "studio" ? "critter studio" : "critterdex"}</h2><div class="ch-grid">` +
       CRITTERS.map(c => {
         const un = st.profile.unlocked.includes(c.id);
         const sel = st.profile.selected === c.id;
-        return `<button data-critter="${c.id}" class="ch-crit ${sel ? "sel" : ""} ${un ? "" : "lock"}">
-          <b>${un ? c.label : "???"}</b><i>${un ? c.tagline : c.price + " coins"}</i></button>`;
-      }).join("") + `</div><p class="ch-hint">Coins: ${st.profile.coins} — rescue pods unlock critters free.</p>`;
+        return `<button type="button" data-critter="${c.id}" class="ch-crit ${sel ? "sel" : ""} ${un ? "" : "lock"}">
+          <b>${un ? c.label : "Locked"}</b><i>${un ? c.tagline : c.price + " coins"}</i></button>`;
+      }).join("") + `</div><p class="ch-hint">Bank: ${st.profile.coins} coins · rescue pods unlock critters free.</p>`;
   }
   el.innerHTML = html;
   el.classList.remove("hidden");
@@ -171,8 +208,8 @@ function tickIntro(): void {
   if (introUntil === 0 && st.mode === "run" && !st.profile.seenIntro) {
     introUntil = now + INTRO_MS;
     (root!.querySelector("#ch-intro-keys") as HTMLElement).textContent = coarsePointer()
-      ? "Tap or swipe up to hop. Swipe left, right or down to step aside."
-      : "W or Up to hop. A, D, S or the arrows to step aside. P pauses.";
+      ? "Tap, swipe, or use the corner hop pad to step in four directions."
+      : "W / Up to hop ahead. A, D, S or Arrows to step aside. P pauses.";
     st.profile.seenIntro = true;
     saveProfile(st.profile);
   }
@@ -186,6 +223,7 @@ export function tickUI(): void {
   (root.querySelector("#ch-top") as HTMLElement).classList.toggle("hidden", !inRun);
   (root.querySelector("#ch-pause-btn") as HTMLElement).classList.toggle("hidden", st.mode !== "run");
   (root.querySelector("#ch-paused") as HTMLElement).classList.toggle("hidden", !(st.paused && st.mode === "run"));
+  (root.querySelector("#ch-dpad") as HTMLElement).classList.toggle("hidden", !(st.mode === "run" && !st.paused));
   const dead = root.querySelector("#ch-dead") as HTMLElement;
   const sub = root.querySelector("#ch-sub") as HTMLElement;
   if (panel === null || inRun) sub.classList.add("hidden");
@@ -196,24 +234,28 @@ export function tickUI(): void {
     dead.classList.remove("hidden");
     const t = root.querySelector("#ch-death-title") as HTMLElement;
     const s = root.querySelector("#ch-death-sub") as HTMLElement;
-    t.textContent = st.dead ? st.dead.label.toUpperCase() : "RUN COMPLETE";
-    s.textContent = `Score ${st.score} · Rows ${st.row} · Coins +${st.coins} · Best ${st.profile.best}`;
+    t.textContent = st.dead ? st.dead.label.toLowerCase() : "drill complete";
+    (root.querySelector("#ch-stat-score") as HTMLElement).textContent = String(st.score);
+    (root.querySelector("#ch-stat-coins") as HTMLElement).textContent = String(st.coins);
+    (root.querySelector("#ch-stat-best") as HTMLElement).textContent = String(st.profile.best);
+    (root.querySelector("#ch-stat-near") as HTMLElement).textContent = String(st.nearMisses);
+    s.textContent = `Reached row ${st.row} in ${THEMES[st.themeIdx].label}`;
     (root.querySelector("#ch-death-unlocks") as HTMLElement).textContent = st.runUnlocks.length ? `Unlocked: ${st.runUnlocks.join(", ")}` : "";
     (root.querySelector("#ch-newbest") as HTMLElement).classList.toggle("hidden", !st.newBest);
   } else dead.classList.add("hidden");
 
   if (inRun) {
     (root.querySelector("#ch-score") as HTMLElement).textContent = String(st.score);
-    (root.querySelector("#ch-coins") as HTMLElement).textContent = `◈ ${displayCoins()}`;
-    (root.querySelector("#ch-best") as HTMLElement).textContent = `BEST ${st.profile.best}`;
-    (root.querySelector("#ch-theme") as HTMLElement).textContent = THEMES[st.themeIdx].label.toUpperCase();
+    (root.querySelector("#ch-coins-val") as HTMLElement).textContent = String(displayCoins());
+    (root.querySelector("#ch-best-val") as HTMLElement).textContent = String(st.profile.best);
+    (root.querySelector("#ch-theme") as HTMLElement).textContent = THEMES[st.themeIdx].label.toLowerCase();
+    const seedEl = root.querySelector("#ch-seed-pill") as HTMLElement | null;
+    if (seedEl) seedEl.textContent = `#${(st.seed >>> 0).toString(16).slice(0, 6)}`;
     document.querySelectorAll<HTMLButtonElement>(".aura3d-top-bar button[data-ch-theme]").forEach(b => {
       b.classList.toggle("active", st.mode !== "title" && st.runKind === "tour" && parseInt(b.dataset.chTheme ?? "-1", 10) === st.themeIdx);
     });
     document.getElementById("ch-bar-quick")?.classList.toggle("active", st.mode !== "title" && st.runKind === "quick");
-    // CH-E6: the banner shows the latest event; the ticker lists the ones before it, so nothing shows twice.
     const showing = st.messageT > 0;
-    (root.querySelector("#ch-ticker") as HTMLElement).textContent = st.events.slice(showing ? -4 : -3, showing ? -1 : undefined).join("  ·  ");
     (root.querySelector("#ch-msg") as HTMLElement).textContent = showing ? st.message : "";
   }
 }

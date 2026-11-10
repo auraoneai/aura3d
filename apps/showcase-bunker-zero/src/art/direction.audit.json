@@ -24,12 +24,12 @@
       {
         "type": "spot",
         "shadow": true,
-        "intensity": 84
+        "intensity": 58
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 34
+        "intensity": 24
       },
       {
         "type": "point",
@@ -39,22 +39,22 @@
       {
         "type": "point",
         "shadow": false,
-        "intensity": 9
+        "intensity": 8
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 9
+        "intensity": 8
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 9
+        "intensity": 8
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 9
+        "intensity": 8
       }
     ],
     "hasAmbient": false,

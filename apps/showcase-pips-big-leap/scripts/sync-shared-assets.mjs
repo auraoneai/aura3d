@@ -22,7 +22,6 @@ export const SHARED_KEYS = [
   "gullsiegeWindmillMeshy",
   "heatsinkArch",
   "heatsinkBoostPad",
-  "heatsinkDroneNighthawk",
   "helperChar",
   "neonStreetLampProp",
   "propBoulder",

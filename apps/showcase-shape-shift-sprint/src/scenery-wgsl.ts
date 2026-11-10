@@ -1,7 +1,9 @@
 /**
- * A3/W6: WGSL twins of Shape Shift Sprint's game-local `material.custom` programs (scenery.ts), line for line, so a WebGPU
- * frame computes the same values. WebGL2 keeps drawing the untouched GLSL. Mapping notes: runner-kit/shaders-wgsl.ts.
- * Custom attributes: `tone` alone sits at 3; the drift layer's `anchor`, `drift`, `tone` (sorted) at 3, 5, 6.
+ * A3/W6 + WP-15: WGSL twins of Shape Shift Sprint's game-local `material.custom` programs (`scenery.ts`),
+ * line for line, so WebGPU (`backend: "auto"`) and WebGL2 compute identical lighting, clearcoat specular,
+ * 6-world skyway gradients, iridescent Fresnel shield bubble, hydro-glow hover cushion, and 8x4 plasma
+ * flipbook bursts. Custom attributes: `tone` alone sits at 3; the drift layer's `anchor`, `drift`, `tone`
+ * (sorted) sit at 3, 5, 6.
  */
 import { WGSL_CLIP, WGSL_POW, WGSL_SHOULDER, wgslStage } from "../../../examples/shared/runner-kit/index";
 
@@ -28,30 +30,36 @@ ${tone ? "  out.vTone = tone;" : ""}
 }`);
 }
 
-/** `FRAGMENT(tone, stripes)`. */
+/** `FRAGMENT(tone, stripes)` with dual-lobe clearcoat highlight + milestone world sunTint. */
 export function toyFragmentWgsl(tone: boolean, stripes = false): string {
   return wgslStage([WGSL_POW, WGSL_SHOULDER], /* wgsl */ `
 fn ramp(d: f32) -> f32 {
   let c = d * 0.5 + 0.5;
   let fw = fwidth(c) * 0.5;
-  return mix(0.52, 1.0, smoothstep(0.66 - fw, 0.66 + fw, c));
+  return mix(0.54, 1.0, smoothstep(0.64 - fw, 0.64 + fw, c));
 }
 @fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vUv: vec2<f32>${tone ? ", @location(3) vTone: vec3<f32>" : ""}) -> @location(0) vec4<f32> {
   var N = normalize(vNormal);
   let toCam = aura.u_cameraPosition - vWorld;
   if (dot(N, toCam) < 0.0) { N = -N; }
   let V = normalize(toCam);
-  var base = aura.u_baseColor${tone ? " * vTone" : ""};
+  let uvGrain = 1.0 + (sin(vUv.x * 37.699) * cos(vUv.y * 25.132)) * 0.014 * aura.u_clearcoat;
+  var base = aura.u_baseColor${tone ? " * vTone" : ""} * uvGrain;
 ${stripes ? "  base = mix(aura.u_stripeA, aura.u_stripeB, step(0.5, fract(vWorld.z / aura.u_stripePeriod)));" : ""}
-  let skyC = vec3<f32>(0.86, 0.93, 1.0);
-  let groundC = vec3<f32>(0.36, 0.30, 0.46);
-  let hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.36;
+  let skyC = vec3<f32>(0.88, 0.94, 1.0);
+  let groundC = vec3<f32>(0.38, 0.32, 0.48);
+  let hemi = mix(groundC, skyC, 0.5 * N.y + 0.5) * 0.38;
   let L1 = normalize(vec3<f32>(5.0, 11.0, 7.5));
   let L2 = normalize(vec3<f32>(-7.0, 6.0, -6.0));
-  let lit = hemi + vec3<f32>(0.66, 0.56, 0.42) * ramp(dot(N, L1)) + vec3<f32>(0.13, 0.18, 0.32) * ramp(dot(N, L2));
+  let keyLight = vec3<f32>(0.68, 0.60, 0.48) * aura.u_sunTint;
+  let lit = hemi + keyLight * ramp(dot(N, L1)) + vec3<f32>(0.14, 0.19, 0.33) * ramp(dot(N, L2));
   var c = shoulder(base * lit);
+  let H = normalize(L1 + V);
+  let ndh = max(dot(N, H), 0.0);
+  let coatSpec = (a3dPow(ndh, 68.0) * 0.44 + a3dPow(ndh, 16.0) * 0.12) * aura.u_clearcoat;
+  c = c + aura.u_sunTint * coatSpec;
   let rim = a3dPow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
-  c = c + vec3<f32>(1.0, 0.86, 0.72) * rim * aura.u_rimStrength;
+  c = c + mix(vec3<f32>(1.0, 0.88, 0.76), aura.u_sunTint, 0.45) * rim * aura.u_rimStrength;
   c = c + aura.u_emissive;
   let d = length(toCam);
   var f = 1.0 - exp(-max(d - aura.u_fogStart, 0.0) * aura.u_fogDensity);
@@ -92,16 +100,13 @@ fn fbm(p0: vec2<f32>) -> f32 {
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(vWorld - aura.u_cameraPosition);
   let y = dir.y;
-  let zenith = vec3<f32>(0.090, 0.330, 0.760);
-  let mid = vec3<f32>(0.300, 0.620, 0.900);
-  let low = vec3<f32>(0.700, 0.820, 0.920);
   let horizon = aura.u_fogColor;
-  var c = mix(horizon, low, smoothstep(0.0, 0.10, y));
-  c = mix(c, mid, smoothstep(0.08, 0.32, y));
-  c = mix(c, zenith, smoothstep(0.30, 0.85, y));
+  var c = mix(horizon, aura.u_lowColor, smoothstep(0.0, 0.10, y));
+  c = mix(c, aura.u_midColor, smoothstep(0.08, 0.34, y));
+  c = mix(c, aura.u_zenithColor, smoothstep(0.30, 0.86, y));
   let sun = normalize(vec3<f32>(-0.55, 0.16, -0.82));
   let s = max(dot(dir, sun), 0.0);
-  c = c + vec3<f32>(1.0, 0.62, 0.34) * (a3dPow(s, 6.0) * 0.28 + a3dPow(s, 48.0) * 0.45) + vec3<f32>(1.0, 0.95, 0.85) * a3dPow(s, 900.0) * 3.0;
+  c = c + aura.u_sunTint * vec3<f32>(1.0, 0.66, 0.40) * (a3dPow(s, 6.0) * 0.28 + a3dPow(s, 48.0) * 0.45) + aura.u_sunTint * a3dPow(s, 900.0) * 2.6;
   let az = atan2(dir.x, -dir.z);
   let t = aura.u_time * 0.004;
   let q = vec2<f32>(az * 3.2 + t, y * 13.0);
@@ -109,14 +114,14 @@ fn fbm(p0: vec2<f32>) -> f32 {
   let cl = smoothstep(0.50, 0.78, fbm(q) * 0.85 + fbm(q * 2.7 + vec2<f32>(3.1)) * 0.3) * band;
   let hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.32, 0.5, y);
   let cl2 = smoothstep(0.58, 0.8, fbm(vec2<f32>(az * 2.0 - t * 1.6, y * 5.0) + vec2<f32>(11.0))) * hi * 0.7;
-  let cloudLit = mix(vec3<f32>(0.93, 0.89, 0.97), vec3<f32>(1.0, 0.97, 0.92), smoothstep(0.0, 0.3, y));
+  let cloudLit = mix(vec3<f32>(0.93, 0.89, 0.97), aura.u_sunTint, smoothstep(0.0, 0.3, y));
   c = mix(c, cloudLit + vec3<f32>(1.0, 0.7, 0.45) * a3dPow(s, 4.0) * 0.35, cl * 0.92);
   c = mix(c, vec3<f32>(0.97, 0.97, 1.0), cl2);
   c = mix(c, aura.u_fogLow, smoothstep(0.0, -0.18, y));
   return vec4<f32>(c, 1.0);
 }`);
 
-/** `CONTACT_VERTEX` (uv only; also the ring's vertex stage). */
+/** `CONTACT_VERTEX` (uv only; shared by contact strips, rings, hydro-glow, and plasma flipbook quad). */
 export const CONTACT_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
 struct ContactVarying {
   @builtin(position) position: vec4<f32>,
@@ -142,6 +147,85 @@ export const RING_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
   let band = smoothstep(0.62, 0.78, d) * (1.0 - smoothstep(0.86, 1.0, d));
   let inner = (1.0 - smoothstep(0.0, 0.8, d)) * 0.25;
   return vec4<f32>(aura.u_baseColor, aura.u_alpha * (band + inner));
+}`);
+
+/** Thin-film iridescent Fresnel shield bubble vertex + fragment WGSL twins. */
+export const SHIELD_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct ShieldVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>) -> ShieldVarying {
+  var out: ShieldVarying;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+export const SHIELD_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+  let N = normalize(vNormal);
+  let V = normalize(aura.u_cameraPosition - vWorld);
+  let ndv = clamp(abs(dot(N, V)), 0.0, 1.0);
+  let fresnel = a3dPow(1.0 - ndv, 3.4);
+  let phase = (1.0 - ndv) * 7.5 + aura.u_time * 1.8 + N.y * 2.2;
+  let film = vec3<f32>(
+    0.5 + 0.5 * sin(phase),
+    0.5 + 0.5 * sin(phase + 2.094),
+    0.5 + 0.5 * sin(phase + 4.188)
+  );
+  let L = normalize(vec3<f32>(5.0, 11.0, 7.5));
+  let H = normalize(L + V);
+  let glint = a3dPow(max(dot(N, H), 0.0), 56.0);
+  let col = mix(aura.u_baseColor, film, 0.42 * fresnel) + vec3<f32>(1.0, 0.98, 0.94) * glint * 0.9;
+  let outAlpha = clamp(aura.u_alpha * (0.04 + 1.45 * fresnel) + glint * 0.55, 0.0, 0.9);
+  return vec4<f32>(col, outAlpha);
+}`);
+
+/** Hovercraft / glider hydro-glow ground cushion fragment WGSL twin. */
+export const HYDRO_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let p = (vUv - vec2<f32>(0.5)) * 2.0;
+  let d = length(p);
+  let pulse = 0.5 + 0.5 * sin(aura.u_time * 7.0 - d * 6.5);
+  let outerRing = smoothstep(0.58, 0.76, d) * (1.0 - smoothstep(0.84, 1.0, d));
+  let innerCore = a3dPow(clamp(1.0 - d, 0.0, 1.0), 2.1) * (0.34 + 0.16 * pulse);
+  let wake = clamp(p.y * 0.5 + 0.5, 0.0, 1.0) * (1.0 - smoothstep(0.0, 0.95, d)) * 0.22;
+  let col = mix(aura.u_baseColor, aura.u_accentColor, outerRing * 0.65 + pulse * 0.2);
+  let a = clamp(aura.u_alpha * (outerRing * 0.95 + innerCore + wake), 0.0, 0.92);
+  return vec4<f32>(col, a);
+}`);
+
+/** 8x4 `createFlipbookAtlas("plasma")` morph burst fragment WGSL twin. */
+export const PLASMA_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
+fn srgbToLin3(c: vec3<f32>) -> vec3<f32> {
+  let lo = c / 12.92;
+  let hi = vec3<f32>(
+    a3dPow((c.x + 0.055) / 1.055, 2.4),
+    a3dPow((c.y + 0.055) / 1.055, 2.4),
+    a3dPow((c.z + 0.055) / 1.055, 2.4)
+  );
+  return select(lo, hi, c >= vec3<f32>(0.04045));
+}
+fn samplePlasmaCell(idx: f32, uv: vec2<f32>) -> vec4<f32> {
+  let col = idx - floor(idx / 8.0) * 8.0;
+  let row = floor(idx / 8.0);
+  let cellUv = (vec2<f32>(col, row) + clamp(uv, vec2<f32>(0.02), vec2<f32>(0.98))) / vec2<f32>(8.0, 4.0);
+  return textureSample(u_plasmaAtlasTexture, u_plasmaAtlasSampler, cellUv);
+}
+@fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
+  let p = clamp(aura.u_progress, 0.0, 0.999);
+  let f = p * 31.0;
+  let f0 = floor(f);
+  let f1 = min(31.0, f0 + 1.0);
+  let s0 = samplePlasmaCell(f0, vUv);
+  let s1 = samplePlasmaCell(f1, vUv);
+  let texel = mix(s0, s1, fract(f));
+  let fade = 1.0 - smoothstep(0.76, 1.0, p);
+  let col = srgbToLin3(texel.rgb) * aura.u_tintColor * aura.u_gain;
+  return vec4<f32>(col, texel.a * fade);
 }`);
 
 /** `DRIFT_VERTEX`: wraps each piece along z on uTime, bobs it and grows it in; outputs match `toyFragmentWgsl(true)`. */

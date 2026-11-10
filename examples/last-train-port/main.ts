@@ -1,5 +1,5 @@
 /**
- * Last Train to the Sea on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
+ * Lamplight Line on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `autopilot=1` (drive the tram with the capture's controller),
@@ -21,6 +21,7 @@ import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
+import "../../apps/showcase-port-shared/hud-tokens.css";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
@@ -78,6 +79,10 @@ let abandonFrames = 0;
 const TEMPERAMENT_LABEL: Record<Temperament, string> = { easy: "easy", sightseer: "sightseer", rushed: "rushed", sleeper: "sleeper" };
 const TEMPERAMENT_GLYPH: Record<Temperament, string> = { easy: "\u25cf", sightseer: "\u25b2", rushed: "\u25c6", sleeper: "\u25a0" };
 let ridersKey = "";
+let legElapsed = 0;
+let trackedLeg = -1;
+let wasEnroute = false;
+const NOMINAL_CRUISE_MPS = 13.2;
 if (readStore(MUTE_KEY) === "1") sound.setMuted(true);
 if (readStore(HUD_KEY) === "large") document.documentElement.classList.add("hud-large");
 
@@ -166,13 +171,70 @@ function runCircuit(renderEvery = 0): { steps: number; seconds: number; fares: n
 
 /* ------------------------------------------------------------------ HUD and render */
 
+let timetableDomReady = false;
+function ensureTimetableDom(): void {
+  if (timetableDomReady) return;
+  timetableDomReady = true;
+  const topEl = $("top");
+  if (!document.getElementById("line-code")) {
+    const badge = document.createElement("span");
+    badge.id = "line-code";
+    badge.className = "line-badge";
+    badge.textContent = "LL-01";
+    topEl.insertBefore(badge, topEl.firstChild);
+  }
+  const statsEl = $("stats");
+  if (!document.getElementById("stop-dist")) {
+    const row = document.createElement("div");
+    row.className = "meta num tele-row";
+    row.innerHTML = 'Stop <span id="stop-dist" class="metric-val">0</span>m &middot; Sched <span id="sched-delta" class="metric-val" data-state="on">+0.0s</span>';
+    const big = statsEl.querySelector(".big");
+    if (big && big.nextSibling) statsEl.insertBefore(row, big.nextSibling);
+    else statsEl.appendChild(row);
+  }
+  for (const id of ["speed", "aboard", "fares", "tips", "score", "streak"]) {
+    document.getElementById(id)?.classList.add("metric-val");
+  }
+}
+
+function updateScheduleClock(dt: number): void {
+  if (!data) return;
+  if (sim.phase === "enroute") {
+    if (!wasEnroute || trackedLeg !== sim.leg) {
+      trackedLeg = sim.leg;
+      legElapsed = sim.distance / NOMINAL_CRUISE_MPS;
+    } else {
+      legElapsed += dt;
+    }
+    wasEnroute = true;
+  } else {
+    if (trackedLeg !== sim.leg && !wasEnroute) {
+      trackedLeg = sim.leg;
+      legElapsed = 0;
+    }
+    wasEnroute = false;
+  }
+}
+
 function updateHud(): void {
+  ensureTimetableDom();
   const towns = data.tables.towns;
   const here = towns[sim.leg]!, next = towns[(sim.leg + 1) % towns.length]!;
+  const legLen = data.route.legs[sim.leg]!.length;
+  $("line-code").textContent = `LL-0${sim.leg + 1}`;
   $("station").textContent = sim.phase === "enroute" ? `${here.name} → ${next.name}` : here.name;
   $("next").textContent = next.name;
   $("clock").textContent = sim.timeOfDay;
   $("speed").textContent = String(Math.round(Math.abs(sim.speed) * 3.6));
+  const stopMeters = sim.phase === "enroute" ? Math.max(0, Math.round(legLen - sim.distance)) : 0;
+  $("stop-dist").textContent = String(stopMeters);
+  const expectedSec = (sim.phase === "enroute" ? sim.distance : (trackedLeg === sim.leg && legElapsed > 0 ? legLen : 0)) / NOMINAL_CRUISE_MPS;
+  const deltaSec = trackedLeg === sim.leg ? legElapsed - expectedSec : 0;
+  const schedEl = $("sched-delta");
+  const absDelta = Math.abs(deltaSec);
+  schedEl.textContent = `${deltaSec < -0.05 ? "\u2212" : "+"}${absDelta.toFixed(1)}s`;
+  const schedState = deltaSec <= -0.5 ? "early" : deltaSec >= 1.5 ? "late" : "on";
+  if (schedEl.dataset.state !== schedState) schedEl.dataset.state = schedState;
   $("aboard").textContent = String(sim.passengers);
   $("fares").textContent = String(sim.attempt.fares);
   $("tips").textContent = String(sim.attempt.tips);
@@ -214,7 +276,7 @@ function updateRiders(): void {
   if (key === ridersKey) return;
   ridersKey = key;
   riders.classList.toggle("hidden", sim.trips.length === 0);
-  const rows = sim.trips.map((t) => `<span class="meta rider"><i class="dot" style="color:${TEMPERAMENT_COLORS[t.temperament]}" aria-hidden="true">${TEMPERAMENT_GLYPH[t.temperament]}</i>${t.name} <em>${TEMPERAMENT_LABEL[t.temperament]}</em> → ${towns[t.destination]!.name} (${tipOf(t)})</span>`);
+  const rows = sim.trips.map((t) => `<span class="meta rider"><i class="dot" style="color:${TEMPERAMENT_COLORS[t.temperament]}" aria-hidden="true">${TEMPERAMENT_GLYPH[t.temperament]}</i>${t.name} <em>${TEMPERAMENT_LABEL[t.temperament]}</em> → ${towns[t.destination]!.name} (<span class="metric-val">${tipOf(t)}</span>)</span>`);
   const limit = narrow ? 4 : rows.length;
   const shown = rows.slice(0, limit).join("") + (rows.length > limit ? `<span class="meta">+${rows.length - limit} more</span>` : "");
   riders.innerHTML = `<div class="meta next-stop">Next stop ${towns[nextStop]!.name}: ${alighting} alighting</div>${shown}`;
@@ -247,7 +309,15 @@ function updateAudio(dt: number): void {
   const state = audioState();
   for (const cue of diffCues(prevAudio, state)) {
     sound.cue(cue);
-    if (cue === "arrive") toast(`Arrived at ${data.tables.towns[sim.leg]!.name}`);
+    if (cue === "arrive") {
+      const cleanStop = (prevAudio?.lost ?? 0) === state.lost && Math.abs(prevAudio?.roll ?? 0) < 0.16;
+      if (cleanStop) {
+        sound.playPrecisionChime();
+        toast(`Precision stop · ${data.tables.towns[sim.leg]!.name}`);
+      } else {
+        toast(`Arrived at ${data.tables.towns[sim.leg]!.name}`);
+      }
+    }
     if (cue === "lost") toast(`Lurch! Tips lost: ${state.lost - (prevAudio?.lost ?? 0)}`);
   }
   prevAudio = state;
@@ -340,7 +410,10 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render: (dt) => {
-    if (titleMode || !flag("manual")) seconds += dt;
+    if (titleMode || !flag("manual")) {
+      seconds += dt;
+      if (!titleMode) updateScheduleClock(dt);
+    }
     render(!titleMode && !flag("manual"));
     if (abandonFrames > 0) abandonFrames--;
     updateHud();
@@ -552,10 +625,8 @@ async function boot(): Promise<void> {
     // Absent the flag: unchanged.
     ...(lab.renderer ? { frameMode: "async" as const } : {}),
     quality: "auto",
-    // GU47 LT-07: the band look renders with dither (per-band exposure is on the grade node). Phase 2: tone mapping is none on
-    // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,
-    // A/B capture g21p2a), so `?tm=agx` is opt-in only.
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands", ...lab.output },
+    // WP-24: AgX filmic tone mapping + dither for the twilight band look (with cinema-warm 3D LUT in S10b colorGrade).
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? (world.look === "bands" ? 1.18 : 1)), dither: world.look === "bands", ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });

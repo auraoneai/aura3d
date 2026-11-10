@@ -1,7 +1,11 @@
 /* Shared quick-switcher bar: one single-row strip that scrolls sideways instead of wrapping.
    Games set --a3d-* accents on :root and offset their HUD with var(--a3d-bar-space). */
+@import "./hud-tokens.css";
 
 :where(:root) {
+  --font-ui: "Whitney", "Whitney Fallback", "Graphik", sans-serif;
+  --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif;
+  --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
   --a3d-bar-h: 32px;
   --a3d-bar-space: calc(var(--a3d-bar-h) + env(safe-area-inset-top, 0px) + 8px);
   --quick-bar-space: var(--a3d-bar-space);
@@ -37,7 +41,8 @@
   background: var(--a3d-bg);
   border-bottom: 1px solid var(--a3d-edge);
   backdrop-filter: blur(8px);
-  font: 500 12px/1 "Graphik Web", "Graphik", sans-serif;
+  font: 500 12px/1 var(--font-ui);
+  font-synthesis: none;
   color: var(--a3d-ink);
   text-transform: none;
   letter-spacing: 0;
@@ -75,7 +80,7 @@
   margin-left: auto;
   padding-left: 8px;
   color: var(--a3d-dim);
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: none;
   white-space: nowrap;
 }

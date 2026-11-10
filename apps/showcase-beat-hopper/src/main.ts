@@ -9,12 +9,14 @@
  * Settings persist under `splatSiblings.beat-hopper.best/.mute/.motion/.howtoSeen` (guarded localStorage). The How to
  * play dialog opens on the first Play press; while it is open the loop is held, so the run neither starts nor advances.
  */
+import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { IDLE, BeatHopperSim, TRACE_COLUMNS, replay, type Input } from "./sim";
+import { createImpactRig } from "../../showcase-port-shared/feel";
+import { CONFIG, IDLE, BeatHopperSim, TRACE_COLUMNS, replay, type Input } from "./sim";
 import { InputQueue, isGameKey } from "./input";
 import { Autopilot } from "./autopilot";
 import { BeatHopperSound, diffSounds, type FrameState } from "./audio";
@@ -22,7 +24,7 @@ import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { ChaseCamera, cardPose, createBeatPresenter, shownOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { Hud, hudElements } from "./hud";
-import { QA_CROPS } from "./look";
+import { QA_CROPS, beatPulse } from "./look";
 
 const config = readQaParams({
   seed: { type: "number", default: 20261101 },
@@ -76,6 +78,15 @@ sound.setMuted(store.get("splatSiblings.beat-hopper.mute") === "1");
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const storedMotion = config.motion || store.get("splatSiblings.beat-hopper.motion") || "";
 let reducedMotion = storedMotion === "reduced" ? true : storedMotion === "full" ? false : prefersReduced;
+const IDLE_IMPACT = {
+  simDt: 0,
+  frozen: false,
+  shakeOffset: [0, 0, 0] as readonly [number, number, number],
+  shakeRoll: 0,
+  fovDeltaDeg: 0
+};
+let impact = createImpactRig({ reducedMotion });
+let impactState = IDLE_IMPACT;
 
 const frameOf = (): FrameState => {
   const o = sim.o;
@@ -123,6 +134,10 @@ function reactToFrame(): void {
     for (const event of diffSounds(prevFrame, frame)) {
       const flash = flashFor(event);
       if (flash) fx.flash(flash.color, flashStrength(flash.strength, reducedMotion));
+      if (event.sound === "perfect") impact.trigger({ fovKickDeg: 1.85, trauma: 0.08 });
+      else if (event.sound === "good") impact.trigger({ fovKickDeg: 0.85 });
+      else if (event.sound === "milestone") impact.trigger({ fovKickDeg: 2.25, trauma: 0.14 });
+      else if (event.sound === "miss") impact.trigger({ freezeSeconds: 0.035, trauma: 0.52, fovKickDeg: -1.4 });
     }
   }
   prevFrame = frame;
@@ -147,8 +162,21 @@ function render(live = false): void {
     const shown = live ? presenter.present(loop, true) : undefined;
     const card = config.manual ? null : cardPose(sim.o.phase, sim.o.t - phaseStart);
     const camera = card ?? rig.at(live ? loop.alpha : 1, sim, reducedMotion);
+    if (!config.manual) {
+      const pulse = reducedMotion ? 0 : beatPulse(shown?.t ?? sim.o.t, CONFIG.BEAT);
+      try {
+        app.post?.setEffect("bloom", { intensity: reducedMotion ? 0.48 : 0.54 + 0.22 * pulse });
+      } catch {
+        /* stub post surface */
+      }
+    }
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
-      ...(shown ? { shown } : {}), camera, reducedMotion
+      ...(shown ? { shown } : {}),
+      camera,
+      reducedMotion,
+      fovKickDeg: impactState.fovDeltaDeg,
+      shakeOffset: impactState.shakeOffset,
+      shakeRoll: impactState.shakeRoll
     });
     app.step(0);
   } catch (error) {
@@ -169,12 +197,14 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howtoOpen,
   step() {
+    if (!config.manual && !pilot && impactState.frozen) return;
     const typed = queue.take();
     const input: Input = pilot ? pilot.next(sim, steps) : typed;
     advance(input);
     presenter.afterStep();
   },
   render(frameSeconds) {
+    impactState = config.manual ? IDLE_IMPACT : impact.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     hud?.update(sim, best, config.manual);
     reactToFrame();
@@ -216,7 +246,7 @@ async function boot(): Promise<void> {
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "none", dither: false, ...lab.output },
+    output: { preset: "neon-night", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -395,6 +425,8 @@ function restart(): void {
   sim.begin();
   rig.reset(sim);
   presenter.reset();
+  impact.reset();
+  impactState = IDLE_IMPACT;
   prevFrame = null;
   lastPhase = "playing";
   phaseStart = 0;
@@ -433,6 +465,8 @@ const motionToggle = $<HTMLInputElement>("toggle-motion");
 motionToggle.checked = reducedMotion;
 motionToggle.addEventListener("change", () => {
   reducedMotion = motionToggle.checked;
+  impact = createImpactRig({ reducedMotion });
+  impactState = IDLE_IMPACT;
   store.set("splatSiblings.beat-hopper.motion", reducedMotion ? "reduced" : "full");
   render();
 });
@@ -477,6 +511,8 @@ const qa = installQaHooks("beat-hopper", {
     sim = new BeatHopperSim(seed);
     rig.reset(sim);
     presenter.reset();
+    impact.reset();
+    impactState = IDLE_IMPACT;
     steps = 0;
     prevFrame = null;
     lastPhase = "splash";
@@ -526,7 +562,10 @@ const qa = installQaHooks("beat-hopper", {
       return { popupsShown: hud?.popupsShown ?? 0, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, warm: warmResult, beatsScheduled: sound.beatsScheduled };
     },
     setting(which: "motion", on: boolean) {
+      void which;
       reducedMotion = on;
+      impact = createImpactRig({ reducedMotion });
+      impactState = IDLE_IMPACT;
       motionToggle.checked = on;
       render();
     },
