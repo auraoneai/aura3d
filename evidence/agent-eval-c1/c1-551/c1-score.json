@@ -1,0 +1,2912 @@
+{
+  "c1-551-t101-three-r1": {
+    "runId": "c1-551-t101-three-r1",
+    "arm": "three",
+    "task": 101,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1279,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505.1,
+          "jsKB": 504.6,
+          "jsGzipKB": 127.3,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 417,
+        "blank": false,
+        "frame": {
+          "lit": 0.982,
+          "meanLuma": 203.4,
+          "stdLuma": 47.8,
+          "motion": 10.33
+        },
+        "loaded": {
+          "totalKB": 504.6,
+          "jsKB": 504.6,
+          "requests": 2
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 10.434872685185185
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1165,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505.4,
+          "jsKB": 504.8,
+          "jsGzipKB": 127.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 69,
+        "blank": false,
+        "frame": {
+          "lit": 0.983,
+          "meanLuma": 203.6,
+          "stdLuma": 47.7,
+          "motion": 8.19
+        },
+        "loaded": {
+          "totalKB": 504.8,
+          "jsKB": 504.8,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "spider-followup": {
+            "name": "spider-followup",
+            "checks": {
+              "startsWalking": true,
+              "spacePauses": true,
+              "pauseFreezesPose": true,
+              "spaceResumes": true
+            },
+            "notes": {
+              "walkDiff": 8.650598958333333,
+              "pausedDiff": 0,
+              "resumedDiff": 11.054723668981481
+            },
+            "passed": 4,
+            "total": 4
+          },
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 10.457061631944445
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t101-three-r2": {
+    "runId": "c1-551-t101-three-r2",
+    "arm": "three",
+    "task": 101,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 890,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 504.8,
+          "jsKB": 504.3,
+          "jsGzipKB": 127.3,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 325,
+        "blank": false,
+        "frame": {
+          "lit": 0.991,
+          "meanLuma": 205.2,
+          "stdLuma": 45.3,
+          "motion": 9.7
+        },
+        "loaded": {
+          "totalKB": 504.3,
+          "jsKB": 504.3,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 9.748158275462963
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 891,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505,
+          "jsKB": 504.5,
+          "jsGzipKB": 127.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 67,
+        "blank": false,
+        "frame": {
+          "lit": 0.991,
+          "meanLuma": 205.4,
+          "stdLuma": 45.1,
+          "motion": 8.76
+        },
+        "loaded": {
+          "totalKB": 504.5,
+          "jsKB": 504.5,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "spider-followup": {
+            "name": "spider-followup",
+            "checks": {
+              "startsWalking": true,
+              "spacePauses": true,
+              "pauseFreezesPose": true,
+              "spaceResumes": true
+            },
+            "notes": {
+              "walkDiff": 8.390190972222221,
+              "pausedDiff": 0,
+              "resumedDiff": 9.753511284722222
+            },
+            "passed": 4,
+            "total": 4
+          },
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 9.706886574074074
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t101-three-r3": {
+    "runId": "c1-551-t101-three-r3",
+    "arm": "three",
+    "task": 101,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2679,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 504.7,
+          "jsKB": 504.2,
+          "jsGzipKB": 127.3,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 78,
+        "blank": false,
+        "frame": {
+          "lit": 0.996,
+          "meanLuma": 203.7,
+          "stdLuma": 38.7,
+          "motion": 8.51
+        },
+        "loaded": {
+          "totalKB": 504.2,
+          "jsKB": 504.2,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 8.105186631944445
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 3778,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 505,
+          "jsKB": 504.4,
+          "jsGzipKB": 127.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 99,
+        "blank": false,
+        "frame": {
+          "lit": 0.996,
+          "meanLuma": 203.7,
+          "stdLuma": 38.7,
+          "motion": 8.39
+        },
+        "loaded": {
+          "totalKB": 504.4,
+          "jsKB": 504.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "spider-followup": {
+            "name": "spider-followup",
+            "checks": {
+              "startsWalking": true,
+              "spacePauses": true,
+              "pauseFreezesPose": true,
+              "spaceResumes": true
+            },
+            "notes": {
+              "walkDiff": 8.766969039351851,
+              "pausedDiff": 0,
+              "resumedDiff": 9.216388888888888
+            },
+            "passed": 4,
+            "total": 4
+          },
+          "spider": {
+            "name": "spider",
+            "checks": {
+              "animatesWithoutInput": true
+            },
+            "notes": {
+              "diff": 8.980384837962964
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t102-three-r1": {
+    "runId": "c1-551-t102-three-r1",
+    "arm": "three",
+    "task": 102,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1271,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 548.1,
+          "jsKB": 547.6,
+          "jsGzipKB": 138.2,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 2210,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 156.2,
+          "stdLuma": 53.9,
+          "motion": 17.31
+        },
+        "loaded": {
+          "totalKB": 547.6,
+          "jsKB": 547.6,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 857,
+              "diff": 8.434448784722223
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 672,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 548.7,
+          "jsKB": 548.2,
+          "jsGzipKB": 138.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 86,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 156.2,
+          "stdLuma": 54,
+          "motion": 17.11
+        },
+        "loaded": {
+          "totalKB": 548.2,
+          "jsKB": 548.2,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "portal-followup": {
+            "name": "portal-followup",
+            "checks": {
+              "closeButton": true,
+              "closes": true,
+              "labelSwitches": true,
+              "reopens": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 858,
+              "diff": 16.148015046296297
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t102-three-r2": {
+    "runId": "c1-551-t102-three-r2",
+    "arm": "three",
+    "task": 102,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2940,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 547.3,
+          "jsKB": 546.8,
+          "jsGzipKB": 137.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 1094,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 103.5,
+          "stdLuma": 61.4,
+          "motion": 6.32
+        },
+        "loaded": {
+          "totalKB": 546.8,
+          "jsKB": 546.8,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 780,
+              "diff": 13.746942997685185
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1163,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 547.8,
+          "jsKB": 547.3,
+          "jsGzipKB": 138.1,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 219,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 112.3,
+          "stdLuma": 62.4,
+          "motion": 7.18
+        },
+        "loaded": {
+          "totalKB": 547.3,
+          "jsKB": 547.3,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "portal-followup": {
+            "name": "portal-followup",
+            "checks": {
+              "closeButton": true,
+              "closes": true,
+              "labelSwitches": true,
+              "reopens": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 780,
+              "diff": 13.804995659722222
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t102-three-r3": {
+    "runId": "c1-551-t102-three-r3",
+    "arm": "three",
+    "task": 102,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 568,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 548.8,
+          "jsKB": 548.3,
+          "jsGzipKB": 138.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 304,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 178,
+          "stdLuma": 47.2,
+          "motion": 33.03
+        },
+        "loaded": {
+          "totalKB": 548.3,
+          "jsKB": 548.3,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 840,
+              "diff": 11.038655960648148
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 580,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 549.4,
+          "jsKB": 548.9,
+          "jsGzipKB": 138.7,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 102,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 178,
+          "stdLuma": 47.2,
+          "motion": 33.05
+        },
+        "loaded": {
+          "totalKB": 548.9,
+          "jsKB": 548.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "portal-followup": {
+            "name": "portal-followup",
+            "checks": {
+              "closeButton": true,
+              "closes": true,
+              "labelSwitches": true,
+              "reopens": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 840,
+              "diff": 11.04900173611111
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t104-three-r1": {
+    "runId": "c1-551-t104-three-r1",
+    "arm": "three",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 647,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500.4,
+          "jsKB": 499.9,
+          "jsGzipKB": 125.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 79,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 124.9,
+          "stdLuma": 6.7,
+          "motion": 2.61
+        },
+        "loaded": {
+          "totalKB": 499.9,
+          "jsKB": 499.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 550,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500.5,
+          "jsKB": 500,
+          "jsGzipKB": 125.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 54,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 124.8,
+          "stdLuma": 6.7,
+          "motion": 2.58
+        },
+        "loaded": {
+          "totalKB": 500,
+          "jsKB": 500,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t104-three-r2": {
+    "runId": "c1-551-t104-three-r2",
+    "arm": "three",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 944,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500.4,
+          "jsKB": 499.9,
+          "jsGzipKB": 125.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 85,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 108.6,
+          "stdLuma": 23.5,
+          "motion": 6.61
+        },
+        "loaded": {
+          "totalKB": 499.9,
+          "jsKB": 499.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1942,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500.6,
+          "jsKB": 500.1,
+          "jsGzipKB": 126.1,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 61,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 108.6,
+          "stdLuma": 23.4,
+          "motion": 6.56
+        },
+        "loaded": {
+          "totalKB": 500.1,
+          "jsKB": 500.1,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t104-three-r3": {
+    "runId": "c1-551-t104-three-r3",
+    "arm": "three",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2512,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500,
+          "jsKB": 499.5,
+          "jsGzipKB": 125.7,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 221,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 41.9,
+          "stdLuma": 30.1,
+          "motion": 5.23
+        },
+        "loaded": {
+          "totalKB": 499.5,
+          "jsKB": 499.5,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1187,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 500.1,
+          "jsKB": 499.6,
+          "jsGzipKB": 125.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 65,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 42.2,
+          "stdLuma": 30.7,
+          "motion": 4.8
+        },
+        "loaded": {
+          "totalKB": 499.6,
+          "jsKB": 499.6,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t106-three-r1": {
+    "runId": "c1-551-t106-three-r1",
+    "arm": "three",
+    "task": 106,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2086,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 750.6,
+          "jsKB": 750.1,
+          "jsGzipKB": 229.7,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 3362,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 206.3,
+          "stdLuma": 42,
+          "motion": 4.21
+        },
+        "loaded": {
+          "totalKB": 750.1,
+          "jsKB": 750.1,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 3504,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 750.9,
+          "jsKB": 750.4,
+          "jsGzipKB": 229.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 217,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 205.8,
+          "stdLuma": 41.6,
+          "motion": 1.5
+        },
+        "loaded": {
+          "totalKB": 750.4,
+          "jsKB": 750.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials-followup": {
+            "name": "materials-followup",
+            "checks": {
+              "nullBeforeKey": true,
+              "key2SelectsMetal": true,
+              "key3SelectsFabric": true,
+              "key1SelectsGlass": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t106-three-r2": {
+    "runId": "c1-551-t106-three-r2",
+    "arm": "three",
+    "task": 106,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 545,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 507.2,
+          "jsKB": 506.7,
+          "jsGzipKB": 127.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 1981,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 180.2,
+          "stdLuma": 53.6,
+          "motion": 6.86
+        },
+        "loaded": {
+          "totalKB": 506.7,
+          "jsKB": 506.7,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 800,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 507.5,
+          "jsKB": 506.9,
+          "jsGzipKB": 127.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 141,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 179.8,
+          "stdLuma": 53.7,
+          "motion": 5.36
+        },
+        "loaded": {
+          "totalKB": 506.9,
+          "jsKB": 506.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials-followup": {
+            "name": "materials-followup",
+            "checks": {
+              "nullBeforeKey": true,
+              "key2SelectsMetal": true,
+              "key3SelectsFabric": true,
+              "key1SelectsGlass": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t106-three-r3": {
+    "runId": "c1-551-t106-three-r3",
+    "arm": "three",
+    "task": 106,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 3059,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 507,
+          "jsKB": 506.4,
+          "jsGzipKB": 127.6,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 3209,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 227.6,
+          "stdLuma": 35.4,
+          "motion": 2.59
+        },
+        "loaded": {
+          "totalKB": 506.4,
+          "jsKB": 506.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 536,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 507.3,
+          "jsKB": 506.7,
+          "jsGzipKB": 127.7,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 132,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 226.8,
+          "stdLuma": 35.8,
+          "motion": 1.25
+        },
+        "loaded": {
+          "totalKB": 506.7,
+          "jsKB": 506.7,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "materials-followup": {
+            "name": "materials-followup",
+            "checks": {
+              "nullBeforeKey": true,
+              "key2SelectsMetal": true,
+              "key3SelectsFabric": true,
+              "key1SelectsGlass": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "materials": {
+            "name": "materials",
+            "checks": {
+              "threeSpheresNamed": true,
+              "keyLightDrifts": true
+            },
+            "notes": {
+              "names": [
+                "glass",
+                "metal",
+                "fabric"
+              ]
+            },
+            "passed": 2,
+            "total": 2
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t109-three-r1": {
+    "runId": "c1-551-t109-three-r1",
+    "arm": "three",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 592,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 511.2,
+          "jsKB": 510.7,
+          "jsGzipKB": 129,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 994,
+        "blank": false,
+        "frame": {
+          "lit": 0.635,
+          "meanLuma": 18.7,
+          "stdLuma": 33.5,
+          "motion": 6.22
+        },
+        "loaded": {
+          "totalKB": 510.7,
+          "jsKB": 510.7,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20.2,
+              "diff": 4.940186631944444
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 929,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 512.2,
+          "jsKB": 511.7,
+          "jsGzipKB": 129.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 164,
+        "blank": false,
+        "frame": {
+          "lit": 0.634,
+          "meanLuma": 18.6,
+          "stdLuma": 33.3,
+          "motion": 6.26
+        },
+        "loaded": {
+          "totalKB": 511.7,
+          "jsKB": 511.7,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 5.87140625,
+              "blueMinusRedAfter": 12.74541232638889
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 19.9,
+              "diff": 5.1536328125
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t109-three-r2": {
+    "runId": "c1-551-t109-three-r2",
+    "arm": "three",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 981,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 524.4,
+          "jsKB": 523.9,
+          "jsGzipKB": 132.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 1159,
+        "blank": false,
+        "frame": {
+          "lit": 0.644,
+          "meanLuma": 53.4,
+          "stdLuma": 89.1,
+          "motion": 6.2
+        },
+        "loaded": {
+          "totalKB": 523.9,
+          "jsKB": 523.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 19.9,
+              "diff": 4.5316796875
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 829,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 525.1,
+          "jsKB": 524.6,
+          "jsGzipKB": 132.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 139,
+        "blank": false,
+        "frame": {
+          "lit": 0.64,
+          "meanLuma": 53.7,
+          "stdLuma": 89.2,
+          "motion": 6.3
+        },
+        "loaded": {
+          "totalKB": 524.6,
+          "jsKB": 524.6,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 5.434379340277777,
+              "blueMinusRedAfter": 13.483689236111111
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20.2,
+              "diff": 4.5375752314814815
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t109-three-r3": {
+    "runId": "c1-551-t109-three-r3",
+    "arm": "three",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 559,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 531.5,
+          "jsKB": 531,
+          "jsGzipKB": 134.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 1683,
+        "blank": false,
+        "frame": {
+          "lit": 0.614,
+          "meanLuma": 36.2,
+          "stdLuma": 46.9,
+          "motion": 3.79
+        },
+        "loaded": {
+          "totalKB": 531,
+          "jsKB": 531,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20,
+              "diff": 2.879212962962963
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1124,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 532.3,
+          "jsKB": 531.8,
+          "jsGzipKB": 135.2,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 324,
+        "blank": false,
+        "frame": {
+          "lit": 0.61,
+          "meanLuma": 35.8,
+          "stdLuma": 46.8,
+          "motion": 4
+        },
+        "loaded": {
+          "totalKB": 531.8,
+          "jsKB": 531.8,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 10.244401041666666,
+              "blueMinusRedAfter": 14.5270703125
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 19.9,
+              "diff": 2.9062239583333334
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-three-r1": {
+    "runId": "c1-551-t110-three-r1",
+    "arm": "three",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1066,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 510.7,
+          "jsKB": 510.2,
+          "jsGzipKB": 128.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 875,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 100,
+          "stdLuma": 38.2,
+          "motion": 0.16
+        },
+        "loaded": {
+          "totalKB": 510.2,
+          "jsKB": 510.2,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.14857638888888888
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 2746,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 513.2,
+          "jsKB": 512.7,
+          "jsGzipKB": 129.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 115,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 100,
+          "stdLuma": 38.2,
+          "motion": 0.15
+        },
+        "loaded": {
+          "totalKB": 512.7,
+          "jsKB": 512.7,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 102.76260995660891,
+              "dim": 29.53044074221881,
+              "relit": 103.65146866320546,
+              "angleRange": [
+                -9.740234451088408,
+                9.61552953175231
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.14348524305555554
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-three-r2": {
+    "runId": "c1-551-t110-three-r2",
+    "arm": "three",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1398,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 511.1,
+          "jsKB": 510.6,
+          "jsGzipKB": 128.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 609,
+        "blank": false,
+        "frame": {
+          "lit": 0.985,
+          "meanLuma": 78.3,
+          "stdLuma": 40.8,
+          "motion": 0.14
+        },
+        "loaded": {
+          "totalKB": 510.6,
+          "jsKB": 510.6,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.15311921296296296
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1938,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 513.8,
+          "jsKB": 513.3,
+          "jsGzipKB": 129.6,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 103,
+        "blank": false,
+        "frame": {
+          "lit": 0.985,
+          "meanLuma": 78.3,
+          "stdLuma": 40.9,
+          "motion": 0.14
+        },
+        "loaded": {
+          "totalKB": 513.3,
+          "jsKB": 513.3,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 82.14135690539749,
+              "dim": 8.578947313379757,
+              "relit": 82.87193803385784,
+              "angleRange": [
+                -12.456015828002814,
+                12.456015198234418
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.15750578703703705
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-three-r3": {
+    "runId": "c1-551-t110-three-r3",
+    "arm": "three",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 601,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 509.4,
+          "jsKB": 508.8,
+          "jsGzipKB": 128.6,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 575,
+        "blank": false,
+        "frame": {
+          "lit": 0.998,
+          "meanLuma": 50.9,
+          "stdLuma": 23.7,
+          "motion": 0.05
+        },
+        "loaded": {
+          "totalKB": 508.8,
+          "jsKB": 508.8,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.07702546296296296
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 518,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 512.7,
+          "jsKB": 512.1,
+          "jsGzipKB": 129.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 58,
+        "blank": false,
+        "frame": {
+          "lit": 0.998,
+          "meanLuma": 51,
+          "stdLuma": 23.7,
+          "motion": 0.12
+        },
+        "loaded": {
+          "totalKB": 512.1,
+          "jsKB": 512.1,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 54.28298729170518,
+              "dim": 5.6001209678885715,
+              "relit": 55.260533177119925,
+              "angleRange": [
+                -7.922651781174805,
+                7.975693236615521
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.0990162037037037
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-three-r1": {
+    "runId": "c1-551-t111-three-r1",
+    "arm": "three",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2255,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 542.7,
+          "jsKB": 542.2,
+          "jsGzipKB": 136.2,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 723,
+        "blank": true,
+        "frame": {
+          "lit": 0.082,
+          "meanLuma": 6.9,
+          "stdLuma": 19.1,
+          "motion": 0.56
+        },
+        "loaded": {
+          "totalKB": 542.2,
+          "jsKB": 542.2,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 7,
+              "target": "Earth",
+              "distance": [
+                169.55402382208385,
+                8.75,
+                8.75
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 2117,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 543.5,
+          "jsKB": 543,
+          "jsGzipKB": 136.4,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 133,
+        "blank": true,
+        "frame": {
+          "lit": 0.082,
+          "meanLuma": 6.9,
+          "stdLuma": 19.1,
+          "motion": 0.55
+        },
+        "loaded": {
+          "totalKB": 543,
+          "jsKB": 543,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 7,
+              "target": "Earth",
+              "distance": [
+                169.53261821176423,
+                8.75,
+                8.75
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-three-r2": {
+    "runId": "c1-551-t111-three-r2",
+    "arm": "three",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 907,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 524.9,
+          "jsKB": 524.4,
+          "jsGzipKB": 132.6,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 725,
+        "blank": true,
+        "frame": {
+          "lit": 0.134,
+          "meanLuma": 8.8,
+          "stdLuma": 21.4,
+          "motion": 0.81
+        },
+        "loaded": {
+          "totalKB": 524.4,
+          "jsKB": 524.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                219.78374668665546,
+                13.000000000000002,
+                12.999999999999996
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 544,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 525.7,
+          "jsKB": 525.1,
+          "jsGzipKB": 132.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 65,
+        "blank": true,
+        "frame": {
+          "lit": 0.134,
+          "meanLuma": 8.8,
+          "stdLuma": 21.3,
+          "motion": 0.81
+        },
+        "loaded": {
+          "totalKB": 525.1,
+          "jsKB": 525.1,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                219.58063738029907,
+                13.000000000000002,
+                13.000000000000002
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-three-r3": {
+    "runId": "c1-551-t111-three-r3",
+    "arm": "three",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 2072,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 542,
+          "jsKB": 541.4,
+          "jsGzipKB": 135.8,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 121,
+        "blank": true,
+        "frame": {
+          "lit": 0.065,
+          "meanLuma": 3.7,
+          "stdLuma": 17.7,
+          "motion": 0.74
+        },
+        "loaded": {
+          "totalKB": 541.4,
+          "jsKB": 541.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 7,
+              "target": "Earth",
+              "distance": [
+                96.59517885545262,
+                6.000000000000001,
+                6
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1050,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 542.6,
+          "jsKB": 542.1,
+          "jsGzipKB": 136,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 102,
+        "blank": true,
+        "frame": {
+          "lit": 0.065,
+          "meanLuma": 3.7,
+          "stdLuma": 17.7,
+          "motion": 0.74
+        },
+        "loaded": {
+          "totalKB": 542.1,
+          "jsKB": 542.1,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 7,
+              "target": "Earth",
+              "distance": [
+                96.65054550560497,
+                6,
+                5.999999999999999
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t103-three-r2": {
+    "runId": "c1-551-t103-three-r2",
+    "arm": "three",
+    "task": 103,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1533,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 515.9,
+          "jsKB": 515.4,
+          "jsGzipKB": 131,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 1094,
+        "blank": false,
+        "frame": {
+          "lit": 0.995,
+          "meanLuma": 48.8,
+          "stdLuma": 26,
+          "motion": 20.03
+        },
+        "loaded": {
+          "totalKB": 515.4,
+          "jsKB": 515.4,
+          "requests": 2
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 15.181510416666667
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 1694,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 516.5,
+          "jsKB": 515.9,
+          "jsGzipKB": 131.3,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 198,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 51.5,
+          "stdLuma": 26.1,
+          "motion": 17.26
+        },
+        "loaded": {
+          "totalKB": 515.9,
+          "jsKB": 515.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon-followup": {
+            "name": "canyon-followup",
+            "checks": {
+              "flyingAtStart": true,
+              "pauseStopsCamera": true,
+              "resumeMovesCamera": true
+            },
+            "notes": {
+              "start": [
+                -9.185807342611168,
+                1.6575071043963332,
+                275.60133
+              ],
+              "paused": [
+                -10.132499806052856,
+                1.9257253652291317,
+                271.93533
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 15.374790219907407
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t103-three-r3": {
+    "runId": "c1-551-t103-three-r3",
+    "arm": "three",
+    "task": 103,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 525,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 517.9,
+          "jsKB": 517.4,
+          "jsGzipKB": 131.9,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 553,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 67.9,
+          "stdLuma": 26.1,
+          "motion": 26.95
+        },
+        "loaded": {
+          "totalKB": 517.4,
+          "jsKB": 517.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 21.711316550925925
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 2578,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 518.4,
+          "jsKB": 517.9,
+          "jsGzipKB": 132.2,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 313,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 67.7,
+          "stdLuma": 25.9,
+          "motion": 25.13
+        },
+        "loaded": {
+          "totalKB": 517.9,
+          "jsKB": 517.9,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon-followup": {
+            "name": "canyon-followup",
+            "checks": {
+              "flyingAtStart": true,
+              "pauseStopsCamera": true,
+              "resumeMovesCamera": true
+            },
+            "notes": {
+              "start": [
+                10.04032401170407,
+                1.1438947231039822,
+                5.113537000000002
+              ],
+              "paused": [
+                10.852421517409978,
+                1.2983321657990006,
+                9.146686999999991
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 19.744220196759258
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t103-three-r1": {
+    "runId": "c1-551-t103-three-r1",
+    "arm": "three",
+    "task": 103,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 1157,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 509.4,
+          "jsKB": 508.9,
+          "jsGzipKB": 130.2,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 790,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 171.2,
+          "stdLuma": 29,
+          "motion": 15.63
+        },
+        "loaded": {
+          "totalKB": 508.9,
+          "jsKB": 508.9,
+          "requests": 2
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 7.09711082175926
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 900,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 509.9,
+          "jsKB": 509.4,
+          "jsGzipKB": 130.5,
+          "assetKB": 0,
+          "scaffoldKB": 0,
+          "files": 2
+        },
+        "ready": true,
+        "loadMs": 455,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 170.8,
+          "stdLuma": 28.2,
+          "motion": 10
+        },
+        "loaded": {
+          "totalKB": 509.4,
+          "jsKB": 509.4,
+          "requests": 1
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon-followup": {
+            "name": "canyon-followup",
+            "checks": {
+              "flyingAtStart": true,
+              "pauseStopsCamera": true,
+              "resumeMovesCamera": true
+            },
+            "notes": {
+              "start": [
+                17.55453333279505,
+                3.121423122426715,
+                -4.950000000000002
+              ],
+              "paused": [
+                14.028386931266695,
+                3.0462047911841963,
+                -8.891299999999992
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 8.385545428240741
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  }
+}

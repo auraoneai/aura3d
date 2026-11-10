@@ -1,0 +1,548 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018M9iNam3LuVqGC38cDXRMk",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Bk6UWZ8uzN26bUug2vNbdW",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018M9iNam3LuVqGC38cDXRMk",
+    "content": "1\t# Task 11: Magic portal with swirling particles and glow\n2\t\n3\tBuild a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The scene is a magic portal standing in an ancient stone ruin at dusk. Build a tall ring portal (a standing circular frame of weathered stone or runic metal) on a stone platform, with moody dusk lighting and a few ruined pillars around it. The disc inside the ring is a swirling, glowing energy surface, such as a rotating vortex in cyan and violet with a bright core, animated continuously. Glowing particles spiral around and into the portal, and a few motes rise from the platform and drift upward, fading out. The portal casts colored light onto the nearby stones and platform, and the light should pulse slowly. Add a subtle slow orbiting camera or gentle camera sway so depth is apparent. Aim for a polished, atmospheric look: strong bloom-like glow around the portal, high contrast against a darker surround, a coherent color palette, and soft haze. Keep it smooth at interactive frame rates. Also expose window.__TASK_STATE__ = { portalActive: true, particleCount: <number of live particles>, time: <elapsed seconds> } and update it every frame.\n4\t\n5\t## Rendering contract (all tasks)\n6\t\n7\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n8\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn s"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Bk6UWZ8uzN26bUug2vNbdW",
+    "content": "TASK.md\nindex.html\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01A6QQHS93PuehmYyf52qJLx",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01SPZTog5sxWLVEHWsNrDuCV",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01DhEox2ot1FTWtisoLRmBah",
+    "name": "list_dir",
+    "input": {
+     "path": "public"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01W3YhttseZ56G47ZuhqjYdq",
+    "name": "read_file",
+    "input": {
+     "path": "tsconfig.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01A6QQHS93PuehmYyf52qJLx",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01SPZTog5sxWLVEHWsNrDuCV",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01DhEox2ot1FTWtisoLRmBah",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01W3YhttseZ56G47ZuhqjYdq",
+    "content": "1\t{\n2\t  \"compilerOptions\": {\n3\t    \"target\": \"ES2022\",\n4\t    \"module\": \"ESNext\",\n5\t    \"moduleResolution\": \"bundler\",\n6\t    \"lib\": [\"ES2022\", \"DOM\", \"DOM.Iterable\"],\n7\t    \"strict\": true,\n8\t    \"noEmit\": true,\n9\t    \"skipLibCheck\": true,\n10\t    \"types\": []\n11\t  },\n12\t  \"include\": [\"src\"]\n13\t}\n14\t\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm planning a WebGL scene with bloom post-processing, keeping it modest for software rendering compatibility. I'm sketching the visual design: a dark purple-blue gradient sky, a stone platform with steps on a large ground plane, and a ring built from torus-shaped stone block segments.\n\nI'm detailing the remaining elements: a shader-swirl portal disc, CPU-updated spiral and rising particle systems, pulsing cyan/violet point lights with ambient dusk tones, procedurally textured broken pillars, additive fog sprites near the portal, and a slow camera sway. Now I'm starting to write the actual geometry code, placing the portal center and defining platform dimensions before building out the ring's stone blocks.\n\nWriting block geometry...\n\nWorking out particle respawn logic so they spiral inward and reset near the outer radius, with alpha fading based on height to avoid clipping below the platform.\n\nFor the ambient motes, I'm planning ~120 particles rising slowly from the platform with sway and a sine-based fade over their lifetime, combined with the spiral particles into one Points object totaling 820 particles. For lighting, I'm setting up a pulsing cyan point light near the portal, accounting for physically-based intensity units in newer three.js versions.\n\nI'm adding a violet point light behind the portal, low ground lights for the platform, a dim hemisphere light, and a dusk-orange directional light for rim lighting, while keeping only directional shadows (skipping point light shadows for performance) at a modest 1024 map size given the 640x360 target. For textures I'm generating a stone-like canvas noise texture with cracks to use as both map and bump map, and creating glowing rune textures on small planes attached to the ring.\n\nFor the glowing ring I'm simplifying to a thin emissive cyan torus with an oversaturated color for bloom, plus 16 rune-textured planes on the block faces using additive transparent materials that pulse in opacity. For the environment I'm building a large fogged ground circle, a gradient sky sphere shading from dusky orange-magenta near the horizon to deep navy above, using exponential fog in a dusk purple tone, and scattering a small cheap set of static star points in the sky.\n\nNow I'm adding drifting haze sprites with radial gradients at platform level for atmosphere, and designing the pillars as jittered cylinders -- deterministically perturbing the top ring vertices based on angle so the broken edges look irregular but still seamless, along with bases, capitals for intact columns, fallen drum segments lying on their sides, and scattered rubble boxes.\n\nI'm building the stone platform as a layered cylinder with a textured step, plus a glowing rune circle drawn on canvas with concentric rings and tick marks, pulsing additively just above the platform surface. Then I'm setting the camera to orbit slowly around the scene at a fixed height looking toward the altar, with wide FOV to keep the pillars framed, and configuring bloom post-processing for the glow effects.\n\nI'm also adding a vignette and subtle grain via a custom shader pass after the output pass, and setting up the renderer and effect composer with a half-float render target with multisampling to keep edges clean.\n\nFor the disc shader, I'm working out a log-spiral swirl formula based on radius and angle, with discard for pixels outside the unit circle, and planning a small cyan rune texture drawn with random strokes on a transparent canvas.\n\nNow I'm layering in turbulence noise bands blended between violet and cyan, with a bright exponential core and a cyan glow ring near the disc's edge, keeping it fully opaque since it sits behind the stone geometry.\n\nThe disc sits slightly hidden within the stone's radial depth, and I'm distorting it with a rotating swirl that changes angle based on radius and time, plus fbm noise. I'm adding a pulsing light intensity tied to a sine wave, defining cyan and violet accent colors, and setting up the stone material with a roughness map in sRGB color space.\n\nFor the stone texture itself, I'm generating a seeded procedural pattern with speckles, radial blotches, dark crack strokes, and mossy teal patches using a mulberry32 RNG for determinism, plus a hash function for vertex jitter. I'm also configuring directional shadows with a bounded camera frustum so pillars and ring blocks cast shadows onto the platform.\n\nNow I'm setting up particle arrays for spiral and mote effects, with position, color, size, and alpha buffers alongside state arrays tracking radius, angle, speed, and lifespan, then writing the per-particle update logic where angular velocity increases as particles get closer to the center...\n\nWriting spawn and respawn logic...\n\nI'm defining fade-in by age, fade-out near the ground via smoothstep, and color blending between cyan and violet with HDR brightening as particles approach the center.\n\nNow I'm working out point sizing so world-space particle size translates correctly through the projection matrix, settling on a size around 0.1 units for a few pixels on screen at typical distance.\n\nSetting up the floating motes with randomized radius, rising velocity, lifespan, sideways drift, and a sine-based alpha fade over their lifetime.\n\nI'm choosing a warm-to-cool color mix for the motes, then shifting focus to the sky shader -- a large backside sphere with a vertical gradient from magenta-orange at the horizon through deep violet to near-black at the zenith, plus a sparse star field layer.\n\nFor post-processing I'm setting ACES Filmic tone mapping with standard exposure. Then I'm tuning exponential fog density so it stays subtle near the portal but thickens with distance, and planning to match the fog color to the horizon gradient so the ground fades naturally into the sky.\n\nFor atmosphere, I'm adding soft violet/cyan haze sprites drifting around the platform with additive blending and no fog interaction, plus a large glowing sprite behind the portal disc to create a halo effect that complements the bloom.\n\nI'm setting up a vignette post-processing pass using ShaderPass, and building the ground as a large stone-textured circular plane with repeated texture wrapping, cloning the texture each time to allow independent repeat settings.\n\nNow I'm placing sixteen stone blocks around a ring, computing each block's angular position and rotating it so its radial axis points outward, then adding slight jitter to depth and radial dimensions for a natural look, plus a couple of flanking base stones.\n\nI'm figuring out the plinth block sizing so it embeds properly under the ring, adjusting the ring's center height so the bottom sits flush into the platform. Then I'm adding rune plane geometry as child elements on the front face of each block, positioned so they inherit the block's rotation.\n\nI want a few texture variants for the runes using additive cyan materials with shared pulsing opacity, plus an inner glow torus with an oversaturated color via setRGB. Now I'm writing the particle shader logic, defining custom attributes for size, alpha, and color, then shaping the fragment shader to render soft glowing point sprites with a smoothstep falloff.\n\nStill writing shader code...\n\n",
+    "signature": "CAQSwnYKEggTEAEYAjgBQgh0aGlua2luZxIMlYPsB01eyTncU+F2Ggy1qfreWTkp4cnKKA4iMHtYL9q/zKQr9VznJiq8uYCUAWKIjwy1eE5CE4bCfmsFcfFz9tmF394OaCklxU+2GSrddfBw6V8ZSG3GWuBcAshVPADyqR3l9+XzkABNXV3JJKgSLtauoTW2gSk1nwWU7HTta3psCm7JL9fgq186s9FdenKCVL5rIVZ+ED9LVS0P/zNOcpdo+e3vFO7SH1Lz6Ork8yTfm0UM+PnH0dpBZ1LvZvB1QonDMfkA4DLgK7QEupcoXXgCAcCvGPxxNFw3Owl280VVhtRL2f8iiBfJL+x/v4CnjSxatvjR8gXjF5EfSLnocc0CitfO8lTRBVFSuBnghz+uGhGdMNecIPPz6+VHy/Xc8GL8sbrnerQ4MPFzMv2IwaYMFYda1+x49MK7iasIjpDN693ZlwNwyLSdyFycqZFChaZwSvm7rjw9eNq7krJXwUJLszLuBVsR/C9P4XxPnLI+TbvGOHRTwGhF7ljiVLpNJ/y1X902Nv7ZZoQmV7RnT1iUtM52BtDiAPxE1EEhOhH+4Kxd+PKFoJmJMGBwgxpvlbJD/vPm1pMh0bCJYF4LQikWZRxY7VLu/UBAvds2h3pc9B4RpxnqAMSbYMT5rEs65O/7zlIohtra4bO66hn+KaRrmgZ1REI2Um/rT3reNHN84r1Ht2QVzA789xjsXhHY4L4Nn+Y4rWYfZWechBOPfeUzGviB5OH5dcqqFFl0OqK1P5bc5yX9DajysINP2r7IM+3nz3MAaXiCTvixxrz4xI2DIXufbRFpe1ql2cOPnHi/GkSHTKhTnEdmKUYDFc7OZPjVbbT8HZrymL/13vQmK+KZ2r2s1MCOC9JaeRP/S602U0Hpjtu0GPQdbY0cSbvcLYV2TYrPc8fx30PLbG+YvXAuIqf4rKYUQDX9gUoujHdYWdIO7AMJhldsCUx9ORA63dZU6lCp6hhn25QPnm12Ht/lHdKxNLRWb5jwboXTCCWAQ+2eb4STdf8qFk4PvFbZWjdgl+NDMnNBFD3qJyeogs+Ok81nCtI37tFJYIrFtJBJ/r5QgcrJ9Y44yl7sdHwLbu5LX9QlD9TU3rOH0ex8ISbfHe+nYq/vE9piVTcSLqWOFqvHewKvWcOfo58+7VYYB/5wWkuhxU6blVtrYAqimLNJLOPswzMhZb71vpZHs3Uyetb4v1Z7BHiTNrjBCU4e8LkDQgqvz8blBFwULk20ec0yz8c3gRNKcBo5Psz/wuDiuWlNdwnW/tbLYSSU3wPwiwjALbpHwH7O0WLkA72IMmOJPRdOpa2VB/fsrMSyALTrVsMQKeWTT8gPdfgGabb36RFIwBzNjki5erKf1vxzAnujQ6QwNiXNnkvANK1CWeMGTRM19fdNR9k/oXC4XbJJYiUaxQL5V6OyUhf82nDUI31eSaShsoRycO960YNKSqLmeLrPWWfkcwQXNk9yHnE87jE1jXqQyL6Uc9zrpYETIjUR3gujPkXOSMAIpDuZ8K0TyS4x2to0q0IDjeI07icgIqDWKqnUEsmVsMkFPnfZIJv9U7vCESep9qrmb6TdI5zakJhvo8+29XTp3fmERmCZglgiW54FsXihTN2BxokiB/5+vw2QJBFQf1UV9fFy9UbjcOTCL3lqhr6/FCJ0Jc1tgcOP0Gd0NEie6DjoudhnxW4b4lr5pEl4eJ8HFL+QENrkjuKuNhWFwYBmfGCxsYo9R5R4t9B1Gm+X6Bm8l62n6vg3lpEiL8npNfrqkQK33nrXB78eKIlFaFzcv/8tBWN5tYnOECPWfdLdoILu1MyQidXbUUWPkAtjnGiGYxbu3BZg7MalAzgpoifEzhmSJMQZM22y8AeLiu+eJ5N1Toe2/rcUSGLM8YOOXwr49VZ+sLfJZjVFqF1CFD6gtbaJmVYRxdXI/OmgBYZcTy8p3M5a2yQJC+aOz1ujkQ2WkFnm1fFJuii6dlAQ5E9OinwQj9hHwKYnl4/c/uUByuh0XfFbqgo2bwgKbc99qlnjxt518XKVyVkg+n2g+n2Gpt0uQau/UGJ8cvpXz6UxtZnWeG1W0qP7xUVsiYiXngUwBfzKQxUPqHBpLLLNmJxtZhAVK782l2B4IArRMHd6Yz7U4c9JS8aAX6cAMU3sqki/22FtRWnLCEZ334HdwLt1oYxdjNuZSkFux8TL+2Zt+0cLANYlU/Y0efReTf0C4QzRLazORKyyPb4r1TFyovYx0lxDRh0azJF8WCVrA3l8bDhWfBO+WpwsWpeUVU3x1eB77iOnsF2i6m6E4zjC7z2ms7IefIN+mqf5UD0NyN0XDp8fDVOoKpc+mJKTtzVGWuy8Zx4YMiWxVfEe6XzGT+GgIqrQiQN4FET/GibZqSJ9wyQlB3w30V+7hgKEjk3aLmVJiW7vOEEpR+Gbb64xbcC8DMOrUSZMGkwWkncAIL7fd/IHwreynZWGGFdcdu1PtYKUNmnfiQOTcbspC0tWHa1k83QRDQSriaxLj7sxjtoInbu1TUpCEbOwKSH8BtIEFr0U0RUXnQEHOQGFnnswWZzMBsWipVJfnIT8uOypBJ2lFoyQqOWvrwqrx0b1Yzd9rJpqOkmo9Q3UjhEGX0VUCALadibPlmhrBD7eTK4HsGxbrWo+gML5h7dpsxGJxovXBhXFcCN350I7YVdQjLJ/xbQNhRizbsWTT9X2wwIZyvXS63p+nTTo4J68lVtF8AKRQSmXOQNwG6mM9dFIK/ez77/W/y9vxD0Zjwclo9PEC3HWx2O4G5qxKJkegHJMeKMNNAW5EufxT8Rxnkt16nKLdjngcRjAl4W07aNmi9bZBwZYR5eMq7yQG4TlLTwias2feeVUq0687eHnXiKFJuiIq5/bYHx4geWpcI5vWpxe+XqRiKYYhtFgPaWOol0ik8Xywxd8omNTC3PojLnYZH2+Y+UegI5xrCnw0k7kIF7vfEj0fCcXkNvQwoUzHfHDZDIFKdJFYjIjUA4JXh/zy6V74ZA3cyulNqbbNUBGvScXXDGbz/Md9cYN3W4dIHlFTqIXX53IHGYjTPJzqcYJOEqYcoSC30D8zYtyndOomnvMJOef5p614MpjYAXKY2P+p+TAN29WO5eYK+kCxfnCSY2Ad1gcHoyjXbMvH13PvUn32/M8472LYESBz/ef/gWJ1VnaHsyhMWi4HSSgVKZ1yrd/LtOUoPVGksxswmqpKrbmEg6/dzKD1WGyOohoC+rvehrwhpLvYbb+emOq2PB2XJIMQLDyR5VmARfMZ7ZmX/mO2MiHq1NbEZmWKyMcpDHfXwQFtpumlHVaDZlF+W2skTFCw6NAI0HYiUYTE+hlAoL3UBSpaQjaVlmvlbJaaeZmThfoFTtP9S9U6sNVuBlzje+dbcOnjdDI0C0vR6Ic+bJO0D7w04/J3sdx+39zrYc9R1Aq9nXCBj7l3UQqzvcxScSs4GyhyDCkrAXZv/bfvRgzDpR9dVWQGDDne38keOqqPHdQiyLKtU3Ju4WEFPD6pZ9Obe+JSeyH1KTcbJ+WlOIZutQBIVkZA/+bjrSdmcDWakDqFWysaorfrOTePifz7K9Ll9A5YgyAS4Ppvce5nOm5zynr+09qSJIGxCDCyHJFnt3IvoKosPzy6hKh3jXdKxI0L6Gt/IDAu4ZfIgqIiCk6AIGPERvr2p3dzfGuejTAaUqN0VOx9mD6RXPNlygAPOY4PF8m0Skf4TT3AitF1FcSqAP1D98ENToNd23oilgg2wdI4I5bZtT4CS4Y4KTeGIO4TMV3bKPmvFSTeGFK1cnsZcN+rJL8YrSWnoVBk//71/JWnK8BLNXv4PR/5oyc8bxjpU5hBlU4c/mi4BkN2UZYWSC09qgaAnrVkKz7uhHKKvl4q59cAyvoIXQ8SZuS+PIZ11dEUQBQ5fXuPM2NLdKPWdBovJ0iABmfFjWKzzWlPmqxubVAg1+jbhQH3gvOoR1tx78VQdY3zFUG0cSEcwzft2LHCvU7jRwK36ongduABQHwUFWOS3JVr70T8EEoAainuuov3WzhQf9ccxt7hEJfcZoVptGtizWgRGY74wv58bVjt3fJiAZVgT20NgLik/YOO0IjfVZU8vMqZg6cV9eq3LfMsBtjQOJzt4mkrAnqAM9V19MofBYUVB6UP/8HkdZ6YSeNwtQKT4Uaf30mf6ZnJTx5pwR4LAk/wU8ZawfbrT1farNEdxOFKMQj7JHpYJczO76wLCG5tzWvqJL7/Rf4LnsTYZm9FmY/lCS4/EMuBsYzeFFz9NZa0xtXwWONNGN+mjr7rrggbKB/Jem/qkSDcR7qlQb/qE8XDik3fVLi2vAJNUUKrm7nX4+UjtjgeCyPC5UIxNk8CNPbKzCs7R6Bskw+ewC9eag7moS2rmlY/lxKVfO1DBgb2YXea2Ce/e46g/KZlCjfouZdw6j+u+GusmR7NYBWszQbbuC/VQ3cqZzlvr0JS7HzHCKfoGTl8/JrMI/XxhLq0TgoWddK5Ddn2mT7RH4EdGLK4nV0QmevQf4+5tUSLoMJg3Eqx1KnMa/KRJr8GnNCOR80w1c8ZyMmzJBZirvBG4Wkij5fIJBU8r1STjTpDq7Xo1WVCs31Yp5kOirzpxRjI7PsfFWmFvfLagfvLlRsZS6HOOR5N+q4k6QysNUP8BI9dx88o5TGvENf5AK4fXqXMCFkwyBYKeeA9QpvilKCddDxwvvE3szWDP72PE76HvaON7+7kOEBlJ3ODu4BxH/wavoSGxHD0OpHBptDzMxQom2/vGuVh/qdQSYdR59+tkVEzwAiNUtNI49BaBWis96bq4jyESPghn6X5GgNONLcAzTnMdwP/nELqsGzdM0C7yjI8Xx28D8SQ0xiwZZqpT6XVBDB8yYlBw7Om2+JzqXP/RdrufVGLu4FJG3akWcE7TSvwwsMSJDuYMIyCBXE1dtXxHvWSuIrvaDsbVbZ6Ezfo5M3FLVj7a/5fv66wG8krkuG1daQJ4fmfOcTnN31+cEO43IaNM2Dm4EpC/I9mpzsH5RMlwWEcbcy56ZDB/neEbNbQDbBAuIqQojKoq5A159FWxstCB8SDO5cumlxfNQo0EXgAs20XfcT0lONBtMxlYxTCvyM52wrtwhlLI0uwuhpqRCyuKDg+G1yRCscp0lfU5DwfoNx+v1W8uZutj5Dws5zpu9n6PrMfJriioq+VmjSd9sroPWOQM8xqSpyjiqGcXMwde7MbGwZam4v5HK1PsWcH9wM9X0m1n8x4V1+JhnKjd10640Lx6etN1RHvDb6TFQfqrjdeQ42n0DzKmSO2gYtpqdRs5KJdFyiwXig8gKnV7Hh72kx1KuFfU/nPFDELoX9Pct58WW7ei9n30wLXFMP4sEZl48kjhMswRvd4OC0uvy/ku3G8BIOQxxnc8bZhEO5dS/Vj2uBceeJEDHKwb5xD7h4vdlB87h+FSDkhfCcpp3DLinAjjV7G6XA1Y8eI2npEVWEmtanLgK9p/sy8tF/bYgNmEHzLQuK02T4vcueIMXcQxHo7gEU8Lfe/BIOTHjIPzytWLFkgFFNdD2DucxtJA2qNevSuEtBB+0ofybNm5r8tkJWi4Xaxehz4k+eFxpj++gr7iZ8UzfNYt1Un5szPo334dN+4zwOnDkNbP+h/TZpuTkQkzSxxjFg/58t3uaS1MRBRnGDluL/r5M45uos7MLUJnvQvszKC76Fb4mpzcHkRbMDMPR+bwctGMtpN1bbS+CDWTL8oPCsnKn64cKKLUWMk7ZN+3+3gHog8RNX+CDfNtweFJZ+jQNpGLXrCw6hCQTnDGZ0YkjbHjn25kKjaR/n9mQA1y/KmeduyohJ/kJy3ekFjfueT31TG7Jdj+Cu07y9G4cG96nW1M3krv2D89e4qaOQeevYrRwx5tAPgF3DJyOykj4wqmz4K+9WBd9zHkFWaTG/wjJ1GNoPYReXt5jbiSkuqJkZUVsIh/ARpnU4ChZTRpq36x0MdqpmP3m/bplzOvyej/vla+lThN+nw47Eiku0mY4b3NcdAOG21NNyOrW8LLubraaU+Xx/6Samhuaz5wjtJiRROfO3RCaxKN2AiED9CFmNje+M7oraR8UCaG2IFItFTB5YMmPCifjnlW+GKOU7kDlH8g4ZYLDC2Em/Z99pLnpXa/JgG1VFqRlHUrTJANZLwF4pvBNRBiL7u5C6Z8gPmdt96ueYb7NJL+AOn5XKk2IcJpEVHNZNrlpG7ntiPw9/h77A0+C/CAYCt1EApUbxkjruMZ6SY9tsgwINsKtv6R5YOATZRY7QdwwGVeTAz6zv2odJFE1FK1r20igI/eUtzOLLlfoF8Z3optREDDWdmsqAMMaStulRV0Q7rmEGs6+sjUu9u5hwEBPsAlIhGh3L03rKLCMsceYb/QF9ZIL51yXH7G56VP05b4sToKLJH++sMjNOT3KCRDVX+mmTiO4D8Wdmg29AzawlS9ZzeUIL19D1FKWnek9S1E6hfscFfGtIG4ufFg7vWg8S3Ss3ffKqYb+/snes87vI0FPo4giTqwaT0T77ONeOwBlTHzQ1BzG9tf6xJa3LMp6tDuK0UdN4NRSJEyDac9koW/aumovvzK+Jl7T8BnIxXYHSpMR0pu51zO2WVZixkWtx45Nz4eudkRZvI7pJAn8/cG8ENJ+2/cXqZoNbpQ0a/ymSb2Vg0VRpSfpA2TlZKF9XI3pz1mN8MLdKSwab4vpHjhTBvUFtDIBj9qIV5cOcNg9OI087+5XMD+Wr4yo8B1XV4V/H8yDWah+Dz1OI6yrOB4BdSLXhznYagN20Pj1i7Pu7SfhFtDjo94oyeNiNMumlhjqvRdahrXL1Vnyzuf+tA7MDkQ3Vcklc4SgCoMP/fbwseU+9r7W+3Qxb8jQ9z2jnB1BsVEzODD8AgUZuD9DdSUWdU14ZKMTfA8z0G5iTNg1d1ma10Z8TS2QDcQy+1N6CHo/GbyZkE++UqxrESv1HZi7kHgVZuvW/aue9BRf+3loEzvQPbmITb5W9nyrJaWAH00sG+Pg76yyOUenLEsev9NF6IpT0+7n2uU6lpGfiaH/sOCB3VYjiIzSDeulP4dq1BiJOKVHqvXd0bG9qBWMfKgQWON3OYT1VYcF/+aoU5CtS6JECI4POQsnD1RbGTZzY8naYLhKR0i90qB7DDgBCURvqkKpeUcm3LTViL9FXwOTwOnyxGAiqI50HAO87OCTNbXUHG7lu4Wh8Kz+/gI32jEB75ygLWTw+oV//kX/4zN14kRdXClGMMEvO2qBwA9UUQ8MNH9+bQ5DsCmKp2LGGAASVjwULrDoeFE2837mkJ/Y0eZ72o2tmZL2kAYcxJen/POnxUr3HBpQuHxO/fFYm421/Rc5mAY1QSS0wFKC22D2b7ywuPoTKYIBE7su0InFwIBrJaIK4HkCsbm7kDTR3weJdSBIcJvWJjCvQxaqXcu53Fh+LZoUByekurxeGWQV1rvAx/Q8VbdmAeM/hdZI2oI/vkliaRldl0J+/8hVpmUWTM+ry77zRnnxPL4he2RiGICWOA2UwOpNCDAvjpNlQX0i8j3uJLaEofdLeVLxqHhQlXL892dHYPK0P7iTdO2pfptlQ5bCoIPcrORDOD6TY6FdRWmxRubBFDNQ35F1jl/q6XKzleW7WvyPxjCVZKxLp7IrnOSG3xs6a3StwxVa7/dRI+xAhnyt/zPmC1ZKioJem9BBtTP0Id7vbT4IWCmSGyd7g0rORL6JhQqqwygPEfb/yIxDZdlRVfIj8+Fe2pgcFW/YzOiqWtdh53pUcnAnl18BAAGy0/pRw5ZXX9fzrpwRaR4dOggNK76uIO6U9A15xHKZnVQKiGCIoE3yff7asV1PQzQ9b7xJ+X/mz2sndk5CCTpKR8Xst54QU97+1HfhevsTwjZerJSKKZT4tSLBEwdXiAeQkeTGsl6pqqBcpgNTA2PKbiLnHkNjDf0clLbGHfhiQc+QC093f69DGiBia5wQmLfceMB+rx44icBchxnw+NhXAPciEwPVJFcEXZCLRnzP/zjNfbGAD0VWm9ykzUVV0eXrW4f4sWmjS8IedLKMzywtgcZnyjJjrni94hAhKF/Z+SvTQHkrQRqZD098cu2OmZDKdR5mJj/Nm1qkzNuOURRnIRsxnb55CfYmGxospLntRVkME6yQhEvEPHsn/gaFTEH1LK3KFhQECbSW55993ktaPcOuXyoL/eoMLiAwWQVgPY9GXK2b2C+szltE/HKZcOcAw3nEXv5TNtqFEpc8DK4OP3F5Hc6NQwAljoYu9Elg48UFmaCLMCtPOlKbDL80IuK/ESPC49N0sHgNcDO9ezZFZ/eVa03s2QxqMnu1QO5XKLm5xnE+YfC74LjQi8wdv5JnjEMQ5sgemUaML/ycfgEeJN2Ph7QjmWoWlCyYf0xMAQmrPP9bkk/NMH96xLmhg9ZgbgQ/aFlJ9Mnsp7UH3vwJLCyMI+vAxrYjx1SX8ZPa7ipwT2dagfHB4Ctba2t6dlv0K16NiLDgmH7oFL0UibX4FsFiGvz44enavz5C0ytZijLb5GpMUR3EaBmezrditmqmMJ4JFoatBJqLeVh8W0aF5yC/Ql0rA6kyfAJwrVYGkvrPHDDgiLamrxQ7aAr16c64pDFWDD7jGY6AeoBihPjN4AWoT3lVrWzfpUkeiqfzawaslxkXPRbc9UvQ8NutMJcB76dL525KgdG+db/vpW++wVezrQ9ZPklmD8A76ACXa5dmwdJln/QiyyH8hwYADR7pWMU46oQrwnG0bxA3Z43kuAYknuhSrzBDzjJOCjk5x1XahfkdcQfH4Z3kX/YC6hnx/1AdgPvjBq4kVkz1/FyUFK9Ih2IEJz+33qGrUqZXIDpVWWYEklbM1uuPzShp1MU1p92ITT1rU7JZBX9bMavRjltMOzGA4JDyOcroW02ln0MQdNiIcbL4j95E5P4lCJqQYAU5CPW1kCVyHbcDhy8Rm1y4fxvcCn1fDjRgaqLG7TON7dsn8WrSZCX2B4QyGDSvU94TZbb6eH1DNVPT6zXWOYCXs4esKBHkWTCbx3Zd2T+jmTUTK9xyVf5ZGnbQ6X5ziS0biD2We/GXwH2IVrkGgBTiQe/TMpavXy4DND0oS28cGpUo4pepeB1wfLvdZdSE7VehJMfyDA1RJ6rgh8okWoKt8R6g53yd6NbRdhBQXz7qOtCHoKK4bii1z+OCXmTnRYnH0SvFJiJLuFbfh2IVSpcVuJ5z10oF1xR2pWRCaL+hSdqPdmlxE1qZb1a4nJme/8lx1NC3nWuUHHmwYPQthR/42bCeJbwb6uIm/LuvOwYLjP30Aj6rPT/x8cWXMDPB2MGm8W4u4E54Qcq8ZHV2pjVcbHPHf24z2zC0juDLH26F+UwHqdJmtTXKr0dXWh0oJIAsuzTaexzZzZrCT9BXatCUCxlKzR5znV6SldXyaQHD0Jd1OVlZI5ZXAlTzp8ZhLwpaqQZqIFtUM9PiN0auVXBr3z/eqz+uLOE+Srxwl6DZMl5ZWc5C4LTL31NOEeNjL6gTSAi4VO8ynUXyqYMCSfVHJ+AvJOwWVSRMnUsJFJYd2H31ayJquuWNwrFRlI+6dzVe0OkfQ3R+48Ddt//hubY6CbOP6/MwK8BuvDhFQINNp9LkWKYxaY/I5aT/AlZE4CCDQAXwnKMNSL3QYr8Wp0qijadKDObeHQcL1lqdHZlCvcyZavIpNF3HB6ccf1txoNdSRD/uznno6UPox/TJoKqNh00HmuAPfBIedKNU6Dv6eHsWYcIcb/YN91fcFxF6eVLZlSVNaGg0UOddv7MUJF04SgEl6HAqL8JfOUILSycdVf13FEZgth4j/2Tb7mu/dYYpow44KLO6q/vgtAwTJhhVbbQdksFIk7mEnscg0r3lSWsj7DPoPOkpVpBvT9rTjawpucEGKcZ+s35CcIzhQVD3rwiG57opQCZtEQnHJ0bAHnGNEu0JvykxKv/wOfFOIU6knBBij2Pl7WCEoHSCME0TjDZcXjoBLvlkrUrmb2crO0y6DHm8wElylN8SL5J7vPfuXFHzl+o+Pw5zSwgRvGgdOzRpBFfT8K8ggAYDtFPrmMdT5jylNZ01xKF+TsY7TBlbAZpoDf3TtLcsDCUxiI29hZYgGdjq9FmcwCXLVTInnW6cxjYDNEiQ3VihgFNia1oZzbVoq+kld8Qwts6o425kbT7VnziYH0PVNQeuEkcRTwRxAFJgrZE16SA3Zc+Fu4Uky6PBBa6RaS7DTGCjck5F/GqJBA0tvqvMA4D0xR/AZBA3ktprA1D7IxIwYetKN5+EYcQ+E9lhaADoSVCWbxfiaPMS9ovuYq1gL1mZDHTyU2WC8qYxrMRvp+scRAPEf6GVZuD1Es58Yq9ucYBtfELZZu38/njoPVqxcHdE4RMbYMD1e7rIDyIgJtTet6rf1y5beu7nJy5K2FIc00gGkaS3NfL4RWFvMXIzRNtuMD6q//t8xRDOQORgXKKTr03OYtc3anLnYMxZkrOW95KMaakkA2YBMnj2CWXXp4WszFhqTB6jqO/oq5iKOniO7QQ0wd1Goj1vzvDrexqc+d5VnYwSs1jOUvT0ayUNPpqdvFwO3rSAkSWdsiSM+Js/2yK6M8zAY8NswHQp4BqclSKZZnEpMfModnBiurTF2g7gksjl0/PPi0aTK02LJ36HKVQvt9dFBnpXcRJzkSqoJqzA1V5u1TRkVg8eJDpBy3nMWEO9w7+c8XNmKp0rIfKyUQYlBAn6jpw5T0fmydpPyQaXvKTaw9upmNzvtW6Cpss+by2gtjiENlomRTNaOR7rBmMnDeJUdtodYIugdoV0ppAVeFG38s0gR5hIg9OVMWr93tPGTqAJNziK28wpImzMOq+zW3DNhISPVgGIEVFsJLFptvFCBl+d6gSy5ZLZ8AlLnPKLVYoCv3mtqnTICMrUzXAQtCfXMszyPUUkhSNNFo3EUlk1E1sLid/98KNXFKN7DwVZu+H6Rl0QSbHdFAA57lVibxQASYhSWg1+KIOgEra4WOricrpWBaTitwqCB8KI0Mlf8fG3vELlcV6EF3H7Tj7XEhIb3gKKqYyeAs9+RasuVXemCdT0b2xMBuc+eq1UR2ktQtLfMP4IfpGaibHS734YF9iB21SCYAlzHABmAjFi61e8OdNw3xPqYcbPCJYTHztoUoJnodRprtSvKcWtUb4y35OH71UoJh8CcnsMde6+B/Ds2BkaCqLNLvtTY81u0xZ1KyyRB5SbWDyGEOyfkgl2q7lotWqDBqycmFICSzeAPSg7VOECJ2KTjY6wNpN2cLeUaAJ8OZWsA8fUilNioRRrcaGgGyAK4VHq4Lb4bm4Z0yiw48neCP7u2sZ9NXOpi0M7iC2iqP9L4ApaUmlkc7qu2qzUm85ThLMhHCSirf+yYQ7kNOTR+tvMK/CJtElWyR1p3LFJ1OjV/TOwYRqi1gni63f2PfHcFRPQuJUS4fIPhCRI3GgLQ2E+kXDeSE1EWsBiFjywdfBA8/mNT5VAi/Biukg3P3HxhzyiNyYFTjb0x7lKJ6mUnN88gjI7j2AKQlwIijTaYdS32H+Uz3IZqm1PXUJ0TYIObTeW/kUMbo6B6pIcbuJ03kqE5HGbpS3KqiU0ev4yQOGC+/CYMG7VZHYlMQyYLNDs4dx9CeTHBbB6KM5tdfdD4/tfscLW6MjQaBg4hHchCO+4NfAegKTcwNcPMe3FU9VPltWtLqVv8t2RjW4xk+QEGTLQAiafR+0yCiaRjVqxjf/n+SE2ILENr2kKCPgH54Y5cg/pH4kZ7uieAj5wyiPotQm/eNzSTPxFEMpPM7mC9M9+T9DImiBAYl5W9QGu0xFKt8TKKw6HRwYl9b9hTFCZEgpTJEkY+bLu6h8zF9HF1t4ptWitF22ak9dOuFIpLiHD2JD2oUaANc7XekKqec3qIizjLFg3HlwtmGCND0483m9aZ5KsCU+KvAVZ7AlyjbbE7Qov3wIul61VUNdna+30tvxMfgfqnbdGP+ZbvoGDWs8UiUugy/BCNCbxmujekHen7PExlVcXT0gcgZrJm4UuD+jEhqFW0rbRdjVeUQRBOEndYoxuSA+IhKLjWKo1KQu2uEuTX1FV3gkEYoOxEC+DM+9w7ONfpBM0qYLlDsJLgEC0oqkaiIzVanVY7P7Wsuog3Y9RDJePQIldzKC//j0ctZ+FOv8rVVi2XM53zJgdDLy63WHqrCcFAfvjVuQOjI7jJjYAz2+g05bMMTHerzLSMD85jA8Zxu6LH18DzJG7CQrbUCc06+t3GqORf01BMQusFNlqW3p5+L7MdsGtopETR2ff1BdqUo8jpUhL9vA7daETNdKMFEx46uEeQVJ3lm0lgbgVkkvTOjGy0GWYD14pdnHVw0ED291eYOQOxyLzFB1wHsEjvMm+5vqnWX0kYDDdmP876mwm5FbHqvkJSFBcNRaNp5qt49Dq50GdakCp3iqC3gBg/Rgf/ZcaCNFqr2HC9tTPTEiTvtyehlYuBWCEa0+iVtg9NlLwQG1EwNahjXlXQc4QNmUQVj5q+GbqICBkKewPLrGtJ7o4d+SliR+GQtHtcL+Wwm3l2tvH0epuiu70wZBEzGOY00hswh8WcMmhToYVwwXHt+VrSObwPYaMIj76xNquvKuaAvD6xcJ0VEkDLzHwno3IHnbI59OfCvvwfNS7bPkxFkVsSvlyoe+syHkfFVx0SDw9D0AV6JybFfeeB6oTAq9Sbok7RMbEZRGqgeypL/6uzAnTm6gWW5Wbin7hUoUwB8QneaMNqwO6zPpREzhEBabI+XOirMcDOhGn0hoFL5qES4hiwN64hzMSlwjWrGhC8JWXFUDQjBb5manbvPhsnDjiFwJbC/kdDiWM60l2Wg2EfHo67Gleij3jk+HfMrEGHDpe0tcetimXmwdKe+DzhGArZKK//PEJT2kr8/tXX/VXHKjglb9WcW3Gvzns/AVhpgGeIKxep2PYGazRnveNmwREqgyHoUPtnCvS7zATVaNflqKqBkIW1die47/viVg0AAg06y7TG5P1hq8Nkcze52NzzR0cmGLaYoNecvGHzOB7gzroOFiWZ2GZupls4Yq4HMEJB1Mb2TveHXatriQZl1L3dSy7GqDgn/Kbc67CD3UKXr7ilkGER6mtoKpwt7WmHEDcOc5CiOKY4nQInQ1xrXbDWmdyWFcYZ98s2s0l+ogEOJnQXl+yWmrpoIsvgB7AGKg2YEdjEDLHnILCf42YkpHeb3CUfA+ghRHNF8LMPvJSOBkYdroMr10H4NZfJHdXbuVy2y0/KoF+PUr/1NUYTXDF22fA3tyFh4v7fRM53muHqgijn33Xui8ffgNfZq8J9/HN36xLcs0fHHFDFH5bbtZDFdh8lUPCldldxceqLG0dmGdjgNCWCPKA+pFAnEmxWsKxF9F9UE3UnKdaV4pR6UzAgDGh9pTcu+EEup9XhG8qr7pHY3V7PfADV/aSl7gLZjToFRsJEb3sRGPwTAfOQeUn1qmBG4ej9czHuEyVg1pbqEE+pmA9OknKUtxZwZH2rf/ciRSO+klTSP2y2tIpLAGBgJsQftOihQNUw6SgPp/T4RMYaxTAkepNQ6sc0swdWV0Fg1lMK52s+zLVXobVhDzBeOHk9h5s9FvU9FyjPswuRM0LtfvXp3XiWw5anVCA5dn6qB/BrSAx4fzq+Pu690BNzwBXTvvQFOZjeLx3Y1bIyHYrzUTRKJq9T6JgkukA7FN/ZfkPCnGPkVemJE1euAhQbbDlNKPBiOM3rnXBa+w8RRwQTW66Iw1AIfS2i+tGLhnvrSLVYMqeIFs69A9FGa6dknl0k/Q3FyHnR0GWppR8GtkW8iPqRvIqnbl8WCvFkAy4Qzvda7TjKFITrgaMZ6+b/CB7o2tsBQB/68OHF9PDRRmDCfP/EkO8fwQkZ3OpA6Nk+bUHjmYL+D7pjcZ5RSxIrfXvUgPmGGQH8507MCjfUDKleEWi5tuyDAjP+P1/XVY8gsoyQAZSUX3GSfoTYewbxtH2pHfb0iPgc+rwjMmwfiv7fjln205l1D47aVjcDiE22FNYvC9NpKVYnqJpFTAPQpy1lG/aA113zyl1S0EIM+tet6qex3PTCheIsOvKpFwACzY0gCuZkOz2YoBoa6kcBAxG4oEF+NGzD1B/gBClAJYkUH6Xj/K+c/2rHbgtYvoyiJE1UfS+k0DXbdgfpOTLn1U+UGgcKEoUiCYsS+DxXh32K/7Pn8vfxj1WSHVfdsi4izhJFx2tUOHI64JHYuEnXAy1Iq9Z4N3vNzjmoI5bkRDnBPNWprE7ucafXcth9ifyDQeM8vBNAdjKuas6eaWJ9lX3qNmvmFxyCfnRhqObc4t5BscFyi4XvsfyzEsN5++t3e9r+0h2niidJypjGsnTFBQOsMVHZ6KYjxXZsXPlShdKvrpruMWs8AusfDDaHS0xnxrfY7qigWBDOtXfTmbZcpMFUU8XYqOfTvgpH2T9NjfT4JPQdZeyxnZmnSJCui9Acg4gR5wje28UwfPxdnXMgwxKyVlWF7mmsPKYeSO54A8hwEwV33nWP2BeHvlZ9kvF4fA9xw+upWkeCo7fw0v35CEXmfjknPy/EJMA0jKFWUaweDjSQjFALusQ9HR27S6VnDdP9UJ5Nq2OQu5Co07xhhuzsRxn3sWBLQKD6rBFsittRSz1PcL701r7QzehyqhSxV2YezcfbE9dLSc3yx1v29niyjuAC3dPUxqOoO+8WwNkbhaXXdNXNAXBGLCFjmBhy2RfUBIMF/YjqP4+ziphtmYcjj/M1K6b4p/gOg1zO0YTT2kcABVPSelx0jvUSWkSWtlBLquLUvZVfLSO/L5Dm0TJydNgqDfhUki4hS7xpRGSKYy+OAsAY4hexNwMWoXkyjg5yInEyFnJBjm9EGMSzPGcOcgzQJaY/TQ3lDrK1ta2vPNneSzITjRRBl97L+KSRXVK5Azz6wJENw+Mc7v8xq4+WAsbS30zFJLYo3MwX8JQKMtu9QH+YQwra6cB9wNNtpuT88jvoUtT3p1VoVmueA4Vh+xuVYdYXzRa91TuqupPeedqXT2oRlAR9Zqn1dK5hQ8UXN75L4HXsx+WHAK8QVMI5S8cBZH948lCqNSn0rbxi+GFLhHN2JoLWhqD7Hmp4FwNHQ2KTVS/I+AKvByFqA36w3i8mDqosfSy9NciK1QlHBkFJl0q5DFO6l3eoigbwK4yYd06JX57qceqGBApx0Rlo0Dc7guDSjKeRaQwDWE4BzzrY+oU5waUSLlBbjmvjsQu7EXh091Em40I1MUeEZ0t6VEyWBJoPa+y9Bfsnw8h5I4Ce/GDCO+q0Aio31MmTV/c+iV3TAgOOplOqivYvQFfLk4uHRwzMV6hpjywP0zjZa9LjiNSb0q+74EDOd0l+P8fevYwbIHn/aGpVaFk02rcp4TJd4DujZv1wYTb6fGIyk8bjhsS/jW9bM2rhTzxInFSk4hjqx4llzauNlqfK1M5Jf3wKNKm0okArcGr0I90iW3piASxyvN2JT4pyZyJMny+7hzXtrNXBFzueeIaq92fw6UxI8ANHCuqeNDh4Xq6IPf+3PvFjELxG8VAis0F/hHcFvSpibihBxP1JD268omvL2WbuBDE2B5JHJI1xGpbdgByijJNwPb045FPm5VYbJyYccusAbSjTKCVNDGwpbUG7oCHpaDwccpFPYauhX15DRBFOCeRhShovIgoGGF7nQZ4N0hN4kMObBlW3s1SinCkGLYILAvx8VE4T04Vz5KQTGXcFWYvVxzM/TKK6MFvbnnpeUOWeLq8CqR5psDyLoYUi7GRxW9+ANF96BrgV1CSt5PiD5IHnDWiEsbTPbB7y+Yi+HQdvOE/c4xoTe6ncNwHEzHHAnuwVe+96azt860ABtkVxV39imXR3z08xYnEOr+910p4LDNbl9ksql3ydjHEtMM4AX4utXW3GKulB7x0WEbAGScRapnl9UetMBoe3YmoW12MmACHtkNuTdHRcoM4efRkmJN/5GpCEqs36urYaCev8FaqoH45kJIIkHcKWERBwx52xuanj60d/F9Bv9nhZhrFnQ77NL4qI1ptbgLYpuBnc7qgWIRDjJyXFuWdS0l59BTikcfDKyPnZsBk+Ot+EafNo8DGUNP/kHkCdBKkGZkAbATYCE+ySEM67V/+2TRXEqEpxMZ1LJoWt1Vl2DnTHmkRVjB6qaRGQBW9AV3YrfWijqE4BwCZNE/uqpbpfIMAA+HSCvRye7i5L6kDJDmv5oCoEFU8295gbPWtbA0EmREF/L50Dk7YVYvDAGIpDJ7O3yVqlyoxqwNqv8IotaWVqvhilH5vEOWeC5uFQ2fFeF14SObFRua/6uQMSkyFiKKsdvXlLyICqQLAAqHwmOZ06dwQxWV4QQzGVnwzkYExpiz9guHl9lSJ8n4G2I7pGBoMkOcPAckWW/bY9pnu+kRfIKpt7hh7KJ79f/OJqDSPgRFvDNiNf5VrGUYChtiFDEx5Psb6CIon0nJE6RAAs4AoHw5yOHX0Ly+V2sSe1vxHW07lg2GrCSTX+NxS2YQvl1YTpjkXytitzabyH+qPZRPClfswpYQzRQh4bjLrHwu0RtEQH8OgFCVEkvISPqXAt9WRxjRL6srhWriD69h59P8FMi6HXBfolcjOMKEmXFvjBEt3EM91PmL82R6V0zfh+5GaXJbmNhNdfe7Y1rOwOfzoDmJ68h/OFgLZ22XfI7bKx+I4/hPV3noRjMDDehSr68XVqIDDWHMibauPLgByhnTquRmcKDl4FH8ZV8Llr0cO24YYN6SmhE/ZL5vV9H/e2euhNIDJwOZRiwZeoipgABBQ6asv3pr3KmnXh5XNlXWAtGSNBksDhTHDnDaJukUv8uUtxJsi7P5Bf83CnLWXwAks/2AIJwm151BYoZo5O3YidHr8TmUowBI9bGYt2uSTNOhl98g9R+8JxJ8ejNKeaDKvqRT++VCQi1PCrgRavwHigig7+rITcIZrxEWt/XIqVOPMgIi7Z/ERb9bJdtvtilW+cDVS51xcvOg++M8dQ+CB/8j9KccHA32r4+P5M03KMyicGnmeorJ6Jel3ObVxTCDATlvfpCGg9gQro6MPoh1y0zQE482LD1AX7WcAsjd66CR2ZmWWD0pFVIybtjdq0Fz2Aq0G5HhLL2eab5WGXTFDevWTIeUZAxF9aIO0I6+Aurgzx716xLRc7FflQ0QrKXrfkJJQlXTT10A0neb+PL4857h70+M+/pRjBmpHiXi+R7CKkWR1t88tqvpWz1FuYDz+B1QPz6ccwt2ZPBWztzj5gwRLCng1Om4VCXGneNhzgA3/e8IbZWFE25BSw72Nz7M3UQkEAaofXZ29zrS1XzMaar1xQP3Z1hzjkYApQswikdxV7KBYT3l4orDofvVcaMOTwmgVLzYzjM0DCx5kYl2g49Am04LAYyUekl+6KBGZ54sLEb2cC7YPGndtiK/DCHRaejf88bkxbDMcAvzy0A0XSo1P/yQpBTbFgx5SIJWluCnWAUQ99GGD1XtpshcZgqkMCV8ofquwa/nRPmy5GQYU6XDXmyKg3Bae/FhTAWw5mx9LWqgK/lLCvMaRXzyxv+LY1L3Yr/RgNzs8JcnAqiSpMDLr4eK7QO4mRtGXrhhbQwhZvYDZ3E8YN1jExYdm2nksxnMh+qXyFcejFEc3t8l+1xBkEScAG9aV1BAa/EdOS13yDD8fk5OSLyyKxr2c1Im4OeuwemFNxbxrQFRl33houewgo3J1j4JDVVohcWv7I+2FUoZUFi9PuAz6RWGRxWt4C04eUHtFiBIHYEdRbaUvHA7B3xtyr5GBhRhUUyTFYvbuKjUYUMhPQdRXdku4yB4ZwuAYIKlCxgi0iDecv16qdKTMMBwSL/jn+chsG9I2ZhxSuhrzuqIxnnPpuRhbl5LWCQuNMjD3v1cSFYXgtLJZJgVuMo2NgSV2VJWiGP3NZOtBtc1qmXH3CnOC2CONYen+Q7eo2KpXGnPzXgMOgFqBwdYg/LCY59yn9QBLKPFljeD6A3OyN9EQMyGkrgK7I7NrBhyT9vHYwTJ36le56AcylSnkVeoCxzILRYj+x5LF6UuDO4UcjCenRbhBmTsDAfNzdGbsgPEXYLCN5e8ImyhcLpCdLDCGKQg1LFTWCz+QSrE+yVXCtzO2T9UjROLyW7yvjF1mlUvnoM0Qw0AKDGZZzFqHS0iobZ2fkGXrF2BElx/peia4SMVGS37O2MUQhyMq5C/UIisCKrS57obwL7lUWxFYlak8h+lQaVLc9sSRWr8TOg+okUweiS7eEMByix6wYL3bjyu1J0ZYRFOyGrN+C/bSwY9j4yd1Anc2WxNO3rYSrHI40aexcyx4CeVIDj1SKS+sfq4o3WsWXerTJW5eAabk5971HojqehSOCX1dAvPwBaQ6JY5wWe5w6+b6MDNYeyrNzJoaTsKyZBT9lEJPqJTlD+Hvm2eAosE8M+VGe3NEfVOzilnvxyrFKZ1olKUJfOYVLIuIg9EOfcs19FrGqaZPMj/6iLaTKI3LEyjMn+id5/+qclVCBcGzGLFObU7CNnoQE/QRDOVshDPoyHNnjRXrp2YHxYFfPP3++YnoK10zvFpS+QNkZNvj1aUG3ksqI8H7oEZ45HeUxspEFT8xvmr3rZsbJjvcIyTM1cSyKSqN152gsAHu8blDWPyaWDJ6FjcMYxFpBTyA4lrmxK7GcahEizk42tU/vzM2LbieSSH/mjrs/rMvznj09ENTMY5q0Ef17DiP1o8mRjkq4Jxt/+8+sjZqXsId+fbTtwXICB6eL+P7I0yxMKH5Kg/htkKowmCapvdYLAi3cKRbQNmriSJw4dLjqy+c7DcX4NXkLuq0QRqkMTRqw+WsqpZrHY6z+pnR8mpqlOL1ZnckmQc/S5umwDby4jEZqP50GAFR9sbfVKdvRne5fHMr1nPMqQZJSssGg6IIicrPCIhtO+7xCNnHzol5KTUJpSjDpooICnDSMxFI28f+PnWtykFQO0N9pGZ2KKiFSQBXW+fWVp7QjIWKP2ynT831ivRsUxTKwKVg4/DpPk0XxLc1kSpktjp6abtUOve43buoVoHJjmvR4V76k/dSsSvLhXEbrjKBcuY3r9Mn18UgK5Pkcrv7IJ2K7HQ43rjx7BouRQ9N9N5GN3+AqGLTI5mTHKmT+TKOSJo82SmAcPYPEs++9lOWFk8AFpTH6ajbqAY8Ybf0N0hzcpUhTsTCy9jmctQhg6ZCoQCODCWjvMzaaokxvMDNKemC3kTIR/zYwqmud9/dNPmw2PQvdVBFBh+7sMcGzSZHABuBEczTR8MCQFXprpeVzvPye56C97pa7m3XKwjRrW2FRErD4oRql2fPGeRysYFNrIQpLUb289VVfAlSVLkeK8sNtIyIcICkeXsysXUt8serDld8goUKXoneaZk2nj+fFcVcV4vv0273mJKrgAXr3HGnbRjNpIZPYOPW4ErIfMeoemSXVjmIDUX4hUBggAzGjNrSNEcvosU+fTL3quux+gQTF1QlbVOPJ3MNslv2p6KvFUwG9mKwe0azGx7w0XdjD9TMQctVhmRx7AmEMYuA7p/2t61mVsLhJNbrJWXzaTpVaFPiJtxG0p3UeDv3nm2q3UP7KVej6o3CiAwzYIwsGtQm7w4nGWnTCstC/gNpmh/jd/HH9z/oDPu4FnW3f93hiRNtrKxNk4s1jrMAUb8xY8OEblw+jR/PhZIinmR1s6/kmRgQ59LcnGWavesnZT8XZgXGgwJzIJMvSddMyYXdc215TS1fctQM3fKMPu1kRLidzXXWGMJyGDcoCoT6OHZBMLPPI1p7Lz6MyIbwQesudEYJvJ/9bjsCIrtFE8pLO0/tQa7W5LjTY51ICOoE80SQqtRYsJlKY4NuDsUtH+fNGb30xY3RqmO5U+lwxo85xEahKD55OeaS6z3BFB9PvJgHzGmAmjmAveDV+AEgXNBYSI4kNxv5WQP1RvdiRMUUGAbREP4hH2QP/nJJWqzPwZ+Fx1iCImOF0fnr3x8QSr7eZLsn6Vfrvx+d2ZH3lgYDl7p8Ut/3YLaUFWVp96saMf6VX7pUJNwscVF6tgZRGMhax6ChvupRPjge+EpM6S8r9D06kkIZ7PP5/uEMu7BZA0hwpHzP9hw7ldHmOFvS2dDdqD+ZavhPvkrxDTogTsYifctUeB1+WGRmBn9lHTndGfpxnQ1a5wj6n92+f+01hNRnbbjqmcVZB2YfryBgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KzHhJCgdEhy4PxbNdJ5Aa2",
+    "name": "write_file",
+    "input": {
+     "path": "src/textures.ts",
+     "content": "import * as THREE from 'three';\n\nexport function mulberry32(seed: number): () => number {\n  let a = seed >>> 0;\n  return () => {\n    a = (a + 0x6d2b79f5) >>> 0;\n    let t = a;\n    t = Math.imul(t ^ (t >>> 15), t | 1);\n    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);\n    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n  };\n}\n\nfunction makeCanvas(size: number): [HTMLCanvasElement, CanvasRenderingContext2D] {\n  const c = document.createElement('canvas');\n  c.width = size;\n  c.height = size;\n  const ctx = c.getContext('2d');\n  if (!ctx) throw new Error('2d context unavailable');\n  return [c, ctx];\n}\n\n/** Weathered stone: speckle, blotches, cracks and a bit of moss. Tileable enough at low contrast. */\nexport function makeStoneTexture(seed: number, repeatX = 1, repeatY = 1): THREE.CanvasTexture {\n  const size = 256;\n  const [c, ctx] = makeCanvas(size);\n  const rnd = mulberry32(seed);\n  ctx.fillStyle = '#74727f';\n  ctx.fillRect(0, 0, size, size);\n  for (let i = 0; i < 40; i++) {\n    const x = rnd() * size;\n    const y = rnd() * size;\n    const r = 20 + rnd() * 60;\n    const g = ctx.createRadialGradient(x, y, 0, x, y, r);\n    const dark = rnd() > 0.5;\n    g.addColorStop(0, dark ? 'rgba(30,28,45,0.35)' : 'rgba(170,168,185,0.22)');\n    g.addColorStop(1, 'rgba(0,0,0,0)');\n    ctx.fillStyle = g;\n    for (const ox of [-size, 0, size]) {\n      for (const oy of [-size, 0, size]) {\n        ctx.save();\n        ctx.translate(ox, oy);\n        ctx.fillRect(x - r, y - r, r * 2, r * 2);\n        ctx.restore();\n      }\n    }\n  }\n  for (let i = 0; i < 7000; i++) {\n    const v = Math.floor(rnd() * 255);\n    ctx.fillStyle = `rgba(${v},${v},${v},${0.05 + rnd() * 0.12})`;\n    ctx.fillRect(rnd() * size, rnd() * size, 1 + rnd() * 2, 1 + rnd() * 2);\n  }\n  // moss\n  for (let i = 0; i < 14; i++) {\n    const x = rnd() * size;\n    const y = rnd() * size;\n    const r = 8 + rnd() * 22;\n    const g = ctx.createRadialGradient(x, y, 0, x, y, r);\n    g.addColorStop(0, 'rgba(40,85,80,0.35)');\n    g.addColorStop(1, 'rgba(40,85,80,0)');\n    ctx.fillStyle = g;\n    ctx.fillRect(x - r, y - r, r * 2, r * 2);\n  }\n  // cracks\n  ctx.strokeStyle = 'rgba(15,12,25,0.7)';\n  for (let i = 0; i < 9; i++) {\n    ctx.lineWidth = 0.6 + rnd() * 1.2;\n    ctx.beginPath();\n    let x = rnd() * size;\n    let y = rnd() * size;\n    ctx.moveTo(x, y);\n    const n = 5 + Math.floor(rnd() * 8);\n    for (let k = 0; k < n; k++) {\n      x += (rnd() - 0.5) * 36;\n      y += (rnd() - 0.3) * 30;\n      ctx.lineTo(x, y);\n    }\n    ctx.stroke();\n  }\n  // block seams\n  ctx.strokeStyle = 'rgba(10,8,20,0.55)';\n  ctx.lineWidth = 2;\n  ctx.strokeRect(0, 0, size, size);\n  const tex = new THREE.CanvasTexture(c);\n  tex.colorSpace = THREE.SRGBColorSpace;\n  tex.wrapS = THREE.RepeatWrapping;\n  tex.wrapT = THREE.RepeatWrapping;\n  tex.repeat.set(repeatX, repeatY);\n  tex.anisotropy = 4;\n  return tex;\n}\n\n/** Glowing rune glyph on transparent background (white-ish strokes, tinted by material color). */\nexport function makeRuneTexture(seed: number): THREE.CanvasTexture {\n  const size = 128;\n  const [c, ctx] = makeCanvas(size);\n  const rnd = mulberry32(seed);\n  ctx.clearRect(0, 0, size, size);\n  ctx.lineCap = 'round';\n  ctx.lineJoin = 'round';\n  const draw = (width: number, alpha: number) => {\n    const r2 = mulberry32(seed * 31 + 7);\n    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;\n    ctx.lineWidth = width;\n    ctx.beginPath();\n    ctx.moveTo(64, 14);\n    ctx.lineTo(64, 114);\n    const strokes = 4 + Math.floor(r2() * 3);\n    for (let i = 0; i < strokes; i++) {\n      const y = 22 + r2() * 84;\n      const dx = 14 + r2() * 30;\n      const dy = (r2() - 0.5) * 40;\n      const side = r2() > 0.5 ? 1 : -1;\n      ctx.moveTo(64, y);\n      ctx.lineTo(64 + side * dx, y + dy);\n      if (r2() > 0.6) ctx.lineTo(64 + side * dx, y + dy + 14);\n    }\n    ctx.stroke();\n  };\n  void rnd;\n  draw(9, 0.25);\n  draw(4, 1);\n  const tex = new THREE.CanvasTexture(c);\n  tex.colorSpace = THREE.SRGBColorSpace;\n  return tex;\n}\n\n/** Concentric ritual circle drawn on the platform. */\nexport function makeCircleTexture(): THREE.CanvasTexture {\n  const size = 512;\n  const [c, ctx] = makeCanvas(size);\n  const m = size / 2;\n  ctx.clearRect(0, 0, size, size);\n  ctx.strokeStyle = '#fff';\n  const ring = (r: number, w: number, a: number) => {\n    ctx.globalAlpha = a;\n    ctx.lineWidth = w;\n    ctx.beginPath();\n    ctx.arc(m, m, r, 0, Math.PI * 2);\n    ctx.stroke();\n  };\n  ring(240, 4, 1);\n  ring(228, 2, 0.7);\n  ring(170, 3, 0.9);\n  ring(120, 2, 0.6);\n  ctx.globalAlpha = 0.9;\n  for (let i = 0; i < 48; i++) {\n    const a = (i / 48) * Math.PI * 2;\n    const r0 = 175;\n    const r1 = i % 4 === 0 ? 222 : 200;\n    ctx.lineWidth = i % 4 === 0 ? 3 : 1.5;\n    ctx.beginPath();\n    ctx.moveTo(m + Math.cos(a) * r0, m + Math.sin(a) * r0);\n    ctx.lineTo(m + Math.cos(a) * r1, m + Math.sin(a) * r1);\n    ctx.stroke();\n  }\n  // triangle sigils\n  ctx.globalAlpha = 0.8;\n  ctx.lineWidth = 2.5;\n  for (let k = 0; k < 2; k++) {\n    ctx.beginPath();\n    for (let i = 0; i <= 3; i++) {\n      const a = (i / 3) * Math.PI * 2 + k * Math.PI - Math.PI / 2;\n      const x = m + Math.cos(a) * 168;\n      const y = m + Math.sin(a) * 168;\n      if (i === 0) ctx.moveTo(x, y);\n      else ctx.lineTo(x, y);\n    }\n    ctx.stroke();\n  }\n  const tex = new THREE.CanvasTexture(c);\n  tex.colorSpace = THREE.SRGBColorSpace;\n  return tex;\n}\n\nexport function makeGlowTexture(): THREE.CanvasTexture {\n  const size = 128;\n  const [c, ctx] = makeCanvas(size);\n  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);\n  g.addColorStop(0, 'rgba(255,255,255,1)');\n  g.addColorStop(0.35, 'rgba(255,255,255,0.35)');\n  g.addColorStop(0.7, 'rgba(255,255,255,0.08)');\n  g.addColorStop(1, 'rgba(255,255,255,0)');\n  ctx.fillStyle = g;\n  ctx.fillRect(0, 0, size, size);\n  const tex = new THREE.CanvasTexture(c);\n  tex.colorSpace = THREE.SRGBColorSpace;\n  return tex;\n}\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KzHhJCgdEhy4PxbNdJ5Aa2",
+    "content": "wrote src/textures.ts (190 lines)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Now I'm moving on to the particles module and the main file setup.\n\n",
+    "signature": "CAQSiQUKEggTEAEYAjgBQgh0aGlua2luZxIM3VcNXzaIlG7tGGGsGgwFhPLduZsOJVQSKY8iMMZjBJoTZWoPy45KJRZnpE75/Hy7R8zQ/oC+B11e1ie6u8QqN5txt4IGPBy+EAvWfCqkBENoajgTgr/aaQZT0cc3HyGP3wAO96YGgMbL6tfbdrXsc0Kx7B7kglQaKtXVPWFaDleNdx0AsJH/u3Js8x/S2AR9PZ071Lsm4iJlyBc01anV5ml4eF1jlkw3gw5ryIXzGOSGgurTWPmWHMRevsLFCxCjQBLkffCO8kXq0xmYmu4FBqd1b65ynkyv0JcdnrbPz2GqcGhjR0MseWUCqyGmvMB5mUXHFC4CqGUYLYc+eOO30gd1nOG/qpd7IcoSMzn1/q16Mep/J51jd9oALcLK+XLS37cTN57KdZRi6Yc88R8JYfUyZvUF1fSoLfzraCfiC34DFNx6apWCuZIMVjQeuc448MlTW93AcHojDCNH3AOcEHFN8ESK2jbZ6XUHUlYKyBM1lb547tsMOpFYIOHH8JSU+MZ31gpfSZW1dE/sWRP2ma/2X4u3+DZABkk6vNfrJdf+jfNusM3DtomnzM7j1GD5K35o+c1gU0KRMoO+HuIdG/6EBKawwicUX0Fn4GQh1szCL4V1mHFKYz9t+9wgfsDdtKK+CZHrMGPjbumdxpABfMZniSdgzmCbSvpZJZty0cuQKuNp7X3KrZ3OZD0AvQjErkj9n8h1UCZ/2fH+kxH6LX9ZBo5jWAgwwOH+FUVDGn+Ooasmp6QJG1y7lIuQT1pnTifUujhUNe/3eM5l0CFbkc0ad1uKVuwqv4hfgphQEmpj9su2nOis/+2fLBo56yV6/7s0GAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019Ua8cSQTjBZTMrXehKSzq3",
+    "name": "write_file",
+    "input": {
+     "content": "import * as THREE from 'three';\nimport { mulberry32 } from './textures';\n\nconst SPIRAL_COUNT = 640;\nconst MOTE_COUNT = 140;\nexport const PARTICLE_TOTAL = SPIRAL_COUNT + MOTE_COUNT;\n\nconst VERT = /* glsl */ `\nattribute float aSize;\nattribute float aAlpha;\nattribute vec3 aColor;\nuniform float uScale;\nvarying float vAlpha;\nvarying vec3 vColor;\nvoid main() {\n  vAlpha = aAlpha;\n  vColor = aColor;\n  vec4 mv = modelViewMatrix * vec4(position, 1.0);\n  gl_Position = projectionMatrix * mv;\n  gl_PointSize = max(aSize * uScale / -mv.z, 1.0);\n}\n`;\n\nconst FRAG = /* glsl */ `\nvarying float vAlpha;\nvarying vec3 vColor;\nvoid main() {\n  float d = length(gl_PointCoord - 0.5) * 2.0;\n  if (d > 1.0) discard;\n  float a = pow(1.0 - d, 2.0);\n  float core = pow(1.0 - d, 6.0);\n  gl_FragColor = vec4(vColor * (0.5 + 1.5 * core), a * vAlpha);\n}\n`;\n\nconst smooth = (a: number, b: number, x: number): number => {\n  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));\n  return t * t * (3 - 2 * t);\n};\n\nexport class PortalParticles {\n  readonly points: THREE.Points;\n  private readonly pos = new Float32Array(PARTICLE_TOTAL * 3);\n  private readonly col = new Float32Array(PARTICLE_TOTAL * 3);\n  private readonly size = new Float32Array(PARTICLE_TOTAL);\n  private readonly alpha = new Float32Array(PARTICLE_TOTAL);\n  // spiral state\n  private readonly rad = new Float32Array(SPIRAL_COUNT);\n  private readonly ang = new Float32Array(SPIRAL_COUNT);\n  private readonly zoff = new Float32Array(SPIRAL_COUNT);\n  private readonly age = new Float32Array(SPIRAL_COUNT);\n  private readonly dir = new Float32Array(SPIRAL_COUNT);\n  private readonly tint = new Float32Array(SPIRAL_COUNT);\n  private readonly sz = new Float32Array(SPIRAL_COUNT);\n  // mote state\n  private readonly mAge = new Float32Array(MOTE_COUNT);\n  private readonly mLife = new Float32Array(MOTE_COUNT);\n  private readonly mVy = new Float32Array(MOTE_COUNT);\n  private readonly mX = new Float32Array(MOTE_COUNT);\n  private readonly mZ = new Float32Array(MOTE_COUNT);\n  private readonly mPhase = new Float32Array(MOTE_COUNT);\n  private readonly mTint = new Float32Array(MOTE_COUNT);\n  private readonly mSz = new Float32Array(MOTE_COUNT);\n  private readonly rnd = mulberry32(1234);\n  private readonly cyan = new THREE.Color(0.25, 0.9, 1.0);\n  private readonly violet = new THREE.Color(0.65, 0.3, 1.0);\n  private readonly tmp = new THREE.Color();\n  private readonly center: THREE.Vector3;\n  liveCount = 0;\n\n  constructor(center: THREE.Vector3, viewHeight: number, fovDeg: number) {\n    this.center = center.clone();\n    for (let i = 0; i < SPIRAL_COUNT; i++) {\n      this.respawnSpiral(i, true);\n    }\n    for (let i = 0; i < MOTE_COUNT; i++) {\n      this.respawnMote(i, true);\n    }\n    const geo = new THREE.BufferGeometry();\n    const posAttr = new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage);\n    geo.setAttribute('position', posAttr);\n    geo.setAttribute('aColor', new THREE.BufferAttribute(this.col, 3).setUsage(THREE.DynamicDrawUsage));\n    geo.setAttribute('aSize', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));\n    geo.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));\n    const mat = new THREE.ShaderMaterial({\n      uniforms: { uScale: { value: viewHeight / (2 * Math.tan((fovDeg * Math.PI) / 360)) } },\n      vertexShader: VERT,\n      fragmentShader: FRAG,\n      transparent: true,\n      depthWrite: false,\n      blending: THREE.AdditiveBlending,\n    });\n    this.points = new THREE.Points(geo, mat);\n    this.points.frustumCulled = false;\n    this.update(0, 0);\n  }\n\n  private respawnSpiral(i: number, initial: boolean): void {\n    const r = this.rnd;\n    this.rad[i] = initial ? 0.3 + r() * 4.2 : 3.2 + r() * 1.6;\n    this.ang[i] = r() * Math.PI * 2;\n    this.zoff[i] = (r() - 0.5) * 3.2 * (this.rad[i] / 3);\n    this.age[i] = initial ? 2 : 0;\n    this.dir[i] = 1;\n    this.tint[i] = r();\n    this.sz[i] = 0.04 + r() * 0.07;\n  }\n\n  private respawnMote(i: number, initial: boolean): void {\n    const r = this.rnd;\n    const a = r() * Math.PI * 2;\n    const d = Math.sqrt(r()) * 4.6;\n    this.mX[i] = Math.cos(a) * d;\n    this.mZ[i] = Math.sin(a) * d;\n    this.mLife[i] = 3.5 + r() * 4;\n    this.mAge[i] = initial ? r() * this.mLife[i] : 0;\n    this.mVy[i] = 0.3 + r() * 0.6;\n    this.mPhase[i] = r() * 6.28;\n    this.mTint[i] = r();\n    this.mSz[i] = 0.035 + r() * 0.06;\n  }\n\n  update(dt: number, time: number): void {\n    const c = this.center;\n    let live = 0;\n    for (let i = 0; i < SPIRAL_COUNT; i++) {\n      this.age[i] += dt;\n      let r = this.rad[i];\n      this.ang[i] += dt * (0.5 + 2.4 / (r + 0.45)) * this.dir[i];\n      r -= dt * (0.28 + 0.12 * r + 0.25 / (r + 0.5));\n      this.rad[i] = r;\n      this.zoff[i] *= Math.exp(-dt * 0.55);\n      if (r < 0.12) {\n        this.respawnSpiral(i, false);\n        r = this.rad[i];\n      }\n      const a = this.ang[i];\n      const x = Math.cos(a) * r;\n      const y = c.y + Math.sin(a) * r;\n      const z = this.zoff[i] + Math.sin(time * 0.9 + i) * 0.03;\n      const k = i * 3;\n      this.pos[k] = c.x + x;\n      this.pos[k + 1] = y;\n      this.pos[k + 2] = c.z + z;\n      const al =\n        smooth(0, 0.8, this.age[i]) * smooth(0.12, 0.7, r) * smooth(0.5, 1.4, y) * 0.95;\n      this.alpha[i] = al;\n      this.tmp.copy(this.cyan).lerp(this.violet, this.tint[i]);\n      const boost = 0.8 + 2.2 / (r + 0.6);\n      this.col[k] = this.tmp.r * boost;\n      this.col[k + 1] = this.tmp.g * boost;\n      this.col[k + 2] = this.tmp.b * boost;\n      this.size[i] = this.sz[i] * (0.7 + 0.5 * smooth(0.3, 2.5, r));\n      live++;\n    }\n    for (let j = 0; j < MOTE_COUNT; j++) {\n      const i = SPIRAL_COUNT + j;\n      this.mAge[j] += dt;\n      if (this.mAge[j] >= this.mLife[j]) this.respawnMote(j, false);\n      const t = this.mAge[j];\n      const u = t / this.mLife[j];\n      const k = i * 3;\n      this.pos[k] = this.mX[j] + Math.sin(t * 1.1 + this.mPhase[j]) * 0.35;\n      this.pos[k + 1] = 0.45 + t * this.mVy[j];\n      this.pos[k + 2] = this.mZ[j] + Math.cos(t * 0.9 + this.mPhase[j]) * 0.35;\n      this.alpha[i] = Math.sin(Math.PI * u) * 0.9;\n      this.tmp.copy(this.cyan).lerp(this.violet, this.mTint[j]).lerp(new THREE.Color(1, 1, 1), 0.25);\n      this.col[k] = this.tmp.r * 1.6;\n      this.col[k + 1] = this.tmp.g * 1.6;\n      this.col[k + 2] = this.tmp.b * 1.6;\n      this.size[i] = this.mSz[j];\n      live++;\n    }\n    this.liveCount = live;\n    const g = this.points.geometry;\n    for (const name of ['position', 'aColor', 'aSize', 'aAlpha']) {\n      (g.getAttribute(name) as THREE.BufferAttribute).needsUpdate = true;\n    }\n  }\n}\n",
+     "path": "src/particles.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019Ua8cSQTjBZTMrXehKSzq3",
+    "content": "wrote src/particles.ts (181 lines)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I noticed I'm allocating a new color object per mote every frame, which is wasteful - I should cache that as a reusable field instead, but that's a minor fix I can do quickly later. Moving on to the main logic now.\n\n",
+    "signature": "CAQSzwUKEggTEAEYAjgBQgh0aGlua2luZxIMFU2tWDNuV+0wmzAgGgySOzi4d/CzbQ1HIioiMMQANXvb+8Z4xXh3RwL4aXaX8bwBgD3fxL46HccnKuCLcAxRdZdj8DTs82C7u4LAUyrqBNv78iL3wfvpQQ+Jyym1KBzeMWuJHyhvOpAyDyTShAsTteDX7qK15Z8gfip2/gG8rKAmAdZmC5sdVO7X6dPzPe8ueMTGVlsJMR0dPNs9t+NsCwYgHkHimwRgGzzKGJHpkDC/b0v0z5XlnFZuV0T/hMlxmhZx5n9OA5mq7ICq7W1H38G7DJ0ORT9mY0+XWeF1JuP02BfUIFzWVaS4mM3p8CL3aeGZSnW6jlEWk9tOx7oJgiPZJ100dohYT4yhARhRCkwMlyofll17vWj+WUawo0R+MH/cyKBy+Qtddqvfku2/rtkrYyFF+yK8zKcGSuC2rmnaIQayKcsRYs0NAdPbh+1KfEydz0J051R1Py0qLctqabIL0ocvuG6pziziYZMJ2CN/k76zrDiRKsI4811pYnKsXusQzo5g9zp8YSfpS09iM36QqQaTwXShMU/a5qLYgXeCk06UJ+DutZwwYPvbJM/jo+cfKjdidgK7mgeIx9mxYMB13jF5qlajTsOfkpcsoRyhHTVZqvxLlbALGadCgCL6jIjMT2XhblzQ3rMEhSS6thD0hZ9ubzbOxjV1MBcz8iGVA7dfdZKXaC4zrU5BaPT1MpXkvUs5RG/Gi66aKztgtNdcCLiZW7v7NX9ZacIHqzI6YFy/Wfkp/bRcR5yVaAUJlViHwi4jCrxCBoU89UWB9ayxXl7dPQRC06x6sXvknjO8ZkJoBsVTCWJ6YUptrvXCepdUlZBXNNCa4amKGFTOx4sWgWSN5M3iwMVtCT75M35HvTorUqvugeQD3kJRLzrRf99fM7mrkzfIWCzsI+0DMp2QzO17Kp50LhgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FbjSvXAt6xbLdaAjUL7RVi",
+    "name": "edit_file",
+    "input": {
+     "path": "src/particles.ts",
+     "old_string": ".lerp(new THREE.Color(1, 1, 1), 0.25);",
+     "new_string": ".lerp(this.white, 0.25);"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JkrNYscuDb9wqsXpM2rnCp",
+    "name": "edit_file",
+    "input": {
+     "path": "src/particles.ts",
+     "old_string": "  private readonly tmp = new THREE.Color();",
+     "new_string": "  private readonly tmp = new THREE.Color();\n  private readonly white = new THREE.Color(1, 1, 1);"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FbjSvXAt6xbLdaAjUL7RVi",
+    "content": "edited src/particles.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JkrNYscuDb9wqsXpM2rnCp",
+    "content": "edited src/particles.ts"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Now I'm setting up the main scene file, defining pillar geometry with jittered cylinder tops using a hash function based on position, then recomputing normals, and laying out a list of pillar positions, heights, and broken states.\n\nI'm positioning the camera to sway slightly and checking the field of view against pillar distances, then setting up the dusk-toned directional and hemisphere lighting plus cyan and violet point lights to give the scene contrast and depth.\n\nAdding drifting glow sprites with additive blending, a circular ground plane with repeating texture, and a starfield of points.\n\n",
+    "signature": "CAQSohUKEggTEAEYAjgBQgh0aGlua2luZxIMBNh/wC1njeaYUqtVGgzBhRWPsytKbC5EljsiMPl9RJdPI5Q5Qwvn1wuTrObDi/23nAyRXq3EAppZ16jHA5fmUQh7UhnDvGJ1hY1SxCq9FNz8KlSbZKbdXDZ9yLhKUGO8BL9KBJ/HXvhh6fmCt3iT8Odr/Nz/KAXtYt7SadS+/siuUHDT+xaNclUmkyBZ/lTxA7jLp9NG29OBGwfiZH4/ltalqbpp/mnz5kBsSyMWV/D8KmKqwnPt8ZXfESV4cy5ztCiZKkpqGSWWRW1cWQY/EQQDDoHvXthoQFhnvBBIA/qtsH+u7ESKLY5+sih0tZCrbc9NYwvA+OEXAXHEkAenVCvnFpnQdhtcwl4N6dwEDI1t0mzVdvKRunkBEbOqJKYS/HCCkD4ZsOipJGYmqJVj2FhV2NhQmhcc2K+ttUtNP1qz0A81xEL1U4V7edjWLDz6oaMGfFYhnRuDxec5WoKY+6xUgni6UW/qCenOlkGC66E1A/K2i4kwmz7CDR3FrASVkdqQN2wDX0oFfANWJpLl+ZV3Ivv3nSdd2iXwz4BenDq/Zv61Pvy0nl5UyfDsLQsOWlNuShBIV4PTeenYMMGeYYHhBSlImO6yaWlEf7JpE1ClWkoSqNeDtPbO9eGnLr98mA5QmTIm/N6R26KprUNPHaUq+C4xidmD9TDkufDzAzVn4F6KHdTMlrTj8EKvrO+mc1ASx1u89vM0Ax1y/vRHJwQVYpKiXHLDTXCWOEfZdnUtvOnjAdh5wgsedw7L0fd0pnSKDcVcY9yfeh5d++ZSzwR49dBtzx1eKnZKPEtJ/Sv4J3ICkXE8NJq+GQH60xEvqTFs92mone5AGtOVKpj6Nnp+HAam5sbxD4oZyewp0BhaPz4RnLVRGDwq+xmBG5iuQzlkIDdFM9jpaYAzUWpjhG1HNtociJa+PlGU4FSNWNO53ES6MTFKw12OZTSmkn9fV6dw1JHGkn9Ag21UaR3dVB6Chb9Y5ADhAg1kRWG+daOAgwTEKqL4KlClO8CKvMNm69chCDc6iogny4YwCHnkws5mnTWtmibsJDJObjiN9Je7fri4A9QinjC4+d1SIPmqihHbYeiQN++yQ3y7ZjeT8+sXv7WwpLr4IxYv4AlCmmjA3oGW5gy5mhi3sftgrvEBtYqCEDhHpIffTj0T3mUaxXGjkDqkXEdzpIn0BXVezxQXAxsHzA5snWKE31yRUM/15AHbX7/QG0UF5RTzFELSzw/FA7umtn4qXK+zXLXKsJ++w2iH0pI81y0RbsxyvHIb7j2oySOGCgDruzbJga5JDPm2IteZQmUx8l5QN/53CsCN3y41LciNI9KxuG5YfsFV8yjjtbex4atAZ+XnpVNzOn0Y4zrKBUAkDDqVN6Dprtf6wF0eET0U/UmAzoNjws6xvoTcCcuaSFlsv/A3/sMSzf/hd7tMh5hD4hIvBn5tBYtwZ/e525Kio1TjX6XJD2HRAy7mrNA+dD19tAhIsQp56LKpMM/QRhRIO5+a6xX/27XiAAy4ovgL0yUQLyTy/EMNbNbRzlmoK0wOdY9JhhXme/MeM6ubJRg3Q6LnaUSH9Zo3rosR+s5YYTtNHVfwow1DbZd64CK8TJ8h2IMrBUWGsIT4fFTDIoxaHxhl7nBno5HEU9u3Q6/swyonxB1/AcomwEHC38s6q0oChTSVd8ayuITivjdh3wZ7qGZlZrCWGJABjlxRw2/2Pkgr4FOScEzXDw2jmiR2dSZNwxiaQ/sGow0wAi0uBJ4bAaKJwt9vKmGvh+xlzubr2WB9bBNOazMD6fr7TLZbS16+xm6U1dQMBhBMapBpjAWcwBi7rfYwGyD+1olxS4Rt2+WdwGY6TlkaY0O085J/o7LmNllV5SAltr7z1eqMduTqIHXJM92jxgclxx/6pYTCJr16ckF9y0YL4DYNYC1Aa0Ef0yQjmak/7SoBU8kG0PBobRJDn1+itcuI5mHtIjNsuJIySn0VENP7Ox9DxTiBb3Ft8gvqsM118uxSal53R5y1nSiPMEtBtKcdLFdtDd6wr/AFN6rL7v4Aev5ZCCVrUPUOK4hAv/1cdfvJNgX7HpWK/4OIHkqoOltRf4dmuC5BdbnM/sPpTOHezC6v5/1E6iofxOWsWdxWtKdnxgJE3kwWB/M2CodnFLSdd9P8zAA1zeSv4bzqsIpVpE2cllvCfsDJi8rfzLj8DD9NhAlH/cwWIcfppKyAM019Ium70oC5jkD5NRsKNYxw8hBYth6QQn+YLJ9kNz2gz+ptZMgvoA3vv2yT9Y42E/C672+mCMuSK5I4wHc79qTBGECmACQa8UAUFGzgjQeEskRW+DOOGYWq5wiDm+jXaGyNw3vwHK2q6PxfWgRbgDsaPp5kHtG6OI4kA4CB3QHsY9v567MIi+89KPRctt0hi2sDNIoKvSQgPlct+TswCU7vVlOdvNZ9ej4K5HjUa4+6ZGH7XH6egcYkB7OOCBkLW7FFEG6IxxpajHkPeH56PDLQuDoedrHVGh2Cz3IQyE2mS7Ma3N46zWLJvw+2L0PuZSEwzeX3p9UZoTjIsIxETMRtlBJSiOELmcybTydheU0hVzKLOhXdYigLofczkyZUCGRYdcPVmCCiQi3s1KtMpm4dj20JPqdgd7oqhFwatM7wXaAJOs16aI+7gdWtbJvwXhqYdhahcapPahd/FIOmSeh5Cg2U03oi9V1g7QvSk0UXM47CjMYEK0M5t6ok8iQaIPwIcE7nJNvvwdpPiFOu2FhYtj07J+78eGOri/jeJ8x8c2OI93vE8gIGIYvyPvIFzy9nQhtwYk26wQ9xxzLdBec7xAAm6jYFPC2nP3WxEeJ1/FUiAHUGsoDL5kYnPIaQe5XmuTzLmOa+XaBnLTclT1EqhBxD+mnOeLFy0r/CGMCB+tjUIPuaTovAvaQUGtslAcqN33L8bgp5ojdDjpHj9NLQCS+OlgwhO25eYjoDnGphV2kwHbhnzUcvs3qlXiM2T6OxVIgxtTxtmPFTLMNEAU7oQ5XzXYkG1RNMeWaFngP3u29GR6vXczQUyId3L02b0QQP+hdLr1l38bs4n01whCOM1Qjf4D0IXqrqJ5w2Wwf4Vn68bHRWyp6G5LNKKTf+AK0u1/7yLGOd45y76K3+3sE6puvT91QjMF8BcRlJ61KujXONSndwv0xbjhdy+Eo7HLV3KFYxXbcMf+sX/IbprawXjUkd0hRpB+t8ie9t9lrZkgUeySto4ITbFhXoxgo9FWZ/mdoV6aD9t047XAUJ0WmOkCjtjx+Nic0qH0R/zs8PwkhfgHxsLDwjbKx0GOIgcHIVAX7PUT50VTp+DHd7VxGVW2Wfqbu10WGMk+NGmTZ0a9Dza7sWYraYxl4O6jZNEahleBVyB99gh+nayQNKLwicFCgaTuTz1DVbQaBuf1SfHP9P8RxwsLYSxQNluJ5YWCLObRtzjKNwwj53i9GRkUFS8LF3lehMkFnsINkzC9j4AWHOWp6TolBFTOLFIf7J/yPd2mz8wzhLxPCKRejg3LSW4yLVI7Rxm+KKRfD0PqUEsdWnWD5aj4DpAoLLq57Ys0+JuVoxG4dIjvFlZyz0QMX1++mqkZ32YPk34svUGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FeqaDKEwE4YyFj4eajpfo7",
+    "name": "write_file",
+    "input": {
+     "content": "import * as THREE from 'three';\nimport { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';\nimport { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';\nimport { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';\nimport { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';\nimport { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';\nimport {\n  makeCircleTexture,\n  makeGlowTexture,\n  makeRuneTexture,\n  makeStoneTexture,\n  mulberry32,\n} from './textures';\nimport { PortalParticles, PARTICLE_TOTAL } from './particles';\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n    __TASK_STATE__?: { portalActive: boolean; particleCount: number; time: number };\n  }\n}\n\nconst W = 640;\nconst H = 360;\nconst FOV = 45;\nconst PORTAL_Y = 2.75;\nconst RING_R = 2.3;\n\nconst canvas = document.getElementById('app') as HTMLCanvasElement;\nconst renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });\nrenderer.setPixelRatio(1);\nrenderer.setSize(W, H, false);\nrenderer.toneMapping = THREE.ACESFilmicToneMapping;\nrenderer.toneMappingExposure = 1.0;\nrenderer.shadowMap.enabled = true;\nrenderer.shadowMap.type = THREE.PCFSoftShadowMap;\n\nconst FOG_COLOR = 0x2a1c40;\nconst scene = new THREE.Scene();\nscene.background = new THREE.Color(0x120c22);\nscene.fog = new THREE.FogExp2(FOG_COLOR, 0.04);\n\nconst camera = new THREE.PerspectiveCamera(FOV, W / H, 0.1, 200);\n\nconst CYAN = new THREE.Color(0.2, 0.85, 1.0);\nconst VIOLET = new THREE.Color(0.6, 0.25, 1.0);\n\n// ---------------------------------------------------------------- sky\n{\n  const sky = new THREE.Mesh(\n    new THREE.SphereGeometry(100, 32, 16),\n    new THREE.ShaderMaterial({\n      side: THREE.BackSide,\n      depthWrite: false,\n      fog: false,\n      vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,\n      fragmentShader: `\n        varying vec3 vDir;\n        void main(){\n          float h = clamp(vDir.y, -0.2, 1.0);\n          vec3 horizon = vec3(0.50, 0.17, 0.30);\n          vec3 mid = vec3(0.13, 0.08, 0.30);\n          vec3 top = vec3(0.015, 0.02, 0.07);\n          vec3 c = mix(horizon, mid, smoothstep(0.0, 0.25, h));\n          c = mix(c, top, smoothstep(0.2, 0.8, h));\n          c = mix(c, vec3(0.09,0.05,0.14), smoothstep(0.0, -0.2, vDir.y));\n          gl_FragColor = vec4(c, 1.0);\n        }`,\n    }),\n  );\n  scene.add(sky);\n\n  const rnd = mulberry32(99);\n  const n = 220;\n  const arr = new Float32Array(n * 3);\n  for (let i = 0; i < n; i++) {\n    const a = rnd() * Math.PI * 2;\n    const y = 0.25 + rnd() * 0.75;\n    const r = Math.sqrt(1 - y * y);\n    arr[i * 3] = Math.cos(a) * r * 90;\n    arr[i * 3 + 1] = y * 90;\n    arr[i * 3 + 2] = Math.sin(a) * r * 90;\n  }\n  const g = new THREE.BufferGeometry();\n  g.setAttribute('position', new THREE.BufferAttribute(arr, 3));\n  scene.add(\n    new THREE.Points(\n      g,\n      new THREE.PointsMaterial({ color: 0xbfc4ff, size: 1.3, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.7 }),\n    ),\n  );\n}\n\n// ---------------------------------------------------------------- lights\nconst hemi = new THREE.HemisphereLight(0x5a56a8, 0x150f22, 0.55);\nscene.add(hemi);\n\nconst dusk = new THREE.DirectionalLight(0xff8f70, 1.0);\ndusk.position.set(-14, 7, -12);\ndusk.castShadow = true;\ndusk.shadow.mapSize.set(1024, 1024);\ndusk.shadow.camera.left = -13;\ndusk.shadow.camera.right = 13;\ndusk.shadow.camera.top = 13;\ndusk.shadow.camera.bottom = -13;\ndusk.shadow.camera.near = 1;\ndusk.shadow.camera.far = 50;\ndusk.shadow.bias = -0.0008;\nscene.add(dusk);\n\nconst fill = new THREE.DirectionalLight(0x4660b0, 0.35);\nfill.position.set(10, 6, 12);\nscene.add(fill);\n\nconst cyanLight = new THREE.PointLight(0x35d9ff, 40, 18, 2);\ncyanLight.position.set(0, PORTAL_Y, 2.4);\nscene.add(cyanLight);\nconst violetLight = new THREE.PointLight(0x9a4dff, 40, 18, 2);\nvioletLight.position.set(0, PORTAL_Y, -2.4);\nscene.add(violetLight);\nconst groundLight = new THREE.PointLight(0x7a6dff, 18, 12, 2);\ngroundLight.position.set(0, 1.0, 3.2);\nscene.add(groundLight);\n\n// ---------------------------------------------------------------- materials\nconst stoneMat = (seed: number, rx: number, ry: number, tint = 0xb4b0c4): THREE.MeshStandardMaterial => {\n  const t = makeStoneTexture(seed, rx, ry);\n  return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.2, color: tint, roughness: 0.92, metalness: 0.02 });\n};\nconst platformMat = stoneMat(3, 4, 1, 0xa7a3ba);\nconst platformTopMat = stoneMat(4, 3, 3, 0x9a96b0);\nconst ringMat = stoneMat(5, 1, 1, 0xa09cb8);\nconst pillarMat = stoneMat(6, 1, 2, 0x9c98ae);\nconst groundMat = stoneMat(7, 40, 40, 0x4a4558);\n\n// ---------------------------------------------------------------- ground & platform\nconst ground = new THREE.Mesh(new THREE.CircleGeometry(70, 48), groundMat);\nground.rotation.x = -Math.PI / 2;\nground.receiveShadow = true;\nscene.add(ground);\n\nconst step = new THREE.Mesh(new THREE.CylinderGeometry(5.9, 6.1, 0.2, 40), platformMat);\nstep.position.y = 0.1;\nstep.receiveShadow = true;\nstep.castShadow = true;\nscene.add(step);\n\nconst platform = new THREE.Mesh(\n  new THREE.CylinderGeometry(5, 5.15, 0.4, 40),\n  [platformMat, platformTopMat, platformTopMat],\n);\nplatform.position.y = 0.2;\nplatform.receiveShadow = true;\nplatform.castShadow = true;\nscene.add(platform);\n\nconst circleTex = makeCircleTexture();\nconst circleMat = new THREE.MeshBasicMaterial({\n  map: circleTex,\n  color: new THREE.Color(0.3, 0.9, 1.2),\n  transparent: true,\n  opacity: 0.5,\n  blending: THREE.AdditiveBlending,\n  depthWrite: false,\n  fog: false,\n});\nconst circle = new THREE.Mesh(new THREE.PlaneGeometry(8.6, 8.6), circleMat);\ncircle.rotation.x = -Math.PI / 2;\ncircle.position.y = 0.41;\nscene.add(circle);\n\n// ---------------------------------------------------------------- portal ring\nconst ringGroup = new THREE.Group();\nringGroup.position.set(0, PORTAL_Y, 0);\nscene.add(ringGroup);\n\nconst runeMats: THREE.MeshBasicMaterial[] = [];\nfor (let i = 0; i < 4; i++) {\n  runeMats.push(\n    new THREE.MeshBasicMaterial({\n      map: makeRuneTexture(11 + i * 5),\n      color: new THREE.Color(0.35, 1.2, 1.6),\n      transparent: true,\n      opacity: 0.9,\n      blending: THREE.AdditiveBlending,\n      depthWrite: false,\n      fog: false,\n    }),\n  );\n}\n{\n  const rnd = mulberry32(42);\n  const N = 16;\n  const tang = (2 * Math.PI * RING_R) / N;\n  const runeGeo = new THREE.PlaneGeometry(0.46, 0.46);\n  for (let i = 0; i < N; i++) {\n    const th = (i / N) * Math.PI * 2 + Math.PI / 2;\n    const radial = 0.56 + rnd() * 0.1;\n    const depth = 0.85 + rnd() * 0.1;\n    const block = new THREE.Mesh(new THREE.BoxGeometry(tang * 0.97, radial, depth), ringMat);\n    block.position.set(Math.cos(th) * RING_R, Math.sin(th) * RING_R, (rnd() - 0.5) * 0.06);\n    block.rotation.z = th - Math.PI / 2 + (rnd() - 0.5) * 0.03;\n    block.castShadow = true;\n    block.receiveShadow = true;\n    ringGroup.add(block);\n    const rune = new THREE.Mesh(runeGeo, runeMats[i % runeMats.length]);\n    rune.position.z = depth / 2 + 0.004;\n    block.add(rune);\n    const runeBack = new THREE.Mesh(runeGeo, runeMats[(i + 1) % runeMats.length]);\n    runeBack.position.z = -depth / 2 - 0.004;\n    runeBack.rotation.y = Math.PI;\n    block.add(runeBack);\n  }\n  const plinth = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.5, 1.5), ringMat);\n  plinth.position.set(0, 0.55 - PORTAL_Y + 0.05, 0);\n  plinth.castShadow = true;\n  plinth.receiveShadow = true;\n  ringGroup.add(plinth);\n}\n\nconst innerRingMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 2.2, 2.8), fog: false });\nconst innerRing = new THREE.Mesh(new THREE.TorusGeometry(2.02, 0.045, 10, 96), innerRingMat);\nringGroup.add(innerRing);\n\nconst discMat = new THREE.ShaderMaterial({\n  side: THREE.DoubleSide,\n  fog: false,\n  uniforms: { uTime: { value: 0 }, uPulse: { value: 1 } },\n  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,\n  fragmentShader: `\n    uniform float uTime; uniform float uPulse; varying vec2 vUv;\n    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n    float noise(vec2 p){\n      vec2 i = floor(p), f = fract(p);\n      f = f*f*(3.0-2.0*f);\n      return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);\n    }\n    float fbm(vec2 p){ float v = 0.0, a = 0.5; for(int i=0;i<4;i++){ v += a*noise(p); p = p*2.03 + 7.1; a *= 0.5; } return v; }\n    void main(){\n      vec2 p = (vUv - 0.5) * 2.0;\n      float r = length(p);\n      float a = atan(p.y, p.x);\n      float t = uTime;\n      float twist = t * 0.55 + 3.2 * pow(1.0 - min(r,1.0), 1.4) * 2.0;\n      float s = cos(twist), c = sin(twist);\n      vec2 q = mat2(s, -c, c, s) * p;\n      float arms = sin(a * 3.0 + log(r + 0.03) * 6.0 - t * 1.6);\n      float arms2 = sin(a * 5.0 - log(r + 0.05) * 9.0 + t * 1.1);\n      float turb = fbm(q * 3.0 + vec2(0.0, t * 0.25));\n      float band = 0.5 + 0.5 * arms + 0.35 * (turb - 0.5);\n      float streak = smoothstep(0.55, 1.0, 0.5 + 0.5 * arms2) * 0.5;\n      vec3 cyan = vec3(0.10, 0.80, 1.00);\n      vec3 violet = vec3(0.50, 0.14, 1.00);\n      vec3 col = mix(violet, cyan, smoothstep(0.25, 0.85, band));\n      col *= 0.55 + 0.9 * turb;\n      col += streak * vec3(0.3, 0.8, 1.0);\n      float core = exp(-r * r * 22.0);\n      float halo = exp(-r * 4.0);\n      col += vec3(0.5, 0.35, 1.0) * halo * 0.9;\n      col = mix(col, vec3(2.6, 2.6, 3.2), core);\n      float edge = smoothstep(0.7, 1.0, r);\n      col += vec3(0.1, 0.7, 1.0) * edge * 1.1;\n      col *= uPulse * (0.95 + 0.15 * sin(t * 2.0 + r * 6.0));\n      gl_FragColor = vec4(col, 1.0);\n    }`,\n});\nconst disc = new THREE.Mesh(new THREE.CircleGeometry(2.06, 96), discMat);\ndisc.position.copy(ringGroup.position);\n// CircleGeometry uv spans 0..1 over the bounding square, as expected.\nscene.add(disc);\n\nconst glowTex = makeGlowTexture();\nconst halo = new THREE.Sprite(\n  new THREE.SpriteMaterial({\n    map: glowTex,\n    color: new THREE.Color(0.3, 0.55, 1.0),\n    transparent: true,\n    opacity: 0.4,\n    blending: THREE.AdditiveBlending,\n    depthWrite: false,\n    fog: false,\n  }),\n);\nhalo.scale.set(11, 11, 1);\nhalo.position.set(0, PORTAL_Y, -0.6);\nscene.add(halo);\n\n// ---------------------------------------------------------------- ruins\nfunction makePillar(x: number, z: number, h: number, broken: boolean, seed: number): THREE.Group {\n  const g = new THREE.Group();\n  const rnd = mulberry32(seed);\n  const r = 0.42 + rnd() * 0.1;\n  const base = new THREE.Mesh(new THREE.BoxGeometry(r * 2.8, 0.35, r * 2.8), pillarMat);\n  base.position.y = 0.175;\n  g.add(base);\n  const geo = new THREE.CylinderGeometry(r * 0.88, r, h, 12, 4);\n  const pos = geo.attributes.position as THREE.BufferAttribute;\n  if (broken) {\n    for (let i = 0; i < pos.count; i++) {\n      if (pos.getY(i) > h / 2 - 1e-4) {\n        const px = pos.getX(i);\n        const pz = pos.getZ(i);\n        const hv = Math.abs(Math.sin(px * 12.9898 + pz * 78.233 + seed) * 43758.5453) % 1;\n        const slope = (px * 0.8 + pz * 0.3) / r;\n        pos.setY(i, pos.getY(i) - hv * 0.35 - Math.max(0, slope) * 0.5);\n      }\n    }\n    geo.computeVertexNormals();\n  }\n  const shaft = new THREE.Mesh(geo, pillarMat);\n  shaft.position.y = 0.35 + h / 2;\n  shaft.castShadow = true;\n  shaft.receiveShadow = true;\n  g.add(shaft);\n  base.castShadow = true;\n  base.receiveShadow = true;\n  if (!broken) {\n    const cap = new THREE.Mesh(new THREE.BoxGeometry(r * 2.7, 0.3, r * 2.7), pillarMat);\n    cap.position.y = 0.35 + h + 0.15;\n    cap.castShadow = true;\n    cap.receiveShadow = true;\n    g.add(cap);\n  }\n  g.position.set(x, 0, z);\n  g.rotation.y = rnd() * Math.PI;\n  return g;\n}\n\nconst pillarDefs: [number, number, number, boolean][] = [\n  [-5.6, -1.2, 5.6, false],\n  [5.9, -2.2, 3.4, true],\n  [-7.2, 3.4, 2.4, true],\n  [7.4, 3.6, 4.4, true],\n  [-3.6, -6.2, 3.2, true],\n  [4.0, -6.8, 5.0, false],\n  [-9.5, -4.5, 3.8, true],\n  [10.0, -0.5, 2.0, true],\n];\npillarDefs.forEach(([x, z, h, b], i) => {\n  const p = makePillar(x, z, h, b, 100 + i);\n  const onPlatform = Math.hypot(x, z) < 6.2;\n  if (onPlatform) p.position.y = 0.4;\n  scene.add(p);\n});\n\n// fallen drums & rubble\n{\n  const rnd = mulberry32(7);\n  const drumGeo = new THREE.CylinderGeometry(0.42, 0.42, 1.2, 12);\n  const drums: [number, number, number][] = [\n    [3.2, 4.6, 0.6],\n    [-4.4, 4.9, -0.4],\n    [6.8, 0.6, 1.9],\n    [-6.0, -4.0, 0.3],\n  ];\n  for (const [x, z, ry] of drums) {\n    const m = new THREE.Mesh(drumGeo, pillarMat);\n    m.rotation.set(0, ry, Math.PI / 2);\n    m.position.set(x, 0.42, z);\n    m.castShadow = true;\n    m.receiveShadow = true;\n    scene.add(m);\n  }\n  const rubbleGeo = new THREE.BoxGeometry(1, 1, 1);\n  for (let i = 0; i < 34; i++) {\n    const a = rnd() * Math.PI * 2;\n    const d = 3.6 + rnd() * 6.5;\n    const s = 0.15 + rnd() * 0.4;\n    const m = new THREE.Mesh(rubbleGeo, pillarMat);\n    m.scale.set(s * (0.8 + rnd() * 0.8), s * 0.7, s * (0.8 + rnd() * 0.8));\n    const onPlat = d < 5;\n    m.position.set(Math.cos(a) * d, (onPlat ? 0.4 : d < 6 ? 0.2 : 0) + s * 0.3, Math.sin(a) * d);\n    m.rotation.set(rnd() * 0.5, rnd() * 3, rnd() * 0.5);\n    m.castShadow = true;\n    m.receiveShadow = true;\n    scene.add(m);\n  }\n}\n\n// ---------------------------------------------------------------- haze\nconst hazeSprites: { s: THREE.Sprite; base: THREE.Vector3; ph: number }[] = [];\n{\n  const rnd = mulberry32(5);\n  for (let i = 0; i < 9; i++) {\n    const mat = new THREE.SpriteMaterial({\n      map: glowTex,\n      color: i % 2 ? new THREE.Color(0.35, 0.25, 0.7) : new THREE.Color(0.2, 0.4, 0.65),\n      transparent: true,\n      opacity: 0.16,\n      blending: THREE.AdditiveBlending,\n      depthWrite: false,\n      fog: false,\n    });\n    const s = new THREE.Sprite(mat);\n    const a = (i / 9) * Math.PI * 2 + rnd();\n    const d = 2 + rnd() * 6;\n    const base = new THREE.Vector3(Math.cos(a) * d, 0.9 + rnd() * 1.2, Math.sin(a) * d);\n    s.position.copy(base);\n    const sc = 7 + rnd() * 5;\n    s.scale.set(sc, sc * 0.5, 1);\n    scene.add(s);\n    hazeSprites.push({ s, base, ph: rnd() * 6.28 });\n  }\n}\n\n// ---------------------------------------------------------------- particles\nconst particles = new PortalParticles(new THREE.Vector3(0, PORTAL_Y, 0), H, FOV);\nscene.add(particles.points);\n\n// ---------------------------------------------------------------- post-processing\nconst rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });\nconst composer = new EffectComposer(renderer, rt);\ncomposer.setPixelRatio(1);\ncomposer.setSize(W, H);\ncomposer.addPass(new RenderPass(scene, camera));\nconst bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 1.0, 0.85, 0.7);\ncomposer.addPass(bloom);\ncomposer.addPass(new OutputPass());\ncomposer.addPass(\n  new ShaderPass({\n    uniforms: { tDiffuse: { value: null }, uTime: { value: 0 } },\n    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,\n    fragmentShader: `\n      uniform sampler2D tDiffuse; uniform float uTime; varying vec2 vUv;\n      void main(){\n        vec4 c = texture2D(tDiffuse, vUv);\n        vec2 d = vUv - 0.5;\n        float v = smoothstep(0.85, 0.2, length(d * vec2(1.1, 1.3)));\n        c.rgb *= mix(0.45, 1.0, v);\n        c.rgb = pow(c.rgb, vec3(1.06));\n        float n = fract(sin(dot(vUv * 640.0 + uTime, vec2(12.9898, 78.233))) * 43758.5453);\n        c.rgb += (n - 0.5) * 0.015;\n        gl_FragColor = c;\n      }`,\n  }),\n);\n\n// ---------------------------------------------------------------- loop\nwindow.__TASK_STATE__ = { portalActive: true, particleCount: PARTICLE_TOTAL, time: 0 };\n\nconst startMs = performance.now();\nlet lastT = 0;\nlet readySet = false;\nconst lookTarget = new THREE.Vector3(0, 2.3, 0);\n\nfunction frame(): void {\n  const t = (performance.now() - startMs) / 1000;\n  const dt = Math.min(0.05, Math.max(0, t - lastT));\n  lastT = t;\n\n  const pulse = 0.5 + 0.5 * Math.sin(t * 1.1);\n  const k = 0.7 + 0.5 * pulse;\n  cyanLight.intensity = 40 * k;\n  violetLight.intensity = 40 * (1.2 - 0.5 * pulse);\n  groundLight.intensity = 18 * k;\n  discMat.uniforms.uTime.value = t;\n  discMat.uniforms.uPulse.value = 0.9 + 0.2 * pulse;\n  innerRingMat.color.setRGB(0.5 * (0.8 + 0.4 * pulse) * 1.2, 2.2 * (0.8 + 0.4 * pulse), 2.8 * (0.8 + 0.4 * pulse));\n  circleMat.opacity = 0.3 + 0.3 * pulse;\n  (halo.material as THREE.SpriteMaterial).opacity = 0.3 + 0.2 * pulse;\n  runeMats.forEach((m, i) => {\n    m.opacity = 0.55 + 0.4 * (0.5 + 0.5 * Math.sin(t * 1.1 - i * 0.7));\n  });\n  for (const h of hazeSprites) {\n    h.s.position.set(\n      h.base.x + Math.sin(t * 0.15 + h.ph) * 0.9,\n      h.base.y + Math.sin(t * 0.2 + h.ph) * 0.15,\n      h.base.z + Math.cos(t * 0.13 + h.ph) * 0.9,\n    );\n  }\n\n  particles.update(dt, t);\n\n  const ang = 0.5 * Math.sin(t * 0.13);\n  const radius = 11.5 + 0.8 * Math.sin(t * 0.09);\n  camera.position.set(Math.sin(ang) * radius, 3.2 + 0.4 * Math.sin(t * 0.21), Math.cos(ang) * radius);\n  camera.lookAt(lookTarget);\n\n  composer.render(dt);\n\n  const state = window.__TASK_STATE__;\n  if (state) {\n    state.portalActive = true;\n    state.particleCount = particles.liveCount;\n    state.time = t;\n  }\n  if (!readySet) {\n    readySet = true;\n    window.__EVAL_READY__ = true;\n  }\n  requestAnimationFrame(frame);\n}\nrequestAnimationFrame(frame);\n",
+     "path": "src/main.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01WkncaVqHHpzuSqUcfQeKqb",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FeqaDKEwE4YyFj4eajpfo7",
+    "content": "wrote src/main.ts (494 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01WkncaVqHHpzuSqUcfQeKqb",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm checking that the halo sprite stays hidden behind the disc regardless of camera sway, and confirming shadows are disabled for the point light before moving on to time-based state logic.\n\nLooking at the horizon seam now: the ground's fog fades into dark purple at radius 70 while the sky shader renders a much brighter magenta horizon band, creating a visible mismatch since fog color is sRGB-converted but the sky output is raw linear. I'm adjusting the sky's horizon, mid, and top colors to darker, more muted linear values so they blend smoothly into the fog color instead of clashing.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Uv4Hfvzeg8Fu48SXK4c4sm",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "          vec3 horizon = vec3(0.50, 0.17, 0.30);\n          vec3 mid = vec3(0.13, 0.08, 0.30);\n          vec3 top = vec3(0.015, 0.02, 0.07);",
+     "new_string": "          vec3 horizon = vec3(0.13, 0.055, 0.12);\n          vec3 mid = vec3(0.05, 0.035, 0.15);\n          vec3 top = vec3(0.008, 0.01, 0.04);"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013K6txrkaGGcoV6hho12o8W",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "          c = mix(c, vec3(0.09,0.05,0.14), smoothstep(0.0, -0.2, vDir.y));",
+     "new_string": "          c = mix(c, horizon, smoothstep(0.0, -0.2, vDir.y));"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019Yy6HjDTYyesfHv18WkEL7",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "scene.fog = new THREE.FogExp2(FOG_COLOR, 0.04);",
+     "new_string": "scene.fog = new THREE.FogExp2(0xffffff, 0.04);\nscene.fog.color.setRGB(0.13, 0.055, 0.12);"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01N2ETQtKwwDWGPN1JnxFrmM",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "const FOG_COLOR = 0x2a1c40;\n",
+     "new_string": ""
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Uv4Hfvzeg8Fu48SXK4c4sm",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013K6txrkaGGcoV6hho12o8W",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019Yy6HjDTYyesfHv18WkEL7",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01N2ETQtKwwDWGPN1JnxFrmM",
+    "content": "edited src/main.ts"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "phase": "main",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm checking whether TypeScript narrows scene.fog from Fog|FogExp2|null down to FogExp2 after the assignment, so accessing .color afterward should typecheck fine.\n\n",
+    "signature": "CAQS5gYKEggTEAEYAjgBQgh0aGlua2luZxIM/2oDxIQKM+xgHnp+Ggx/+EyxKo7t69gkLuwiMNN7EZ1jVwQFiDoCgSPKMuff+r4P8fI39D84LXUjC/YDefMlpRTw5iJsT21xGmq9fSqBBmlEc2BVYeCsndnV0QGujgB7kKkRGmuLRODWaDNhQVGshnvSiG37SgTuoOqmieGCu0w+7s7i9yEf+kLIe+ZzhLC/FG8l0hXjXm1zFt2jpHUqm3iMRutLJY5O+Q0Fg/4teguRv58hKdb+b06uJDVqIiMJjaOyRgk6Tr2wFcu29xdUXV15vwqTWtfNZWwjYWhzjD47rqoU3y8ufelUQzc9dgthC4hMQDfn5Znaja0ymBydA76WjKqcVRxaBN4+/XmRjAdIwotkoJkQUAgrcAOkuMc95JOe/UX+PJ05iN//Rqad9my6Uf57cebtNNQSsYseKL3S5oZNhE88kMhD8y/OImoJjt2SvGyczXngd45bzMbD+LzPp5a+PDQyGAWPaEFGBLGSjSZ03OP+zQ6OBVgzG1EaVDNQqbZCre6EAbJ2lg3YOaVNiUv/pred1cxBLWv5Y9QobmRY52ZgdqL8fgTELAj3/vCiOhX8HS6hEnhPPkWlOYXEgeF18OPvAAyDeTZtOsIt18ZQat7cGPJLtXSZynf+WvsJMRP7hCKsTx9ryKWSDvXtws72s03AISGmYsOxu+cOxIy9zUN7dxvoSzyNn1EeKrJUyWEb5UGAvaLY1yMh7ZCtYtBmEOStahwqVQlueODoicL8EnlCTqfPO1UxU25uGiXwtj4i33JuFqwJg61/xqYhszH2pptmz638OFSSxTkAfQcGUICMxYgY9g3Fp+sz2l66L8KGAVW2hVff4NWB2T+QcUvEXdFRfWYHE/wPaiZajD9CVfYnrybm+n9GvToacm6TUDGvY9UQfWE9i0L6cOWSkd/BlAxkhPFoG53QSVs6nH9c4bpX1TNTKa2LUrVYPKbaSI6SzhwEc6o819LxMXW1zXO7biBP281xZUFhZ0lp+KD+gVlOhTG8WS9gPcPz2fVHTPJdcrV3wjN8it2Q0XCnh8VRY06+mRhhB9TkkWE0ZVbkUJvQ/fKFhCZWkTbYWvaMsDqM6ApeS501lZoVhWclVdPbepC6u4VR4KAajHsYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016pA2gG1rYATipyFGnYksK3",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016pA2gG1rYATipyFGnYksK3",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013bXRpFuqKm5jaAvQ8NZf8S",
+    "name": "finish",
+    "input": {
+     "summary": "I built the portal scene in `src/main.ts`, `src/textures.ts` and `src/particles.ts`. It passes `typecheck`, but I couldn't run it, so I haven't seen a rendered frame. Light intensities, bloom strength and particle sizes are untuned estimates.\n\n- **Scene:** The portal is a 16-block weathered-stone ring with glowing runes and a glowing inner ring, standing on a stepped stone platform. Around it are eight ruined pillars (some broken), fallen drums and scattered rubble. A dusk sky with stars, exponential fog and drifting haze sprites set the mood.\n- **Disc:** The disc is a shader vortex in cyan and violet with a bright white core.\n- **Lighting:** Cyan and violet point lights pulse slowly and light the stones and platform. A glowing ritual circle on the platform pulses with them. A warm dusk directional light casts shadows.\n- **Particles:** 640 particles spiral in toward the portal and 140 motes rise from the platform and fade out. They are drawn as one additive point cloud.\n- **Look:** UnrealBloomPass gives the glow, followed by tone mapping, a vignette and light grain.\n- **Camera:** The camera orbits slowly with a gentle height and distance sway.\n- **Contract:** `window.__TASK_STATE__` updates every frame, with `particleCount` set to the number of live particles. `__EVAL_READY__` is set after the first frame."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "phase": "main",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013bXRpFuqKm5jaAvQ8NZf8S",
+    "content": "ok"
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "phase": "followup",
+  "content": "Follow-up request from the user: Add a DOM button labelled 'Close portal' outside the canvas. Clicking it closes the portal: the energy disc and all particles disappear, window.__TASK_STATE__.portalActive becomes false, particleCount becomes 0 and the label changes to 'Open portal'. Clicking it again reopens the portal.\nMake this change in the existing project, check it with typecheck, then call finish again."
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'll add the button in main.ts, appended after the canvas, and handle the closing sequence by hiding the disc, halo, and particles while dimming the lights to signal the portal shutting down.\n\n",
+    "signature": "CAQSrAsKEggTEAEYAjgBQgh0aGlua2luZxIMA/QyAqd3dH8lDTp0GgxcxmuXMOIqJG6DPaQiMOfGSk29RD+v4OhysG2giojwaPBIInRvpxOBeIelqCsjQibXsBy1MLfSSCqkDzdt/irHCuzqrTzo9s569DW5ozRNFDcreckchb+Mij1uJ4HbppgXa/oRL+r5eq//kCkqkK2ppZTBmWGxDWtzYBsimlgwNqwNK051PyvLYoile+zwvE7m3dXtAe2000iP56YDeEHNqMSqYLVErQSGnIN5tg3jNrXA8oIB2PCZLWK9jmS8sfUVai74JqRbzTSoLuz989VVZ7ySJS1fQS3AFEoYtljuWVuEvOFl996FEk9btIGjSPLq8JIg0B46BrRJ/pTdHNtLGWVCi/7Dzl9hekPjSyZBggmKT+k8RgqTi1uAlJwvFecaeuu3AY829B+rRivR3jimEnyKgJp7u7BBAL7wPd3qii4pbTlrywQzZ1zgZz64WDV8JzMO5kitApzr/JmgBdwGAZ5owdNkWHYawCHhobyKsPrDmeW1GL4JwHgn0yFZWPbF2+J6Slz4dcFjlUwmP8cDbki9C/7yKs66tx1uDsVKvN3J+kQsavTRWcImmuehNVd+55DHIZacTAiR7c9DKQPCHJ4945DoB88fDT1hlqcQGudXKVR0WPoJfUyVk17aaaWqqT0W30z7ZcZBUMBo3AniRwpdK7AOJVaLSxjGqQqjOPcoIHeZqW6qiAArra55R+l8zKDeEyMbG50COp5kJ67yA/pCoOnt1eDSQDyqJFm6wUYrQeQhOEfsADKYvA8mG/fbhh3uNgGmM/JOXeg1WWebubBVRmCAfwoFMiiZruy9XTIa6eQzUtnZ4SzjPWEn9dPRefY68YK0zb6xV5ukzIaWN9YiKeoxpX6F7/1ZwC+QwjIRiNa48tQiHxZRQFLNmrQBRmrdex2+6d7hoH/gpuKemaIc7Z9XrW3xRkn16W5oig5YFb6p2F5Pfdi1TAZQyvhak+cVrFPSvCj3BH2TRlOj+HyZUPXodPUgryg3UZciwYM0IYww4x8bZ8lb2qH09A4Jl4xf5RzzTHp2m4MQ0stxIEoXsbSoQvnwM9CVWaYiyaCd3kPqxAye7UVv4223eP2AL0UffKc8uU5uLfFviPHOUXrFMCDla+WEPl4sNwVP5leFFTy8UR+ySpNvLdw0JiWuENKzVyFT/ZGPdYfpSyKOMqXQetKeMk750c8bgkcPqzcBOuz6v46IcDK5ZkwpGVnwNw9chB7VSaLv82+1NCEX84I95BF8+pZr4U/UvXks2OqRSz5P3YkAhD0AFQmUIPDY7G8e2fyK5JtXlZlZkAnxamlPTrk90RqSFnBuXQkkJfb8IZecexePnEzN3DLWEY7FotWCbaxH57JoW5Wp9fUYeIYEx5yjw4USVADVfVg+5ZH4lahC7ki6+ymHvzmEYQdng3IqjZtaryg1+VdYf2xlKHC2xds0YkLw4tLgHuz2OLj9v7cPbLMaTTjmNooH8UZu1LKvSyTYqWkdM+353n5xV9g7E62O6ekV+XxwRnuraVhC3PDHaNjBPhWi+APSWK5W3JMxgh8X0Lnl26o07GeogqQl5L/e+l6rSgsd9IAgTWiZrr9Aw2JlMa+YpGiNq9GVLYj+3omFmcYVjDn18wZmUKHHqyToiXvOALb0PdnAr97J692xLx5cJNPmf2tekgGM0p7DhQTqsKfslASRysN/o8GC3ZqMNu19VMmZe4sO3Lh4ASrqYSWW8qbu8OS6V7yNM33ur4g9ogaSPlxOQefCjh0sKPMWzetGgUX3mcPMzqswWGMcJxGj3GfkIkLnnG3rinApLp7vfnQjjajt7cfIsusJLL29ixdHUWnZjQBWhgC2xoh2j+dBehPhRYWzjuJ/R59Gzz6iWQ/v2M4m5Ee6AFsac0rYHPAYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01MuS9wCpoVsJCtQrR3TyK6q",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "const startMs = performance.now();",
+     "new_string": "let portalActive = true;\nconst toggleBtn = document.createElement('button');\ntoggleBtn.id = 'portal-toggle';\ntoggleBtn.type = 'button';\ntoggleBtn.textContent = 'Close portal';\ntoggleBtn.style.cssText = 'display:block;margin:8px 0 0 8px;padding:6px 14px;font:inherit;cursor:pointer;';\ncanvas.insertAdjacentElement('afterend', toggleBtn);\ntoggleBtn.addEventListener('click', () => {\n  portalActive = !portalActive;\n  toggleBtn.textContent = portalActive ? 'Close portal' : 'Open portal';\n  disc.visible = portalActive;\n  halo.visible = portalActive;\n  particles.points.visible = portalActive;\n  const state = window.__TASK_STATE__;\n  if (state) {\n    state.portalActive = portalActive;\n    state.particleCount = portalActive ? particles.liveCount : 0;\n  }\n});\n\nconst startMs = performance.now();"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NCp58eg2hxZAXDhUyZUtri",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "  cyanLight.intensity = 40 * k;\n  violetLight.intensity = 40 * (1.2 - 0.5 * pulse);\n  groundLight.intensity = 18 * k;",
+     "new_string": "  const on = portalActive ? 1 : 0.05;\n  cyanLight.intensity = 40 * k * on;\n  violetLight.intensity = 40 * (1.2 - 0.5 * pulse) * on;\n  groundLight.intensity = 18 * k * on;\n  circle.visible = portalActive;\n  innerRing.visible = portalActive;"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017mTdP2t2GK5rP5RMpnRcZm",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "  particles.update(dt, t);",
+     "new_string": "  if (portalActive) particles.update(dt, t);"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XDxcCjMijwR2BDYvrkJHMF",
+    "name": "edit_file",
+    "input": {
+     "path": "src/main.ts",
+     "old_string": "    state.portalActive = true;\n    state.particleCount = particles.liveCount;",
+     "new_string": "    state.portalActive = portalActive;\n    state.particleCount = portalActive ? particles.liveCount : 0;"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01MuS9wCpoVsJCtQrR3TyK6q",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NCp58eg2hxZAXDhUyZUtri",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017mTdP2t2GK5rP5RMpnRcZm",
+    "content": "edited src/main.ts"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XDxcCjMijwR2BDYvrkJHMF",
+    "content": "edited src/main.ts"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "The runes staying pulsed when closed is fine as is, so I'll move on to running the typecheck.\n\n",
+    "signature": "CAQSywUKEggTEAEYAjgBQgh0aGlua2luZxIMOa73dtPMQbEWhPdRGgwZLdEX6wv7YYzJid8iMHbnView9sEA5UkVLz5FKB4XbJXHX7acXa7OnFo+ROvAMshh48ZJaHkvdaV4/nHAaSrmBCqfPzIEkqp+ymeE3kM56BQmQ6FIEEK8oa16ajkYFrGZIP3ViiGxMv+z/QC7byAAEfjTJuVX+UnrURJ0wMHAPolkxEE6xdub3irBKH6tyFDWokpO1VfhMkMggrUnCkhOv/Jg9xp8jIz2ilEgqKbSYqWNrpG5wV/0YutaAmCDA7HUiedypBMti56EugYc7JDSl8MPkut/R+BkP4PCvkDWf1CgHAqqKmCw2ksl9NZsTPZ2tw7Ts8R4FZgB5r8oUVceJHeG3JT9Kxma1M2jzhRudoXOvDJtrHt64GNploPN5B/LGciwu51rgZdEOZLEplrksam4wcDMyAgzUlwOU9QFXlUjFble/JDb9IUd+WZT87P0JEmCRX1FbAtQWzGgKZRWacYXdB5yvUxsRPtui1Pq7fuBz0Oln7SGgQXRkHIRtwKKEWH5unRbdoVxp5EPLcxbCT7vzzGHdzM3x2VKVME3Iio7LT5xmRB3jmZOmxModl/gvdo28OZjWhCvo3vzeojR1EXrUCT5Jd4VqLFRSWSGmtErcpUuIZ1Ddry/JeD+CDFg7RE1qT/3r8n7mgiZ8/seSadgjpjV71qcZMR3gVuNfLnRr+C9lD+CCT1H3TnpbnMRBeBhgV7+4n4BwFqUW8X2HycU3salSpSRNZFAULrW+g2DzCE128Bs88rbdD/unt2MH1cXAEQJybNKTpDUYRwcEvGoS+bQqyYyLD+NDLMBFlxKJ5W8sC13o4kSf3gLiHY8GF7Pslrw4X8qsOEH3aJaO8DW119eNumvg5LipvDhXa2UIITLQbwbIxSdGHuatNzPqTjgRe9DGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PjbSZFQg8hfSE7T6u6AZgh",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PjbSZFQg8hfSE7T6u6AZgh",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Xo1zEMo9zH7YZGkfWhmkLC",
+    "name": "finish",
+    "input": {
+     "summary": "I added a \"Close portal\" button below the canvas in `src/main.ts`. It passed `typecheck`, but I haven't run it in a browser or clicked the button. Clicking it hides the energy disc, the halo glow behind the disc, and all particles. It also hides the platform ritual circle and the inner glowing ring, and drops the portal lights to 5% of their intensity. `window.__TASK_STATE__.portalActive` becomes false and `particleCount` becomes 0. The label changes to \"Open portal\". Clicking again shows everything again, restores the lights and the count, and changes the label back to \"Close portal\". Particle updates pause while the portal is closed. The state is also written immediately on click, so it doesn't wait for the next frame."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "phase": "followup",
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Xo1zEMo9zH7YZGkfWhmkLC",
+    "content": "ok"
+   }
+  ]
+ }
+]

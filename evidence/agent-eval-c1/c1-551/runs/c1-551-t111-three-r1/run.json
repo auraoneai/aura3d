@@ -1,0 +1,253 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t111-three-r1",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 111,
+  "slug": "solar",
+  "idx": 1,
+  "order": 22,
+  "seed": 20261108022,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:23:22.974Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Add a DOM button labelled 'Tour' outside the canvas that starts a guided tour: the camera focuses on each planet in turn from the innermost outwards, about 3 seconds per planet (with the info panel), then returns to the overview. While touring the button reads 'Stop tour'; clicking it ends the tour and returns to the overview. Add touring: boolean to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "stopped_without_finish",
+  "followUpEndReason": "finished",
+  "wallMs": 108071,
+  "usage": {
+    "input": 86823,
+    "uncachedInput": 86823,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 9007,
+    "turns": 6,
+    "providerCredits": 2.745543,
+    "providerCostUsd": null,
+    "modelMs": 107273,
+    "toolMs": 796,
+    "perTurnInput": [
+      3226,
+      4315,
+      17870,
+      18648,
+      21072,
+      21692
+    ],
+    "perTurnOutput": [
+      11,
+      18,
+      7399,
+      391,
+      965,
+      223
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "stopped_without_finish",
+      "wallMs": 90276,
+      "input": 44059,
+      "uncachedInput": 44059,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 7819,
+      "turns": 4,
+      "providerCredits": 2.212133,
+      "providerCostUsd": null,
+      "modelMs": 89865,
+      "toolMs": 411,
+      "perTurnInput": [
+        3226,
+        4315,
+        17870,
+        18648
+      ],
+      "perTurnOutput": [
+        11,
+        18,
+        7399,
+        391
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.166308,
+        "listUsd": 0.166308,
+        "providerUsd": null,
+        "providerCredits": 2.212133,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 17794,
+      "input": 42764,
+      "uncachedInput": 42764,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 1188,
+      "turns": 2,
+      "providerCredits": 0.53341,
+      "providerCostUsd": null,
+      "modelMs": 17408,
+      "toolMs": 385,
+      "perTurnInput": [
+        21072,
+        21692
+      ],
+      "perTurnOutput": [
+        965,
+        223
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.097408,
+        "listUsd": 0.097408,
+        "providerUsd": null,
+        "providerCredits": 0.53341,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.263716,
+    "listUsd": 0.263716,
+    "providerUsd": null,
+    "providerCredits": 2.745543,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1252,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 18
+    },
+    {
+      "i": 1,
+      "t": 1252,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2595,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2595,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 2595,
+      "type": "read",
+      "path": "tsconfig.json",
+      "lines": 14
+    },
+    {
+      "i": 5,
+      "t": 83993,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 18024
+    },
+    {
+      "i": 6,
+      "t": 84403,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 7,
+      "t": 103970,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 8,
+      "t": 103970,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 9,
+      "t": 103970,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 10,
+      "t": 103972,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 11,
+      "t": 103974,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 12,
+      "t": 104355,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 13,
+      "t": 108298,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "I added a \"Tour\" button in a toolbar below the canvas, outside it, and `touring` on `window.__TASK_STATE__`. `typecheck` passes. I haven't built the app or run it in a browser, so the tour itself is untested. The tour focuses each planet in turn from Mercury to Uranus for 3 seconds each, including the 1.5 s camera move. The info panel shows during each stop, and the camera returns to the overview after Uranus. While the tour runs the button reads \"Stop tour\", and clicking it ends the tour and returns to the overview. A click on a planet or empty space, Escape, `__focusPlanet` and `__unfocus` also end the tour before doing their normal action. The 3-second tour timer uses real time, so it keeps running while the scene is paused."
+}

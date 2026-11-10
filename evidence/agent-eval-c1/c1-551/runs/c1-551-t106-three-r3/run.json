@@ -1,0 +1,230 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-t106-three-r3",
+  "batch": "c1-551",
+  "arm": "three",
+  "task": 106,
+  "slug": "materials",
+  "idx": 3,
+  "order": 12,
+  "seed": 20261108012,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T05:16:58.379Z",
+  "docsCommit": null,
+  "docs": null,
+  "base": {
+    "versions": {
+      "engine": null,
+      "cli": null,
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "not-applicable"
+  },
+  "followUp": "Keys 1, 2 and 3 select the glass, metal and fabric sphere; the selected sphere slowly spins about its vertical axis and the others stay still. Add selected: 'glass' | 'metal' | 'fabric' | null (null before any key) to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 87099,
+  "usage": {
+    "input": 72023,
+    "uncachedInput": 72023,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "output": 6277,
+    "turns": 6,
+    "providerCredits": 2.048133,
+    "providerCostUsd": null,
+    "modelMs": 86477,
+    "toolMs": 621,
+    "perTurnInput": [
+      3226,
+      4258,
+      15064,
+      15718,
+      16694,
+      17063
+    ],
+    "perTurnOutput": [
+      11,
+      11,
+      5269,
+      371,
+      468,
+      147
+    ],
+    "perTurnCacheRead": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 79615,
+      "input": 38266,
+      "uncachedInput": 38266,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 5662,
+      "turns": 4,
+      "providerCredits": 1.791274,
+      "providerCostUsd": null,
+      "modelMs": 79237,
+      "toolMs": 377,
+      "perTurnInput": [
+        3226,
+        4258,
+        15064,
+        15718
+      ],
+      "perTurnOutput": [
+        11,
+        11,
+        5269,
+        371
+      ],
+      "perTurnCacheRead": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.133152,
+        "listUsd": 0.133152,
+        "providerUsd": null,
+        "providerCredits": 1.791274,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 7484,
+      "input": 33757,
+      "uncachedInput": 33757,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 615,
+      "turns": 2,
+      "providerCredits": 0.256859,
+      "providerCostUsd": null,
+      "modelMs": 7240,
+      "toolMs": 244,
+      "perTurnInput": [
+        16694,
+        17063
+      ],
+      "perTurnOutput": [
+        468,
+        147
+      ],
+      "perTurnCacheRead": [
+        0,
+        0
+      ],
+      "cost": {
+        "billedUsd": 0.073664,
+        "listUsd": 0.073664,
+        "providerUsd": null,
+        "providerCredits": 0.256859,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.206816,
+    "listUsd": 0.206816,
+    "providerUsd": null,
+    "providerCredits": 2.048133,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1424,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 1424,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 2763,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 3,
+      "t": 2763,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 4,
+      "t": 74091,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 10654
+    },
+    {
+      "i": 5,
+      "t": 74467,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 6,
+      "t": 79616,
+      "type": "finish"
+    },
+    {
+      "i": 7,
+      "t": 84646,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 8,
+      "t": 84646,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 9,
+      "t": 84890,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 10,
+      "t": 87297,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [],
+  "docsOpened": [],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "Keys 1, 2 and 3 now select the glass, metal and fabric sphere. The selected sphere spins about its vertical axis at 0.6 rad/s, and the other two stay still. Pressing another key switches the selection, and the previous sphere stops where it is. `window.__TASK_STATE__.selected` is `null` until a key is pressed, then `'glass'`, `'metal'` or `'fabric'`. The change is in `src/main.ts` and passes typecheck. I haven't run it in a browser, so the key handling and spin are untested. The glass sphere is symmetric, so its spin won't be visible except through the moving reflections."
+}

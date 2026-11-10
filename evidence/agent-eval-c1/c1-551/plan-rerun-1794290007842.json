@@ -1,0 +1,70 @@
+{
+  "args": {
+    "arm": "three",
+    "task": "103",
+    "runs": 3,
+    "seed": 20261108,
+    "concurrency": 4,
+    "model": "claude-sonnet-5.5",
+    "condition": "base",
+    "stub": false,
+    "estimate": false,
+    "only": [
+      "c1-551-t103-three-r1"
+    ],
+    "batch": "c1-551",
+    "score": true,
+    "maxTurns": 40,
+    "followUpTurns": 15
+  },
+  "plan": [
+    {
+      "task": 103,
+      "arm": "three",
+      "idx": 1,
+      "order": 2,
+      "runId": "c1-551-t103-three-r1",
+      "seed": 20261108002
+    }
+  ],
+  "bases": {
+    "three": {
+      "baseDir": "/tmp/c1-551-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "cli": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": 103,
+      "slug": "canyon",
+      "coverage": "outdoor",
+      "category": "environments",
+      "source": "origin/bench/505-environments:tools/agent-eval/tasks/10-desert-canyon.md",
+      "bench505": {
+        "medianTurns": {
+          "aura": 25,
+          "auraSheet": 23,
+          "three": 8
+        }
+      },
+      "causes": [
+        "H missing helper (strata)",
+        "B material defaults",
+        "D fog"
+      ],
+      "probe": "canyon",
+      "followUp": {
+        "text": "Add a DOM button labelled 'Pause flythrough' outside the canvas that stops the camera where it is (the scene keeps rendering) and, clicked again (label 'Resume flythrough'), continues the flythrough. Expose window.__TASK_STATE__ = { flying: boolean, cameraX: number, cameraY: number, cameraZ: number } with the current camera position, updated every frame.",
+        "probe": "canyon-followup"
+      },
+      "assetHeavy": false
+    }
+  ]
+}
