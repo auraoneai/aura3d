@@ -1,0 +1,598 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-551-eff1-t109-aura-r3",
+  "batch": "c1-551-eff1",
+  "arm": "aura",
+  "task": 109,
+  "slug": "product",
+  "idx": 3,
+  "order": 5,
+  "seed": 20261108005,
+  "model": "claude-sonnet-5.5",
+  "stub": false,
+  "condition": "base",
+  "startedAt": "2026-11-10T09:07:26.834Z",
+  "docsCommit": "b89ea3183",
+  "docs": {
+    "files": 139,
+    "sha256": "abeed2067223d5d8d12fbacb7b2bb258470d31f3293e847c89e6db2befb534c2"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.5.1",
+      "cli": "5.5.1",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.",
+  "invalid": true,
+  "invalidReason": "prism request failed after retries: prism 503: stream error {\"type\":\"overloaded_error\",\"message\":\"Kiro unavailable after 1 attempts: No healthy keys available (loaded=25, enabled=25, healthy=25, quarantined=0, quota_exhausted=0, circuit_open=0, excluded=0, mod",
+  "endReason": "infra_error",
+  "followUpEndReason": null,
+  "wallMs": null,
+  "usage": null,
+  "phases": [],
+  "cost": {
+    "billedUsd": null,
+    "listUsd": null,
+    "providerUsd": null,
+    "providerCredits": null,
+    "source": "none"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2281,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 2282,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 62
+    },
+    {
+      "i": 2,
+      "t": 4420,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 159
+    },
+    {
+      "i": 3,
+      "t": 4826,
+      "type": "aura3d",
+      "command": "examples",
+      "exit": 0,
+      "ms": 406
+    },
+    {
+      "i": 4,
+      "t": 9598,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1460
+    },
+    {
+      "i": 5,
+      "t": 11362,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1763
+    },
+    {
+      "i": 6,
+      "t": 16060,
+      "type": "search",
+      "pattern": "AuraStudioEnvironmentOptions|interface AuraEnvironmentOptionsV2|AuraStudioPanel|"
+    },
+    {
+      "i": 7,
+      "t": 18192,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.d.ts",
+      "lines": 109
+    },
+    {
+      "i": 8,
+      "t": 24597,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1905
+    },
+    {
+      "i": 9,
+      "t": 28927,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1409
+    },
+    {
+      "i": 10,
+      "t": 30784,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1857
+    },
+    {
+      "i": 11,
+      "t": 32560,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1776
+    },
+    {
+      "i": 12,
+      "t": 57429,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1591
+    },
+    {
+      "i": 13,
+      "t": 57440,
+      "type": "search",
+      "pattern": "^\\s+(rotation|rotate|position|scale|add|children|runtime)\\w*\\("
+    },
+    {
+      "i": 14,
+      "t": 60366,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/builder.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 15,
+      "t": 62602,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 2235
+    },
+    {
+      "i": 16,
+      "t": 65561,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 2959
+    },
+    {
+      "i": 17,
+      "t": 72315,
+      "type": "search",
+      "pattern": "type AuraMaterialTextureInput|type AuraTextureColorSpace|type AuraTextureRef\\b|i"
+    },
+    {
+      "i": 18,
+      "t": 75617,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 19,
+      "t": 75623,
+      "type": "search",
+      "pattern": "AuraProceduralTextureSpec =|interface AuraProceduralTextureSpec"
+    },
+    {
+      "i": 20,
+      "t": 107646,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 796
+    },
+    {
+      "i": 21,
+      "t": 108450,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 804
+    },
+    {
+      "i": 22,
+      "t": 137981,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 9904
+    },
+    {
+      "i": 23,
+      "t": 144247,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 24,
+      "t": 178428,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 1,
+      "ms": 32057
+    },
+    {
+      "i": 25,
+      "t": 180766,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 26,
+      "t": 195388,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 12831
+    },
+    {
+      "i": 27,
+      "t": 212175,
+      "type": "error",
+      "tool": "edit_file"
+    },
+    {
+      "i": 28,
+      "t": 216335,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 29,
+      "t": 219226,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 30,
+      "t": 227829,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 31,
+      "t": 227831,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 32,
+      "t": 227840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 33,
+      "t": 227840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 34,
+      "t": 227840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 35,
+      "t": 338479,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 108503
+    },
+    {
+      "i": 36,
+      "t": 345716,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 37,
+      "t": 359597,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 38,
+      "t": 359598,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 39,
+      "t": 359599,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 40,
+      "t": 359600,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 41,
+      "t": 359600,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 42,
+      "t": 476229,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 114535
+    },
+    {
+      "i": 43,
+      "t": 492150,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 44,
+      "t": 492152,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 45,
+      "t": 492154,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 46,
+      "t": 492155,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 47,
+      "t": 492156,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 48,
+      "t": 492156,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 49,
+      "t": 492156,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 50,
+      "t": 492157,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 51,
+      "t": 492157,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 52,
+      "t": 512217,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 16420
+    },
+    {
+      "i": 53,
+      "t": 523838,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 54,
+      "t": 523838,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 55,
+      "t": 523840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 56,
+      "t": 523840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 57,
+      "t": 523840,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 58,
+      "t": 556925,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 30648
+    },
+    {
+      "i": 59,
+      "t": 563565,
+      "type": "write",
+      "tool": "edit_file",
+      "path": "src/main.ts"
+    },
+    {
+      "i": 60,
+      "t": 628873,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 62842
+    }
+  ],
+  "bridgeExports": [],
+  "cliCalls": [
+    {
+      "command": "examples",
+      "exit": 0,
+      "ms": 406
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1460
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1763
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1905
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1409
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1857
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1776
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1591
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 2235
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 2959
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 796
+    },
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 804
+    },
+    {
+      "command": "render",
+      "exit": 1,
+      "ms": 32057
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 12831
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 108503
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 114535
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 16420
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 30648
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 62842
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/builder.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+  ],
+  "typecheckAfterMain": null,
+  "typecheckAfterFollowUp": null,
+  "summary": null
+}

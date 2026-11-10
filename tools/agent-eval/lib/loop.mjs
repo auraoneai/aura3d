@@ -25,7 +25,9 @@ export function systemPrompt(arm, condition = {}) {
   const extra = [];
   if (arm !== "three" && condition.cliTools) {
     extra.push(
-      "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, screenshots it in headless Chrome and returns diagnostics plus the screenshot, so you can see what you made."
+      process.env.AGENT_EVAL_RENDER_DESC === "summary"
+        ? "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, renders it in headless Chrome and prints a short text summary: subject framing, exposure, shadow, motion, errors, fps and `next`. Add `--screenshot` only when you must see the pixels; an image costs far more context than the summary."
+        : "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, screenshots it in headless Chrome and returns diagnostics plus the screenshot, so you can see what you made."
     );
   }
   if (arm === "aura" && condition.lookup) {
@@ -61,6 +63,23 @@ export const usageOf = (response) => {
  * Prism's Kiro route caps a request at 1.5 MB and a few images, and every `aura3d render` adds one; without this a
  * render-heavy run would grow past the cap and end as an infra error. Returns the number of images replaced.
  */
+export const IMAGE_TURN_MAX_BYTES = 1_000_000;
+
+/** Image-turn mode only: drop the oldest top-level image blocks while the conversation's base64 image bytes exceed maxBytes. */
+export function dropOldestImages(messages, maxBytes) {
+  const blocks = [];
+  for (const m of messages) if (m.role === "user" && Array.isArray(m.content)) m.content.forEach((b, i) => b?.type === "image" && blocks.push({ m, i, size: b.source?.data?.length ?? 0 }));
+  let total = blocks.reduce((a, b) => a + b.size, 0);
+  let dropped = 0;
+  for (const b of blocks) {
+    if (total <= maxBytes || b === blocks[blocks.length - 1]) break;
+    b.m.content[b.i] = { type: "text", text: "[earlier screenshot removed: image size cap]" };
+    total -= b.size;
+    dropped += 1;
+  }
+  return dropped;
+}
+
 export function pruneOldImages(messages) {
   const holders = [];
   for (const m of messages) {
@@ -102,7 +121,7 @@ function addUsage(total, u) {
  * follow-up edit request (C1 benchmark); `onPhaseEnd(name)` runs between phases (snapshot hook). Usage then also carries
  * per-phase totals in `phases`. `extraTools` adds tool definitions (the toolbox must handle them).
  */
-export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, maxOutputTokens = 8192, session, condition = {}, now = () => Date.now(), followUp = null, onPhaseEnd = null, extraTools = [] }) {
+export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, maxOutputTokens = 8192, session, condition = {}, now = () => Date.now(), followUp = null, onPhaseEnd = null, extraTools = [], imageTurn = process.env.AGENT_EVAL_IMAGE_TURN === "1" }) {
   const started = now();
   const first = condition.batchHint ? FIRST_USER_MESSAGE + BATCH_HINT : FIRST_USER_MESSAGE;
   const messages = [{ role: "user", content: first }];
@@ -151,8 +170,25 @@ export async function runAgent({ client, model, arm, toolbox, maxTurns = 40, max
       const toolMs = now() - t1;
       usage.toolMs += toolMs;
       pu.toolMs += toolMs;
-      messages.push({ role: "user", content: results });
-      pruneOldImages(messages);
+      if (imageTurn) {
+        // C1 efficiency pass 2 (AGENT_EVAL_IMAGE_TURN=1): never rewrite earlier tool results. A screenshot leaves its
+        // tool_result (which keeps only the text) and follows the results as its own block in this user turn, so every
+        // earlier byte of the conversation stays a stable prefix. Only past IMAGE_TURN_MAX_BYTES of images in the
+        // conversation is the oldest one dropped (counted in usage.imagesDropped).
+        const images = [];
+        for (const r of results) {
+          if (!Array.isArray(r.content) || !r.content.some((b) => b?.type === "image")) continue;
+          images.push(...r.content.filter((b) => b?.type === "image").map((b) => ({ id: r.tool_use_id, b })));
+          r.content = r.content.filter((b) => b?.type !== "image").map((b) => b).concat([{ type: "text", text: "[screenshot attached after the tool results]" }]);
+        }
+        const extra = images.flatMap(({ id, b }) => [{ type: "text", text: `Screenshot from tool call ${id}:` }, b]);
+        messages.push({ role: "user", content: [...results, ...extra] });
+        usage.imagesDelivered = (usage.imagesDelivered ?? 0) + images.length;
+        usage.imagesDropped = (usage.imagesDropped ?? 0) + dropOldestImages(messages, IMAGE_TURN_MAX_BYTES);
+      } else {
+        messages.push({ role: "user", content: results });
+        pruneOldImages(messages);
+      }
       // Image blocks (aura3d render) are kept out of the transcript file; the text part is kept like any result.
       const brief = (c) => (Array.isArray(c) ? c.map((b) => (b.type === "text" ? b.text : `[${b.type}]`)).join("\n") : String(c)).slice(0, 1500);
       transcript.push({ role: "user", turn, phase: name, content: results.map((r) => ({ ...r, content: brief(r.content) })) });
