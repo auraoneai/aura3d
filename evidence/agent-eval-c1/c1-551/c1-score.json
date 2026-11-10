@@ -8349,5 +8349,265 @@
         }
       }
     }
+  },
+  "c1-551-t103-bridge-r1": {
+    "runId": "c1-551-t103-bridge-r1",
+    "arm": "bridge",
+    "task": 103,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4423,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 23252.3,
+          "jsKB": 7023.1,
+          "jsGzipKB": 2220.1,
+          "assetKB": 16224.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 381,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 92.6,
+          "stdLuma": 51.2,
+          "motion": 24.19
+        },
+        "loaded": {
+          "totalKB": 32062.4,
+          "jsKB": 5853.8,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 18.58279224537037
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4661,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 23252.8,
+          "jsKB": 7023.6,
+          "jsGzipKB": 2220.4,
+          "assetKB": 16224.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 431,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 92.6,
+          "stdLuma": 51.2,
+          "motion": 24.1
+        },
+        "loaded": {
+          "totalKB": 32062.9,
+          "jsKB": 5854.3,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "canyon-followup": {
+            "name": "canyon-followup",
+            "checks": {
+              "flyingAtStart": true,
+              "pauseStopsCamera": true,
+              "resumeMovesCamera": true
+            },
+            "notes": {
+              "start": [
+                7.074565793146454,
+                2.3594010710746347,
+                -204.33835
+              ],
+              "paused": [
+                8.414300192589927,
+                2.392211009957553,
+                -208.00435
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "canyon": {
+            "name": "canyon",
+            "checks": {
+              "flythroughMoves": true
+            },
+            "notes": {
+              "diff": 18.581546585648148
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t111-aura-r3": {
+    "runId": "c1-551-t111-aura-r3",
+    "arm": "aura",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4766,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10185.4,
+          "jsKB": 7060.8,
+          "jsGzipKB": 2233.4,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 260,
+        "blank": true,
+        "frame": {
+          "lit": 0.072,
+          "meanLuma": 8.5,
+          "stdLuma": 24.8,
+          "motion": 0.81
+        },
+        "loaded": {
+          "totalKB": 5869.8,
+          "jsKB": 5869.8,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                90.73101283654022,
+                3.900000000000001,
+                3.9000000000000004
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4880,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10185.9,
+          "jsKB": 7061.3,
+          "jsGzipKB": 2233.6,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 269,
+        "blank": true,
+        "frame": {
+          "lit": 0.072,
+          "meanLuma": 8.5,
+          "stdLuma": 24.8,
+          "motion": 0.81
+        },
+        "loaded": {
+          "totalKB": 5870.4,
+          "jsKB": 5870.4,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                90.74672359237168,
+                3.9000000000000004,
+                3.9000000000000004
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
   }
 }
