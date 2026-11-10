@@ -27,6 +27,8 @@ function routeCandidates(pathname) {
   const candidates = [];
   if (pathname.startsWith("/docs/")) {
     const rest = pathname.slice("/docs/".length);
+    // The docs hub: /docs/ serves docs/index.html (the header Docs link).
+    if (rest === "") candidates.push(resolve(marketingDir, "docs", "index.html"));
     candidates.push(resolve(marketingDir, "docs", rest));
     // Cloudflare Pages serves docs/<name>.html at extensionless /docs/<name>
     // (308-redirects the .html form), so internal links are extensionless.
