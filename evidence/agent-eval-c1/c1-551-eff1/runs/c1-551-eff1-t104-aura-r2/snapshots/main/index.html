@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eval app</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }
+      #app { display: block; width: 640px; height: 360px; }
+      #hud { display: flex; gap: 20px; width: 640px; box-sizing: border-box; padding: 6px 12px; background: #11141b; font-variant-numeric: tabular-nums; }
+      #hud span b { color: #ffd166; }
+      #hud .hint { margin-left: auto; color: #8a93a6; }
+    </style>
+  </head>
+  <body>
+    <canvas id="app" width="640" height="360"></canvas>
+    <div id="hud">
+      <span>Score: <b id="hud-score">0</b></span>
+      <span>Best: <b id="hud-best">0</b></span>
+      <span>Status: <b id="hud-status">playing</b></span>
+      <span class="hint">Space / click: drop &middot; R: restart</span>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

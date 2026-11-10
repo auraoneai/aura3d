@@ -174,7 +174,7 @@ function main(argv) {
     const out = [
       `# Benchmark C1 report: Aura3D ${version} (npm) vs three.js vs three.js + bridge`,
       "",
-      `Batch \`${batch}\`, run 2026-11-09/10 on \`exp/551-c1bench\`. Spec: [\`SPEC.md\`](SPEC.md) (frozen; tasks, rubric and thresholds unchanged). Evidence: \`evidence/agent-eval-c1/${batch}/\` (run.json, transcripts, snapshots, frames, c1-score.json, c1-judge.json, c1-metrics.json, c1-headline.json). Public numbers: \`evidence/vs-threejs/RESULTS-agent-authoring-c1-${version}.md\`.`,
+      `Batch \`${batch}\`, run 2026-11-09/10 (Aura3D 5.5.1 from npm, docs at \`v5.5.1\` \`6ee56fe80\`) on \`exp/551-c1bench\`. Spec: [\`SPEC.md\`](SPEC.md) (frozen; tasks, rubric and thresholds unchanged). Evidence: \`evidence/agent-eval-c1/${batch}/\` (run.json, transcripts, snapshots, frames, c1-score.json, c1-judge.json, c1-metrics.json, c1-headline.json). Public numbers: \`evidence/vs-threejs/RESULTS-agent-authoring-c1-${version}.md\`.`,
       "",
       md,
       "",

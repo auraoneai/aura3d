@@ -37,6 +37,27 @@ export function addJudgeUsage(total, u) {
   return total;
 }
 
+/**
+ * The first balanced top-level JSON object in a model answer. A greedy /\{[\s\S]*\}/ spans to the last brace, so an answer
+ * with text or a second object after the JSON failed to parse (13 of 216 C1 visual judge calls, c1-551).
+ */
+export function firstJsonObject(text) {
+  const start = text.indexOf("{");
+  if (start < 0) throw new Error("no JSON object in judge answer");
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i];
+    if (inString) {
+      if (ch === "\\") i += 1;
+      else if (ch === '"') inString = false;
+    } else if (ch === '"') inString = true;
+    else if (ch === "{") depth += 1;
+    else if (ch === "}" && (depth -= 1) === 0) return JSON.parse(text.slice(start, i + 1));
+  }
+  throw new Error("unbalanced JSON object in judge answer");
+}
+
 export function majority(calls) {
   const tally = {};
   for (const c of calls) if (c.winner) tally[c.winner] = (tally[c.winner] ?? 0) + 1;
@@ -103,7 +124,7 @@ async function main(argv) {
               content.push({ type: "text", text: "Judge both candidates now. Answer with ONLY the JSON object." });
               const response = await client.messages({ model, max_tokens: 800, system: RUBRIC, messages: [{ role: "user", content }] }, { session: `c1-visjudge-${task.id}`, jobType: "agent-eval-judge" });
               addJudgeUsage(usage, usageOf(response));
-              json = JSON.parse(/\{[\s\S]*\}/.exec((response.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join(""))[0]);
+              json = firstJsonObject((response.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join(""));
             }
             const winner = json.winner === "tie" ? "tie" : json.winner === "A" ? order[0] : order[1];
             results.push({ order, winner, scores: json.A ? { [order[0]]: json.A, [order[1]]: json.B } : null, why: String(json.why ?? "").slice(0, 300) });

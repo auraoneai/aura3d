@@ -10,7 +10,7 @@ import { DEFAULT_MODEL, createPrismClient, loadKey } from "../lib/prism.mjs";
 import { usageOf } from "../lib/loop.mjs";
 import { mulberry32 } from "../run.mjs";
 import { costOf } from "./cost.mjs";
-import { RUBRIC, addJudgeUsage, majority } from "./judge.mjs";
+import { RUBRIC, addJudgeUsage, firstJsonObject, majority } from "./judge.mjs";
 import { C1_DIR } from "./run-c1.mjs";
 
 const REPO = resolve(C1_DIR, "..", "..", "..");
@@ -53,7 +53,7 @@ async function main(argv) {
         content.push({ type: "text", text: "Judge both candidates now. Answer with ONLY the JSON object." });
         const response = await client.messages({ model, max_tokens: 800, system: RUBRIC, messages: [{ role: "user", content }] }, { session: `c1-abjudge-${b.task}`, jobType: "agent-eval-judge" });
         addJudgeUsage(usage, usageOf(response));
-        const json = JSON.parse(/\{[\s\S]*\}/.exec((response.content ?? []).filter((x) => x.type === "text").map((x) => x.text).join(""))[0]);
+        const json = firstJsonObject((response.content ?? []).filter((x) => x.type === "text").map((x) => x.text).join(""));
         const winner = json.winner === "tie" ? "tie" : json.winner === "A" ? order[0] : order[1];
         const s = { [order[0]]: json.A, [order[1]]: json.B };
         for (const side of ["A", "B"]) {

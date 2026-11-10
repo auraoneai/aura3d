@@ -1,0 +1,2261 @@
+{
+  "schema": "aura3d.agent-eval.c1-headline/1",
+  "batch": "c1-551",
+  "version": "5.5.1",
+  "generatedAt": "2026-11-10T09:52:23.046Z",
+  "model": "claude-sonnet-5.5 via Kiro Prism /v1/messages",
+  "costBasis": "list price on provider token split; Prism returned no cache fields (all input uncached) and bills Kiro credits with no defined USD rate",
+  "arms": {
+    "aura": {
+      "runs": 24,
+      "turns": {
+        "median": 27,
+        "min": 14,
+        "max": 47,
+        "n": 24
+      },
+      "turnsMain": {
+        "median": 22,
+        "min": 11,
+        "max": 40,
+        "n": 24
+      },
+      "tokensMain": {
+        "median": 1149604,
+        "min": 265733,
+        "max": 3152678,
+        "n": 24
+      },
+      "tokensIn": {
+        "median": 1510609.5,
+        "min": 367717,
+        "max": 4058817,
+        "n": 24
+      },
+      "tokensOut": {
+        "median": 9009.5,
+        "min": 4265,
+        "max": 22141,
+        "n": 24
+      },
+      "wallSec": {
+        "median": 300.79999999999995,
+        "min": 121.3,
+        "max": 746.2,
+        "n": 24
+      },
+      "listUsd": {
+        "median": 3.111314,
+        "min": 0.778084,
+        "max": 8.339044,
+        "n": 24
+      },
+      "credits": {
+        "median": 7.7784475,
+        "min": 2.737105,
+        "max": 19.797443,
+        "n": 24
+      },
+      "mainChecksFraction": {
+        "median": 1,
+        "min": 0,
+        "max": 1,
+        "n": 24
+      },
+      "followChecksFraction": {
+        "median": 1,
+        "min": 1,
+        "max": 1,
+        "n": 24
+      },
+      "mainAllPass": 0.875,
+      "followAllPass": 1,
+      "visual": {
+        "median": 3.366666666666667,
+        "min": 2.5666666666666664,
+        "max": 4,
+        "n": 24
+      },
+      "checklist": {
+        "median": 1,
+        "min": 0.875,
+        "max": 1,
+        "n": 24
+      },
+      "totalUsd": 77.97,
+      "totalCredits": 200.9
+    },
+    "three": {
+      "runs": 24,
+      "turns": {
+        "median": 7,
+        "min": 6,
+        "max": 21,
+        "n": 24
+      },
+      "turnsMain": {
+        "median": 5,
+        "min": 4,
+        "max": 19,
+        "n": 24
+      },
+      "tokensMain": {
+        "median": 57385,
+        "min": 30226,
+        "max": 826209,
+        "n": 24
+      },
+      "tokensIn": {
+        "median": 97028.5,
+        "min": 55198,
+        "max": 947230,
+        "n": 24
+      },
+      "tokensOut": {
+        "median": 7877.5,
+        "min": 3882,
+        "max": 21559,
+        "n": 24
+      },
+      "wallSec": {
+        "median": 125.25,
+        "min": 59,
+        "max": 827.8,
+        "n": 24
+      },
+      "listUsd": {
+        "median": 0.283325,
+        "min": 0.153116,
+        "max": 2.09028,
+        "n": 24
+      },
+      "credits": {
+        "median": 2.788039,
+        "min": 1.348059,
+        "max": 10.989629,
+        "n": 24
+      },
+      "mainChecksFraction": {
+        "median": 1,
+        "min": 0,
+        "max": 1,
+        "n": 24
+      },
+      "followChecksFraction": {
+        "median": 1,
+        "min": 1,
+        "max": 1,
+        "n": 24
+      },
+      "mainAllPass": 0.875,
+      "followAllPass": 1,
+      "visual": {
+        "median": 3.4333333333333336,
+        "min": 1.7666666666666666,
+        "max": 4,
+        "n": 24
+      },
+      "checklist": {
+        "median": 1,
+        "min": 0.875,
+        "max": 1,
+        "n": 24
+      },
+      "totalUsd": 10,
+      "totalCredits": 81.7
+    },
+    "bridge": {
+      "runs": 24,
+      "turns": {
+        "median": 34.5,
+        "min": 15,
+        "max": 55,
+        "n": 24
+      },
+      "turnsMain": {
+        "median": 29.5,
+        "min": 12,
+        "max": 40,
+        "n": 24
+      },
+      "tokensMain": {
+        "median": 1508030,
+        "min": 291100,
+        "max": 2574660,
+        "n": 24
+      },
+      "tokensIn": {
+        "median": 1937596.5,
+        "min": 402916,
+        "max": 3995412,
+        "n": 24
+      },
+      "tokensOut": {
+        "median": 11338,
+        "min": 5736,
+        "max": 17643,
+        "n": 24
+      },
+      "wallSec": {
+        "median": 351.1,
+        "min": 162.3,
+        "max": 474.6,
+        "n": 24
+      },
+      "listUsd": {
+        "median": 3.980818,
+        "min": 0.863192,
+        "max": 8.142174,
+        "n": 24
+      },
+      "credits": {
+        "median": 9.262799000000001,
+        "min": 3.136103,
+        "max": 16.825047,
+        "n": 24
+      },
+      "mainChecksFraction": {
+        "median": 1,
+        "min": 0,
+        "max": 1,
+        "n": 24
+      },
+      "followChecksFraction": {
+        "median": 1,
+        "min": 0,
+        "max": 1,
+        "n": 24
+      },
+      "mainAllPass": 0.875,
+      "followAllPass": 0.7083333333333334,
+      "visual": {
+        "median": 3.65,
+        "min": 2.533333333333333,
+        "max": 4.2,
+        "n": 24
+      },
+      "checklist": {
+        "median": 1,
+        "min": 0.875,
+        "max": 1,
+        "n": 24
+      },
+      "totalUsd": 105.48,
+      "totalCredits": 241.1
+    }
+  },
+  "perTask": {
+    "101": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 14,
+          "min": 14,
+          "max": 20,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 11,
+          "min": 11,
+          "max": 17,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 268811,
+          "min": 265733,
+          "max": 585853,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 370438,
+          "min": 367717,
+          "max": 730745,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 4490,
+          "min": 4265,
+          "max": 6176,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 201.5,
+          "min": 185.9,
+          "max": 256.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.785776,
+          "min": 0.778084,
+          "max": 1.52325,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.927014,
+          "min": 2.737105,
+          "max": 4.598161,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.9,
+          "min": 3.8333333333333335,
+          "max": 3.9333333333333336,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 3.09,
+        "totalCredits": 10.3
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 7,
+          "min": 6,
+          "max": 7,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 5,
+          "min": 4,
+          "max": 5,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 49355,
+          "min": 33779,
+          "max": 51282,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 73138,
+          "min": 55198,
+          "max": 75943,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 4952,
+          "min": 4272,
+          "max": 5004,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 80.8,
+          "min": 62.2,
+          "max": 84.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.196316,
+          "min": 0.153116,
+          "max": 0.201406,
+          "n": 3
+        },
+        "credits": {
+          "median": 1.677817,
+          "min": 1.382376,
+          "max": 1.741463,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.9,
+          "min": 3.8333333333333335,
+          "max": 3.9333333333333336,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 0.55,
+        "totalCredits": 4.8
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 28,
+          "min": 28,
+          "max": 33,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 13,
+          "min": 13,
+          "max": 18,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 397698,
+          "min": 379770,
+          "max": 651740,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1300599,
+          "min": 1170383,
+          "max": 1678743,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 6640,
+          "min": 6265,
+          "max": 6880,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 234.7,
+          "min": 232.4,
+          "max": 255.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 2.667598,
+          "min": 2.409566,
+          "max": 3.420136,
+          "n": 3
+        },
+        "credits": {
+          "median": 6.741136,
+          "min": 6.198382,
+          "max": 7.66858,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 0,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 0.6666666666666666,
+        "visual": {
+          "median": 3.3000000000000003,
+          "min": 3.033333333333333,
+          "max": 3.3666666666666667,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.8888888888888888,
+          "min": 0.8888888888888888,
+          "max": 0.8888888888888888,
+          "n": 3
+        },
+        "totalUsd": 8.5,
+        "totalCredits": 20.6
+      }
+    },
+    "102": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 29,
+          "min": 24,
+          "max": 44,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 24,
+          "min": 20,
+          "max": 38,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1144349,
+          "min": 887864,
+          "max": 2357884,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1527892,
+          "min": 1169790,
+          "max": 2926977,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 10730,
+          "min": 9932,
+          "max": 15400,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 346.4,
+          "min": 287.4,
+          "max": 413.6,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 3.163084,
+          "min": 2.4389,
+          "max": 6.007954,
+          "n": 3
+        },
+        "credits": {
+          "median": 7.963998,
+          "min": 6.789391,
+          "max": 13.116849,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.3333333333333335,
+          "min": 3.1666666666666665,
+          "max": 3.6,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 11.61,
+        "totalCredits": 27.9
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 7,
+          "min": 6,
+          "max": 12,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 4,
+          "min": 4,
+          "max": 9,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 65133,
+          "min": 62892,
+          "max": 193044,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 131761,
+          "min": 102517,
+          "max": 277477,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 11987,
+          "min": 11005,
+          "max": 14613,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 472,
+          "min": 256.5,
+          "max": 806.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.383392,
+          "min": 0.315084,
+          "max": 0.701084,
+          "n": 3
+        },
+        "credits": {
+          "median": 3.546507,
+          "min": 3.27742,
+          "max": 4.977131,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 2.3666666666666667,
+          "min": 2.233333333333334,
+          "max": 2.733333333333334,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 1.4,
+        "totalCredits": 11.8
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 37,
+          "min": 31,
+          "max": 38,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 32,
+          "min": 27,
+          "max": 34,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 2011695,
+          "min": 1448218,
+          "max": 2445520,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 2496025,
+          "min": 1769321,
+          "max": 2874096,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 14414,
+          "min": 12142,
+          "max": 15672,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 323.8,
+          "min": 251,
+          "max": 430.5,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 5.13619,
+          "min": 3.660062,
+          "max": 5.904912,
+          "n": 3
+        },
+        "credits": {
+          "median": 11.363221,
+          "min": 8.411481,
+          "max": 13.389568,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 4.133333333333334,
+          "min": 3.5,
+          "max": 4.2,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 14.7,
+        "totalCredits": 33.2
+      }
+    },
+    "103": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 25,
+          "min": 24,
+          "max": 29,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 22,
+          "min": 20,
+          "max": 26,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1274879,
+          "min": 881470,
+          "max": 1355990,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1494723,
+          "min": 1140004,
+          "max": 1637588,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 9045,
+          "min": 8444,
+          "max": 17929,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 279.8,
+          "min": 252.1,
+          "max": 464.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 3.079896,
+          "min": 2.364448,
+          "max": 3.454466,
+          "n": 3
+        },
+        "credits": {
+          "median": 7.592897,
+          "min": 6.433643,
+          "max": 11.688043,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.266666666666666,
+          "min": 3.1999999999999997,
+          "max": 3.433333333333333,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.875,
+          "min": 0.875,
+          "max": 0.875,
+          "n": 3
+        },
+        "totalUsd": 8.9,
+        "totalCredits": 25.7
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 11,
+          "min": 10,
+          "max": 21,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 9,
+          "min": 8,
+          "max": 19,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 333079,
+          "min": 200556,
+          "max": 826209,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 433183,
+          "min": 269249,
+          "max": 947230,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 19582,
+          "min": 11082,
+          "max": 21559,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 494.8,
+          "min": 409.8,
+          "max": 827.8,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 1.081956,
+          "min": 0.649318,
+          "max": 2.09028,
+          "n": 3
+        },
+        "credits": {
+          "median": 9.449832,
+          "min": 5.366004,
+          "max": 10.989629,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.3000000000000003,
+          "min": 1.7666666666666666,
+          "max": 3.5999999999999996,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.875,
+          "min": 0.875,
+          "max": 0.875,
+          "n": 3
+        },
+        "totalUsd": 3.82,
+        "totalCredits": 25.8
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 35,
+          "min": 32,
+          "max": 41,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 31,
+          "min": 28,
+          "max": 39,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1657451,
+          "min": 1567842,
+          "max": 2574660,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1974436,
+          "min": 1900757,
+          "max": 2764697,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 11306,
+          "min": 9819,
+          "max": 12703,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 345.9,
+          "min": 332.4,
+          "max": 429.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 4.047062,
+          "min": 3.914574,
+          "max": 5.656424,
+          "n": 3
+        },
+        "credits": {
+          "median": 9.374521,
+          "min": 9.151077,
+          "max": 12.419453,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.8666666666666667,
+          "min": 3.8333333333333335,
+          "max": 3.933333333333333,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.875,
+          "min": 0.875,
+          "max": 0.875,
+          "n": 3
+        },
+        "totalUsd": 13.62,
+        "totalCredits": 30.9
+      }
+    },
+    "104": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 16,
+          "min": 16,
+          "max": 16,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 13,
+          "min": 12,
+          "max": 13,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 370855,
+          "min": 334586,
+          "max": 377046,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 500463,
+          "min": 452364,
+          "max": 568097,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 5403,
+          "min": 5272,
+          "max": 6484,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 160.7,
+          "min": 121.3,
+          "max": 164.4,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 1.053646,
+          "min": 0.958758,
+          "max": 1.201034,
+          "n": 3
+        },
+        "credits": {
+          "median": 3.405386,
+          "min": 3.062864,
+          "max": 4.093935,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 0.8,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 0.6666666666666666,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.2000000000000006,
+          "min": 3.1,
+          "max": 3.2000000000000006,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 0.8888888888888888,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 3.21,
+        "totalCredits": 10.6
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 7,
+          "min": 7,
+          "max": 8,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 5,
+          "min": 4,
+          "max": 5,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 41439,
+          "min": 30226,
+          "max": 49528,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 64388,
+          "min": 63302,
+          "max": 91540,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 4060,
+          "min": 3882,
+          "max": 4841,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 59.2,
+          "min": 59,
+          "max": 81.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.167596,
+          "min": 0.167204,
+          "max": 0.23149,
+          "n": 3
+        },
+        "credits": {
+          "median": 1.351939,
+          "min": 1.348059,
+          "max": 1.846542,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 2.533333333333333,
+          "min": 2.5,
+          "max": 2.733333333333334,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 0.57,
+        "totalCredits": 4.5
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 24,
+          "min": 15,
+          "max": 26,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 22,
+          "min": 12,
+          "max": 24,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 914489,
+          "min": 291100,
+          "max": 1074088,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1034586,
+          "min": 402916,
+          "max": 1204087,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 8369,
+          "min": 5736,
+          "max": 8435,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 250.6,
+          "min": 162.3,
+          "max": 450.8,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 2.152862,
+          "min": 0.863192,
+          "max": 2.492524,
+          "n": 3
+        },
+        "credits": {
+          "median": 6.187158,
+          "min": 3.136103,
+          "max": 6.704498,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 0.8,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 0.8,
+          "min": 0.8,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 0.6666666666666666,
+        "followAllPass": 0.3333333333333333,
+        "visual": {
+          "median": 3.4999999999999996,
+          "min": 3.1999999999999997,
+          "max": 3.8333333333333335,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 5.51,
+        "totalCredits": 16
+      }
+    },
+    "106": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 27,
+          "min": 26,
+          "max": 35,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 24,
+          "min": 22,
+          "max": 31,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1157941,
+          "min": 1154859,
+          "max": 2126000,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1484369,
+          "min": 1363300,
+          "max": 2547686,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 7318,
+          "min": 7275,
+          "max": 8614,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 216.5,
+          "min": 204.9,
+          "max": 330.4,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 3.041918,
+          "min": 2.79935,
+          "max": 5.181512,
+          "n": 3
+        },
+        "credits": {
+          "median": 7.246462,
+          "min": 6.4962,
+          "max": 10.93174,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.7000000000000006,
+          "min": 3.533333333333333,
+          "max": 4,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 11.02,
+        "totalCredits": 24.7
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 7,
+          "min": 6,
+          "max": 9,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 5,
+          "min": 4,
+          "max": 7,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 78909,
+          "min": 43928,
+          "max": 92870,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 121203,
+          "min": 72023,
+          "max": 132016,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 7155,
+          "min": 6277,
+          "max": 7703,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 126.9,
+          "min": 87.1,
+          "max": 152.5,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.319436,
+          "min": 0.206816,
+          "max": 0.335582,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.929942,
+          "min": 2.048133,
+          "max": 3.309121,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.4000000000000004,
+          "min": 3.166666666666666,
+          "max": 3.533333333333333,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 0.86,
+        "totalCredits": 8.3
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 49,
+          "min": 45,
+          "max": 55,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 37,
+          "min": 36,
+          "max": 40,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 2144963,
+          "min": 1574650,
+          "max": 2266143,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 3027361,
+          "min": 2541860,
+          "max": 3738219,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 12150,
+          "min": 11842,
+          "max": 12491,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 387.1,
+          "min": 380.4,
+          "max": 403.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 6.179632,
+          "min": 5.20522,
+          "max": 7.594858,
+          "n": 3
+        },
+        "credits": {
+          "median": 13.380718,
+          "min": 11.756227,
+          "max": 14.558853,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 0.75,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 0.6666666666666666,
+        "visual": {
+          "median": 3.633333333333333,
+          "min": 3,
+          "max": 3.6333333333333333,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 18.98,
+        "totalCredits": 39.7
+      }
+    },
+    "109": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 46,
+          "min": 27,
+          "max": 47,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 39,
+          "min": 21,
+          "max": 40,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 2369213,
+          "min": 1055480,
+          "max": 3152678,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 3167266,
+          "min": 1556974,
+          "max": 4058817,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 19440,
+          "min": 13426,
+          "max": 22141,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 640.4,
+          "min": 328.2,
+          "max": 746.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 6.528932,
+          "min": 3.248208,
+          "max": 8.339044,
+          "n": 3
+        },
+        "credits": {
+          "median": 17.092165,
+          "min": 9.483602,
+          "max": 19.797443,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.6666666666666665,
+          "min": 2.5666666666666664,
+          "max": 3.8000000000000003,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 18.12,
+        "totalCredits": 46.4
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 9,
+          "min": 6,
+          "max": 10,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 6,
+          "min": 4,
+          "max": 7,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 112561,
+          "min": 50749,
+          "max": 120126,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 157281,
+          "min": 86286,
+          "max": 237037,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 8052,
+          "min": 6865,
+          "max": 9794,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 318.7,
+          "min": 277,
+          "max": 332.1,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.395082,
+          "min": 0.241222,
+          "max": 0.572014,
+          "n": 3
+        },
+        "credits": {
+          "median": 3.441288,
+          "min": 2.628523,
+          "max": 4.597627,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.233333333333333,
+          "min": 2.8333333333333335,
+          "max": 3.6999999999999997,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 1.21,
+        "totalCredits": 10.7
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 55,
+          "min": 47,
+          "max": 55,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 40,
+          "min": 32,
+          "max": 40,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 2404069,
+          "min": 1436547,
+          "max": 2412581,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 3978980,
+          "min": 2728435,
+          "max": 3995412,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 14346,
+          "min": 11109,
+          "max": 15135,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 409.6,
+          "min": 393.4,
+          "max": 474.6,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 8.10142,
+          "min": 5.56796,
+          "max": 8.142174,
+          "n": 3
+        },
+        "credits": {
+          "median": 16.005668,
+          "min": 11.9464,
+          "max": 16.825047,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 0.6,
+          "min": 0.6,
+          "max": 0.8,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 0,
+        "visual": {
+          "median": 3.7999999999999994,
+          "min": 2.533333333333333,
+          "max": 4,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 0.9,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 21.81,
+        "totalCredits": 44.8
+      }
+    },
+    "110": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 30,
+          "min": 28,
+          "max": 37,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 15,
+          "min": 14,
+          "max": 29,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 529260,
+          "min": 423880,
+          "max": 1227320,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1526496,
+          "min": 1291709,
+          "max": 1746620,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 8974,
+          "min": 7654,
+          "max": 9134,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 314.2,
+          "min": 261.4,
+          "max": 461.9,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 3.142732,
+          "min": 2.659958,
+          "max": 3.58458,
+          "n": 3
+        },
+        "credits": {
+          "median": 8.063002,
+          "min": 7.034624,
+          "max": 8.705015,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 0,
+          "min": 0,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 0.3333333333333333,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.266666666666666,
+          "min": 3.1999999999999997,
+          "max": 3.4000000000000004,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.8888888888888888,
+          "min": 0.8888888888888888,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 9.39,
+        "totalCredits": 23.8
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 6,
+          "min": 6,
+          "max": 6,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 4,
+          "min": 4,
+          "max": 4,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 40861,
+          "min": 37665,
+          "max": 47956,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 69488,
+          "min": 63381,
+          "max": 81760,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 6604,
+          "min": 5702,
+          "max": 8404,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 105.6,
+          "min": 93.3,
+          "max": 123.6,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.205016,
+          "min": 0.183782,
+          "max": 0.24756,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.117802,
+          "min": 1.804803,
+          "max": 2.622923,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 0,
+          "min": 0,
+          "max": 0,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 0,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.8666666666666667,
+          "min": 3.766666666666667,
+          "max": 3.9,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.8888888888888888,
+          "min": 0.8888888888888888,
+          "max": 0.8888888888888888,
+          "n": 3
+        },
+        "totalUsd": 0.64,
+        "totalCredits": 6.5
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 30,
+          "min": 27,
+          "max": 33,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 18,
+          "min": 14,
+          "max": 21,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 693483,
+          "min": 454847,
+          "max": 810996,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1393815,
+          "min": 1301104,
+          "max": 1738183,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 9743,
+          "min": 9618,
+          "max": 11268,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 252.1,
+          "min": 237.7,
+          "max": 414.2,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 2.88381,
+          "min": 2.714888,
+          "max": 3.573796,
+          "n": 3
+        },
+        "credits": {
+          "median": 7.81618,
+          "min": 7.138223,
+          "max": 8.705433,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 0,
+          "min": 0,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 0.3333333333333333,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.733333333333334,
+          "min": 3.6666666666666665,
+          "max": 4,
+          "n": 3
+        },
+        "checklist": {
+          "median": 0.8888888888888888,
+          "min": 0.8888888888888888,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 9.17,
+        "totalCredits": 23.7
+      }
+    },
+    "111": {
+      "aura": {
+        "runs": 3,
+        "turns": {
+          "median": 31,
+          "min": 26,
+          "max": 41,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 28,
+          "min": 23,
+          "max": 37,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1680101,
+          "min": 1441363,
+          "max": 2047815,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 1960213,
+          "min": 1746462,
+          "max": 2396721,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 14335,
+          "min": 13754,
+          "max": 14543,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 369,
+          "min": 366.1,
+          "max": 512.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 4.065856,
+          "min": 3.636274,
+          "max": 4.930982,
+          "n": 3
+        },
+        "credits": {
+          "median": 10.396411,
+          "min": 10.196907,
+          "max": 11.061976,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.3000000000000003,
+          "min": 2.8666666666666667,
+          "max": 3.766666666666667,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 12.63,
+        "totalCredits": 31.7
+      },
+      "three": {
+        "runs": 3,
+        "turns": {
+          "median": 7,
+          "min": 6,
+          "max": 7,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 4,
+          "min": 4,
+          "max": 5,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 64586,
+          "min": 51878,
+          "max": 70570,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 106107,
+          "min": 86823,
+          "max": 133311,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 9072,
+          "min": 9007,
+          "max": 11730,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 116.6,
+          "min": 108.1,
+          "max": 161.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 0.302934,
+          "min": 0.263716,
+          "max": 0.383922,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.830535,
+          "min": 2.745543,
+          "max": 3.623438,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.9,
+          "min": 3.466666666666667,
+          "max": 4,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 0.95,
+        "totalCredits": 9.2
+      },
+      "bridge": {
+        "runs": 3,
+        "turns": {
+          "median": 38,
+          "min": 34,
+          "max": 40,
+          "n": 3
+        },
+        "turnsMain": {
+          "median": 34,
+          "min": 28,
+          "max": 37,
+          "n": 3
+        },
+        "tokensMain": {
+          "median": 1826808,
+          "min": 1194916,
+          "max": 2334414,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 2168173,
+          "min": 1591940,
+          "max": 2620021,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 14199,
+          "min": 11370,
+          "max": 17643,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 356.3,
+          "min": 335.7,
+          "max": 447.3,
+          "n": 3
+        },
+        "listUsd": {
+          "median": 4.478336,
+          "min": 3.29758,
+          "max": 5.416472,
+          "n": 3
+        },
+        "credits": {
+          "median": 10.767193,
+          "min": 8.226375,
+          "max": 13.241386,
+          "n": 3
+        },
+        "mainChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "followChecksFraction": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "mainAllPass": 1,
+        "followAllPass": 1,
+        "visual": {
+          "median": 3.4333333333333336,
+          "min": 2.9,
+          "max": 3.8333333333333335,
+          "n": 3
+        },
+        "checklist": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 13.19,
+        "totalCredits": 32.2
+      }
+    }
+  },
+  "visualPairs": {
+    "aura-vs-three": {
+      "subject": "aura",
+      "opponent": "three",
+      "wins": 13,
+      "losses": 11,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 11,
+      "winRate": 0.542,
+      "wilson": [
+        0.351,
+        0.721
+      ]
+    },
+    "bridge-vs-three": {
+      "subject": "bridge",
+      "opponent": "three",
+      "wins": 12,
+      "losses": 12,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 11,
+      "winRate": 0.5,
+      "wilson": [
+        0.314,
+        0.686
+      ]
+    },
+    "bridge-vs-aura": {
+      "subject": "bridge",
+      "opponent": "aura",
+      "wins": 15,
+      "losses": 9,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 11,
+      "winRate": 0.625,
+      "wilson": [
+        0.427,
+        0.788
+      ]
+    }
+  },
+  "decision": {
+    "verdict": "native stays the default (bridge does not meet the rule)",
+    "all": {
+      "verdict": "native stays the default (bridge does not meet the rule)",
+      "detail": {
+        "timeGain": -0.16722074468085132,
+        "costGain": -0.27946520344780373,
+        "bridgeVsAuraWinRate": 0.625,
+        "correctnessDelta": 0,
+        "comparableQuality": false,
+        "clearlyBetter": false,
+        "comparableCorrect": true
+      }
+    },
+    "assets": {
+      "tasks": [
+        101,
+        109,
+        110
+      ],
+      "verdict": "native stays the default (bridge does not meet the rule)",
+      "detail": {
+        "timeGain": 0.18777848504137493,
+        "costGain": -0.08826842377905585,
+        "bridgeVsAuraWinRate": 0.556,
+        "correctnessDelta": 0,
+        "comparableQuality": true,
+        "clearlyBetter": false,
+        "comparableCorrect": true
+      }
+    }
+  },
+  "bench505": {
+    "turns": {
+      "docs": 25,
+      "sheet": 14,
+      "three": 5
+    },
+    "tokens": {
+      "docs": 1450000,
+      "sheet": 420000,
+      "three": 63000
+    }
+  },
+  "spend": {
+    "runsUsd": 193.45,
+    "runsCredits": 523.7,
+    "judgeUsd": 5.09,
+    "judgeCredits": 46.8,
+    "preflightUsd": 7.82,
+    "preflightCredits": 22.15,
+    "totalUsd": 206.36,
+    "totalCredits": 592.7
+  },
+  "source": "evidence/agent-eval-c1/c1-551/",
+  "report": "tests/reports/benchmark-c1/REPORT.md"
+}

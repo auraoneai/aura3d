@@ -62,7 +62,7 @@ function rows(batch) {
       const tr = readJson(join(rdir, r.runId, "transcript.json"), []);
       const vis = abScores[r.runId];
       return {
-        batch, runId: r.runId, task: r.task, idx: r.idx, end: `${r.endReason}/${r.followUpEndReason}`,
+        batch, scored: Boolean(score[r.runId]), runId: r.runId, task: r.task, idx: r.idx, end: `${r.endReason}/${r.followUpEndReason}`,
         turns: r.usage?.turns, turnsMain: r.phases?.find((p) => p.name === "main")?.turns,
         tokensIn: r.usage?.input, tokensOut: r.usage?.output, wallSec: r.wallMs == null ? null : Math.round(r.wallMs / 1000),
         usd: r.cost?.listUsd, credits: r.cost?.providerCredits,
@@ -94,6 +94,7 @@ for (const scope of [...taskIds, "all"]) {
     (summary[scope] ??= {})[b] = {
       n: rs.length, turns: stat(rs.map((r) => r.turns)), tokensIn: stat(rs.map((r) => r.tokensIn)), tokensOut: stat(rs.map((r) => r.tokensOut)),
       wallSec: stat(rs.map((r) => r.wallSec)), usd: stat(rs.map((r) => r.usd)), credits: stat(rs.map((r) => r.credits)),
+      scored: rs.filter((r) => r.scored).length,
       mainAll: rs.filter((r) => r.mainAll).length, followAll: rs.filter((r) => r.followAll).length, regressions: rs.filter((r) => r.regressed).length, rendered: rs.filter((r) => r.rendered).length,
       visual: stat(rs.map((r) => r.visual)), renders: stat(rs.map((r) => r.tools.render)), screenshots: rs.reduce((a, r) => a + r.tools.screenshot, 0),
       info: stat(rs.map((r) => r.tools.info)), examples: stat(rs.map((r) => r.tools.examples)), validate: stat(rs.map((r) => r.tools.validate)),
@@ -104,9 +105,9 @@ for (const scope of [...taskIds, "all"]) {
 }
 
 const L = [];
-L.push("# Agent-efficiency A/B on the C1 aura arm (tasks 101, 104, 109)", "");
-L.push(`Baseline = the c1-551 aura runs of the same tasks (Aura3D 5.5.1 CLI and docs at v5.5.1 \`6ee56fe80\`). ${passes.map((p) => `\`${p}\``).join(" and ")}: same frozen harness, model (\`claude-sonnet-5.5\` via Kiro Prism), caps (40 + 15 turns), condition and seeds; \`@aura3d/cli\` from \`exp/agent-efficiency\` (\`93c069d82\`: compact render summary, PNG only with \`--screenshot\`, category starters in \`examples\`), docs at \`b89ea3183\` (done rule, exact signatures in \`llms.txt\`). Pass 2 also sets \`AGENT_EVAL_IMAGE_TURN=1\` (earlier tool results are never rewritten; a requested screenshot follows the tool results in its own block). 3 runs per task: report ranges, not just medians. Turns and tokens include the follow-up edit. Cost is list price (Prism reports Kiro credits only, and no cache fields).`, "");
-L.push("## Overall (9 runs per column)", "");
+L.push("# Agent-efficiency A/B on the C1 aura arm (tasks 101, 104, 109)", "", "**Partial: eff1 agent phase only (7 of 9 runs, not scored or judged); eff2 and eff3 not run. See Status below.**", "");
+L.push(`Baseline = the c1-551 aura runs of the same tasks (Aura3D 5.5.1 CLI and docs at v5.5.1 \`6ee56fe80\`). ${passes.map((p) => `\`${p}\``).join(" and ")}: same frozen harness, model (\`claude-sonnet-5.5\` via Kiro Prism), caps (40 + 15 turns), condition and seeds; \`@aura3d/cli\` from \`exp/agent-efficiency\` (\`93c069d82\`: compact render summary, PNG only with \`--screenshot\`, category starters in \`examples\`), docs at \`b89ea3183\` (done rule, exact signatures in \`llms.txt\`). Planned passes: eff1 = CLI and docs only (harness tool description unchanged, so agents still request screenshots); eff2 = eff1 plus the render tool description matching the new CLI (\`AGENT_EVAL_RENDER_DESC=summary\`, wording from the branch's \`aura3d --help\` and \`llms.txt\`); eff3 = eff2 plus \`AGENT_EVAL_IMAGE_TURN=1\` (earlier tool results never rewritten; a requested screenshot follows the tool results in its own block). 3 runs per task: report ranges, not just medians. Turns and tokens include the follow-up edit. Cost is list price (Prism reports Kiro credits only, and no cache fields).`, "");
+L.push("## Overall", "");
 const cols = batches.filter((b) => summary.all?.[b]);
 const row = (name, fn) => L.push(`| ${name} | ${cols.map((b) => fn(summary.all[b])).join(" | ")} |`);
 L.push(`| measure | ${cols.map(label).join(" | ")} |`, `|---|${cols.map(() => "---").join("|")}|`);
@@ -117,9 +118,11 @@ row("wall s", (s) => mr(s.wallSec));
 row("list $ per run", (s) => mr(s.usd, f, 2));
 row("list $ total", (s) => f(s.totalUsd, 2));
 row("Kiro credits total", (s) => f(s.totalCredits, 1));
-row("main all-pass", (s) => `${s.mainAll}/${s.n}`);
-row("follow-up all-pass", (s) => `${s.followAll}/${s.n}`);
-row("regressions", (s) => s.regressions);
+const ns = (s, v) => (s.scored ? v : "not scored");
+row("runs (scored)", (s) => `${s.n} (${s.scored})`);
+row("main all-pass", (s) => ns(s, `${s.mainAll}/${s.scored}`));
+row("follow-up all-pass", (s) => ns(s, `${s.followAll}/${s.scored}`));
+row("regressions", (s) => ns(s, s.regressions));
 row("blind rubric score (1-5)", (s) => mr(s.visual, f, 2));
 row("render calls", (s) => mr(s.renders));
 row("render calls with --screenshot (total)", (s) => s.screenshots);
@@ -145,6 +148,11 @@ L.push("", "Decision rule from the plan (`docs/agents/agent-efficiency.md` on `e
 for (const p of passes) {
   if (!summary.all?.[p]) continue;
   const better = taskIds.filter((t) => summary[t]?.[p] && summary[t][p].tokensIn.median < summary[t][base].tokensIn.median && summary[t][p].turns.median < summary[t][base].turns.median);
+  if (!summary.all[p].scored) {
+    const fewer = taskIds.filter((t) => summary[t]?.[p] && summary[t][p].tokensIn.median < summary[t][base].tokensIn.median && summary[t][p].turns.median < summary[t][base].turns.median);
+    L.push(`- **${label(p)}**: not scored, so the rule cannot be applied (it needs functional all-pass). Turns and input tokens both lower on ${fewer.length}/3 tasks (${fewer.join(", ") || "none"}) on the runs that finished.`);
+    continue;
+  }
   const noLoss = summary.all[p].mainAll >= summary.all[base].mainAll && summary.all[p].followAll >= summary.all[base].followAll;
   L.push(`- **${label(p)}**: turns and input tokens both lower on ${better.length}/3 tasks (${better.join(", ") || "none"}); functional all-pass ${noLoss ? "not lower" : "lower"} (main ${summary.all[p].mainAll}/${summary.all[p].n} vs ${summary.all[base].mainAll}/${summary.all[base].n}, follow-up ${summary.all[p].followAll}/${summary.all[p].n} vs ${summary.all[base].followAll}/${summary.all[base].n}). Verdict: **${better.length >= 2 && noLoss ? "better" : "not shown better"}**.`);
 }

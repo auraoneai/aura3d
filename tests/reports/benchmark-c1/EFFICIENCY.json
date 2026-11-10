@@ -1,0 +1,1336 @@
+{
+  "schema": "aura3d.agent-eval.c1-efficiency/1",
+  "base": "c1-551",
+  "passes": [
+    "c1-551-eff1"
+  ],
+  "tasks": [
+    101,
+    104,
+    109
+  ],
+  "summary": {
+    "101": {
+      "c1-551": {
+        "n": 3,
+        "turns": {
+          "median": 14,
+          "min": 14,
+          "max": 20,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 370438,
+          "min": 367717,
+          "max": 730745,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 4490,
+          "min": 4265,
+          "max": 6176,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 202,
+          "min": 186,
+          "max": 256,
+          "n": 3
+        },
+        "usd": {
+          "median": 0.785776,
+          "min": 0.778084,
+          "max": 1.52325,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.927014,
+          "min": 2.737105,
+          "max": 4.598161,
+          "n": 3
+        },
+        "scored": 3,
+        "mainAll": 3,
+        "followAll": 3,
+        "regressions": 0,
+        "rendered": 3,
+        "visual": null,
+        "renders": {
+          "median": 3,
+          "min": 3,
+          "max": 4,
+          "n": 3
+        },
+        "screenshots": 0,
+        "info": {
+          "median": 1,
+          "min": 1,
+          "max": 3,
+          "n": 3
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "validate": {
+          "median": 0,
+          "min": 0,
+          "max": 1,
+          "n": 3
+        },
+        "readFile": {
+          "median": 4,
+          "min": 3,
+          "max": 5,
+          "n": 3
+        },
+        "editFile": {
+          "median": 4,
+          "min": 2,
+          "max": 7,
+          "n": 3
+        },
+        "search": {
+          "median": 2,
+          "min": 0,
+          "max": 7,
+          "n": 3
+        },
+        "totalUsd": 3.09,
+        "totalCredits": 10.3
+      },
+      "c1-551-eff1": {
+        "n": 3,
+        "turns": {
+          "median": 11,
+          "min": 11,
+          "max": 13,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 312825,
+          "min": 278041,
+          "max": 350730,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 4457,
+          "min": 4011,
+          "max": 4468,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 179,
+          "min": 123,
+          "max": 245,
+          "n": 3
+        },
+        "usd": {
+          "median": 0.66576,
+          "min": 0.600652,
+          "max": 0.74614,
+          "n": 3
+        },
+        "credits": {
+          "median": 2.467738,
+          "min": 2.448477,
+          "max": 2.76701,
+          "n": 3
+        },
+        "scored": 0,
+        "mainAll": 0,
+        "followAll": 0,
+        "regressions": 0,
+        "rendered": 0,
+        "visual": null,
+        "renders": {
+          "median": 3,
+          "min": 2,
+          "max": 3,
+          "n": 3
+        },
+        "screenshots": 6,
+        "info": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "validate": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "readFile": {
+          "median": 3,
+          "min": 3,
+          "max": 4,
+          "n": 3
+        },
+        "editFile": {
+          "median": 4,
+          "min": 2,
+          "max": 5,
+          "n": 3
+        },
+        "search": {
+          "median": 1,
+          "min": 0,
+          "max": 1,
+          "n": 3
+        },
+        "totalUsd": 2.01,
+        "totalCredits": 7.7
+      }
+    },
+    "104": {
+      "c1-551": {
+        "n": 3,
+        "turns": {
+          "median": 16,
+          "min": 16,
+          "max": 16,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 500463,
+          "min": 452364,
+          "max": 568097,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 5403,
+          "min": 5272,
+          "max": 6484,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 161,
+          "min": 121,
+          "max": 164,
+          "n": 3
+        },
+        "usd": {
+          "median": 1.053646,
+          "min": 0.958758,
+          "max": 1.201034,
+          "n": 3
+        },
+        "credits": {
+          "median": 3.405386,
+          "min": 3.062864,
+          "max": 4.093935,
+          "n": 3
+        },
+        "scored": 3,
+        "mainAll": 2,
+        "followAll": 3,
+        "regressions": 0,
+        "rendered": 3,
+        "visual": null,
+        "renders": {
+          "median": 2,
+          "min": 1,
+          "max": 3,
+          "n": 3
+        },
+        "screenshots": 0,
+        "info": {
+          "median": 2,
+          "min": 1,
+          "max": 2,
+          "n": 3
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "validate": {
+          "median": 0,
+          "min": 0,
+          "max": 0,
+          "n": 3
+        },
+        "readFile": {
+          "median": 6,
+          "min": 6,
+          "max": 6,
+          "n": 3
+        },
+        "editFile": {
+          "median": 11,
+          "min": 8,
+          "max": 14,
+          "n": 3
+        },
+        "search": {
+          "median": 3,
+          "min": 2,
+          "max": 6,
+          "n": 3
+        },
+        "totalUsd": 3.21,
+        "totalCredits": 10.6
+      },
+      "c1-551-eff1": {
+        "n": 3,
+        "turns": {
+          "median": 18,
+          "min": 17,
+          "max": 19,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 564532,
+          "min": 464269,
+          "max": 571592,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 5527,
+          "min": 5403,
+          "max": 5658,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 245,
+          "min": 154,
+          "max": 265,
+          "n": 3
+        },
+        "usd": {
+          "median": 1.184334,
+          "min": 0.982568,
+          "max": 1.199764,
+          "n": 3
+        },
+        "credits": {
+          "median": 3.587785,
+          "min": 3.197541,
+          "max": 3.645745,
+          "n": 3
+        },
+        "scored": 0,
+        "mainAll": 0,
+        "followAll": 0,
+        "regressions": 0,
+        "rendered": 0,
+        "visual": null,
+        "renders": {
+          "median": 3,
+          "min": 2,
+          "max": 3,
+          "n": 3
+        },
+        "screenshots": 7,
+        "info": {
+          "median": 3,
+          "min": 2,
+          "max": 3,
+          "n": 3
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "validate": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 3
+        },
+        "readFile": {
+          "median": 4,
+          "min": 4,
+          "max": 6,
+          "n": 3
+        },
+        "editFile": {
+          "median": 12,
+          "min": 12,
+          "max": 18,
+          "n": 3
+        },
+        "search": {
+          "median": 4,
+          "min": 3,
+          "max": 4,
+          "n": 3
+        },
+        "totalUsd": 3.37,
+        "totalCredits": 10.4
+      }
+    },
+    "109": {
+      "c1-551": {
+        "n": 3,
+        "turns": {
+          "median": 46,
+          "min": 27,
+          "max": 47,
+          "n": 3
+        },
+        "tokensIn": {
+          "median": 3167266,
+          "min": 1556974,
+          "max": 4058817,
+          "n": 3
+        },
+        "tokensOut": {
+          "median": 19440,
+          "min": 13426,
+          "max": 22141,
+          "n": 3
+        },
+        "wallSec": {
+          "median": 640,
+          "min": 328,
+          "max": 746,
+          "n": 3
+        },
+        "usd": {
+          "median": 6.528932,
+          "min": 3.248208,
+          "max": 8.339044,
+          "n": 3
+        },
+        "credits": {
+          "median": 17.092165,
+          "min": 9.483602,
+          "max": 19.797443,
+          "n": 3
+        },
+        "scored": 3,
+        "mainAll": 3,
+        "followAll": 3,
+        "regressions": 0,
+        "rendered": 3,
+        "visual": null,
+        "renders": {
+          "median": 11,
+          "min": 6,
+          "max": 11,
+          "n": 3
+        },
+        "screenshots": 0,
+        "info": {
+          "median": 6,
+          "min": 4,
+          "max": 11,
+          "n": 3
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 2,
+          "n": 3
+        },
+        "validate": {
+          "median": 0,
+          "min": 0,
+          "max": 0,
+          "n": 3
+        },
+        "readFile": {
+          "median": 17,
+          "min": 10,
+          "max": 18,
+          "n": 3
+        },
+        "editFile": {
+          "median": 50,
+          "min": 18,
+          "max": 54,
+          "n": 3
+        },
+        "search": {
+          "median": 17,
+          "min": 8,
+          "max": 19,
+          "n": 3
+        },
+        "totalUsd": 18.12,
+        "totalCredits": 46.4
+      },
+      "c1-551-eff1": {
+        "n": 1,
+        "turns": {
+          "median": 42,
+          "min": 42,
+          "max": 42,
+          "n": 1
+        },
+        "tokensIn": {
+          "median": 2367884,
+          "min": 2367884,
+          "max": 2367884,
+          "n": 1
+        },
+        "tokensOut": {
+          "median": 18132,
+          "min": 18132,
+          "max": 18132,
+          "n": 1
+        },
+        "wallSec": {
+          "median": 546,
+          "min": 546,
+          "max": 546,
+          "n": 1
+        },
+        "usd": {
+          "median": 4.917088,
+          "min": 4.917088,
+          "max": 4.917088,
+          "n": 1
+        },
+        "credits": {
+          "median": 13.587857,
+          "min": 13.587857,
+          "max": 13.587857,
+          "n": 1
+        },
+        "scored": 0,
+        "mainAll": 0,
+        "followAll": 0,
+        "regressions": 0,
+        "rendered": 0,
+        "visual": null,
+        "renders": {
+          "median": 10,
+          "min": 10,
+          "max": 10,
+          "n": 1
+        },
+        "screenshots": 9,
+        "info": {
+          "median": 10,
+          "min": 10,
+          "max": 10,
+          "n": 1
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 1
+        },
+        "validate": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 1
+        },
+        "readFile": {
+          "median": 12,
+          "min": 12,
+          "max": 12,
+          "n": 1
+        },
+        "editFile": {
+          "median": 51,
+          "min": 51,
+          "max": 51,
+          "n": 1
+        },
+        "search": {
+          "median": 8,
+          "min": 8,
+          "max": 8,
+          "n": 1
+        },
+        "totalUsd": 4.92,
+        "totalCredits": 13.6
+      }
+    },
+    "all": {
+      "c1-551": {
+        "n": 9,
+        "turns": {
+          "median": 16,
+          "min": 14,
+          "max": 47,
+          "n": 9
+        },
+        "tokensIn": {
+          "median": 568097,
+          "min": 367717,
+          "max": 4058817,
+          "n": 9
+        },
+        "tokensOut": {
+          "median": 6176,
+          "min": 4265,
+          "max": 22141,
+          "n": 9
+        },
+        "wallSec": {
+          "median": 202,
+          "min": 121,
+          "max": 746,
+          "n": 9
+        },
+        "usd": {
+          "median": 1.201034,
+          "min": 0.778084,
+          "max": 8.339044,
+          "n": 9
+        },
+        "credits": {
+          "median": 4.093935,
+          "min": 2.737105,
+          "max": 19.797443,
+          "n": 9
+        },
+        "scored": 9,
+        "mainAll": 8,
+        "followAll": 9,
+        "regressions": 0,
+        "rendered": 9,
+        "visual": null,
+        "renders": {
+          "median": 3,
+          "min": 1,
+          "max": 11,
+          "n": 9
+        },
+        "screenshots": 0,
+        "info": {
+          "median": 2,
+          "min": 1,
+          "max": 11,
+          "n": 9
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 2,
+          "n": 9
+        },
+        "validate": {
+          "median": 0,
+          "min": 0,
+          "max": 1,
+          "n": 9
+        },
+        "readFile": {
+          "median": 6,
+          "min": 3,
+          "max": 18,
+          "n": 9
+        },
+        "editFile": {
+          "median": 11,
+          "min": 2,
+          "max": 54,
+          "n": 9
+        },
+        "search": {
+          "median": 6,
+          "min": 0,
+          "max": 19,
+          "n": 9
+        },
+        "totalUsd": 24.42,
+        "totalCredits": 67.2
+      },
+      "c1-551-eff1": {
+        "n": 7,
+        "turns": {
+          "median": 17,
+          "min": 11,
+          "max": 42,
+          "n": 7
+        },
+        "tokensIn": {
+          "median": 464269,
+          "min": 278041,
+          "max": 2367884,
+          "n": 7
+        },
+        "tokensOut": {
+          "median": 5403,
+          "min": 4011,
+          "max": 18132,
+          "n": 7
+        },
+        "wallSec": {
+          "median": 245,
+          "min": 123,
+          "max": 546,
+          "n": 7
+        },
+        "usd": {
+          "median": 0.982568,
+          "min": 0.600652,
+          "max": 4.917088,
+          "n": 7
+        },
+        "credits": {
+          "median": 3.197541,
+          "min": 2.448477,
+          "max": 13.587857,
+          "n": 7
+        },
+        "scored": 0,
+        "mainAll": 0,
+        "followAll": 0,
+        "regressions": 0,
+        "rendered": 0,
+        "visual": null,
+        "renders": {
+          "median": 3,
+          "min": 2,
+          "max": 10,
+          "n": 7
+        },
+        "screenshots": 22,
+        "info": {
+          "median": 2,
+          "min": 1,
+          "max": 10,
+          "n": 7
+        },
+        "examples": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 7
+        },
+        "validate": {
+          "median": 1,
+          "min": 1,
+          "max": 1,
+          "n": 7
+        },
+        "readFile": {
+          "median": 4,
+          "min": 3,
+          "max": 12,
+          "n": 7
+        },
+        "editFile": {
+          "median": 12,
+          "min": 2,
+          "max": 51,
+          "n": 7
+        },
+        "search": {
+          "median": 3,
+          "min": 0,
+          "max": 8,
+          "n": 7
+        },
+        "totalUsd": 10.3,
+        "totalCredits": 31.7
+      }
+    }
+  },
+  "runs": [
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t101-aura-r1",
+      "task": 101,
+      "idx": 1,
+      "end": "finished/finished",
+      "turns": 20,
+      "turnsMain": 17,
+      "tokensIn": 730745,
+      "tokensOut": 6176,
+      "wallSec": 202,
+      "usd": 1.52325,
+      "credits": 4.598161,
+      "mainChecks": "1/1",
+      "mainAll": true,
+      "followChecks": "4/4",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 0,
+        "info": 1,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 5,
+        "edit_file": 7,
+        "write_file": 1,
+        "search": 7,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t101-aura-r2",
+      "task": 101,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 14,
+      "turnsMain": 11,
+      "tokensIn": 367717,
+      "tokensOut": 4265,
+      "wallSec": 186,
+      "usd": 0.778084,
+      "credits": 2.737105,
+      "mainChecks": "1/1",
+      "mainAll": true,
+      "followChecks": "4/4",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 4,
+        "screenshot": 0,
+        "info": 3,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 3,
+        "edit_file": 4,
+        "write_file": 1,
+        "search": 0,
+        "typecheck": 3
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t101-aura-r3",
+      "task": 101,
+      "idx": 3,
+      "end": "finished/finished",
+      "turns": 14,
+      "turnsMain": 11,
+      "tokensIn": 370438,
+      "tokensOut": 4490,
+      "wallSec": 256,
+      "usd": 0.785776,
+      "credits": 2.927014,
+      "mainChecks": "1/1",
+      "mainAll": true,
+      "followChecks": "4/4",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 0,
+        "info": 1,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 4,
+        "edit_file": 2,
+        "write_file": 1,
+        "search": 2,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t104-aura-r1",
+      "task": 104,
+      "idx": 1,
+      "end": "finished/finished",
+      "turns": 16,
+      "turnsMain": 13,
+      "tokensIn": 500463,
+      "tokensOut": 5272,
+      "wallSec": 161,
+      "usd": 1.053646,
+      "credits": 3.405386,
+      "mainChecks": "5/5",
+      "mainAll": true,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 2,
+        "screenshot": 0,
+        "info": 2,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 6,
+        "edit_file": 11,
+        "write_file": 1,
+        "search": 2,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t104-aura-r2",
+      "task": 104,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 16,
+      "turnsMain": 13,
+      "tokensIn": 452364,
+      "tokensOut": 5403,
+      "wallSec": 121,
+      "usd": 0.958758,
+      "credits": 3.062864,
+      "mainChecks": "4/5",
+      "mainAll": false,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 1,
+        "screenshot": 0,
+        "info": 2,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 6,
+        "edit_file": 8,
+        "write_file": 1,
+        "search": 6,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t104-aura-r3",
+      "task": 104,
+      "idx": 3,
+      "end": "finished/finished",
+      "turns": 16,
+      "turnsMain": 12,
+      "tokensIn": 568097,
+      "tokensOut": 6484,
+      "wallSec": 164,
+      "usd": 1.201034,
+      "credits": 4.093935,
+      "mainChecks": "5/5",
+      "mainAll": true,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 0,
+        "info": 1,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 6,
+        "edit_file": 14,
+        "write_file": 1,
+        "search": 3,
+        "typecheck": 3
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t109-aura-r1",
+      "task": 109,
+      "idx": 1,
+      "end": "finished/finished",
+      "turns": 46,
+      "turnsMain": 39,
+      "tokensIn": 3167266,
+      "tokensOut": 19440,
+      "wallSec": 746,
+      "usd": 6.528932,
+      "credits": 17.092165,
+      "mainChecks": "4/4",
+      "mainAll": true,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 11,
+        "screenshot": 0,
+        "info": 6,
+        "examples": 2,
+        "validate": 0,
+        "read_file": 17,
+        "edit_file": 50,
+        "write_file": 1,
+        "search": 19,
+        "typecheck": 5
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t109-aura-r2",
+      "task": 109,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 27,
+      "turnsMain": 21,
+      "tokensIn": 1556974,
+      "tokensOut": 13426,
+      "wallSec": 328,
+      "usd": 3.248208,
+      "credits": 9.483602,
+      "mainChecks": "4/4",
+      "mainAll": true,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 6,
+        "screenshot": 0,
+        "info": 11,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 10,
+        "edit_file": 18,
+        "write_file": 1,
+        "search": 8,
+        "typecheck": 4
+      }
+    },
+    {
+      "batch": "c1-551",
+      "scored": true,
+      "runId": "c1-551-t109-aura-r3",
+      "task": 109,
+      "idx": 3,
+      "end": "max_turns/finished",
+      "turns": 47,
+      "turnsMain": 40,
+      "tokensIn": 4058817,
+      "tokensOut": 22141,
+      "wallSec": 640,
+      "usd": 8.339044,
+      "credits": 19.797443,
+      "mainChecks": "4/4",
+      "mainAll": true,
+      "followChecks": "5/5",
+      "followAll": true,
+      "regressed": false,
+      "rendered": true,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 11,
+        "screenshot": 0,
+        "info": 4,
+        "examples": 1,
+        "validate": 0,
+        "read_file": 18,
+        "edit_file": 54,
+        "write_file": 2,
+        "search": 17,
+        "typecheck": 6
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t101-aura-r1",
+      "task": 101,
+      "idx": 1,
+      "end": "finished/finished",
+      "turns": 13,
+      "turnsMain": 10,
+      "tokensIn": 350730,
+      "tokensOut": 4468,
+      "wallSec": 245,
+      "usd": 0.74614,
+      "credits": 2.76701,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 2,
+        "info": 1,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 3,
+        "edit_file": 5,
+        "write_file": 1,
+        "search": 0,
+        "typecheck": 3
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t101-aura-r2",
+      "task": 101,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 11,
+      "turnsMain": 9,
+      "tokensIn": 278041,
+      "tokensOut": 4457,
+      "wallSec": 179,
+      "usd": 0.600652,
+      "credits": 2.467738,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 2,
+        "info": 1,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 3,
+        "edit_file": 4,
+        "write_file": 1,
+        "search": 1,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t101-aura-r3",
+      "task": 101,
+      "idx": 3,
+      "end": "finished/finished",
+      "turns": 11,
+      "turnsMain": 9,
+      "tokensIn": 312825,
+      "tokensOut": 4011,
+      "wallSec": 123,
+      "usd": 0.66576,
+      "credits": 2.448477,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 2,
+        "screenshot": 2,
+        "info": 1,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 4,
+        "edit_file": 2,
+        "write_file": 1,
+        "search": 1,
+        "typecheck": 2
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t104-aura-r1",
+      "task": 104,
+      "idx": 1,
+      "end": "finished/finished",
+      "turns": 18,
+      "turnsMain": 15,
+      "tokensIn": 564532,
+      "tokensOut": 5527,
+      "wallSec": 265,
+      "usd": 1.184334,
+      "credits": 3.587785,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 3,
+        "info": 3,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 4,
+        "edit_file": 18,
+        "write_file": 1,
+        "search": 3,
+        "typecheck": 4
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t104-aura-r2",
+      "task": 104,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 19,
+      "turnsMain": 17,
+      "tokensIn": 571592,
+      "tokensOut": 5658,
+      "wallSec": 245,
+      "usd": 1.199764,
+      "credits": 3.645745,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 2,
+        "screenshot": 2,
+        "info": 3,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 6,
+        "edit_file": 12,
+        "write_file": 2,
+        "search": 4,
+        "typecheck": 3
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t104-aura-r3",
+      "task": 104,
+      "idx": 3,
+      "end": "finished/finished",
+      "turns": 17,
+      "turnsMain": 14,
+      "tokensIn": 464269,
+      "tokensOut": 5403,
+      "wallSec": 154,
+      "usd": 0.982568,
+      "credits": 3.197541,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 3,
+        "screenshot": 2,
+        "info": 2,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 4,
+        "edit_file": 12,
+        "write_file": 1,
+        "search": 4,
+        "typecheck": 3
+      }
+    },
+    {
+      "batch": "c1-551-eff1",
+      "scored": false,
+      "runId": "c1-551-eff1-t109-aura-r2",
+      "task": 109,
+      "idx": 2,
+      "end": "finished/finished",
+      "turns": 42,
+      "turnsMain": 38,
+      "tokensIn": 2367884,
+      "tokensOut": 18132,
+      "wallSec": 546,
+      "usd": 4.917088,
+      "credits": 13.587857,
+      "mainChecks": "-",
+      "mainAll": false,
+      "followChecks": "-",
+      "followAll": false,
+      "regressed": false,
+      "rendered": false,
+      "visual": null,
+      "imagesDelivered": null,
+      "imagesDropped": null,
+      "firstRenderSummary": false,
+      "tools": {
+        "render": 10,
+        "screenshot": 9,
+        "info": 10,
+        "examples": 1,
+        "validate": 1,
+        "read_file": 12,
+        "edit_file": 51,
+        "write_file": 2,
+        "search": 8,
+        "typecheck": 3
+      }
+    }
+  ]
+}
