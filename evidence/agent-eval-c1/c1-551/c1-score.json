@@ -6284,5 +6284,358 @@
         }
       }
     }
+  },
+  "c1-551-t110-bridge-r1": {
+    "runId": "c1-551-t110-bridge-r1",
+    "arm": "bridge",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 7246,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10277.2,
+          "jsKB": 7019,
+          "jsGzipKB": 2218.3,
+          "assetKB": 3253.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 181,
+        "blank": false,
+        "frame": {
+          "lit": 0.986,
+          "meanLuma": 67.9,
+          "stdLuma": 35.8,
+          "motion": 0.22
+        },
+        "loaded": {
+          "totalKB": 6116.5,
+          "jsKB": 5849.7,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.07382667824074074
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 6769,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10226.6,
+          "jsKB": 7020.4,
+          "jsGzipKB": 2218.7,
+          "assetKB": 3201.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 202,
+        "blank": false,
+        "frame": {
+          "lit": 0.986,
+          "meanLuma": 73.2,
+          "stdLuma": 41.1,
+          "motion": 0.25
+        },
+        "loaded": {
+          "totalKB": 6013.8,
+          "jsKB": 5851.2,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 76.95550023002997,
+              "dim": 23.87880090712505,
+              "relit": 77.86844495659061,
+              "angleRange": [
+                -12.518024408217514,
+                8.314177228369864
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.19956452546296297
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t102-aura-r1": {
+    "runId": "c1-551-t102-aura-r1",
+    "arm": "aura",
+    "task": 102,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 5918,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10151.1,
+          "jsKB": 7026.5,
+          "jsGzipKB": 2221.4,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 267,
+        "blank": false,
+        "frame": {
+          "lit": 0.997,
+          "meanLuma": 51.4,
+          "stdLuma": 41.1,
+          "motion": 14.4
+        },
+        "loaded": {
+          "totalKB": 5835.5,
+          "jsKB": 5835.5,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 330,
+              "diff": 12.170912905092592
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 5409,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10152.1,
+          "jsKB": 7027.5,
+          "jsGzipKB": 2221.7,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 275,
+        "blank": false,
+        "frame": {
+          "lit": 0.997,
+          "meanLuma": 51.4,
+          "stdLuma": 41.1,
+          "motion": 14.32
+        },
+        "loaded": {
+          "totalKB": 5836.5,
+          "jsKB": 5836.5,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "portal-followup": {
+            "name": "portal-followup",
+            "checks": {
+              "closeButton": true,
+              "closes": true,
+              "labelSwitches": true,
+              "reopens": true
+            },
+            "notes": {},
+            "passed": 4,
+            "total": 4
+          },
+          "portal": {
+            "name": "portal",
+            "checks": {
+              "portalActive": true,
+              "particlesLive": true,
+              "timeAdvances": true,
+              "animated": true
+            },
+            "notes": {
+              "particleCount": 330,
+              "diff": 12.16734230324074
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-bridge-r2": {
+    "runId": "c1-551-t110-bridge-r2",
+    "arm": "bridge",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4749,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10252.6,
+          "jsKB": 7018.3,
+          "jsGzipKB": 2218,
+          "assetKB": 3229.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 2127,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 161.3,
+          "stdLuma": 46.3,
+          "motion": 0.23
+        },
+        "loaded": {
+          "totalKB": 8890.4,
+          "jsKB": 5724.6,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": true
+            },
+            "notes": {
+              "diff": 0.23524305555555555
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 5055,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10253.7,
+          "jsKB": 7019.3,
+          "jsGzipKB": 2218.3,
+          "assetKB": 3229.5,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 2494,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 163.7,
+          "stdLuma": 47.7,
+          "motion": 0.17
+        },
+        "loaded": {
+          "totalKB": 8891.4,
+          "jsKB": 5725.6,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 165.47037485679238,
+              "dim": 38.27373405384586,
+              "relit": 161.21903937078955,
+              "angleRange": [
+                -9.114505566238096,
+                8.86103366715148
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": false
+            },
+            "notes": {
+              "diff": 0.17670572916666666
+            },
+            "passed": 0,
+            "total": 1
+          }
+        }
+      }
+    }
   }
 }
