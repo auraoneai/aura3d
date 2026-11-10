@@ -13,6 +13,16 @@ The release process starts by choosing the release track. Package releases,
 showcase releases, marketing launches, and benchmark/superiority claims have
 different evidence requirements.
 
+## Which path a change takes (owner directive, 2026-11-09)
+
+| Change | Path | Time |
+|---|---|---|
+| Game, site, SEO, docs, assets | Site-only: merge `main`, real-GPU check, build, preview, prod (AGENTS.md "Shipping rules" 1) | ~30 min |
+| Engine fix the owner wants live now | Site-only after a real-GPU check of the affected games; npm gets it in the next batched release (rule 2) | ~30 min |
+| npm package release | One batched candidate, packed-a for the API doc, one full ACR pass, gate, publish, promote, site | ~3 h |
+
+Never restart a running ACR pass for a change that belongs to the first two rows. Never push to a `release/*` branch that is under test. Never delete a locked worktree.
+
 ## Process
 
 1. Select a track in `docs/project/release-tracks.md`.
