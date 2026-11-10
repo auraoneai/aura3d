@@ -1,0 +1,315 @@
+{
+  "schema": "aura3d.agent-eval.c1-run/1",
+  "runId": "c1-dryrun-551-t109-bridge-r1",
+  "batch": "c1-dryrun-551",
+  "arm": "bridge",
+  "task": 109,
+  "slug": "product",
+  "idx": 1,
+  "order": 0,
+  "seed": 20261108000,
+  "model": "claude-sonnet-5.5",
+  "stub": true,
+  "condition": "base",
+  "startedAt": "2026-11-09T22:14:06.211Z",
+  "docsCommit": "3ade7a1d64fb8b0b1a766a9b11f29ad8c5845bee",
+  "docs": {
+    "files": 136,
+    "sha256": "9526940bc84ce27d31cdd62edb140c8bf82c2bbeaab33c227c1b81ddb14a2aa0"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.3.0",
+      "cli": "5.3.0",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "followUp": "Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.",
+  "invalid": false,
+  "endReason": "finished",
+  "followUpEndReason": "finished",
+  "wallMs": 13876,
+  "usage": {
+    "input": 161500,
+    "uncachedInput": 19800,
+    "cacheRead": 137500,
+    "cacheWrite": 4200,
+    "output": 3850,
+    "turns": 11,
+    "providerCredits": null,
+    "providerCostUsd": null,
+    "modelMs": 284,
+    "toolMs": 13591,
+    "perTurnInput": [
+      2250,
+      4000,
+      6650,
+      9300,
+      11950,
+      14600,
+      17250,
+      19900,
+      22550,
+      25200,
+      27850
+    ],
+    "perTurnOutput": [
+      350,
+      350,
+      350,
+      350,
+      350,
+      350,
+      350,
+      350,
+      350,
+      350,
+      350
+    ],
+    "perTurnCacheRead": [
+      0,
+      2500,
+      5000,
+      7500,
+      10000,
+      12500,
+      15000,
+      17500,
+      20000,
+      22500,
+      25000
+    ]
+  },
+  "phases": [
+    {
+      "name": "main",
+      "endReason": "finished",
+      "wallMs": 13424,
+      "input": 85900,
+      "uncachedInput": 12600,
+      "cacheRead": 70000,
+      "cacheWrite": 3300,
+      "output": 2800,
+      "turns": 8,
+      "providerCredits": null,
+      "providerCostUsd": null,
+      "modelMs": 206,
+      "toolMs": 13217,
+      "perTurnInput": [
+        2250,
+        4000,
+        6650,
+        9300,
+        11950,
+        14600,
+        17250,
+        19900
+      ],
+      "perTurnOutput": [
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350,
+        350
+      ],
+      "perTurnCacheRead": [
+        0,
+        2500,
+        5000,
+        7500,
+        10000,
+        12500,
+        15000,
+        17500
+      ],
+      "cost": {
+        "billedUsd": 0.07545,
+        "listUsd": 0.07545,
+        "providerUsd": null,
+        "providerCredits": null,
+        "source": "list-price-estimate"
+      }
+    },
+    {
+      "name": "followup",
+      "endReason": "finished",
+      "wallMs": 452,
+      "input": 75600,
+      "uncachedInput": 7200,
+      "cacheRead": 67500,
+      "cacheWrite": 900,
+      "output": 1050,
+      "turns": 3,
+      "providerCredits": null,
+      "providerCostUsd": null,
+      "modelMs": 78,
+      "toolMs": 374,
+      "perTurnInput": [
+        22550,
+        25200,
+        27850
+      ],
+      "perTurnOutput": [
+        350,
+        350,
+        350
+      ],
+      "perTurnCacheRead": [
+        20000,
+        22500,
+        25000
+      ],
+      "cost": {
+        "billedUsd": 0.04065,
+        "listUsd": 0.04065,
+        "providerUsd": null,
+        "providerCredits": null,
+        "source": "list-price-estimate"
+      }
+    }
+  ],
+  "cost": {
+    "billedUsd": 0.1161,
+    "listUsd": 0.1161,
+    "providerUsd": null,
+    "providerCredits": null,
+    "source": "list-price-estimate"
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 26,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 14
+    },
+    {
+      "i": 1,
+      "t": 26,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 2,
+      "t": 53,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 80
+    },
+    {
+      "i": 3,
+      "t": 1155,
+      "type": "aura3d",
+      "command": "info",
+      "exit": 0,
+      "ms": 1102
+    },
+    {
+      "i": 4,
+      "t": 1181,
+      "type": "write",
+      "tool": "write_file",
+      "path": "recipes/product.mjs",
+      "bytes": 2181
+    },
+    {
+      "i": 5,
+      "t": 1591,
+      "type": "bridge",
+      "name": "product",
+      "pass": true,
+      "ms": 410
+    },
+    {
+      "i": 6,
+      "t": 1617,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 989
+    },
+    {
+      "i": 7,
+      "t": 2197,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 8,
+      "t": 3085,
+      "type": "aura3d",
+      "command": "validate",
+      "exit": 0,
+      "ms": 862
+    },
+    {
+      "i": 9,
+      "t": 13399,
+      "type": "aura3d",
+      "command": "render",
+      "exit": 0,
+      "ms": 10288
+    },
+    {
+      "i": 10,
+      "t": 13425,
+      "type": "finish"
+    },
+    {
+      "i": 11,
+      "t": 13861,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1595
+    },
+    {
+      "i": 12,
+      "t": 14261,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 13,
+      "t": 14287,
+      "type": "finish"
+    }
+  ],
+  "bridgeExports": [
+    {
+      "name": "product",
+      "pass": true,
+      "ms": 410
+    }
+  ],
+  "cliCalls": [
+    {
+      "command": "info",
+      "exit": 0,
+      "ms": 1102
+    },
+    {
+      "command": "validate",
+      "exit": 0,
+      "ms": 862
+    },
+    {
+      "command": "render",
+      "exit": 0,
+      "ms": 10288
+    }
+  ],
+  "docsOpened": [
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "typecheckAfterMain": true,
+  "typecheckAfterFollowUp": true,
+  "summary": "stub follow-up applied"
+}

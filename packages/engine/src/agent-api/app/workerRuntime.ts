@@ -1055,7 +1055,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       if (suspended()) return;
       if (renderer.deviceLost?.()) throw new AuraWorkerError("Renderer device is lost; wait for restoration.", "device-lost", "recoverable");
       const texturedMaterials = sampleTexturedMaterials(renderer);
-      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source, ...(texturedMaterials ? { texturedMaterials } : {}) };
+      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source, presentedAt: workerNow(), ...(texturedMaterials ? { texturedMaterials } : {}) };
       if (frame.source === "automatic") send({ type: "presented", id: 0, result: lastFrame });
     }
   });
@@ -1387,6 +1387,9 @@ export function installWorkerRendererGlobals(globals: unknown, target: object = 
     if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) (target as Record<string, unknown>)[key] = value;
   }
 }
+
+/** 5.5.1: the presentation clock reported with each frame (`AuraWorkerFrameResult.presentedAt`). */
+const workerNow = (): number => (typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now());
 
 /** Presented frames between reads of the worker renderer's textured-material status. */
 const TEXTURED_SAMPLE_FRAMES = 15;

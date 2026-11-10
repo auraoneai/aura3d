@@ -10,6 +10,7 @@ import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagno
 import { applyWorkerCanvasCssDefaults, forwardAuthoredCanvasSize, isOffscreenCanvas, resolveCanvas, workerCanvasBackingSize } from "./canvas.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { computeRuntimeAlpha } from "./frameAlpha.js";
+import { createFrameRateMeter } from "./frameLoop.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
 import { normalizeCreateAppRendererOptions, resolveBackendOptions, resolveDrawingPathOptions } from "./rendererOptions.js";
 import { AuraWorkerError, createWorkerRenderer, measureWorkerCanvas, supportsWorkerRendering, validateWorkerSceneGroups, workerCanvasTransferAttempted } from "./workerRuntime.js";
@@ -286,6 +287,10 @@ export function createWorkerRootApp(
   // 5.4: the worker sends its textured-material status when it changes (games wait on it before hiding a loader). Kept
   // even from frames presented while the host still settles the mount, since the worker sends each change once.
   let workerTexturedMaterials: AuraWorkerFrameResult["texturedMaterials"];
+  // 5.5.1: `diagnostics().fps` over the frames the worker presented (automatic and manual, not capture-only frames), on the
+  // worker's own presentation clock when it reports one, so a busy host thread does not bunch the samples.
+  const frameRate = createFrameRateMeter();
+  const hostNow = (): number => (typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now());
   const present = (result: AuraWorkerFrameResult, advanceRuntime = true) => {
     if (!disposed && Array.isArray(result?.texturedMaterials)) workerTexturedMaterials = result.texturedMaterials;
     if (disposed || mounting || lost || failure) return;
@@ -310,6 +315,8 @@ export function createWorkerRootApp(
       frame += 1;
       time += result.deltaSeconds ?? 0;
       alpha = computeRuntimeAlpha(result.deltaSeconds ?? 0, 1 / 60);
+      frameRate.sample(typeof result.presentedAt === "number" && Number.isFinite(result.presentedAt) ? result.presentedAt : hostNow());
+      diagnostics.fps = frameRate.fps();
     }
     diagnostics.backend = actual;
     diagnostics.drawCalls = result.drawCalls;

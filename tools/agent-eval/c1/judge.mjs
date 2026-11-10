@@ -82,8 +82,10 @@ async function main(argv) {
         if (!id(x) || !id(y)) continue;
         const frames = Object.fromEntries([x, y].map((arm) => [arm, [1, 2].map((n) => join(framesDir, `${id(arm)}-main-${n}.png`))]));
         const missing = [x, y].filter((arm) => !frames[arm].every(existsSync));
+        // No frame = the build failed (SPEC section 6): that side loses without a judge call; neither side = not judged.
         if (missing.length) {
-          pairs.push({ task: task.id, idx, pairing: `${x}-vs-${y}`, noFrame: missing, winner: null });
+          const winner = missing.length === 1 ? [x, y].find((arm) => arm !== missing[0]) : null;
+          pairs.push({ task: task.id, idx, pairing: `${x}-vs-${y}`, noFrame: missing, winner, unanimous: winner != null, calls: [] });
           continue;
         }
         const results = [];

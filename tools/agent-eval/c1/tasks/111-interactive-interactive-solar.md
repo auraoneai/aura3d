@@ -1,0 +1,9 @@
+# Task 11: Solar-system explorer with focus on click
+
+Build a single-page browser app with the provided framework, served by vite, rendering to the canvas with id #app. The app is an interactive, stylised solar system explorer on a dark starfield background.
+
+Show a glowing central star and at least 6 planets, each at a different orbital distance, with a different size and colour and orbiting the star at a different speed (inner planets faster). At least one planet has a moon orbiting it, and at least one planet has a ring. Draw a thin circular orbit line for each planet. Planets should also spin about their own axis. Use a simple procedural look (colour, gradients or generated textures); do not load external assets from the network.
+
+The user can click a planet to focus on it. On focus, the camera smoothly moves (about 1.5 seconds, eased) to a close view of that planet and keeps following it as it orbits, and a DOM info panel appears showing the planet's name, its orbital period in Earth days, and its distance from the star in million km. Clicking empty space, or pressing the Escape key, smoothly returns to the overview showing the whole system and hides the panel. In the overview, the user can drag to orbit the camera around the system and scroll to zoom within sensible limits. Add a toggle button labelled 'Pause' that stops and resumes orbital motion, and shows 'Play' while paused.
+
+The scene must look correct on first load with no console errors. Expose a read-only object on window named __TASK_STATE__ with fields: ready (boolean), focused (name string of the focused planet or null), paused (boolean), planets (array of {name, x, y, z} world positions) and cameraDistanceToFocus (number or null). Also expose window.__focusPlanet(name) and window.__unfocus() which behave exactly like a click on that planet and a click on empty space.

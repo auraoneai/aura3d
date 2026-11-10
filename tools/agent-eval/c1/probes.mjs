@@ -33,6 +33,31 @@ async function waitFor(page, predicate, { timeoutMs = 3000, stepMs = 100 } = {})
 
 const num = (v) => typeof v === "number" && Number.isFinite(v);
 
+/** Mean Rec. 601 luma of an RGBA frame, 0..255. */
+export function meanLuma(frame) {
+  const d = frame.data;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+  return sum / (d.length / 4);
+}
+
+/** Mean (B - R) over an RGBA frame: rises when a large red surface turns blue. */
+export function blueMinusRed(frame) {
+  const d = frame.data;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) sum += d[i + 2] - d[i];
+  return sum / (d.length / 4);
+}
+
+function planetsMoved(a, b) {
+  const pa = Array.isArray(a?.planets) ? a.planets : [];
+  const pb = Array.isArray(b?.planets) ? b.planets : [];
+  return pa.some((p) => {
+    const q = pb.find((x) => x?.name === p?.name);
+    return Boolean(q && [p.x, p.y, p.z, q.x, q.y, q.z].every(num) && Math.hypot(p.x - q.x, p.y - q.y, p.z - q.z) > 1e-3);
+  });
+}
+
 export const PROBES = {
   async spider(page) {
     const diff = await motion(page);
@@ -168,62 +193,6 @@ export const PROBES = {
     };
   },
 
-  async garden(page) {
-    const s0 = await page.state();
-    const overlay0 = /plants:\s*0/i.test(await page.text());
-    await page.clickCanvas(0.5, 0.78);
-    const s1 = await waitFor(page, (s) => s?.plantCount === 1, { timeoutMs: 1500 });
-    const hasPlantAt = await page.eval("typeof window.__plantAt === 'function'");
-    if (hasPlantAt) await page.eval("window.__plantAt(1.25, -0.75)");
-    const s2 = await waitFor(page, (s) => s?.plantCount === 2, { timeoutMs: 1500 });
-    const placed = s2?.plants?.find((p) => Math.abs(p.x - 1.25) < 0.05 && Math.abs(p.z + 0.75) < 0.05);
-    await page.sleep(1200);
-    const s3 = await page.state();
-    const grows = Boolean(s2?.plants?.[0] && s3?.plants?.[0] && s3.plants[0].growth > s2.plants[0].growth);
-    const olderBigger = Boolean(s3?.plants?.length >= 2 && s3.plants[0].growth > s3.plants[1].growth);
-    await page.clickCanvas(0.5, 0.03); // the sky strip: must not plant
-    await page.sleep(300);
-    const s4 = await page.state();
-    const overlay2 = /plants:\s*2/i.test(await page.text());
-    const cleared = await page.clickText(/^\s*clear\s*$/i);
-    const s5 = await waitFor(page, (s) => s?.plantCount === 0, { timeoutMs: 1500 });
-    return {
-      checks: {
-        readyEmpty: s0?.ready === true && s0?.plantCount === 0 && overlay0,
-        clickPlantsOnGround: s1?.plantCount === 1 && num(s1?.plants?.[0]?.x) && num(s1?.plants?.[0]?.z),
-        plantAtExact: Boolean(hasPlantAt && placed),
-        plantsGrow: grows && olderBigger,
-        skyClickIgnored: s4?.plantCount === 2,
-        overlayCount: overlay2,
-        clearRemovesAll: cleared && s5?.plantCount === 0
-      },
-      notes: { firstPlant: s1?.plants?.[0] ?? null }
-    };
-  },
-  async "garden-followup"(page) {
-    await page.clickText(/^\s*clear\s*$/i);
-    await page.sleep(200);
-    await page.eval("window.__plantAt?.(-1, 0.5)");
-    await page.sleep(100);
-    await page.eval("window.__plantAt?.(1, -0.5)");
-    const s0 = await waitFor(page, (s) => s?.plantCount === 2, { timeoutMs: 1500 });
-    const undone = await page.clickText(/^\s*undo\s*$/i);
-    const s1 = await waitFor(page, (s) => s?.plantCount === 1, { timeoutMs: 1500 });
-    const overlay = /plants:\s*1/i.test(await page.text());
-    await page.clickText(/^\s*undo\s*$/i);
-    const s2 = await waitFor(page, (s) => s?.plantCount === 0, { timeoutMs: 1500 });
-    const kept = s1?.plants?.[0];
-    return {
-      checks: {
-        undoButton: undone,
-        undoRemovesNewest: s0?.plantCount === 2 && s1?.plantCount === 1 && Boolean(kept && Math.abs(kept.x + 1) < 0.05),
-        overlayUpdates: overlay,
-        repeatedUndo: s2?.plantCount === 0
-      },
-      notes: {}
-    };
-  },
-
   async materials(page) {
     const s0 = await page.state();
     await page.sleep(1200);
@@ -256,82 +225,159 @@ export const PROBES = {
     };
   },
 
-  async lighthouse(page) {
-    const s = await page.state();
-    const diff = await motion(page, 1200);
+  async product(page) {
+    const samples = [];
+    for (let i = 0; i < 4; i += 1) {
+      const s = await page.state();
+      samples.push({ t: Date.now(), a: s?.turntableAngleDeg, finish: s?.paintFinish });
+      if (i < 3) await page.sleep(500);
+    }
+    const angles = samples.filter((x) => num(x.a));
+    // Unwrap a 0..360 wrap: the turntable only turns one way, so a drop of more than 180 deg is a wrap.
+    let turned = 0;
+    for (let i = 1; i < angles.length; i += 1) {
+      let d = angles[i].a - angles[i - 1].a;
+      if (d < -180) d += 360;
+      turned += d;
+    }
+    const secs = angles.length > 1 ? (angles[angles.length - 1].t - angles[0].t) / 1000 : 0;
+    const rate = secs > 0 ? turned / secs : null;
+    const diff = await motion(page, 1000);
     return {
       checks: {
-        ready: s?.ready === true,
-        enoughParts: num(s?.partCount) && s.partCount >= 12,
-        threeOrMoreBands: num(s?.bandCount) && s.bandCount >= 3,
-        cameraOrbits: diff > MOVING
+        clearcoatState: samples[0].finish === "clearcoat",
+        turntableTurns: angles.length === samples.length && turned > 0,
+        turntableRate: rate != null && rate >= 10 && rate <= 30,
+        animated: diff > MOVING
       },
-      notes: { partCount: s?.partCount ?? null, bandCount: s?.bandCount ?? null, diff }
+      notes: { degPerSec: rate == null ? null : Math.round(rate * 10) / 10, diff }
     };
   },
-  async "lighthouse-followup"(page) {
-    const seen = new Set();
-    const flips = [];
-    let prev;
-    for (let i = 0; i < 32; i += 1) {
-      const s = await page.state();
-      if (typeof s?.lampOn === "boolean") {
-        seen.add(s.lampOn);
-        if (prev !== undefined && prev !== s.lampOn) flips.push(Date.now());
-        prev = s.lampOn;
-      }
-      await page.sleep(100);
-    }
-    const gaps = flips.slice(1).map((t, i) => t - flips[i]);
-    // Median, not every gap: each sample is a CDP round trip, so single gaps carry polling jitter.
-    const mid = [...gaps].sort((x, y) => x - y)[Math.floor(gaps.length / 2)];
+  async "product-followup"(page) {
+    const s0 = await page.state();
+    const red = blueMinusRed(await page.frame());
+    const blue = await page.clickText(/^\s*blue\s*$/i);
+    const s1 = await waitFor(page, (s) => s?.paintColor === "blue", { timeoutMs: 1500 });
+    await page.sleep(300);
+    const blueShift = blueMinusRed(await page.frame());
+    const black = await page.clickText(/^\s*black\s*$/i);
+    const s2 = await waitFor(page, (s) => s?.paintColor === "black", { timeoutMs: 1500 });
+    const back = await page.clickText(/^\s*red\s*$/i);
+    const s3 = await waitFor(page, (s) => s?.paintColor === "red", { timeoutMs: 1500 });
     return {
       checks: {
-        lampOnExposed: seen.size > 0,
-        blinks: seen.has(true) && seen.has(false),
-        aboutOneSecond: gaps.length > 0 && mid > 700 && mid < 1400
+        startsRed: s0?.paintColor === "red",
+        blueButton: blue && s1?.paintColor === "blue",
+        frameShiftsBlue: blueShift - red > 1.5,
+        blackButton: black && s2?.paintColor === "black",
+        redRestores: back && s3?.paintColor === "red"
       },
-      notes: { flips: flips.length, gaps }
+      notes: { blueMinusRedBefore: red, blueMinusRedAfter: blueShift }
     };
   },
 
-  async plinko(page) {
+  async clock(page) {
+    const diff = await motion(page, 1000);
+    return { checks: { pendulumMoves: diff > MOVING }, notes: { diff } };
+  },
+  async "clock-followup"(page) {
     const s0 = await page.state();
-    const dropped = await page.clickText(/drop 20 balls/i);
-    const d = await waitFor(page, (s) => s?.phase === "dropping" || (s?.spawned ?? 0) > 0, { timeoutMs: 2000 });
-    const settled = await waitFor(page, (s) => s?.phase === "settled", { timeoutMs: 30000, stepMs: 250 });
-    const bins = settled?.bins;
-    const sum = Array.isArray(bins) ? bins.reduce((a, b) => a + b, 0) : null;
-    const reset = await page.clickText(/^\s*reset\s*$/i);
-    const r = await waitFor(page, (s) => s?.total === 0 && s?.spawned === 0, { timeoutMs: 2000 });
+    const angles = [];
+    for (let i = 0; i < 12; i += 1) {
+      const s = await page.state();
+      if (num(s?.pendulumAngleDeg)) angles.push(s.pendulumAngleDeg);
+      await page.sleep(125);
+    }
+    const swings = angles.some((a) => a > 0.5) && angles.some((a) => a < -0.5);
+    const lit = meanLuma(await page.frame());
+    const off = await page.clickText(/^\s*lights off\s*$/i);
+    const s1 = await waitFor(page, (s) => s?.lightsOn === false, { timeoutMs: 1500 });
+    await page.sleep(400);
+    const dim = meanLuma(await page.frame());
+    const on = await page.clickText(/^\s*lights on\s*$/i);
+    const s2 = await waitFor(page, (s) => s?.lightsOn === true, { timeoutMs: 1500 });
+    await page.sleep(400);
+    const relit = meanLuma(await page.frame());
     return {
       checks: {
-        readyPhase: s0?.phase === "ready" && s0?.total === 0,
-        dropButtonSpawns: dropped && ((d?.spawned ?? 0) > 0 || d?.phase === "dropping"),
-        allTwentyLand: settled?.phase === "settled" && settled?.spawned === 20 && settled?.total === 20,
-        binsSumToTotal: Array.isArray(bins) && bins.length === 7 && sum === settled?.total,
-        resetClears: reset && r?.total === 0 && r?.spawned === 0
+        stateExposed: s0?.lightsOn === true && num(s0?.pendulumAngleDeg),
+        pendulumSwings: swings,
+        lightsOffButton: off && s1?.lightsOn === false,
+        lightsOffDims: s1?.lightsOn === false && dim <= lit * 0.9,
+        lightsOnRestores: on && s2?.lightsOn === true && relit > dim && relit >= lit * 0.9
       },
-      notes: { bins: bins ?? null }
+      notes: { lit, dim, relit, angleRange: angles.length ? [Math.min(...angles), Math.max(...angles)] : null }
     };
   },
-  async "plinko-followup"(page) {
-    await page.clickText(/^\s*reset\s*$/i);
-    await waitFor(page, (s) => s?.total === 0, { timeoutMs: 2000 });
-    const one = await page.clickText(/drop 1 ball/i);
-    const s = await waitFor(page, (x) => x?.total === 1, { timeoutMs: 15000, stepMs: 250 });
+
+  async solar(page) {
+    const s0 = await page.state();
+    const planets = Array.isArray(s0?.planets) ? s0.planets.filter((p) => typeof p?.name === "string" && [p.x, p.y, p.z].every(num)) : [];
+    await page.sleep(1000);
+    const s1 = await page.state();
+    const orbit = planetsMoved(s0, s1);
+    const target = planets[Math.min(2, planets.length - 1)]?.name ?? null;
+    const hasFocus = await page.eval("typeof window.__focusPlanet === 'function' && typeof window.__unfocus === 'function'");
+    if (hasFocus && target) await page.eval(`window.__focusPlanet(${JSON.stringify(target)})`);
+    const f1 = await waitFor(page, (s) => s?.focused === target && num(s?.cameraDistanceToFocus), { timeoutMs: 2500 });
+    await page.sleep(1800); // the 1.5 s eased move has finished
+    const f2 = await page.state();
+    await page.sleep(800);
+    const f3 = await page.state();
+    const panel = target ? (await page.text()).includes(target) : false;
+    const following = num(f2?.cameraDistanceToFocus) && num(f3?.cameraDistanceToFocus) && f3.cameraDistanceToFocus <= Math.max(f2.cameraDistanceToFocus * 1.3, f2.cameraDistanceToFocus + 0.5);
+    await page.key("Escape");
+    const e = await waitFor(page, (s) => s?.focused === null, { timeoutMs: 2500 });
+    const paused = await page.clickText(/^\s*pause\s*$/i);
+    const p0 = await waitFor(page, (s) => s?.paused === true, { timeoutMs: 1000 });
+    await page.sleep(700);
+    const p1 = await page.state();
+    const play = await page.clickText(/^\s*play\s*$/i);
+    const r0 = await waitFor(page, (s) => s?.paused === false, { timeoutMs: 1000 });
+    await page.sleep(700);
+    const r1 = await page.state();
     return {
       checks: {
-        dropOneButton: one,
-        oneBallSpawned: s?.spawned === 1,
-        oneBallCounted: s?.total === 1 && Array.isArray(s?.bins) && s.bins.reduce((a, b) => a + b, 0) === 1
+        readyState: s0?.ready === true && planets.length >= 6,
+        planetsOrbit: orbit,
+        focusApi: Boolean(hasFocus && target && f1?.focused === target),
+        panelShowsName: panel,
+        cameraFollows: f2?.focused === target && following,
+        escapeReturns: e?.focused === null && f1?.focused === target,
+        pauseFreezes: paused && p0?.paused === true && !planetsMoved(p0, p1),
+        playResumes: play && r0?.paused === false && planetsMoved(r0, r1)
       },
-      notes: { bins: s?.bins ?? null }
+      notes: { planets: planets.length, target, distance: [f1?.cameraDistanceToFocus ?? null, f2?.cameraDistanceToFocus ?? null, f3?.cameraDistanceToFocus ?? null] }
+    };
+  },
+  async "solar-followup"(page) {
+    const s0 = await page.state();
+    // Innermost = smallest distance from the star; the star is taken to be the origin (orbits are centred on it).
+    const byRadius = (Array.isArray(s0?.planets) ? s0.planets : []).filter((p) => typeof p?.name === "string" && [p.x, p.z].every(num)).sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).map((p) => p.name);
+    const tour = await page.clickText(/^\s*tour\s*$/i);
+    const t0 = await waitFor(page, (s) => s?.touring === true && typeof s?.focused === "string", { timeoutMs: 2000 });
+    const first = t0?.focused ?? null;
+    const t1 = await waitFor(page, (s) => typeof s?.focused === "string" && s.focused !== first, { timeoutMs: 4500, stepMs: 150 });
+    const second = t1?.focused !== first ? t1?.focused ?? null : null;
+    const stop = await page.clickText(/^\s*stop tour\s*$/i);
+    const e = await waitFor(page, (s) => s?.touring === false && s?.focused === null, { timeoutMs: 2500 });
+    return {
+      checks: {
+        tourButton: tour && t0?.touring === true,
+        tourOrderInnerToOuter: byRadius.length >= 2 && first === byRadius[0] && second === byRadius[1],
+        stopTourReturns: stop && e?.touring === false && e?.focused === null
+      },
+      notes: { first, second, innermost: byRadius.slice(0, 2) }
     };
   }
 };
 
-/** Run a named probe; a thrown driver error becomes an `error` field with every check false. */
+/**
+ * Run a named probe; a thrown driver error becomes an `error` field with every check false.
+ * @param {string} name
+ * @param {object} page
+ * @returns {Promise<{ name: string, checks: Record<string, boolean>, notes: Record<string, unknown>, passed: number, total: number | null, error?: string }>}
+ */
 export async function runProbe(name, page) {
   const probe = PROBES[name];
   if (!probe) throw new Error(`unknown probe ${name}`);

@@ -1719,6 +1719,18 @@ const GENERATED_PBR_DIRECT_UNIFORMS: ReadonlyMap<string, { readonly field: strin
 ]);
 
 /**
+ * The byte range `[start, end)` of the material block that `patchGeneratedPbrMaterialUniform` writes for `name` with
+ * `length` values (-1: a number), or null when `name` is not a direct uniform. Bytes outside it are left as they were.
+ */
+export function generatedPbrPatchByteRange(name: string, length: number): readonly [number, number] | null {
+  const direct = GENERATED_PBR_DIRECT_UNIFORMS.get(name);
+  const offset = direct ? GENERATED_PBR_MATERIAL_OFFSETS[direct.field] : undefined;
+  if (!direct || offset === undefined || !Number.isSafeInteger(length) || length < -1) return null;
+  const start = offset + direct.component * 4;
+  return [start, start + Math.max(1, length) * 4];
+}
+
+/**
  * Rewrite one uniform's place in bytes that `packGeneratedPbrMaterialUniforms` produced, for a draw whose other read
  * uniforms are unchanged and whose `name` value had `previousLength` values (-1: a number) in that pack. Returns false
  * when the uniform is not a direct one or the value is not one the packer would accept with the same layout; the bytes
