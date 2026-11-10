@@ -1,0 +1,44 @@
+{
+  "resource": "text-to-3d",
+  "task": {
+    "id": "01a1c092-0027-7078-aaae-151d7d9e3930",
+    "type": "text-to-3d-refine",
+    "status": "SUCCEEDED",
+    "progress": 100,
+    "preceding_tasks": 0,
+    "created_at": 1794232156703,
+    "started_at": 1794232156724,
+    "finished_at": 1794232200896,
+    "expires_at": 0,
+    "task_error": null,
+    "model_urls": {
+      "glb": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/model.glb?Expires=4947782400&Signature=I6fmQnupuXre66v7HfNI7F64miab-WClXsH8XtOiEYY45JmsRi8r4UCk8tRUp1djqQ9GYjWQ7gV4owrMEyQ0pNEhdQz1ZB2YI3wFLERP1kT6QMf740DErmy7U6Q3HF08DlCMuUn29lEGyiqKW6Gd2BBqfnhMHtU0HTWOzNAL5C4k5j7Y6Oqdim2mCI8F~YZ5YzykUZx4LZtixwVI8O0XunLpVaC9cD7hPFXD8vV6eApW9Xc49FXai09XSjptacvHLEyXDZOsK-jY~vY3F6otVSL3sA2Wfhc1w5cebqG5BUhDZ5fNv-wG5Hg5v1xgyQ4aF190LMksNh8qQAcfED3Siw__&Key-Pair-Id=K1VGYTHIYLM9UM"
+    },
+    "texture_urls": [
+      {
+        "base_color": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/texture_0.png?Expires=4947782400&Signature=Viu98~Rj8u~tVJBaWlXKNTOcDgtzGbzlkW3JTRZdp62Xmo3nGyr9tUP~R1xUPPQRPi3yVLBZcVbFXwecU9k4vYlJYQl~H2cWAA6svn7mqaUyDITfxMj-2ysYBhCcsX051~nDQSBOQ~V1lFg6BES5zVHDNedc4FysynA8y5MX1xvnEnTNQkRY92vvjj4dkTrcWYYj-CM3vH~zaJioKEJ6vWSqeRpq2MZ7dxUiAbor829Z~pRO-FTrMeWMi8HzPY7-0UdKI1RkfABB~cpsx5wbsu7udAtzSuvNKvN7dR-avdufancE1b9HSxsHC-kLTWzmh8nTQNdfnWbq-M9pAmdQNQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "metallic": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/texture_0_metallic.png?Expires=4947782400&Signature=jk1L9kl4zk4UNs5kGoUHecW-QhAJosbTf3KewhIiG8op~HUeLFaSEZTBBD4ft0M5toLjppX4xaA3M6~bGmAukm927bPDcAdzQkrPKue2Z0FdpW~wNhIo-ChfzrSvXGpUTa8~dHWAQyYT4FGSfIZoNAj3sNpgSxlaaL0hxf-iYLJWCy~ZUS0FgNuTkHpTiuKSKdckBQh-lQlIdjihoNRJshotgUwQYBFmj6~GSwC2clyYXxTzmQNpFpLSpn3hEOa7XOGitT~ef4IXnaApjF3jLNW3q0kySdpL58MzG3amwfFevelCan3jukp7ywP3Zn6HV3sMLC3Arjpztv89YDDOIQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "normal": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/texture_0_normal.png?Expires=4947782400&Signature=fQXaSlBGvx8X8np3rcooGnoGMyO94V5WQI4W7yyG4AS2sc4wMBHwNTv7REqNpYViZICDCfMc6Npe7CoW02xDZd4BzQDduRoucdsBqYp1nZTqil7mCvmJUcaLXeP--OUM8aadABKshjqLva21yUCFtg65rE3O096cHo4-a-KsRKIZAY0qbsTm5iACNsUU7-tpQszudQNbjRGX3WsDbacLLgN2vDFso~qERtSPhfPsJOY49bS1GIUkSZynuoPir9XAOT-qGIxUbfUg~Zw1FCWCjJzWReRsbK8we3CkvCf6l69Jd6g6ufK5p44ENu0PCzabxFxEBHbqDtY3Yd5Q04sFLQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+        "roughness": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/texture_0_roughness.png?Expires=4947782400&Signature=GONKAERC8ITDTBCjvxC-xzCUGQh5VOBL1~2PWe3cZbPiRFGW7xx86NUdEoKgL5RUOENbpHlSYJZPTraAWecPnSQPqWpWbip2dnj-nef~oLjnS7CKeII0238PV9rARXzzB242-h2CzJH3l5kUQtWj2tRphuaJ8HFlL51efNiZ2WXFq-RYdKzvQg49qiXbQRNvaf7mRU11uSYRZjLA5UP~VF1n2-vBUmJdakj2inCSTgY--CF~UsjLK1qcO9xRPIkZlDM~p6ygBxCwGia1~2JBl~mnkfShRLSBxT2t06oBiDJcbh2pHCsGDFl-z9JnybCHzPnXcA7LgYfd3RXHb4zOAQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
+      }
+    ],
+    "thumbnail_url": "https://assets.meshy.ai/4ca65692-eb1f-4a02-ade8-a35949110369/tasks/01a1c092-0027-7078-aaae-151d7d9e3930/output/preview.png?Expires=4947782400&Signature=E6SDZaReLTcbcBMawb0~NY33hEYKI0km1emlwE27~4RWsDTIRut6v2CAYo-~xSa4uJDPtnAHlzGdSPGICIQq76NKA3xyi3JwHKdeCJ0A5ijUB57FlnmoIjoZsDU4oQ3r~Ih8xMPPz3EhiXM9IHkwS3TtOrIENBDfdw8OtbD4qFqYwDvtjslIYx6oojH~ePEvVVdrrX0dweJpvSn3-2SiG9GJlOIId0pnnPwbshKYJUe9AK1iLnbQ7oPrBB6hYYgs~8odNmBu9kga-6YGAAePnPH3j9y3nfpR05eQ0jzEVcVXAl-hXVI~~ru~PjR~pDDzcrgC0-2nIMCsQSS-OjO5Xg__&Key-Pair-Id=K1VGYTHIYLM9UM",
+    "prompt": "pair of giant neon dice, dark smoked glass cubes with glowing cyan pips and magenta glowing edges, arcade style, isolated single object, game-ready, low poly, clean simple shapes, no text or logos",
+    "texture_prompt": "neon arcade PBR: dark glossy chrome, emissive magenta, cyan and gold neon tubes; crisp synthwave",
+    "texture_image_url": "",
+    "mode": "refine",
+    "name": "",
+    "model_type": "standard",
+    "seed": 2177861879,
+    "consumed_credits": 10
+  },
+  "saved_files": [
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/model.glb",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/thumbnail.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/texture_0_base_color.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/texture_0_metallic.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/texture_0_normal.png",
+    "/Users/gurbakshchahal/platforms/aura3d/.git-worktrees-m07/artifacts/gu47-meshy/number-surge/nsFloatingDice/raw.part-72642-1794232213282/texture_0_roughness.png"
+  ],
+  "downloaded_at": "2026-11-09T13:50:17.625Z"
+}

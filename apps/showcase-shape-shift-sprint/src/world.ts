@@ -5,7 +5,7 @@
  * on cream, day gradient sky, hole rims glow on match, morph burst + shape-confetti trail (the trail is
  * presentation-only and draws from its own RNG stream, never the gameplay stream).
  */
-import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, model, scene, type AuraApp } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, Slots, GameRng, scrollFrameZ, flatSpec, shadowSpec, hexToLinear,
@@ -14,7 +14,7 @@ import {
 import { CONFIG, POOL, type ShapeShiftSim, type Segment, type Token, type WallRow } from "./sim";
 import { LOOK, SHAPE_LINEAR, ROAD_LINEAR, WALL_LINEAR, TOKEN_LINEAR, SUN_DIRECTION } from "./look";
 import {
-  PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, contactSpec, driftSpec, layerGeometry, ringSpec, pillarMesh,
+  MESHY_PIECES, PILLAR_COUNT, PILLAR_SPACING, SEA_TILE, SCENERY, cloudSeaTile, meshyPose, contactSpec, driftSpec, layerGeometry, ringSpec, pillarMesh,
   sceneryProgramSpecs, skirtMesh, SKIRT_DIMS, tonedGeometry, toySkySpec, toyToonSpec, wallContactMesh
 } from "./scenery";
 import {
@@ -22,6 +22,7 @@ import {
 } from "./meshes";
 import { WALL_DIMS } from "./meshes";
 import { shakeOffset, type CameraPose, type Shown } from "./presentation";
+import { assets as modelAssets } from "./aura-model-assets";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -178,6 +179,12 @@ export function buildWorld(options: WorldOptions): World {
   for (const layer of [0, 1, 2] as const) {
     builder.add(geometry.custom(layerGeometry(layer), { name: `isles-${layer}`, material: material.custom(driftSpec(0.2)) }));
   }
+  // Meshy toy dressing (castle islands, block towers) drifting with the island layers; created visible at their t=0 pose.
+  for (const p of MESHY_PIECES) {
+    const pose = meshyPose(p, 0, false);
+    builder.add(model(modelAssets[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: false, receiveShadow: false })
+      .position(pose.x, pose.y, pose.z).rotation(0, pose.yaw, 0).scale(pose.scale).runtime({ id: p.id }));
+  }
 
   /* Post: gentle bloom on the sun glow, glowing rims and confetti; warm grade; soft vignette. */
   const post = options.post ?? "lite";
@@ -228,12 +235,16 @@ export function buildWorld(options: WorldOptions): World {
         cloudsPlaced = true;
       }
 
-      /** Bridge pillars travel with the road scroll (the island layers drift on the GPU clock). */
-      function updateScenery(scrollNow: number): void {
+      /** Bridge pillars travel with the road scroll (the island layers drift on the GPU clock, the Meshy dressing on the sim clock). */
+      function updateScenery(scrollNow: number, elapsedNow: number, reducedNow: boolean): void {
         const pillarSpan = PILLAR_SPACING * PILLAR_COUNT;
         for (let i = 0; i < PILLAR_COUNT; i++) {
           const z = ((((i * PILLAR_SPACING + scrollNow) % pillarSpan) + pillarSpan) % pillarSpan) - pillarSpan + 30;
           node(`pillar-${i}`).setPosition(0, 0, z);
+        }
+        for (const piece of MESHY_PIECES) {
+          const pose = meshyPose(piece, elapsedNow, reducedNow);
+          node(piece.id).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(pose.scale);
         }
 
       }
@@ -385,7 +396,7 @@ export function buildWorld(options: WorldOptions): World {
         particles.flush(node("particles"));
 
         if (!cloudsPlaced) placeClouds();
-        updateScenery(scroll);
+        updateScenery(scroll, elapsed, reduced);
 
         /* camera */
         const pose = view.camera ?? view.shown?.camera ?? { x: 0.5 * p.x, y: p.y + 5, z: p.z + 9, lookX: p.x, lookY: p.y, lookZ: p.z - 10 };

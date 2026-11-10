@@ -42,3 +42,8 @@ Ten more generated models replace the placeholder box houses, flat-faceted cliff
 ## GU47 wave 2 set-pieces (2026-11-03)
 
 `models/ninja_runner_port_ninjaShrineGate.glb`, `ninja_runner_port_ninjaWaterWheel.glb` and `ninja_runner_port_ninjaPagodaSilhouette.glb`: Meshy text-to-3D from own text prompts (rights and task metadata in `provenance/ninja_runner_port_*.json`), decimated locally (gltf-transform weld + meshopt simplify, then a sloppy pass for the cap) to 5,678 / 7,297 / 7,452 triangles with 1024 px textures. Drawn in the evening look only (`setpieces.ts`).
+
+
+## GU47 meshy07 rigged enemies (2026-11-09)
+
+`models/ninja_runner_port_ninjaCasterAnimR2.glb` (robed owl caster) and `ninja_runner_port_ninjaScoutAnimR2.glb` (fox scout): Meshy text-to-3D rows `ninjaCasterR2` / `ninjaScoutR2` (own text prompts), rigged by Meshy (`ninjaCasterRigR2` / `ninjaScoutRigR2`) and animated (`ninjaCasterAnimR2`: idle, cast, hit, death; `ninjaScoutAnimR2`: idle, throw, hit, death); the rig task's `run` clip is merged onto the same 24-joint skeleton by node name. Decimated locally (dedup, weld, meshopt simplify with the skin kept) from 54,807 / 56,344 to 11,998 / 11,999 triangles with 512 px textures (1.39 / 1.16 MB). Task ids and credits in `provenance/ninja_runner_port_ninja{Caster,Scout}AnimR2.meta.json`. Drawn in the evening look only (`EVENING_SLOT_MODEL` in `models.ts`).

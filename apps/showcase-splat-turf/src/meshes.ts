@@ -152,9 +152,10 @@ export function finishMesh(): MeshData {
 
 /** The player ball radius (§3.4 world). */
 export const BALL_RADIUS = 0.45;
-export const ballMesh = (): MeshData => sphereMesh(BALL_RADIUS, 24, 16);
-/** One paint cell overlay quad, inset so the white road shows a grid seam. */
-export const cellMesh = (): MeshData => quadMesh(0.96, 0.96);
+/** 48 x 32: smooth silhouette and a clean specular highlight on the glossy ball program. */
+export const ballMesh = (): MeshData => sphereMesh(BALL_RADIUS, 48, 32);
+/** One paint cell overlay quad, a full 1 m so a painted lane reads as one continuous streak (the paint program draws the edges). */
+export const cellMesh = (): MeshData => quadMesh(1, 1);
 /** Solvent strip: one lane wide, 10 m long, a thin wash above the road. */
 export const stripMesh = (): MeshData => boxMesh(0.98, 0.04, 10);
 /** Road segment: 6.4 m wide (6 lanes + shoulders), 1 m row, 0.3 thick. */

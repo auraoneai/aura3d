@@ -1,0 +1,104 @@
+{
+  "args": {
+    "arm": "all",
+    "task": "109",
+    "runs": 1,
+    "seed": 20261108,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "condition": "base",
+    "stub": true,
+    "estimate": false,
+    "batch": "c1-dryrun-551",
+    "score": true,
+    "maxTurns": 40,
+    "followUpTurns": 15
+  },
+  "plan": [
+    {
+      "task": 109,
+      "arm": "bridge",
+      "idx": 1,
+      "order": 0,
+      "runId": "c1-dryrun-551-t109-bridge-r1",
+      "seed": 20261108000
+    },
+    {
+      "task": 109,
+      "arm": "three",
+      "idx": 1,
+      "order": 1,
+      "runId": "c1-dryrun-551-t109-three-r1",
+      "seed": 20261108001
+    },
+    {
+      "task": 109,
+      "arm": "aura",
+      "idx": 1,
+      "order": 2,
+      "runId": "c1-dryrun-551-t109-aura-r1",
+      "seed": 20261108002
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/c1-551-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.3.0",
+        "cli": "5.3.0",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/c1-551-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "cli": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "bridge": {
+      "baseDir": "/tmp/c1-551-base/bridge",
+      "patch": "already",
+      "versions": {
+        "engine": "5.3.0",
+        "cli": "5.3.0",
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": 109,
+      "slug": "product",
+      "coverage": "product viewer",
+      "category": "materials",
+      "source": "origin/bench/505-materials:tools/agent-eval/tasks/11-materials-2.md",
+      "bench505": {
+        "medianTurns": {
+          "aura": 33,
+          "auraSheet": 13,
+          "three": 6
+        }
+      },
+      "causes": [
+        "B clearcoat / metal against a uniform environment",
+        "A look"
+      ],
+      "probe": "product",
+      "followUp": {
+        "text": "Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.",
+        "probe": "product-followup"
+      },
+      "assetHeavy": true
+    }
+  ]
+}

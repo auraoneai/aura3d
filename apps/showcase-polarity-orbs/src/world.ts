@@ -20,6 +20,7 @@ import {
   deckHalfMesh, railMesh, dashMesh, shadowMesh, shockwaveMesh, streamMesh, symbolMesh, translateMesh
 } from "./meshes";
 import { CAMERA_FAR, chaseFov, type Shown } from "./presentation";
+import { addBackdrop, updateBackdrop } from "./backdrop";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 type SceneBuilder = ReturnType<typeof scene>;
@@ -150,6 +151,8 @@ export function buildWorld(options: WorldOptions): World {
     const spec = layer.glow ? sceneryGlowSpec(layer.tile) : sceneryLitSpec(fog[0], fog[1], layer.tile);
     builder.add(geometry.custom(layerGeometry(layer).geometry, { name: layer.id, material: material.custom(spec), castShadow: false, receiveShadow: false }).runtime({ id: layer.id }));
   }
+  /* Meshy backdrop dressing: red-pole pieces left, blue-tinted pieces right (presentation only, see backdrop.ts). */
+  addBackdrop(builder);
 
   add("ball", ballMesh(), toonSpec(LINEAR.red));
   add("ball-shadow", shadowMesh(), shadowSpec(), false); // a blob shadow must not itself cast (DEPTH_ALPHA_HASH_DEGRADED)
@@ -265,6 +268,7 @@ export function buildWorld(options: WorldOptions): World {
           h.setUniform?.("uScroll", layerScroll(layer, o.distance));
           if (!layer.glow) h.setUniform?.("uMix", mix);
         }
+        updateBackdrop(node, o.distance, elapsed, mix, reducedMotion);
 
         /* road in the scrolling frame: vertices written once at run-space z, nodes moved by -distance */
         const distance = o.distance;

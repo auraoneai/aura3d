@@ -73,6 +73,10 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopContainer", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // GU47 wave 3 (H47-A1): the re-rolled covered bleacher, 25,104 -> 17,714 triangles after the meshopt pass, 1k maps.
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopBleacherR2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // Meshy-07: six seated, skinned live fans (src/crowd.ts), decimated with the skin kept: 3,876 / 3,928 / 4,147 tris, 512 px maps.
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanAPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanCPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanDPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsTrophy", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },

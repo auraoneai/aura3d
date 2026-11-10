@@ -138,3 +138,8 @@ Every public claim follows [`docs/agents/claims-and-boundaries.md`](./docs/agent
 ## Contributing
 
 Open issues with the prompt, package version, asset source and a screenshot or route-health output. Inside this monorepo, browsers, Playwright suites and heavy builds run on the remote runner (`tools/remote-acr/run.sh`), not on a laptop. Licensed under MIT.
+
+## Status reconciliation (2026-11-09)
+
+- `platforms-launch-code-fixes.md` is 48/48 complete across the 26-platform spec (eight custody packages implemented + pushed 2026-11-09; see spec completion report). This repo is outside that spec's scope — no code changed.
+- Repo state at reconciliation: `main@3e271d054`, 0 dirty path(s).

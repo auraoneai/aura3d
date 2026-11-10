@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "e281612937f6f02bb0aca54247bc79931fa299360aa7a4d08af9b0dfe5c297dc",
+  "sourceSha256": "85966c818330271cad1c7ed5cbfd241fe6bc9d63c23ffbc0c300190dc407cc8f",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -68,6 +68,48 @@
       },
       {
         "assetKey": "fcSoccerGoalNetMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanAMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanBMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanCMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanAMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanCMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcPitchFanBMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1011,6 +1053,48 @@
         "maxTriangles": 14000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcPitchFanAMeshy",
+        "maxTriangles": 5200,
+        "textureSet": "BC",
+        "maxTextureSize": 512,
+        "animated": {
+          "clips": [
+            "idle",
+            "cheer",
+            "pump"
+          ]
+        }
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcPitchFanBMeshy",
+        "maxTriangles": 5200,
+        "textureSet": "BC",
+        "maxTextureSize": 512,
+        "animated": {
+          "clips": [
+            "idle",
+            "cheer",
+            "pump"
+          ]
+        }
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcPitchFanCMeshy",
+        "maxTriangles": 5200,
+        "textureSet": "BC",
+        "maxTextureSize": 512,
+        "animated": {
+          "clips": [
+            "idle",
+            "cheer",
+            "pump"
+          ]
+        }
       },
       {
         "role": "set-dressing",

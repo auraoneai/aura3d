@@ -11,6 +11,29 @@ Owner rule for these features: on by default in a game only after it passes a re
 - `?gamut=p3` falls back to sRGB instead of failing to mount (Slingshot Siege, Saltwind Highway drew nothing).
 - Aura FC 3D no longer crashes on `?worker=1`; Aura FC 3D, Pips' Big Leap and Glint Courier now pass the lab flags to the engine.
 
+## 5.5.1 task list (after 5.5.0; recorded 2026-11-09)
+
+5.5.0 is the last feature release of this program. These are the items still open after it, for a 5.5.1 patch when the owner asks for it.
+
+| # | Item | Why | Done when |
+|---|---|---|---|
+| P1 | WebGPU batched uniform uploads: one upload per batch with dynamic offsets instead of about 900 small `writeBuffer` calls a frame | Pip's Big Leap runs at 0.89x WebGL2 on WebGPU (about 6 ms more per frame across 1,087 draws) | Pip's Big Leap holds >= 0.92x over 10 load-gated pairs and switches to `backend: "auto"` |
+| P2 | WebGPU draw merging: combine compatible draws the way the WebGL2 path already does | Same gap; WebGL2 gets merged draws that WebGPU does not | Draw count per frame on WebGPU matches WebGL2 for the same scene |
+| P3 | Lower WebGPU native per-frame overhead in Lamplight Line (about 3 ms native plus 2.5 ms draw path) | Lamplight Line runs at 0.89x WebGL2 on WebGPU | Lamplight Line holds >= 0.92x and switches; the switch is prepared in round 4 notes |
+| P4 | Worker frame rate: count worker-presented frames in `workerRootApp` so `diagnostics().fps` is real in worker mode | Worker rendering works in all 30 games, but its speed is unmeasured | Worker fps measured in all 30 games against the main thread |
+| C1 | Run the fixed agent-authoring comparison (section 4, C1) against 5.5.0 | The N1-N8 baseline and the B1 bridge shipped, but the benchmark that shows whether turns, tokens and time dropped has not been run | Report with turns, tokens, time, cost, visual quality and correctness per arm |
+
+**Status (2026-11-09 evening):**
+- P1 done: per-frame uniform arena, patch-range uploads, bind groups remembered per arena range (branch `exp/551-wgpu5`).
+- P2 not done: WebGPU draw merging.
+- P3 partly done: native DoF passes share the batch encoder and keep their uniforms, samplers, views and bind groups; Lamplight quad sprites skip unchanged updates.
+- Game switches for Pip's Big Leap and Lamplight Line: being measured; each switches only at >= 0.92x.
+- P4 done: worker-presented frames counted (`exp/551-workerfps`); per-game worker fps being measured.
+- C1 phase 1 done (frozen spec, harness, stub dry run on `exp/551-c1bench`); the paid run starts once 5.5.0 is on npm.
+- Shipping: engine changes go live on the site through the site-only path, and npm gets them in the next batched release (AGENTS.md "Shipping rules").
+
+Rules as before: paired load-gated fps runs, a game switches only at >= 0.92x, WebGL2 output unchanged, public API additive only.
+
 ## 1. WebGPU as a working backend (about 100 h)
 
 Today no game renders on WebGPU. 13 games fall back because their post stack needs depth textures WebGPU does not have; the rest hit missing WGSL passes. Work packages, in the order that unblocks the most games:

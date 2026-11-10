@@ -1,7 +1,8 @@
 // Stub model for the C1 dry run: a scripted Messages client that drives the real loop, toolbox, bridge, snapshots and
-// scoring with fixed solutions from c1/stub/<task>/<arm>/ instead of model output. It returns provider-shaped usage
+// scoring with fixed solutions from c1/stub/<task>/<arm>/ (main.ts, followup.ts, bridge recipes *.mjs) instead of model
+// output. It returns provider-shaped usage
 // (input, cache read, cache write, output) so the cost and token pipeline is exercised; the numbers are synthetic.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export const STUB_DIR = join(import.meta.dirname, "stub");
@@ -10,7 +11,7 @@ export function stubSolution(task, arm, dir = STUB_DIR) {
   const base = join(dir, String(task), arm);
   if (!existsSync(join(base, "main.ts"))) return null;
   const read = (f) => (existsSync(join(base, f)) ? readFileSync(join(base, f), "utf8") : null);
-  const factories = ["lighthouse.factory.ts", "garden.factory.ts"].filter((f) => existsSync(join(base, f))).map((f) => ({ path: `src/bridge/${f}`, content: read(f) }));
+  const factories = readdirSync(base).filter((f) => f.endsWith(".mjs")).sort().map((f) => ({ path: `recipes/${f}`, content: read(f) }));
   return { main: read("main.ts"), followup: read("followup.ts"), factories };
 }
 
@@ -20,11 +21,14 @@ const use = (name, input) => ({ type: "tool_use", id: `stub_${(ids += 1)}`, name
 /** The scripted turns: each entry is one assistant message (a list of tool calls). */
 export function stubScript({ arm, solution }) {
   const main = [[use("read_file", { path: "TASK.md" }), use("list_dir", { path: "." })]];
-  if (arm !== "three") main.push([use("read_file", { path: "llms.txt", limit: 80 })]);
+  if (arm !== "three") main.push([use("read_file", { path: "llms.txt", limit: 80 }), use("aura3d", { command: "info", args: ["--name", "material.pbr"] })]);
   if (arm === "bridge") {
-    for (const f of solution.factories) main.push([use("write_file", f), use("bridge_export", { factory: f.path, seed: 7 })]);
+    for (const f of solution.factories) main.push([use("write_file", f), use("import_three", { factory: f.path, seed: 7 })]);
   }
-  main.push([use("write_file", { path: "src/main.ts", content: solution.main })], [use("typecheck", {})], [use("finish", { summary: "stub solution written" })]);
+  main.push([use("write_file", { path: "src/main.ts", content: solution.main })], [use("typecheck", {})]);
+  // The native and bridge arms exercise the N6 loop: validate (no browser), then render (build + headless Chrome + image).
+  if (arm !== "three") main.push([use("aura3d", { command: "validate" })], [use("aura3d", { command: "render", args: ["--width", "640", "--height", "360"] })]);
+  main.push([use("finish", { summary: "stub solution written" })]);
   const followup = solution.followup
     ? [[use("write_file", { path: "src/main.ts", content: solution.followup })], [use("typecheck", {})], [use("finish", { summary: "stub follow-up applied" })]]
     : [[use("finish", { summary: "stub has no follow-up" })]];

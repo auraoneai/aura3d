@@ -1,0 +1,64 @@
+{
+  "schema": "aura3d.agent-eval.c1-judge/1",
+  "judge": "stub-frame-statistics",
+  "seed": 20261108,
+  "callsPerPair": 1,
+  "pairs": [
+    {
+      "task": 109,
+      "idx": 1,
+      "pairing": "aura-vs-three",
+      "winner": "aura",
+      "unanimous": true,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "three"
+          ],
+          "winner": "aura",
+          "scores": null,
+          "why": "stub frame-statistics judge"
+        }
+      ]
+    },
+    {
+      "task": 109,
+      "idx": 1,
+      "pairing": "bridge-vs-three",
+      "winner": "three",
+      "unanimous": true,
+      "calls": [
+        {
+          "order": [
+            "three",
+            "bridge"
+          ],
+          "winner": "three",
+          "scores": null,
+          "why": "stub frame-statistics judge"
+        }
+      ]
+    },
+    {
+      "task": 109,
+      "idx": 1,
+      "pairing": "bridge-vs-aura",
+      "winner": "aura",
+      "unanimous": true,
+      "calls": [
+        {
+          "order": [
+            "aura",
+            "bridge"
+          ],
+          "winner": "aura",
+          "scores": null,
+          "why": "stub frame-statistics judge"
+        }
+      ]
+    }
+  ],
+  "checklists": [],
+  "judgeCost": null
+}

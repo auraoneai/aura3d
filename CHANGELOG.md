@@ -4,6 +4,28 @@ Version: 5.5.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## Unreleased (5.5.1)
+
+Engine changes after 5.5.0. They go live on the showcase site through the site-only path (AGENTS.md "Shipping rules" 2) once the affected games pass a real-GPU check, and reach npm in the next batched release. WebGL2 output is unchanged; public API additions only.
+
+### WebGPU draw path (P1-P3)
+
+- **Per-frame uniform arena for batched draws (P1).** Batched draws inside a frame no longer take a pooled uniform buffer and a `writeBuffer` each. Their uniform blocks are staged in a CPU mirror of a few large uniform buffers at `minUniformBufferOffsetAlignment` offsets, bound as `{ buffer, offset, size }`, and uploaded at batch submission with one `writeBuffer` per coalesced dirty run (runs closer than 1 KB merge). Offsets restart every frame, so an unchanged draw uploads nothing and reuses its bind group. Generated-PBR slot images record the byte range a patch wrote, so unchanged regions compare and copy only that range instead of the 8 KB block. A failed upload stops the arena until reset (draws fall back to pooled buffers); draws outside a frame or batch, and non-batchable draws, keep pooled buffers. Render-target owner lookups remember misses until the target set changes.
+- **One pass over a draw's uniforms.** `WebGPUDevice.draw` walked every uniform three times per draw (structured-value check, attachment-feedback textures, batch access list); it now walks them once and hands the texture bindings to both checks. Same checks, same errors.
+- **Material bind groups remembered per arena range.** A batched draw's material group is compared with the group its arena range bound last frame (layout, bindings, resource objects, buffer offset and size) before the keyed cache lookup; any difference falls through to the keyed cache.
+- **Native depth-of-field passes share the frame's batch encoder (P3).** DoF passes record into the open batch encoder instead of one encoder and queue submission each; each DoF pass keeps one uniform buffer per label and size, the sampler and bind group come from the caches, depth-only views are created once per depth texture, and the DoF pipeline key is looked up per fragment source instead of serialising the shader each pass. Stage markers and submission flags keep their failure semantics.
+- **Lamplight Line quad sprites (WebGPU path only)** skip an `updateAttribute` whose array and offset equal the last ones for that name. The WebGL2 point path is unchanged.
+- Draw merging on WebGPU (P2) is not done yet.
+- Per-game WebGPU defaults: Pip's Big Leap and Lamplight Line switch only if they hold >= 0.92x WebGL2 (load-gated pairs, matching frame, 0 errors); results are recorded in `docs/upgrade-5.0.0/README.md` when measured.
+
+### Worker rendering (P4)
+
+- **Worker fps is real.** The worker stamps each presented frame with its own `performance.now()` (`AuraWorkerFrameResult.presentedAt`, optional) and `workerRootApp` feeds it to the same 1 s frame-rate meter the main-thread loop uses, so a worker app's `diagnostics().fps` is no longer 0. Capture-only frames do not count; results without the stamp fall back to the host clock. Worker rendering stays opt-in (`?worker=1`); per-game worker vs main-thread fps is recorded in `docs/upgrade-5.0.0/README.md` when measured.
+
+### Agent-authoring comparison (C1)
+
+- The fixed 8-task comparison (native Aura3D 5.5.0, three.js, three.js + bridge) is frozen in `tests/reports/benchmark-c1/SPEC.md` on `exp/551-c1bench`, with a stub dry run on all three arms; the paid run starts once 5.5.0 is on npm. No engine change.
+
 ## 5.5.0 (2026-11-09)
 
 A minor release and the last of this program. It also carries the work prepared as 5.4.0, which was not published on its own: WebGPU is the default in 28 of 30 showcase games, worker rendering is opt-in in all 30, the plain look matches authored colours, and the three.js asset bridge carries clips, simple custom shaders and node edits.

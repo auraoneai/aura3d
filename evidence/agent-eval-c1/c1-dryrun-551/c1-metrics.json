@@ -1,0 +1,441 @@
+{
+  "batch": "c1-dryrun-551",
+  "stub": true,
+  "arms": {
+    "aura": {
+      "runs": 1,
+      "valid": 1,
+      "invalid": 0,
+      "mainFinished": 1,
+      "mainCapped": 0,
+      "followUpFinished": 1,
+      "followUpCapped": 0,
+      "renderMain": 1,
+      "functionalMainAll": 1,
+      "functionalMainMean": 1,
+      "functionalFollowUpAll": 1,
+      "regressions": 0,
+      "turnsMedian": 10,
+      "turnsMainMedian": 7,
+      "turnsFollowUpMedian": 3,
+      "tokensMainMedian": 68450,
+      "cliCallsMedian": 3,
+      "renderCallsMedian": 1,
+      "ranges": {
+        "turns": [
+          10,
+          10
+        ],
+        "turnsMain": [
+          7,
+          7
+        ],
+        "tokensIn": [
+          133650,
+          133650
+        ],
+        "tokensOut": [
+          3500,
+          3500
+        ],
+        "tokensMain": [
+          68450,
+          68450
+        ],
+        "wallSec": [
+          13.8,
+          13.8
+        ],
+        "toolSec": [
+          13.6,
+          13.6
+        ],
+        "billedUsd": [
+          0.10175,
+          0.10175
+        ]
+      },
+      "wallSecMedian": 13.8,
+      "toolSecMedian": 13.6,
+      "tokensInMedian": 133650,
+      "tokensOutMedian": 3500,
+      "cachedShareMedian": 0.842,
+      "billedUsdMedian": 0.10175,
+      "billedUsdTotal": 0.1017,
+      "costSources": [
+        "list-price-estimate"
+      ],
+      "jsGzipKBMedian": 2203,
+      "totalKBMedian": 10098.5,
+      "loadedKBMedian": 8624.3,
+      "loadMsMedian": 243,
+      "fpsMedian": 60
+    },
+    "three": {
+      "runs": 1,
+      "valid": 1,
+      "invalid": 0,
+      "mainFinished": 1,
+      "mainCapped": 0,
+      "followUpFinished": 1,
+      "followUpCapped": 0,
+      "renderMain": 1,
+      "functionalMainAll": 1,
+      "functionalMainMean": 1,
+      "functionalFollowUpAll": 1,
+      "regressions": 0,
+      "turnsMedian": 7,
+      "turnsMainMedian": 4,
+      "turnsFollowUpMedian": 3,
+      "tokensMainMedian": 23600,
+      "cliCallsMedian": 0,
+      "renderCallsMedian": 0,
+      "ranges": {
+        "turns": [
+          7,
+          7
+        ],
+        "turnsMain": [
+          4,
+          4
+        ],
+        "tokensIn": [
+          66000,
+          66000
+        ],
+        "tokensOut": [
+          2450,
+          2450
+        ],
+        "tokensMain": [
+          23600,
+          23600
+        ],
+        "wallSec": [
+          0.8,
+          0.8
+        ],
+        "toolSec": [
+          0.6,
+          0.6
+        ],
+        "billedUsd": [
+          0.0635,
+          0.0635
+        ]
+      },
+      "wallSecMedian": 0.8,
+      "toolSecMedian": 0.6,
+      "tokensInMedian": 66000,
+      "tokensOutMedian": 2450,
+      "cachedShareMedian": 0.795,
+      "billedUsdMedian": 0.0635,
+      "billedUsdTotal": 0.0635,
+      "costSources": [
+        "list-price-estimate"
+      ],
+      "jsGzipKBMedian": 128.9,
+      "totalKBMedian": 514.3,
+      "loadedKBMedian": 513.8,
+      "loadMsMedian": 168,
+      "fpsMedian": 60
+    },
+    "bridge": {
+      "runs": 1,
+      "valid": 1,
+      "invalid": 0,
+      "mainFinished": 1,
+      "mainCapped": 0,
+      "followUpFinished": 1,
+      "followUpCapped": 0,
+      "renderMain": 1,
+      "functionalMainAll": 1,
+      "functionalMainMean": 1,
+      "functionalFollowUpAll": 1,
+      "regressions": 0,
+      "turnsMedian": 11,
+      "turnsMainMedian": 8,
+      "turnsFollowUpMedian": 3,
+      "tokensMainMedian": 88700,
+      "cliCallsMedian": 3,
+      "renderCallsMedian": 1,
+      "ranges": {
+        "turns": [
+          11,
+          11
+        ],
+        "turnsMain": [
+          8,
+          8
+        ],
+        "tokensIn": [
+          161500,
+          161500
+        ],
+        "tokensOut": [
+          3850,
+          3850
+        ],
+        "tokensMain": [
+          88700,
+          88700
+        ],
+        "wallSec": [
+          13.9,
+          13.9
+        ],
+        "toolSec": [
+          13.6,
+          13.6
+        ],
+        "billedUsd": [
+          0.1161,
+          0.1161
+        ]
+      },
+      "wallSecMedian": 13.9,
+      "toolSecMedian": 13.6,
+      "tokensInMedian": 161500,
+      "tokensOutMedian": 3850,
+      "cachedShareMedian": 0.851,
+      "billedUsdMedian": 0.1161,
+      "billedUsdTotal": 0.1161,
+      "costSources": [
+        "list-price-estimate"
+      ],
+      "jsGzipKBMedian": 3263.2,
+      "totalKBMedian": 13024.4,
+      "loadedKBMedian": 8883.6,
+      "loadMsMedian": 213,
+      "fpsMedian": 60
+    }
+  },
+  "visual": {
+    "aura-vs-three": {
+      "subject": "aura",
+      "opponent": "three",
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 1,
+      "winRate": 1,
+      "wilson": [
+        0.207,
+        1
+      ]
+    },
+    "bridge-vs-three": {
+      "subject": "bridge",
+      "opponent": "three",
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 0,
+      "winRate": 0,
+      "wilson": [
+        0,
+        0.793
+      ]
+    },
+    "bridge-vs-aura": {
+      "subject": "bridge",
+      "opponent": "aura",
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "noFrame": 0,
+      "unanimousWins": 0,
+      "winRate": 0,
+      "wilson": [
+        0,
+        0.793
+      ]
+    }
+  },
+  "decision": {
+    "verdict": "native stays the default (bridge does not meet the rule)",
+    "all": {
+      "verdict": "native stays the default (bridge does not meet the rule)",
+      "detail": {
+        "timeGain": -0.007246376811594177,
+        "costGain": -0.14103194103194105,
+        "bridgeVsAuraWinRate": 0,
+        "correctnessDelta": 0,
+        "comparableQuality": false,
+        "clearlyBetter": false,
+        "comparableCorrect": true
+      }
+    },
+    "assets": {
+      "tasks": [
+        101,
+        109,
+        110
+      ],
+      "verdict": "native stays the default (bridge does not meet the rule)",
+      "detail": {
+        "timeGain": -0.007246376811594177,
+        "costGain": -0.14103194103194105,
+        "bridgeVsAuraWinRate": 0,
+        "correctnessDelta": 0,
+        "comparableQuality": false,
+        "clearlyBetter": false,
+        "comparableCorrect": true
+      }
+    }
+  },
+  "rows": [
+    {
+      "runId": "c1-dryrun-551-t109-aura-r1",
+      "arm": "aura",
+      "task": 109,
+      "idx": 1,
+      "valid": true,
+      "invalidReason": null,
+      "mainEnd": "finished",
+      "followUpEnd": "finished",
+      "mainFinished": true,
+      "mainCapped": false,
+      "followUpFinished": true,
+      "followUpCapped": false,
+      "turnsMain": 7,
+      "tokensMain": 68450,
+      "turnsFollowUp": 3,
+      "turns": 10,
+      "wallSec": 13.8,
+      "toolSec": 13.6,
+      "modelSec": 0.3,
+      "tokensIn": 133650,
+      "tokensOut": 3500,
+      "cacheRead": 112500,
+      "cacheWrite": 3900,
+      "cachedShare": 0.842,
+      "billedUsd": 0.10175,
+      "billedUsdFollowUp": 0.03825,
+      "costSource": "list-price-estimate",
+      "bridgeExports": 0,
+      "bridgeFailures": 0,
+      "cliCalls": 3,
+      "renderCalls": 1,
+      "buildMain": true,
+      "renderMain": true,
+      "buildFollowUp": true,
+      "functionalMain": 1,
+      "functionalMainAll": true,
+      "functionalFollowUp": 1,
+      "functionalFollowUpAll": true,
+      "regressedMain": false,
+      "jsGzipKB": 2203,
+      "totalKB": 10098.5,
+      "assetKB": 3119.9,
+      "loadedKB": 8624.3,
+      "loadMs": 243,
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "pageErrors": 0,
+      "probeErrors": []
+    },
+    {
+      "runId": "c1-dryrun-551-t109-bridge-r1",
+      "arm": "bridge",
+      "task": 109,
+      "idx": 1,
+      "valid": true,
+      "invalidReason": null,
+      "mainEnd": "finished",
+      "followUpEnd": "finished",
+      "mainFinished": true,
+      "mainCapped": false,
+      "followUpFinished": true,
+      "followUpCapped": false,
+      "turnsMain": 8,
+      "tokensMain": 88700,
+      "turnsFollowUp": 3,
+      "turns": 11,
+      "wallSec": 13.9,
+      "toolSec": 13.6,
+      "modelSec": 0.3,
+      "tokensIn": 161500,
+      "tokensOut": 3850,
+      "cacheRead": 137500,
+      "cacheWrite": 4200,
+      "cachedShare": 0.851,
+      "billedUsd": 0.1161,
+      "billedUsdFollowUp": 0.04065,
+      "costSource": "list-price-estimate",
+      "bridgeExports": 1,
+      "bridgeFailures": 0,
+      "cliCalls": 3,
+      "renderCalls": 1,
+      "buildMain": true,
+      "renderMain": true,
+      "buildFollowUp": true,
+      "functionalMain": 1,
+      "functionalMainAll": true,
+      "functionalFollowUp": 1,
+      "functionalFollowUpAll": true,
+      "regressedMain": false,
+      "jsGzipKB": 3263.2,
+      "totalKB": 13024.4,
+      "assetKB": 3254.7,
+      "loadedKB": 8883.6,
+      "loadMs": 213,
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "pageErrors": 0,
+      "probeErrors": []
+    },
+    {
+      "runId": "c1-dryrun-551-t109-three-r1",
+      "arm": "three",
+      "task": 109,
+      "idx": 1,
+      "valid": true,
+      "invalidReason": null,
+      "mainEnd": "finished",
+      "followUpEnd": "finished",
+      "mainFinished": true,
+      "mainCapped": false,
+      "followUpFinished": true,
+      "followUpCapped": false,
+      "turnsMain": 4,
+      "tokensMain": 23600,
+      "turnsFollowUp": 3,
+      "turns": 7,
+      "wallSec": 0.8,
+      "toolSec": 0.6,
+      "modelSec": 0.2,
+      "tokensIn": 66000,
+      "tokensOut": 2450,
+      "cacheRead": 52500,
+      "cacheWrite": 3000,
+      "cachedShare": 0.795,
+      "billedUsd": 0.0635,
+      "billedUsdFollowUp": 0.03105,
+      "costSource": "list-price-estimate",
+      "bridgeExports": 0,
+      "bridgeFailures": 0,
+      "cliCalls": 0,
+      "renderCalls": 0,
+      "buildMain": true,
+      "renderMain": true,
+      "buildFollowUp": true,
+      "functionalMain": 1,
+      "functionalMainAll": true,
+      "functionalFollowUp": 1,
+      "functionalFollowUpAll": true,
+      "regressedMain": false,
+      "jsGzipKB": 128.9,
+      "totalKB": 514.3,
+      "assetKB": 0,
+      "loadedKB": 513.8,
+      "loadMs": 168,
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "pageErrors": 0,
+      "probeErrors": []
+    }
+  ]
+}

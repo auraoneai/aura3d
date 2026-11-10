@@ -2,11 +2,14 @@
 // C1 fixed comparison runner: 8 frozen tasks (c1/tasks.json) x arms aura | three | bridge x N runs, each run = the task
 // (40-turn cap) followed by one predefined follow-up edit in the same conversation (15-turn cap).
 //   node tools/agent-eval/c1/run-c1.mjs --arm all|aura|three|bridge[,..] --task all|101[,..] --runs 3 --batch NAME
-//        [--seed S] [--concurrency C] [--model ID] [--condition base|A|..] [--docs-ref GITREF] [--aura-tarballs DIR]
-//        [--bridge-cmd "TEMPLATE"] [--stub] [--estimate] [--only RUNID,..]
+//        [--idx N] [--seed S] [--concurrency C] [--model ID] [--condition base|..] [--docs-ref GITREF] [--aura-tarballs DIR]
+//        [--stub] [--estimate] [--only RUNID,..] [--score]
+// One arm/task/replicate: --arm aura --task 109 --idx 2 --score (runs <batch>-t109-aura-r2, then scores it).
 // --stub drives everything with the scripted stub model (no Prism traffic, no cost). --estimate prints the planned spend.
-// Scoring: c1/score.mjs (build, real-GPU load/fps/frames, functional probes), c1/judge.mjs, c1/report.mjs.
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+// --score runs c1/score.mjs (build, real-GPU load/fps/frames over loopback CDP, functional probes) on the runs just made.
+// Then c1/judge.mjs (blind pairs, needs all arms of a task/replicate) and c1/report.mjs per batch.
+import { spawnSync } from "node:child_process";
+import { constants as fsConstants, cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Worker, isMainThread, parentPort, workerData } from "node:worker_threads";
 import { ensureBase } from "../lib/base.mjs";
@@ -15,9 +18,11 @@ import { DEFAULT_MODEL, createPrismClient, loadKey } from "../lib/prism.mjs";
 import { assertNoRepoSourceLeak, buildSandbox, C1_ARMS, docsCommit, exportDocs, writeSnapshot } from "../lib/sandbox.mjs";
 import { createToolbox } from "../lib/tools.mjs";
 import { CONDITIONS, buildPlan } from "../run.mjs";
-import { BRIDGE_GUIDE, BRIDGE_TOOL, createBridgeHandler } from "./bridge.mjs";
+import { BRIDGE_GUIDE, FACTORY_RE, IMPORT_THREE_TOOL, createImportThreeHandler } from "./bridge.mjs";
+import { AURA3D_TOOL, createAura3dHandler } from "./cli-tools.mjs";
 import { costOf, estimateBatch } from "./cost.mjs";
 import { createStubClient } from "./stub-model.mjs";
+import { inProcessTsc } from "./tsc.mjs";
 
 export const C1_DIR = import.meta.dirname;
 const REPO_ROOT = resolve(C1_DIR, "..", "..", "..");
@@ -42,7 +47,8 @@ export function parseArgs(argv) {
     else if (a === "--condition") args.condition = next();
     else if (a === "--docs-ref") args.docsRef = next();
     else if (a === "--aura-tarballs") args.auraTarballs = resolve(next());
-    else if (a === "--bridge-cmd") args.bridgeCmd = next();
+    else if (a === "--idx") args.idx = Number(next());
+    else if (a === "--score") args.score = true;
     else if (a === "--only") args.only = next().split(",");
     else if (a === "--stub") args.stub = true;
     else if (a === "--estimate") args.estimate = true;
@@ -94,7 +100,7 @@ export function estimatePlan({ arms, tasks, runs, model, followUpShare = 0.35, j
 
 function copyPhase(sandboxDir, into) {
   rmSync(into, { recursive: true, force: true });
-  cpSync(sandboxDir, into, { recursive: true, filter: (src) => !src.startsWith(join(sandboxDir, "node_modules")) });
+  cpSync(sandboxDir, into, { recursive: true, mode: fsConstants.COPYFILE_FICLONE, filter: (src) => !src.startsWith(join(sandboxDir, "node_modules")) && !src.startsWith(join(sandboxDir, "dist")) });
   symlinkSync(join(sandboxDir, "node_modules"), join(into, "node_modules"), "dir");
 }
 
@@ -104,7 +110,8 @@ export async function executeC1Run({ item, args, task, bases, makeClient, batchD
   const runDir = join(batchDir, "runs", item.runId);
   mkdirSync(runDir, { recursive: true });
   const base = bases[item.arm];
-  const condition = { ...(CONDITIONS[args.condition] ?? {}), ...(item.arm === "bridge" ? { bridgeGuide: BRIDGE_GUIDE } : {}) };
+  // C1: both Aura3D arms get the N6 CLI agent tools; the bridge arm also BRIDGE.md and import_three.
+  const condition = { ...(CONDITIONS[args.condition] ?? {}), ...(item.arm !== "three" ? { cliTools: true, scaffoldPublic: true } : {}), ...(item.arm === "bridge" ? { bridgeGuide: BRIDGE_GUIDE } : {}) };
   const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, tasksDir: join(C1_DIR, "tasks"), docsRoot: args.docsRoot ?? REPO_ROOT, condition });
   assertNoRepoSourceLeak({ dir: sandboxDir, arm: item.arm, repoRoot: REPO_ROOT, baseDir: base.baseDir });
   const record = {
@@ -128,22 +135,27 @@ export async function executeC1Run({ item, args, task, bases, makeClient, batchD
   };
 
   const snapshotRoot = join(runDir, "snapshots");
-  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(condition.lookup) });
-  let exec = toolbox.exec;
+  const toolbox = createToolbox({ dir: sandboxDir, snapshotRoot, lookup: Boolean(condition.lookup), runTsc: inProcessTsc, extraWritable: item.arm === "bridge" ? [{ re: FACTORY_RE, label: "recipes/*.mjs" }] : [] });
+  const recordEvent = (event) => toolbox.events.push({ i: toolbox.events.length, t: Date.now() - toolbox.started, ...event });
+  const handlers = {};
   const extraTools = [];
-  if (item.arm === "bridge") {
-    const recordEvent = (event) => toolbox.events.push({ i: toolbox.events.length, t: Date.now() - toolbox.started, ...event });
-    const bridge = createBridgeHandler({ dir: sandboxDir, command: args.bridgeCmd ?? process.env.AGENT_EVAL_BRIDGE_CMD, record: recordEvent });
-    exec = (name, input) => {
-      if (name !== "bridge_export") return toolbox.exec(name, input);
-      try {
-        return { content: bridge(input), isError: false };
-      } catch (error) {
-        return { content: String(error.message ?? error), isError: true };
-      }
-    };
-    extraTools.push(BRIDGE_TOOL);
+  if (condition.cliTools) {
+    handlers.aura3d = createAura3dHandler({ dir: sandboxDir, record: recordEvent });
+    extraTools.push(AURA3D_TOOL);
   }
+  if (item.arm === "bridge") {
+    handlers.import_three = createImportThreeHandler({ dir: sandboxDir, record: recordEvent });
+    extraTools.push(IMPORT_THREE_TOOL);
+  }
+  const exec = (name, input) => {
+    if (!handlers[name]) return toolbox.exec(name, input);
+    try {
+      return { content: handlers[name](input ?? {}), isError: false };
+    } catch (error) {
+      recordEvent({ type: "error", tool: name });
+      return { content: String(error.message ?? error), isError: true };
+    }
+  };
   const phaseChecks = {};
   const onPhaseEnd = (name) => {
     writeSnapshot(sandboxDir, join(snapshotRoot, name));
@@ -155,7 +167,7 @@ export async function executeC1Run({ item, args, task, bases, makeClient, batchD
     outcome = await runAgent({
       client: makeClient(item),
       model: args.model,
-      arm: item.arm === "bridge" ? "bridge" : item.arm,
+      arm: item.arm,
       toolbox: { ...toolbox, exec },
       maxTurns: args.maxTurns ?? 40,
       session: item.runId,
@@ -182,6 +194,7 @@ export async function executeC1Run({ item, args, task, bases, makeClient, batchD
     cost: costOf(outcome.usage, args.model, { usdPerCredit }),
     events: toolbox.events,
     bridgeExports: toolbox.events.filter((e) => e.type === "bridge").map(({ name, pass, ms }) => ({ name, pass, ms })),
+    cliCalls: toolbox.events.filter((e) => e.type === "aura3d").map(({ command, exit, ms }) => ({ command, exit, ms })),
     docsOpened: [...toolbox.docsOpened].sort(),
     typesOpened: [...toolbox.typesOpened].sort(),
     typecheckAfterMain: phaseChecks.main ?? null,
@@ -250,11 +263,12 @@ export async function main(argv) {
   }
   const batchDir = resolve(REPO_ROOT, process.env.AGENT_EVAL_EVIDENCE ?? "evidence/agent-eval-c1", args.batch);
   mkdirSync(batchDir, { recursive: true });
+  if (args.idx) args.runs = Math.max(args.runs, args.idx);
   const fullPlan = buildPlan({ arms, tasks, runs: args.runs, seed: args.seed, batch: args.batch });
-  const plan = args.only ? fullPlan.filter((p) => args.only.includes(p.runId)) : fullPlan;
+  const plan = fullPlan.filter((p) => (!args.only || args.only.includes(p.runId)) && (!args.idx || p.idx === args.idx));
   if (args.docsRef) args.docsRoot = exportDocs(REPO_ROOT, args.docsRef, join(WORK_ROOT, args.batch, "docs"));
-  const bases = Object.fromEntries(arms.map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null })]));
-  const rerun = Boolean(args.only) && existsSync(join(batchDir, "plan.json"));
+  const bases = Object.fromEntries(arms.map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null, withCli: arm !== "three" })]));
+  const rerun = (Boolean(args.only) || Boolean(args.idx) || args.arm !== "all" || args.task !== "all") && existsSync(join(batchDir, "plan.json"));
   writeFileSync(join(batchDir, rerun ? `plan-rerun-${Date.now()}.json` : "plan.json"), JSON.stringify({ args, plan, bases, tasks: manifest.tasks.filter((t) => tasks.includes(t.id)) }, null, 2));
   if (!args.stub) loadKey(); // fail fast on a missing key before any worker starts
   const byId = Object.fromEntries(manifest.tasks.map((t) => [t.id, t]));
@@ -270,6 +284,10 @@ export async function main(argv) {
     }
   });
   writeFileSync(join(batchDir, rerun ? `batch-rerun-${Date.now()}.json` : "batch.json"), JSON.stringify({ batch: args.batch, wallMs: Date.now() - started, runs: records.length, invalid: records.filter((r) => r.invalid).length }, null, 2));
+  if (args.score && plan.length) {
+    const scorer = spawnSync(process.execPath, [join(C1_DIR, "score.mjs"), args.batch, "--only", plan.map((p) => p.runId).join(",")], { stdio: "inherit", env: process.env });
+    if (scorer.status !== 0) throw new Error(`score.mjs exited with ${scorer.status}`);
+  }
   return { args, records, batchDir };
 }
 
