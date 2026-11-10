@@ -161,6 +161,10 @@ Rendering: reduced-motion captures (960x540) of the three games on the final lan
 
 What is left: Pip's Big Leap (0.89) still pays ~6 ms more per frame in the WebGPU device draw path over its 1087 draws (per-draw uniform snapshot compares, ~900 small `writeBuffer` calls for per-frame material rows, bind-group keys, vertex-stream checks); WebGL2 also takes combined/multi-draw paths there that WebGPU does not. Lamplight Line (0.89) is now stable but still below 0.92; its WebGPU frames spend ~3 ms more in native main-thread time and ~2.5 ms more in the draw path.
 
+### WebGPU draw path 5.5.1 (after 5.5.0, 2026-11-09)
+
+Engine work for the two games still on WebGL2 after round 4 (Pip's Big Leap 0.89x, Lamplight Line 0.89x): a per-frame uniform arena for batched draws (one `writeBuffer` per dirty run instead of one per draw), bind groups remembered per arena range, one pass over a draw's uniforms, native depth-of-field passes recorded into the frame's batch encoder, and unchanged Lamplight quad-sprite updates skipped. WebGL2 output unchanged. Per-game ratios and the default backend for these two games are added here when the fresh-session re-measure is done; a game switches only at >= 0.92x. See `CHANGELOG.md` "Unreleased (5.5.1)".
+
 ## Shared helpers added in Wave 0
 
 - `apps/showcase-port-shared/backend-report.ts` (W-6): `readBackendSelection`, `formatBackendSelection`, `readReadiness`, `publishBackendReport(app, hook)`. `?diag=1` (`diag.ts`) now prints `backend requested->active (reason)` when a game's QA hook exposes `backendSelection`. `apps/common/src/runtime.ts` publishes `backendSelection` and `readiness` on `window.__a3dProductionRuntime`.

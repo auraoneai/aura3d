@@ -23,6 +23,15 @@ Owner rule for these features: on by default in a game only after it passes a re
 | P4 | Worker frame rate: count worker-presented frames in `workerRootApp` so `diagnostics().fps` is real in worker mode | Worker rendering works in all 30 games, but its speed is unmeasured | Worker fps measured in all 30 games against the main thread |
 | C1 | Run the fixed agent-authoring comparison (section 4, C1) against 5.5.0 | The N1-N8 baseline and the B1 bridge shipped, but the benchmark that shows whether turns, tokens and time dropped has not been run | Report with turns, tokens, time, cost, visual quality and correctness per arm |
 
+**Status (2026-11-09 evening):**
+- P1 done: per-frame uniform arena, patch-range uploads, bind groups remembered per arena range (branch `exp/551-wgpu5`).
+- P2 not done: WebGPU draw merging.
+- P3 partly done: native DoF passes share the batch encoder and keep their uniforms, samplers, views and bind groups; Lamplight quad sprites skip unchanged updates.
+- Game switches for Pip's Big Leap and Lamplight Line: being measured; each switches only at >= 0.92x.
+- P4 done: worker-presented frames counted (`exp/551-workerfps`); per-game worker fps being measured.
+- C1 phase 1 done (frozen spec, harness, stub dry run on `exp/551-c1bench`); the paid run starts once 5.5.0 is on npm.
+- Shipping: engine changes go live on the site through the site-only path, and npm gets them in the next batched release (AGENTS.md "Shipping rules").
+
 Rules as before: paired load-gated fps runs, a game switches only at >= 0.92x, WebGL2 output unchanged, public API additive only.
 
 ## 1. WebGPU as a working backend (about 100 h)
