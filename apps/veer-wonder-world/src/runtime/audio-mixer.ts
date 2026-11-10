@@ -498,7 +498,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       };
       graph = {
         context,
-        files: new AudioFileManager({ context, cache: clipCache, ...(options.fetch ? { fetch: options.fetch } : {}) }),
+        files: new AudioFileManager({
+          context,
+          maxDecodedBytes: cacheBudget,
+          securityContext: "wonder-world-static",
+          ...(options.fetch ? { fetch: options.fetch } : {})
+        }),
         chain,
         master,
         buses: { voice: bus("voice"), song: bus("song"), sfx: bus("sfx"), bed: bus("bed") }
@@ -604,6 +609,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       if (cachedBytes <= cacheBudget || key === url) break;
       cacheSizes.delete(key);
       clipCache.delete(key);
+      graph?.files.clear(key);
       cachedBytes -= size;
     }
   }
@@ -618,9 +624,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   async function load(ref: AudioClipRef): Promise<AudioClip | null> {
     const g = ensureGraph();
     if (!g || failedUrls.has(ref.url)) return null;
+    const existing = cachedClip(ref.url);
+    if (existing) return existing;
     try {
       const clip = await g.files.load(ref.url);
       if (disposed) return null;
+      clipCache.set(ref.url, clip);
       touchCache(ref.url, clip);
       return clip;
     } catch {
@@ -1126,6 +1135,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     },
 
     clearCache(): void {
+      graph?.files.clear();
       clipCache.clear();
       cacheSizes.clear();
       cachedBytes = 0;

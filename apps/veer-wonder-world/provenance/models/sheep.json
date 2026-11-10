@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "sheep",
-  "file": "src/assets/models/sheep.1f2fb81f.glb",
-  "sha256": "1f2fb81fbe574b67075e979bdcb500407d7c6174600680e1a8f53787df0ee430",
-  "sizeBytes": 344224,
+  "file": "src/assets/models/sheep.00762cb0.glb",
+  "sha256": "00762cb07bfad6966bce75d51fc5c0352c5e515937ebf5e2a130905a75f73012",
+  "sizeBytes": 413388,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -45,11 +45,25 @@
       "bytesIn": 9681044,
       "bytesOut": 996876
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.9,
+      "metallicFactor": 0,
+      "normalScale": 0.42,
+      "jpegBytes": 68955,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-0fdcbaa26c920f7977f801e552c7bf719cd0e2a1e3dfebc4562ebd18661d7066"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.256
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Woolly toy sheep; friendly."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/sheep.1f2fb81f.glb",
+    "sha256": "1f2fb81fbe574b67075e979bdcb500407d7c6174600680e1a8f53787df0ee430",
+    "sizeBytes": 344224
+  }
 }

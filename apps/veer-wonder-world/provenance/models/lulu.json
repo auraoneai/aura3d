@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "lulu",
-  "file": "src/assets/models/lulu.5cfa945c.glb",
-  "sha256": "5cfa945cb96ce66de389d4cb8ccf84849d1ea672c75af6f0cab3ea7de5f00eab",
-  "sizeBytes": 1156828,
+  "file": "src/assets/models/lulu.839a7b5a.glb",
+  "sha256": "839a7b5a9624ebee45a15a168548cdf55d1d9d9368dc4768f3577ef7999602be",
+  "sizeBytes": 1688176,
   "rigged": false,
   "clips": [],
   "heightM": 1,
@@ -91,10 +91,150 @@
         "sha256": "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0",
         "sizeBytes": 2060128
       }
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#8fd9a8",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 906269,
+      "preservedPixels": 141199,
+      "totalPixels": 1048576,
+      "geometryHash": "sha256-10b8655254a141b3af9e76a06137c3f649b9a83ac165c713900a401a52255ca4"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "head",
+        "armL",
+        "armR",
+        "tail",
+        "footL",
+        "footR"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 12356,
+      "trianglesAfter": 12356,
+      "verticesAfter": 11498,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 3.699e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "lulu_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 4681,
+          "vertices": 4514
+        },
+        "head": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            0.12,
+            0.08
+          ],
+          "localTranslation": [
+            0,
+            0.12,
+            0.08
+          ],
+          "triangles": 3110,
+          "vertices": 2628
+        },
+        "armL": {
+          "parent": "body",
+          "worldPivot": [
+            0.35,
+            -0.05,
+            0.1
+          ],
+          "localTranslation": [
+            0.35,
+            -0.05,
+            0.1
+          ],
+          "triangles": 590,
+          "vertices": 608
+        },
+        "armR": {
+          "parent": "body",
+          "worldPivot": [
+            -0.35,
+            -0.05,
+            0.1
+          ],
+          "localTranslation": [
+            -0.35,
+            -0.05,
+            0.1
+          ],
+          "triangles": 562,
+          "vertices": 533
+        },
+        "tail": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            -0.52,
+            -0.3
+          ],
+          "localTranslation": [
+            0,
+            -0.52,
+            -0.3
+          ],
+          "triangles": 977,
+          "vertices": 876
+        },
+        "footL": {
+          "parent": "lulu_root",
+          "worldPivot": [
+            0.22,
+            -0.68,
+            0.05
+          ],
+          "localTranslation": [
+            0.22,
+            -0.68,
+            0.05
+          ],
+          "triangles": 1227,
+          "vertices": 1170
+        },
+        "footR": {
+          "parent": "lulu_root",
+          "worldPivot": [
+            -0.22,
+            -0.68,
+            0.05
+          ],
+          "localTranslation": [
+            -0.22,
+            -0.68,
+            0.05
+          ],
+          "triangles": 1209,
+          "vertices": 1169
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 11132,
+    "vertexCount": 11498,
     "bounds": [
       1.449,
       1.902,
@@ -120,5 +260,10 @@
     "notes": "Rounded baby dinosaur, friendly face; body came out near-white, tinted mint per PRD 02 palette. Rig rejected after skin validation (see tools/wonder-assets.json rigNote); admitted as the static A-pose model with procedural motion.",
     "tint": "#8fd9a8"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/lulu.82d7157f.glb",
+    "sha256": "82d7157f44b6593deb8a736e76460954db1e4d20228ac7bef5a3cf5ce43a7541",
+    "sizeBytes": 1240620
+  }
 }

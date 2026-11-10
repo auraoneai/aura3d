@@ -42,6 +42,27 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "momo", gesture: "look" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "sparkle" },
+        { do: "gesture", actor: "momo", gesture: "happy" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "pianoUp" },
+        { do: "gesture", actor: "momo", gesture: "cheer" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "sfx", sound: "pianoUp" },
+        { do: "gesture", actor: "momo", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -94,7 +115,8 @@ export const activity: ActivitySpec = {
         { do: "show", actor: "bud-2" },
         { do: "face", actor: "momo", toward: "bud-1" },
         { do: "gesture", actor: "momo", gesture: "point" },
-        { do: "object", target: "bud-1", action: "wobble" }
+        { do: "object", target: "bud-1", action: "wobble" },
+        { do: "object", target: "bud-2", action: "glow" }
       ],
       lines: [{ speaker: "momo", key: "g11.hello-one.1" }],
       words: [
@@ -102,16 +124,35 @@ export const activity: ActivitySpec = {
         { wordId: "flower", objectId: "bud-1" }
       ],
       holdMs: 800,
-      input: { type: "tap", targets: ["bud-1"] },
+      input: { type: "tap", targets: ["bud-1", "bud-2"] },
       waitMs: 5000,
       caregiverPromptKey: "g11.tip.1",
       response: {
         stage: [
           { do: "object", target: "bud-1", action: "wobble" },
-          { do: "sfx", sound: "rustle" }
+          { do: "sfx", sound: "sparkle" }
         ],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        "bud-1": {
+          stage: [
+            { do: "object", target: "bud-1", action: "bloom" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "momo", toward: "bud-1" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        "bud-2": {
+          stage: [
+            { do: "object", target: "bud-2", action: "wobble" },
+            { do: "object", target: "bud-1", action: "bloom" },
+            { do: "sfx", sound: "pianoUp" },
+            { do: "face", actor: "momo", toward: "bud-2" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
       }
     },
     {
@@ -143,7 +184,8 @@ export const activity: ActivitySpec = {
       stage: [
         { do: "face", actor: "momo", toward: "bud-2" },
         { do: "gesture", actor: "momo", gesture: "point" },
-        { do: "object", target: "bud-2", action: "wobble" }
+        { do: "object", target: "bud-2", action: "wobble" },
+        { do: "object", target: "flower-1", action: "glow" }
       ],
       lines: [{ speaker: "momo", key: "g11.hello-two.1" }],
       words: [
@@ -151,16 +193,35 @@ export const activity: ActivitySpec = {
         { wordId: "flower", objectId: "bud-2" }
       ],
       holdMs: 800,
-      input: { type: "tap", targets: ["bud-2"] },
+      input: { type: "tap", targets: ["bud-2", "flower-1"] },
       waitMs: 5000,
       caregiverPromptKey: "g11.tip.1",
       response: {
         stage: [
-          { do: "object", target: "bud-2", action: "wobble" },
-          { do: "sfx", sound: "rustle" }
+          { do: "object", target: "bud-2", action: "bloom" },
+          { do: "sfx", sound: "sparkle" }
         ],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        "bud-2": {
+          stage: [
+            { do: "object", target: "bud-2", action: "bloom" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "momo", toward: "bud-2" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        "flower-1": {
+          stage: [
+            { do: "object", target: "flower-1", action: "wobble" },
+            { do: "object", target: "bud-2", action: "bloom" },
+            { do: "sfx", sound: "pianoUp" },
+            { do: "face", actor: "momo", toward: "flower-1" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -204,6 +265,22 @@ export const activity: ActivitySpec = {
         stage: [{ do: "gesture", actor: "momo", gesture: "nod" }],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        "flower-1": {
+          stage: [
+            { do: "object", target: "flower-1", action: "wobble" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "gesture", actor: "momo", gesture: "nod" }
+          ]
+        },
+        "flower-2": {
+          stage: [
+            { do: "object", target: "flower-2", action: "wobble" },
+            { do: "sfx", sound: "pianoUp" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
       }
     }
   ],

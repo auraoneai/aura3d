@@ -6,8 +6,9 @@
 // trigger a microphone permission prompt.
 //
 // readFlags(search) adds the few page-load switches QA and parents need
-// (models, diagnostics, audio, reduced motion). It parses them with the
-// Aura3D QA kit's readQaParams and never reads a locked flag from the URL.
+// (models, diagnostics, audio, reduced motion, renderer backend). It parses
+// them with the Aura3D QA kit's readQaParams and never reads a locked flag
+// from the URL.
 
 import { readQaParams } from "@aura3d/engine";
 
@@ -26,6 +27,9 @@ export const FEATURE_FLAGS = Object.freeze({
 
 export type FeatureFlags = typeof FEATURE_FLAGS;
 
+/** Requested 3D renderer backend (`"auto"` tries WebGPU first with clean WebGL2 fallback). */
+export type RendererBackendPref = "auto" | "webgl2" | "webgpu";
+
 /** Effective flags for one page load. Locked flags are typed `false`. */
 export interface WonderFlags extends FeatureFlags {
   /** Load admitted GLBs; `?models=0` forces the primitive stand-ins. */
@@ -42,6 +46,8 @@ export interface WonderFlags extends FeatureFlags {
    * the default wait; a device never needs it.
    */
   readonly modelWaitMs: number | null;
+  /** `?backend=auto|webgl2|webgpu`: renderer preference (default `"auto"`). */
+  readonly backend: RendererBackendPref;
 }
 
 const PAGE_PARAMS = {
@@ -49,7 +55,8 @@ const PAGE_PARAMS = {
   diag: { type: "flag" },
   audio: { type: "string", default: "1" },
   reducedMotion: { type: "flag" },
-  modelWaitMs: { type: "int", default: -1 }
+  modelWaitMs: { type: "int", default: -1 },
+  backend: { type: "string", default: "auto" }
 } as const;
 
 const MODEL_WAIT_MIN_MS = 1_000;
@@ -59,6 +66,13 @@ const OFF_VALUES: readonly string[] = ["0", "false", "off", "no"];
 
 function switchedOff(value: string): boolean {
   return OFF_VALUES.includes(value.trim().toLowerCase());
+}
+
+function parseBackendPref(value: string): RendererBackendPref {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "webgl2") return "webgl2";
+  if (normalized === "webgpu") return "webgpu";
+  return "auto";
 }
 
 /**
@@ -73,6 +87,7 @@ export function readFlags(search: string): WonderFlags {
     diag: page.diag,
     audio: !switchedOff(page.audio),
     reducedMotion: page.reducedMotion,
-    modelWaitMs: page.modelWaitMs > 0 ? Math.min(MODEL_WAIT_MAX_MS, Math.max(MODEL_WAIT_MIN_MS, page.modelWaitMs)) : null
+    modelWaitMs: page.modelWaitMs > 0 ? Math.min(MODEL_WAIT_MAX_MS, Math.max(MODEL_WAIT_MIN_MS, page.modelWaitMs)) : null,
+    backend: parseBackendPref(page.backend)
   });
 }

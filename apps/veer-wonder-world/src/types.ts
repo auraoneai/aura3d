@@ -119,6 +119,13 @@ export type BeatInput =
 
 export type BeatKind = "greeting" | "hook" | "model" | "invite" | "event" | "repeat" | "song" | "outro";
 
+/** Optional per-target or round-override response fields (omitted fields inherit from `beat.response`). */
+export interface BeatResponse {
+  readonly stage?: readonly StageAction[];
+  readonly lines?: readonly LineRef[];
+  readonly holdMs?: number;
+}
+
 export interface BeatSpec {
   readonly id: string;
   readonly kind: BeatKind;
@@ -139,6 +146,11 @@ export interface BeatSpec {
   readonly waitMs?: number;
   /** Played after the wait ends, whether by tap, parent confirm or timeout. */
   readonly response?: { readonly stage: readonly StageAction[]; readonly lines: readonly LineRef[]; readonly holdMs: number };
+  /**
+   * Optional target-specific response overrides when `input.type === "tap" | "more-or-done"`.
+   * Tapping `targetId` merges `responseByTarget[targetId]` over `response`; timeout and parentConfirm play `response`.
+   */
+  readonly responseByTarget?: Readonly<Partial<Record<string, BeatResponse>>>;
   /** Parent-facing coaching hint key shown during this beat. */
   readonly caregiverPromptKey?: string;
   /** Replaces `stage` when reduced motion is on (omit when `stage` is already calm). */
@@ -194,6 +206,25 @@ export interface EpisodeSpec extends StoryCommon {
   readonly estimatedDurationSec: number;
 }
 
+/** Per-beat round override inside `ActivitySpec.roundVariants`. */
+export interface RoundBeatOverride {
+  readonly stage?: readonly StageAction[];
+  readonly reducedMotionStage?: readonly StageAction[];
+  readonly lines?: readonly LineRef[];
+  readonly response?: { readonly stage: readonly StageAction[]; readonly lines: readonly LineRef[]; readonly holdMs: number };
+  readonly responseByTarget?: Readonly<Partial<Record<string, BeatResponse>>>;
+}
+
+/** Optional per-round (Rounds 1..N) setup and beat overrides so repeated rounds feel fresh. */
+export interface RoundVariantSpec {
+  /** Stage setup prepended to the first beat of this round (same actors visible in reduced motion). */
+  readonly setupStage?: readonly StageAction[];
+  /** Optional calm setup variant for reduced motion (omit when `setupStage` is already calm). */
+  readonly reducedMotionSetupStage?: readonly StageAction[];
+  /** Per-beat overrides keyed by `BeatSpec.id`. */
+  readonly beatOverrides?: Readonly<Partial<Record<string, RoundBeatOverride>>>;
+}
+
 export interface ActivitySpec extends StoryCommon {
   readonly kind: "activity";
   /** Number in the canonical list: 1-12. */
@@ -203,6 +234,8 @@ export interface ActivitySpec extends StoryCommon {
   /** Played once per round. The last beat should end with `more-or-done`. */
   readonly round: readonly BeatSpec[];
   readonly roundLimit: number;
+  /** Optional progressive variants indexed by `round - 1` (0, 1, 2). */
+  readonly roundVariants?: readonly RoundVariantSpec[];
   readonly outro: readonly BeatSpec[];
   readonly options: { readonly allowTap: true; readonly dragAlternative: "tap"; readonly microphoneRequired: false };
 }
@@ -221,6 +254,8 @@ export interface AudioClipRef {
   readonly url: string;
   readonly sha256: string;
   readonly durationMs: number;
+  /** Optional 20 Hz (50 ms window) Base64-encoded Uint8Array RMS syllable envelope [0..255]. */
+  readonly env?: string;
 }
 
 export type PlayMode = "watch-sing" | "play-together";
@@ -273,6 +308,7 @@ export interface StageAdapter {
   load(story: StorySpec): Promise<void>;
   apply(actions: readonly StageAction[]): void;
   setTalking(actor: string | null): void;
+  setSpeechEnergy?(energy: number | null): void;
   setTargets(targets: readonly string[] | null): void;
   /** Hit test in CSS pixels relative to the canvas; returns a target id that is currently active. */
   pick(clientX: number, clientY: number): string | null;

@@ -115,10 +115,12 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
+        { do: "object", target: "basket", action: "open" },
         { do: "move", actor: "teddy", to: "front", style: "hop" },
         { do: "sfx", sound: "rustle" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "basket", action: "open" },
         { do: "move", actor: "teddy", to: "front", style: "slide" },
         { do: "sfx", sound: "rustle" }
       ],
@@ -138,6 +140,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "hide", actor: "teddy" },
+        { do: "object", target: "basket", action: "close" },
         { do: "face", actor: "momo", toward: "chair" },
         { do: "gesture", actor: "momo", gesture: "look" },
         { do: "face", actor: "peeko", toward: "chair" },
@@ -173,7 +176,7 @@ export const episode: EpisodeSpec = {
         { wordId: "under", objectId: "table" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["table"] },
+      input: { type: "tap", targets: ["table", "peeko"] },
       waitMs: 5000,
       caregiverPromptKey: "e14.tip.2",
       response: {
@@ -187,6 +190,24 @@ export const episode: EpisodeSpec = {
           { speaker: "peeko", key: "e14.under-table.4" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        table: {
+          stage: [
+            { do: "object", target: "table", action: "wobble" },
+            { do: "move", actor: "peeko", to: "back", style: "walk" },
+            { do: "gesture", actor: "peeko", gesture: "peek" },
+            { do: "face", actor: "momo", toward: "table" }
+          ]
+        },
+        peeko: {
+          stage: [
+            { do: "sfx", sound: "tweet" },
+            { do: "move", actor: "peeko", to: "back", style: "hop" },
+            { do: "gesture", actor: "peeko", gesture: "peek" },
+            { do: "face", actor: "momo", toward: "table" }
+          ]
+        }
       }
     },
     {
@@ -229,20 +250,42 @@ export const episode: EpisodeSpec = {
       lines: [{ speaker: "momo", key: "e14.behind-cushion.1" }],
       words: [{ wordId: "behind", objectId: "cushion" }],
       holdMs: 500,
-      input: { type: "tap", targets: ["cushion"] },
+      input: { type: "tap", targets: ["cushion", "momo"] },
       waitMs: 5000,
       caregiverPromptKey: "e14.tip.2",
       response: {
         stage: [
           { do: "face", actor: "momo", toward: "cushion" },
           { do: "gesture", actor: "momo", gesture: "look" },
-          { do: "object", target: "cushion", action: "wobble" }
+          { do: "move", actor: "cushion", to: "right", style: "slide" },
+          { do: "object", target: "cushion", action: "wobble" },
+          { do: "sfx", sound: "rustle" }
         ],
         lines: [
           { speaker: "narrator", key: "e14.behind-cushion.2" },
           { speaker: "momo", key: "e14.behind-cushion.3" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        cushion: {
+          stage: [
+            { do: "face", actor: "momo", toward: "cushion" },
+            { do: "gesture", actor: "momo", gesture: "look" },
+            { do: "move", actor: "cushion", to: "right", style: "slide" },
+            { do: "object", target: "cushion", action: "wobble" },
+            { do: "sfx", sound: "rustle" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "face", actor: "momo", toward: "cushion" },
+            { do: "gesture", actor: "momo", gesture: "peek" },
+            { do: "move", actor: "cushion", to: "right", style: "slide" },
+            { do: "object", target: "cushion", action: "wobble" },
+            { do: "sfx", sound: "rustle" }
+          ]
+        }
       }
     },
     {
@@ -278,11 +321,12 @@ export const episode: EpisodeSpec = {
       lines: [{ speaker: "momo", key: "e14.in-basket.1" }],
       words: [{ wordId: "find", objectId: "momo" }],
       holdMs: 500,
-      input: { type: "tap", targets: ["basket"] },
+      input: { type: "tap", targets: ["basket", "peeko"] },
       waitMs: 5000,
       caregiverPromptKey: "e14.tip.1",
       response: {
         stage: [
+          { do: "object", target: "basket", action: "open" },
           { do: "show", actor: "teddy" },
           { do: "object", target: "teddy", action: "bounce" },
           { do: "sfx", sound: "ding" },
@@ -291,6 +335,29 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e14.in-basket.2" }],
         holdMs: 2500
+      },
+      responseByTarget: {
+        basket: {
+          stage: [
+            { do: "object", target: "basket", action: "open" },
+            { do: "show", actor: "teddy" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "sfx", sound: "ding" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "face", actor: "peeko", toward: "teddy" }
+          ]
+        },
+        peeko: {
+          stage: [
+            { do: "object", target: "basket", action: "open" },
+            { do: "show", actor: "teddy" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "sfx", sound: "tada" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "face", actor: "peeko", toward: "teddy" }
+          ]
+        }
       }
     },
     {
@@ -362,11 +429,13 @@ export const episode: EpisodeSpec = {
       kind: "repeat",
       camera: "wide",
       stage: [
+        { do: "object", target: "basket", action: "close" },
         { do: "carry", actor: "momo", item: null },
         { do: "move", actor: "teddy", to: "frontRight", style: "hop" },
         { do: "face", actor: "momo", toward: "teddy" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "basket", action: "close" },
         { do: "carry", actor: "momo", item: null },
         { do: "move", actor: "teddy", to: "frontRight", style: "slide" },
         { do: "face", actor: "momo", toward: "teddy" }

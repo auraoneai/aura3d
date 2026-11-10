@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "toyBlock",
-  "file": "src/assets/models/toyBlock.618a565c.glb",
-  "sha256": "618a565c1b011aeb94832e507a59ff4b00bbf057e87027a1c993c6b758d02206",
-  "sizeBytes": 114728,
+  "file": "src/assets/models/toyBlock.441f12af.glb",
+  "sha256": "441f12afd7815dd8f1d14297d01443a8a61a888a886a5734ff459e92e84fc782",
+  "sizeBytes": 179892,
   "rigged": false,
   "clips": [],
   "heightM": 0.35,
@@ -45,11 +45,25 @@
       "bytesIn": 6377756,
       "bytesOut": 447568
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.6,
+      "metallicFactor": 0,
+      "normalScale": 0.34,
+      "jpegBytes": 64960,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-1ffabc55b2d4f839e6e93652a7f5681cf3facdad8bad89ebf4a0678bbc9e08cf"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.773
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Big rounded block, plain; stories tint per block."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/toyBlock.618a565c.glb",
+    "sha256": "618a565c1b011aeb94832e507a59ff4b00bbf057e87027a1c993c6b758d02206",
+    "sizeBytes": 114728
+  }
 }

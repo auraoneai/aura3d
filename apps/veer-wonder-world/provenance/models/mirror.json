@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "mirror",
-  "file": "src/assets/models/mirror.f54db8e3.glb",
-  "sha256": "f54db8e3034cc3e0406da937d322f442fe32a63b72de2f41cc69864868186835",
-  "sizeBytes": 209352,
+  "file": "src/assets/models/mirror.6d26918b.glb",
+  "sha256": "6d26918b75d2b5300b44fd165883c6fe1c37e623d25e1446fa53fb6c96b5228d",
+  "sizeBytes": 238488,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,11 +45,25 @@
       "bytesIn": 8501176,
       "bytesOut": 703868
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.32,
+      "metallicFactor": 0.14,
+      "normalScale": 0.24,
+      "jpegBytes": 28928,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-a2081968b18c06bd5504097dcaf7a1d53a1dab40a2917b0f50db3edeb48beb2d"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       0.582
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Round toy mirror on a stand; plain surface."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/mirror.f54db8e3.glb",
+    "sha256": "f54db8e3034cc3e0406da937d322f442fe32a63b72de2f41cc69864868186835",
+    "sizeBytes": 209352
+  }
 }

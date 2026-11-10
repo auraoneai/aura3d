@@ -79,6 +79,7 @@ export const episode: EpisodeSpec = {
       kind: "hook",
       stage: [
         { do: "sfx", sound: "doorbell" },
+        { do: "object", target: "door", action: "ring" },
         { do: "object", target: "door", action: "wobble" },
         { do: "face", actor: "momo", toward: "door" },
         { do: "face", actor: "peeko", toward: "door" }
@@ -164,6 +165,7 @@ export const episode: EpisodeSpec = {
       kind: "event",
       stage: [
         { do: "sfx", sound: "doorbell" },
+        { do: "object", target: "door", action: "ring" },
         { do: "object", target: "door", action: "wobble" },
         { do: "face", actor: "momo", toward: "door" },
         { do: "face", actor: "peeko", toward: "door" },
@@ -186,7 +188,7 @@ export const episode: EpisodeSpec = {
         { speaker: "peeko", key: "e18.door-invite.2" }
       ],
       holdMs: 1500,
-      input: { type: "tap", targets: ["door"] },
+      input: { type: "tap", targets: ["door", "peeko"] },
       waitMs: 5000,
       caregiverPromptKey: "e18.tip.1",
       response: {
@@ -201,6 +203,27 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e18.door-invite.4" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        door: {
+          stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "show", actor: "sheru" },
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "face", actor: "momo", toward: "sheru" }
+          ]
+        },
+        peeko: {
+          stage: [
+            { do: "gesture", actor: "peeko", gesture: "hop" },
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "show", actor: "sheru" },
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "face", actor: "peeko", toward: "sheru" }
+          ]
+        }
       },
       words: [
         { wordId: "door", objectId: "door" },
@@ -294,6 +317,27 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e18.bye-invite.4" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        lulu: {
+          stage: [
+            { do: "gesture", actor: "lulu", gesture: "bow" },
+            { do: "gesture", actor: "lulu", gesture: "wave" },
+            { do: "sfx", sound: "giggle" },
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "gesture", actor: "momo", gesture: "wave" },
+            { do: "gesture", actor: "peeko", gesture: "wave" }
+          ]
+        },
+        sheru: {
+          stage: [
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "sfx", sound: "woofSoft" },
+            { do: "gesture", actor: "lulu", gesture: "wave" },
+            { do: "gesture", actor: "momo", gesture: "wave" },
+            { do: "gesture", actor: "peeko", gesture: "wave" }
+          ]
+        }
       },
       words: [
         { wordId: "wave", objectId: "momo" },

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "gogoCarriage",
-  "file": "src/assets/models/gogoCarriage.f4165978.glb",
-  "sha256": "f4165978aa95292a564270beef659b74dbaadd096fb1c9cf02711cb1a180cb27",
-  "sizeBytes": 383332,
+  "file": "src/assets/models/gogoCarriage.d440cbbe.glb",
+  "sha256": "d440cbbe5498a81f7e5a7b841b8405450fc604b2b96f526693df372cb6499011",
+  "sizeBytes": 850816,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -45,22 +45,161 @@
       "bytesIn": 8952436,
       "bytesOut": 908128
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#f5c83a",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#f5c83a",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 201824,
+      "preservedPixels": 59782,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-aa7a6eb9a179dd4889a18903272c5f773bd56533176b7479ae006f25f73db4a9"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.4,
+      "metallicFactor": 0.04,
+      "normalScale": 0.28,
+      "jpegBytes": 36371,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-aa7a6eb9a179dd4889a18903272c5f773bd56533176b7479ae006f25f73db4a9"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "cabDoorL",
+        "wheelFL",
+        "wheelFR",
+        "wheelRL",
+        "wheelRR"
+      ],
+      "hasAxleFrame": true,
+      "trianglesBefore": 6160,
+      "trianglesAfter": 6160,
+      "verticesAfter": 8800,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.496e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "gogoCarriage_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 2924,
+          "vertices": 3964
+        },
+        "cabDoorL": {
+          "parent": "body",
+          "worldPivot": [
+            -0.38252,
+            0.0372,
+            0.41405
+          ],
+          "localTranslation": [
+            -0.38252,
+            0.0372,
+            0.41405
+          ],
+          "triangles": 204,
+          "vertices": 351
+        },
+        "wheelFL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.3637,
+            -0.31881,
+            0.24277
+          ],
+          "localTranslation": [
+            0.24277,
+            -0.31881,
+            0.3637
+          ],
+          "triangles": 779,
+          "vertices": 1164
+        },
+        "wheelFR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.35895,
+            -0.32725,
+            -0.24214
+          ],
+          "localTranslation": [
+            -0.24214,
+            -0.32725,
+            0.35895
+          ],
+          "triangles": 753,
+          "vertices": 1054
+        },
+        "wheelRL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.31043,
+            -0.24955,
+            0.23338
+          ],
+          "localTranslation": [
+            0.23338,
+            -0.24955,
+            -0.31043
+          ],
+          "triangles": 756,
+          "vertices": 1131
+        },
+        "wheelRR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.28708,
+            -0.32575,
+            -0.24469
+          ],
+          "localTranslation": [
+            -0.24469,
+            -0.32575,
+            -0.28708
+          ],
+          "triangles": 744,
+          "vertices": 1136
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 8604,
+    "vertexCount": 8800,
     "bounds": [
       1.902,
       1.048,
       0.979
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +216,10 @@
     "notes": "Toy carriage with round windows and wheels; tinted yellow per brief.",
     "tint": "#f5c83a"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/gogoCarriage.30d6c0a1.glb",
+    "sha256": "30d6c0a194edd4011a5d52f6dbe17ef071adb651cb181f6ee8378e16b2cdc7ea",
+    "sizeBytes": 527272
+  }
 }

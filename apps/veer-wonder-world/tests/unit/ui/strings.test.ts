@@ -1,17 +1,19 @@
 /// <reference types="node" />
 // UI strings and UI source guards (PRD 04 E01-E08 and A04, PRD 01 sections
-// 6-9, MASTER-PROMPT section 6). Lists every `ui.*` key the overlay uses,
+// 6-9, MASTER-PROMPT section 6; WP-7). Lists every `ui.*` key the overlay uses,
 // checks the sources use no other key, checks every English fallback against
-// the child-safety copy rules, and guards the stylesheet and index.html.
+// the child-safety copy rules, and guards fonts.css, styles.css and index.html.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { strings as enUiStrings } from "../../../src/localization/en/ui.js";
-import { CHARACTER_COLOURS, UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
-import { speakerColour } from "../../../src/ui/captions.js";
-import { menuSection, type MenuItem } from "../../../src/ui/episode-menu.js";
+import { CHARACTER_COLOURS, ENGLISH_ONLY, UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
+import { mountCaptions, speakerColour } from "../../../src/ui/captions.js";
+import { mountChildControls } from "../../../src/ui/child-controls.js";
+import { menuSection, showEpisodeMenu, type MenuItem } from "../../../src/ui/episode-menu.js";
+import { showOfflineCard } from "../../../src/ui/offline-card.js";
 import { GROWN_UP_LINKS, formatSeconds, waitChoicesMs } from "../../../src/ui/parent-panel.js";
 import { welcomeNameLine } from "../../../src/ui/start-screen.js";
 
@@ -215,7 +217,6 @@ describe("ui string keys", () => {
   it("UI modules never call locale.str for a ui.* key directly (uiText always passes the fallback)", () => {
     expect(usageSources()).not.toMatch(/\.str\(\s*["'`]ui\./);
   });
-
 });
 
 describe("English fallbacks", () => {
@@ -383,6 +384,7 @@ describe("UI sources", () => {
         /SpeechRecognition/,
         /mediaDevices/,
         /\.innerHTML\b/,
+        /insertAdjacentHTML/,
         /\bas any\b/,
         /\bas never\b/,
         /from "three"/
@@ -408,19 +410,43 @@ describe("UI sources", () => {
   });
 });
 
-describe("styles.css", () => {
+describe("fonts.css and styles.css", () => {
+  const fontsCss = readFileSync(join(uiDir, "fonts.css"), "utf8");
   const css = readFileSync(join(uiDir, "styles.css"), "utf8");
 
-  it("uses Graphik Web with weights 400, 500 and 600 only", () => {
-    expect(css).toMatch(/"Graphik Web"/);
-    const weights = Array.from(css.matchAll(/font-weight:\s*([^;]+);/g), (match) => (match[1] ?? "").trim());
-    expect(weights.length).toBeGreaterThan(0);
-    expect(weights.filter((weight) => !["400", "500", "600"].includes(weight))).toEqual([]);
-    expect(css).toMatch(/font-synthesis:\s*none/);
-    expect(css).not.toMatch(/\b(Inter|Roboto|Open Sans|fonts\.googleapis)\b/);
+  it("self-hosts Whitney, Graphik Web, DIN Pro and Monument Grotesk Mono with weights 400, 500 and 600 only", () => {
+    expect(css).toMatch(/^@import "\.\/fonts\.css";/);
+    for (const family of [
+      '"Whitney"',
+      '"Whitney Fallback"',
+      '"Graphik Web"',
+      '"Graphik Fallback"',
+      '"DIN Pro"',
+      '"DIN Pro Fallback"',
+      '"Monument Grotesk Mono"',
+      '"Monument Grotesk Mono Fallback"'
+    ]) {
+      expect(fontsCss, family).toContain(family);
+    }
+    for (const token of ["--font-ui:", "--font-display:", "--font-metric:", "--font-code:", "--font-smallcaps:"]) {
+      expect(fontsCss, token).toContain(token);
+    }
+    expect(css).toContain("--ww-font: var(--font-ui)");
+
+    for (const [label, sheet] of [
+      ["fonts.css", fontsCss],
+      ["styles.css", css]
+    ] as const) {
+      const weights = Array.from(sheet.matchAll(/font-weight:\s*([^;]+);/g), (match) => (match[1] ?? "").trim());
+      expect(weights.length, label).toBeGreaterThan(0);
+      expect(weights.filter((weight) => !["400", "500", "600"].includes(weight)), label).toEqual([]);
+      expect(sheet, label).toMatch(/font-synthesis:\s*none/);
+      expect(sheet, label).not.toMatch(/\b(Inter|Roboto|Geist|Open Sans|fonts\.googleapis)\b/);
+      expect(sheet, label).not.toMatch(/font-weight:\s*(bold|bolder|700|800|900)\b/);
+    }
   });
 
-  it("has high contrast, calm motion, safe areas, large targets and both orientations", () => {
+  it("has high contrast, calm motion, safe areas, large targets, dense caregiver sheet tokens and both orientations", () => {
     expect(css).toMatch(/\.high-contrast\s*\{/);
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
     expect(css).toMatch(/\.reduced-motion #ui \*/);
@@ -428,6 +454,9 @@ describe("styles.css", () => {
     expect(css).toMatch(/env\(safe-area-inset-bottom/);
     expect(css).toMatch(/--ww-tap:\s*48px/);
     expect(css).toMatch(/min-height:\s*44px/);
+    expect(css).toMatch(/--row-height:\s*34px/);
+    expect(css).toMatch(/--control-height:\s*32px/);
+    expect(css).toMatch(/font-variant-caps:\s*small-caps/);
     expect(css).toMatch(/orientation: landscape/);
   });
 
@@ -471,6 +500,8 @@ describe("styles.css", () => {
       ["--ww-primary", "--ww-on-primary"],
       ["--ww-primary-hover", "--ww-on-primary"],
       ["--ww-selected-bg", "--ww-selected-ink"],
+      ["--ww-focus-bg", "--ww-focus-ink"],
+      ["--ww-keyword-bg", "--ww-keyword-ink"],
       ["--ww-surface", "--ww-ink"],
       ["--ww-surface", "--ww-ink-soft"]
     ] as const;
@@ -483,6 +514,247 @@ describe("styles.css", () => {
         expect(contrast(bg ?? "", ink ?? ""), `${palette}: ${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
       }
     }
+  });
+});
+
+describe("WP-7 co-play UI upgrades", () => {
+  class MiniElement {
+    parentNode: MiniElement | null = null;
+    readonly children: MiniElement[] = [];
+    readonly dataset: Record<string, string | undefined> = {};
+    private readonly attrs = new Map<string, string>();
+    private ownText = "";
+    disabled = false;
+    title = "";
+    readonly style = {
+      props: new Map<string, string>(),
+      setProperty(k: string, v: string): void {
+        this.props.set(k, v);
+      },
+      removeProperty(k: string): void {
+        this.props.delete(k);
+      }
+    };
+    readonly classList = {
+      owner: null as MiniElement | null,
+      tokens(): string[] {
+        return (this.owner?.getAttribute("class") ?? "").split(/\s+/).filter(Boolean);
+      },
+      contains(c: string): boolean {
+        return this.tokens().includes(c);
+      },
+      add(...cs: string[]): void {
+        this.owner?.setAttribute("class", [...new Set([...this.tokens(), ...cs])].join(" "));
+      },
+      remove(...cs: string[]): void {
+        this.owner?.setAttribute("class", this.tokens().filter((t) => !cs.includes(t)).join(" "));
+      },
+      toggle(c: string, force?: boolean): boolean {
+        const on = force ?? !this.contains(c);
+        if (on) this.add(c);
+        else this.remove(c);
+        return on;
+      }
+    };
+    private readonly listeners = new Map<string, ((ev: { type: string; timeStamp: number; target: MiniElement; preventDefault(): void }) => void)[]>();
+
+    constructor(
+      readonly ownerDocument: MiniDoc,
+      readonly localName: string
+    ) {
+      this.classList.owner = this;
+    }
+
+    get hidden(): boolean {
+      return this.attrs.has("hidden");
+    }
+    set hidden(v: boolean) {
+      if (v) this.attrs.set("hidden", "");
+      else this.attrs.delete("hidden");
+    }
+
+    get textContent(): string {
+      return this.ownText + this.children.map((c) => c.textContent).join("");
+    }
+    set textContent(v: string) {
+      for (const c of this.children) c.parentNode = null;
+      this.children.length = 0;
+      this.ownText = v;
+    }
+
+    set className(v: string) {
+      this.setAttribute("class", v);
+    }
+    get className(): string {
+      return this.getAttribute("class") ?? "";
+    }
+
+    setAttribute(k: string, v: string): void {
+      this.attrs.set(k, String(v));
+    }
+    getAttribute(k: string): string | null {
+      return this.attrs.get(k) ?? null;
+    }
+    hasAttribute(k: string): boolean {
+      return this.attrs.has(k);
+    }
+    removeAttribute(k: string): void {
+      this.attrs.delete(k);
+    }
+    appendChild(child: MiniElement): MiniElement {
+      child.remove();
+      child.parentNode = this;
+      this.children.push(child);
+      return child;
+    }
+    append(...kids: MiniElement[]): void {
+      for (const kid of kids) this.appendChild(kid);
+    }
+    remove(): void {
+      if (!this.parentNode) return;
+      const idx = this.parentNode.children.indexOf(this);
+      if (idx >= 0) this.parentNode.children.splice(idx, 1);
+      this.parentNode = null;
+    }
+    focus(): void {
+      this.ownerDocument.activeElement = this;
+    }
+    addEventListener(type: string, fn: (ev: { type: string; timeStamp: number; target: MiniElement; preventDefault(): void }) => void): void {
+      const list = this.listeners.get(type) ?? [];
+      list.push(fn);
+      this.listeners.set(type, list);
+    }
+    removeEventListener(): void {}
+    click(timeStamp = 1000): void {
+      const ev = { type: "click", timeStamp, target: this, preventDefault(): void {} };
+      for (const fn of this.listeners.get("click") ?? []) fn(ev);
+    }
+    querySelectorAll(selector: string): MiniElement[] {
+      const all = (node: MiniElement): MiniElement[] => node.children.flatMap((c) => [c, ...all(c)]);
+      return all(this).filter((n) => selector.split(",").some((part) => {
+        const s = part.trim();
+        if (s.startsWith(".")) return n.classList.contains(s.slice(1));
+        if (s.startsWith("[") && s.endsWith("]")) {
+          const body = s.slice(1, -1);
+          const eq = body.indexOf("=");
+          if (eq < 0) return n.hasAttribute(body);
+          return n.getAttribute(body.slice(0, eq)) === body.slice(eq + 1).replace(/^"|"$/g, "");
+        }
+        return n.localName === s;
+      }));
+    }
+    closest(): null {
+      return null;
+    }
+  }
+
+  class MiniDoc {
+    activeElement: MiniElement | null = null;
+    readonly defaultView = null;
+    readonly documentElement: MiniElement;
+    readonly body: MiniElement;
+    constructor() {
+      this.documentElement = new MiniElement(this, "html");
+      this.body = new MiniElement(this, "body");
+      this.documentElement.appendChild(this.body);
+    }
+    createElement(tag: string): MiniElement {
+      return new MiniElement(this, tag.toLowerCase());
+    }
+    createElementNS(_ns: string, tag: string): MiniElement {
+      return new MiniElement(this, tag);
+    }
+    createTextNode(text: string): MiniElement {
+      const t = new MiniElement(this, "#text");
+      t.textContent = text;
+      return t;
+    }
+    addEventListener(): void {}
+    removeEventListener(): void {}
+  }
+
+  function makeRoot(): HTMLElement {
+    const doc = new MiniDoc();
+    const root = doc.createElement("div");
+    doc.body.appendChild(root);
+    return root as unknown as HTMLElement;
+  }
+
+  it("highlights target words with safe <mark> nodes and shows speaker avatar without touching narrator", () => {
+    const root = makeRoot();
+    const captions = mountCaptions(root, ENGLISH_ONLY, {
+      portraits: { momo: "/assets/portraits/momo.webp" },
+      highlightWords: ["ball", "all-done"]
+    });
+    captions.show("momo", "Roll the ball! All done.");
+    const marks = (root as unknown as MiniElement).querySelectorAll("mark");
+    expect(marks.map((m) => m.textContent)).toEqual(["ball", "All done"]);
+    expect((root as unknown as MiniElement).querySelectorAll(".ww-caption-text")[0]?.textContent).toBe("Roll the ball! All done.");
+    expect((root as unknown as MiniElement).querySelectorAll(".ww-caption-avatar")).toHaveLength(1);
+
+    captions.show("narrator", "Quiet sky.");
+    expect((root as unknown as MiniElement).querySelectorAll(".ww-caption-avatar")).toHaveLength(0);
+    captions.dispose();
+  });
+
+  it("filters menu cards by world while defaulting to All and marks Focus word matches", () => {
+    const root = makeRoot();
+    const items: MenuItem[] = [
+      {
+        id: "sheru-big-adventure",
+        code: "e17",
+        titleKey: "e17.title",
+        kind: "episode",
+        host: "sheru",
+        number: 17,
+        phase: "P1",
+        world: "meadow",
+        targetWords: ["ball"]
+      },
+      { id: "gogo-abc-train", code: "e04", titleKey: "e04.title", kind: "episode", host: "gogo", number: 4, world: "station", targetWords: ["train"] }
+    ];
+    const remove = showEpisodeMenu(root, ENGLISH_ONLY, items, () => {}, {
+      portraits: {},
+      selectedWords: ["ball"]
+    });
+    const host = root as unknown as MiniElement;
+    expect(host.querySelectorAll(".ww-world-pill")).toHaveLength(7);
+    expect(host.querySelectorAll('[data-ui="focus-word"]')).toHaveLength(1);
+    const cells = host.querySelectorAll(".ww-menu-cell");
+    expect(cells.map((c) => c.hidden)).toEqual([false, false]);
+
+    const stationPill = host.querySelectorAll('[data-world="station"]')[0];
+    stationPill?.click();
+    expect(cells.map((c) => c.hidden)).toEqual([true, false]);
+    remove();
+  });
+
+  it("updates the radial wait ring on the confirm turn button and renders offline recap chips", () => {
+    const root = makeRoot();
+    const controls = mountChildControls(root, ENGLISH_ONLY, {
+      onPause() {},
+      onResume() {},
+      onReplayWord() {},
+      onAllDone() {},
+      onParent() {}
+    });
+    controls.setTurnWaiting(true);
+    controls.setWaitProgress?.(0.5);
+    const host = root as unknown as MiniElement;
+    const confirm = host.querySelectorAll('[data-action="confirm"]')[0];
+    expect(confirm?.getAttribute("data-control")).toBe("confirm");
+    expect(confirm?.dataset["waitProgress"]).toBe("0.50");
+    controls.dispose();
+
+    const closeOffline = showOfflineCard(root, ENGLISH_ONLY, "Roll a real ball together.", () => {}, {
+      words: [
+        { id: "ball", label: "ball" },
+        { id: "more", label: "more" }
+      ],
+      portraits: {}
+    });
+    expect(host.querySelectorAll(".ww-offline-word-chip").map((c) => c.textContent)).toEqual(["ball", "more"]);
+    closeOffline();
   });
 });
 

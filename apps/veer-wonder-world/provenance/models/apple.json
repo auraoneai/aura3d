@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "apple",
-  "file": "src/assets/models/apple.4c797628.glb",
-  "sha256": "4c79762850dfdd9a03922a5c3256c3b5b937c583272bf24204f0afc72daf4dff",
-  "sizeBytes": 175396,
+  "file": "src/assets/models/apple.a76f3b59.glb",
+  "sha256": "a76f3b592c8626003896c2ae9261911579a339ebec6df3bee99cf63b22d74ae3",
+  "sizeBytes": 258448,
   "rigged": false,
   "clips": [],
   "heightM": 0.25,
@@ -45,11 +45,39 @@
       "bytesIn": 8579244,
       "bytesOut": 607336
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#e8453c",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#e8453c",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 137431,
+      "preservedPixels": 124380,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-cf19afb117c86d625ce0f34be526d0985817b5fde0dacc77bb8bbe2daafb8ef9"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.34,
+      "metallicFactor": 0,
+      "normalScale": 0.26,
+      "jpegBytes": 29225,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-cf19afb117c86d625ce0f34be526d0985817b5fde0dacc77bb8bbe2daafb8ef9"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       1.505
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Apple shape correct; pale, tinted red.",
     "tint": "#e8453c"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/apple.4c797628.glb",
+    "sha256": "4c79762850dfdd9a03922a5c3256c3b5b937c583272bf24204f0afc72daf4dff",
+    "sizeBytes": 175396
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "picnicBasket",
-  "file": "src/assets/models/picnicBasket.355d9cf2.glb",
-  "sha256": "355d9cf2511cbcd305718907e08452427e2fad2633cf3203e02d214bf4d4b3da",
-  "sizeBytes": 264680,
+  "file": "src/assets/models/picnicBasket.47bcd77c.glb",
+  "sha256": "47bcd77c58b4dad57432cb060f282c586ea7cf7347d06fae659df9354d0b9ef1",
+  "sizeBytes": 578060,
   "rigged": false,
   "clips": [],
   "heightM": 0.45,
@@ -45,22 +45,83 @@
       "bytesIn": 3163760,
       "bytesOut": 404052
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.78,
+      "metallicFactor": 0,
+      "normalScale": 0.44,
+      "jpegBytes": 56969,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-d8fc10567bc572eda7e3738752f9552b0d9a6a67b3febdf13af324e5adfd2f98"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "lid"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 3185,
+      "trianglesAfter": 3185,
+      "verticesAfter": 7367,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.531e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "picnicBasket_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 2798,
+          "vertices": 6416
+        },
+        "lid": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            -0.32493,
+            -0.85598
+          ],
+          "localTranslation": [
+            0,
+            -0.32493,
+            -0.85598
+          ],
+          "triangles": 387,
+          "vertices": 951
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 7302,
+    "vertexCount": 7367,
     "bounds": [
       1.621,
       1.9,
       1.712
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +137,10 @@
     "date": "2026-10-29",
     "notes": "Woven basket with cloth; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/picnicBasket.38f792af.glb",
+    "sha256": "38f792afceb14ee2d4c1530cbd32c7699d70fb14fcdec4f1ba90412a7427bf5d",
+    "sizeBytes": 321860
+  }
 }

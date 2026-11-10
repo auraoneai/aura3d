@@ -40,6 +40,23 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "peeko", gesture: "look" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "tweet" },
+        { do: "gesture", actor: "peeko", gesture: "wave" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "sparkle" },
+        { do: "gesture", actor: "peeko", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -132,6 +149,7 @@ export const activity: ActivitySpec = {
       response: {
         stage: [
           { do: "sfx", sound: "pianoUp" },
+          { do: "object", target: "lift", action: "up" },
           { do: "object", target: "teddy", action: "up" },
           { do: "face", actor: "peeko", toward: "teddy" }
         ],
@@ -140,6 +158,27 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g07.up.3" }
         ],
         holdMs: 1000
+      },
+      responseByTarget: {
+        lift: {
+          stage: [
+            { do: "sfx", sound: "pianoUp" },
+            { do: "object", target: "lift", action: "up" },
+            { do: "object", target: "teddy", action: "up" },
+            { do: "face", actor: "peeko", toward: "lift" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "sfx", sound: "pianoUp" },
+            { do: "object", target: "lift", action: "up" },
+            { do: "object", target: "teddy", action: "up" },
+            { do: "object", target: "teddy", action: "wobble" },
+            { do: "face", actor: "peeko", toward: "teddy" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" }
+          ]
+        }
       },
       words: [{ wordId: "up", objectId: "teddy" }]
     },
@@ -151,7 +190,7 @@ export const activity: ActivitySpec = {
         { do: "sfx", sound: "ding" },
         { do: "object", target: "lift", action: "open" },
         { do: "object", target: "teddy", action: "wobble" },
-        { do: "gesture", actor: "peeko", gesture: "peek" }
+        { do: "gesture", actor: "peeko", gesture: "wave" }
       ],
       lines: [
         { speaker: "peeko", key: "g07.top.1" },
@@ -180,6 +219,7 @@ export const activity: ActivitySpec = {
       response: {
         stage: [
           { do: "sfx", sound: "pianoDown" },
+          { do: "object", target: "lift", action: "down" },
           { do: "object", target: "teddy", action: "down" },
           { do: "face", actor: "peeko", toward: "teddy" }
         ],
@@ -188,6 +228,27 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g07.down.3" }
         ],
         holdMs: 1000
+      },
+      responseByTarget: {
+        lift: {
+          stage: [
+            { do: "sfx", sound: "pianoDown" },
+            { do: "object", target: "lift", action: "down" },
+            { do: "object", target: "teddy", action: "down" },
+            { do: "face", actor: "peeko", toward: "lift" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "sfx", sound: "pianoDown" },
+            { do: "object", target: "lift", action: "down" },
+            { do: "object", target: "teddy", action: "down" },
+            { do: "object", target: "teddy", action: "wobble" },
+            { do: "face", actor: "peeko", toward: "teddy" },
+            { do: "gesture", actor: "peeko", gesture: "wave" }
+          ]
+        }
       },
       words: [{ wordId: "down", objectId: "teddy" }]
     },
@@ -226,6 +287,20 @@ export const activity: ActivitySpec = {
         stage: [{ do: "gesture", actor: "peeko", gesture: "nod" }],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        lift: {
+          stage: [
+            { do: "object", target: "lift", action: "wobble" },
+            { do: "gesture", actor: "peeko", gesture: "nod" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        }
       }
     }
   ],

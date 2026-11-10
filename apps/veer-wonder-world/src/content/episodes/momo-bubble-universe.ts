@@ -192,6 +192,25 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "momo", key: "e15.more-1.2" }],
         holdMs: 2500
+      },
+      responseByTarget: {
+        wand: {
+          stage: [
+            { do: "object", target: "wand", action: "wobble" },
+            { do: "sfx", sound: "bubbleBlow" },
+            { do: "enter", actor: "bubble-2", at: "right", from: "left", style: "float" },
+            { do: "face", actor: "momo", toward: "bubble-2" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "sfx", sound: "bubbleBlow" },
+            { do: "enter", actor: "bubble-2", at: "right", from: "left", style: "float" },
+            { do: "face", actor: "momo", toward: "bubble-2" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -212,17 +231,38 @@ export const episode: EpisodeSpec = {
         { wordId: "pop", objectId: "bubble-2" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["bubble-2"] },
+      input: { type: "tap", targets: ["bubble-2", "bird"] },
       waitMs: 5000,
       caregiverPromptKey: "e15.tip.2",
       response: {
         stage: [
           { do: "object", target: "bubble-2", action: "pop" },
           { do: "sfx", sound: "pop" },
+          { do: "object", target: "bird", action: "bounce" },
           { do: "face", actor: "momo", toward: "bird" }
         ],
         lines: [{ speaker: "momo", key: "e15.pop-2.3" }],
         holdMs: 2500
+      },
+      responseByTarget: {
+        "bubble-2": {
+          stage: [
+            { do: "object", target: "bubble-2", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "bird", action: "bounce" },
+            { do: "face", actor: "momo", toward: "bird" },
+            { do: "gesture", actor: "momo", gesture: "point" }
+          ]
+        },
+        bird: {
+          stage: [
+            { do: "object", target: "bubble-2", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "bird", action: "bounce" },
+            { do: "face", actor: "momo", toward: "bird" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
       }
     },
     {
@@ -326,17 +366,38 @@ export const episode: EpisodeSpec = {
         { wordId: "pop", objectId: "bubble-3" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["bubble-3"] },
+      input: { type: "tap", targets: ["bubble-3", "cow"] },
       waitMs: 5000,
       caregiverPromptKey: "e15.tip.2",
       response: {
         stage: [
           { do: "object", target: "bubble-3", action: "pop" },
           { do: "sfx", sound: "pop" },
+          { do: "object", target: "cow", action: "bounce" },
           { do: "face", actor: "momo", toward: "cow" }
         ],
         lines: [{ speaker: "momo", key: "e15.pop-3.3" }],
         holdMs: 2500
+      },
+      responseByTarget: {
+        "bubble-3": {
+          stage: [
+            { do: "object", target: "bubble-3", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "cow", action: "bounce" },
+            { do: "face", actor: "momo", toward: "cow" },
+            { do: "gesture", actor: "momo", gesture: "point" }
+          ]
+        },
+        cow: {
+          stage: [
+            { do: "object", target: "bubble-3", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "cow", action: "bounce" },
+            { do: "face", actor: "momo", toward: "cow" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

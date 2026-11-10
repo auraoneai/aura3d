@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "toyPiano",
-  "file": "src/assets/models/toyPiano.b4ca10f8.glb",
-  "sha256": "b4ca10f89671a5e18a70177a5e9febee0fa0fd7e1089716553bca778aed54d9c",
-  "sizeBytes": 282936,
+  "file": "src/assets/models/toyPiano.e0cb93e7.glb",
+  "sha256": "e0cb93e7b1dc4705196a23764f25ca29434b571d0aa9bd291590c6abae1a470a",
+  "sizeBytes": 390048,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,11 +45,39 @@
       "bytesIn": 9458484,
       "bytesOut": 770604
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#f4a6c4",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#f4a6c4",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 184512,
+      "preservedPixels": 77187,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-8d9a0d6f4e8b178afd58f1d5a8a0659d7e26d555f15d660ebe661be1ceefebe0"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.48,
+      "metallicFactor": 0.02,
+      "normalScale": 0.3,
+      "jpegBytes": 66527,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-8d9a0d6f4e8b178afd58f1d5a8a0659d7e26d555f15d660ebe661be1ceefebe0"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       1.075
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Toy piano with big keys; tinted pink per brief.",
     "tint": "#f4a6c4"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/toyPiano.b4ca10f8.glb",
+    "sha256": "b4ca10f89671a5e18a70177a5e9febee0fa0fd7e1089716553bca778aed54d9c",
+    "sizeBytes": 282936
+  }
 }

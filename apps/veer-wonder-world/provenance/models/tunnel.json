@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "tunnel",
-  "file": "src/assets/models/tunnel.2ce4550c.glb",
-  "sha256": "2ce4550c17c9c7462ba0b3ba9a77ffcb6abcfbe46e0a2e01f305ff936e3ffe93",
-  "sizeBytes": 442932,
+  "file": "src/assets/models/tunnel.73d149bb.glb",
+  "sha256": "73d149bbf226cc92acf67f24876d2d2b5e785cfb8cf70fbd0e2c99aac733a51a",
+  "sizeBytes": 494512,
   "rigged": false,
   "clips": [],
   "heightM": 1.8,
@@ -45,13 +45,27 @@
       "bytesIn": 12014500,
       "bytesOut": 1162228
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.82,
+      "metallicFactor": 0,
+      "normalScale": 0.38,
+      "jpegBytes": 51369,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-f6565eec30b27e7245bae778ca1caea5eb6b07012824c764e7a8c45cfdd53a4c"
     }
   },
   "inspection": {
@@ -62,7 +76,8 @@
       1.654
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -78,5 +93,10 @@
     "date": "2026-10-29",
     "notes": "Arched toy tunnel; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/tunnel.2ce4550c.glb",
+    "sha256": "2ce4550c17c9c7462ba0b3ba9a77ffcb6abcfbe46e0a2e01f305ff936e3ffe93",
+    "sizeBytes": 442932
+  }
 }

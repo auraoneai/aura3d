@@ -42,6 +42,23 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "lumi", gesture: "glow" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "sparkle" },
+        { do: "gesture", actor: "lumi", gesture: "float" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "pianoUp" },
+        { do: "gesture", actor: "lumi", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -71,9 +88,8 @@ export const activity: ActivitySpec = {
         { do: "hide", actor: "block-3" },
         { do: "face", actor: "lumi", toward: "viewer" },
         { do: "gesture", actor: "lumi", gesture: "glow" },
-        { do: "show", actor: "block-1" },
-        { do: "object", target: "block-1", action: "stack" },
-        { do: "sfx", sound: "clack" }
+        { do: "enter", actor: "block-1", at: "high", from: "highLeft", style: "float" },
+        { do: "object", target: "block-1", action: "glow" }
       ],
       lines: [
         { speaker: "lumi", key: "g08.one.1" },
@@ -92,6 +108,9 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g08.tip.1",
       response: {
         stage: [
+          { do: "move", actor: "block-1", to: "center", style: "slide" },
+          { do: "object", target: "block-1", action: "stack" },
+          { do: "sfx", sound: "clack" },
           { do: "gesture", actor: "lumi", gesture: "glow" },
           { do: "sfx", sound: "sparkle" }
         ],
@@ -105,9 +124,8 @@ export const activity: ActivitySpec = {
       camera: "medium",
       stage: [
         { do: "gesture", actor: "lumi", gesture: "glow" },
-        { do: "show", actor: "block-2" },
-        { do: "object", target: "block-2", action: "stack" },
-        { do: "sfx", sound: "clack" }
+        { do: "enter", actor: "block-2", at: "high", from: "highRight", style: "float" },
+        { do: "object", target: "block-2", action: "glow" }
       ],
       lines: [
         { speaker: "lumi", key: "g08.two.1" },
@@ -126,11 +144,34 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g08.tip.1",
       response: {
         stage: [
+          { do: "move", actor: "block-2", to: "center", style: "slide" },
+          { do: "object", target: "block-2", action: "stack" },
+          { do: "sfx", sound: "clack" },
           { do: "gesture", actor: "lumi", gesture: "glow" },
           { do: "sfx", sound: "sparkle" }
         ],
         lines: [{ speaker: "lumi", key: "g08.two.4" }],
         holdMs: 600
+      },
+      responseByTarget: {
+        "block-1": {
+          stage: [
+            { do: "move", actor: "block-2", to: "center", style: "slide" },
+            { do: "object", target: "block-2", action: "stack" },
+            { do: "object", target: "block-1", action: "wobble" },
+            { do: "sfx", sound: "clack" },
+            { do: "gesture", actor: "lumi", gesture: "glow" }
+          ]
+        },
+        "block-2": {
+          stage: [
+            { do: "move", actor: "block-2", to: "center", style: "slide" },
+            { do: "object", target: "block-2", action: "stack" },
+            { do: "sfx", sound: "clack" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "gesture", actor: "lumi", gesture: "happy" }
+          ]
+        }
       }
     },
     {
@@ -139,9 +180,10 @@ export const activity: ActivitySpec = {
       camera: "medium",
       stage: [
         { do: "gesture", actor: "lumi", gesture: "glow" },
-        { do: "show", actor: "block-3" },
+        { do: "enter", actor: "block-3", at: "center", from: "high", style: "float" },
         { do: "object", target: "block-3", action: "stack" },
-        { do: "sfx", sound: "clack" }
+        { do: "sfx", sound: "clack" },
+        { do: "object", target: "block-3", action: "wobble" }
       ],
       lines: [
         { speaker: "lumi", key: "g08.three.1" },
@@ -172,6 +214,26 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g08.three.5" }
         ],
         holdMs: 1500
+      },
+      responseByTarget: {
+        "block-2": {
+          stage: [
+            { do: "object", target: "block-2", action: "topple" },
+            { do: "object", target: "block-3", action: "topple" },
+            { do: "object", target: "block-1", action: "topple" },
+            { do: "sfx", sound: "tumble" },
+            { do: "gesture", actor: "lumi", gesture: "happy" }
+          ]
+        },
+        "block-3": {
+          stage: [
+            { do: "object", target: "block-3", action: "topple" },
+            { do: "object", target: "block-2", action: "topple" },
+            { do: "object", target: "block-1", action: "topple" },
+            { do: "sfx", sound: "tumble" },
+            { do: "gesture", actor: "lumi", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -192,6 +254,20 @@ export const activity: ActivitySpec = {
         stage: [{ do: "gesture", actor: "lumi", gesture: "nod" }],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        "block-1": {
+          stage: [
+            { do: "object", target: "block-1", action: "wobble" },
+            { do: "gesture", actor: "lumi", gesture: "nod" }
+          ]
+        },
+        "block-2": {
+          stage: [
+            { do: "object", target: "block-2", action: "wobble" },
+            { do: "gesture", actor: "lumi", gesture: "happy" }
+          ]
+        }
       }
     }
   ],

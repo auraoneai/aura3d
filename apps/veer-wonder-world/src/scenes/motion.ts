@@ -10,6 +10,9 @@
 //   add, scales multiply. NEUTRAL_POSE changes nothing.
 
 import type { MoveStyle, ObjectAction } from "../types.js";
+import type { ActorPose, ArticulatedPartPose, ArticulatedPoseMap, SubPartId } from "./articulated-actors.js";
+
+export type { ActorPose, ArticulatedPartPose, ArticulatedPoseMap, SubPartId };
 
 export type Vec3 = readonly [number, number, number];
 
@@ -145,29 +148,150 @@ export interface PoseOffset {
   readonly sx: number;
   readonly sy: number;
   readonly sz: number;
+  readonly parts?: ArticulatedPoseMap;
 }
 
 export const NEUTRAL_POSE: PoseOffset = Object.freeze({ dx: 0, dy: 0, dz: 0, rx: 0, ry: 0, rz: 0, sx: 1, sy: 1, sz: 1 });
 
-export function pose(parts: Partial<PoseOffset>): PoseOffset {
-  return { ...NEUTRAL_POSE, ...parts };
+const POSE_SUB_PARTS: readonly SubPartId[] = [
+  "body", "head", "armL", "armR", "footL", "footR", "tail", "wingL", "wingR", "tuft",
+  "earL", "earR", "legFL", "legFR", "legBL", "legBR", "wheelFL", "wheelFR", "wheelRL", "wheelRR",
+  "chimney", "cabDoorL", "cabDoorR", "eyelidL", "eyelidR", "jaw", "beakLower", "cheekPuff",
+  "hingeLeaf", "hingeLeafR", "lid", "liftCab", "liftGate", "petals"
+];
+
+const POSE_MIRROR_PARTS: Partial<Readonly<Record<SubPartId, SubPartId>>> = {
+  armL: "armR", armR: "armL",
+  footL: "footR", footR: "footL",
+  wingL: "wingR", wingR: "wingL",
+  earL: "earR", earR: "earL",
+  legFL: "legFR", legFR: "legFL",
+  legBL: "legBR", legBR: "legBL",
+  wheelFL: "wheelFR", wheelFR: "wheelFL",
+  wheelRL: "wheelRR", wheelRR: "wheelRL",
+  cabDoorL: "cabDoorR", cabDoorR: "cabDoorL",
+  eyelidL: "eyelidR", eyelidR: "eyelidL",
+  hingeLeaf: "hingeLeafR", hingeLeafR: "hingeLeaf"
+};
+
+function addSubPartMaps(maps: readonly (ArticulatedPoseMap | undefined)[]): ArticulatedPoseMap | undefined {
+  const merged: Partial<Record<SubPartId, ArticulatedPartPose>> = {};
+  let hasAny = false;
+  for (const map of maps) {
+    if (!map) continue;
+    for (const key of POSE_SUB_PARTS) {
+      const next = map[key];
+      if (!next) continue;
+      const prev = merged[key];
+      if (!prev) {
+        merged[key] = next;
+        hasAny = true;
+      } else {
+        const offset: Vec3 | undefined = prev.offset && next.offset ? addVec3(prev.offset, next.offset) : prev.offset ?? next.offset;
+        const rotation: Vec3 | undefined = prev.rotation && next.rotation ? composeRotation(prev.rotation, next.rotation) : prev.rotation ?? next.rotation;
+        const scale: Vec3 | undefined = prev.scale && next.scale
+          ? [prev.scale[0] * next.scale[0], prev.scale[1] * next.scale[1], prev.scale[2] * next.scale[2]]
+          : prev.scale ?? next.scale;
+        merged[key] = {
+          ...(offset ? { offset } : {}),
+          ...(rotation ? { rotation } : {}),
+          ...(scale ? { scale } : {})
+        };
+      }
+    }
+  }
+  return hasAny ? merged : undefined;
 }
 
-/** Combines offsets: translations and rotations add, scales multiply. */
+function dampSubPartMap(map: ArticulatedPoseMap | undefined, k: number): ArticulatedPoseMap | undefined {
+  if (!map || k <= 0) return undefined;
+  if (Math.abs(k - 1) < 1e-6) return map;
+  const s = (v: number): number => 1 + (v - 1) * k;
+  const out: Partial<Record<SubPartId, ArticulatedPartPose>> = {};
+  let hasAny = false;
+  for (const key of POSE_SUB_PARTS) {
+    const p = map[key];
+    if (!p) continue;
+    out[key] = {
+      ...(p.offset ? { offset: [p.offset[0] * k, p.offset[1] * k, p.offset[2] * k] } : {}),
+      ...(p.rotation ? { rotation: [p.rotation[0] * k, p.rotation[1] * k, p.rotation[2] * k] } : {}),
+      ...(p.scale ? { scale: [s(p.scale[0]), s(p.scale[1]), s(p.scale[2])] } : {})
+    };
+    hasAny = true;
+  }
+  return hasAny ? out : undefined;
+}
+
+function mirrorSubPartMap(map: ArticulatedPoseMap | undefined): ArticulatedPoseMap | undefined {
+  if (!map) return undefined;
+  const out: Partial<Record<SubPartId, ArticulatedPartPose>> = {};
+  let hasAny = false;
+  for (const key of POSE_SUB_PARTS) {
+    const p = map[key];
+    if (!p) continue;
+    const swapped = POSE_MIRROR_PARTS[key] ?? key;
+    out[swapped] = {
+      ...(p.offset ? { offset: [-p.offset[0], p.offset[1], p.offset[2]] } : {}),
+      ...(p.rotation ? { rotation: [p.rotation[0], -p.rotation[1], -p.rotation[2]] } : {}),
+      ...(p.scale ? { scale: p.scale } : {})
+    };
+    hasAny = true;
+  }
+  return hasAny ? out : undefined;
+}
+
+function scaleSubPartOffsets(map: ArticulatedPoseMap | undefined, k: number): ArticulatedPoseMap | undefined {
+  if (!map) return undefined;
+  const out: Partial<Record<SubPartId, ArticulatedPartPose>> = {};
+  let hasAny = false;
+  for (const key of POSE_SUB_PARTS) {
+    const p = map[key];
+    if (!p) continue;
+    out[key] = {
+      ...p,
+      ...(p.offset ? { offset: [p.offset[0] * k, p.offset[1] * k, p.offset[2] * k] } : {})
+    };
+    hasAny = true;
+  }
+  return hasAny ? out : undefined;
+}
+
+export function pose(fields: Partial<PoseOffset>): PoseOffset {
+  const { parts, ...rest } = fields;
+  return {
+    ...NEUTRAL_POSE,
+    ...rest,
+    ...(parts ? { parts } : {})
+  };
+}
+
+/** Combines offsets: translations and rotations add, scales multiply, and optional sub-parts merge. */
 export function addPose(...poses: readonly PoseOffset[]): PoseOffset {
   let dx = 0, dy = 0, dz = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1;
+  let hasParts = false;
   for (const p of poses) {
     dx += p.dx; dy += p.dy; dz += p.dz;
     rx += p.rx; ry += p.ry; rz += p.rz;
     sx *= p.sx; sy *= p.sy; sz *= p.sz;
+    if (p.parts) hasParts = true;
   }
-  return { dx, dy, dz, rx, ry, rz, sx, sy, sz };
+  const mergedParts = hasParts ? addSubPartMaps(poses.map((p) => p.parts)) : undefined;
+  return {
+    dx, dy, dz, rx, ry, rz, sx, sy, sz,
+    ...(mergedParts ? { parts: mergedParts } : {})
+  };
 }
 
 /** Scales the amplitude of an offset toward neutral (k = 0 gives NEUTRAL_POSE, k = 1 leaves it as it is). */
 export function dampPose(p: PoseOffset, k: number): PoseOffset {
   const s = (v: number): number => 1 + (v - 1) * k;
-  return { dx: p.dx * k, dy: p.dy * k, dz: p.dz * k, rx: p.rx * k, ry: p.ry * k, rz: p.rz * k, sx: s(p.sx), sy: s(p.sy), sz: s(p.sz) };
+  const dampedParts = dampSubPartMap(p.parts, k);
+  return {
+    dx: p.dx * k, dy: p.dy * k, dz: p.dz * k,
+    rx: p.rx * k, ry: p.ry * k, rz: p.rz * k,
+    sx: s(p.sx), sy: s(p.sy), sz: s(p.sz),
+    ...(dampedParts ? { parts: dampedParts } : {})
+  };
 }
 
 /**
@@ -175,12 +299,28 @@ export function dampPose(p: PoseOffset, k: number): PoseOffset {
  * goes to the other side, and a turn goes the other way. Up, down, leaning toward the viewer and scales are kept.
  */
 export function mirrorPoseOffset(p: PoseOffset): PoseOffset {
-  return { ...p, dx: -p.dx, ry: -p.ry, rz: -p.rz };
+  const { parts, ...rest } = p;
+  const mirroredParts = mirrorSubPartMap(parts);
+  return {
+    ...rest,
+    dx: -p.dx,
+    ry: -p.ry,
+    rz: -p.rz,
+    ...(mirroredParts ? { parts: mirroredParts } : {})
+  };
 }
 
 /** The same offset for a copy drawn `k` times as large: translations scale by k; rotations and scales stay. */
 export function scalePoseTranslation(p: PoseOffset, k: number): PoseOffset {
-  return { ...p, dx: p.dx * k, dy: p.dy * k, dz: p.dz * k };
+  const { parts, ...rest } = p;
+  const scaledParts = scaleSubPartOffsets(parts, k);
+  return {
+    ...rest,
+    dx: p.dx * k,
+    dy: p.dy * k,
+    dz: p.dz * k,
+    ...(scaledParts ? { parts: scaledParts } : {})
+  };
 }
 
 export function isNeutral(p: PoseOffset, epsilon = 1e-6): boolean {
@@ -236,11 +376,21 @@ export function breathe(timeSec: number, amount: number, periodSec = 2.4): numbe
   return 1 + amount * 0.5 * (1 - Math.cos((TAU * timeSec) / periodSec));
 }
 
-/** Talking pulse: a soft squash/bob while a line plays. Not lip sync; there are no mouth morphs. */
+/** Talking pulse: a soft squash/bob while a line plays. */
 export function talkPulse(timeSec: number, strength: number, hz = 2.4): PoseOffset {
   const k = strength * 0.5 * (1 - Math.cos(TAU * hz * timeSec));
   const [sx, sy, sz] = squashStretch(k);
   return pose({ sx, sy, sz, rx: -k * 0.6 });
+}
+
+/** Syllable-envelope talking pulse: drives soft breath/nod from normalized 20 Hz RMS `speechEnergy` in `[0, 1]`. */
+export function talkPulseEnvelope(timeSec: number, strength: number, speechEnergy: number): PoseOffset {
+  const e = clamp01(speechEnergy);
+  const breathCarrier = 0.22 + 0.78 * e;
+  const k = strength * breathCarrier;
+  const [sx, sy, sz] = squashStretch(k);
+  const microNod = Math.sin(TAU * 2.4 * timeSec) * 0.15;
+  return pose({ sx, sy, sz, rx: -k * (0.55 + microNod) });
 }
 
 /**
@@ -478,8 +628,9 @@ export function sampleLayer(m: ProceduralMotion, tSec: number, loop: boolean, ho
       return pose({ sx, sy, sz });
     }
     case "flap": {
+      // Feather lift & pitch flutter (wing sub-parts pivot cleanly around shoulders; zero X-axis torso stretch).
       const k = a * Math.abs(osc(cycles)) * env;
-      return pose({ sx: 1 + k });
+      return pose({ dy: 0.08 * k, rx: -0.12 * osc(cycles) * env });
     }
     case "chomp": {
       const k = a * Math.abs(osc(cycles)) * env;
@@ -850,7 +1001,22 @@ export function sampleTransient(kind: TransientKind, tSec: number, durationSec: 
     }
     case "bloom": {
       const s = 1 + 0.18 * k * env;
-      return pose({ sx: s, sy: s, sz: s, ry: 0.5 * k * ease("inOutSine", u) });
+      const petalEase = u <= 0 ? 0 : (reduced ? ease("inOutSine", u) : ease("outBackSoft", u)) * Math.sin(Math.PI * 0.5 * clamp01(u * 1.25));
+      const petalScale = 1 + 0.26 * k * petalEase;
+      return pose({
+        sx: s,
+        sy: s,
+        sz: s,
+        ry: 0.5 * k * ease("inOutSine", u),
+        ...(u > 1e-6 ? {
+          parts: {
+            petals: {
+              scale: [petalScale, 1 + 0.16 * k * petalEase, petalScale],
+              rotation: [0, 0.35 * k * petalEase, 0]
+            }
+          }
+        } : {})
+      });
     }
     case "wash":
       return pose({ dx: 0.04 * k * Math.sin(TAU * 4 * u) * env, sy: 1 - 0.03 * k * env });
@@ -870,19 +1036,44 @@ export function sampleTransient(kind: TransientKind, tSec: number, durationSec: 
       return pose({ dy: reduced ? 0.4 * (1 - ease("inOutSine", u)) : 0.8 * (1 - ease("outBounceSoft", u)) });
     case "lidHop": {
       const [sx, sy, sz] = squashStretch(0.05 * k * Math.sin(TAU * u));
-      return pose({ dy: hopArc(u, 0.08 * k), sx, sy, sz });
+      return pose({
+        dy: hopArc(u, 0.08 * k),
+        sx,
+        sy,
+        sz,
+        ...(u > 1e-6 && u < 1 - 1e-6 ? {
+          parts: {
+            lid: { rotation: [-0.22 * k * env, 0, 0] }
+          }
+        } : {})
+      });
     }
     case "sway":
       return pose({ rz: 0.05 * k * Math.sin(TAU * u) });
-    case "tumble":
-      return pose({ dy: hopArc(clamp01(u * 1.4), 0.06 * k) });
+    case "tumble": {
+      const settle = u > 0.74 && !reduced ? hopArc((u - 0.74) / 0.26, 0.018) : 0;
+      return pose({
+        dy: hopArc(clamp01(u * 1.35), 0.06 * k) + settle,
+        rz: -0.05 * k * Math.sin(TAU * u) * (1 - u)
+      });
+    }
   }
 }
 
 /** Gentle running loop for a vehicle that is "going" (chug). */
 export function runningPose(timeSec: number, reduced: boolean): PoseOffset {
   if (reduced) return NEUTRAL_POSE;
-  return pose({ dy: 0.018 * Math.abs(Math.sin(TAU * 2.5 * timeSec)), rx: 0.015 * Math.sin(TAU * 2.5 * timeSec) });
+  const chug = Math.abs(Math.sin(TAU * 2.5 * timeSec));
+  return pose({
+    dy: 0.018 * chug,
+    rx: 0.015 * Math.sin(TAU * 2.5 * timeSec),
+    parts: {
+      chimney: {
+        scale: [1 + 0.12 * chug, 1 - 0.14 * chug, 1 + 0.12 * chug],
+        offset: [0, 0.012 * chug, 0]
+      }
+    }
+  });
 }
 
 /** Lying-on-its-side angle for a toppled state (slightly less than 90 degrees so it reads as a toy). */
@@ -890,3 +1081,146 @@ export const TOPPLE_ANGLE = 1.4;
 
 /** Door swing angle when open (about 100 degrees, toward the viewer). */
 export const DOOR_OPEN_ANGLE = -1.75;
+
+/** Container lid open angle about local X (-1.45 rad = ~83 degrees open). */
+export const LID_OPEN_ANGLE = -1.45;
+
+/** Articulated lift cab height travel for one "up" floor (+0.82 m). */
+export const LIFT_CAB_HEIGHT_M = 0.82;
+
+/** True non-slipping rolling ball Euler rotation along `headingYaw` for `distanceTravelled` and `radius`. */
+export function rollingBallRotation(headingYaw: number, distanceTravelled: number, radius: number): Vec3 {
+  const spin = rollAngle(distanceTravelled, radius);
+  return composeRotation([0, headingYaw, 0], [spin, 0, 0]);
+}
+
+/** Natural kinematic topple arc about the tipping bottom edge with soft settle. */
+export function kinematicToppleArc(u01: number, direction: number, halfWidth: number, reduced: boolean): PoseOffset {
+  if (direction === 0) return NEUTRAL_POSE;
+  const u = clamp01(u01);
+  const eased = reduced ? ease("inOutSine", u) : ease("outBounceSoft", u);
+  const angle = Math.sign(direction) * TOPPLE_ANGLE * eased;
+  const edge = tipEdgeOffset(halfWidth, angle);
+  return pose({
+    dx: edge[0],
+    dy: edge[1] + hopArc(clamp01(u * 1.3), (reduced ? 0.025 : 0.05)),
+    dz: edge[2],
+    rz: angle
+  });
+}
+
+export interface ObjectSubPartSampleInput {
+  readonly asset: string;
+  /** Interpolated 0..1 open progress (`0` = closed, `1` = open). */
+  readonly openProgress: number;
+  /** Persistent lift height in metres (`0` at ground, `LIFT_STEP_M` per floor). */
+  readonly liftM: number;
+  /** Travelled distance in metres (drives wheel arc-length spin). */
+  readonly distanceTravelled?: number;
+  /** Wheel radius in metres (defaults to 0.16 m). */
+  readonly wheelRadiusM?: number;
+  /** Vehicle is currently chugging (`go`). */
+  readonly running?: boolean;
+  /** Active transient (`bloom`, `lidHop`, etc.). */
+  readonly transient?: { readonly kind: TransientKind; readonly elapsedSec: number; readonly durationSec: number } | null;
+  readonly timeSec?: number;
+  readonly reducedMotion?: boolean;
+}
+
+/**
+ * Computes articulated sub-part poses for interactive props (`door`, `barn`, `toyBox`, `storyBox`,
+ * `picnicBasket`, `gogoCarriage`, `lift`, `flower`, `flowerBud`, `car`, `gogo`).
+ */
+export function sampleObjectParts(input: ObjectSubPartSampleInput): ArticulatedPoseMap | undefined {
+  const reduced = input.reducedMotion === true;
+  const openU = clamp01(input.openProgress);
+  const openEased = openU <= 0 ? 0 : openU >= 1 ? 1 : (reduced ? ease("inOutSine", openU) : ease("outBackSoft", openU));
+  const out: Partial<Record<SubPartId, ArticulatedPartPose>> = {};
+  let hasAny = false;
+
+  switch (input.asset) {
+    case "door":
+      if (openEased > 1e-4) {
+        const angle = DOOR_OPEN_ANGLE * openEased;
+        out.hingeLeaf = { rotation: [0, angle, 0] };
+        hasAny = true;
+      }
+      break;
+    case "barn":
+      if (openEased > 1e-4) {
+        out.hingeLeaf = { rotation: [0, DOOR_OPEN_ANGLE * openEased, 0] };
+        out.hingeLeafR = { rotation: [0, -DOOR_OPEN_ANGLE * openEased, 0] };
+        hasAny = true;
+      }
+      break;
+    case "toyBox":
+    case "storyBox":
+    case "picnicBasket":
+      if (openEased > 1e-4) {
+        out.lid = { rotation: [LID_OPEN_ANGLE * openEased, 0, 0] };
+        hasAny = true;
+      }
+      break;
+    case "gogoCarriage":
+      if (openEased > 1e-4) {
+        out.cabDoorL = { rotation: [0, -1.45 * openEased, 0] };
+        hasAny = true;
+      }
+      break;
+    case "lift": {
+      const cabY = input.liftM > 1e-4 ? (input.liftM / LIFT_STEP_M) * LIFT_CAB_HEIGHT_M : 0;
+      if (Math.abs(cabY) > 1e-4) {
+        out.liftCab = { offset: [0, cabY, 0] };
+        hasAny = true;
+      }
+      if (openEased > 1e-4) {
+        out.liftGate = {
+          offset: [0.22 * openEased, 0, 0],
+          scale: [Math.max(0.15, 1 - 0.78 * openEased), 1, 1]
+        };
+        hasAny = true;
+      }
+      break;
+    }
+    case "flower":
+    case "flowerBud": {
+      if (input.transient?.kind === "bloom") {
+        const u = clamp01(input.transient.elapsedSec / Math.max(1e-3, input.transient.durationSec));
+        const bloomEase = reduced ? ease("inOutSine", u) : ease("outBackSoft", u);
+        const s = 1 + 0.32 * bloomEase;
+        out.petals = {
+          scale: [s, 1 + 0.18 * bloomEase, s],
+          rotation: [0, 0.35 * bloomEase, 0]
+        };
+        hasAny = true;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  if (input.asset === "gogo" || input.asset === "gogoCarriage" || input.asset === "car") {
+    const dist = input.distanceTravelled ?? 0;
+    const wheelR = input.wheelRadiusM ?? 0.16;
+    const spin = rollAngle(dist, wheelR);
+    if (Math.abs(spin) > 1e-5) {
+      const wheelPose: ArticulatedPartPose = { rotation: [spin, 0, 0] };
+      out.wheelFL = wheelPose;
+      out.wheelFR = wheelPose;
+      out.wheelRL = wheelPose;
+      out.wheelRR = wheelPose;
+      hasAny = true;
+    }
+    if (input.asset === "gogo" && input.running && !reduced) {
+      const chug = Math.abs(Math.sin(TAU * 2.5 * (input.timeSec ?? 0)));
+      out.chimney = {
+        scale: [1 + 0.12 * chug, 1 - 0.14 * chug, 1 + 0.12 * chug],
+        offset: [0, 0.012 * chug, 0]
+      };
+      hasAny = true;
+    }
+  }
+
+  return hasAny ? out : undefined;
+}

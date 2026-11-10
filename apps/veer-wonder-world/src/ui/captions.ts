@@ -1,9 +1,11 @@
 // Parent-facing captions (PRD 01 section 9, PRD 03 section 4, PRD 04 B05 and
-// E08, PRD 06 QA-A01). Shows the exact approved line text the narration
+// E08, PRD 06 QA-A01; WP-7). Shows the exact approved line text the narration
 // player is speaking, one speaker at a time, so a story still reads when
 // sound is off or unavailable. The line sits in a polite live region; it never
-// blocks taps on the scene below. Speakers on screen get a colour dot and
-// their name; the off-screen narrator gets no label.
+// blocks taps on the scene below. Speakers on screen get a mini-portrait ring
+// (falling back to their colour dot) and their name; the off-screen narrator
+// gets no label. Target vocabulary words are softly highlighted with safe DOM
+// <mark class="ww-caption-keyword"> spans via DOM nodes only.
 
 import {
   CHARACTER_COLOURS,
@@ -17,10 +19,22 @@ import {
   uiText,
   type UiLocale
 } from "./accessibility.js";
+import type { PortraitMap } from "./episode-menu.js";
+import { CORE_WORD_IDS, wordLabel } from "./parent-wordlist.js";
+import { PORTRAITS } from "./portraits.js";
+
+export interface CaptionsOptions {
+  /** Optional portrait map for speaker mini-avatars (defaults to PORTRAITS). */
+  readonly portraits?: PortraitMap;
+  /** Optional default vocabulary words to highlight (defaults to CORE_WORD_IDS; pass [] to disable). */
+  readonly highlightWords?: readonly string[];
+}
 
 export interface Captions {
   /** Shows one line. `speaker` is a SpeakerId ("momo", "narrator", ...). */
-  show(speaker: string, text: string): void;
+  show(speaker: string, text: string, highlightWords?: readonly string[]): void;
+  /** Updates the active vocabulary highlight list for subsequent lines (`null` restores defaults). */
+  setHighlightWords?(words: readonly string[] | null): void;
   clear(): void;
   /** The parent's captions setting. */
   setEnabled(on: boolean): void;
@@ -40,9 +54,60 @@ export function speakerColour(speaker: string): string | null {
   return speaker === "robot" ? NEUTRAL_COLOUR : null;
 }
 
+function escapeRegExp(literal: string): string {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Builds a Safari-15-safe word-boundary matcher (longest multi-word phrases first, no regex lookbehind). */
+function buildHighlightPattern(words: readonly string[]): RegExp | null {
+  const normalized = Array.from(
+    new Set(
+      words
+        .map((entry) => wordLabel(entry).trim().toLowerCase())
+        .filter((entry) => entry.length > 0)
+    )
+  ).sort((a, b) => b.length - a.length);
+  if (normalized.length === 0) return null;
+  const branches = normalized.map((phrase) => phrase.split(/\s+/).map(escapeRegExp).join("[\\s-]+"));
+  return new RegExp(`\\b(${branches.join("|")})\\b`, "gi");
+}
+
+function renderHighlightedText(doc: Document, container: HTMLElement, text: string, words: readonly string[]): void {
+  container.textContent = "";
+  if (text.length === 0) return;
+  const pattern = buildHighlightPattern(words);
+  if (!pattern) {
+    container.textContent = text;
+    return;
+  }
+  let cursor = 0;
+  let matchedAny = false;
+  for (const match of text.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    const hit = match[0] ?? "";
+    if (hit.length === 0) continue;
+    matchedAny = true;
+    if (start > cursor) {
+      container.appendChild(doc.createTextNode(text.slice(cursor, start)));
+    }
+    container.appendChild(el(doc, "mark", { className: "ww-caption-keyword", text: hit }));
+    cursor = start + hit.length;
+  }
+  if (!matchedAny) {
+    container.textContent = text;
+    return;
+  }
+  if (cursor < text.length) {
+    container.appendChild(doc.createTextNode(text.slice(cursor)));
+  }
+}
+
 /** `locale` is optional so `mountCaptions(root)` works; it supplies the region label and notice text. */
-export function mountCaptions(root: HTMLElement, locale: UiLocale = ENGLISH_ONLY): Captions {
+export function mountCaptions(root: HTMLElement, locale: UiLocale = ENGLISH_ONLY, options: CaptionsOptions = {}): Captions {
   const doc = docOf(root);
+  const portraits = options.portraits ?? PORTRAITS;
+  let defaultWords: readonly string[] = options.highlightWords ?? CORE_WORD_IDS;
+
   const box = el(doc, "div", {
     className: "ww-captions",
     attrs: { role: "region", "aria-label": uiText(locale, "ui.captions.label"), "data-ui": "captions" }
@@ -74,20 +139,49 @@ export function mountCaptions(root: HTMLElement, locale: UiLocale = ENGLISH_ONLY
   sync();
 
   return {
-    show(speaker: string, text: string): void {
+    show(speaker: string, text: string, highlightWords?: readonly string[]): void {
       const name = speakerName(speaker, locale);
       const colour = speakerColour(speaker);
-      speakerNode.textContent = name;
+      speakerNode.textContent = "";
+      speakerNode.classList.remove("has-avatar");
       speakerNode.hidden = name === "" && colour === null;
       if (colour) speakerNode.style.setProperty("--ww-dot", colour);
       else speakerNode.style.removeProperty("--ww-dot");
+
+      if (speaker !== "narrator" && isCharacterId(speaker)) {
+        const avatarUrl = portraits[speaker];
+        if (avatarUrl) {
+          speakerNode.classList.add("has-avatar");
+          const avatar = el(doc, "img", {
+            className: "ww-caption-avatar",
+            attrs: { src: avatarUrl, alt: "", "aria-hidden": "true", decoding: "async", draggable: "false" }
+          });
+          avatar.addEventListener(
+            "error",
+            () => {
+              avatar.remove();
+              speakerNode.classList.remove("has-avatar");
+            },
+            { once: true }
+          );
+          speakerNode.appendChild(avatar);
+        }
+      }
+      if (name !== "") {
+        speakerNode.appendChild(el(doc, "span", { className: "ww-caption-speaker-name", text: name }));
+      }
+
       line.dataset["speaker"] = speaker;
-      textNode.textContent = text;
+      renderHighlightedText(doc, textNode, text, highlightWords ?? defaultWords);
       hasText = text.trim().length > 0;
       sync();
     },
+    setHighlightWords(words: readonly string[] | null): void {
+      defaultWords = words ?? options.highlightWords ?? CORE_WORD_IDS;
+    },
     clear(): void {
       speakerNode.textContent = "";
+      speakerNode.classList.remove("has-avatar");
       textNode.textContent = "";
       delete line.dataset["speaker"];
       hasText = false;

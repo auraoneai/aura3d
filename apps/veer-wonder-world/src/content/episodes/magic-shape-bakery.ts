@@ -233,6 +233,26 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e12.turn-wobble.4" }
         ],
         holdMs: 2000
+      },
+      responseByTarget: {
+        "pastry-circle": {
+          stage: [
+            { do: "object", target: "pastry-circle", action: "bounce" },
+            { do: "object", target: "plate", action: "glow" },
+            { do: "sfx", sound: "boing" },
+            { do: "face", actor: "momo", toward: "pastry-circle" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        "pastry-square": {
+          stage: [
+            { do: "object", target: "pastry-square", action: "bounce" },
+            { do: "object", target: "block", action: "glow" },
+            { do: "sfx", sound: "giggle" },
+            { do: "face", actor: "momo", toward: "pastry-square" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -302,7 +322,7 @@ export const episode: EpisodeSpec = {
       lines: [{ speaker: "momo", key: "e12.turn-triangle.1" }],
       words: [{ wordId: "triangle", objectId: "pastry-triangle" }],
       holdMs: 500,
-      input: { type: "tap", targets: ["pastry-triangle"] },
+      input: { type: "tap", targets: ["pastry-triangle", "party-hat"] },
       waitMs: 5000,
       caregiverPromptKey: "e12.tip.1",
       response: {
@@ -316,6 +336,26 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e12.turn-triangle.3" }
         ],
         holdMs: 2000
+      },
+      responseByTarget: {
+        "pastry-triangle": {
+          stage: [
+            { do: "object", target: "pastry-triangle", action: "bounce" },
+            { do: "object", target: "party-hat", action: "glow" },
+            { do: "sfx", sound: "boing" },
+            { do: "face", actor: "momo", toward: "pastry-triangle" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        "party-hat": {
+          stage: [
+            { do: "object", target: "party-hat", action: "wobble" },
+            { do: "object", target: "pastry-triangle", action: "bounce" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "momo", toward: "party-hat" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

@@ -1,18 +1,12 @@
 // Corner controls during play (PRD 04 E01, PRD 01 sections 6 and 9, PRD 06
-// QA-A08 and QA-E10). The child plays by tapping big objects in the scene, so
-// nothing here is aimed at the child and no text instruction is needed for
-// play. These are small grown-up controls in the top corners, each at least
-// 44 x 44 CSS px: "All done" on the left; "Your child had a turn", pause/resume,
-// replay word and the grown-up button on the right. "All done" is never
-// disabled or gated and acts at once. A quick accidental double tap is ignored
-// so a single tap never pauses and resumes, or ends twice.
-//
-// "Your child had a turn" is the grown-up's confirm (PRD 01 section 3.2: the
-// parent can trigger the response to a real-world gesture; PRD 03 section 3
-// PARENT_CONFIRM): when the child points, looks or makes a sound during a
-// turn, the grown-up presses it and the story answers exactly as for a tap on
-// the glowing object. It is enabled only while a beat waits for a turn (and
-// not while play is paused); it never judges or labels what the child did.
+// QA-A08 and QA-E10; WP-7). The child plays by tapping big objects in the
+// scene, so nothing here is aimed at the child and no text instruction is
+// needed for play. These are small grown-up controls in the top corners, each
+// at least 48 x 48 CSS px: "All done" on the left; "Your child had a turn"
+// (with an unobtrusive SVG radial wait-progress ring), pause/resume, replay
+// word and the grown-up button on the right. "All done" is never disabled or
+// gated and acts at once. A quick accidental double tap is ignored so a single
+// tap never pauses and resumes, or ends twice.
 
 import { docOf, el, icon, iconButton, ignoreRepeats, uiText, type UiLocale } from "./accessibility.js";
 
@@ -33,9 +27,40 @@ export interface ChildControls {
   setReplayAvailable(available: boolean): void;
   /** A beat started (true) or stopped (false) waiting for a turn: enables "Your child had a turn". */
   setTurnWaiting(waiting: boolean): void;
+  /** Updates the calm radial wait ring around "Your child had a turn" (`1` = full wait left, `0` = elapsed). */
+  setWaitProgress?(fractionRemaining: number): void;
   /** Hides or shows the whole bar (for example under the offline card). */
   setVisible(visible: boolean): void;
   dispose(): void;
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+/** r = 21 inside a 48x48 viewBox -> circumference = 2 * pi * 21 ≈ 131.95. */
+const WAIT_RING_CIRCUMFERENCE = 131.95;
+
+function createWaitRing(doc: Document): { readonly svg: SVGSVGElement; readonly arc: SVGCircleElement } {
+  const svg = doc.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 48 48");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  svg.setAttribute("class", "ww-wait-ring");
+
+  const track = doc.createElementNS(SVG_NS, "circle");
+  track.setAttribute("cx", "24");
+  track.setAttribute("cy", "24");
+  track.setAttribute("r", "21");
+  track.setAttribute("class", "ww-wait-track");
+
+  const arc = doc.createElementNS(SVG_NS, "circle");
+  arc.setAttribute("cx", "24");
+  arc.setAttribute("cy", "24");
+  arc.setAttribute("r", "21");
+  arc.setAttribute("class", "ww-wait-arc");
+  arc.setAttribute("stroke-dasharray", String(WAIT_RING_CIRCUMFERENCE));
+  arc.setAttribute("stroke-dashoffset", String(WAIT_RING_CIRCUMFERENCE));
+
+  svg.append(track, arc);
+  return { svg, arc };
 }
 
 export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers: ChildControlHandlers): ChildControls {
@@ -47,28 +72,53 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     icon(doc, "done"),
     el(doc, "span", { text: uiText(locale, "ui.allDone") })
   ]);
-  const confirm = iconButton(doc, "turn", uiText(locale, "ui.confirm"), { "data-control": "confirm" });
+  const confirm = iconButton(doc, "turn", uiText(locale, "ui.confirm"), {
+    "data-control": "confirm",
+    "data-action": "confirm"
+  });
+  confirm.classList.add("ww-control-confirm");
+  const waitRing = createWaitRing(doc);
+  confirm.appendChild(waitRing.svg);
+
   const pause = iconButton(doc, "pause", pauseLabel, { "data-control": "pause" });
   const replay = iconButton(doc, "replay", uiText(locale, "ui.replay"), { "data-control": "replay" });
   const parent = iconButton(doc, "settings", uiText(locale, "ui.parentButton"), { "data-control": "parent" });
 
-  const bar = el(doc, "div", {
-    className: "ww-controls",
-    attrs: { role: "group", "aria-label": uiText(locale, "ui.controls.label"), "data-ui": "controls" }
-  }, [
-    el(doc, "div", { className: "ww-controls-group" }, [allDone]),
-    el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [confirm, pause, replay, parent])
-  ]);
+  const bar = el(
+    doc,
+    "div",
+    {
+      className: "ww-controls",
+      attrs: { role: "group", "aria-label": uiText(locale, "ui.controls.label"), "data-ui": "controls" }
+    },
+    [
+      el(doc, "div", { className: "ww-controls-group" }, [allDone]),
+      el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [confirm, pause, replay, parent])
+    ]
+  );
 
   let paused = false;
   let turnWaiting = false;
+  let waitFraction = 0;
+
+  const syncRing = (): void => {
+    const clamped = Number.isFinite(waitFraction) ? Math.min(1, Math.max(0, waitFraction)) : 0;
+    const active = turnWaiting && !paused;
+    const offset = active ? WAIT_RING_CIRCUMFERENCE * (1 - clamped) : WAIT_RING_CIRCUMFERENCE;
+    waitRing.arc.setAttribute("stroke-dashoffset", offset.toFixed(2));
+    confirm.dataset["waitProgress"] = active ? clamped.toFixed(2) : "0.00";
+  };
+
   const sync = (): void => {
     const label = paused ? resumeLabel : pauseLabel;
-    pause.replaceChildren(icon(doc, paused ? "play" : "pause"));
+    pause.textContent = "";
+    pause.appendChild(icon(doc, paused ? "play" : "pause"));
     pause.setAttribute("aria-label", label);
     pause.title = label;
     pause.dataset["paused"] = String(paused);
     confirm.disabled = !turnWaiting || paused;
+    confirm.classList.toggle("is-waiting", turnWaiting && !paused);
+    syncRing();
   };
 
   pause.addEventListener(
@@ -106,7 +156,12 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     setTurnWaiting(waiting: boolean): void {
       if (turnWaiting === waiting) return;
       turnWaiting = waiting;
+      waitFraction = waiting ? 1 : 0;
       sync();
+    },
+    setWaitProgress(fractionRemaining: number): void {
+      waitFraction = Number.isFinite(fractionRemaining) ? Math.min(1, Math.max(0, fractionRemaining)) : 0;
+      syncRing();
     },
     setVisible(visible: boolean): void {
       bar.hidden = !visible;

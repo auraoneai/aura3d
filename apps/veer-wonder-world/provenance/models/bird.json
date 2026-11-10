@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "bird",
-  "file": "src/assets/models/bird.455fd6b5.glb",
-  "sha256": "455fd6b550abfa3122b7f8b7ff00f114a96d3fdde891a45cdc35c02b488f7ad3",
-  "sizeBytes": 294620,
+  "file": "src/assets/models/bird.ff90b504.glb",
+  "sha256": "ff90b5041eafef3428182bec40a5eb53be9be37cb8a50c0934e206369d389804",
+  "sizeBytes": 445996,
   "rigged": false,
   "clips": [],
   "heightM": 0.3,
@@ -45,11 +45,39 @@
       "bytesIn": 9320568,
       "bytesOut": 817532
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#7fb2ea",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#7fb2ea",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 175421,
+      "preservedPixels": 85312,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-87b57eb891a003da99d9708ba93e6f8152acb5d3805b7c8d024f5d6f436cadf9"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.84,
+      "metallicFactor": 0,
+      "normalScale": 0.35,
+      "jpegBytes": 70909,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-87b57eb891a003da99d9708ba93e6f8152acb5d3805b7c8d024f5d6f436cadf9"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       1.409
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Cute round bird; came out cream with a blue belly, tinted light blue per brief.",
     "tint": "#7fb2ea"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/bird.455fd6b5.glb",
+    "sha256": "455fd6b550abfa3122b7f8b7ff00f114a96d3fdde891a45cdc35c02b488f7ad3",
+    "sizeBytes": 294620
+  }
 }

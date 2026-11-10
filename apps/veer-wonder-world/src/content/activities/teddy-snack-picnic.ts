@@ -52,6 +52,23 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "object", target: "basket", action: "open" }]
+    },
+    {
+      setupStage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "object", target: "teddy", action: "wobble" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "gesture", actor: "momo", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -139,6 +156,26 @@ export const activity: ActivitySpec = {
           { speaker: "momo", key: "g05.apple.4" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        apple: {
+          stage: [
+            { do: "move", actor: "apple", to: "center", style: "hop" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "happy" },
+            { do: "sfx", sound: "munch" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "move", actor: "apple", to: "center", style: "slide" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "object", target: "teddy", action: "wobble" },
+            { do: "gesture", actor: "momo", gesture: "cheer" },
+            { do: "sfx", sound: "munch" }
+          ]
+        }
       }
     },
     {
@@ -175,19 +212,42 @@ export const activity: ActivitySpec = {
           { speaker: "momo", key: "g05.banana.4" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        banana: {
+          stage: [
+            { do: "move", actor: "banana", to: "center", style: "hop" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "happy" },
+            { do: "sfx", sound: "munch" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "move", actor: "banana", to: "center", style: "slide" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "object", target: "teddy", action: "wobble" },
+            { do: "gesture", actor: "momo", gesture: "cheer" },
+            { do: "sfx", sound: "munch" }
+          ]
+        }
       }
     }
   ],
   round: [
     {
-      // The choice: both foods back in their places, both glowing, offered at
-      // once. One answer for either pick: Teddy takes a pretend bite where he
-      // sits (no food moves, so nothing contradicts the child's pick), and
-      // the grown-up names the chosen food (tip 3).
+      // The choice: both foods fresh in their places, both glowing, offered at
+      // once. Tapping apple feeds Teddy the apple; tapping banana feeds Teddy
+      // the banana; timeout plays a neutral pretend bite.
       id: "choose",
       kind: "invite",
       camera: "wide",
       stage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
         { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "point" },
@@ -215,6 +275,28 @@ export const activity: ActivitySpec = {
           { speaker: "momo", key: "g05.choose.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        apple: {
+          stage: [
+            { do: "move", actor: "apple", to: "center", style: "hop" },
+            { do: "object", target: "apple", action: "eat" },
+            { do: "sfx", sound: "munch" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        banana: {
+          stage: [
+            { do: "move", actor: "banana", to: "center", style: "hop" },
+            { do: "object", target: "banana", action: "eat" },
+            { do: "sfx", sound: "munch" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -222,10 +304,16 @@ export const activity: ActivitySpec = {
       kind: "repeat",
       camera: "wide",
       stage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "enter", actor: "apple", at: "front", from: "backRight", style: "hop" },
+        { do: "enter", actor: "banana", at: "frontRight", from: "backRight", style: "hop" },
         { do: "object", target: "teddy", action: "bounce" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "enter", actor: "apple", at: "front", from: "backRight", style: "slide" },
+        { do: "enter", actor: "banana", at: "frontRight", from: "backRight", style: "slide" },
         { do: "object", target: "teddy", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],

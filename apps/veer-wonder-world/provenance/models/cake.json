@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "cake",
-  "file": "src/assets/models/cake.f261855c.glb",
-  "sha256": "f261855cb1ea51d2839e11e90a2101556110ccbf73df5654c18ea629dce6bb6c",
-  "sizeBytes": 319312,
+  "file": "src/assets/models/cake.48c4270d.glb",
+  "sha256": "48c4270d500cdac49c40625e6c806b8a380b3acc1ce40b93a30b074a6e363087",
+  "sizeBytes": 373060,
   "rigged": false,
   "clips": [],
   "heightM": 0.38,
@@ -45,7 +45,7 @@
       "bytesIn": 10908268,
       "bytesOut": 849156
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
@@ -57,6 +57,20 @@
       "trianglesRemoved": 92,
       "reason": "The modelled candle flame and wick were cut off so E16 can light and blow out the separate procedural candleFlame prop that rests on the candle (2026-10-29).",
       "from": "cake.8d32d584.glb (sha256 8d32d5841f78be43d6e81c4d38ef5b5c09624f334519c4e9d07188db47e39270)"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.66,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 53543,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-13154f4bc6e569d68b67ab689716b7e43f619390e0b59b1d3029c9c34579dc66"
     }
   },
   "inspection": {
@@ -67,7 +81,8 @@
       1.708
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -83,5 +98,10 @@
     "date": "2026-10-29",
     "notes": "v2: round cake with frosting, sprinkles and exactly one candle (E16: cake, one, blow). Flame cut off 2026-10-29; the stage draws the candle flame as a separate prop."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/cake.f261855c.glb",
+    "sha256": "f261855cb1ea51d2839e11e90a2101556110ccbf73df5654c18ea629dce6bb6c",
+    "sizeBytes": 319312
+  }
 }

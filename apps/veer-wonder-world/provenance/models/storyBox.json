@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "storyBox",
-  "file": "src/assets/models/storyBox.3c134a7e.glb",
-  "sha256": "3c134a7e2105453ace996368f3a7ed5f24fd17d8fd49ebf6563ad088a0604311",
-  "sizeBytes": 282952,
+  "file": "src/assets/models/storyBox.610f29e4.glb",
+  "sha256": "610f29e4a784dedede25b0d7d0ac515d2ce1c331a93a9285880bab9f315dac4a",
+  "sizeBytes": 556212,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,24 +45,85 @@
       "bytesIn": 7602900,
       "bytesOut": 738612
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.58,
+      "metallicFactor": 0.02,
+      "normalScale": 0.36,
+      "jpegBytes": 64561,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-57accefd2843b91d05308656c73d233327d27be0b01c6f66543af01c3788df45"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "lid"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 3879,
+      "trianglesAfter": 3879,
+      "verticesAfter": 5746,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.52e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "storyBox_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 2547,
+          "vertices": 3883
+        },
+        "lid": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            0.02894,
+            -0.77603
+          ],
+          "localTranslation": [
+            0,
+            0.02894,
+            -0.77603
+          ],
+          "triangles": 1332,
+          "vertices": 1863
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 5685,
+    "vertexCount": 5746,
     "bounds": [
       1.839,
       1.901,
       1.589
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -78,5 +139,10 @@
     "date": "2026-10-29",
     "notes": "Open box with stars; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/storyBox.51542258.glb",
+    "sha256": "51542258bcc0ed47136cd76da9d8d786c73ae89c04a0b3ef5003857b15b6a525",
+    "sizeBytes": 347728
+  }
 }

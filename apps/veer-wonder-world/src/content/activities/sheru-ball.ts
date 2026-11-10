@@ -41,6 +41,87 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "sheru", gesture: "wag" }]
+    },
+    {
+      setupStage: [
+        { do: "gesture", actor: "sheru", gesture: "wag" },
+        { do: "sfx", sound: "yip" }
+      ],
+      beatOverrides: {
+        roll: {
+          response: {
+            stage: [
+              { do: "move", actor: "ball", to: "backLeft", style: "roll" },
+              { do: "object", target: "ball", action: "roll" },
+              { do: "face", actor: "momo", toward: "ball" }
+            ],
+            lines: [
+              { speaker: "momo", key: "g03.roll.2" },
+              { speaker: "narrator", key: "g03.roll.3" }
+            ],
+            holdMs: 800
+          }
+        },
+        fetch: {
+          stage: [
+            { do: "move", actor: "sheru", to: "backLeft", style: "run" },
+            { do: "face", actor: "sheru", toward: "ball" },
+            { do: "gesture", actor: "sheru", gesture: "sniff" },
+            { do: "sfx", sound: "yip" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ],
+          reducedMotionStage: [
+            { do: "move", actor: "sheru", to: "backLeft", style: "walk" },
+            { do: "face", actor: "sheru", toward: "ball" },
+            { do: "gesture", actor: "sheru", gesture: "sniff" },
+            { do: "sfx", sound: "yip" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
+      }
+    },
+    {
+      setupStage: [
+        { do: "gesture", actor: "sheru", gesture: "wag" },
+        { do: "sfx", sound: "woofSoft" }
+      ],
+      beatOverrides: {
+        roll: {
+          response: {
+            stage: [
+              { do: "move", actor: "ball", to: "back", style: "roll" },
+              { do: "object", target: "ball", action: "roll" },
+              { do: "face", actor: "momo", toward: "ball" }
+            ],
+            lines: [
+              { speaker: "momo", key: "g03.roll.2" },
+              { speaker: "narrator", key: "g03.roll.3" }
+            ],
+            holdMs: 800
+          }
+        },
+        fetch: {
+          stage: [
+            { do: "move", actor: "sheru", to: "back", style: "run" },
+            { do: "face", actor: "sheru", toward: "ball" },
+            { do: "gesture", actor: "sheru", gesture: "sniff" },
+            { do: "sfx", sound: "woof" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ],
+          reducedMotionStage: [
+            { do: "move", actor: "sheru", to: "back", style: "walk" },
+            { do: "face", actor: "sheru", toward: "ball" },
+            { do: "gesture", actor: "sheru", gesture: "sniff" },
+            { do: "sfx", sound: "woof" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
+      }
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -119,6 +200,7 @@ export const activity: ActivitySpec = {
       response: {
         stage: [
           { do: "move", actor: "ball", to: "backRight", style: "roll" },
+          { do: "object", target: "ball", action: "roll" },
           { do: "face", actor: "momo", toward: "ball" }
         ],
         lines: [
@@ -137,12 +219,14 @@ export const activity: ActivitySpec = {
       stage: [
         { do: "move", actor: "sheru", to: "backRight", style: "run" },
         { do: "face", actor: "sheru", toward: "ball" },
+        { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "sfx", sound: "arf" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionStage: [
         { do: "move", actor: "sheru", to: "backRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "ball" },
+        { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "sfx", sound: "arf" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],
@@ -186,7 +270,8 @@ export const activity: ActivitySpec = {
         // backRight does not pass through him.
         { do: "carry", actor: "sheru", item: null },
         { do: "move", actor: "ball", to: "front", style: "roll" },
-        { do: "gesture", actor: "sheru", gesture: "sit" },
+        { do: "object", target: "ball", action: "roll" },
+        { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "object", target: "ball", action: "glow" }
       ],

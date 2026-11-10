@@ -302,7 +302,7 @@ export const episode: EpisodeSpec = {
         { wordId: "go", objectId: "lulu" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["drum"] },
+      input: { type: "tap", targets: ["drum", "lulu"] },
       waitMs: 5000,
       caregiverPromptKey: "e06.tip.1",
       response: {
@@ -318,6 +318,26 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e06.invite-go.3" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        drum: {
+          stage: [
+            { do: "sfx", sound: "drum" },
+            { do: "object", target: "drum", action: "bounce" },
+            { do: "music", bed: "gardenBed" },
+            { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
+            { do: "gesture", actor: "momo", gesture: "dance", loop: true }
+          ]
+        },
+        lulu: {
+          stage: [
+            { do: "sfx", sound: "clap" },
+            { do: "object", target: "drum", action: "wobble" },
+            { do: "music", bed: "gardenBed" },
+            { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
+            { do: "gesture", actor: "momo", gesture: "dance", loop: true }
+          ]
+        }
       }
     },
     {
@@ -342,7 +362,7 @@ export const episode: EpisodeSpec = {
         { wordId: "stop", objectId: "lulu" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["drum"] },
+      input: { type: "tap", targets: ["drum", "lulu"] },
       waitMs: 5000,
       caregiverPromptKey: "e06.tip.2",
       response: {
@@ -357,6 +377,25 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e06.invite-stop.3" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        drum: {
+          stage: [
+            { do: "sfx", sound: "drum" },
+            { do: "object", target: "drum", action: "wobble" },
+            { do: "music", bed: null },
+            { do: "gesture", actor: "lulu", gesture: "freeze" },
+            { do: "gesture", actor: "momo", gesture: "freeze" }
+          ]
+        },
+        lulu: {
+          stage: [
+            { do: "sfx", sound: "stomp" },
+            { do: "music", bed: null },
+            { do: "gesture", actor: "lulu", gesture: "freeze" },
+            { do: "gesture", actor: "momo", gesture: "freeze" }
+          ]
+        }
       }
     },
     {

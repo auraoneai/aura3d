@@ -119,6 +119,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
+        { do: "object", target: "basket", action: "open" },
         { do: "gesture", actor: "lulu", gesture: "pickUp" },
         { do: "show", actor: "cookie-1" },
         { do: "object", target: "cookie-1", action: "bounce" },
@@ -177,6 +178,23 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "lulu", key: "e05.turn.3" }],
         holdMs: 3300
+      },
+      responseByTarget: {
+        basket: {
+          stage: [
+            { do: "object", target: "basket", action: "open" },
+            { do: "object", target: "basket", action: "wobble" },
+            { do: "gesture", actor: "lulu", gesture: "pickUp" },
+            { do: "sfx", sound: "rustle" }
+          ]
+        },
+        lulu: {
+          stage: [
+            { do: "gesture", actor: "lulu", gesture: "happy" },
+            { do: "object", target: "basket", action: "open" },
+            { do: "sfx", sound: "sparkle" }
+          ]
+        }
       }
     },
     {
@@ -244,6 +262,24 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e05.eat.3" }
         ],
         holdMs: 3800
+      },
+      responseByTarget: {
+        "cookie-3": {
+          stage: [
+            { do: "object", target: "cookie-3", action: "bounce" },
+            { do: "carry", actor: "momo", item: "cookie-3" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "carry", actor: "momo", item: "cookie-3" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "gesture", actor: "lulu", gesture: "happy" },
+            { do: "sfx", sound: "munch" }
+          ]
+        }
       }
     },
     {

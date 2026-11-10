@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "pastryCircle",
-  "file": "src/assets/models/pastryCircle.6a3b108c.glb",
-  "sha256": "6a3b108c709cac5f79727b763a10493e1c125a535c267256ff9a1700123529fb",
-  "sizeBytes": 148920,
+  "file": "src/assets/models/pastryCircle.657a8a5c.glb",
+  "sha256": "657a8a5c1cd9ef2d9f8426656ddb890d6ab8f3aaecafd089d3933e0df6cd3b11",
+  "sizeBytes": 201220,
   "rigged": false,
   "clips": [],
   "heightM": 0.08,
@@ -45,13 +45,27 @@
       "bytesIn": 7711460,
       "bytesOut": 607308
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.62,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 52091,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-f2e91d02271ff3a7a32aa239468624f1a1b1d371d06945a433837b8426cf7fc1"
     }
   },
   "inspection": {
@@ -62,7 +76,8 @@
       0.123
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -78,5 +93,10 @@
     "date": "2026-10-29",
     "notes": "Round fluted pastry; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/pastryCircle.6a3b108c.glb",
+    "sha256": "6a3b108c709cac5f79727b763a10493e1c125a535c267256ff9a1700123529fb",
+    "sizeBytes": 148920
+  }
 }

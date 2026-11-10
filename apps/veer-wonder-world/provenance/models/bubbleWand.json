@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "bubbleWand",
-  "file": "src/assets/models/bubbleWand.1baf843e.glb",
-  "sha256": "1baf843eba6cd1b71c098b9d3980c44e9720cc3300e20bf83732ba1bd1df91d7",
-  "sizeBytes": 187988,
+  "file": "src/assets/models/bubbleWand.18d37ac5.glb",
+  "sha256": "18d37ac5300c6ff609134276f60d453132fe00b5940887eb1b72eeddadd3b9e2",
+  "sizeBytes": 242416,
   "rigged": false,
   "clips": [],
   "heightM": 0.5,
@@ -45,11 +45,39 @@
       "bytesIn": 7513600,
       "bytesOut": 655352
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#a46ad8",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#a46ad8",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 228861,
+      "preservedPixels": 32531,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-84cf80cb58d20de5811593c4a848f758450301600b5194542b1776e111fce977"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.4,
+      "metallicFactor": 0.02,
+      "normalScale": 0.26,
+      "jpegBytes": 25732,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-84cf80cb58d20de5811593c4a848f758450301600b5194542b1776e111fce977"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       0.297
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Wand with a ring; tinted purple per brief.",
     "tint": "#a46ad8"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/bubbleWand.1baf843e.glb",
+    "sha256": "1baf843eba6cd1b71c098b9d3980c44e9720cc3300e20bf83732ba1bd1df91d7",
+    "sizeBytes": 187988
+  }
 }

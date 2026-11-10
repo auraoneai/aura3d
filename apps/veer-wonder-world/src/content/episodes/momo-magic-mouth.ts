@@ -202,6 +202,25 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e01.turn.4" }
         ],
         holdMs: 4400
+      },
+      responseByTarget: {
+        mirror: {
+          stage: [
+            { do: "object", target: "mirror", action: "wobble" },
+            { do: "object", target: "mirror", action: "glow" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "momo", toward: "mirror" },
+            { do: "gesture", actor: "momo", gesture: "mirror" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "object", target: "mirror", action: "glow" },
+            { do: "sfx", sound: "giggle" },
+            { do: "face", actor: "momo", toward: "mirror" },
+            { do: "gesture", actor: "momo", gesture: "surprise" }
+          ]
+        }
       }
     },
     {
@@ -229,6 +248,23 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e01.more.3" }
         ],
         holdMs: 4400
+      },
+      responseByTarget: {
+        mirror: {
+          stage: [
+            { do: "object", target: "mirror", action: "wobble" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "momo", toward: "mirror" },
+            { do: "gesture", actor: "momo", gesture: "mirror" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "face", actor: "momo", toward: "mirror" },
+            { do: "gesture", actor: "momo", gesture: "cheer" },
+            { do: "sfx", sound: "giggle" }
+          ]
+        }
       }
     },
     {

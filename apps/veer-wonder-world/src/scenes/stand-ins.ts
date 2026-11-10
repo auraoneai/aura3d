@@ -16,8 +16,10 @@
 import { material, primitives, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
 import { MODEL_INFO, type ModelKey } from "../aura-assets.js";
 import type { MoveStyle, PropAssetId } from "../types.js";
+import type { SubPartId } from "./articulated-actors.js";
 import { composeRotation, rotateZYX, type Vec3 } from "./motion.js";
-import type { LayoutRole } from "./spots.js";
+
+export type LayoutRole = "actor" | "surface" | "container" | "occluder" | "stackable" | "plain";
 
 /** Every asset the stage can place: the 59 generated model keys plus the procedural bubble. */
 export type StageAssetKey = ModelKey | "bubble";
@@ -166,6 +168,17 @@ export function propAssetKey(asset: PropAssetId): StageAssetKey {
 
 export type StandInShape = "sphere" | "capsule" | "box" | "cylinder" | "torus" | "cone";
 
+export type StandInMaterialCraft =
+  | "clay"
+  | "felt"
+  | "lacquer"
+  | "ceramic"
+  | "rubber"
+  | "metal"
+  | "frostedGlass"
+  | "carPaint"
+  | "soapBubble";
+
 export interface StandInPiece {
   readonly shape: StandInShape;
   readonly color: string;
@@ -183,6 +196,10 @@ export interface StandInPiece {
   readonly metallic?: number;
   readonly opacity?: number;
   readonly emissive?: { readonly color: string; readonly intensity: number };
+  /** Tactile 5.5.1 material preset family (clay, felt, lacquer, ceramic, rubber, soapBubble, ...). */
+  readonly craft?: StandInMaterialCraft;
+  /** Optional articulated sub-part id (`${actorId}__${part}` when movable). */
+  readonly part?: SubPartId;
   /** Radial segments for cylinders (3 makes the triangle pastry). */
   readonly segments?: number;
   /** Torus tube radius of the unit torus (engine default 0.045, a thin wire). */
@@ -243,46 +260,85 @@ function starPoints(color: string, y: number): readonly StandInPiece[] {
 const r = (main: StandInPiece, parts: readonly StandInPiece[] = []): StandInRecipe => ({ main, parts });
 
 export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
-  // ---- the six friends
-  momo: r(piece("sphere", "#8E6CD8", [0.88, 1, 0.8], [0, 0.5, 0]), [
-    ...eyes(0.17, 0.66, 0.34, 0.22, 0.11),
-    piece("sphere", "#7556C2", [0.24, 0.14, 0.3], [-0.2, 0.05, 0.1]),
-    piece("sphere", "#7556C2", [0.24, 0.14, 0.3], [0.2, 0.05, 0.1])
+  // ---- the six friends (articulated sub-parts `${id}__<part>` + tactile craft materials)
+  momo: r(piece("sphere", "#8E6CD8", [0.84, 0.72, 0.76], [0, 0.38, 0], { craft: "felt" }), [
+    piece("sphere", "#8E6CD8", [0.66, 0.56, 0.62], [0, 0.73, 0.04], { craft: "felt", tinted: true, part: "head" }),
+    ...eyes(0.16, 0.76, 0.32, 0.2, 0.1),
+    piece("sphere", "#8E6CD8", [0.21, 0.09, 0.15], [-0.16, 0.82, 0.34], { craft: "felt", part: "eyelidL" }),
+    piece("sphere", "#8E6CD8", [0.21, 0.09, 0.15], [0.16, 0.82, 0.34], { craft: "felt", part: "eyelidR" }),
+    piece("capsule", "#8563D0", [0.16, 0.32, 0.16], [-0.44, 0.46, 0.04], { craft: "felt", part: "armL" }),
+    piece("capsule", "#8563D0", [0.16, 0.32, 0.16], [0.44, 0.46, 0.04], { craft: "felt", part: "armR" }),
+    piece("sphere", "#7556C2", [0.24, 0.14, 0.3], [-0.2, 0.07, 0.1], { craft: "felt", part: "footL" }),
+    piece("sphere", "#7556C2", [0.24, 0.14, 0.3], [0.2, 0.07, 0.1], { craft: "felt", part: "footR" }),
+    piece("sphere", "#6D4EB8", [0.2, 0.09, 0.12], [0, 0.61, 0.33], { craft: "clay", part: "jaw" }),
+    piece("sphere", "#B89AF0", [0.46, 0.1, 0.15], [0, 0.68, 0.31], { craft: "felt", part: "cheekPuff" })
   ]),
-  lulu: r(piece("capsule", "#7ED6AE", [0.62, 1, 0.58], [0, 0.5, 0]), [
-    ...eyes(0.12, 0.78, 0.25, 0.17, 0.085),
-    piece("sphere", "#68C49B", [0.24, 0.2, 0.34], [0, 0.22, -0.32]),
-    piece("sphere", "#68C49B", [0.28, 0.14, 0.34], [-0.15, 0.05, 0.1]),
-    piece("sphere", "#68C49B", [0.28, 0.14, 0.34], [0.15, 0.05, 0.1])
+  lulu: r(piece("capsule", "#7ED6AE", [0.58, 0.68, 0.54], [0, 0.36, 0], { craft: "clay" }), [
+    piece("sphere", "#7ED6AE", [0.52, 0.46, 0.5], [0, 0.77, 0.03], { craft: "clay", tinted: true, part: "head" }),
+    ...eyes(0.12, 0.8, 0.25, 0.17, 0.085),
+    piece("sphere", "#7ED6AE", [0.18, 0.08, 0.14], [-0.12, 0.86, 0.27], { craft: "clay", part: "eyelidL" }),
+    piece("sphere", "#7ED6AE", [0.18, 0.08, 0.14], [0.12, 0.86, 0.27], { craft: "clay", part: "eyelidR" }),
+    piece("capsule", "#68C49B", [0.14, 0.26, 0.14], [-0.31, 0.5, 0.08], { craft: "clay", part: "armL" }),
+    piece("capsule", "#68C49B", [0.14, 0.26, 0.14], [0.31, 0.5, 0.08], { craft: "clay", part: "armR" }),
+    piece("sphere", "#68C49B", [0.24, 0.2, 0.34], [0, 0.22, -0.32], { craft: "clay", part: "tail" }),
+    piece("sphere", "#68C49B", [0.28, 0.14, 0.34], [-0.15, 0.07, 0.1], { craft: "clay", part: "footL" }),
+    piece("sphere", "#68C49B", [0.28, 0.14, 0.34], [0.15, 0.07, 0.1], { craft: "clay", part: "footR" }),
+    piece("sphere", "#52AC85", [0.18, 0.08, 0.12], [0, 0.66, 0.26], { craft: "clay", part: "jaw" }),
+    piece("sphere", "#A6EBD0", [0.36, 0.09, 0.14], [0, 0.73, 0.24], { craft: "clay", part: "cheekPuff" })
   ]),
-  sheru: r(piece("sphere", "#EAD3A8", [0.7, 0.58, 1.05], [0, 0.42, -0.05]), [
-    piece("sphere", "#EAD3A8", [0.55, 0.52, 0.5], [0, 0.78, 0.38]),
-    piece("sphere", "#A87B4F", [0.13, 0.32, 0.12], [-0.25, 0.86, 0.33]),
-    piece("sphere", "#A87B4F", [0.13, 0.32, 0.12], [0.25, 0.86, 0.33]),
-    piece("sphere", INK, [0.1, 0.08, 0.08], [0, 0.72, 0.64]),
-    ...dotEyes(0.11, 0.86, 0.6, 0.08)
+  sheru: r(piece("sphere", "#EAD3A8", [0.7, 0.54, 1.02], [0, 0.42, -0.05], { craft: "felt" }), [
+    piece("sphere", "#EAD3A8", [0.55, 0.5, 0.5], [0, 0.76, 0.38], { craft: "felt", part: "head" }),
+    piece("sphere", "#A87B4F", [0.13, 0.32, 0.12], [-0.25, 0.82, 0.33], { craft: "felt", part: "earL" }),
+    piece("sphere", "#A87B4F", [0.13, 0.32, 0.12], [0.25, 0.82, 0.33], { craft: "felt", part: "earR" }),
+    piece("capsule", "#D8BC8E", [0.12, 0.28, 0.12], [0, 0.56, -0.54], { rotation: [-0.55, 0, 0], craft: "felt", part: "tail" }),
+    piece("capsule", "#DEC394", [0.14, 0.28, 0.14], [-0.18, 0.14, 0.24], { craft: "felt", part: "legFL" }),
+    piece("capsule", "#DEC394", [0.14, 0.28, 0.14], [0.18, 0.14, 0.24], { craft: "felt", part: "legFR" }),
+    piece("capsule", "#DEC394", [0.14, 0.28, 0.14], [-0.18, 0.14, -0.3], { craft: "felt", part: "legBL" }),
+    piece("capsule", "#DEC394", [0.14, 0.28, 0.14], [0.18, 0.14, -0.3], { craft: "felt", part: "legBR" }),
+    piece("sphere", INK, [0.1, 0.08, 0.08], [0, 0.72, 0.64], { craft: "lacquer" }),
+    ...dotEyes(0.11, 0.84, 0.6, 0.08),
+    piece("sphere", "#EAD3A8", [0.1, 0.05, 0.07], [-0.11, 0.88, 0.61], { craft: "felt", part: "eyelidL" }),
+    piece("sphere", "#EAD3A8", [0.1, 0.05, 0.07], [0.11, 0.88, 0.61], { craft: "felt", part: "eyelidR" }),
+    piece("sphere", "#C7A878", [0.18, 0.07, 0.16], [0, 0.64, 0.54], { craft: "felt", part: "jaw" })
   ]),
-  gogo: r(piece("box", "#E2483D", [0.7, 0.55, 1.15], [0, 0.42, 0]), [
-    piece("box", "#B83228", [0.7, 0.42, 0.42], [0, 0.82, -0.36]),
-    piece("cylinder", "#3C3C46", [0.18, 0.32, 0.18], [0, 0.85, 0.3]),
-    piece("cylinder", "#2F3140", [0.32, 0.8, 0.32], [0, 0.16, 0.34], { rotation: [0, 0, Math.PI / 2] }),
-    piece("cylinder", "#2F3140", [0.32, 0.8, 0.32], [0, 0.16, -0.34], { rotation: [0, 0, Math.PI / 2] }),
-    ...dotEyes(0.15, 0.55, 0.59, 0.11)
+  gogo: r(piece("box", "#E2483D", [0.7, 0.55, 1.15], [0, 0.42, 0], { craft: "carPaint" }), [
+    piece("box", "#B83228", [0.7, 0.42, 0.42], [0, 0.82, -0.36], { craft: "carPaint" }),
+    piece("box", "#CF3B30", [0.05, 0.36, 0.3], [-0.36, 0.78, -0.36], { craft: "carPaint", part: "cabDoorL" }),
+    piece("box", "#CF3B30", [0.05, 0.36, 0.3], [0.36, 0.78, -0.36], { craft: "carPaint", part: "cabDoorR" }),
+    piece("cylinder", "#3C3C46", [0.18, 0.32, 0.18], [0, 0.85, 0.3], { craft: "metal", part: "chimney" }),
+    piece("cylinder", "#2F3140", [0.32, 0.14, 0.32], [-0.36, 0.16, 0.34], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFL" }),
+    piece("cylinder", "#2F3140", [0.32, 0.14, 0.32], [0.36, 0.16, 0.34], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFR" }),
+    piece("cylinder", "#2F3140", [0.32, 0.14, 0.32], [-0.36, 0.16, -0.34], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRL" }),
+    piece("cylinder", "#2F3140", [0.32, 0.14, 0.32], [0.36, 0.16, -0.34], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRR" }),
+    ...dotEyes(0.15, 0.55, 0.59, 0.11),
+    piece("sphere", "#E2483D", [0.13, 0.06, 0.08], [-0.15, 0.6, 0.6], { craft: "carPaint", part: "eyelidL" }),
+    piece("sphere", "#E2483D", [0.13, 0.06, 0.08], [0.15, 0.6, 0.6], { craft: "carPaint", part: "eyelidR" })
   ]),
-  gogoCarriage: r(piece("box", "#F5C842", [0.86, 0.5, 1.2], [0, 0.42, 0]), [
-    piece("cylinder", "#2F3140", [0.36, 0.95, 0.36], [0, 0.18, 0.36], { rotation: [0, 0, Math.PI / 2] }),
-    piece("cylinder", "#2F3140", [0.36, 0.95, 0.36], [0, 0.18, -0.36], { rotation: [0, 0, Math.PI / 2] })
+  gogoCarriage: r(piece("box", "#F5C842", [0.86, 0.5, 1.2], [0, 0.42, 0], { craft: "carPaint" }), [
+    piece("box", "#E4B530", [0.05, 0.38, 0.42], [-0.44, 0.44, 0], { craft: "carPaint", part: "cabDoorL" }),
+    piece("cylinder", "#2F3140", [0.36, 0.14, 0.36], [-0.44, 0.18, 0.36], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFL" }),
+    piece("cylinder", "#2F3140", [0.36, 0.14, 0.36], [0.44, 0.18, 0.36], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFR" }),
+    piece("cylinder", "#2F3140", [0.36, 0.14, 0.36], [-0.44, 0.18, -0.36], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRL" }),
+    piece("cylinder", "#2F3140", [0.36, 0.14, 0.36], [0.44, 0.18, -0.36], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRR" })
   ]),
-  lumi: r(piece("sphere", "#FFD34D", [0.5, 0.5, 0.32], [0, 0.5, 0], { emissive: { color: "#FFC83A", intensity: 0.22 } }), [
+  lumi: r(piece("sphere", "#FFD34D", [0.5, 0.5, 0.32], [0, 0.5, 0], { craft: "ceramic", emissive: { color: "#FFC83A", intensity: 0.22 } }), [
+    piece("torus", "#FFE484", [0.68, 0.68, 0.24], [0, 0.5, -0.02], { tube: 0.08, craft: "ceramic", emissive: { color: "#FFD55A", intensity: 0.18 }, part: "petals" }),
     ...starPoints("#FFD34D", 0.5),
-    ...dotEyes(0.08, 0.55, 0.15, 0.08)
+    ...dotEyes(0.08, 0.55, 0.15, 0.08),
+    piece("sphere", "#FFD34D", [0.09, 0.04, 0.06], [-0.08, 0.59, 0.16], { craft: "ceramic", part: "eyelidL" }),
+    piece("sphere", "#FFD34D", [0.09, 0.04, 0.06], [0.08, 0.59, 0.16], { craft: "ceramic", part: "eyelidR" })
   ]),
-  peeko: r(piece("sphere", "#FFE15A", [0.92, 1, 0.88], [0, 0.5, 0]), [
-    piece("cone", "#F59A2E", [0.16, 0.22, 0.16], [0, 0.52, 0.48], { rotation: [Math.PI / 2, 0, 0] }),
-    piece("sphere", "#FFD23A", [0.2, 0.22, 0.2], [0, 1.0, 0]),
-    piece("sphere", "#FFD23A", [0.2, 0.36, 0.42], [-0.46, 0.45, 0]),
-    piece("sphere", "#FFD23A", [0.2, 0.36, 0.42], [0.46, 0.45, 0]),
-    ...dotEyes(0.16, 0.66, 0.4, 0.12)
+  peeko: r(piece("sphere", "#FFE15A", [0.92, 0.96, 0.88], [0, 0.48, 0], { craft: "felt" }), [
+    piece("cone", "#F59A2E", [0.16, 0.2, 0.14], [0, 0.55, 0.48], { rotation: [Math.PI / 2, 0, 0], craft: "lacquer" }),
+    piece("cone", "#E8891E", [0.14, 0.16, 0.12], [0, 0.49, 0.46], { rotation: [Math.PI / 2 + 0.12, 0, 0], craft: "lacquer", part: "beakLower" }),
+    piece("sphere", "#FFD23A", [0.2, 0.22, 0.2], [0, 0.99, 0], { craft: "felt", part: "tuft" }),
+    piece("sphere", "#FFD23A", [0.2, 0.36, 0.42], [-0.46, 0.46, 0], { craft: "felt", part: "wingL" }),
+    piece("sphere", "#FFD23A", [0.2, 0.36, 0.42], [0.46, 0.46, 0], { craft: "felt", part: "wingR" }),
+    piece("sphere", "#F59A2E", [0.16, 0.08, 0.22], [-0.16, 0.04, 0.08], { craft: "lacquer", part: "footL" }),
+    piece("sphere", "#F59A2E", [0.16, 0.08, 0.22], [0.16, 0.04, 0.08], { craft: "lacquer", part: "footR" }),
+    ...dotEyes(0.16, 0.66, 0.4, 0.12),
+    piece("sphere", "#FFE15A", [0.14, 0.06, 0.09], [-0.16, 0.72, 0.41], { craft: "felt", part: "eyelidL" }),
+    piece("sphere", "#FFE15A", [0.14, 0.06, 0.09], [0.16, 0.72, 0.41], { craft: "felt", part: "eyelidR" })
   ]),
   // ---- friends and animals
   teddy: r(piece("sphere", "#A9744F", [0.72, 0.62, 0.62], [0, 0.31, 0]), [
@@ -333,24 +389,26 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
     piece("sphere", "#F7D64A", [0.2, 0.2, 0.08], [0.45, 0.66, 0.03])
   ]),
   // ---- toys and props
-  ball: r(piece("sphere", "#E4574B", [1, 1, 1], [0, 0.5, 0], { roughness: 0.55 })),
-  bubbleWand: r(piece("cylinder", "#9B6BD6", [0.1, 0.62, 0.1], [0, 0.31, 0]), [
-    piece("torus", "#B48BE8", [0.42, 0.42, 0.42], [0, 0.79, 0], { tube: 0.06 })
+  ball: r(piece("sphere", "#E4574B", [1, 1, 1], [0, 0.5, 0], { roughness: 0.42, craft: "rubber", tinted: true }), [
+    piece("torus", "#FFF6EC", [0.92, 0.92, 0.92], [0, 0.5, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.055, craft: "lacquer", tinted: false })
   ]),
-  cookie: r(piece("cylinder", "#D9A35F", [2.2, 1, 2.2], [0, 0.5, 0]), [
-    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [-0.4, 1.0, 0.3]),
-    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [0.45, 1.0, -0.2]),
-    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [0.05, 1.0, 0.55])
+  bubbleWand: r(piece("cylinder", "#9B6BD6", [0.1, 0.62, 0.1], [0, 0.31, 0], { craft: "lacquer" }), [
+    piece("torus", "#B48BE8", [0.42, 0.42, 0.42], [0, 0.79, 0], { tube: 0.06, craft: "lacquer" })
   ]),
-  plate: r(piece("cylinder", "#BFE0F2", [5, 1, 5], [0, 0.5, 0], { roughness: 0.35 })),
+  cookie: r(piece("cylinder", "#D9A35F", [2.2, 1, 2.2], [0, 0.5, 0], { craft: "clay" }), [
+    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [-0.4, 1.0, 0.3], { craft: "clay" }),
+    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [0.45, 1.0, -0.2], { craft: "clay" }),
+    piece("sphere", "#5C3A22", [0.32, 0.25, 0.32], [0.05, 1.0, 0.55], { craft: "clay" })
+  ]),
+  plate: r(piece("cylinder", "#BFE0F2", [5, 1, 5], [0, 0.5, 0], { roughness: 0.22, craft: "ceramic" })),
   mirror: r(piece("cylinder", "#DDE6EE", [0.6, 0.05, 0.6], [0, 0.62, 0], { rotation: [Math.PI / 2, 0, 0], roughness: 0.08, metallic: 0.6 }), [
     piece("torus", "#F4B6C8", [0.7, 0.7, 0.7], [0, 0.62, 0], { tube: 0.1 }),
     piece("cylinder", "#F4B6C8", [0.08, 0.34, 0.08], [0, 0.17, 0]),
     piece("cylinder", "#F4B6C8", [0.4, 0.05, 0.3], [0, 0.025, 0])
   ]),
-  door: r(piece("box", "#49B7B0", [0.62, 1, 0.08], [0, 0.5, 0], { tinted: true }), [
-    piece("sphere", "#F2C94C", [0.06, 0.06, 0.06], [0.22, 0.48, 0.06], { roughness: 0.3 }),
-    piece("box", "#FFFFFF", [0.5, 0.02, 0.09], [0, 0.85, 0], { tinted: false })
+  door: r(piece("box", "#49B7B0", [0.62, 1, 0.08], [0, 0.5, 0], { tinted: true, craft: "lacquer" }), [
+    piece("sphere", "#F2C94C", [0.06, 0.06, 0.06], [0.22, 0.48, 0.06], { roughness: 0.28, craft: "metal" }),
+    piece("box", "#FFFFFF", [0.5, 0.02, 0.09], [0, 0.85, 0], { tinted: false, craft: "ceramic" })
   ]),
   letterB: r(piece("box", "#3F7FD9", [0.22, 1, 0.24], [-0.24, 0.5, 0]), [
     // Chunky bowls (tube 0.2): outer radius 0.63 * size, so the top bowl reaches h and the bottom one the ground.
@@ -385,49 +443,55 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
     piece("box", "#FFFFFF", [1.2, 0.08, 0.3], [0, 0.79, 0.24]),
     piece("box", "#3D3A4A", [1.0, 0.06, 0.13], [0, 0.85, 0.17])
   ]),
-  picnicBasket: r(piece("box", "#D9A15B", [1.3, 0.62, 0.9], [0, 0.31, 0]), [
-    piece("torus", "#B98545", [0.95, 0.95, 0.95], [0, 0.62, 0]),
-    piece("box", "#E4574B", [1.12, 0.08, 0.72], [0, 0.64, 0])
+  picnicBasket: r(piece("box", "#D9A15B", [1.3, 0.62, 0.9], [0, 0.31, 0], { craft: "clay" }), [
+    piece("torus", "#B98545", [0.95, 0.95, 0.95], [0, 0.62, 0], { craft: "clay" }),
+    piece("box", "#E4574B", [1.12, 0.08, 0.72], [0, 0.64, 0], { craft: "lacquer", part: "lid" })
   ]),
-  car: r(piece("box", "#4A8FE8", [1.0, 0.5, 1.45], [0, 0.42, 0], { tinted: true }), [
-    piece("box", "#9CCBF5", [0.8, 0.38, 0.7], [0, 0.85, -0.08]),
-    piece("cylinder", "#2F3140", [0.38, 1.1, 0.38], [0, 0.19, 0.46], { rotation: [0, 0, Math.PI / 2] }),
-    piece("cylinder", "#2F3140", [0.38, 1.1, 0.38], [0, 0.19, -0.46], { rotation: [0, 0, Math.PI / 2] }),
+  car: r(piece("box", "#4A8FE8", [1.0, 0.5, 1.45], [0, 0.42, 0], { tinted: true, craft: "carPaint" }), [
+    piece("box", "#9CCBF5", [0.8, 0.38, 0.7], [0, 0.85, -0.08], { craft: "frostedGlass" }),
+    piece("cylinder", "#2F3140", [0.38, 0.16, 0.38], [-0.48, 0.19, 0.46], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFL" }),
+    piece("cylinder", "#2F3140", [0.38, 0.16, 0.38], [0.48, 0.19, 0.46], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelFR" }),
+    piece("cylinder", "#2F3140", [0.38, 0.16, 0.38], [-0.48, 0.19, -0.46], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRL" }),
+    piece("cylinder", "#2F3140", [0.38, 0.16, 0.38], [0.48, 0.19, -0.46], { rotation: [0, 0, Math.PI / 2], craft: "rubber", part: "wheelRR" }),
     piece("sphere", "#FFF6D8", [0.16, 0.16, 0.08], [-0.3, 0.5, 0.73], { emissive: { color: "#FFF1B8", intensity: 0.2 } }),
     piece("sphere", "#FFF6D8", [0.16, 0.16, 0.08], [0.3, 0.5, 0.73], { emissive: { color: "#FFF1B8", intensity: 0.2 } })
   ]),
-  sponge: r(piece("box", "#F7E26B", [2, 1, 1.4], [0, 0.5, 0], { roughness: 0.95 })),
-  towel: r(piece("box", "#A8DDB5", [3, 1, 2.2], [0, 0.5, 0], { roughness: 0.95 })),
-  toyBlock: r(piece("box", "#E2C08D", [1, 1, 1], [0, 0.5, 0])),
-  lift: r(piece("box", "#CDBAF0", [0.56, 1, 0.08], [0, 0.5, -0.16]), [
-    piece("box", "#FFE7A3", [0.5, 0.04, 0.36], [0, 0.5, 0]),
-    piece("box", "#FFE7A3", [0.5, 0.04, 0.36], [0, 0.02, 0]),
-    piece("box", "#B7A2E6", [0.6, 0.06, 0.4], [0, 1.0, 0]),
-    piece("box", "#B7A2E6", [0.05, 1, 0.36], [-0.27, 0.5, 0]),
-    piece("box", "#B7A2E6", [0.05, 1, 0.36], [0.27, 0.5, 0])
+  sponge: r(piece("box", "#F7E26B", [2, 1, 1.4], [0, 0.5, 0], { roughness: 0.95, craft: "felt" })),
+  towel: r(piece("box", "#A8DDB5", [3, 1, 2.2], [0, 0.5, 0], { roughness: 0.95, craft: "felt" })),
+  toyBlock: r(piece("box", "#E2C08D", [1, 1, 1], [0, 0.5, 0], { craft: "lacquer" })),
+  lift: r(piece("box", "#CDBAF0", [0.56, 1, 0.08], [0, 0.5, -0.16], { craft: "clay" }), [
+    piece("box", "#FFE7A3", [0.5, 0.04, 0.36], [0, 0.5, 0], { craft: "lacquer", part: "liftCab" }),
+    piece("box", "#FFE7A3", [0.5, 0.04, 0.36], [0, 0.02, 0], { craft: "lacquer" }),
+    piece("box", "#E9D9FF", [0.46, 0.28, 0.03], [0, 0.18, 0.18], { craft: "lacquer", part: "liftGate" }),
+    piece("box", "#B7A2E6", [0.6, 0.06, 0.4], [0, 1.0, 0], { craft: "clay" }),
+    piece("box", "#B7A2E6", [0.05, 1, 0.36], [-0.27, 0.5, 0], { craft: "clay" }),
+    piece("box", "#B7A2E6", [0.05, 1, 0.36], [0.27, 0.5, 0], { craft: "clay" })
   ]),
-  flower: r(piece("cylinder", "#6DBE6B", [0.06, 0.75, 0.06], [0, 0.375, 0]), [
-    piece("torus", "#F58AB8", [0.42, 0.42, 0.25], [0, 0.76, 0], { tube: 0.16 }),
-    piece("sphere", "#FFD54D", [0.24, 0.24, 0.14], [0, 0.76, 0.01]),
-    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [-0.1, 0.35, 0]),
-    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [0.1, 0.5, 0])
+  flower: r(piece("cylinder", "#6DBE6B", [0.06, 0.75, 0.06], [0, 0.375, 0], { craft: "clay" }), [
+    piece("torus", "#F58AB8", [0.42, 0.42, 0.25], [0, 0.76, 0], { tube: 0.16, craft: "felt", part: "petals" }),
+    piece("sphere", "#FFD54D", [0.24, 0.24, 0.14], [0, 0.76, 0.01], { craft: "felt" }),
+    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [-0.1, 0.35, 0], { craft: "clay" }),
+    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [0.1, 0.5, 0], { craft: "clay" })
   ]),
-  flowerBud: r(piece("cylinder", "#6DBE6B", [0.06, 0.75, 0.06], [0, 0.375, 0]), [
-    piece("sphere", "#F58AB8", [0.24, 0.32, 0.24], [0, 0.86, 0]),
-    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [-0.1, 0.35, 0]),
-    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [0.1, 0.5, 0])
+  flowerBud: r(piece("cylinder", "#6DBE6B", [0.06, 0.75, 0.06], [0, 0.375, 0], { craft: "clay" }), [
+    piece("sphere", "#F58AB8", [0.24, 0.32, 0.24], [0, 0.86, 0], { craft: "felt", part: "petals" }),
+    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [-0.1, 0.35, 0], { craft: "clay" }),
+    piece("sphere", "#7CCB6A", [0.2, 0.06, 0.12], [0.1, 0.5, 0], { craft: "clay" })
   ]),
-  tree: r(piece("cylinder", "#9B6B43", [0.12, 0.48, 0.12], [0, 0.24, 0]), [
-    piece("sphere", "#7CCB6A", [0.72, 0.6, 0.72], [0, 0.7, 0], { shadow: true })
+  tree: r(piece("cylinder", "#9B6B43", [0.12, 0.48, 0.12], [0, 0.24, 0], { craft: "clay" }), [
+    piece("sphere", "#7CCB6A", [0.72, 0.6, 0.72], [0, 0.7, 0], { shadow: true, craft: "felt" })
   ]),
-  bush: r(piece("sphere", "#7CC46E", [1.1, 0.9, 1.0], [0, 0.42, 0]), [
-    piece("sphere", "#8BD07C", [0.7, 0.7, 0.7], [-0.45, 0.32, 0.05]),
-    piece("sphere", "#6FB862", [0.7, 0.7, 0.7], [0.45, 0.3, -0.05])
+  bush: r(piece("sphere", "#7CC46E", [1.08, 0.86, 0.96], [0, 0.43, 0], { craft: "felt" }), [
+    piece("sphere", "#8BD07C", [0.68, 0.64, 0.68], [-0.44, 0.32, 0.06], { craft: "felt" }),
+    piece("sphere", "#6FB862", [0.68, 0.62, 0.68], [0.44, 0.31, -0.04], { craft: "felt" }),
+    piece("sphere", "#95DA86", [0.58, 0.52, 0.58], [-0.16, 0.66, 0.12], { craft: "felt" }),
+    piece("sphere", "#79C66B", [0.54, 0.48, 0.54], [0.22, 0.62, 0.14], { craft: "felt" })
   ]),
-  barn: r(piece("box", "#D9574A", [1.1, 0.6, 0.8], [0, 0.3, 0]), [
-    piece("box", "#F6EFE6", [0.66, 0.06, 0.86], [-0.27, 0.72, 0], { rotation: [0, 0, 0.62], shadow: true }),
-    piece("box", "#F6EFE6", [0.66, 0.06, 0.86], [0.27, 0.72, 0], { rotation: [0, 0, -0.62], shadow: true }),
-    piece("box", "#B8463B", [0.5, 0.42, 0.02], [0, 0.21, 0.41])
+  barn: r(piece("box", "#D9574A", [1.1, 0.6, 0.8], [0, 0.3, 0], { craft: "clay" }), [
+    piece("box", "#F6EFE6", [0.66, 0.06, 0.86], [-0.27, 0.72, 0], { rotation: [0, 0, 0.62], shadow: true, craft: "clay" }),
+    piece("box", "#F6EFE6", [0.66, 0.06, 0.86], [0.27, 0.72, 0], { rotation: [0, 0, -0.62], shadow: true, craft: "clay" }),
+    piece("box", "#B8463B", [0.24, 0.42, 0.03], [-0.13, 0.21, 0.41], { craft: "lacquer", part: "hingeLeaf" }),
+    piece("box", "#B8463B", [0.24, 0.42, 0.03], [0.13, 0.21, 0.41], { craft: "lacquer", part: "hingeLeafR" })
   ]),
   station: r(piece("box", "#F1E4C8", [1.5, 0.12, 0.62], [0, 0.06, 0]), [
     piece("box", "#A9CBEA", [0.9, 0.55, 0.42], [0, 0.39, -0.08]),
@@ -466,82 +530,98 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
     piece("cylinder", "#E39A5E", [0.08, 0.52, 0.08], [-0.24, 0.26, 0.24]),
     piece("cylinder", "#E39A5E", [0.08, 0.52, 0.08], [0.24, 0.26, 0.24])
   ]),
-  cushion: r(piece("sphere", "#B48BE0", [2.2, 1, 2.2], [0, 0.5, 0], { roughness: 0.95 })),
-  toyBox: r(piece("box", "#A6DDB3", [1.3, 0.9, 0.9], [0, 0.45, 0]), [
-    piece("box", "#8FCFA0", [1.32, 0.08, 0.6], [0, 1.02, -0.62], { rotation: [-1.1, 0, 0] })
+  cushion: r(piece("sphere", "#B48BE0", [2.2, 1, 2.2], [0, 0.5, 0], { roughness: 0.95, craft: "felt" })),
+  toyBox: r(piece("box", "#A6DDB3", [1.3, 0.9, 0.9], [0, 0.45, 0], { craft: "lacquer" }), [
+    piece("box", "#8FCFA0", [1.32, 0.08, 0.6], [0, 1.02, -0.62], { rotation: [-1.1, 0, 0], craft: "lacquer", part: "lid" })
   ]),
-  bench: r(piece("box", "#E3C391", [2.0, 0.12, 0.6], [0, 0.66, 0]), [
-    piece("box", "#D2AD78", [0.12, 0.6, 0.5], [-0.82, 0.3, 0]),
-    piece("box", "#D2AD78", [0.12, 0.6, 0.5], [0.82, 0.3, 0])
+  bench: r(piece("box", "#E3C391", [2.0, 0.12, 0.6], [0, 0.66, 0], { craft: "clay" }), [
+    piece("box", "#D2AD78", [0.12, 0.6, 0.5], [-0.82, 0.3, 0], { craft: "clay" }),
+    piece("box", "#D2AD78", [0.12, 0.6, 0.5], [0.82, 0.3, 0], { craft: "clay" })
   ]),
-  colourMachine: r(piece("box", "#C7B3F2", [0.8, 0.7, 0.55], [0, 0.35, 0]), [
-    piece("cone", "#F7B8D2", [0.5, 0.3, 0.5], [0, 0.86, 0], { rotation: [Math.PI, 0, 0] }),
-    piece("box", "#A9D4F2", [0.26, 0.1, 0.26], [0, 0.12, 0.34]),
-    piece("sphere", "#E4574B", [0.1, 0.1, 0.06], [-0.2, 0.5, 0.28]),
-    piece("sphere", "#F2C94C", [0.1, 0.1, 0.06], [0, 0.5, 0.28]),
-    piece("sphere", "#3F7FD9", [0.1, 0.1, 0.06], [0.2, 0.5, 0.28])
+  colourMachine: r(piece("box", "#C7B3F2", [0.8, 0.7, 0.55], [0, 0.35, 0], { craft: "lacquer" }), [
+    piece("cone", "#F7B8D2", [0.5, 0.3, 0.5], [0, 0.86, 0], { rotation: [Math.PI, 0, 0], craft: "ceramic" }),
+    piece("box", "#A9D4F2", [0.26, 0.1, 0.26], [0, 0.12, 0.34], { craft: "ceramic" }),
+    piece("sphere", "#E4574B", [0.1, 0.1, 0.06], [-0.2, 0.5, 0.28], { craft: "lacquer" }),
+    piece("sphere", "#F2C94C", [0.1, 0.1, 0.06], [0, 0.5, 0.28], { craft: "lacquer" }),
+    piece("sphere", "#3F7FD9", [0.1, 0.1, 0.06], [0.2, 0.5, 0.28], { craft: "lacquer" })
   ]),
-  storyBox: r(piece("box", "#B79AE6", [1.2, 0.9, 0.9], [0, 0.45, 0]), [
-    piece("box", "#A385DA", [1.22, 0.08, 0.6], [0, 1.02, -0.6], { rotation: [-1.1, 0, 0] }),
+  storyBox: r(piece("box", "#B79AE6", [1.2, 0.9, 0.9], [0, 0.45, 0], { craft: "lacquer" }), [
+    piece("box", "#A385DA", [1.22, 0.08, 0.6], [0, 1.02, -0.6], { rotation: [-1.1, 0, 0], craft: "lacquer", part: "lid" }),
     piece("sphere", "#F7D64A", [0.14, 0.14, 0.04], [-0.3, 0.55, 0.46], { emissive: { color: "#FFD54D", intensity: 0.2 } }),
     piece("sphere", "#F7D64A", [0.12, 0.12, 0.04], [0.28, 0.35, 0.46], { emissive: { color: "#FFD54D", intensity: 0.2 } })
   ]),
-  pastryCircle: r(piece("cylinder", "#E9B872", [3.75, 1, 3.75], [0, 0.5, 0])),
-  pastrySquare: r(piece("box", "#E9B872", [3.75, 1, 3.75], [0, 0.5, 0])),
-  pastryTriangle: r(piece("cylinder", "#E9B872", [4.2, 1, 4.2], [0, 0.5, 0], { segments: 3 })),
-  hat: r(piece("cylinder", "#E4574B", [1.2, 0.72, 1.2], [0, 0.46, 0]), [
-    piece("cylinder", "#E4574B", [2.2, 0.12, 2.2], [0, 0.06, 0], { tinted: true })
+  pastryCircle: r(piece("cylinder", "#E9B872", [3.75, 1, 3.75], [0, 0.5, 0], { craft: "clay" })),
+  pastrySquare: r(piece("box", "#E9B872", [3.75, 1, 3.75], [0, 0.5, 0], { craft: "clay" })),
+  pastryTriangle: r(piece("cylinder", "#E9B872", [4.2, 1, 4.2], [0, 0.5, 0], { segments: 3, craft: "clay" })),
+  hat: r(piece("cylinder", "#E4574B", [1.2, 0.72, 1.2], [0, 0.46, 0], { craft: "felt" }), [
+    piece("cylinder", "#E4574B", [2.2, 0.12, 2.2], [0, 0.06, 0], { tinted: true, craft: "felt" })
   ]),
-  stompStone: r(piece("cylinder", "#CDB8F2", [5, 1, 5], [0, 0.5, 0], { roughness: 0.9 })),
-  cloud: r(piece("sphere", "#FFFFFF", [1.3, 0.75, 0.85], [0, 0.42, 0], { roughness: 0.95 }), [
-    piece("sphere", "#F7F5FF", [0.85, 0.6, 0.7], [-0.55, 0.32, 0.02], { roughness: 0.95 }),
-    piece("sphere", "#F7F5FF", [0.8, 0.62, 0.7], [0.55, 0.34, -0.02], { roughness: 0.95 }),
-    piece("sphere", "#FFFFFF", [0.8, 0.6, 0.66], [0.15, 0.72, 0], { roughness: 0.95 })
+  stompStone: r(piece("cylinder", "#CDB8F2", [5, 0.84, 5], [0, 0.42, 0], { roughness: 0.86, craft: "clay", tinted: true }), [
+    piece("torus", "#DECFF8", [4.4, 4.4, 0.9], [0, 0.76, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.08, craft: "ceramic", tinted: true }),
+    piece("cylinder", "#E7DCFB", [3.9, 0.16, 3.9], [0, 0.92, 0], { roughness: 0.35, craft: "ceramic", tinted: true })
   ]),
-  balloon: r(piece("sphere", "#E4574B", [0.75, 0.86, 0.75], [0, 0.58, 0], { roughness: 0.3 }), [
-    piece("cylinder", "#F5F2EC", [0.015, 0.36, 0.015], [0, 0.18, 0]),
-    piece("sphere", "#E4574B", [0.08, 0.08, 0.08], [0, 0.15, 0], { tinted: true })
+  cloud: r(piece("sphere", "#FFFFFF", [1.26, 0.74, 0.84], [0, 0.42, 0], { roughness: 0.94, craft: "felt" }), [
+    piece("sphere", "#F7F5FF", [0.84, 0.58, 0.7], [-0.54, 0.32, 0.03], { roughness: 0.94, craft: "felt" }),
+    piece("sphere", "#F7F5FF", [0.8, 0.6, 0.7], [0.54, 0.34, -0.02], { roughness: 0.94, craft: "felt" }),
+    piece("sphere", "#FFFFFF", [0.8, 0.58, 0.66], [0.16, 0.72, 0], { roughness: 0.94, craft: "felt" }),
+    piece("sphere", "#FFFFFF", [0.68, 0.52, 0.62], [-0.22, 0.68, 0.06], { roughness: 0.94, craft: "felt" })
+  ]),
+  balloon: r(piece("sphere", "#E4574B", [0.76, 0.86, 0.76], [0, 0.58, 0], { roughness: 0.16, craft: "lacquer", tinted: true }), [
+    piece("torus", "#E4574B", [0.14, 0.14, 0.18], [0, 0.15, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.16, craft: "lacquer", tinted: true }),
+    piece("cylinder", "#F5F2EC", [0.016, 0.3, 0.016], [0, 0.15, 0], { craft: "felt" }),
+    piece("sphere", "#FFFFFF", [0.12, 0.16, 0.05], [-0.18, 0.76, 0.32], { craft: "ceramic", opacity: 0.65 })
   ]),
   // Lowercase letters (05 section 1: one clear uppercase and lowercase letter), in their capitals' colours.
-  // b: a full-height stem and a round bowl at the bottom right (chunky torus, outer radius 0.63 * size).
-  letterBLower: r(piece("box", "#3F7FD9", [0.22, 1, 0.24], [-0.2, 0.5, 0]), [
-    piece("torus", "#3F7FD9", [0.476, 0.476, 0.55], [0.05, 0.3, 0], { tube: 0.2, tinted: true })
+  // b: a rounded full-height stem and a smooth bowl at the bottom right (chunky torus, outer radius 0.63 * size).
+  letterBLower: r(piece("capsule", "#3F7FD9", [0.22, 0.98, 0.24], [-0.2, 0.49, 0], { craft: "lacquer", tinted: true }), [
+    piece("torus", "#3F7FD9", [0.476, 0.476, 0.55], [0.05, 0.3, 0], { tube: 0.2, tinted: true, craft: "lacquer" })
   ]),
-  // a: the single-storey form toddler books use, a round bowl with a stem on its right.
-  letterALower: r(piece("box", "#E4574B", [0.2, 0.9, 0.24], [0.29, 0.45, 0]), [
-    piece("torus", "#E4574B", [0.714, 0.714, 0.55], [-0.08, 0.45, 0], { tube: 0.2, tinted: true })
+  // a: the single-storey form toddler books use, a smooth round bowl with a rounded stem on its right.
+  letterALower: r(piece("capsule", "#E4574B", [0.2, 0.9, 0.24], [0.29, 0.45, 0], { craft: "lacquer", tinted: true }), [
+    piece("torus", "#E4574B", [0.714, 0.714, 0.55], [-0.08, 0.45, 0], { tube: 0.2, tinted: true, craft: "lacquer" })
   ]),
-  // A toddler toothbrush standing on its handle: mint handle, white bristles at the top.
-  toothbrush: r(piece("capsule", "#7ED6AE", [0.12, 0.86, 0.12], [0, 0.43, 0], { roughness: 0.45 }), [
-    piece("box", "#7ED6AE", [0.14, 0.16, 0.12], [0, 0.9, 0], { roughness: 0.45 }),
-    piece("box", "#FFFFFF", [0.1, 0.18, 0.2], [0, 0.9, 0.1], { roughness: 0.8 })
+  // A toddler toothbrush standing on its handle: glossy mint handle, soft grip ring, rounded white bristles.
+  toothbrush: r(piece("capsule", "#7ED6AE", [0.12, 0.84, 0.12], [0, 0.42, 0], { roughness: 0.24, craft: "lacquer" }), [
+    piece("torus", "#5FC096", [0.18, 0.18, 0.22], [0, 0.38, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.14, craft: "rubber" }),
+    piece("capsule", "#7ED6AE", [0.14, 0.2, 0.12], [0, 0.88, 0.01], { roughness: 0.24, craft: "lacquer" }),
+    piece("capsule", "#FFFFFF", [0.1, 0.18, 0.16], [0, 0.88, 0.1], { roughness: 0.85, craft: "felt" })
   ]),
-  // The cake candle's flame: a warm teardrop with a brighter core. Its glow is steady and never flashes.
-  candleFlame: r(piece("sphere", "#FFB347", [0.55, 0.62, 0.55], [0, 0.3, 0], { roughness: 0.4, emissive: { color: "#FFB347", intensity: 0.45 } }), [
-    piece("cone", "#FFC864", [0.42, 0.62, 0.42], [0, 0.68, 0], { roughness: 0.4, emissive: { color: "#FFC864", intensity: 0.45 } }),
-    piece("sphere", "#FFF1C4", [0.26, 0.3, 0.26], [0, 0.3, 0.12], { roughness: 0.3, emissive: { color: "#FFF1C4", intensity: 0.5 } })
+  // The cake candle's flame: a warm sculpted teardrop with a luminous core. Its glow is steady and never flashes.
+  candleFlame: r(piece("sphere", "#FFB347", [0.54, 0.6, 0.54], [0, 0.3, 0], { roughness: 0.26, craft: "ceramic", emissive: { color: "#FFB347", intensity: 0.45 } }), [
+    piece("cone", "#FFC864", [0.42, 0.6, 0.42], [0, 0.68, 0], { roughness: 0.26, craft: "ceramic", emissive: { color: "#FFC864", intensity: 0.45 } }),
+    piece("sphere", "#FFF1C4", [0.26, 0.3, 0.26], [0, 0.32, 0.11], { roughness: 0.2, craft: "ceramic", emissive: { color: "#FFF1C4", intensity: 0.5 } })
   ]),
-  // A cone party hat with a soft pompom: the familiar triangle shape (E12).
-  partyHat: r(piece("cone", "#4FA3E0", [0.72, 0.9, 0.72], [0, 0.45, 0], { roughness: 0.55 }), [
-    piece("torus", "#F7D24A", [0.32, 0.32, 0.5], [0, 0.04, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.12 }),
-    piece("sphere", "#F7D24A", [0.2, 0.2, 0.2], [0, 0.94, 0], { roughness: 0.8 })
+  // A plush felt cone party hat with festive ceramic dots and a soft pompom (E12).
+  partyHat: r(piece("cone", "#4FA3E0", [0.72, 0.88, 0.72], [0, 0.44, 0], { roughness: 0.86, craft: "felt", tinted: true }), [
+    piece("torus", "#F7D24A", [0.34, 0.34, 0.52], [0, 0.05, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.13, craft: "felt" }),
+    piece("sphere", "#FFF5D6", [0.1, 0.1, 0.06], [-0.12, 0.38, 0.22], { craft: "ceramic" }),
+    piece("sphere", "#F7B8D2", [0.09, 0.09, 0.06], [0.14, 0.56, 0.15], { craft: "ceramic" }),
+    piece("sphere", "#F7D24A", [0.22, 0.22, 0.22], [0, 0.94, 0], { roughness: 0.9, craft: "felt" })
   ]),
-  // A warm sun with eight soft rays (no face; the glow is steady and never flashes).
-  sun: r(piece("sphere", "#FFC94A", [0.62, 0.62, 0.4], [0, 0.5, 0], { roughness: 0.6, emissive: { color: "#FFD36B", intensity: 0.25 } }), [
+  // A warm ceramic-and-clay sun with a soft inner corona and eight rounded rays (steady glow, never flashes).
+  sun: r(piece("sphere", "#FFC94A", [0.62, 0.62, 0.42], [0, 0.5, 0], { roughness: 0.32, craft: "ceramic", emissive: { color: "#FFD36B", intensity: 0.26 } }), [
+    piece("torus", "#FFE07D", [0.66, 0.66, 0.24], [0, 0.5, -0.02], { tube: 0.07, craft: "clay", emissive: { color: "#FFD36B", intensity: 0.18 } }),
     ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
       const a = (k * Math.PI) / 4;
-      return piece("cone", "#FFB938", [0.12, 0.16, 0.1], [Math.cos(a) * 0.44, 0.5 + Math.sin(a) * 0.44, 0], {
+      return piece("cone", "#FFB938", [0.13, 0.17, 0.11], [Math.cos(a) * 0.44, 0.5 + Math.sin(a) * 0.44, 0], {
         rotation: [0, 0, a - Math.PI / 2],
+        craft: "clay",
         emissive: { color: "#FFD36B", intensity: 0.2 }
       });
     })
   ]),
-  bubble: r(piece("sphere", "#DDF3FF", [1, 1, 1], [0, 0.5, 0], {
-    roughness: 0.08,
-    opacity: 0.38,
-    emissive: { color: "#CFEFFF", intensity: 0.12 }
+  // WebGPU-native thin-film iridescent soap bubble (IOR 1.33, 180–480 nm interference film).
+  bubble: r(piece("sphere", "#FFFFFF", [1, 1, 1], [0, 0.5, 0], {
+    roughness: 0.03,
+    metallic: 0,
+    opacity: 0.36,
+    craft: "soapBubble"
   }), [
-    piece("sphere", "#FFFFFF", [0.16, 0.12, 0.06], [-0.2, 0.74, 0.36], { emissive: { color: "#FFFFFF", intensity: 0.35 }, opacity: 0.85 })
+    piece("sphere", "#FFFFFF", [0.16, 0.12, 0.06], [-0.2, 0.74, 0.36], {
+      craft: "ceramic",
+      emissive: { color: "#FFFFFF", intensity: 0.32 },
+      opacity: 0.8
+    })
   ])
 };
 
@@ -562,6 +642,8 @@ export interface StandInPieceInstance {
   readonly index: number;
   /** Takes the placement tint (and a later "tint" action). */
   readonly tinted: boolean;
+  /** Articulated sub-part id when this piece is named `${actorId}__${part}`. */
+  readonly part?: SubPartId;
 }
 
 export interface BuiltStandIn {
@@ -589,13 +671,92 @@ export interface StandInOptions {
 type PieceMaterial = ReturnType<typeof material.pbr>;
 
 function pieceMaterial(p: StandInPiece, color: string): PieceMaterial {
-  return material.pbr({
-    color,
-    roughness: p.roughness ?? 0.72,
-    metallic: p.metallic ?? 0,
-    ...(p.opacity !== undefined && p.opacity < 1 ? { opacity: p.opacity } : {}),
-    ...(p.emissive ? { emissive: p.emissive.color, emissiveIntensity: p.emissive.intensity } : {})
-  });
+  const opacitySpec = p.opacity !== undefined && p.opacity < 1 ? { opacity: p.opacity } : {};
+  const emissiveSpec = p.emissive ? { emissive: p.emissive.color, emissiveIntensity: p.emissive.intensity, practical: true } : {};
+
+  switch (p.craft) {
+    case "soapBubble":
+      return material.physical({
+        color,
+        roughness: p.roughness ?? 0.03,
+        metallic: 0.0,
+        transmission: 0.88,
+        ior: 1.33,
+        thickness: 0.08,
+        iridescence: 1.0,
+        iridescenceIOR: 1.33,
+        iridescenceThicknessRange: [180, 480],
+        opacity: p.opacity ?? 0.36,
+        alphaMode: "blend"
+      });
+    case "clay":
+      return material.matteClay({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "felt":
+      return material.felt({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        sheen: 0.42,
+        sheenColor: "#FFF9F0",
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "lacquer":
+      return material.lacquer({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "ceramic":
+      return material.ceramic({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "rubber":
+      return material.rubber({
+        color,
+        roughness: p.roughness ?? 0.68,
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "metal":
+      return material.brushedMetal({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        ...(p.metallic !== undefined ? { metallic: p.metallic } : {}),
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    case "frostedGlass":
+      return material.frostedGlass({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        opacity: p.opacity ?? 0.52,
+        ...emissiveSpec
+      });
+    case "carPaint":
+      return material.carPaint({
+        color,
+        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+    default:
+      return material.pbr({
+        color,
+        roughness: p.roughness ?? 0.72,
+        metallic: p.metallic ?? 0,
+        ...opacitySpec,
+        ...emissiveSpec
+      });
+  }
 }
 
 /**
@@ -658,10 +819,21 @@ export function buildStandIn(key: StageAssetKey, options: StandInOptions): Built
   const yaw = options.yaw ?? 0;
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
   const pieces: StandInPieceInstance[] = [];
+  const usedParts = new Set<SubPartId>();
   const all = [recipe.main, ...recipe.parts];
   all.forEach((p, index) => {
-    const id = index === 0 ? options.id : `${options.id}~${index}`;
     const isMain = index === 0;
+    let id = options.id;
+    let assignedPart: SubPartId | undefined;
+    if (!isMain) {
+      if (p.part && !usedParts.has(p.part)) {
+        usedParts.add(p.part);
+        assignedPart = p.part;
+        id = `${options.id}__${p.part}`;
+      } else {
+        id = `${options.id}~${index}`;
+      }
+    }
     const tinted = p.tinted ?? isMain;
     const color = tinted && options.tint ? options.tint : p.color;
     const castShadow = (options.castShadow ?? true) && (p.shadow ?? isMain);
@@ -674,10 +846,25 @@ export function buildStandIn(key: StageAssetKey, options: StandInOptions): Built
       .position(world)
       .rotate(placed[0], placed[1], placed[2]);
     if (options.movable) {
-      node = node.runtime({ id, tags: [...(options.tags ?? []), isMain ? "stand-in" : "stand-in-part"], mutable: true });
+      node = node.runtime({
+        id,
+        tags: [
+          ...(options.tags ?? []),
+          isMain ? "stand-in" : "stand-in-part",
+          ...(assignedPart ? [`subpart:${assignedPart}`] : [])
+        ],
+        mutable: true
+      });
     }
     nodes.push(node);
-    pieces.push({ id, center, rotation, index, tinted });
+    pieces.push({
+      id,
+      center,
+      rotation,
+      index,
+      tinted,
+      ...(assignedPart ? { part: assignedPart } : {})
+    });
   });
   return { nodes, pieces };
 }

@@ -183,7 +183,7 @@ export const episode: EpisodeSpec = {
         { speaker: "lulu", key: "e16.count-three.2" }
       ],
       holdMs: 1500,
-      input: { type: "tap", targets: ["balloon3"] },
+      input: { type: "tap", targets: ["balloon3", "teddy"] },
       waitMs: 5000,
       caregiverPromptKey: "e16.tip.1",
       response: {
@@ -196,6 +196,23 @@ export const episode: EpisodeSpec = {
           { speaker: "lulu", key: "e16.count-three.4" }
         ],
         holdMs: 3000
+      },
+      responseByTarget: {
+        balloon3: {
+          stage: [
+            { do: "move", actor: "balloon3", to: "high", style: "float" },
+            { do: "sfx", sound: "boing" },
+            { do: "gesture", actor: "lulu", gesture: "happy" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "move", actor: "balloon3", to: "high", style: "float" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" }
+          ]
+        }
       },
       words: [
         { wordId: "balloon", objectId: "balloon3" },
@@ -210,6 +227,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "show", actor: "flame" },
+        { do: "object", target: "flame", action: "grow" },
         { do: "sfx", sound: "sparkle" },
         { do: "object", target: "flame", action: "glow" },
         { do: "face", actor: "lulu", toward: "cake" },
@@ -253,6 +271,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "sfx", sound: "blow" },
+        { do: "object", target: "flame", action: "shrink" },
         { do: "hide", actor: "flame" },
         { do: "gesture", actor: "lulu", gesture: "bow" },
         { do: "gesture", actor: "momo", gesture: "happy" }
@@ -273,6 +292,7 @@ export const episode: EpisodeSpec = {
       kind: "event",
       stage: [
         { do: "show", actor: "flame" },
+        { do: "object", target: "flame", action: "grow" },
         { do: "sfx", sound: "sparkle" },
         { do: "object", target: "flame", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" },
@@ -298,12 +318,13 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "lulu", key: "e16.blow-invite.1" }],
       holdMs: 1500,
-      input: { type: "tap", targets: ["cake"] },
+      input: { type: "tap", targets: ["cake", "flame"] },
       waitMs: 5000,
       caregiverPromptKey: "e16.tip.2",
       response: {
         stage: [
           { do: "sfx", sound: "blow" },
+          { do: "object", target: "flame", action: "shrink" },
           { do: "hide", actor: "flame" },
           { do: "gesture", actor: "lulu", gesture: "cheer" },
           { do: "gesture", actor: "momo", gesture: "cheer" }
@@ -313,6 +334,28 @@ export const episode: EpisodeSpec = {
           { speaker: "lulu", key: "e16.blow-invite.3" }
         ],
         holdMs: 2000
+      },
+      responseByTarget: {
+        cake: {
+          stage: [
+            { do: "sfx", sound: "blow" },
+            { do: "object", target: "cake", action: "wobble" },
+            { do: "object", target: "flame", action: "shrink" },
+            { do: "hide", actor: "flame" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        },
+        flame: {
+          stage: [
+            { do: "sfx", sound: "blow" },
+            { do: "object", target: "flame", action: "shrink" },
+            { do: "hide", actor: "flame" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "gesture", actor: "lulu", gesture: "bow" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       },
       words: [
         { wordId: "blow", objectId: "cake" },

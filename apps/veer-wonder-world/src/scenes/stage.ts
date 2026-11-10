@@ -94,6 +94,7 @@ import {
   rotateYaw,
   runningPose,
   sampleMove,
+  sampleObjectParts,
   sampleTransient,
   scalePoseTranslation,
   tipEdgeOffset,
@@ -137,6 +138,19 @@ import {
   type StageAssetKey,
   type StandInPiece
 } from "./stand-ins.js";
+import {
+  applyArticulatedParts,
+  mergePartPoses,
+  mirrorPartPoses,
+  type ArticulatedPoseMap,
+  type SubPartId
+} from "./articulated-actors.js";
+import {
+  createWonderVfxEmitter,
+  registerWonderVfxPresets,
+  targetRippleMaterial,
+  type WonderVfxEmitter
+} from "./vfx-presets.js";
 import { buildWorldNodes, worldDressingKeys, type BuiltWorld } from "./worlds.js";
 
 // ---------------------------------------------------------------- public types
@@ -148,6 +162,8 @@ export interface StageOptions {
    */
   readonly target: HTMLElement | string | null;
   readonly reducedMotion: boolean;
+  /** Renderer backend preference (`"auto"` tries WebGPU first with WebGL2 fallback). */
+  readonly backend?: "auto" | "webgpu" | "webgl2";
   /** Passed straight to `createGame({ sound })` (the audio mixer's `gameSoundOptions()`). */
   readonly sound?: unknown;
   /** Per-model preload timeout before a stand-in is used. Default 10000 ms. */
@@ -322,6 +338,8 @@ interface Piece {
   readonly index: number;
   /** Re-coloured by a "tint" action. */
   readonly tinted: boolean;
+  /** Named articulated sub-part id on stand-ins (`${actorId}__${part}`). */
+  readonly part?: SubPartId;
 }
 
 interface MoveRun {
@@ -396,6 +414,8 @@ interface StageNode {
   faceTarget: string | null;
   heading: number;
   rollAngle: number;
+  /** Cumulative arc-length travelled in metres (drives continuous wheel spin). */
+  travelledDistance: number;
   move: MoveRun | null;
   transient: TransientRun | null;
   appear: AppearRun | null;
@@ -404,6 +424,8 @@ interface StageNode {
   readonly scaleMul: Tweened;
   readonly topple: Tweened;
   readonly open: Tweened;
+  /** Normalized 0..1 open progress for hinged doors, lids, barn leaves, cab doors and lifts. */
+  readonly openProgress: Tweened;
   carriedBy: string | null;
   carrying: string | null;
   tint: string | null;
@@ -662,7 +684,7 @@ function buildReflection(mirror: StageNode, actor: StageNode): { readonly nodes:
         .rotate(placed[0], placed[1], placed[2])
         .runtime({ id: pieceId, tags: [...tags, index === 0 ? "stand-in" : "stand-in-part"], mutable: true })
     );
-    pieces.push({ id: pieceId, center, rotation, index, tinted: false });
+    pieces.push({ id: pieceId, center, rotation, index, tinted: false, ...(p.part ? { part: p.part } : {}) });
   });
   return { nodes, reflection: { ...layout, id, mirrorId: mirror.id, actorId: actor.id, drawnAs: "stand-in", pieces, drawn: null } };
 }
@@ -738,12 +760,11 @@ function nodeSeeds(story: StorySpec): NodeSeedInput[] {
 }
 
 function ringNode(id: string): AuraNodeBuilder<AuraSceneNode> {
-  return primitives.torus({
+  return primitives.plane({
     name: id,
-    size: [1, 1, 0.05],
+    size: [1, 1, 1],
     position: [0, -10, 0],
-    rotation: [Math.PI / 2, 0, 0],
-    material: material.pbr({ color: "#FFE9A8", emissive: "#FFE2A0", emissiveIntensity: 0.3, roughness: 0.6, metallic: 0 }),
+    material: targetRippleMaterial(),
     castShadow: false,
     receiveShadow: false
   }).runtime({ id, tags: ["highlight"], mutable: true });
@@ -754,7 +775,7 @@ function haloNode(id: string): AuraNodeBuilder<AuraSceneNode> {
     name: id,
     size: [1, 1, 1],
     position: [0, -10, 0],
-    material: material.pbr({ color: "#FFF3C4", emissive: "#FFE7A0", emissiveIntensity: 0.35, roughness: 1, metallic: 0, opacity: 0.22 }),
+    material: material.pbr({ color: "#FFF3C4", emissive: "#FFE7A0", emissiveIntensity: 0.35, practical: true, roughness: 1, metallic: 0, opacity: 0.22 }),
     castShadow: false,
     receiveShadow: false
   }).runtime({ id, tags: ["halo"], mutable: true });
@@ -786,6 +807,7 @@ function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in",
     faceTarget: null,
     heading: 0,
     rollAngle: 0,
+    travelledDistance: 0,
     move: null,
     transient: null,
     appear: null,
@@ -794,6 +816,7 @@ function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in",
     scaleMul: new Tweened(1),
     topple: new Tweened(0),
     open: new Tweened(0),
+    openProgress: new Tweened(0),
     carriedBy: null,
     carrying: null,
     tint: seed.tint,
@@ -802,11 +825,16 @@ function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in",
   };
 }
 
-function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cameraPose: CameraPose): BuiltStory {
+function buildStory(
+  story: StorySpec,
+  available: (key: ModelKey) => boolean,
+  cameraPose: CameraPose,
+  reducedMotion = false
+): BuiltStory {
   const look = worldLook(story.world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(story.world)) builder.add(node);
-  const world = buildWorldNodes(story.world, available);
+  for (const node of worldLookNodes(story.world, { reducedMotion })) builder.add(node);
+  const world = buildWorldNodes(story.world, available, { reducedMotion });
   builder.addMany(world.nodes);
   const seeds = nodeSeeds(story);
   const layout = resolveLayout(seeds.map(layoutEntryFor));
@@ -820,7 +848,6 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
     seen.add(seed.id);
     const base = layout.get(seed.id) ?? SPOTS[seed.at];
     const ref = seed.modelKey ? modelRef(seed.modelKey) : undefined;
-    const traits = ASSET_TRAITS[seed.asset];
     const tags = [seed.role, seed.asset];
     if (seed.modelKey && ref && available(seed.modelKey)) {
       const profile: CharacterProfile | null = seed.characterId ? CHARACTERS[seed.characterId] : null;
@@ -834,7 +861,7 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
         receiveShadow: true,
         visible: true,
         ...(seed.tint
-          ? { materialOverrides: [{ color: seed.tint, colorMode: traits.tintMode, ...(traits.tintMode === "replace" ? { replaceTextures: true } : {}) }] }
+          ? { materialOverrides: [{ color: seed.tint, colorMode: "multiply" }] }
           : {})
       })
         .position(base)
@@ -1002,13 +1029,19 @@ export function targetRectFor(candidate: PickCandidate, camera: CameraPose, widt
 }
 
 /** The calm scene shown before the first story loads: a world with no cast. */
-function buildIdleScene(world: WorldId, available: (key: ModelKey) => boolean, cameraPose: CameraPose): AuraSceneBuilder {
+function buildIdleScene(
+  world: WorldId,
+  available: (key: ModelKey) => boolean,
+  cameraPose: CameraPose,
+  reducedMotion = false
+): { readonly builder: AuraSceneBuilder; readonly world: BuiltWorld } {
   const look = worldLook(world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(world)) builder.add(node);
-  builder.addMany(buildWorldNodes(world, available).nodes);
+  for (const node of worldLookNodes(world, { reducedMotion })) builder.add(node);
+  const builtWorld = buildWorldNodes(world, available, { reducedMotion });
+  builder.addMany(builtWorld.nodes);
   builder.camera(camera.perspective({ position: cameraPose.position, target: cameraPose.target, fov: cameraPose.fov, near: cameraPose.near, far: cameraPose.far }));
-  return builder;
+  return { builder, world: builtWorld };
 }
 
 // ---------------------------------------------------------------- the stage
@@ -1058,21 +1091,51 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   };
   const initialWorld: WorldId = "meadow";
   const initialPre = await preloader.preload(worldDressingKeys(initialWorld));
-  const initialScene = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()));
+  let initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion);
+  let currentWorld: BuiltWorld | null = initialIdle.world;
 
+  const lookOpts = lookAppOptions(initialWorld);
   const gameOptions = {
     id: "wonder-world",
     target: options.target,
-    scene: () => initialScene,
+    scene: () => initialIdle.builder,
     autoStart: true,
     qualityRebuild: { flags: ["game"] },
-    ...lookAppOptions(initialWorld),
+    ...lookOpts,
+    renderer: {
+      ...lookOpts.renderer,
+      backend: options.backend ?? "auto",
+      allowFallback: true,
+      morph: "gpu" as const
+    },
     ...(options.sound !== undefined ? { sound: options.sound } : {})
   };
   const created = createGame<string, string>(gameOptions);
   gameHandle = created;
   const app = created.app;
   created.start();
+
+  let vfx: WonderVfxEmitter | null = null;
+  if (app.effects) {
+    try {
+      registerWonderVfxPresets(app.effects);
+      vfx = createWonderVfxEmitter(app.effects, () => reducedMotion || host === null);
+    } catch (error) {
+      warn(`vfx: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  const syncEffectsRuntime = (): void => {
+    if (!app.effects) return;
+    app.effects.runtime = host !== null && !reducedMotion ? "on" : "off";
+  };
+  const warmOptions = () => ({
+    ...WARM_OPTIONS,
+    // Headless Node tests (`host === null`) have no HTTP server or GPU canvas for HDRI/texture fetches.
+    frames: host !== null ? 1 : 0,
+    maxFrames: host !== null ? WARM_OPTIONS.maxFrames : 2,
+    waitForEnvironment: host !== null,
+    waitForTextures: host !== null
+  });
 
   // ---- live state
   let disposed = false;
@@ -1156,7 +1219,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       preloader.markFailed(drop);
       warn(`first mount failed; ${drop.join(", ")} drawn as stand-ins`);
       try {
-        await created.setScene(buildIdleScene(initialWorld, (key) => initialPre.available.has(key) && !dropped.includes(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow())).toJSON());
+        initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key) && !dropped.includes(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion);
+        currentWorld = initialIdle.world;
+        await created.setScene(initialIdle.builder.toJSON());
         await withTimeout(app.ready(), mountTimeoutMs);
       } catch (error) {
         warn(`setScene: ${error instanceof Error ? error.message : String(error)}`);
@@ -1176,10 +1241,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (app.effects) app.effects.runtime = "off";
     applyCamera(frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), true);
     try {
-      await warmPrograms(app, WARM_OPTIONS);
+      await warmPrograms(app, warmOptions());
     } catch (error) {
       warn(`warmPrograms: ${error instanceof Error ? error.message : String(error)}`);
     }
+    syncEffectsRuntime();
     if (!disposed) await setVeil(0);
   };
   let readyPromise: Promise<void> = settleFirstMount();
@@ -1233,7 +1299,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const carrier = nodes.get(item.carriedBy);
     item.base = item.drawn.base;
     item.carriedBy = null;
-    if (carrier && carrier.carrying === item.id) carrier.carrying = null;
+    if (carrier && carrier.carrying === item.id) {
+      carrier.carrying = null;
+      director.setCarrying(carrier.id, false);
+    }
   };
 
   const startMove = (n: StageNode, spot: SpotId, style: MoveStyle | undefined, hideOnArrival: boolean): void => {
@@ -1286,7 +1355,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         if (!main) return;
         const materials = materialHandleOf(main);
         if (materials) {
-          materials.setMaterialOverrides([{ color: tint, colorMode: n.traits.tintMode, ...(n.traits.tintMode === "replace" ? { replaceTextures: true } : {}) }]);
+          // Non-destructive multiply tint preserves normal & roughness maps on PBR GLBs.
+          materials.setMaterialOverrides([{ color: tint, colorMode: "multiply" }]);
         } else {
           main.setMaterial(material.pbr({ color: tint }));
         }
@@ -1299,6 +1369,49 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       }
     } catch (error) {
       warn(`tint ${n.id}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  /** Four-stage PBR car wash material progression for `splashy-car-wash` (`g06`). */
+  const applyCarWashState = (state: "muddy" | "wet" | "foamy" | "gleaming"): void => {
+    const car = nodes.get("car");
+    if (!car) return;
+    const palette: Record<typeof state, { readonly color: string; readonly roughness: number }> = {
+      muddy: { color: "#A6896E", roughness: 0.88 },
+      wet: { color: "#A4D2FF", roughness: 0.16 },
+      foamy: { color: "#EEF8FF", roughness: 0.54 },
+      gleaming: { color: "#FFFFFF", roughness: 0.12 }
+    };
+    const spec = palette[state];
+    try {
+      if (car.drawnAs === "model") {
+        const main = handle(car.id);
+        const materials = main ? materialHandleOf(main) : null;
+        materials?.setMaterialOverrides([{ color: spec.color, colorMode: "multiply", roughness: spec.roughness }]);
+      } else {
+        for (const piece of car.pieces) {
+          if (!piece.tinted) continue;
+          handle(piece.id)?.setMaterial(standInPieceMaterial(car.asset, piece.index, spec.color));
+        }
+      }
+    } catch {
+      // Material polish is best-effort.
+    }
+  };
+
+  /** Gentle time-of-day bounce-fill shift for `momos-day` (`E19`: morning -> midday -> cosy bedtime). */
+  const shiftHomeNookTimeOfDay = (phase: "morning" | "midday" | "bedtime"): void => {
+    if (story?.id !== "momos-day") return;
+    const palette: Record<typeof phase, { readonly color: string; readonly intensity: number }> = {
+      morning: { color: "#FFE8BE", intensity: 0.52 },
+      midday: { color: "#FFF2D6", intensity: 0.48 },
+      bedtime: { color: "#FFCF96", intensity: 0.34 }
+    };
+    const next = palette[phase];
+    try {
+      handle("home-nook bounce fill")?.setLight?.({ color: next.color, intensity: next.intensity });
+    } catch {
+      // Optional light transition.
     }
   };
 
@@ -1339,6 +1452,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (plan.next.scaleMul !== previous.scaleMul) n.scaleMul.set(plan.next.scaleMul, settle, "inOutSine");
     if (plan.next.toppled !== previous.toppled) n.topple.set(plan.next.toppled * TOPPLE_ANGLE, settle, "outCubic");
     if (n.traits.door && plan.next.open !== previous.open) n.open.set(plan.next.open ? DOOR_OPEN_ANGLE : 0, settle, "inOutSine");
+    if (plan.next.open !== previous.open) n.openProgress.set(plan.next.open ? 1 : 0, settle, "inOutSine");
     if (action === "stack") n.topple.set(0, 0.3, "inOutSine");
     if (plan.transient) {
       n.transient = { kind: plan.transient, duration: plan.durationSec, hideAtEnd: plan.hideAtEnd, halo: plan.halo, elapsed: 0 };
@@ -1367,6 +1481,49 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (action === "stack") stackOnSpot(n, appearing);
     if (action === "tint" && tint) applyTint(n, tint);
     if (action === "stack" && !n.visible) show(n);
+
+    // Calm tactile VFX bursts & scene material cues (auto-muted when reducedMotion is on).
+    const fxAt: Vec3 = [position[0], position[1] + n.heightM * 0.55, position[2]];
+    if (action === "pop") {
+      vfx?.fire("bubblePop", fxAt);
+    } else if (action === "eat") {
+      vfx?.fire("cookieCrumb", fxAt);
+      if (n.asset === "banana") shiftHomeNookTimeOfDay("midday");
+    } else if (action === "bloom") {
+      vfx?.fire("meadowPollen", fxAt);
+    } else if (action === "glow") {
+      vfx?.fire("starDust", fxAt);
+      if (n.asset === "bed") shiftHomeNookTimeOfDay("bedtime");
+    } else if (action === "wash") {
+      if (story?.id === "splashy-car-wash") {
+        const carAt = nodes.get("car") ? currentPosition(nodes.get("car")!) : fxAt;
+        const burstPos: Vec3 = [carAt[0], carAt[1] + 0.45, carAt[2]];
+        if (n.asset === "sponge") {
+          applyCarWashState("foamy");
+          vfx?.fire("soapFoam", burstPos);
+        } else {
+          applyCarWashState("wet");
+          vfx?.fire("waterDroplets", burstPos);
+        }
+      } else {
+        vfx?.fire("waterDroplets", fxAt);
+      }
+      if (n.asset === "sink") shiftHomeNookTimeOfDay("morning");
+    } else if (action === "dry") {
+      if (story?.id === "splashy-car-wash") {
+        const carAt = nodes.get("car") ? currentPosition(nodes.get("car")!) : fxAt;
+        applyCarWashState("gleaming");
+        vfx?.fire("starDust", [carAt[0], carAt[1] + 0.5, carAt[2]]);
+      }
+    } else if (action === "ring") {
+      vfx?.fire(n.asset === "gogo" ? "steamPuff" : "musicNotes", fxAt);
+    } else if (action === "go" && (n.asset === "gogo" || n.asset === "gogoCarriage")) {
+      vfx?.fire("steamPuff", [position[0], position[1] + n.heightM * 0.9, position[2]]);
+    } else if (action === "topple") {
+      vfx?.fire("turfStep", [position[0], Math.max(0.05, position[1]), position[2]]);
+    } else if (action === "bounce" && (n.asset === "drum" || n.asset === "toyPiano" || n.asset === "shaker")) {
+      vfx?.fire("musicNotes", fxAt);
+    }
   };
 
   const carry = (carrierId: string, itemId: string | null): void => {
@@ -1378,6 +1535,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (itemId === null) {
       const item = carrier.carrying ? nodes.get(carrier.carrying) : undefined;
       carrier.carrying = null;
+      director.setCarrying(carrier.id, false);
       if (!item) return;
       item.carriedBy = null;
       // Set down just in front of the carrier (clear of its body), lowered from
@@ -1402,6 +1560,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     item.move = null;
     item.carriedBy = carrier.id;
     carrier.carrying = item.id;
+    director.setCarrying(carrier.id, true);
     if (!item.visible) show(item);
   };
 
@@ -1630,6 +1789,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     n.scaleMul.step(dt);
     n.topple.step(dt);
     n.open.step(dt);
+    n.openProgress.step(dt);
     if (n.transient) {
       n.transient.elapsed += dt;
       if (n.transient.elapsed >= n.transient.duration) {
@@ -1654,7 +1814,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const sample = sampleMove(run.style, run.from, run.to, t, run.elapsed, reducedMotion);
       if (sample.heading !== null) n.heading = sample.heading;
       if (n.traits.round) n.rollAngle = run.rollStart + rollAngle(sample.travelled, n.heightM / 2);
+      director.setDistanceTravelled(n.id, n.travelledDistance + sample.travelled);
       if (t >= 1) {
+        n.travelledDistance += distance3(run.from, run.to);
+        director.setDistanceTravelled(n.id, n.travelledDistance);
         n.base = run.to;
         n.move = null;
         director.setLocomotion(n.id, null);
@@ -1706,9 +1869,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const p = addPose(gesture, transient, moveOffset, running);
     const yaw = carrierYaw ?? n.yaw;
     const mul = n.scaleMul.value * breathing * appearScale;
-    let base: Vec3 = [position[0] + p.dx, position[1] + n.lift.value + p.dy, position[2] + p.dz];
+    const hasArticulatedLiftCab =
+      n.asset === "lift" &&
+      (n.drawnAs === "model" ? Boolean(handle(n.id)?.part?.("liftCab")) : n.pieces.some((piece) => piece.part === "liftCab"));
+    const liftY = hasArticulatedLiftCab ? 0 : n.lift.value;
+    let base: Vec3 = [position[0] + p.dx, position[1] + liftY + p.dy, position[2] + p.dz];
     let openYaw = 0;
-    if (n.traits.door) {
+    const hasArticulatedDoorLeaf = n.drawnAs === "model" && Boolean(handle(n.id)?.part?.("hingeLeaf"));
+    if (n.traits.door && !hasArticulatedDoorLeaf) {
       openYaw = n.open.value;
       const hinge = rotateYaw(yaw, hingeSwingOffset(n.size[0] * mul, openYaw));
       base = [base[0] + hinge[0], base[1], base[2] + hinge[2]];
@@ -1759,13 +1927,34 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
-  const render = (n: StageNode, pose: StagePose, visible: boolean): void => {
+  const render = (n: StageNode, pose: StagePose, visible: boolean, partsPose?: ArticulatedPoseMap): void => {
     n.drawn = pose;
     n.center = placePiece(pose, [0, n.heightM / 2, 0]);
+    if (n.drawnAs === "model") {
+      for (const piece of n.pieces) {
+        const position = placePiece(pose, piece.center);
+        const rotation = composeRotation(pose.rotation, piece.rotation);
+        write(piece.id, position, rotation, pose.scale, visible);
+      }
+      applyArticulatedParts(app, n.id, n.id, visible ? partsPose : undefined);
+      return;
+    }
     for (const piece of n.pieces) {
-      const position = placePiece(pose, piece.center);
-      const rotation = composeRotation(pose.rotation, piece.rotation);
-      write(piece.id, position, rotation, pose.scale, visible);
+      const sub = piece.part && partsPose ? partsPose[piece.part] : undefined;
+      const localCenter: Vec3 = sub?.offset
+        ? [
+            piece.center[0] + sub.offset[0] * n.heightM,
+            piece.center[1] + sub.offset[1] * n.heightM,
+            piece.center[2] + sub.offset[2] * n.heightM
+          ]
+        : piece.center;
+      const localRot: Vec3 = sub?.rotation ? composeRotation(piece.rotation, sub.rotation) : piece.rotation;
+      const position = placePiece(pose, localCenter);
+      const rotation = composeRotation(pose.rotation, localRot);
+      const scale: Vec3 = sub?.scale
+        ? [pose.scale[0] * sub.scale[0], pose.scale[1] * sub.scale[1], pose.scale[2] * sub.scale[2]]
+        : pose.scale;
+      write(piece.id, position, rotation, scale, visible);
     }
   };
 
@@ -1776,9 +1965,28 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     return mirror !== undefined && actor !== undefined && isShown(mirror) && isShown(actor);
   };
 
-  const writeReflection = (r: Reflection, pose: StagePose): void => {
+  const writeReflection = (r: Reflection, pose: StagePose, partsPose?: ArticulatedPoseMap): void => {
     r.drawn = pose;
-    for (const piece of r.pieces) write(piece.id, placePiece(pose, piece.center), composeRotation(pose.rotation, piece.rotation), pose.scale, true);
+    if (r.drawnAs === "model") {
+      for (const piece of r.pieces) write(piece.id, placePiece(pose, piece.center), composeRotation(pose.rotation, piece.rotation), pose.scale, true);
+      applyArticulatedParts(app, r.id, r.id, partsPose);
+      return;
+    }
+    for (const piece of r.pieces) {
+      const sub = piece.part && partsPose ? partsPose[piece.part] : undefined;
+      const localCenter: Vec3 = sub?.offset
+        ? [
+            piece.center[0] + sub.offset[0] * r.heightM,
+            piece.center[1] + sub.offset[1] * r.heightM,
+            piece.center[2] + sub.offset[2] * r.heightM
+          ]
+        : piece.center;
+      const localRot: Vec3 = sub?.rotation ? composeRotation(piece.rotation, sub.rotation) : piece.rotation;
+      const scale: Vec3 = sub?.scale
+        ? [pose.scale[0] * sub.scale[0], pose.scale[1] * sub.scale[1], pose.scale[2] * sub.scale[2]]
+        : pose.scale;
+      write(piece.id, placePiece(pose, localCenter), composeRotation(pose.rotation, localRot), scale, true);
+    }
   };
 
   const renderReflection = (r: Reflection): void => {
@@ -1786,10 +1994,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const actor = nodes.get(r.actorId);
     if (!mirror || !actor || !reflectionShown(r)) {
       for (const piece of r.pieces) write(piece.id, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
+      if (r.drawnAs === "model") applyArticulatedParts(app, r.id, r.id, undefined);
       return;
     }
-    // Momo's gesture, idle and talking pulse as a mirror image; it shrinks with her own soft hide.
-    writeReflection(r, reflectionPose(mirror.drawn, r, director.pose(actor.id), appearScaleOf(actor) * actor.scaleMul.value));
+    // Momo's gesture, articulated limbs, idle and talking pulse as a mirror image; it shrinks with her own soft hide.
+    const mirroredParts = mirrorPartPoses(director.partsPose(actor.id));
+    writeReflection(r, reflectionPose(mirror.drawn, r, director.pose(actor.id), appearScaleOf(actor) * actor.scaleMul.value), mirroredParts);
   };
 
   /** Height of the bottom of a node's body as drawn last frame. */
@@ -1803,11 +2013,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const renderHighlights = (dt: number): void => {
     const highlighted = activeTargets.slice(0, MAX_HIGHLIGHTS).map((id) => nodes.get(id)).filter((n): n is StageNode => n !== undefined && isShown(n));
+    const ripplePhase = reducedMotion ? 0.35 : (time * 0.45) % 1;
     RING_IDS.forEach((ringId, index) => {
       const n = highlighted[index];
       if (!n) {
         ringOwner[index] = null;
-        write(ringId, [0, -10, 0], [Math.PI / 2, 0, 0], [1, 1, 1], false);
+        write(ringId, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
         return;
       }
       if (ringOwner[index] !== n.id) {
@@ -1822,10 +2033,19 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const floating = floor > 0.3 || n.traits.floats === true;
       if (floating) {
         const d = (Math.max(n.size[0], n.size[1]) * 1.3 + 0.3) * breath;
-        write(ringId, [c[0], c[1], c[2]], [0, 0, 0], [d, d, 1], true);
+        write(ringId, [c[0], c[1], c[2]], [Math.PI / 2, 0, 0], [d, 1, d], true);
       } else {
         const d = (Math.max(n.size[0], n.size[2]) * 1.25 + 0.35) * breath;
-        write(ringId, [c[0], Math.max(0.02, floor + 0.02), c[2]], [Math.PI / 2, 0, 0], [d, d, 1], true);
+        write(ringId, [c[0], Math.max(0.02, floor + 0.02), c[2]], [0, 0, 0], [d, 1, d], true);
+      }
+      const ringHandle = handle(ringId);
+      if (ringHandle?.setUniform) {
+        try {
+          ringHandle.setUniform("ripplePhase", ripplePhase);
+          ringHandle.setUniform("rippleOpacity", 0.82 * open);
+        } catch {
+          // Uniform animation is purely cosmetic.
+        }
       }
     });
     const glowing: Array<{ n: StageNode; strength: number }> = [];
@@ -1873,11 +2093,29 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  const partsPoseFor = (n: StageNode): ArticulatedPoseMap | undefined => {
+    const objectParts = sampleObjectParts({
+      asset: n.asset,
+      openProgress: n.openProgress.value,
+      liftM: n.lift.value,
+      distanceTravelled: n.travelledDistance,
+      wheelRadiusM: Math.max(0.06, n.heightM * 0.16),
+      running: n.object.running,
+      transient: n.transient
+        ? { kind: n.transient.kind, elapsedSec: n.transient.elapsed, durationSec: n.transient.duration }
+        : null,
+      timeSec: time,
+      reducedMotion
+    });
+    return mergePartPoses(director.partsPose(n.id), objectParts);
+  };
+
   const frame = (dt: number): void => {
     time += dt;
     // Song lines whose time has come start first, as if their motions and cues were applied just before this frame.
     advanceSong(dt * 1000);
     director.update(dt);
+    if (host !== null) currentWorld?.updateWorld(handle, time, reducedMotion);
     // Carriers first so carried items follow this frame's pose.
     const carriers = order.filter((n) => !n.carriedBy);
     const carried = order.filter((n) => n.carriedBy);
@@ -1888,7 +2126,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         const target = targetYawFor(n, position);
         n.yaw = reducedMotion ? target : approachAngle(n.yaw, target, TURN_RATE * dt);
         const { pose, visible } = poseOf(n);
-        render(n, pose, visible);
+        render(n, pose, visible, partsPoseFor(n));
       }
     }
     for (const r of reflections) renderReflection(r);
@@ -1912,14 +2150,16 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const mirror = nodes.get(r.mirrorId);
       if (mirror) writeReflection(r, reflectionPose(mirror.drawn, r, NEUTRAL_POSE));
     }
-    RING_IDS.forEach((id, index) => write(id, [index === 0 ? -0.6 : 0.6, 0.02, 0.4], [Math.PI / 2, 0, 0], [1, 1, 1], true));
+    RING_IDS.forEach((id, index) => write(id, [index === 0 ? -0.6 : 0.6, 0.02, 0.4], [0, 0, 0], [1, 1, 1], true));
     HALO_IDS.forEach((id, index) => write(id, [index === 0 ? -0.6 : 0.6, 0.8, -0.5], [0, 0, 0], [0.8, 0.8, 0.8], true));
   };
 
   const adopt = (built: BuiltStory): void => {
     director.clear();
     written.clear();
+    vfx?.resetSeed();
     ringOwner.fill(null);
+    currentWorld = built.world;
     nodes = new Map(built.nodes.map((n) => [n.id, n]));
     order = [...built.nodes];
     reflections = [...built.reflections];
@@ -1937,6 +2177,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       });
     }
     director.drainClipCommands();
+    if (built.story.id === "splashy-car-wash") {
+      applyCarWashState("muddy");
+    }
     cameraPreset = DEFAULT_CAMERA_PRESET;
     cameraFrom = null;
     cameraElapsed = 0;
@@ -2001,7 +2244,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
     if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
-    let built = buildStory(next, (key) => pre.available.has(key), aspectPose);
+    let built = buildStory(next, (key) => pre.available.has(key), aspectPose, reducedMotion);
     recovered = false;
     let result = await mountScene(built, seq);
     if (result === "stale") return;
@@ -2016,7 +2259,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       dropped = [...dropped, ...drop];
       preloader.markFailed(drop);
       warn(`mount of ${next.id} failed; ${drop.join(", ")} drawn as stand-ins`);
-      built = buildStory(next, (key) => pre.available.has(key) && !dropped.includes(key), aspectPose);
+      built = buildStory(next, (key) => pre.available.has(key) && !dropped.includes(key), aspectPose, reducedMotion);
       recovered = true;
       result = await mountScene(built, seq);
       if (result === "stale") return;
@@ -2031,13 +2274,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     mounted = true;
     renderWarmPose();
     try {
-      await warmPrograms(app, WARM_OPTIONS);
+      await warmPrograms(app, warmOptions());
       warmed = true;
     } catch (error) {
       warn(`warmPrograms: ${error instanceof Error ? error.message : String(error)}`);
     }
     warming = false;
     if (seq !== loadSeq || disposed) return;
+    syncEffectsRuntime();
     written.clear();
     frame(0);
     await setVeil(0);
@@ -2082,6 +2326,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     setTalking(actor) {
       director.setTalking(actor !== null && nodes.has(actor) ? actor : null);
     },
+    setSpeechEnergy(energy) {
+      director.setSpeechEnergy(energy);
+    },
     setTargets(targets) {
       const unique = targets ? [...new Set(targets)] : [];
       // Child-safety rule: at most two touch targets at a time (the content schema enforces it too).
@@ -2104,7 +2351,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     setReducedMotion(on) {
       reducedMotion = on;
       director.setReducedMotion(on);
+      syncEffectsRuntime();
       if (on) {
+        try {
+          app.effects?.clear();
+        } catch {
+          // Best-effort clear.
+        }
         cameraElapsed = cameraDuration;
         // Soft pops end at once; a node that was fading out still ends hidden.
         for (const n of order) {
@@ -2119,6 +2372,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       loadSeq += 1;
       mounted = false;
       songRun = null;
+      currentWorld = null;
       director.clear();
       preloader.dispose();
       nodes.clear();

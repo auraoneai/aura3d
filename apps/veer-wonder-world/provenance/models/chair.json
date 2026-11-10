@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "chair",
-  "file": "src/assets/models/chair.1eac0b65.glb",
-  "sha256": "1eac0b6530a18515b32b98720dd13be24021978c1c79e7e1e645975e1aff1f9c",
-  "sizeBytes": 176172,
+  "file": "src/assets/models/chair.fb86f6ce.glb",
+  "sha256": "fb86f6cef81c8589c1bd8d9ca4d640ff7614cc9428e93f5ded825ba0330968f6",
+  "sizeBytes": 240384,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -45,11 +45,25 @@
       "bytesIn": 8941112,
       "bytesOut": 622848
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.64,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 64003,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-3c26720b7ec0d76ad1ee00fb78003be9fbd479bfb6b47d299d0024e97de7bcd6"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.902
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Chunky toy chair; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/chair.1eac0b65.glb",
+    "sha256": "1eac0b6530a18515b32b98720dd13be24021978c1c79e7e1e645975e1aff1f9c",
+    "sizeBytes": 176172
+  }
 }

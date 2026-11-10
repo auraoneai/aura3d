@@ -99,15 +99,7 @@ async function finish(input, output, key, tint, recolor) {
   }
   const factor = tintFactor(tint);
   if (factor) for (const material of root.listMaterials()) material.setBaseColorFactor(factor);
-  if (!MAIN_CAST.has(key)) {
-    for (const material of root.listMaterials()) {
-      if (material.getNormalTexture() || material.getMetallicRoughnessTexture() || material.getOcclusionTexture()) stripped = true;
-      material.setNormalTexture(null).setMetallicRoughnessTexture(null).setOcclusionTexture(null);
-      material.setMetallicFactor(0).setRoughnessFactor(0.85);
-    }
-    await doc.transform(prune());
-  }
-  const normalMaps = MAIN_CAST.has(key) ? await jpegNormalMaps(doc, sharp) : [];
+  const normalMaps = await jpegNormalMaps(doc, sharp);
   const asset = root.getAsset();
   asset.extras = { ...(asset.extras ?? {}), aura3d: { orientation: { forwardAxis: "+z", upAxis: "+y", source: "Meshy export convention (faces +z)" } } };
   await io.write(output, doc);
@@ -141,7 +133,7 @@ for (const a of spec.assets) {
     source = merged;
   }
   const role = a.rig || MAIN_CAST.has(a.key) || a.face ? "character" : a.role === "background" ? "background" : a.role === "vehicle" ? "vehicle" : "prop";
-  const tex = MAIN_CAST.has(a.key) ? 1024 : 512;
+  const tex = MAIN_CAST.has(a.key) ? 2048 : 1024;
   const optimized = join(work, "optimized.glb");
   const opt = auraJson(["assets", "optimize", "--file", source, "--out", optimized, "--role", role, "--tex", String(tex), ...(a.rig ? ["--no-simplify"] : []), ...(fromRefine ? ["--max-verts", String(Math.round((a.poly ?? 6000) * 0.7))] : []), "--json"]);
   const finalPath = join(work, "final.glb");

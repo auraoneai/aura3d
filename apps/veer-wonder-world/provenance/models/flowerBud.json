@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "flowerBud",
-  "file": "src/assets/models/flowerBud.c62434c7.glb",
-  "sha256": "c62434c70aa7999be5b1768c698ea9a065a90631f8c299b24b055b85abc323d2",
-  "sizeBytes": 248576,
+  "file": "src/assets/models/flowerBud.6bcdaaf7.glb",
+  "sha256": "6bcdaaf770e0a91061f4a2096862ea363f2daf1528cf9f51d6eaf3221ce6a6c3",
+  "sizeBytes": 491728,
   "rigged": false,
   "clips": [],
   "heightM": 0.8,
@@ -45,22 +45,83 @@
       "bytesIn": 8705120,
       "bytesOut": 832792
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.68,
+      "metallicFactor": 0,
+      "normalScale": 0.32,
+      "jpegBytes": 52378,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-49ba7bb33a2ae6e78d4dc9a7547e0b603b2a45c60e537e9541219cc8e2f5bb92"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "petals"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 3049,
+      "trianglesAfter": 3049,
+      "verticesAfter": 5341,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.536e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "flowerBud_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 683,
+          "vertices": 1008
+        },
+        "petals": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            -0.19525,
+            0
+          ],
+          "localTranslation": [
+            0,
+            -0.19525,
+            0
+          ],
+          "triangles": 2366,
+          "vertices": 4333
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 5331,
+    "vertexCount": 5341,
     "bounds": [
       0.86,
       1.9,
       0.843
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +137,10 @@
     "date": "2026-10-29",
     "notes": "Closed bud on a stem; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/flowerBud.8074edcd.glb",
+    "sha256": "8074edcdb7eebf168df9efe716ff3ccc6c1fe2c8f158dc3060055b0e5b38a6a6",
+    "sizeBytes": 301168
+  }
 }

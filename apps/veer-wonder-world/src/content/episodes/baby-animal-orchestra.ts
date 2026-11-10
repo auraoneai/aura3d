@@ -129,11 +129,13 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "moo" },
-        { do: "object", target: "cow", action: "bounce" }
+        { do: "object", target: "cow", action: "bounce" },
+        { do: "object", target: "cow-drum", action: "bounce" }
       ],
       reducedMotionStage: [
         { do: "sfx", sound: "moo" },
-        { do: "object", target: "cow", action: "wobble" }
+        { do: "object", target: "cow", action: "wobble" },
+        { do: "object", target: "cow-drum", action: "wobble" }
       ],
       lines: [],
       holdMs: 2000
@@ -172,11 +174,13 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "baa" },
-        { do: "object", target: "sheep", action: "bounce" }
+        { do: "object", target: "sheep", action: "bounce" },
+        { do: "object", target: "sheep-shaker", action: "shake" }
       ],
       reducedMotionStage: [
         { do: "sfx", sound: "baa" },
-        { do: "object", target: "sheep", action: "wobble" }
+        { do: "object", target: "sheep", action: "wobble" },
+        { do: "object", target: "sheep-shaker", action: "wobble" }
       ],
       lines: [],
       holdMs: 2000
@@ -215,11 +219,13 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "quack" },
-        { do: "object", target: "duck", action: "bounce" }
+        { do: "object", target: "duck", action: "bounce" },
+        { do: "object", target: "duck-piano", action: "wobble" }
       ],
       reducedMotionStage: [
         { do: "sfx", sound: "quack" },
-        { do: "object", target: "duck", action: "wobble" }
+        { do: "object", target: "duck", action: "wobble" },
+        { do: "object", target: "duck-piano", action: "wobble" }
       ],
       lines: [],
       holdMs: 2000
@@ -261,6 +267,7 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "sfx", sound: "drum" },
         { do: "object", target: "cow", action: "wobble" },
+        { do: "object", target: "cow-drum", action: "bounce" },
         { do: "gesture", actor: "lulu", gesture: "sway", loop: true }
       ],
       lines: [{ speaker: "lulu", key: "e09.rhythm.1" }],
@@ -273,7 +280,8 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "shaker" },
-        { do: "object", target: "sheep", action: "wobble" }
+        { do: "object", target: "sheep", action: "wobble" },
+        { do: "object", target: "sheep-shaker", action: "shake" }
       ],
       lines: [{ speaker: "lulu", key: "e09.rhythm-2.1" }],
       holdMs: 1500
@@ -293,16 +301,35 @@ export const episode: EpisodeSpec = {
         { wordId: "your-turn", objectId: "cow" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["cow"] },
+      input: { type: "tap", targets: ["cow", "cow-drum"] },
       waitMs: 5000,
       caregiverPromptKey: "e09.tip.1",
       response: {
         stage: [
           { do: "sfx", sound: "moo" },
-          { do: "object", target: "cow", action: "bounce" }
+          { do: "object", target: "cow", action: "bounce" },
+          { do: "object", target: "cow-drum", action: "wobble" }
         ],
         lines: [],
         holdMs: 2000
+      },
+      responseByTarget: {
+        cow: {
+          stage: [
+            { do: "sfx", sound: "moo" },
+            { do: "object", target: "cow", action: "bounce" },
+            { do: "object", target: "cow-drum", action: "wobble" },
+            { do: "face", actor: "lulu", toward: "cow" }
+          ]
+        },
+        "cow-drum": {
+          stage: [
+            { do: "sfx", sound: "moo" },
+            { do: "object", target: "cow-drum", action: "bounce" },
+            { do: "object", target: "cow", action: "bounce" },
+            { do: "face", actor: "peeko", toward: "cow" }
+          ]
+        }
       }
     },
     {
@@ -329,16 +356,35 @@ export const episode: EpisodeSpec = {
         { wordId: "your-turn", objectId: "duck" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["duck"] },
+      input: { type: "tap", targets: ["duck", "duck-piano"] },
       waitMs: 5000,
       caregiverPromptKey: "e09.tip.2",
       response: {
         stage: [
           { do: "sfx", sound: "quack" },
-          { do: "object", target: "duck", action: "bounce" }
+          { do: "object", target: "duck", action: "bounce" },
+          { do: "object", target: "duck-piano", action: "wobble" }
         ],
         lines: [],
         holdMs: 2000
+      },
+      responseByTarget: {
+        duck: {
+          stage: [
+            { do: "sfx", sound: "quack" },
+            { do: "object", target: "duck", action: "bounce" },
+            { do: "object", target: "duck-piano", action: "wobble" },
+            { do: "face", actor: "lulu", toward: "duck" }
+          ]
+        },
+        "duck-piano": {
+          stage: [
+            { do: "sfx", sound: "quack" },
+            { do: "object", target: "duck-piano", action: "glow" },
+            { do: "object", target: "duck", action: "bounce" },
+            { do: "face", actor: "peeko", toward: "duck" }
+          ]
+        }
       }
     },
     {

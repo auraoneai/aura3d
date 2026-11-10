@@ -43,6 +43,67 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [
+        { do: "hide", actor: "bubble2" },
+        { do: "hide", actor: "bubble3" },
+        { do: "object", target: "bubble1", action: "wobble" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "hide", actor: "bubble2" },
+        { do: "hide", actor: "bubble3" },
+        { do: "object", target: "flowerLeft", action: "wobble" },
+        { do: "object", target: "flowerRight", action: "wobble" }
+      ],
+      beatOverrides: {
+        blow: {
+          response: {
+            stage: [
+              { do: "sfx", sound: "bubbleBlow" },
+              { do: "enter", actor: "bubble2", at: "center", from: "left", style: "float" },
+              { do: "enter", actor: "bubble3", at: "highRight", from: "left", style: "float" },
+              { do: "object", target: "bubble1", action: "rise" },
+              { do: "face", actor: "momo", toward: "bubble2" }
+            ],
+            lines: [
+              { speaker: "momo", key: "g01.blow.2" },
+              { speaker: "narrator", key: "g01.blow.3" }
+            ],
+            holdMs: 1500
+          }
+        }
+      }
+    },
+    {
+      setupStage: [
+        { do: "hide", actor: "bubble2" },
+        { do: "hide", actor: "bubble3" },
+        { do: "object", target: "bubble1", action: "glow" },
+        { do: "sfx", sound: "sparkle" }
+      ],
+      beatOverrides: {
+        blow: {
+          response: {
+            stage: [
+              { do: "sfx", sound: "bubbleBlow" },
+              { do: "enter", actor: "bubble2", at: "high", from: "left", style: "float" },
+              { do: "enter", actor: "bubble3", at: "right", from: "left", style: "float" },
+              { do: "gesture", actor: "momo", gesture: "cheer" },
+              { do: "face", actor: "momo", toward: "bubble3" }
+            ],
+            lines: [
+              { speaker: "momo", key: "g01.blow.2" },
+              { speaker: "narrator", key: "g01.blow.3" }
+            ],
+            holdMs: 1500
+          }
+        }
+      }
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -142,6 +203,28 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g01.pop.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        bubble2: {
+          stage: [
+            { do: "object", target: "bubble2", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "bubble3", action: "rise" },
+            { do: "object", target: "bubble3", action: "wobble" },
+            { do: "face", actor: "momo", toward: "bubble2" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        bubble3: {
+          stage: [
+            { do: "object", target: "bubble3", action: "pop" },
+            { do: "sfx", sound: "pop" },
+            { do: "object", target: "bubble2", action: "rise" },
+            { do: "object", target: "bubble2", action: "wobble" },
+            { do: "face", actor: "momo", toward: "bubble3" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

@@ -197,6 +197,7 @@ export const episode: EpisodeSpec = {
       kind: "invite",
       camera: "wide",
       stage: [
+        { do: "object", target: "carriage", action: "close" },
         { do: "face", actor: "gogo", toward: "viewer" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "point" }
@@ -225,6 +226,31 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e04.invite.4" }
         ],
         holdMs: 4400
+      },
+      responseByTarget: {
+        gogo: {
+          stage: [
+            { do: "sfx", sound: "whistle" },
+            { do: "object", target: "gogo", action: "go" },
+            { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
+            { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "gesture", actor: "lulu", gesture: "wave" }
+          ]
+        },
+        carriage: {
+          stage: [
+            { do: "object", target: "carriage", action: "wobble" },
+            { do: "object", target: "gogo", action: "go" },
+            { do: "sfx", sound: "chugga" },
+            { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
+            { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -251,6 +277,7 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
+        { do: "object", target: "carriage", action: "open" },
         { do: "face", actor: "peeko", toward: "gogo" },
         { do: "face", actor: "gogo", toward: "peeko" }
       ],
@@ -264,8 +291,14 @@ export const episode: EpisodeSpec = {
       id: "hop-in",
       kind: "event",
       camera: "left",
-      stage: [{ do: "move", actor: "peeko", to: "left", style: "hop" }],
-      reducedMotionStage: [{ do: "move", actor: "peeko", to: "left", style: "walk" }],
+      stage: [
+        { do: "move", actor: "peeko", to: "left", style: "hop" },
+        { do: "object", target: "carriage", action: "close" }
+      ],
+      reducedMotionStage: [
+        { do: "move", actor: "peeko", to: "left", style: "walk" },
+        { do: "object", target: "carriage", action: "close" }
+      ],
       lines: [{ speaker: "narrator", key: "e04.hop-in.1" }],
       words: [{ wordId: "in", objectId: "carriage" }],
       holdMs: 3900
@@ -307,6 +340,33 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e04.again.4" }
         ],
         holdMs: 4400
+      },
+      responseByTarget: {
+        gogo: {
+          stage: [
+            { do: "sfx", sound: "whistle" },
+            { do: "object", target: "gogo", action: "go" },
+            { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
+            { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
+            { do: "gesture", actor: "lulu", gesture: "wave" }
+          ]
+        },
+        carriage: {
+          stage: [
+            { do: "object", target: "carriage", action: "wobble" },
+            { do: "object", target: "gogo", action: "go" },
+            { do: "sfx", sound: "chugga" },
+            { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
+            { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

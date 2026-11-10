@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "duck",
-  "file": "src/assets/models/duck.3f6eb24c.glb",
-  "sha256": "3f6eb24c83435473fc6867280e0439aedfee18869d1ef706494c8f6dc24f9287",
-  "sizeBytes": 304376,
+  "file": "src/assets/models/duck.905154ae.glb",
+  "sha256": "905154ae3da0c13213289efe7ff62461c7aa499bf7cd05ccd9e8398eb11522ac",
+  "sizeBytes": 358456,
   "rigged": false,
   "clips": [],
   "heightM": 0.45,
@@ -45,11 +45,25 @@
       "bytesIn": 8347796,
       "bytesOut": 809888
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.72,
+      "metallicFactor": 0,
+      "normalScale": 0.32,
+      "jpegBytes": 53866,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-f515c5daf382616faa505f027053dff9c4cf487ff3eedde0bf47f665b2addb0c"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       0.966
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Toy duck, yellow-green; friendly."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/duck.3f6eb24c.glb",
+    "sha256": "3f6eb24c83435473fc6867280e0439aedfee18869d1ef706494c8f6dc24f9287",
+    "sizeBytes": 304376
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "shaker",
-  "file": "src/assets/models/shaker.d3ab6224.glb",
-  "sha256": "d3ab62245cf511a00a6299d09ee3670c63d185da22ee2a61a0469c2a68f9e450",
-  "sizeBytes": 173236,
+  "file": "src/assets/models/shaker.0b19de5d.glb",
+  "sha256": "0b19de5ddab3f32eea70ff279da93ca44ff1c2958b22b704cb318fe14ac862d7",
+  "sizeBytes": 240184,
   "rigged": false,
   "clips": [],
   "heightM": 0.35,
@@ -45,11 +45,25 @@
       "bytesIn": 6998700,
       "bytesOut": 600020
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.52,
+      "metallicFactor": 0,
+      "normalScale": 0.32,
+      "jpegBytes": 66743,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-ad9419c696d43ba1619417eecc2345c5900f8ee01e3980069bdf2293a24702f9"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       0.907
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Toy maraca; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/shaker.d3ab6224.glb",
+    "sha256": "d3ab62245cf511a00a6299d09ee3670c63d185da22ee2a61a0469c2a68f9e450",
+    "sizeBytes": 173236
+  }
 }

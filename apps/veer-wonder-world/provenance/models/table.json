@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "table",
-  "file": "src/assets/models/table.66b4b172.glb",
-  "sha256": "66b4b172ee77da0f854ad4fe36853d51cd4c570ee86e636fb33eceb6f2584073",
-  "sizeBytes": 184132,
+  "file": "src/assets/models/table.194e0254.glb",
+  "sha256": "194e0254ae5cafae42eec2936d2626061aacc97c73db3033e43ceecb3cccec71",
+  "sizeBytes": 250188,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,11 +45,25 @@
       "bytesIn": 6760464,
       "bytesOut": 604948
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.62,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 65848,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-9fa7d032b815fffdf0c916d958e351d64f8d3b142b5c933f17321f925975bc22"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.902
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Small round toy table; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/table.66b4b172.glb",
+    "sha256": "66b4b172ee77da0f854ad4fe36853d51cd4c570ee86e636fb33eceb6f2584073",
+    "sizeBytes": 184132
+  }
 }

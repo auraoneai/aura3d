@@ -36,6 +36,27 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "lulu", gesture: "sway" }]
+    },
+    {
+      setupStage: [
+        { do: "object", target: "bear", action: "wobble" },
+        { do: "gesture", actor: "lulu", gesture: "happy" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "object", target: "shaker", action: "wobble" },
+        { do: "gesture", actor: "lulu", gesture: "dance" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "object", target: "shaker", action: "glow" },
+        { do: "gesture", actor: "lulu", gesture: "sway" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -93,11 +114,12 @@ export const activity: ActivitySpec = {
       stage: [
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "point" },
-        { do: "object", target: "drum", action: "glow" }
+        { do: "object", target: "drum", action: "glow" },
+        { do: "object", target: "shaker", action: "glow" }
       ],
       lines: [{ speaker: "lulu", key: "g10.your-turn.1" }],
       holdMs: 800,
-      input: { type: "tap", targets: ["drum"] },
+      input: { type: "tap", targets: ["drum", "shaker"] },
       waitMs: 5000,
       caregiverPromptKey: "g10.tip.1",
       response: {
@@ -111,6 +133,24 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g10.your-turn.3" }
         ],
         holdMs: 1000
+      },
+      responseByTarget: {
+        drum: {
+          stage: [
+            { do: "object", target: "drum", action: "bounce" },
+            { do: "sfx", sound: "drum" },
+            { do: "gesture", actor: "lulu", gesture: "clap" },
+            { do: "object", target: "bear", action: "wobble" }
+          ]
+        },
+        shaker: {
+          stage: [
+            { do: "object", target: "shaker", action: "shake" },
+            { do: "sfx", sound: "shaker" },
+            { do: "object", target: "bear", action: "bounce" },
+            { do: "gesture", actor: "lulu", gesture: "dance" }
+          ]
+        }
       },
       words: [
         { wordId: "your-turn", objectId: "drum" },
@@ -179,6 +219,20 @@ export const activity: ActivitySpec = {
         stage: [{ do: "gesture", actor: "lulu", gesture: "nod" }],
         lines: [],
         holdMs: 600
+      },
+      responseByTarget: {
+        drum: {
+          stage: [
+            { do: "object", target: "drum", action: "wobble" },
+            { do: "gesture", actor: "lulu", gesture: "nod" }
+          ]
+        },
+        bear: {
+          stage: [
+            { do: "object", target: "bear", action: "bounce" },
+            { do: "gesture", actor: "lulu", gesture: "happy" }
+          ]
+        }
       }
     }
   ],

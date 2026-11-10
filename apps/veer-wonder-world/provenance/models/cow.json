@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "cow",
-  "file": "src/assets/models/cow.133d9ae8.glb",
-  "sha256": "133d9ae858400afe8ff55e21da5d74e202b6b7cd38b4fdabd9318f67b04d2bcb",
-  "sizeBytes": 338732,
+  "file": "src/assets/models/cow.805e545d.glb",
+  "sha256": "805e545db16a6b371324c4fe33319bafa861b609cf5e20635f81b23fda50f682",
+  "sizeBytes": 408068,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -45,11 +45,25 @@
       "bytesIn": 10021064,
       "bytesOut": 877452
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.84,
+      "metallicFactor": 0,
+      "normalScale": 0.34,
+      "jpegBytes": 69125,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-df51bfc621b1ed4b2402070ad1d8a4ae3ee8041ec8122dfb606e6de17d950bad"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.9
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Chunky toy cow with patches; friendly."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/cow.133d9ae8.glb",
+    "sha256": "133d9ae858400afe8ff55e21da5d74e202b6b7cd38b4fdabd9318f67b04d2bcb",
+    "sizeBytes": 338732
+  }
 }

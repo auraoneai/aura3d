@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "pastryTriangle",
-  "file": "src/assets/models/pastryTriangle.bef10726.glb",
-  "sha256": "bef10726598e8d8861105e674f639b89f82ada0ee3dd660ee033e39534740b01",
-  "sizeBytes": 206456,
+  "file": "src/assets/models/pastryTriangle.46350be3.glb",
+  "sha256": "46350be3b20b51948d17949514bfb33bc9078b633381452616cfb8ca57b0ff1e",
+  "sizeBytes": 256524,
   "rigged": false,
   "clips": [],
   "heightM": 0.08,
@@ -45,13 +45,27 @@
       "bytesIn": 10140048,
       "bytesOut": 805272
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.62,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 49857,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-a8a396c5d2cb8d4a1e99a3748749850d944e35b67952c0b135a9995191489983"
     }
   },
   "inspection": {
@@ -62,7 +76,8 @@
       1.721
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -78,5 +93,10 @@
     "date": "2026-10-29",
     "notes": "Triangular layered pastry; thin but reads as a pastry."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/pastryTriangle.bef10726.glb",
+    "sha256": "bef10726598e8d8861105e674f639b89f82ada0ee3dd660ee033e39534740b01",
+    "sizeBytes": 206456
+  }
 }

@@ -1,0 +1,230 @@
+/*
+ * Wonder World self-hosted licensed typography (WP-7; ui-typography-density.md).
+ *
+ * Families served from committed repo /public/fonts/ assets copied into dist/fonts/
+ * by vite.config.ts:
+ *   - Whitney (--font-ui): caregiver controls, dense settings sheet, badges, notes,
+ *     with native OpenType small caps (`smcp`) and tabular numerals (`tnum`).
+ *   - Graphik Web (--font-display): warm storybook titles, card headings and
+ *     child-facing co-reading captions.
+ *   - DIN Pro (--font-metric): episode/game index numbers, round counters and
+ *     selected-word counts (80-glyph numeric subset falling through to Whitney).
+ *   - Monument Grotesk Mono (--font-code): diagnostics identifiers only.
+ *
+ * Weights declared strictly in {400, 500, 600}; synthetic weights, obliques and
+ * small caps are disabled on :root.
+ */
+
+:root {
+  font-synthesis: none;
+  font-synthesis-weight: none;
+  font-synthesis-style: none;
+  font-synthesis-small-caps: none;
+
+  --font-ui: "Whitney", "Whitney Fallback", sans-serif;
+  --font-display: "Graphik Web", "Graphik Fallback", "Whitney", "Whitney Fallback", sans-serif;
+  --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Whitney Fallback", sans-serif;
+  --font-code: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
+  --font-smallcaps: var(--font-ui);
+}
+
+/* ---------- Whitney: UI, controls, dense caregiver sheet ---------- */
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-regular-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Graphik Web: warm storybook display & captions ---------- */
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- DIN Pro: monospaced-digit counters & index badges ---------- */
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+/* ---------- Monument Grotesk Mono: diagnostics identifiers ---------- */
+
+@font-face {
+  font-family: "Monument Grotesk Mono";
+  src: url("/fonts/monument-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Metric-matched local fallbacks (CLS-free swap) ---------- */
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 93.6%;
+  ascent-override: 102.6%;
+  descent-override: 25.6%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Helvetica Neue Medium"), local("HelveticaNeue-Medium"), local("Arial"), local("ArialMT"), local("Helvetica");
+  font-weight: 500;
+  font-style: normal;
+  size-adjust: 94.5%;
+  ascent-override: 101.6%;
+  descent-override: 25.4%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Helvetica Neue Medium"), local("HelveticaNeue-Medium"), local("Arial"), local("ArialMT"), local("Helvetica");
+  font-weight: 600;
+  font-style: normal;
+  size-adjust: 95.6%;
+  ascent-override: 100.4%;
+  descent-override: 25.1%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Graphik Fallback";
+  src: local("Helvetica Neue"), local("Helvetica"), local("Arial"), local("ArialMT");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 102.8%;
+  ascent-override: 96.4%;
+  descent-override: 24.4%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Graphik Fallback";
+  src: local("Helvetica Neue Medium"), local("HelveticaNeue-Medium"), local("Helvetica Neue"), local("Arial");
+  font-weight: 500;
+  font-style: normal;
+  size-adjust: 103.4%;
+  ascent-override: 95.8%;
+  descent-override: 24.2%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Graphik Fallback";
+  src: local("Helvetica Neue Medium"), local("HelveticaNeue-Medium"), local("Helvetica Neue"), local("Arial");
+  font-weight: 600;
+  font-style: normal;
+  size-adjust: 104.2%;
+  ascent-override: 95.1%;
+  descent-override: 24.0%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 93.9%;
+  ascent-override: 110.9%;
+  descent-override: 25.2%;
+  line-gap-override: 1.1%;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Helvetica Neue Medium"), local("HelveticaNeue-Medium"), local("Arial"), local("ArialMT");
+  font-weight: 500;
+  font-style: normal;
+  size-adjust: 95.9%;
+  ascent-override: 108.6%;
+  descent-override: 24.7%;
+  line-gap-override: 1.0%;
+  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
+}
+
+@font-face {
+  font-family: "Monument Grotesk Mono Fallback";
+  src: local("Menlo"), local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("DejaVu Sans Mono");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 103.3%;
+  ascent-override: 103.8%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}

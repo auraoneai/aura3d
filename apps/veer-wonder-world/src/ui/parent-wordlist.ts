@@ -1,7 +1,7 @@
-// Parent word list (PRD 04 E07, PRD 01 sections 4.1 and 6). A short local
-// shortlist of words the grown-up wants to use often today. It is stored with
-// the other parent settings on this device, is never sent anywhere, and does
-// not measure, score or claim learning.
+// Parent word list (PRD 04 E07, PRD 01 sections 4.1 and 6; WP-7). A short
+// local shortlist of words the grown-up wants to use often today. It is stored
+// with the other parent settings on this device, is never sent anywhere, and
+// does not measure, score or claim learning.
 
 import { docOf, el, fillTemplate, uiText, uniqueId, type UiLocale } from "./accessibility.js";
 import { WORD_LIST_MAX, isStorableWordId } from "./settings-store.js";
@@ -68,8 +68,8 @@ export interface WordListHandle {
 }
 
 /**
- * Renders the shortlist as a group of large checkbox chips. Once `max` words
- * are chosen the other chips are disabled until one is removed.
+ * Renders the shortlist as a group of checkbox chips. Once `max` words are
+ * chosen the other chips are disabled until one is removed.
  */
 export function mountWordList(container: HTMLElement, locale: UiLocale, options: WordListOptions): WordListHandle {
   const doc = docOf(container);
@@ -84,10 +84,15 @@ export function mountWordList(container: HTMLElement, locale: UiLocale, options:
     className: "ww-field ww-wordlist",
     attrs: { "data-setting": "wordList", "aria-describedby": helpId }
   });
+  const metric = el(doc, "span", { className: "ww-wordlist-metric", attrs: { "aria-hidden": "true" } });
+  const legend = el(doc, "legend", { className: "ww-legend" }, [
+    el(doc, "span", { text: uiText(locale, "ui.parent.words") }),
+    metric
+  ]);
   const count = el(doc, "p", { className: "ww-field-note ww-wordlist-count", attrs: { "aria-live": "polite" } });
   const grid = el(doc, "div", { className: "ww-chip-grid" });
   fieldset.append(
-    el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.parent.words") }),
+    legend,
     el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.wordsHelp"), attrs: { id: helpId } }),
     grid,
     count
@@ -120,6 +125,7 @@ export function mountWordList(container: HTMLElement, locale: UiLocale, options:
       box.checked = selected.includes(id);
       box.disabled = !box.checked && selected.length >= max;
     }
+    metric.textContent = `${selected.length} / ${max}`;
     count.textContent = fillTemplate(uiText(locale, "ui.parent.wordsCount"), { n: selected.length, max });
   };
   sync();

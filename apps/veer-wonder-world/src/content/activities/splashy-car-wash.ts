@@ -49,6 +49,24 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "object", target: "car", action: "wobble" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "beep" },
+        { do: "object", target: "car", action: "wobble" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "splash" },
+        { do: "object", target: "car", action: "wobble" },
+        { do: "gesture", actor: "momo", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -92,6 +110,7 @@ export const activity: ActivitySpec = {
       kind: "invite",
       camera: "wide",
       stage: [
+        { do: "object", target: "car", action: "wobble" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "point" },
         { do: "object", target: "sink", action: "glow" }
@@ -102,14 +121,15 @@ export const activity: ActivitySpec = {
         { wordId: "wet", objectId: "car" }
       ],
       holdMs: 800,
-      input: { type: "tap", targets: ["sink"] },
+      input: { type: "tap", targets: ["sink", "car"] },
       waitMs: 5000,
       caregiverPromptKey: "g06.tip.1",
       response: {
         stage: [
           { do: "object", target: "sink", action: "open" },
+          { do: "object", target: "sink", action: "wash" },
           { do: "sfx", sound: "splash" },
-          { do: "object", target: "car", action: "wobble" },
+          { do: "object", target: "car", action: "wash" },
           { do: "face", actor: "momo", toward: "car" }
         ],
         lines: [
@@ -117,6 +137,28 @@ export const activity: ActivitySpec = {
           { speaker: "momo", key: "g06.water.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        sink: {
+          stage: [
+            { do: "object", target: "sink", action: "open" },
+            { do: "object", target: "sink", action: "wash" },
+            { do: "sfx", sound: "splash" },
+            { do: "object", target: "car", action: "wash" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        car: {
+          stage: [
+            { do: "object", target: "sink", action: "open" },
+            { do: "sfx", sound: "splash" },
+            { do: "object", target: "car", action: "bounce" },
+            { do: "object", target: "car", action: "wash" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -141,6 +183,7 @@ export const activity: ActivitySpec = {
         stage: [
           { do: "gesture", actor: "momo", gesture: "pickUp" },
           { do: "carry", actor: "momo", item: "sponge" },
+          { do: "object", target: "sponge", action: "shake" },
           { do: "face", actor: "momo", toward: "car" },
           { do: "object", target: "car", action: "wash" },
           { do: "sfx", sound: "squeak" }
@@ -150,6 +193,30 @@ export const activity: ActivitySpec = {
           { speaker: "narrator", key: "g06.wash.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        sponge: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "pickUp" },
+            { do: "carry", actor: "momo", item: "sponge" },
+            { do: "object", target: "sponge", action: "shake" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "object", target: "car", action: "wash" },
+            { do: "sfx", sound: "squeak" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        car: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "pickUp" },
+            { do: "carry", actor: "momo", item: "sponge" },
+            { do: "object", target: "sponge", action: "shake" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "object", target: "car", action: "wash" },
+            { do: "object", target: "car", action: "wobble" },
+            { do: "sfx", sound: "squeak" }
+          ]
+        }
       }
     },
     {
@@ -175,15 +242,43 @@ export const activity: ActivitySpec = {
         stage: [
           { do: "gesture", actor: "momo", gesture: "pickUp" },
           { do: "carry", actor: "momo", item: "towel" },
+          { do: "object", target: "towel", action: "dry" },
           { do: "face", actor: "momo", toward: "car" },
           { do: "object", target: "car", action: "dry" },
-          { do: "sfx", sound: "rustle" }
+          { do: "object", target: "car", action: "glow" },
+          { do: "sfx", sound: "sparkle" }
         ],
         lines: [
           { speaker: "momo", key: "g06.dry.2" },
           { speaker: "narrator", key: "g06.dry.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        towel: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "pickUp" },
+            { do: "carry", actor: "momo", item: "towel" },
+            { do: "object", target: "towel", action: "dry" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "object", target: "car", action: "dry" },
+            { do: "object", target: "car", action: "glow" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        car: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "pickUp" },
+            { do: "carry", actor: "momo", item: "towel" },
+            { do: "object", target: "towel", action: "dry" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "object", target: "car", action: "dry" },
+            { do: "object", target: "car", action: "glow" },
+            { do: "sfx", sound: "tada" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -232,8 +327,9 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "car", action: "glow" },
+        { do: "sfx", sound: "tada" },
         { do: "face", actor: "momo", toward: "car" },
-        { do: "gesture", actor: "momo", gesture: "happy" }
+        { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       lines: [
         { speaker: "momo", key: "g06.shine.1" },

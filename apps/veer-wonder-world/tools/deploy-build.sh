@@ -25,4 +25,4 @@ for file in _headers robots.txt 404.html; do
 done
 node "$APP_DIR/tools/check-dist.mjs"
 cd "$APP_DIR"
-npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --no-assets
+npx -y @aura3d/cli@5.5.1 check-deploy --dist dist --no-assets

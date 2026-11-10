@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "tree",
-  "file": "src/assets/models/tree.54e5fabe.glb",
-  "sha256": "54e5fabe8950dca9af1cb3c7205026e62cbbab9daa727adf396b8d1c5d600165",
-  "sizeBytes": 312200,
+  "file": "src/assets/models/tree.f1f87b61.glb",
+  "sha256": "f1f87b61569b1e6aeb82fad9077b1b4c8412fe3ba74d2baeb39bfc14b454d132",
+  "sizeBytes": 362540,
   "rigged": false,
   "clips": [],
   "heightM": 2.4,
@@ -45,11 +45,25 @@
       "bytesIn": 11740288,
       "bytesOut": 946108
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.84,
+      "metallicFactor": 0,
+      "normalScale": 0.4,
+      "jpegBytes": 50134,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-4eef06a39a0a998f82ae825abf1670e2e63ca1eca8a18fb765f7b78604b87208"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.544
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "v2: fluffy green crown, brown trunk; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/tree.54e5fabe.glb",
+    "sha256": "54e5fabe8950dca9af1cb3c7205026e62cbbab9daa727adf396b8d1c5d600165",
+    "sizeBytes": 312200
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "butterfly",
-  "file": "src/assets/models/butterfly.441f9f27.glb",
-  "sha256": "441f9f27d1ab50f2503c71a2206793c5b6282d06949ea7a65be060b1fd893de0",
-  "sizeBytes": 287340,
+  "file": "src/assets/models/butterfly.e41aed52.glb",
+  "sha256": "e41aed5278d860b9848bb52da5f0417874c7f8f20f982fbe09dcc750340b7a3a",
+  "sizeBytes": 415724,
   "rigged": false,
   "clips": [],
   "heightM": 0.3,
@@ -45,11 +45,39 @@
       "bytesIn": 12227080,
       "bytesOut": 868532
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#f39ac0",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#f39ac0",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 138347,
+      "preservedPixels": 121992,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-be9a8d57b5b5c955ba801fca63a2003f8e66ff9c4c4722961e8f8e8f4ec25122"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.8,
+      "metallicFactor": 0,
+      "normalScale": 0.32,
+      "jpegBytes": 70913,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-be9a8d57b5b5c955ba801fca63a2003f8e66ff9c4c4722961e8f8e8f4ec25122"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       0.714
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "v2: friendly flat-winged butterfly; grey wings, tinted pink per brief.",
     "tint": "#f39ac0"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/butterfly.441f9f27.glb",
+    "sha256": "441f9f27d1ab50f2503c71a2206793c5b6282d06949ea7a65be060b1fd893de0",
+    "sizeBytes": 287340
+  }
 }

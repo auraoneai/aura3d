@@ -333,6 +333,24 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "momo", key: "e08.invite-2.2" }],
         holdMs: 1500
+      },
+      responseByTarget: {
+        sheru: {
+          stage: [
+            { do: "face", actor: "momo", toward: "sheru" },
+            { do: "gesture", actor: "momo", gesture: "cheer" },
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "sfx", sound: "yip" }
+          ]
+        },
+        table: {
+          stage: [
+            { do: "face", actor: "momo", toward: "table" },
+            { do: "gesture", actor: "momo", gesture: "point" },
+            { do: "object", target: "table", action: "wobble" },
+            { do: "gesture", actor: "sheru", gesture: "wag" }
+          ]
+        }
       }
     },
     {
@@ -369,12 +387,16 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
+        { do: "object", target: "box", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
         { do: "move", actor: "sheru", to: "frontLeft", style: "hop" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "face", actor: "momo", toward: "box" },
         { do: "gesture", actor: "momo", gesture: "point" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "box", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
         { do: "move", actor: "sheru", to: "frontLeft", style: "walk" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "face", actor: "momo", toward: "box" },
@@ -463,6 +485,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: null },
+        { do: "object", target: "box", action: "close" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" },

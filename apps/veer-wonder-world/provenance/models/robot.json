@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "robot",
-  "file": "src/assets/models/robot.3be01f4b.glb",
-  "sha256": "3be01f4bec052ba9502fd90ea7859e73f50dd227073737cfa0b8a2b413542480",
-  "sizeBytes": 473160,
+  "file": "src/assets/models/robot.83e84463.glb",
+  "sha256": "83e84463449d713dda5546443136ec04278b17178c7531271d411f055988067a",
+  "sizeBytes": 552508,
   "rigged": false,
   "clips": [],
   "heightM": 0.8,
@@ -45,11 +45,39 @@
       "bytesIn": 10413084,
       "bytesOut": 1070516
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#a9cdf2",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#a9cdf2",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 238601,
+      "preservedPixels": 22613,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-26d99f9ad03c585e91b90253b36593dd4c6c333874bb2b9bb4ba984e7ffd267c"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.42,
+      "metallicFactor": 0.12,
+      "normalScale": 0.28,
+      "jpegBytes": 29049,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-26d99f9ad03c585e91b90253b36593dd4c6c333874bb2b9bb4ba984e7ffd267c"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       0.747
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Small rounded toy robot, harmless; tinted light blue per brief.",
     "tint": "#a9cdf2"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/robot.3be01f4b.glb",
+    "sha256": "3be01f4bec052ba9502fd90ea7859e73f50dd227073737cfa0b8a2b413542480",
+    "sizeBytes": 473160
+  }
 }

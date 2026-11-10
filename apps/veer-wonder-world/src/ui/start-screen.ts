@@ -1,20 +1,22 @@
 // Start screen (PRD 04 A04, PRD 01 section 6, PRD 03 section 4, PRD 06
-// QA-A01). Nothing is audible before the grown-up taps "Tap to start": that
-// click is the genuine user gesture the app shell uses to unlock audio, so
-// onStart runs synchronously inside the click handler. The screen carries the
-// parent note and the mode choice; there is no autoplay and no timer.
+// QA-A01; WP-7). Nothing is audible before the grown-up taps "Tap to start":
+// that click is the genuine user gesture the app shell uses to unlock audio,
+// so onStart runs synchronously inside the click handler. The screen carries
+// the parent note and the mode choice; there is no autoplay and no timer.
 //
-// The welcome (07 O8): a decorative sky (sun glow, a rainbow in the six
-// character colours, slow clouds), the six characters' portraits in a row, and
+// The welcome (07 O8; WP-7): a warm translucent sunlit veil over the live 3D
+// Momo Meadow stage, the six characters' portraits in a gentle arc, and
 // "Welcome to" over "<name>'s Wonder World" (src/personal.ts; "Wonder World"
-// when no name is set). The decorations are hidden from screen readers. Motion
-// is slow and stops in reduced motion; high contrast drops the decorations.
+// when no name is set). Decorations are hidden from screen readers; motion is
+// slow and stops in reduced motion; high contrast uses solid opaque surfaces.
 
 import { WELCOME_NAME } from "../personal.js";
-import type { CharacterId, PlayMode } from "../types.js";
+import { HOST_HOME_WORLD, WORLD_THEMES, createWorldSceneSvg } from "./world-art.js";
+import type { CharacterId, PlayMode, WorldId } from "../types.js";
 import {
   CHARACTER_COLOURS,
   CHARACTER_IDS,
+  ENGLISH_ONLY,
   buildModeChoice,
   castDots,
   docOf,
@@ -22,10 +24,12 @@ import {
   fillTemplate,
   icon,
   inertOthers,
+  speakerName,
   uiText,
   uniqueId,
   type UiLocale
 } from "./accessibility.js";
+import type { PortraitMap } from "./episode-menu.js";
 import { PORTRAITS } from "./portraits.js";
 
 /** The welcome title's big line: "<name>'s Wonder World", or "Wonder World" when no name is set. */
@@ -42,22 +46,52 @@ function nameLineElement(doc: Document, locale: UiLocale): HTMLElement {
   const product = uiText(locale, "ui.start.title");
   const span = el(doc, "span", { className: "ww-start-name" });
   const at = line.lastIndexOf(product);
-  if (at < 0) span.textContent = line;
-  else span.append(line.slice(0, at), el(doc, "span", { className: "ww-start-product", text: product }), line.slice(at + product.length));
+  if (at < 0) {
+    span.textContent = line;
+  } else {
+    if (at > 0) span.appendChild(doc.createTextNode(line.slice(0, at)));
+    span.appendChild(el(doc, "span", { className: "ww-start-product", text: product }));
+    const tail = line.slice(at + product.length);
+    if (tail.length > 0) span.appendChild(doc.createTextNode(tail));
+  }
   return span;
 }
 
 /** How far below the middle of its picture a character sits: GoGo the train shows its face low in the frame. */
 const PORTRAIT_SHIFT: Partial<Record<CharacterId, string>> = { gogo: "13%" };
 
-/** The decorative sky behind the welcome: a sun glow, a rainbow arc and three slow clouds. */
+const MODE_HINTS: Readonly<Record<PlayMode, string>> = {
+  "play-together": "Pauses for a turn",
+  "watch-sing": "Plays right through"
+};
+
+function isPlayMode(value: string | null): value is PlayMode {
+  return value === "play-together" || value === "watch-sing";
+}
+
+/** Adds concise caregiver descriptions under the two start-screen mode segments without changing radio labels. */
+function decorateStartModes(doc: Document, fieldset: HTMLElement): void {
+  for (const segment of Array.from(fieldset.querySelectorAll(".ww-segment"))) {
+    const input = segment.querySelectorAll(".ww-choice-input")[0];
+    const face = segment.querySelectorAll(".ww-segment-face")[0];
+    const modeAttr = input?.getAttribute("data-mode") ?? null;
+    if (!input || !face || !isPlayMode(modeAttr)) continue;
+    const subId = uniqueId("ww-mode-sub");
+    input.setAttribute("aria-describedby", subId);
+    face.appendChild(
+      el(doc, "span", {
+        className: "ww-mode-sub",
+        text: MODE_HINTS[modeAttr],
+        attrs: { id: subId, "aria-hidden": "true" }
+      })
+    );
+  }
+}
+
+/** Warm sunlit corner glow behind the translucent welcome card while the live 3D Meadow stage renders underneath. */
 function welcomeSky(doc: Document): HTMLElement {
   return el(doc, "div", { className: "ww-start-sky", attrs: { "aria-hidden": "true" } }, [
-    el(doc, "span", { className: "ww-start-sun" }),
-    el(doc, "span", { className: "ww-start-rainbow" }),
-    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-1" }),
-    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-2" }),
-    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-3" })
+    el(doc, "span", { className: "ww-start-sun" })
   ]);
 }
 
@@ -98,15 +132,17 @@ export function showStartScreen(
   const titleId = uniqueId("ww-start-title");
   const screen = el(doc, "section", { className: "ww-screen ww-start", attrs: { "aria-labelledby": titleId, "data-ui": "start" } });
   const nameLine = nameLineElement(doc, locale);
-  const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } }, [
-    el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }),
-    nameLine
-  ]);
+  const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } });
   // A space between the two lines, so the heading's text reads "Welcome to <line>" (the flex layout ignores it).
-  title.insertBefore(doc.createTextNode(" "), nameLine);
+  title.appendChild(el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }));
+  title.appendChild(doc.createTextNode(" "));
+  title.appendChild(nameLine);
+
   const modeChoice = buildModeChoice(doc, locale, mode, (next) => {
     mode = next;
   });
+  decorateStartModes(doc, modeChoice.element);
+
   // The route stays labelled as a prototype until real-device evidence exists.
   const prototype = el(doc, "p", { className: "ww-prototype", text: uiText(locale, "ui.prototype") });
   const hintId = uniqueId("ww-start-hint");
@@ -163,17 +199,69 @@ export function showStartScreen(
   return dispose;
 }
 
+export interface LoadingScreenOptions {
+  /** Optional story title shown on the warm storybook card while the world prepares. */
+  readonly title?: string;
+  /** Optional host character shown in a portrait ring above the calm breathing dots. */
+  readonly host?: CharacterId;
+  /** Optional world diorama header shown on the loading card. */
+  readonly world?: WorldId;
+  /** Optional portrait map override (defaults to PORTRAITS). */
+  readonly portraits?: PortraitMap;
+}
+
 /**
  * A calm loading status (`ui.loading`) between start and the first frame: no
  * spinner and no flashing; the character dots breathe slowly and stay still
  * in calm-motion mode. It never blocks taps. Returns an idempotent remover.
  */
-export function showLoading(root: HTMLElement, locale: UiLocale): () => void {
+export function showLoading(root: HTMLElement, locale: UiLocale = ENGLISH_ONLY, options: LoadingScreenOptions = {}): () => void {
   const doc = docOf(root);
-  const view = el(doc, "div", { className: "ww-loading", attrs: { role: "status", "aria-live": "polite", "data-ui": "loading" } }, [
-    castDots(doc),
-    el(doc, "p", { className: "ww-loading-text", text: uiText(locale, "ui.loading") })
-  ]);
+  const card = el(doc, "div", { className: "ww-loading-card" });
+
+  const resolvedWorld = options.world ?? (options.host ? HOST_HOME_WORLD[options.host] : undefined);
+  if (resolvedWorld) {
+    const banner = el(doc, "div", { className: "ww-loading-banner", attrs: { "aria-hidden": "true" } }, [
+      createWorldSceneSvg(doc, resolvedWorld),
+      el(doc, "span", { className: "ww-card-world-tag", text: WORLD_THEMES[resolvedWorld].shortLabel })
+    ]);
+    card.appendChild(banner);
+  }
+
+  const body = el(doc, "div", { className: "ww-loading-body" });
+  if (options.host) {
+    const portraits = options.portraits ?? PORTRAITS;
+    const portraitUrl = portraits[options.host];
+    const avatar = el(doc, "span", { className: "ww-loading-host", attrs: { "aria-hidden": "true" } });
+    avatar.style.setProperty("--ww-dot", CHARACTER_COLOURS[options.host]);
+    if (portraitUrl) {
+      const img = el(doc, "img", {
+        className: "ww-loading-host-img",
+        attrs: { src: portraitUrl, alt: "", decoding: "async", draggable: "false" }
+      });
+      img.addEventListener(
+        "error",
+        () => {
+          img.remove();
+        },
+        { once: true }
+      );
+      avatar.appendChild(img);
+    }
+    body.appendChild(avatar);
+  }
+
+  if (options.title && options.title.trim() !== "") {
+    body.appendChild(el(doc, "p", { className: "ww-loading-title", text: options.title.trim() }));
+  }
+  if (options.host) {
+    body.appendChild(el(doc, "p", { className: "ww-loading-sub", text: speakerName(options.host, locale) }));
+  }
+  body.appendChild(castDots(doc));
+  body.appendChild(el(doc, "p", { className: "ww-loading-text", text: uiText(locale, "ui.loading") }));
+  card.appendChild(body);
+
+  const view = el(doc, "div", { className: "ww-loading", attrs: { role: "status", "aria-live": "polite", "data-ui": "loading" } }, [card]);
   root.appendChild(view);
   return () => {
     view.remove();

@@ -1,22 +1,25 @@
+@import "./fonts.css";
+
 /*
- * Wonder World overlay styles (PRD 04 E06; PRD 01 section 9; PRD 02 section 4).
+ * Wonder World overlay styles (PRD 04 E06; PRD 01 section 9; PRD 02 section 4; WP-7).
  *
- * Mobile-first, safe-area aware, portrait and landscape. Large touch targets
- * (44 x 44 CSS px minimum, 48 px by default). Calm pastel palette; no
- * flashing, no strobe, no shaking: the only motion is a short fade-in, the
- * parent-gate progress ring and slowly breathing loading dots, and calm
- * motion (.reduced-motion on <html> or prefers-reduced-motion) removes all
+ * Mobile-first, safe-area aware, portrait and landscape. Large child/co-play
+ * touch targets (44 x 44 CSS px minimum, 48 px by default) paired with the
+ * AuraOne dense caregiver sheet inside the gated parent panel. Calm storybook
+ * palette; no flashing, no strobe, no shaking: the only motion is a short
+ * fade-in, the parent-gate progress ring and slowly breathing loading dots, and
+ * calm motion (.reduced-motion on <html> or prefers-reduced-motion) removes all
  * of it except the gate ring, which is the hold's progress feedback.
  * .high-contrast raises contrast and text size for parent mode.
  *
- * Type: licensed "Graphik Web" from /fonts/local.css, weights 400, 500 and
- * 600 only (600 for the single title of a screen or dialog). Sentence case,
- * no tracked capitals.
+ * Type: licensed Whitney (--font-ui), Graphik Web (--font-display), DIN Pro
+ * (--font-metric) and Monument Grotesk Mono (--font-code) from ./fonts.css,
+ * weights 400, 500 and 600 only.
  */
 
 :root {
   color-scheme: light;
-  --ww-font: "Graphik Web", "Helvetica Neue", Arial, sans-serif;
+  --ww-font: var(--font-ui);
 
   --ww-bg: #f4efe6;
   --ww-sky: #e3edf6;
@@ -32,13 +35,17 @@
   --ww-selected-bg: #e9e1fa;
   --ww-selected-ink: #2a2638;
   --ww-selected-line: #5b46a3;
+  --ww-focus-bg: #fff2cc;
+  --ww-focus-ink: #5a3800;
+  --ww-keyword-bg: #fde68a;
+  --ww-keyword-ink: #1e1b2a;
   --ww-switch-off: #8f86a6;
   --ww-switch-on: #5b46a3;
   --ww-switch-thumb: #ffffff;
   --ww-focus: #2a62c9;
   --ww-backdrop: rgba(42, 38, 56, 0.42);
   --ww-control-bg: rgba(255, 253, 249, 0.94);
-  --ww-caption-bg: rgba(30, 27, 42, 0.86);
+  --ww-caption-bg: rgba(30, 27, 42, 0.88);
   --ww-caption-ink: #ffffff;
 
   --ww-tap: 48px;
@@ -68,6 +75,10 @@
   --ww-selected-bg: #000000;
   --ww-selected-ink: #ffffff;
   --ww-selected-line: #000000;
+  --ww-focus-bg: #000000;
+  --ww-focus-ink: #ffffff;
+  --ww-keyword-bg: #ffffff;
+  --ww-keyword-ink: #000000;
   --ww-switch-off: #ffffff;
   --ww-switch-on: #000000;
   --ww-switch-thumb: #000000;
@@ -106,6 +117,13 @@ body {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-code);
+  font-weight: 400;
 }
 
 h1,
@@ -252,6 +270,7 @@ b {
 }
 
 .ww-icon-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -366,10 +385,11 @@ b {
 .ww-legend {
   float: left;
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   padding: 0;
   color: var(--ww-ink);
   font-size: 0.9375rem;
@@ -406,15 +426,23 @@ b {
   gap: 2px;
   min-height: var(--ww-tap);
   height: 100%;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: 2px solid var(--ww-line);
   border-radius: var(--ww-radius-small);
   background: var(--ww-surface);
   color: var(--ww-ink);
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.2;
   text-align: center;
   cursor: pointer;
+}
+
+.ww-mode-sub {
+  display: block;
+  color: var(--ww-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .ww-chip-grid {
@@ -429,7 +457,7 @@ b {
   justify-content: center;
   min-width: var(--ww-tap);
   min-height: var(--ww-tap);
-  padding: 8px 16px;
+  padding: 6px 14px;
   border: 2px solid var(--ww-line);
   border-radius: 999px;
   background: var(--ww-surface);
@@ -437,6 +465,11 @@ b {
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
+}
+
+.ww-chip-tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .ww-choice-input:checked + .ww-segment-face,
@@ -465,7 +498,7 @@ b {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 56px;
+  min-height: 44px;
   padding: 6px 0;
   border-bottom: 1px solid var(--ww-line);
   cursor: pointer;
@@ -479,8 +512,8 @@ b {
 .ww-switch-track {
   position: relative;
   flex: none;
-  width: 56px;
-  height: 34px;
+  width: 52px;
+  height: 30px;
   border: 2px solid var(--ww-switch-off);
   border-radius: 999px;
   background: var(--ww-switch-off);
@@ -490,10 +523,10 @@ b {
 .ww-switch-track::after {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 24px;
-  height: 24px;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--ww-switch-thumb);
   transition: transform var(--ww-fade) ease;
@@ -528,7 +561,7 @@ b {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: calc(16px + var(--ww-safe-top)) calc(16px + var(--ww-safe-right)) calc(24px + var(--ww-safe-bottom))
+  padding: calc(14px + var(--ww-safe-top)) calc(16px + var(--ww-safe-right)) calc(18px + var(--ww-safe-bottom))
     calc(16px + var(--ww-safe-left));
   pointer-events: auto;
   animation: ww-fade-in var(--ww-fade) ease-out both;
@@ -562,9 +595,11 @@ b {
 }
 
 .ww-dialog-title {
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
   font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .ww-cast {
@@ -591,6 +626,18 @@ b {
 }
 
 /*
+ * When live (not the static index.html splash), let the live 3D Momo Meadow stage
+ * shine through a warm sunlit veil behind the frosted storybook welcome card.
+ */
+.ww-start:not(.ww-boot) {
+  background: rgba(251, 246, 236, 0.72);
+}
+
+.high-contrast .ww-start:not(.ww-boot) {
+  background: #ffffff;
+}
+
+/*
  * The static splash in index.html: the start screen's background, dots and title, shown from the first paint
  * while the bundle downloads. It never fades (a fade would hold it invisible while the main thread is busy),
  * takes no taps, and sits under every screen; src/main.ts removes it once the first screen has faded in.
@@ -601,8 +648,7 @@ b {
   animation: none;
 }
 
-/* Once the first screen starts to fade in over it, the splash's dots and title fade out first, so the two layouts
-   never show through each other; its background, the same as the start screen's, stays until it is removed. */
+/* Once the first screen starts to fade in over it, the splash's dots and title fade out first. */
 .ww-boot.ww-boot-leaving .ww-start-inner {
   opacity: 0;
   transition: opacity 160ms ease-out;
@@ -627,18 +673,36 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(16px, 3vh, 24px);
-  width: min(100%, 36rem);
+  gap: clamp(12px, 2.2vh, 20px);
+  width: min(100%, 35rem);
   text-align: center;
 }
 
-/* The welcome (portraits and title) and the controls; side by side on short landscape screens (end of this file). */
+.ww-start:not(.ww-boot) > .ww-start-inner {
+  padding: clamp(14px, 2.4vh, 24px) clamp(14px, 3vw, 28px);
+  border: 1px solid rgba(209, 198, 226, 0.88);
+  border-radius: 28px;
+  background: rgba(255, 252, 245, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 44px rgba(42, 38, 56, 0.12), 0 2px 6px rgba(42, 38, 56, 0.05);
+}
+
+.high-contrast .ww-start:not(.ww-boot) > .ww-start-inner {
+  border: 2px solid #000000;
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* The welcome (portraits and title) and the controls; side by side on landscape screens (end of this file). */
 .ww-start-hero,
 .ww-start-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(16px, 3vh, 24px);
+  gap: clamp(10px, 2vh, 18px);
   width: 100%;
   min-width: 0;
 }
@@ -647,24 +711,15 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   color: var(--ww-ink);
-  font-size: clamp(2.25rem, 8vw, 3.25rem);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 7vw, 3rem);
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.08;
   letter-spacing: -0.02em;
 }
 
-/*
- * The welcome (07 O8): a sky behind the start screen (sun glow, a rainbow in the six character colours, three
- * slow clouds), the six characters' portraits, and "Welcome to" over the big "<name>'s Wonder World". Every
- * colour stop of the big line keeps at least 3:1 against the sky (large text), and neighbouring stops are close
- * in hue, so no blend between them turns grey. Entrances run once; the slow loops (faces 3.6 s, clouds 48-60 s)
- * settle after a few rounds, so a tablet left on the welcome stops redrawing; reduced motion stops all of it (end
- * of this file).
- *
- * The sky is fixed to the window, so it stays put if a small screen has to scroll the welcome.
- */
 .ww-start-sky {
   position: fixed;
   inset: 0;
@@ -680,101 +735,7 @@ b {
   width: 64vmin;
   height: 64vmin;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 236, 170, 0.95) 0%, rgba(255, 236, 170, 0.5) 36%, rgba(255, 236, 170, 0) 70%);
-}
-
-/*
- * The rainbow is sized by the window's height, not its width, so its top stays at about half the height on any
- * screen: below the title, behind the controls. Six bands, one per character colour, in rainbow order from the
- * outside in. Short landscape screens use a smaller one (end of this file).
- */
-.ww-start-rainbow {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 100vh;
-  height: 50vh;
-  transform: translateX(-50%);
-  background: radial-gradient(
-    circle at 50% 100%,
-    transparent 0 40%,
-    #cdbcf2 40% 44.5%,
-    #a9e5d1 44.5% 49%,
-    #e8c9a2 49% 53.5%,
-    #f7dc82 53.5% 58%,
-    #f9cd92 58% 62.5%,
-    #f3aba4 62.5% 67%,
-    transparent 67%
-  );
-  opacity: 0.7;
-}
-
-.ww-start-cloud {
-  position: absolute;
-  width: 18vmin;
-  height: 6vmin;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(91, 70, 163, 0.08);
-  animation-name: ww-drift;
-  animation-duration: 48s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 2;
-  animation-direction: alternate;
-  animation-fill-mode: both;
-}
-
-.ww-start-cloud::before,
-.ww-start-cloud::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  background: inherit;
-}
-
-.ww-start-cloud::before {
-  left: 14%;
-  bottom: 30%;
-  width: 45%;
-  height: 140%;
-}
-
-.ww-start-cloud::after {
-  right: 16%;
-  bottom: 35%;
-  width: 34%;
-  height: 110%;
-}
-
-/* Clouds keep to the corners, clear of the portraits and the title: two along the top, one low on the left. */
-.ww-start-cloud-1 {
-  top: 4%;
-  left: 4%;
-}
-
-.ww-start-cloud-2 {
-  top: 4%;
-  right: 4%;
-  width: 14vmin;
-  height: 5vmin;
-  animation-duration: 60s;
-  animation-delay: -20s;
-}
-
-.ww-start-cloud-3 {
-  bottom: 3%;
-  left: 5%;
-  width: 11vmin;
-  height: 4vmin;
-  animation-duration: 54s;
-  animation-delay: -35s;
-}
-
-/* The top-left cloud's tall puff rises 0.7 of its height above its box: keep it inside the top edge. */
-@media (min-height: 600px) {
-  .ww-start-cloud-1 {
-    top: 6%;
-  }
+  background: radial-gradient(circle, rgba(255, 236, 170, 0.92) 0%, rgba(255, 236, 170, 0.42) 38%, rgba(255, 236, 170, 0) 70%);
 }
 
 /* Portraits in a gentle arc: the middle faces stand a little higher. */
@@ -782,14 +743,15 @@ b {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: clamp(6px, 1.6vw, 14px);
+  gap: clamp(6px, 1.4vw, 12px);
 }
 
 .ww-start-face {
+  position: relative;
   display: grid;
   flex: none;
   place-items: center;
-  width: clamp(46px, 11vw, 76px);
+  width: clamp(44px, 10vw, 68px);
   aspect-ratio: 1;
   overflow: hidden;
   border: 4px solid var(--ww-dot, #d5d9e2);
@@ -806,19 +768,12 @@ b {
 
 .ww-start-face:nth-child(2),
 .ww-start-face:nth-child(5) {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .ww-start-face:nth-child(3),
 .ww-start-face:nth-child(4) {
-  margin-bottom: 18px;
-}
-
-/* The portraits are full-body renders on their own backdrops: the image is drawn at 1.5 times the ring, centred on
-   the character (a size and offsets, not a transform, so the round clip holds in every browser; --ww-face-shift
-   looks lower for a character drawn low in its picture), so each ring holds the character. */
-.ww-start-face {
-  position: relative;
+  margin-bottom: 14px;
 }
 
 .ww-start-face-img {
@@ -833,9 +788,10 @@ b {
 
 .ww-start-welcome {
   color: var(--ww-primary);
-  font-size: clamp(1.25rem, 3.4vw, 1.875rem);
+  font-family: var(--font-ui);
+  font-size: clamp(1.125rem, 2.8vw, 1.5rem);
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.25;
   letter-spacing: 0;
 }
 
@@ -850,10 +806,12 @@ b {
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  font-size: clamp(2.25rem, 10vw, 5.25rem);
-  line-height: 1.02;
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 8.6vw, 4.125rem);
+  font-weight: 600;
+  line-height: 1.04;
   text-wrap: balance;
-  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.95)) drop-shadow(0 12px 24px rgba(91, 70, 163, 0.2));
+  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.95)) drop-shadow(0 10px 22px rgba(91, 70, 163, 0.16));
   animation-name: ww-rise;
   animation-duration: 700ms;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -909,21 +867,12 @@ b {
   }
 }
 
-@keyframes ww-drift {
-  from {
-    transform: translateX(-3vmin);
-  }
-  to {
-    transform: translateX(3vmin);
-  }
-}
-
 .ww-start-head,
 .ww-start-action {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -935,12 +884,13 @@ b {
   color: var(--ww-ink-soft);
   font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .ww-start-hint {
   color: var(--ww-ink-soft);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
 }
 
 .ww-start .ww-segmented {
@@ -951,20 +901,23 @@ b {
   justify-content: center;
 }
 
-/* Over the sky, the question and the hint under the button sit on a soft backing, so no rainbow band edge runs
-   through their text (one-column layouts put the bands behind the controls). */
 .ww-start .ww-legend-text,
 .ww-start-hint {
-  padding: 2px 12px;
+  padding: 2px 10px;
   border-radius: 999px;
-  background: rgba(255, 253, 249, 0.88);
 }
 
-/* Over the sky the chosen mode is filled in, so it cannot read as a gap in the row. */
+/* Over the frosted card the chosen mode is filled in, with readable subtitle ink. */
 html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   border-color: var(--ww-primary);
   background: var(--ww-primary);
   color: var(--ww-on-primary);
+}
+
+html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face .ww-mode-sub,
+.high-contrast .ww-choice-input:checked + .ww-segment-face .ww-mode-sub {
+  color: var(--ww-on-primary);
+  opacity: 0.92;
 }
 
 .ww-start-button {
@@ -973,17 +926,19 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   justify-content: center;
   gap: 12px;
   min-width: min(100%, 18rem);
-  min-height: 76px;
-  padding: 0 32px;
+  min-height: clamp(56px, 8.2vh, 68px);
+  padding: 0 30px;
   border: 2px solid var(--ww-primary);
   border-radius: 999px;
   background: var(--ww-primary);
   color: var(--ww-on-primary);
-  font-size: 1.375rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.1875rem, 2.5vw, 1.3125rem);
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
   touch-action: manipulation;
+  box-shadow: 0 8px 20px rgba(91, 70, 163, 0.22);
 }
 
 .ww-start-button:hover {
@@ -991,9 +946,13 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   background: var(--ww-primary-hover);
 }
 
+.high-contrast .ww-start-button {
+  box-shadow: none;
+}
+
 .ww-start-button .ww-icon {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
 }
 
 /* The button takes focus when the screen opens; its ring stands clear of the pill, in the pill's own colour. */
@@ -1004,15 +963,15 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
 
 .ww-start-note {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   max-width: 26rem;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border: 1px solid var(--ww-line);
-  border-radius: var(--ww-radius);
+  border-radius: 16px;
   background: var(--ww-surface);
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.45;
   text-align: left;
 }
 
@@ -1029,9 +988,77 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 16px;
+  padding: 20px;
   color: var(--ww-ink);
   pointer-events: none;
+}
+
+.ww-loading-card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 22rem);
+  overflow: hidden;
+  border: 1px solid var(--ww-line);
+  border-radius: 24px;
+  background: rgba(255, 253, 249, 0.94);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 36px rgba(42, 38, 56, 0.12);
+  text-align: center;
+}
+
+.high-contrast .ww-loading-card {
+  border: 2px solid #000000;
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.ww-loading-banner {
+  position: relative;
+  height: 72px;
+  overflow: hidden;
+}
+
+.ww-loading-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+}
+
+.ww-loading-host {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border: 3px solid var(--ww-dot, #d5d9e2);
+  border-radius: 50%;
+  background: var(--ww-surface);
+}
+
+.ww-loading-host-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ww-loading-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.ww-loading-sub {
+  margin-top: -6px;
+  color: var(--ww-ink-soft);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .ww-loading-text {
@@ -1066,7 +1093,7 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: min(100%, 64rem);
+  width: min(100%, 68rem);
   margin: 0 auto;
 }
 
@@ -1078,9 +1105,11 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
 }
 
 .ww-menu-title {
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 /* Shown only when the 3D stage could not start on this device: calm, still, no icon. */
@@ -1095,17 +1124,78 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   line-height: 1.45;
 }
 
+/* World filter strip ("All" + 6 toy-island worlds). */
+.ww-world-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ww-world-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--ww-line);
+  border-radius: 999px;
+  background: var(--ww-world-bg, var(--ww-surface));
+  color: var(--ww-ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-world-pill:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.ww-world-pill.is-active {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
+}
+
+.high-contrast .ww-world-pill {
+  border: 2px solid #000000;
+  background: #ffffff;
+  color: #000000;
+}
+
+.high-contrast .ww-world-pill.is-active {
+  background: #000000;
+  color: #ffffff;
+}
+
+.ww-world-pill-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border: 1px solid rgba(42, 38, 56, 0.18);
+  border-radius: 50%;
+  background: var(--ww-dot, #d5d9e2);
+}
+
+.ww-world-pill.is-active .ww-world-pill-dot {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
 .ww-menu-heading {
-  margin-top: 8px;
+  margin-top: 6px;
+  font-family: var(--font-display);
   font-size: 1.125rem;
   font-weight: 500;
   line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .ww-menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+  gap: 14px;
   padding: 0;
   list-style: none;
 }
@@ -1116,11 +1206,12 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
 
 .ww-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
-  min-height: 96px;
-  padding: 14px 16px;
+  min-height: 132px;
+  padding: 0;
+  overflow: hidden;
   border: 2px solid var(--ww-line);
   border-radius: var(--ww-radius);
   background: var(--ww-surface);
@@ -1128,10 +1219,93 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(42, 38, 56, 0.05);
 }
 
 .ww-card:hover {
   border-color: var(--ww-line-strong);
+}
+
+.high-contrast .ww-card {
+  box-shadow: none;
+}
+
+.ww-card-scene {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 64px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(42, 38, 56, 0.08);
+}
+
+.high-contrast .ww-card-scene {
+  border-bottom: 2px solid #000000;
+}
+
+.high-contrast .ww-card-scene-svg {
+  display: none;
+}
+
+.ww-card-scene-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ww-card-world-tag {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  padding: 2px 9px;
+  border: 1px solid rgba(42, 38, 56, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.92);
+  color: var(--ww-ink);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.high-contrast .ww-card-world-tag {
+  border: 1px solid #000000;
+  background: #ffffff;
+  color: #000000;
+}
+
+.ww-card-focus {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border: 1px solid rgba(90, 56, 0, 0.24);
+  border-radius: 999px;
+  background: var(--ww-focus-bg);
+  color: var(--ww-focus-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.high-contrast .ww-card-focus {
+  border: 1px solid #000000;
+}
+
+.ww-card-focus-icon {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+.ww-card-body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
 }
 
 .high-contrast .ww-card-badge,
@@ -1143,14 +1317,16 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: grid;
   flex: none;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: var(--ww-dot, #d5d9e2);
   color: #2a2638;
-  font-size: 1.125rem;
+  font-family: var(--font-metric);
+  font-size: 1.0625rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* A host portrait fills the badge circle; the canonical number stays as a small tag. */
@@ -1169,38 +1345,62 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
 
 .ww-card-number {
   position: absolute;
-  right: -6px;
-  bottom: -6px;
+  right: -5px;
+  bottom: -5px;
   display: grid;
   place-items: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
   border: 1px solid var(--ww-line-strong);
   border-radius: 999px;
   background: var(--ww-surface);
   color: var(--ww-ink);
-  font-size: 0.8125rem;
+  font-family: var(--font-metric);
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .ww-card-text {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
 .ww-card-title {
-  font-size: 1.0625rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1.25;
 }
 
+.ww-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
 .ww-card-host {
   color: var(--ww-ink-soft);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   line-height: 1.3;
+}
+
+.ww-card-duration {
+  color: var(--ww-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Corner controls during play ---------------------------------------------------- */
@@ -1235,12 +1435,54 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
 }
 
 /*
- * "Your child had a turn": while a turn waits it gets a still, solid outline (no
- * fill and no animation, so it never competes with the glowing object the child
- * is looking at); otherwise it is dashed and soft like any disabled control.
+ * "Your child had a turn": while a turn waits it gets a still, solid outline and
+ * an unobtrusive SVG radial countdown ring showing calm wait progress.
  */
+.ww-control-confirm {
+  overflow: hidden;
+  border-radius: 50%;
+}
+
 .ww-controls [data-control="confirm"]:not(:disabled) {
   border-color: var(--ww-selected-line);
+}
+
+.ww-wait-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: rotate(-90deg);
+  opacity: 0;
+}
+
+.ww-control-confirm.is-waiting:not(:disabled) .ww-wait-ring {
+  opacity: 1;
+}
+
+.ww-wait-track,
+.ww-wait-arc {
+  fill: none;
+  stroke-width: 3;
+}
+
+.ww-wait-track {
+  stroke: var(--ww-line);
+}
+
+.ww-wait-arc {
+  stroke: var(--ww-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 120ms linear;
+}
+
+.high-contrast .ww-wait-track {
+  stroke: #d4d4d4;
+}
+
+.high-contrast .ww-wait-arc {
+  stroke: #000000;
 }
 
 /* Captions --------------------------------------------------------------------------- */
@@ -1253,18 +1495,24 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: grid;
   justify-items: center;
   gap: 6px;
-  width: min(calc(100% - 32px - var(--ww-safe-left) - var(--ww-safe-right)), 40rem);
+  width: min(calc(100% - 32px - var(--ww-safe-left) - var(--ww-safe-right)), 42rem);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
 .ww-caption-line {
-  padding: 12px 18px;
-  border-radius: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 18px;
   background: var(--ww-caption-bg);
   color: var(--ww-caption-ink);
+  font-family: var(--font-display);
   font-size: 1.125rem;
-  line-height: 1.4;
+  line-height: 1.42;
   text-align: center;
 }
 
@@ -1272,16 +1520,35 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-right: 8px;
-  font-weight: 500;
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
-.ww-caption-speaker::before {
+.ww-caption-speaker:not(.has-avatar)::before {
   content: "";
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--ww-dot, transparent);
+}
+
+.ww-caption-avatar {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border: 2px solid var(--ww-dot, #ffffff);
+  border-radius: 50%;
+  background: var(--ww-surface);
+  object-fit: cover;
+}
+
+.ww-caption-keyword {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--ww-keyword-bg);
+  color: var(--ww-keyword-ink);
+  font-weight: 600;
 }
 
 .ww-caption-notice,
@@ -1413,15 +1680,31 @@ html.high-contrast .ww-caption-line {
   stroke: #000000;
 }
 
-/* Parent panel ----------------------------------------------------------------------- */
+/* Parent panel (AuraOne dense caregiver sheet) --------------------------------------- */
 
 .ww-parent {
+  --row-height: 34px;
+  --control-height: 32px;
+  --control-height-sm: 28px;
+  --cell-px: 10px;
+  --cell-py: 6px;
+  --section-gap: 16px;
+
   display: flex;
   flex-direction: column;
   width: min(100%, 40rem);
-  height: min(100%, 56rem);
+  height: min(100%, 54rem);
   padding: 0;
   overflow: hidden;
+  font-family: var(--font-ui);
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+  .ww-parent {
+    --row-height: 44px;
+    --control-height: 44px;
+    --control-height-sm: 36px;
+  }
 }
 
 .ww-parent-header {
@@ -1429,7 +1712,7 @@ html.high-contrast .ww-caption-line {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 12px 12px 20px;
+  padding: 10px 12px 10px 20px;
   border-bottom: 1px solid var(--ww-line);
 }
 
@@ -1437,13 +1720,13 @@ html.high-contrast .ww-caption-line {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--section-gap);
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 20px;
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  padding: 16px 20px;
+  font-size: 0.875rem;
+  line-height: 1.45;
   -webkit-user-select: text;
   user-select: text;
 }
@@ -1451,33 +1734,114 @@ html.high-contrast .ww-caption-line {
 .ww-parent-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--section-gap);
+}
+
+/* Native OpenType small-caps section eyebrow (lowercase source strings, never text-transform: uppercase). */
+.ww-parent-kicker {
+  margin: 4px 0 -8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ww-line);
+  color: var(--ww-ink-soft);
+  font-family: var(--font-smallcaps);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+}
+
+.ww-parent-form > .ww-parent-kicker:first-child,
+.ww-parent-section > .ww-parent-kicker:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.ww-parent .ww-legend {
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.ww-parent .ww-segment-face {
+  min-height: var(--control-height);
+  padding: 4px var(--cell-px);
+  border-width: 1.5px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.ww-parent .ww-chip-grid {
+  gap: 6px;
+}
+
+.ww-parent .ww-chip-face {
+  min-width: 42px;
+  min-height: var(--control-height);
+  padding: 4px 12px;
+  border-width: 1.5px;
+  font-size: 0.8125rem;
+}
+
+.ww-parent .ww-switch-row {
+  min-height: var(--row-height);
+  padding: 4px 0;
+  font-size: 0.875rem;
+}
+
+.ww-parent .ww-switch-track {
+  width: 44px;
+  height: 24px;
+}
+
+.ww-parent .ww-switch-track::after {
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+.ww-parent .ww-choice-input:checked + .ww-switch-track::after {
+  transform: translateX(20px);
 }
 
 .ww-field-note {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--ww-ink-soft);
-  font-size: 0.875rem;
-  line-height: 1.45;
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .ww-chip-grid + .ww-field-note,
 .ww-segmented-options + .ww-field-note {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
+}
+
+.ww-wordlist-metric {
+  color: var(--ww-ink-soft);
+  font-family: var(--font-metric);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .ww-wordlist-count {
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* A setting with one possible value (a single language pack): a plain row, not a choice of one. */
 .ww-setting-static {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-height: var(--row-height);
   margin: 0;
-  padding: 12px 0;
+  padding: 6px 0;
   border-top: 1px solid var(--ww-line);
   border-bottom: 1px solid var(--ww-line);
 }
@@ -1496,34 +1860,36 @@ html.high-contrast .ww-caption-line {
 
 .ww-clear {
   align-self: flex-start;
-  padding-left: 0;
-  padding-right: 0;
+  min-height: var(--control-height);
+  padding: 4px 0;
+  font-size: 0.875rem;
 }
 
 .ww-parent-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   max-width: 38rem;
-  padding-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid var(--ww-line);
 }
 
 .ww-section-title {
-  font-size: 1rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
   line-height: 1.3;
 }
 
 .ww-guide-list {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   padding-left: 1.25rem;
 }
 
 .ww-links {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   padding: 0;
   list-style: none;
 }
@@ -1541,8 +1907,8 @@ html.high-contrast .ww-caption-line {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: 10px;
+  padding: 10px 20px;
   border-top: 1px solid var(--ww-line);
   background: var(--ww-surface);
 }
@@ -1559,40 +1925,81 @@ html.high-contrast .ww-caption-line {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   width: min(100%, 32rem);
-  padding: 32px 24px;
+  padding: 28px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   text-align: center;
+  box-shadow: 0 12px 32px rgba(42, 38, 56, 0.08);
+}
+
+.high-contrast .ww-offline {
   box-shadow: none;
 }
 
+.ww-offline-cast {
+  gap: 8px;
+}
+
+.ww-offline-avatar {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border: 2.5px solid var(--ww-dot, #d5d9e2);
+}
+
+.ww-offline-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .ww-offline-title {
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
+.ww-offline-words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-offline-word-chip {
+  padding: 4px 14px;
+  border: 1.5px solid var(--ww-selected-line);
+  border-radius: 999px;
+  background: var(--ww-selected-bg);
+  color: var(--ww-selected-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 .ww-offline-text {
   max-width: 26rem;
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
   line-height: 1.45;
 }
 
-/* The caregiver bridge under the activity: small grown-up text. On a short screen the card scrolls inside itself. */
+/* The caregiver bridge under the activity: small grown-up text. */
 .ww-offline-note {
   max-width: 26rem;
   margin: 0;
 }
 
-.ww-offline {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 .ww-offline-done {
-  min-height: 56px;
+  min-height: 54px;
   padding: 0 28px;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
 }
 
 /* Small screens and short landscape screens ----------------------------------------------- */
@@ -1610,18 +2017,18 @@ html.high-contrast .ww-caption-line {
   }
 
   .ww-parent-header {
-    padding-top: calc(12px + var(--ww-safe-top));
+    padding-top: calc(10px + var(--ww-safe-top));
     padding-right: calc(12px + var(--ww-safe-right));
-    padding-left: calc(20px + var(--ww-safe-left));
+    padding-left: calc(16px + var(--ww-safe-left));
   }
 
   .ww-parent-body {
-    padding-right: calc(20px + var(--ww-safe-right));
-    padding-left: calc(20px + var(--ww-safe-left));
+    padding-right: calc(16px + var(--ww-safe-right));
+    padding-left: calc(16px + var(--ww-safe-left));
   }
 
   .ww-parent-actions {
-    padding-bottom: calc(12px + var(--ww-safe-bottom));
+    padding-bottom: calc(10px + var(--ww-safe-bottom));
   }
 
   .ww-parent-actions .ww-button {
@@ -1632,37 +2039,66 @@ html.high-contrast .ww-caption-line {
     font-size: 1.3125rem;
   }
 
-  .ww-card {
-    min-height: 84px;
-  }
-
-  .ww-card-badge {
-    width: 48px;
-    height: 48px;
-  }
-}
-
-/* Phones: one cloud, peeking in above the portraits, and a softer sun that leaves their rings their own colours. */
-@media (max-width: 560px) {
-  .ww-start-cloud-1 {
-    top: 1%;
-    left: -5%;
-  }
-
-  .ww-start-cloud-2,
-  .ww-start-cloud-3 {
-    display: none;
-  }
-
   .ww-start-sun {
     opacity: 0.6;
   }
 }
 
-/* Short phones: the welcome fills the height, so the portraits sit at the top edge where the cloud would be. */
-@media (max-width: 560px) and (max-height: 700px) {
-  .ww-start-cloud-1 {
+/* Compact portrait phones (375x667, 320x568): keep the entire welcome and Tap to start above the fold. */
+@media (max-width: 440px) and (max-height: 700px) {
+  .ww-start.ww-screen {
+    padding: calc(8px + var(--ww-safe-top)) calc(10px + var(--ww-safe-right)) calc(10px + var(--ww-safe-bottom))
+      calc(10px + var(--ww-safe-left));
+  }
+
+  .ww-start:not(.ww-boot) > .ww-start-inner {
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 20px;
+  }
+
+  .ww-start-hero,
+  .ww-start-panel {
+    gap: 8px;
+  }
+
+  .ww-start-face {
+    width: 38px;
+    border-width: 3px;
+  }
+
+  .ww-start-face:nth-child(2),
+  .ww-start-face:nth-child(5) {
+    margin-bottom: 4px;
+  }
+
+  .ww-start-face:nth-child(3),
+  .ww-start-face:nth-child(4) {
+    margin-bottom: 8px;
+  }
+
+  .ww-start-welcome {
+    font-size: 1rem;
+  }
+
+  .ww-start-name {
+    font-size: clamp(1.75rem, 8.4vw, 2.25rem);
+  }
+
+  .ww-mode-sub {
     display: none;
+  }
+
+  .ww-start-button {
+    min-height: 50px;
+    font-size: 1.125rem;
+  }
+
+  .ww-start-note {
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    line-height: 1.35;
   }
 }
 
@@ -1681,34 +2117,30 @@ html.high-contrast .ww-caption-line {
   }
 
   .ww-start-face {
-    width: 40px;
+    width: 38px;
     border-width: 3px;
   }
 
   /* "Watch and sing" stays on one line in a 320 px phone's half-width segment. */
   .ww-start .ww-segment-face {
     padding-inline: 6px;
-  }
-
-  .ww-start-cloud-1 {
-    display: none;
+    font-size: 0.9375rem;
   }
 }
 
 /*
- * Landscape screens up to 840 px tall (laptops, iPads held sideways, phones on their side): the welcome stands beside
- * the controls, so the start screen fits without scrolling; in one column it is about 800 px tall. The big line
- * scales with the narrower column, and the rainbow is smaller, so its top stays under the title.
+ * Landscape screens up to 840 px tall (laptops, iPads held sideways, phones on their side including 568x320 and
+ * 667x375): the welcome stands beside the controls so the start screen fits without scrolling.
  */
-@media (orientation: landscape) and (max-height: 840px) and (min-width: 640px) {
+@media (orientation: landscape) and (max-height: 840px) and (min-width: 540px) {
   .ww-start:not(.ww-boot) > .ww-start-inner {
     flex-direction: row;
-    gap: clamp(24px, 5vw, 72px);
-    width: min(100%, 68rem);
+    gap: clamp(18px, 4vw, 56px);
+    width: min(100%, 66rem);
   }
 
   .ww-start-hero {
-    flex: 1.2 1 0;
+    flex: 1.15 1 0;
   }
 
   .ww-start-panel {
@@ -1717,72 +2149,76 @@ html.high-contrast .ww-caption-line {
   }
 
   .ww-start-name {
-    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+    font-size: clamp(2rem, 5.4vw, 4.125rem);
   }
 
-  /* The portrait row stays inside its column: 65 px rings at 1024 px wide, full size from about 1190 px. */
   .ww-start-face {
-    width: clamp(46px, 6.4vw, 76px);
-  }
-
-  .ww-start-rainbow {
-    width: 48vh;
-    height: 24vh;
+    width: clamp(42px, 5.8vw, 68px);
   }
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .ww-start-hero,
-  .ww-start-panel {
-    gap: 12px;
+  .ww-start.ww-screen {
+    padding: calc(8px + var(--ww-safe-top)) calc(12px + var(--ww-safe-right)) calc(8px + var(--ww-safe-bottom))
+      calc(12px + var(--ww-safe-left));
   }
 
-  /* The welcome's column has height to spare beside the controls: the portraits stay readable. */
+  .ww-start:not(.ww-boot) > .ww-start-inner {
+    padding: 10px 16px;
+    border-radius: 20px;
+  }
+
+  .ww-start-hero,
+  .ww-start-panel {
+    gap: 8px;
+  }
+
   .ww-start-face {
-    width: clamp(36px, 5.6vw, 52px);
+    width: clamp(32px, 5vw, 46px);
     border-width: 3px;
   }
 
   .ww-start-face:nth-child(2),
   .ww-start-face:nth-child(5) {
-    margin-bottom: 5px;
+    margin-bottom: 4px;
   }
 
   .ww-start-face:nth-child(3),
   .ww-start-face:nth-child(4) {
-    margin-bottom: 9px;
+    margin-bottom: 7px;
   }
 
   .ww-start-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .ww-start-welcome {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 
   .ww-start-name {
-    font-size: clamp(2rem, 10vh, 3rem);
+    font-size: clamp(1.625rem, 4.8vw, 2.5rem);
   }
 
-  .ww-start-button {
-    min-height: 60px;
-    font-size: 1.25rem;
-  }
-
-  .ww-start-note {
-    padding: 12px 16px;
-    font-size: 0.875rem;
-  }
-
-  /* The controls reach the top and bottom edges here: the top-right cloud would rest on the question above them,
-     and a centred rainbow would sit behind the note card. The rainbow stands under the welcome's column instead. */
-  .ww-start-cloud-2 {
+  .ww-mode-sub {
     display: none;
   }
 
-  .ww-start-rainbow {
-    left: 27%;
+  .ww-start-button {
+    min-height: 48px;
+    padding: 0 22px;
+    font-size: 1.125rem;
+  }
+
+  .ww-start-hint {
+    font-size: 0.75rem;
+  }
+
+  .ww-start-note {
+    gap: 3px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    line-height: 1.3;
   }
 
   .ww-parent-overlay {
@@ -1819,7 +2255,7 @@ html.high-contrast .ww-caption-line {
   }
 
   .ww-offline {
-    padding: 20px 24px;
+    padding: 18px 20px;
   }
 }
 
@@ -1857,17 +2293,20 @@ html.high-contrast .ww-caption-line {
   .ww-pill-button,
   .ww-button,
   .ww-start-button,
+  .ww-world-pill,
   .ww-card,
   .ww-card-number,
   .ww-segment-face,
   .ww-chip-face,
+  .ww-offline-word-chip,
   .ww-switch-track,
   .ww-caption-line {
     border: 2px solid CanvasText;
   }
 
   .ww-choice-input:checked + .ww-segment-face,
-  .ww-choice-input:checked + .ww-chip-face {
+  .ww-choice-input:checked + .ww-chip-face,
+  .ww-world-pill.is-active {
     outline: 3px solid Highlight;
   }
 
@@ -1875,7 +2314,8 @@ html.high-contrast .ww-caption-line {
     background: Highlight;
   }
 
-  .ww-hold-progress {
+  .ww-hold-progress,
+  .ww-wait-arc {
     stroke: Highlight;
   }
 

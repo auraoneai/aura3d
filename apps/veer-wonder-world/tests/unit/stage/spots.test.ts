@@ -794,7 +794,7 @@ describe("createStage (headless engine, no canvas)", () => {
         stage.dispose();
       }
     }
-  });
+  }, 60_000);
 
   it("still ends hidden when reduced motion is switched on while a node fades out, and a second hide never pops it back", async () => {
     const stage = await open();

@@ -94,7 +94,8 @@ export const episode: EpisodeSpec = {
         { do: "move", actor: "ball", to: "right", style: "roll" },
         { do: "face", actor: "sheru", toward: "ball" },
         { do: "gesture", actor: "sheru", gesture: "look" },
-        { do: "face", actor: "momo", toward: "ball" }
+        { do: "face", actor: "momo", toward: "ball" },
+        { do: "gesture", actor: "momo", gesture: "look" }
       ],
       lines: [
         { speaker: "narrator", key: "e17.hook.1" },
@@ -153,7 +154,9 @@ export const episode: EpisodeSpec = {
       response: {
         stage: [
           { do: "move", actor: "ball", to: "backRight", style: "roll" },
-          { do: "face", actor: "momo", toward: "ball" }
+          { do: "face", actor: "momo", toward: "ball" },
+          { do: "gesture", actor: "momo", gesture: "point" },
+          { do: "gesture", actor: "sheru", gesture: "wag" }
         ],
         lines: [{ speaker: "momo", key: "e17.invite.2" }],
         holdMs: 3500
@@ -170,12 +173,14 @@ export const episode: EpisodeSpec = {
         { do: "sfx", sound: "yip" },
         { do: "move", actor: "sheru", to: "backRight", style: "run" },
         { do: "face", actor: "sheru", toward: "ball" },
+        { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionStage: [
         { do: "sfx", sound: "yip" },
         { do: "move", actor: "sheru", to: "backRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "ball" },
+        { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],
       lines: [
@@ -218,6 +223,7 @@ export const episode: EpisodeSpec = {
         stage: [
           { do: "carry", actor: "sheru", item: null },
           { do: "gesture", actor: "sheru", gesture: "sniff" },
+          { do: "gesture", actor: "sheru", gesture: "wag" },
           { do: "move", actor: "ball", to: "frontLeft", style: "roll" },
           { do: "gesture", actor: "momo", gesture: "cheer" }
         ],

@@ -42,6 +42,23 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "sheru", gesture: "wag" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "yip" },
+        { do: "gesture", actor: "sheru", gesture: "wag" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "woofSoft" },
+        { do: "gesture", actor: "sheru", gesture: "look" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -91,6 +108,8 @@ export const activity: ActivitySpec = {
       camera: "medium",
       stage: [
         { do: "hide", actor: "teddy" },
+        { do: "object", target: "toy-box", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
         { do: "face", actor: "sheru", toward: "toy-box" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "ball" },
@@ -99,6 +118,8 @@ export const activity: ActivitySpec = {
       ],
       reducedMotionStage: [
         { do: "hide", actor: "teddy" },
+        { do: "object", target: "toy-box", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
         { do: "face", actor: "sheru", toward: "toy-box" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "ball" },
@@ -120,12 +141,14 @@ export const activity: ActivitySpec = {
       kind: "model",
       camera: "medium",
       stage: [
+        { do: "object", target: "toy-box", action: "open" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "teddy" },
         { do: "object", target: "teddy", action: "bounce" },
         { do: "gesture", actor: "sheru", gesture: "wag" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "toy-box", action: "open" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "teddy" },
         { do: "object", target: "teddy", action: "wobble" }
@@ -146,7 +169,7 @@ export const activity: ActivitySpec = {
       camera: "medium",
       stage: [
         { do: "face", actor: "sheru", toward: "viewer" },
-        { do: "gesture", actor: "sheru", gesture: "sit" }
+        { do: "gesture", actor: "sheru", gesture: "wait" }
       ],
       lines: [
         { speaker: "narrator", key: "g12.your-turn.1" },
@@ -157,10 +180,11 @@ export const activity: ActivitySpec = {
         { wordId: "find", objectId: "sheru" },
         { wordId: "woof", objectId: "sheru" }
       ],
-      // A calm real-world search pause before the tap wait begins.
-      holdMs: 12000,
+      // Enter waiting right after a brief beat settle so Sheru's target highlight
+      // and the caregiver confirm button stay active for the entire 12s room search.
+      holdMs: 600,
       input: { type: "tap", targets: ["sheru"] },
-      waitMs: 5000,
+      waitMs: 12000,
       caregiverPromptKey: "g12.tip.1",
       response: {
         stage: [
@@ -190,7 +214,7 @@ export const activity: ActivitySpec = {
           { do: "sfx", sound: "huff" },
           { do: "hide", actor: "ball" },
           { do: "hide", actor: "teddy" },
-          { do: "object", target: "toy-box", action: "wobble" },
+          { do: "object", target: "toy-box", action: "close" },
           { do: "gesture", actor: "sheru", gesture: "sit" }
         ],
         lines: [{ speaker: "narrator", key: "g12.again.2" }],

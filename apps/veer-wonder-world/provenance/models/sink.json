@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "sink",
-  "file": "src/assets/models/sink.2e10ec2b.glb",
-  "sha256": "2e10ec2b6a391406c731e4bcfe4b4006c6502a1b46a4ed41c86aadbbac51947d",
-  "sizeBytes": 210624,
+  "file": "src/assets/models/sink.0fe8a175.glb",
+  "sha256": "0fe8a17542da521b1eeca0f6bd468dd6b94dab206d66130b6c46536a974af5fd",
+  "sizeBytes": 237952,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -45,11 +45,25 @@
       "bytesIn": 7131020,
       "bytesOut": 639380
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.34,
+      "metallicFactor": 0.04,
+      "normalScale": 0.24,
+      "jpegBytes": 27120,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-281b3fc43a5e824d03e856faf671f1bb3f6a2af71db3ac383ccac2b3d3af1123"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.901
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Toy sink with tap; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/sink.2e10ec2b.glb",
+    "sha256": "2e10ec2b6a391406c731e4bcfe4b4006c6502a1b46a4ed41c86aadbbac51947d",
+    "sizeBytes": 210624
+  }
 }

@@ -18,6 +18,7 @@ export const MOMO: CharacterDefinition = {
   color: "#8E6CD8",
   voice: "momo",
   speaks: true,
+  articulatedParts: ["body", "head", "armL", "armR", "footL", "footR", "eyelidL", "eyelidR", "jaw", "cheekPuff"],
   clipCandidates: {
     idle: ["idle"],
     talk: ["talk"],

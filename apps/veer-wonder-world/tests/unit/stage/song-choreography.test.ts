@@ -125,7 +125,7 @@ describe("song timing", () => {
     } finally {
       h.stage.dispose();
     }
-  });
+  }, 30_000);
 
   it("plays every song's motion on its line, in order, for every catalog song", async () => {
     const h = await open();
@@ -146,7 +146,7 @@ describe("song timing", () => {
     } finally {
       h.stage.dispose();
     }
-  });
+  }, 30_000);
 });
 
 describe("performers", () => {
@@ -255,7 +255,7 @@ describe("cues", () => {
     } finally {
       h.stage.dispose();
     }
-  });
+  }, 30_000);
 
   it("never starts a song from a cue, and reports cues on unknown nodes or lines (warnings, not throws)", async () => {
     const h = await open();

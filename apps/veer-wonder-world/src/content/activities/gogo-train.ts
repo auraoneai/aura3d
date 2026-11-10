@@ -25,7 +25,10 @@ export const activity: ActivitySpec = {
     { id: "gogo", at: "offLeft" },
     { id: "peeko", at: "frontLeft" }
   ],
-  props: [{ id: "teddy", asset: "teddy", at: "frontRight", size: 0.5 }],
+  props: [
+    { id: "gogoCarriage", asset: "gogoCarriage", at: "offLeft", size: 0.7 },
+    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.5 }
+  ],
   targetWords: ["go", "stop", "in"],
   supportWords: ["bye", "hi", "train", "out", "again", "thank-you", "all-done"],
   music: "stationBed",
@@ -39,6 +42,38 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [
+        { do: "object", target: "gogo", action: "glow" },
+        { do: "gesture", actor: "peeko", gesture: "wave" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "whistle" },
+        { do: "gesture", actor: "peeko", gesture: "hop" },
+        { do: "object", target: "teddy", action: "wobble" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "sfx", sound: "whistle" },
+        { do: "gesture", actor: "peeko", gesture: "wave" },
+        { do: "object", target: "teddy", action: "glow" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "ding" },
+        { do: "gesture", actor: "peeko", gesture: "cheer" },
+        { do: "object", target: "gogoCarriage", action: "wobble" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "sfx", sound: "ding" },
+        { do: "gesture", actor: "peeko", gesture: "happy" },
+        { do: "object", target: "gogoCarriage", action: "glow" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "arrive",
@@ -48,6 +83,7 @@ export const activity: ActivitySpec = {
         { do: "music", bed: "stationBed" },
         { do: "sfx", sound: "chugga" },
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "gogoCarriage", at: "left", from: "offLeft", style: "drive" },
         { do: "object", target: "gogo", action: "go" },
         // GoGo drives in front first along the track, then turns its face to the child for its "Hi!" (07 B33).
         { do: "face", actor: "gogo", toward: "viewer" },
@@ -76,6 +112,7 @@ export const activity: ActivitySpec = {
         // arrival was skipped or its lines ran shorter than the drive in.
         { do: "object", target: "gogo", action: "stop" },
         { do: "move", actor: "gogo", to: "center", style: "drive" },
+        { do: "move", actor: "gogoCarriage", to: "left", style: "drive" },
         { do: "sfx", sound: "ding" },
         { do: "face", actor: "gogo", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "wave" }
@@ -95,8 +132,9 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "gogo", action: "open" },
+        { do: "object", target: "gogoCarriage", action: "open" },
         { do: "face", actor: "gogo", toward: "viewer" },
-        { do: "face", actor: "peeko", toward: "gogo" }
+        { do: "face", actor: "peeko", toward: "gogoCarriage" }
       ],
       lines: [{ speaker: "gogo", key: "g02.board.1" }],
       words: [{ wordId: "in", objectId: "gogo" }],
@@ -106,14 +144,37 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g02.tip.1",
       response: {
         stage: [
-          { do: "move", actor: "peeko", to: "center", style: "hop" },
-          { do: "move", actor: "teddy", to: "center", style: "hop" }
+          { do: "object", target: "gogoCarriage", action: "open" },
+          { do: "move", actor: "peeko", to: "left", style: "hop" },
+          { do: "carry", actor: "gogoCarriage", item: "teddy" },
+          { do: "gesture", actor: "peeko", gesture: "happy" }
         ],
         lines: [
           { speaker: "narrator", key: "g02.board.2" },
           { speaker: "narrator", key: "g02.board.3" }
         ],
         holdMs: 1200
+      },
+      responseByTarget: {
+        peeko: {
+          stage: [
+            { do: "object", target: "gogoCarriage", action: "open" },
+            { do: "sfx", sound: "tweet" },
+            { do: "move", actor: "peeko", to: "left", style: "hop" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" },
+            { do: "carry", actor: "gogoCarriage", item: "teddy" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "object", target: "gogoCarriage", action: "open" },
+            { do: "sfx", sound: "whistle" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "carry", actor: "gogoCarriage", item: "teddy" },
+            { do: "move", actor: "peeko", to: "left", style: "hop" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        }
       }
     },
     {
@@ -121,9 +182,9 @@ export const activity: ActivitySpec = {
       kind: "invite",
       camera: "wide",
       stage: [
-        { do: "hide", actor: "peeko" },
-        { do: "hide", actor: "teddy" },
         { do: "object", target: "gogo", action: "close" },
+        { do: "object", target: "gogoCarriage", action: "close" },
+        { do: "gesture", actor: "peeko", gesture: "wave" },
         { do: "face", actor: "gogo", toward: "viewer" }
       ],
       lines: [{ speaker: "gogo", key: "g02.go.1" }],
@@ -139,7 +200,10 @@ export const activity: ActivitySpec = {
         stage: [
           { do: "object", target: "gogo", action: "go" },
           { do: "sfx", sound: "chugga" },
-          { do: "move", actor: "gogo", to: "farRight", style: "drive" }
+          { do: "move", actor: "gogo", to: "farRight", style: "drive" },
+          { do: "move", actor: "gogoCarriage", to: "right", style: "drive" },
+          { do: "move", actor: "peeko", to: "right", style: "drive" },
+          { do: "gesture", actor: "peeko", gesture: "cheer" }
         ],
         lines: [
           { speaker: "gogo", key: "g02.go.2" },
@@ -154,6 +218,8 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "move", actor: "gogo", to: "back", style: "drive" },
+        { do: "move", actor: "gogoCarriage", to: "backLeft", style: "drive" },
+        { do: "move", actor: "peeko", to: "backLeft", style: "drive" },
         { do: "object", target: "gogo", action: "go" },
         { do: "sfx", sound: "chugga" }
       ],
@@ -173,6 +239,8 @@ export const activity: ActivitySpec = {
           // leave GoGo at the back of the loop.
           { do: "object", target: "gogo", action: "stop" },
           { do: "move", actor: "gogo", to: "center", style: "drive" },
+          { do: "move", actor: "gogoCarriage", to: "left", style: "drive" },
+          { do: "move", actor: "peeko", to: "left", style: "drive" },
           { do: "sfx", sound: "ding" }
         ],
         lines: [
@@ -188,14 +256,20 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "gogo", action: "open" },
-        { do: "enter", actor: "peeko", at: "frontLeft", from: "center", style: "hop" },
-        { do: "enter", actor: "teddy", at: "frontRight", from: "center", style: "hop" },
+        { do: "object", target: "gogoCarriage", action: "open" },
+        { do: "carry", actor: "gogoCarriage", item: null },
+        { do: "move", actor: "peeko", to: "frontLeft", style: "hop" },
+        { do: "move", actor: "teddy", to: "frontRight", style: "hop" },
+        { do: "gesture", actor: "peeko", gesture: "happy" },
         { do: "face", actor: "gogo", toward: "viewer" }
       ],
       reducedMotionStage: [
         { do: "object", target: "gogo", action: "open" },
-        { do: "enter", actor: "peeko", at: "frontLeft", from: "center", style: "walk" },
-        { do: "enter", actor: "teddy", at: "frontRight", from: "center", style: "walk" },
+        { do: "object", target: "gogoCarriage", action: "open" },
+        { do: "carry", actor: "gogoCarriage", item: null },
+        { do: "move", actor: "peeko", to: "frontLeft", style: "walk" },
+        { do: "move", actor: "teddy", to: "frontRight", style: "walk" },
+        { do: "gesture", actor: "peeko", gesture: "nod" },
         { do: "face", actor: "gogo", toward: "viewer" }
       ],
       lines: [
@@ -224,6 +298,7 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "gogo", action: "close" },
+        { do: "object", target: "gogoCarriage", action: "close" },
         { do: "face", actor: "peeko", toward: "gogo" },
         { do: "gesture", actor: "peeko", gesture: "wave" }
       ],

@@ -1,6 +1,6 @@
 {
   "schema": "wonder-world.environment-provenance/1",
-  "note": "The engine's look presets fetch their HDRI from /hdri/<name>.hdr at the origin root. vite.config.ts serves the repo's shared public/hdri/ files in dev and preview and copies these two (with public/hdri/ATTRIBUTION.md) into dist/hdri/ at build time (plugin wonder-world-copy-shared-public-files; a missing file fails the build). The app keeps no copy of its own.",
+  "note": "The engine's look presets fetch their HDRI from /hdri/<name>.hdr at the origin root. vite.config.ts serves the repo's shared public/hdri/ files in dev and preview and copies these six world skies (with public/hdri/ATTRIBUTION.md) into dist/hdri/ at build time (plugin wonder-world-copy-shared-public-files; a missing file fails the build). The app keeps no copy of its own.",
   "files": {
     "autumn_field_puresky_1k.hdr": {
       "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
@@ -9,12 +9,40 @@
       "license": "CC0-1.0 (Poly Haven)",
       "repoPath": "public/hdri/autumn_field_puresky_1k.hdr"
     },
-    "studio_small_08_1k.hdr": {
-      "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
-      "sizeBytes": 1508872,
-      "source": "https://polyhaven.com/a/studio_small_08",
+    "outdoor-midday_1k.hdr": {
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "sizeBytes": 1173154,
+      "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
       "license": "CC0-1.0 (Poly Haven)",
-      "repoPath": "public/hdri/studio_small_08_1k.hdr"
+      "repoPath": "public/hdri/outdoor-midday_1k.hdr"
+    },
+    "spruit_sunrise_1k.hdr": {
+      "sha256": "3ac30651cde16d2a80521273ec917ba3feca172ea4b842335431201879f39593",
+      "sizeBytes": 1527279,
+      "source": "https://polyhaven.com/a/spruit_sunrise",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/spruit_sunrise_1k.hdr"
+    },
+    "kloppenheim_06_puresky_1k.hdr": {
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "sizeBytes": 1173154,
+      "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/kloppenheim_06_puresky_1k.hdr"
+    },
+    "kloppenheim_02_1k.hdr": {
+      "sha256": "c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002",
+      "sizeBytes": 1744238,
+      "source": "https://polyhaven.com/a/kloppenheim_02",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/kloppenheim_02_1k.hdr"
+    },
+    "warm_bar_1k.hdr": {
+      "sha256": "d2681f6912d3ade36e2bf998bdd31758596cc0ea524ca5177032a0ec86e1a685",
+      "sizeBytes": 1504042,
+      "source": "https://polyhaven.com/a/warm_bar",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/warm_bar_1k.hdr"
     }
   }
 }

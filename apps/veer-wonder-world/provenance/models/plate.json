@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "plate",
-  "file": "src/assets/models/plate.cbafe298.glb",
-  "sha256": "cbafe298035389079b4ad6ea1c469d5acd2337d83e662e6891005e8b4b3f11f2",
-  "sizeBytes": 156320,
+  "file": "src/assets/models/plate.4d91f37f.glb",
+  "sha256": "4d91f37f05dab9862a90956f3fe2df4cf0622a3af1c9899aad5510701e447e4d",
+  "sizeBytes": 217992,
   "rigged": false,
   "clips": [],
   "heightM": 0.08,
@@ -45,11 +45,39 @@
       "bytesIn": 6230288,
       "bytesOut": 570764
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#9cc8ef",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#9cc8ef",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 228274,
+      "preservedPixels": 33225,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-24b9f1e51af3319004a36a91291733816337f359f68bb4c3b638457d65deb968"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.32,
+      "metallicFactor": 0,
+      "normalScale": 0.22,
+      "jpegBytes": 30248,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-24b9f1e51af3319004a36a91291733816337f359f68bb4c3b638457d65deb968"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       1.901
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Shallow toy plate; tinted pale blue per brief.",
     "tint": "#9cc8ef"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/plate.cbafe298.glb",
+    "sha256": "cbafe298035389079b4ad6ea1c469d5acd2337d83e662e6891005e8b4b3f11f2",
+    "sizeBytes": 156320
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "house",
-  "file": "src/assets/models/house.80af4042.glb",
-  "sha256": "80af40427af8b3080cac5d89e3717f5e78c89b1a03ee0d642632d5a03b1532de",
-  "sizeBytes": 358952,
+  "file": "src/assets/models/house.345237eb.glb",
+  "sha256": "345237ebaff9de58a47cb111afd7019035142a31272c83f1ffaa309b7728ae14",
+  "sizeBytes": 426732,
   "rigged": false,
   "clips": [],
   "heightM": 3,
@@ -45,11 +45,25 @@
       "bytesIn": 8605780,
       "bytesOut": 832112
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.7,
+      "metallicFactor": 0,
+      "normalScale": 0.38,
+      "jpegBytes": 67571,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-0526647343bd684dff34d29b09bcaec3fc4ad0a8d50ce38d230b125a4940f92f"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       0.977
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Small toy house with a round door and windows; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/house.80af4042.glb",
+    "sha256": "80af40427af8b3080cac5d89e3717f5e78c89b1a03ee0d642632d5a03b1532de",
+    "sizeBytes": 358952
+  }
 }

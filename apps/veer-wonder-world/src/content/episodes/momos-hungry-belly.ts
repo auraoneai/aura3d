@@ -282,6 +282,24 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e10.invite.3" }
         ],
         holdMs: 1500
+      },
+      responseByTarget: {
+        apple: {
+          stage: [
+            { do: "face", actor: "momo", toward: "apple" },
+            { do: "object", target: "apple", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" }
+          ]
+        },
+        banana: {
+          stage: [
+            { do: "face", actor: "momo", toward: "banana" },
+            { do: "object", target: "banana", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" }
+          ]
+        }
       }
     },
     {
@@ -310,6 +328,24 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "momo", key: "e10.more.2" }],
         holdMs: 1000
+      },
+      responseByTarget: {
+        apple: {
+          stage: [
+            { do: "face", actor: "momo", toward: "apple" },
+            { do: "object", target: "apple", action: "wobble" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" }
+          ]
+        },
+        banana: {
+          stage: [
+            { do: "face", actor: "momo", toward: "banana" },
+            { do: "object", target: "banana", action: "wobble" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" }
+          ]
+        }
       }
     },
     {
@@ -345,6 +381,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: null },
+        { do: "object", target: "basket", action: "close" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],

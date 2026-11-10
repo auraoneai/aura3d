@@ -1,6 +1,8 @@
 // Parent panel (PRD 04 E03 and E07; PRD 01 sections 6-9 and 11; PRD 06
-// QA-E12, QA-P06 and QA-P08). Grown-up settings, guidance and the safety and
-// privacy notes, kept apart from the play canvas behind the parent gate.
+// QA-E12, QA-P06 and QA-P08; WP-7). Grown-up settings, guidance and the safety
+// and privacy notes, kept apart from the play canvas behind the parent gate,
+// presented as a dense caregiver sheet with native Whitney small-caps (`smcp`)
+// section eyebrows, tabular numerals (`tnum`) and hairline dividers.
 //
 // Every change is reported at once through onChange; the app shell persists
 // it with saveSettings and applies it (mode, music, sound, sound-effect level,
@@ -103,6 +105,11 @@ function withToggle(settings: ParentSettings, field: ToggleField, value: boolean
   }
 }
 
+/** Decorative lowercase OpenType `smcp` section eyebrow for the dense caregiver sheet. */
+function sectionKicker(doc: Document, label: string): HTMLElement {
+  return el(doc, "p", { className: "ww-parent-kicker", text: label, attrs: { "aria-hidden": "true" } });
+}
+
 /** "5 seconds" / "5 sec" in the parent's language, with a plain fallback. */
 export function formatSeconds(localeCode: string, seconds: number, display: "long" | "short"): string {
   try {
@@ -187,7 +194,7 @@ export function openParentPanel(
   }
 
   // Sound effects: off, soft or normal (PRD 01 section 9: capped, with a grown-up adjustment).
-  // A native radio group, so a screen reader announces the legend, the note and the checked level.
+  // Kept immediately after switchField (`sections.indexOf(sfxField) === sections.indexOf(switchField) + 1`).
   const sfxName = uniqueId("ww-sfx");
   const sfxHelpId = uniqueId("ww-sfx-help");
   const sfxOptions = el(doc, "div", { className: "ww-segmented-options ww-segmented-three" });
@@ -216,10 +223,10 @@ export function openParentPanel(
     );
   }
 
-  // Wait time for a turn: 3-8 whole seconds. Silence always carries on.
+  // Wait time for a turn: 3-8 whole seconds (`tnum` tabular numerals). Silence always carries on.
   const waitName = uniqueId("ww-wait");
   const waitHelpId = uniqueId("ww-wait-help");
-  const waitGrid = el(doc, "div", { className: "ww-chip-grid" });
+  const waitGrid = el(doc, "div", { className: "ww-chip-grid ww-wait-grid" });
   const waitField = el(doc, "fieldset", { className: "ww-field", attrs: { "data-setting": "waitMs", "aria-describedby": waitHelpId } }, [
     el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.parent.wait") }),
     el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.waitHelp"), attrs: { id: waitHelpId } }),
@@ -245,7 +252,7 @@ export function openParentPanel(
     waitGrid.appendChild(
       el(doc, "label", { className: "ww-chip" }, [
         input,
-        el(doc, "span", { className: "ww-chip-face", text: formatSeconds(current.locale, seconds, "short") })
+        el(doc, "span", { className: "ww-chip-face ww-chip-tnum", text: formatSeconds(current.locale, seconds, "short") })
       ])
     );
   }
@@ -280,13 +287,25 @@ export function openParentPanel(
     clearSettings(options.storage === undefined ? safeLocalStorage(win) : options.storage);
   });
 
-  form.append(modeChoice.element, switchField, sfxField, waitField, localeField, wordsHost, clear);
+  form.append(
+    sectionKicker(doc, "playback & co-play"),
+    modeChoice.element,
+    switchField,
+    sfxField,
+    sectionKicker(doc, "pacing & language"),
+    waitField,
+    localeField,
+    sectionKicker(doc, "focus words"),
+    wordsHost,
+    clear
+  );
 
   // Guidance and notes (PRD 01 sections 6, 7, 8 and 11).
   const guideTitleId = uniqueId("ww-guide-title");
   const guideList = el(doc, "ul", { className: "ww-guide-list" });
   for (const key of GUIDE_KEYS) guideList.appendChild(el(doc, "li", { text: uiText(locale, key) }));
   const guide = el(doc, "section", { className: "ww-parent-section", attrs: { "aria-labelledby": guideTitleId } }, [
+    sectionKicker(doc, "co-play guide"),
     el(doc, "h3", { className: "ww-section-title", text: uiText(locale, "ui.guide.title"), attrs: { id: guideTitleId } }),
     el(doc, "p", { text: uiText(locale, "ui.note.start") }),
     guideList
@@ -304,6 +323,7 @@ export function openParentPanel(
   }
   const notesTitleId = uniqueId("ww-notes-title");
   const notes = el(doc, "section", { className: "ww-parent-section", attrs: { "aria-labelledby": notesTitleId } }, [
+    sectionKicker(doc, "safety & privacy"),
     el(doc, "h3", { className: "ww-section-title", text: uiText(locale, "ui.note.title"), attrs: { id: notesTitleId } }),
     el(doc, "p", { text: uiText(locale, "ui.note.safety") }),
     el(doc, "p", { text: uiText(locale, "ui.note.privacy") }),

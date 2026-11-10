@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "flower",
-  "file": "src/assets/models/flower.1d94ca02.glb",
-  "sha256": "1d94ca0274922d0f105a8756dafb74bf249f74fa55756d74e175c9dbfa2af868",
-  "sizeBytes": 224912,
+  "file": "src/assets/models/flower.eb012ecf.glb",
+  "sha256": "eb012ecfd6a1a5b85f25039da012ea3336536010e1f5afd12c4724f9fdeb1fa7",
+  "sizeBytes": 278784,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -45,11 +45,25 @@
       "bytesIn": 9094544,
       "bytesOut": 730192
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.68,
+      "metallicFactor": 0,
+      "normalScale": 0.32,
+      "jpegBytes": 53657,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-3ddd1ccb5ff82552e945f24c45137b594bddf64f90692b60960cbb6869aa6502"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       0.532
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Toy daisy on a green stem; friendly, no face."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/flower.1d94ca02.glb",
+    "sha256": "1d94ca0274922d0f105a8756dafb74bf249f74fa55756d74e175c9dbfa2af868",
+    "sizeBytes": 224912
+  }
 }

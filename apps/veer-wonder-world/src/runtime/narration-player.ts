@@ -43,6 +43,94 @@ export const SAFETY_MS = 1500;
 /** Caption time used when `estimateMs` gives no usable number (matches beat-runner's DEFAULT_LINE_MS). */
 export const FALLBACK_LINE_MS = 2600;
 
+/** Step size of the pre-baked 20 Hz RMS speech envelope (`AudioClipRef.env`). */
+export const SPEECH_ENVELOPE_STEP_MS = 50;
+
+const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const BASE64_LOOKUP: Int8Array = (() => {
+  const table = new Int8Array(128);
+  table.fill(-1);
+  for (let i = 0; i < BASE64_CHARS.length; i += 1) {
+    table[BASE64_CHARS.charCodeAt(i)] = i;
+  }
+  return table;
+})();
+
+/**
+ * Pure browser-and-worker-safe Base64 decoder for `AudioClipRef.env` (`Uint8Array` of 20 Hz RMS bytes `[0..255]`).
+ * Uses no Node `Buffer`, no DOM globals, and zero type assertions.
+ */
+export function decodeSpeechEnvelope(envBase64: string | undefined): Uint8Array {
+  if (!envBase64 || envBase64.length === 0) return new Uint8Array(0);
+  const sextets: number[] = [];
+  for (let i = 0; i < envBase64.length; i += 1) {
+    const code = envBase64.charCodeAt(i);
+    if (code === 61) break; // '=' padding
+    if (code < 128) {
+      const val = BASE64_LOOKUP[code] ?? -1;
+      if (val >= 0) sextets.push(val);
+    }
+  }
+  const byteLength = Math.floor((sextets.length * 3) / 4);
+  if (byteLength <= 0) return new Uint8Array(0);
+  const out = new Uint8Array(byteLength);
+  let outIndex = 0;
+  for (let i = 0; i + 1 < sextets.length && outIndex < byteLength; i += 4) {
+    const a = sextets[i] ?? 0;
+    const b = sextets[i + 1] ?? 0;
+    const c = sextets[i + 2] ?? 0;
+    const d = sextets[i + 3] ?? 0;
+    out[outIndex] = ((a << 2) | (b >> 4)) & 0xff;
+    outIndex += 1;
+    if (outIndex < byteLength && i + 2 < sextets.length) {
+      out[outIndex] = (((b & 0x0f) << 4) | (c >> 2)) & 0xff;
+      outIndex += 1;
+    }
+    if (outIndex < byteLength && i + 3 < sextets.length) {
+      out[outIndex] = (((c & 0x03) << 6) | d) & 0xff;
+      outIndex += 1;
+    }
+  }
+  return out;
+}
+
+/** Gentle deterministic syllable cadence used when `AudioClipRef.env` is absent (synthetic test clips / caption mode). */
+export function fallbackSpeechEnvelopeAt(elapsedMs: number, durationMs = 0): number {
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) return 0;
+  const sec = elapsedMs / 1000;
+  const syllable = 0.5 * (1 - Math.cos(2 * Math.PI * 3.1 * sec));
+  const phrase = 0.58 + 0.42 * Math.sin(2 * Math.PI * 0.85 * sec + 0.5);
+  const fadeIn = Math.min(1, elapsedMs / 80);
+  const fadeOut = durationMs > 120 ? Math.min(1, Math.max(0.12, (durationMs - elapsedMs) / 140)) : 1;
+  const raw = (0.18 + 0.72 * syllable * phrase) * fadeIn * fadeOut;
+  return raw < 0 ? 0 : raw > 1 ? 1 : raw;
+}
+
+/**
+ * Samples a 20 Hz (`50 ms` step) RMS envelope smoothly in `[0, 1]` with linear interpolation
+ * between consecutive 50 ms samples, falling back gracefully when `env` is absent.
+ */
+export function sampleSpeechEnvelope(
+  env: Uint8Array | string | null | undefined,
+  elapsedMs: number,
+  durationMs = 0
+): number {
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) return 0;
+  const bytes = typeof env === "string" ? decodeSpeechEnvelope(env) : env;
+  if (bytes && bytes.length > 0) {
+    const stepPos = elapsedMs / SPEECH_ENVELOPE_STEP_MS;
+    const i0 = Math.floor(stepPos);
+    if (i0 >= bytes.length) return 0;
+    const i1 = Math.min(bytes.length - 1, i0 + 1);
+    const frac = stepPos - i0;
+    const v0 = (bytes[i0] ?? 0) / 255;
+    const v1 = (bytes[i1] ?? 0) / 255;
+    const interpolated = v0 + (v1 - v0) * frac;
+    return interpolated < 0 ? 0 : interpolated > 1 ? 1 : interpolated;
+  }
+  return fallbackSpeechEnvelopeAt(elapsedMs, durationMs);
+}
+
 /** The part of the mixer the narration player uses. */
 export type NarrationMixer = Pick<AudioMixer, "canPlayVoice" | "startVoice" | "duck" | "isPaused" | "onPauseChange">;
 
@@ -79,6 +167,8 @@ export interface NarrationTiming {
   readonly elapsedMs: number;
   /** Expected length (ms): the clip duration when audio plays, else the caption estimate. */
   readonly durationMs: number;
+  /** Normalized 20 Hz syllable-envelope speech energy in `[0, 1]` (`0` while paused or waiting). */
+  readonly speechEnergy: number;
 }
 
 export interface NarrationPlayer {
@@ -96,6 +186,8 @@ export interface NarrationPlayer {
   /** Restarts the current line (or the last one) from the beginning. False when there is none. */
   replay(): boolean;
   timing(): NarrationTiming | null;
+  /** Current 20 Hz syllable-envelope speech energy in `[0, 1]` (`0` when silent or paused). */
+  speechEnergy(): number;
   isPaused(): boolean;
   dispose(): void;
 }
@@ -105,6 +197,7 @@ interface ActiveLine {
   readonly token: number;
   mode: NarrationMode;
   handle: VoiceHandle | null;
+  envelope: Uint8Array | null;
   ducking: boolean;
   /** Active ms banked before the current running segment. */
   bankedMs: number;
@@ -219,6 +312,12 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
   function begin(line: ActiveLine): void {
     const key = line.line.key;
     const ref = clipFor(key);
+    if (ref?.env) {
+      const decoded = decodeSpeechEnvelope(ref.env);
+      line.envelope = decoded.length > 0 ? decoded : null;
+    } else {
+      line.envelope = null;
+    }
     if (!ref || !mixer.canPlayVoice()) {
       toCaption(line, estimate(key));
       return;
@@ -306,6 +405,7 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
       token: tokens,
       mode: "waiting",
       handle: null,
+      envelope: null,
       ducking: false,
       bankedMs: 0,
       segmentStart: isPaused() ? null : now(),
@@ -369,14 +469,33 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
     timing(): NarrationTiming | null {
       const line = active;
       if (!line) return null;
+      const pausedNow = line.segmentStart === null;
+      const elapsedMs = elapsed(line);
+      const durationMs = line.lengthMs > 0 ? line.lengthMs : estimate(line.line.key);
+      const handlePos = line.mode === "audio" && line.handle ? line.handle.positionMs() : 0;
+      const sampleMs = handlePos > 0 ? handlePos : elapsedMs;
+      const energy = pausedNow || line.mode === "waiting"
+        ? 0
+        : sampleSpeechEnvelope(line.envelope, sampleMs, durationMs);
       return {
         key: line.line.key,
         speaker: line.line.speaker,
         mode: line.mode,
-        paused: line.segmentStart === null,
-        elapsedMs: elapsed(line),
-        durationMs: line.lengthMs > 0 ? line.lengthMs : estimate(line.line.key)
+        paused: pausedNow,
+        elapsedMs,
+        durationMs,
+        speechEnergy: energy
       };
+    },
+
+    speechEnergy(): number {
+      const line = active;
+      if (!line || line.segmentStart === null || line.mode === "waiting") return 0;
+      const elapsedMs = elapsed(line);
+      const durationMs = line.lengthMs > 0 ? line.lengthMs : estimate(line.line.key);
+      const handlePos = line.mode === "audio" && line.handle ? line.handle.positionMs() : 0;
+      const sampleMs = handlePos > 0 ? handlePos : elapsedMs;
+      return sampleSpeechEnvelope(line.envelope, sampleMs, durationMs);
     },
 
     isPaused,

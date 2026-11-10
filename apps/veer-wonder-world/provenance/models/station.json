@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "station",
-  "file": "src/assets/models/station.5442f8e0.glb",
-  "sha256": "5442f8e0df582764ff92fa3bfeb437500e359e236e9158befa1d1f75189b57e8",
-  "sizeBytes": 580232,
+  "file": "src/assets/models/station.03d92edf.glb",
+  "sha256": "03d92edf0a42a2789f0a5d290373b30c78b6495f06f9f07869ff605c00986b20",
+  "sizeBytes": 646944,
   "rigged": false,
   "clips": [],
   "heightM": 2.6,
@@ -45,11 +45,25 @@
       "bytesIn": 9500264,
       "bytesOut": 1153152
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.68,
+      "metallicFactor": 0,
+      "normalScale": 0.38,
+      "jpegBytes": 66503,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-1af72ca864e7cfcdf550bf12a5e1acd75a80d783aff55ba54ef5d45440763db8"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.662
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Small toy station building on a base; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/station.5442f8e0.glb",
+    "sha256": "5442f8e0df582764ff92fa3bfeb437500e359e236e9158befa1d1f75189b57e8",
+    "sizeBytes": 580232
+  }
 }

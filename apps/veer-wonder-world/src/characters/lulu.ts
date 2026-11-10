@@ -17,6 +17,7 @@ export const LULU: CharacterDefinition = {
   color: "#7ED6AE",
   voice: "lulu",
   speaks: true,
+  articulatedParts: ["body", "head", "armL", "armR", "footL", "footR", "tail", "eyelidL", "eyelidR", "jaw", "cheekPuff"],
   clipCandidates: {
     idle: ["idle"],
     talk: ["talk"],

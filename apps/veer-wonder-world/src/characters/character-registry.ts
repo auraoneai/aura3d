@@ -12,6 +12,12 @@
 
 import { MODEL_INFO, type ModelInfo, type ModelKey } from "../aura-assets.js";
 import type { CharacterId, Gesture, MoveStyle, SpeakerId } from "../types.js";
+import {
+  sampleCharacterSubParts,
+  type ArticulatedPoseMap,
+  type CharacterSubPartSampleInput,
+  type SubPartId
+} from "../scenes/articulated-actors.js";
 import { gestureMotion, proc, type GestureMotionSpec, type Vec3 } from "../scenes/motion.js";
 import { GOGO } from "./gogo.js";
 import { LULU } from "./lulu.js";
@@ -31,6 +37,8 @@ export interface CharacterDefinition {
   readonly voice: SpeakerId;
   /** False for Sheru, who only barks (sound effect "woof"). */
   readonly speaks: boolean;
+  /** Named articulated sub-parts this character drives via `handle.part(name)` or `${id}__${part}`. */
+  readonly articulatedParts?: readonly SubPartId[];
   /** Preferred clip names per gesture, best first. */
   readonly clipCandidates: Partial<Readonly<Record<Gesture, readonly string[]>>>;
   /** Preferred clip names while travelling in a style, best first. */
@@ -59,6 +67,8 @@ export interface CharacterProfile {
   readonly rigged: boolean;
   /** The permitted animation list: exactly the clip names MODEL_INFO lists for the admitted GLB. */
   readonly clips: readonly string[];
+  /** Named articulated sub-parts declared for this character. */
+  readonly articulatedParts: readonly SubPartId[];
   /** The clip that plays a gesture, or null when MODEL_INFO lists none of its candidates. */
   gestureClip(gesture: Gesture): string | null;
   locomotionClip(style: MoveStyle): string | null;
@@ -67,6 +77,8 @@ export interface CharacterProfile {
   /** Procedural motion for a gesture (used whenever no clip plays it). */
   procedural(gesture: Gesture): GestureMotionSpec;
   idleMotion(): GestureMotionSpec | null;
+  /** Articulated sub-part pose for gestures, locomotion, carry, eyelid blink and 20 Hz speech envelope. */
+  subParts(input: Omit<CharacterSubPartSampleInput, "id">): ArticulatedPoseMap | undefined;
   readonly talkStrength: number;
   readonly carryOffset: Vec3;
   readonly defaultStyle: MoveStyle;
@@ -116,7 +128,8 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
   hide: gestureMotion([proc("duck", 0.9, 0.5)], { hold: true }),
   float: gestureMotion([proc("float", 2.6, 0.08)]),
   glow: gestureMotion([proc("pulse", 2.0, 0.05)], { halo: true }),
-  blink: gestureMotion([proc("squash", 0.3, 0.06)]),
+  // Natural eyelid blink is driven on `eyelidL` / `eyelidR` (never a whole-body vertical squash).
+  blink: gestureMotion([], { durationSec: 0.35 }),
   bow: gestureMotion([proc("bow", 1.4, 0.38)]),
   // Surprised: a quick small stretch up and a little hop, then back (02 section 2 expression sheet; never a
   // startle: 02 section 1). Stretch and hop together stay under 15% taller. Characters that cannot hop or
@@ -160,12 +173,14 @@ export function createCharacterProfile(def: CharacterDefinition, info: ModelInfo
     speaks: def.speaks,
     rigged: info.admitted && clips.length > 0,
     clips,
+    articulatedParts: def.articulatedParts ?? ["body", "head", "eyelidL", "eyelidR"],
     gestureClip: (gesture) => first(def.clipCandidates[gesture]),
     locomotionClip: (style) => first(def.locomotionClips[style]),
     idleClip: () => first(def.clipCandidates.idle ?? ["idle"]),
     talkClip: () => first(def.clipCandidates.talk ?? ["talk"]),
     procedural: (gesture) => def.gestures[gesture] ?? SHARED_GESTURES[gesture],
     idleMotion: () => def.idleMotion,
+    subParts: (input) => sampleCharacterSubParts({ ...input, id: def.id }),
     talkStrength: def.talkStrength,
     carryOffset: def.carryOffset,
     defaultStyle: def.defaultStyle

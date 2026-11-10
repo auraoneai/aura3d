@@ -320,6 +320,28 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e07.invite-choose.2" }],
         holdMs: 1500
+      },
+      responseByTarget: {
+        "red-ball": {
+          stage: [
+            { do: "object", target: "red-ball", action: "bounce" },
+            { do: "object", target: "blue-ball", action: "wobble" },
+            { do: "sfx", sound: "boing" },
+            { do: "face", actor: "momo", toward: "red-ball" },
+            { do: "gesture", actor: "momo", gesture: "cheer" },
+            { do: "gesture", actor: "lumi", gesture: "happy" }
+          ]
+        },
+        "blue-ball": {
+          stage: [
+            { do: "object", target: "blue-ball", action: "bounce" },
+            { do: "object", target: "red-ball", action: "wobble" },
+            { do: "sfx", sound: "ding" },
+            { do: "gesture", actor: "lumi", gesture: "glow" },
+            { do: "face", actor: "momo", toward: "blue-ball" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

@@ -1,10 +1,11 @@
-// Beat runner (PRD 04 B02): beat order, stage selection and timing math,
-// driven by the authored content rather than loose setTimeout webs. The
-// episode director uses these helpers; tools and tests use them to estimate
-// running time. Pure: no DOM, no clocks, no randomness.
+// Beat runner (PRD 04 B02): beat order, stage selection, round variants,
+// choice-response resolution and timing math, driven by the authored content
+// rather than loose setTimeout webs. The episode director uses these helpers;
+// tools and tests use them to estimate running time. Pure: no DOM, no clocks,
+// no randomness.
 
-import type { BeatSpec, LineRef, StageAction, StorySpec } from "../types.js";
-import { normalizeWaitMs } from "./turn-taking.js";
+import type { BeatSpec, LineRef, RoundVariantSpec, StageAction, StorySpec } from "../types.js";
+import { normalizeWaitMs, type TurnResolution } from "./turn-taking.js";
 
 /** Used when a line has no known recorded duration (or its audio failed). */
 export const DEFAULT_LINE_MS = 2600;
@@ -23,6 +24,13 @@ export interface BeatCursor {
   readonly section: BeatSection;
   readonly index: number;
   readonly round: number;
+}
+
+/** Resolved response block played after a wait ends. */
+export interface ResolvedBeatResponse {
+  readonly stage: readonly StageAction[];
+  readonly lines: readonly LineRef[];
+  readonly holdMs: number;
 }
 
 /** Recorded line duration in ms, or undefined when unknown. */
@@ -63,6 +71,26 @@ export function beatTargets(beat: BeatSpec): readonly string[] {
 }
 
 /**
+ * Resolves the response played after a wait ends:
+ * - Child tap on `tappedTarget` merges `beat.responseByTarget?.[tappedTarget]` over `beat.response`.
+ * - `parent` confirm and `timeout` play `beat.response` directly.
+ */
+export function resolveBeatResponse(
+  beat: BeatSpec,
+  by: TurnResolution,
+  tappedTarget: string | null = null
+): ResolvedBeatResponse | null {
+  const base = beat.response;
+  const branch = by === "tap" && tappedTarget !== null ? beat.responseByTarget?.[tappedTarget] : undefined;
+  if (!base && !branch) return null;
+  return {
+    stage: branch?.stage ?? base?.stage ?? [],
+    lines: branch?.lines ?? base?.lines ?? [],
+    holdMs: finiteMs(branch?.holdMs ?? base?.holdMs ?? 0)
+  };
+}
+
+/**
  * Stage actions applied when a beat starts: `reducedMotionStage` replaces
  * `stage` when reduced motion is on, and the beat's camera preset (if any)
  * is applied first.
@@ -88,8 +116,45 @@ export function sectionBeats(story: StorySpec, section: BeatSection): readonly B
   return [];
 }
 
+/** Applies a round variant (setupStage on beat 0 + beatOverrides) to a round beat. */
+export function applyRoundVariant(base: BeatSpec, variant: RoundVariantSpec | undefined, beatIndexInRound: number): BeatSpec {
+  if (!variant) return base;
+  const override = variant.beatOverrides?.[base.id];
+  const setup = beatIndexInRound === 0 ? (variant.setupStage ?? []) : [];
+  const reducedSetup = beatIndexInRound === 0 ? (variant.reducedMotionSetupStage ?? variant.setupStage ?? []) : [];
+  if (!override && setup.length === 0 && reducedSetup.length === 0) return base;
+
+  const nextStage = [...setup, ...(override?.stage ?? base.stage)];
+  const hasReduced =
+    base.reducedMotionStage !== undefined ||
+    override?.reducedMotionStage !== undefined ||
+    (beatIndexInRound === 0 && variant.reducedMotionSetupStage !== undefined);
+  const nextReducedStage = hasReduced
+    ? [...reducedSetup, ...(override?.reducedMotionStage ?? override?.stage ?? base.reducedMotionStage ?? base.stage)]
+    : undefined;
+  const nextResponse = override?.response ?? base.response;
+  const nextResponseByTarget = override?.responseByTarget
+    ? { ...(base.responseByTarget ?? {}), ...override.responseByTarget }
+    : base.responseByTarget;
+
+  return {
+    ...base,
+    stage: nextStage,
+    ...(nextReducedStage !== undefined ? { reducedMotionStage: nextReducedStage } : {}),
+    ...(override?.lines !== undefined ? { lines: override.lines } : {}),
+    ...(nextResponse !== undefined ? { response: nextResponse } : {}),
+    ...(nextResponseByTarget !== undefined ? { responseByTarget: nextResponseByTarget } : {})
+  };
+}
+
 export function beatAt(story: StorySpec, cursor: BeatCursor): BeatSpec | null {
-  return sectionBeats(story, cursor.section)[cursor.index] ?? null;
+  const base = sectionBeats(story, cursor.section)[cursor.index] ?? null;
+  if (!base) return null;
+  if (story.kind === "activity" && cursor.section === "round" && cursor.round >= 1) {
+    const variant = story.roundVariants?.[cursor.round - 1];
+    return applyRoundVariant(base, variant, cursor.index);
+  }
+  return base;
 }
 
 /** Settle on the first real beat at or after the given position, skipping empty sections. */
@@ -133,14 +198,17 @@ export function nextCursor(story: StorySpec, cursor: BeatCursor, more: boolean):
 
 /**
  * Beats in play order. For activities, `round` is the number of rounds
- * played (clamped to 0..roundLimit; default roundLimit).
+ * played (clamped to 0..roundLimit; default roundLimit), with roundVariants applied.
  */
 export function storyBeats(story: StorySpec, round?: number): BeatSpec[] {
   if (story.kind === "episode") return [...story.beats];
   const limit = roundLimitOf(story);
   const rounds = round === undefined || !Number.isFinite(round) ? limit : Math.min(limit, Math.max(0, Math.floor(round)));
   const out: BeatSpec[] = [...story.intro];
-  for (let r = 0; r < rounds; r += 1) out.push(...story.round);
+  for (let r = 0; r < rounds; r += 1) {
+    const variant = story.roundVariants?.[r];
+    story.round.forEach((beat, idx) => out.push(applyRoundVariant(beat, variant, idx)));
+  }
   out.push(...story.outro);
   return out;
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "bench",
-  "file": "src/assets/models/bench.b354500c.glb",
-  "sha256": "b354500c5a459930c313d0d302947e9b8c841b8adc0e87c473b3317a02fd353d",
-  "sizeBytes": 203192,
+  "file": "src/assets/models/bench.dab4b192.glb",
+  "sha256": "dab4b1927261736205dcab3aa9115083ac31349ebc2960116f68f035451515c9",
+  "sizeBytes": 267780,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,13 +45,27 @@
       "bytesIn": 8728108,
       "bytesOut": 736556
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.66,
+      "metallicFactor": 0,
+      "normalScale": 0.38,
+      "jpegBytes": 64380,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-c87b621b21d5c8f0d49572d68912af74440960bda25e9a2a6707f32eaaa93d65"
     }
   },
   "inspection": {
@@ -62,7 +76,8 @@
       0.947
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -78,5 +93,10 @@
     "date": "2026-10-29",
     "notes": "Chunky wooden toy bench; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/bench.b354500c.glb",
+    "sha256": "b354500c5a459930c313d0d302947e9b8c841b8adc0e87c473b3317a02fd353d",
+    "sizeBytes": 203192
+  }
 }

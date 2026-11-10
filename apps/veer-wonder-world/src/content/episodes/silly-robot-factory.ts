@@ -176,7 +176,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hat", objectId: "hat" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["hat"] },
+      input: { type: "tap", targets: ["hat", "robot"] },
       waitMs: 5000,
       caregiverPromptKey: "e13.tip.1",
       response: {
@@ -191,6 +191,26 @@ export const episode: EpisodeSpec = {
           { speaker: "robot", key: "e13.help-hat.4" }
         ],
         holdMs: 1500
+      },
+      responseByTarget: {
+        hat: {
+          stage: [
+            { do: "carry", actor: "robot", item: "hat" },
+            { do: "object", target: "robot", action: "bounce" },
+            { do: "sfx", sound: "ding" },
+            { do: "face", actor: "momo", toward: "robot" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        robot: {
+          stage: [
+            { do: "carry", actor: "robot", item: "hat" },
+            { do: "object", target: "robot", action: "wobble" },
+            { do: "sfx", sound: "beep" },
+            { do: "face", actor: "momo", toward: "robot" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -279,6 +299,22 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e13.turn-clap.2" }],
         holdMs: 1500
+      },
+      responseByTarget: {
+        robot: {
+          stage: [
+            { do: "object", target: "robot", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "clap" },
+            { do: "sfx", sound: "clap" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "clap" },
+            { do: "object", target: "robot", action: "wobble" },
+            { do: "sfx", sound: "clap" }
+          ]
+        }
       }
     },
     {
@@ -347,6 +383,22 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e13.turn-stomp.2" }],
         holdMs: 1500
+      },
+      responseByTarget: {
+        robot: {
+          stage: [
+            { do: "object", target: "robot", action: "bounce" },
+            { do: "gesture", actor: "momo", gesture: "stomp" },
+            { do: "sfx", sound: "stomp" }
+          ]
+        },
+        momo: {
+          stage: [
+            { do: "gesture", actor: "momo", gesture: "stomp" },
+            { do: "object", target: "robot", action: "wobble" },
+            { do: "sfx", sound: "stomp" }
+          ]
+        }
       }
     },
     {
@@ -393,6 +445,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: null },
+        { do: "object", target: "toy-box", action: "close" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "face", actor: "robot", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" },

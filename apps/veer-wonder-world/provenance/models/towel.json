@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "towel",
-  "file": "src/assets/models/towel.73ce321a.glb",
-  "sha256": "73ce321ab51f76af7531aeca7ee6afc2b9ee309917668e73c87b09f47d13d10e",
-  "sizeBytes": 190948,
+  "file": "src/assets/models/towel.5b9cf928.glb",
+  "sha256": "5b9cf9288c7bbb11ed97db31c0c4a50e746abb2c4155464ff74e63fa7b129ddc",
+  "sizeBytes": 261216,
   "rigged": false,
   "clips": [],
   "heightM": 0.12,
@@ -45,11 +45,25 @@
       "bytesIn": 8429100,
       "bytesOut": 806320
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.9,
+      "metallicFactor": 0,
+      "normalScale": 0.42,
+      "jpegBytes": 70062,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-c642852d39a7ed227bb53e754e620a99c0385094962a49f2ab7583d1001304d0"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.886
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Folded soft towel; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/towel.73ce321a.glb",
+    "sha256": "73ce321ab51f76af7531aeca7ee6afc2b9ee309917668e73c87b09f47d13d10e",
+    "sizeBytes": 190948
+  }
 }

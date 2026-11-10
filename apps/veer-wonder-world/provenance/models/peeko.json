@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "peeko",
-  "file": "src/assets/models/peeko.febd9228.glb",
-  "sha256": "febd9228c5ee11fdeda4300d6ed12383e8180a92d5664c08191540bec71daa80",
-  "sizeBytes": 1272148,
+  "file": "src/assets/models/peeko.7a6a0458.glb",
+  "sha256": "7a6a0458326906d970f47334c567f0a53f6cbe938d0cb4bdf17a5b471c2933a9",
+  "sizeBytes": 1807716,
   "rigged": false,
   "clips": [],
   "heightM": 0.55,
@@ -69,10 +69,166 @@
         "sha256": "016097bccbc0aad659ba0d62f6161204e49a46be7332ada7fb4d86a7505fffa9",
         "sizeBytes": 2426404
       }
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#ffe066",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 755913,
+      "preservedPixels": 286791,
+      "totalPixels": 1048576,
+      "geometryHash": "sha256-520e576f3df7996426d00ca49e756b50a4c390dc48da84c4fefce9326d73c05f"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "head",
+        "tuft",
+        "beakLower",
+        "wingL",
+        "wingR",
+        "footL",
+        "footR"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 8015,
+      "trianglesAfter": 8015,
+      "verticesAfter": 10219,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.527e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "peeko_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 1248,
+          "vertices": 1089
+        },
+        "head": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            0.07,
+            0.02
+          ],
+          "localTranslation": [
+            0,
+            0.07,
+            0.02
+          ],
+          "triangles": 1971,
+          "vertices": 2007
+        },
+        "tuft": {
+          "parent": "head",
+          "worldPivot": [
+            0,
+            0.65,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0.58,
+            -0.02
+          ],
+          "triangles": 1992,
+          "vertices": 4272
+        },
+        "beakLower": {
+          "parent": "head",
+          "worldPivot": [
+            0,
+            0.28,
+            0.32
+          ],
+          "localTranslation": [
+            0,
+            0.21,
+            0.3
+          ],
+          "triangles": 45,
+          "vertices": 55
+        },
+        "wingL": {
+          "parent": "body",
+          "worldPivot": [
+            0.31,
+            -0.1,
+            0
+          ],
+          "localTranslation": [
+            0.31,
+            -0.1,
+            0
+          ],
+          "triangles": 626,
+          "vertices": 593
+        },
+        "wingR": {
+          "parent": "body",
+          "worldPivot": [
+            -0.31,
+            -0.1,
+            0
+          ],
+          "localTranslation": [
+            -0.31,
+            -0.1,
+            0
+          ],
+          "triangles": 633,
+          "vertices": 576
+        },
+        "footL": {
+          "parent": "peeko_root",
+          "worldPivot": [
+            0.14,
+            -0.68,
+            0
+          ],
+          "localTranslation": [
+            0.14,
+            -0.68,
+            0
+          ],
+          "triangles": 769,
+          "vertices": 758
+        },
+        "footR": {
+          "parent": "peeko_root",
+          "worldPivot": [
+            -0.14,
+            -0.68,
+            0
+          ],
+          "localTranslation": [
+            -0.14,
+            -0.68,
+            0
+          ],
+          "triangles": 731,
+          "vertices": 869
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 9981,
+    "vertexCount": 10219,
     "bounds": [
       0.954,
       1.812,
@@ -98,5 +254,10 @@
     "notes": "v2: round baby chick, friendly; pale, tinted warmer yellow per brief.",
     "tint": "#ffe066"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/peeko.46f73b55.glb",
+    "sha256": "46f73b5541f341b94622920ab2783ff724a990fb636fab6a0292f227f804b362",
+    "sizeBytes": 1426232
+  }
 }

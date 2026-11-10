@@ -19,8 +19,8 @@ export const episode: EpisodeSpec = {
     { id: "peeko", at: "backRight", hidden: true }
   ],
   props: [
-    { id: "door-left", asset: "door", at: "left", size: 1.6 },
-    { id: "door-right", asset: "door", at: "right", size: 1.6 },
+    { id: "door-left", asset: "door", at: "left", tint: "#F28B82", size: 1.6 },
+    { id: "door-right", asset: "door", at: "right", tint: "#8AB4F8", size: 1.6 },
     { id: "duck", asset: "duck", at: "backLeft", hidden: true, size: 0.5 }
   ],
   targetWords: ["open", "hi", "bye"],
@@ -206,6 +206,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "door-right", action: "wobble" },
+        { do: "sfx", sound: "rustle" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "nod" }
       ],
@@ -215,7 +216,7 @@ export const episode: EpisodeSpec = {
       ],
       words: [{ wordId: "open", objectId: "door-right" }],
       holdMs: 3600,
-      input: { type: "tap", targets: ["door-right"] },
+      input: { type: "tap", targets: ["door-right", "duck"] },
       waitMs: 5000,
       caregiverPromptKey: "e02.tip.2",
       response: {
@@ -231,6 +232,27 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e02.turn-right.4" }
         ],
         holdMs: 4600
+      },
+      responseByTarget: {
+        "door-right": {
+          stage: [
+            { do: "object", target: "door-right", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "show", actor: "peeko" },
+            { do: "gesture", actor: "peeko", gesture: "peek" },
+            { do: "face", actor: "momo", toward: "peeko" }
+          ]
+        },
+        duck: {
+          stage: [
+            { do: "object", target: "duck", action: "bounce" },
+            { do: "sfx", sound: "quack" },
+            { do: "object", target: "door-right", action: "open" },
+            { do: "show", actor: "peeko" },
+            { do: "gesture", actor: "peeko", gesture: "peek" },
+            { do: "face", actor: "momo", toward: "peeko" }
+          ]
+        }
       }
     },
     {

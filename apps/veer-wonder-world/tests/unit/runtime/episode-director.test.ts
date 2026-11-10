@@ -889,3 +889,125 @@ describe("episode director: determinism and invariants", () => {
     }
   });
 });
+
+describe("episode director: choice branching (responseByTarget) and roundVariants", () => {
+  const choiceBeat: BeatSpec = {
+    id: "pick-snack",
+    kind: "invite",
+    stage: [],
+    lines: [{ speaker: "momo", key: "t03.pick.1" }],
+    holdMs: 0,
+    input: { type: "tap", targets: ["ball", "drum"] },
+    waitMs: 3000,
+    response: {
+      stage: [{ do: "object", target: "ball", action: "bounce" }],
+      lines: [{ speaker: "momo", key: "t03.pick.default" }],
+      holdMs: 400
+    },
+    responseByTarget: {
+      ball: {
+        stage: [{ do: "object", target: "ball", action: "roll" }],
+        lines: [{ speaker: "momo", key: "t03.pick.ball" }],
+        holdMs: 400
+      },
+      drum: {
+        stage: [{ do: "object", target: "drum", action: "shake" }],
+        lines: [{ speaker: "momo", key: "t03.pick.drum" }],
+        holdMs: 400
+      }
+    }
+  };
+
+  it("plays the matching responseByTarget branch on tap, and falls back to beat.response on timeout or parentConfirm", () => {
+    const pickBall = started(makeEpisode([choiceBeat, outro])).director;
+    tickUntil(pickBall, untilPhase("waiting"));
+    expect(pickBall.send({ type: "TAP", target: "ball" })).toEqual([
+      { type: "targets", targets: null },
+      { type: "stage", actions: [{ do: "object", target: "ball", action: "roll" }] },
+      { type: "speak", line: { speaker: "momo", key: "t03.pick.ball" } }
+    ]);
+
+    const pickDrum = started(makeEpisode([choiceBeat, outro])).director;
+    tickUntil(pickDrum, untilPhase("waiting"));
+    expect(pickDrum.send({ type: "TAP", target: "drum" })).toEqual([
+      { type: "targets", targets: null },
+      { type: "stage", actions: [{ do: "object", target: "drum", action: "shake" }] },
+      { type: "speak", line: { speaker: "momo", key: "t03.pick.drum" } }
+    ]);
+
+    const viaParent = started(makeEpisode([choiceBeat, outro])).director;
+    tickUntil(viaParent, untilPhase("waiting"));
+    expect(viaParent.send({ type: "PARENT_CONFIRM" })).toEqual([
+      { type: "targets", targets: null },
+      { type: "stage", actions: [{ do: "object", target: "ball", action: "bounce" }] },
+      { type: "speak", line: { speaker: "momo", key: "t03.pick.default" } }
+    ]);
+
+    const viaTimeout = started(makeEpisode([choiceBeat, outro])).director;
+    tickUntil(viaTimeout, untilPhase("waiting"));
+    expect(tickFor(viaTimeout, 3000)).toEqual([
+      { type: "targets", targets: null },
+      { type: "stage", actions: [{ do: "object", target: "ball", action: "bounce" }] },
+      { type: "speak", line: { speaker: "momo", key: "t03.pick.default" } }
+    ]);
+  });
+
+  it("applies roundVariants across rounds 1..3 deterministically", () => {
+    const varied: ActivitySpec = {
+      ...makeActivity(),
+      roundVariants: [
+        {
+          beatOverrides: {
+            roll: {
+              stage: [{ do: "move", actor: "ball", to: "left", style: "roll" }]
+            }
+          }
+        },
+        {
+          beatOverrides: {
+            roll: {
+              stage: [{ do: "move", actor: "ball", to: "right", style: "roll" }],
+              response: {
+                stage: [{ do: "gesture", actor: "sheru", gesture: "wag" }],
+                lines: [{ speaker: "momo", key: "t02.roll.r1" }],
+                holdMs: 500
+              }
+            }
+          }
+        },
+        {
+          beatOverrides: {
+            roll: {
+              stage: [{ do: "move", actor: "ball", to: "back", style: "roll" }]
+            }
+          }
+        }
+      ]
+    };
+
+    const director = createEpisodeDirector(varied, { lineMs });
+    const roundRollStages: DirectorEffect[] = [];
+    const recordRollStages = (fx: readonly DirectorEffect[]): void => {
+      if (director.snapshot().beatId === "roll" && director.snapshot().phase === "speaking") {
+        for (const e of fx) if (e.type === "stage") roundRollStages.push(e);
+      }
+    };
+    recordRollStages(director.send({ type: "START", mode: "play-together" }));
+    for (let round = 1; round <= 3; round += 1) {
+      recordRollStages(tickUntil(director, untilBeat("roll", round)));
+      if (round === 2) {
+        tickUntil(director, untilPhase("waiting"));
+        const r2Resp = director.send({ type: "TAP", target: "ball" });
+        expect(r2Resp).toContainEqual({ type: "stage", actions: [{ do: "gesture", actor: "sheru", gesture: "wag" }] });
+      }
+      tickUntil(director, (s) => s.beatId === "more" && s.phase === "waiting");
+      recordRollStages(director.send({ type: "TAP", target: "ball" }));
+    }
+    tickUntil(director, untilPhase("finished"));
+    expect(roundRollStages).toEqual([
+      { type: "stage", actions: [{ do: "move", actor: "ball", to: "left", style: "roll" }] },
+      { type: "stage", actions: [{ do: "move", actor: "ball", to: "right", style: "roll" }] },
+      { type: "stage", actions: [{ do: "move", actor: "ball", to: "back", style: "roll" }] }
+    ]);
+  });
+});

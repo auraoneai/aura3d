@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "bed",
-  "file": "src/assets/models/bed.f7f95330.glb",
-  "sha256": "f7f95330d14b40be9946b217c080dc0134211a43b7a877ae4b200955dfb0b499",
-  "sizeBytes": 224008,
+  "file": "src/assets/models/bed.f9dfa794.glb",
+  "sha256": "f9dfa794e669b5ba1305d601a59416c11988ee5c5d0b76fb63288613f55d3274",
+  "sizeBytes": 294620,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -45,11 +45,25 @@
       "bytesIn": 8758664,
       "bytesOut": 694612
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.84,
+      "metallicFactor": 0,
+      "normalScale": 0.35,
+      "jpegBytes": 70401,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-84e9f36a0293cb40fa3d620dbae052b179716c55b53fd0777cad0912ad4b371e"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.708
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Small toy bed with pillow; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/bed.f7f95330.glb",
+    "sha256": "f7f95330d14b40be9946b217c080dc0134211a43b7a877ae4b200955dfb0b499",
+    "sizeBytes": 224008
+  }
 }

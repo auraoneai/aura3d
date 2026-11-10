@@ -13,6 +13,7 @@ export const GOGO: CharacterDefinition = {
   color: "#E2483D",
   voice: "gogo",
   speaks: true,
+  articulatedParts: ["body", "chimney", "wheelFL", "wheelFR", "wheelRL", "wheelRR", "cabDoorL", "cabDoorR", "eyelidL", "eyelidR", "jaw"],
   clipCandidates: {},
   locomotionClips: {},
   gestures: {

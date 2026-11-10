@@ -231,12 +231,13 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "face", actor: "lumi", toward: "viewer" },
         { do: "object", target: "ball", action: "glow" },
+        { do: "object", target: "bear", action: "glow" },
         { do: "gesture", actor: "peeko", gesture: "point" }
       ],
       lines: [{ speaker: "lumi", key: "e03.turn-ball.1" }],
       words: [{ wordId: "ball", objectId: "ball" }],
       holdMs: 3200,
-      input: { type: "tap", targets: ["ball"] },
+      input: { type: "tap", targets: ["ball", "bear"] },
       waitMs: 5000,
       caregiverPromptKey: "e03.tip.1",
       response: {
@@ -251,6 +252,27 @@ export const episode: EpisodeSpec = {
           { speaker: "peeko", key: "e03.turn-ball.3" }
         ],
         holdMs: 4200
+      },
+      responseByTarget: {
+        ball: {
+          stage: [
+            { do: "move", actor: "ball", to: "front", style: "roll" },
+            { do: "object", target: "ball", action: "roll" },
+            { do: "sfx", sound: "boing" },
+            { do: "face", actor: "peeko", toward: "ball" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        },
+        bear: {
+          stage: [
+            { do: "object", target: "bear", action: "wobble" },
+            { do: "move", actor: "ball", to: "front", style: "roll" },
+            { do: "object", target: "ball", action: "roll" },
+            { do: "sfx", sound: "giggle" },
+            { do: "face", actor: "peeko", toward: "ball" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -260,12 +282,13 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "face", actor: "lumi", toward: "viewer" },
         { do: "object", target: "bear", action: "glow" },
+        { do: "object", target: "ball", action: "glow" },
         { do: "face", actor: "peeko", toward: "bear" }
       ],
       lines: [{ speaker: "lumi", key: "e03.turn-bear.1" }],
       words: [{ wordId: "bear", objectId: "bear" }],
       holdMs: 3200,
-      input: { type: "tap", targets: ["bear"] },
+      input: { type: "tap", targets: ["bear", "ball"] },
       waitMs: 5000,
       caregiverPromptKey: "e03.tip.2",
       response: {
@@ -279,6 +302,24 @@ export const episode: EpisodeSpec = {
           { speaker: "peeko", key: "e03.turn-bear.3" }
         ],
         holdMs: 4200
+      },
+      responseByTarget: {
+        bear: {
+          stage: [
+            { do: "object", target: "bear", action: "bounce" },
+            { do: "sfx", sound: "giggle" },
+            { do: "gesture", actor: "peeko", gesture: "happy" },
+            { do: "gesture", actor: "lumi", gesture: "glow" }
+          ]
+        },
+        ball: {
+          stage: [
+            { do: "object", target: "ball", action: "bounce" },
+            { do: "object", target: "bear", action: "bounce" },
+            { do: "sfx", sound: "boing" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

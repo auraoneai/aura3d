@@ -48,6 +48,31 @@ export const activity: ActivitySpec = {
   },
   options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false },
   roundLimit: 3,
+  roundVariants: [
+    {
+      setupStage: [{ do: "gesture", actor: "peeko", gesture: "peek" }]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "tweet" },
+        { do: "gesture", actor: "peeko", gesture: "hop" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "sfx", sound: "tweet" },
+        { do: "gesture", actor: "peeko", gesture: "wave" }
+      ]
+    },
+    {
+      setupStage: [
+        { do: "sfx", sound: "rustle" },
+        { do: "gesture", actor: "peeko", gesture: "cheer" }
+      ],
+      reducedMotionSetupStage: [
+        { do: "sfx", sound: "rustle" },
+        { do: "gesture", actor: "peeko", gesture: "happy" }
+      ]
+    }
+  ],
   intro: [
     {
       id: "hello",
@@ -100,12 +125,13 @@ export const activity: ActivitySpec = {
     {
       id: "cow",
       kind: "invite",
-      camera: "wide",
+      camera: "medium",
       stage: [
         { do: "hide", actor: "cow" },
         { do: "hide", actor: "duck" },
         { do: "hide", actor: "horse" },
         { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "wobble" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "point" }
       ],
@@ -121,7 +147,9 @@ export const activity: ActivitySpec = {
         // She never crosses the door's sweep while it closes in the next beat.
         stage: [
           { do: "object", target: "door", action: "open" },
+          { do: "sfx", sound: "doorOpen" },
           { do: "enter", actor: "cow", at: "left", from: "back", style: "walk" },
+          { do: "object", target: "cow", action: "wobble" },
           { do: "face", actor: "peeko", toward: "door" }
         ],
         lines: [{ speaker: "peeko", key: "g04.cow.2" }],
@@ -131,10 +159,19 @@ export const activity: ActivitySpec = {
     {
       id: "duck",
       kind: "invite",
-      camera: "wide",
+      camera: "medium",
       stage: [
         { do: "sfx", sound: "moo" },
+        { do: "object", target: "cow", action: "bounce" },
         { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "wobble" },
+        { do: "face", actor: "peeko", toward: "cow" }
+      ],
+      reducedMotionStage: [
+        { do: "sfx", sound: "moo" },
+        { do: "object", target: "cow", action: "wobble" },
+        { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "glow" },
         { do: "face", actor: "peeko", toward: "cow" }
       ],
       lines: [
@@ -150,26 +187,58 @@ export const activity: ActivitySpec = {
         { wordId: "again", objectId: "door" }
       ],
       holdMs: 800,
-      input: { type: "tap", targets: ["door"] },
+      input: { type: "tap", targets: ["door", "cow"] },
       waitMs: 5000,
       caregiverPromptKey: "g04.tip.1",
       response: {
         stage: [
           { do: "object", target: "door", action: "open" },
+          { do: "sfx", sound: "doorOpen" },
           { do: "enter", actor: "duck", at: "right", from: "back", style: "walk" },
+          { do: "object", target: "duck", action: "wobble" },
           { do: "face", actor: "peeko", toward: "door" }
         ],
         lines: [{ speaker: "peeko", key: "g04.duck.4" }],
         holdMs: 1200
+      },
+      responseByTarget: {
+        door: {
+          stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "enter", actor: "duck", at: "right", from: "back", style: "walk" },
+            { do: "object", target: "duck", action: "wobble" },
+            { do: "face", actor: "peeko", toward: "door" }
+          ]
+        },
+        cow: {
+          stage: [
+            { do: "object", target: "cow", action: "bounce" },
+            { do: "sfx", sound: "moo" },
+            { do: "object", target: "door", action: "open" },
+            { do: "enter", actor: "duck", at: "right", from: "back", style: "walk" },
+            { do: "face", actor: "peeko", toward: "cow" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        }
       }
     },
     {
       id: "horse",
       kind: "invite",
-      camera: "wide",
+      camera: "medium",
       stage: [
         { do: "sfx", sound: "quack" },
+        { do: "object", target: "duck", action: "bounce" },
         { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "wobble" },
+        { do: "face", actor: "peeko", toward: "duck" }
+      ],
+      reducedMotionStage: [
+        { do: "sfx", sound: "quack" },
+        { do: "object", target: "duck", action: "wobble" },
+        { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "glow" },
         { do: "face", actor: "peeko", toward: "duck" }
       ],
       lines: [
@@ -184,17 +253,40 @@ export const activity: ActivitySpec = {
         { wordId: "open", objectId: "door" }
       ],
       holdMs: 800,
-      input: { type: "tap", targets: ["door"] },
+      input: { type: "tap", targets: ["door", "duck"] },
       waitMs: 5000,
       caregiverPromptKey: "g04.tip.1",
       response: {
         stage: [
           { do: "object", target: "door", action: "open" },
+          { do: "sfx", sound: "doorOpen" },
           { do: "enter", actor: "horse", at: "center", from: "back", style: "walk" },
+          { do: "object", target: "horse", action: "wobble" },
           { do: "face", actor: "peeko", toward: "door" }
         ],
         lines: [{ speaker: "peeko", key: "g04.horse.4" }],
         holdMs: 1200
+      },
+      responseByTarget: {
+        door: {
+          stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "enter", actor: "horse", at: "center", from: "back", style: "walk" },
+            { do: "object", target: "horse", action: "wobble" },
+            { do: "face", actor: "peeko", toward: "door" }
+          ]
+        },
+        duck: {
+          stage: [
+            { do: "object", target: "duck", action: "bounce" },
+            { do: "sfx", sound: "quack" },
+            { do: "object", target: "door", action: "open" },
+            { do: "enter", actor: "horse", at: "center", from: "back", style: "walk" },
+            { do: "face", actor: "peeko", toward: "duck" },
+            { do: "gesture", actor: "peeko", gesture: "happy" }
+          ]
+        }
       }
     },
     {
@@ -219,7 +311,7 @@ export const activity: ActivitySpec = {
         { wordId: "peekaboo", objectId: "peeko" }
       ],
       holdMs: 800,
-      input: { type: "more-or-done", targets: ["door"] },
+      input: { type: "more-or-done", targets: ["door", "horse"] },
       waitMs: 5000,
       caregiverPromptKey: "g04.tip.2",
       response: {
@@ -236,6 +328,28 @@ export const activity: ActivitySpec = {
         ],
         lines: [],
         holdMs: 1800
+      },
+      responseByTarget: {
+        door: {
+          stage: [
+            { do: "exit", actor: "cow", to: "back", style: "walk" },
+            { do: "exit", actor: "duck", to: "back", style: "walk" },
+            { do: "exit", actor: "horse", to: "back", style: "walk" },
+            { do: "object", target: "door", action: "close" },
+            { do: "gesture", actor: "peeko", gesture: "peek" }
+          ]
+        },
+        horse: {
+          stage: [
+            { do: "object", target: "horse", action: "bounce" },
+            { do: "sfx", sound: "neigh" },
+            { do: "exit", actor: "cow", to: "back", style: "walk" },
+            { do: "exit", actor: "duck", to: "back", style: "walk" },
+            { do: "exit", actor: "horse", to: "back", style: "walk" },
+            { do: "object", target: "door", action: "close" },
+            { do: "gesture", actor: "peeko", gesture: "cheer" }
+          ]
+        }
       }
     }
   ],

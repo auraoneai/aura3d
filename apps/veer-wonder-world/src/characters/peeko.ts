@@ -13,6 +13,7 @@ export const PEEKO: CharacterDefinition = {
   color: "#FFE15A",
   voice: "peeko",
   speaks: true,
+  articulatedParts: ["body", "head", "wingL", "wingR", "tuft", "footL", "footR", "eyelidL", "eyelidR", "beakLower"],
   clipCandidates: {},
   locomotionClips: {},
   gestures: {

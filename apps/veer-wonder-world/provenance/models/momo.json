@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "momo",
-  "file": "src/assets/models/momo.9e38ee8e.glb",
-  "sha256": "9e38ee8e48b687843a6861e94b845f177b8f99f5ab717c770cdbf9ef27ead0a9",
-  "sizeBytes": 1011932,
+  "file": "src/assets/models/momo.f88046d1.glb",
+  "sha256": "f88046d1b9ec8c1f919ec74364e6560785316bba4e6835a48a30980a4b962bf5",
+  "sizeBytes": 1417388,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -71,10 +71,120 @@
         "sha256": "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799",
         "sizeBytes": 1937816
       }
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "head",
+        "armL",
+        "armR",
+        "footL",
+        "footR"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 12434,
+      "trianglesAfter": 12434,
+      "verticesAfter": 10194,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.551e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "momo_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 1969,
+          "vertices": 1620
+        },
+        "head": {
+          "parent": "body",
+          "worldPivot": [
+            0,
+            0.03,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0.03,
+            0
+          ],
+          "triangles": 5769,
+          "vertices": 4684
+        },
+        "armL": {
+          "parent": "body",
+          "worldPivot": [
+            0.38,
+            -0.14,
+            0
+          ],
+          "localTranslation": [
+            0.38,
+            -0.14,
+            0
+          ],
+          "triangles": 1265,
+          "vertices": 1116
+        },
+        "armR": {
+          "parent": "body",
+          "worldPivot": [
+            -0.38,
+            -0.14,
+            0
+          ],
+          "localTranslation": [
+            -0.38,
+            -0.14,
+            0
+          ],
+          "triangles": 1158,
+          "vertices": 935
+        },
+        "footL": {
+          "parent": "momo_root",
+          "worldPivot": [
+            0.2,
+            -0.7,
+            0.02
+          ],
+          "localTranslation": [
+            0.2,
+            -0.7,
+            0.02
+          ],
+          "triangles": 1107,
+          "vertices": 924
+        },
+        "footR": {
+          "parent": "momo_root",
+          "worldPivot": [
+            -0.2,
+            -0.7,
+            0.02
+          ],
+          "localTranslation": [
+            -0.2,
+            -0.7,
+            0.02
+          ],
+          "triangles": 1166,
+          "vertices": 915
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 9936,
+    "vertexCount": 10194,
     "bounds": [
       1.241,
       1.903,
@@ -99,5 +209,10 @@
     "date": "2026-10-29",
     "notes": "v3: a round, soft lavender-purple plush monster with big friendly eyes, pink cheeks and a small closed smile; no teeth, no eyebrows, no horns. Purple as generated (no recolour). Replaces v2 (beige fur recoloured purple, open grin with two buck teeth, artifacts/meshy/wonder-world/_versions/momo-v2), whose brows read as cross at small size. Smooth plush rather than fuzzy fur."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/momo.9e38ee8e.glb",
+    "sha256": "9e38ee8e48b687843a6861e94b845f177b8f99f5ab717c770cdbf9ef27ead0a9",
+    "sizeBytes": 1011932
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "horse",
-  "file": "src/assets/models/horse.0767181a.glb",
-  "sha256": "0767181aabd91b519b47839202bddabb7da23727aca2a3aa30f196ca2c6b6fe2",
-  "sizeBytes": 346392,
+  "file": "src/assets/models/horse.78b5650b.glb",
+  "sha256": "78b5650b47973fed585ff04aa1eb7cda358659c82d8c96e4fc8dafe29f16f8a3",
+  "sizeBytes": 415316,
   "rigged": false,
   "clips": [],
   "heightM": 1,
@@ -45,11 +45,25 @@
       "bytesIn": 8736880,
       "bytesOut": 928036
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.82,
+      "metallicFactor": 0,
+      "normalScale": 0.34,
+      "jpegBytes": 68720,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-afee6c9ffcd43c143e1061d7902b3abc4edb57e5d3aad60c1f8ab3c5ae5ded17"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.901
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Toy pony with a soft mane; friendly."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/horse.0767181a.glb",
+    "sha256": "0767181aabd91b519b47839202bddabb7da23727aca2a3aa30f196ca2c6b6fe2",
+    "sizeBytes": 346392
+  }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "teddy",
-  "file": "src/assets/models/teddy.49af2add.glb",
-  "sha256": "49af2addc5633b4186ccf59511b02ba17db1887891221f73fc9027531acee159",
-  "sizeBytes": 348408,
+  "file": "src/assets/models/teddy.d836080b.glb",
+  "sha256": "d836080bff563ec9c7467202a45206fee0b97878c63d09df08f9715058f119dc",
+  "sizeBytes": 418068,
   "rigged": false,
   "clips": [],
   "heightM": 0.55,
@@ -45,11 +45,25 @@
       "bytesIn": 8958676,
       "bytesOut": 804244
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "plush_felt",
+      "roughnessFactor": 0.88,
+      "metallicFactor": 0,
+      "normalScale": 0.36,
+      "jpegBytes": 69451,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-eb7a1abfc9943e3c1bc1ebf12afe1377c26e4d69a08b30e0592afd89ea99974a"
     }
   },
   "inspection": {
@@ -60,7 +74,8 @@
       1.278
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +91,10 @@
     "date": "2026-10-29",
     "notes": "Brown teddy bear, friendly; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/teddy.49af2add.glb",
+    "sha256": "49af2addc5633b4186ccf59511b02ba17db1887891221f73fc9027531acee159",
+    "sizeBytes": 348408
+  }
 }

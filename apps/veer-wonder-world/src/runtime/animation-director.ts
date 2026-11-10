@@ -21,6 +21,11 @@
 import type { Gesture, MoveStyle } from "../types.js";
 import { SHARED_GESTURES } from "../characters/character-registry.js";
 import {
+  sampleCharacterSubParts,
+  type ArticulatedPoseMap
+} from "../scenes/articulated-actors.js";
+import { fallbackSpeechEnvelopeAt } from "./narration-player.js";
+import {
   NEUTRAL_POSE,
   addPose,
   clamp01,
@@ -28,10 +33,11 @@ import {
   envelope,
   gestureMotion,
   phaseOf,
+  pose,
   proc,
   reducedMotionSpec,
   sampleGestureMotion,
-  talkPulse,
+  talkPulseEnvelope,
   type GestureMotionSpec,
   type PoseOffset
 } from "../scenes/motion.js";
@@ -184,6 +190,7 @@ export interface AnimationSnapshot {
   readonly procedural: boolean;
   readonly holding: boolean;
   readonly talking: boolean;
+  readonly speechEnergy: number;
   readonly locomotion: MoveStyle | null;
 }
 
@@ -196,13 +203,23 @@ export interface AnimationDirector {
   gesture(id: string, gesture: Gesture, loop: boolean): GesturePlan | null;
   /** Travel clip while a move runs (null when it stops). */
   setLocomotion(id: string, style: MoveStyle | null): void;
-  /** The node whose line is playing (or null). */
-  setTalking(id: string | null): void;
+  /** Optional travelled distance in metres for arc-length wheel spin. */
+  setDistanceTravelled(id: string, distanceM: number): void;
+  /** Marks whether a character is cradling a carried item (`armL` / `armR` curl). */
+  setCarrying(id: string, carrying: boolean): void;
+  /** The node whose line is playing (or null), with optional initial speech energy `[0..1]`. */
+  setTalking(id: string | null, energy?: number): void;
+  /** Updates live 20 Hz syllable-envelope energy (`[0..1]`) for the active speaker (`null` resets to rhythmic fallback). */
+  setSpeechEnergy(energy: number | null): void;
+  /** Normalized `[0..1]` syllable-envelope speech energy for `actorId` (`0` when not talking). */
+  speechEnergy(actorId: string): number;
   talking(): string | null;
   setReducedMotion(on: boolean): void;
   update(dtSeconds: number): void;
-  /** Procedural gesture + idle + talk offset for a node at the current time. */
+  /** Procedural gesture + idle + talk offset (plus articulated `parts` when active) for a node at the current time. */
   pose(id: string): PoseOffset;
+  /** Articulated sub-part pose map (`head`, `armL`/`armR`, `wingL`/`wingR`, `tail`, `jaw`/`beakLower`, `eyelidL`/`eyelidR`, wheels) for `id`. */
+  partsPose(id: string): ArticulatedPoseMap | undefined;
   /** Glow halo strength 0..1 (soft rise and fall, never flashing). */
   halo(id: string): number;
   /** Clip changes since the last drain, in order. */
@@ -222,7 +239,10 @@ interface NodeRun {
   elapsed: number;
   plan: GesturePlan | null;
   holding: GestureMotionSpec | null;
+  holdingGesture: Gesture | null;
   locomotion: MoveStyle | null;
+  carrying: boolean;
+  distanceTravelled: number;
   currentClip: string | null;
 }
 
@@ -232,6 +252,31 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
   let time = 0;
   let reduced = options.reducedMotion === true;
   let talkingId: string | null = null;
+  let talkingStartedAt = 0;
+  let explicitSpeechEnergy: number | null = null;
+
+  const liveSpeechEnergy = (id: string): number => {
+    if (talkingId !== id) return 0;
+    if (explicitSpeechEnergy !== null) return clamp01(explicitSpeechEnergy);
+    return fallbackSpeechEnvelopeAt(Math.max(0, time - talkingStartedAt) * 1000, 0);
+  };
+
+  const computeSubParts = (run: NodeRun): ArticulatedPoseMap | undefined =>
+    sampleCharacterSubParts({
+      id: run.id,
+      gesture: run.gesture,
+      gestureElapsedSec: run.elapsed,
+      gestureDurationSec: run.plan?.durationSec ?? 1,
+      loop: run.loop,
+      holding: run.holding !== null,
+      holdGesture: run.holdingGesture,
+      locomotion: run.locomotion,
+      speechEnergy: liveSpeechEnergy(run.id),
+      carrying: run.carrying,
+      timeSec: time,
+      reducedMotion: reduced,
+      distanceTravelled: run.distanceTravelled
+    });
 
   const desiredClip = (run: NodeRun): string | null => {
     if (!run.canPlayClips) return null;
@@ -268,7 +313,10 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
         elapsed: 0,
         plan: null,
         holding: null,
+        holdingGesture: null,
         locomotion: null,
+        carrying: false,
+        distanceTravelled: 0,
         currentClip: config.initialClip ?? null
       };
       nodes.set(config.id, run);
@@ -276,12 +324,16 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
     },
     unregister(id) {
       nodes.delete(id);
-      if (talkingId === id) talkingId = null;
+      if (talkingId === id) {
+        talkingId = null;
+        explicitSpeechEnergy = null;
+      }
     },
     clear() {
       nodes.clear();
       commands.length = 0;
       talkingId = null;
+      explicitSpeechEnergy = null;
     },
     has(id) {
       return nodes.has(id);
@@ -291,6 +343,7 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
       if (!run) return null;
       const plan = planGesture(run.profile, gesture, run.canPlayClips);
       run.holding = null;
+      run.holdingGesture = null;
       if (gesture === "idle") {
         run.gesture = null;
         run.plan = null;
@@ -311,11 +364,37 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
       run.locomotion = style;
       sync(run);
     },
-    setTalking(id) {
+    setDistanceTravelled(id, distanceM) {
+      const run = nodes.get(id);
+      if (!run) return;
+      run.distanceTravelled = Number.isFinite(distanceM) ? Math.max(0, distanceM) : 0;
+    },
+    setCarrying(id, carrying) {
+      const run = nodes.get(id);
+      if (!run) return;
+      run.carrying = carrying;
+    },
+    setTalking(id, energy) {
       const previous = talkingId;
       talkingId = id;
+      if (id === null) {
+        explicitSpeechEnergy = null;
+      } else {
+        if (previous !== id) talkingStartedAt = time;
+        explicitSpeechEnergy = energy !== undefined && Number.isFinite(energy) ? clamp01(energy) : null;
+      }
       if (previous !== null && previous !== id) sync(nodes.get(previous));
       if (id !== null) sync(nodes.get(id));
+    },
+    setSpeechEnergy(energy) {
+      if (talkingId === null) {
+        explicitSpeechEnergy = null;
+        return;
+      }
+      explicitSpeechEnergy = energy !== null && Number.isFinite(energy) ? clamp01(energy) : null;
+    },
+    speechEnergy(actorId) {
+      return liveSpeechEnergy(actorId);
     },
     talking() {
       return talkingId;
@@ -330,7 +409,10 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
         if (!run.gesture || !run.plan) continue;
         run.elapsed += dt;
         if (!run.loop && run.elapsed >= run.plan.durationSec) {
-          if (run.plan.hold && run.plan.motion) run.holding = run.plan.motion;
+          if (run.plan.hold && run.plan.motion) {
+            run.holding = run.plan.motion;
+            run.holdingGesture = run.gesture;
+          }
           run.gesture = null;
           run.plan = null;
           run.elapsed = 0;
@@ -359,9 +441,19 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
         layers.push(sampleGestureMotion(idle, time + run.phase * idle.durationSec, true));
       }
       if (talkingId === id) {
-        layers.push(talkPulse(time, run.profile.talkStrength * (reduced ? 0.5 : 1)));
+        const energy = liveSpeechEnergy(id);
+        // Keep a soft minimum talking breath (> 0) while the speaker holds the floor, modulated by 20 Hz syllable energy.
+        const modulated = Math.min(0.96, 0.16 + 0.8 * energy);
+        layers.push(talkPulseEnvelope(time, run.profile.talkStrength * (reduced ? 0.5 : 1), modulated));
       }
-      return layers.length === 0 ? NEUTRAL_POSE : addPose(...layers);
+      const subParts = computeSubParts(run);
+      const rootPose = layers.length === 0 ? NEUTRAL_POSE : addPose(...layers);
+      return subParts ? pose({ ...rootPose, parts: subParts }) : rootPose;
+    },
+    partsPose(id) {
+      const run = nodes.get(id);
+      if (!run) return undefined;
+      return computeSubParts(run);
     },
     halo(id) {
       const run = nodes.get(id);
@@ -388,6 +480,7 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
         procedural: run.plan?.motion !== null && run.plan !== null,
         holding: run.holding !== null,
         talking: talkingId === id,
+        speechEnergy: liveSpeechEnergy(id),
         locomotion: run.locomotion
       };
     },

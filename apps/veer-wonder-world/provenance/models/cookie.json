@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "cookie",
-  "file": "src/assets/models/cookie.a5cea9cc.glb",
-  "sha256": "a5cea9cce11f33176396b69faf0a90b99a94d88315f59d591fa67a86be9038c2",
-  "sizeBytes": 168552,
+  "file": "src/assets/models/cookie.9df43d4d.glb",
+  "sha256": "9df43d4d6481083ff1d216b244671152ea89731995cb537b692e8f7b44f08d03",
+  "sizeBytes": 239476,
   "rigged": false,
   "clips": [],
   "heightM": 0.18,
@@ -72,13 +72,41 @@
       "bytesIn": 5449132,
       "bytesOut": 212200
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#f0c58a",
     "recolor": null,
     "source": "remesh",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#f0c58a",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 202072,
+      "preservedPixels": 57828,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-e04d7d9b797c4aa6401821b0100960318cf37d24131843879f7413f471b8be1b"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.84,
+      "metallicFactor": 0,
+      "normalScale": 0.42,
+      "jpegBytes": 49975,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-e04d7d9b797c4aa6401821b0100960318cf37d24131843879f7413f471b8be1b"
     }
   },
   "inspection": {
@@ -89,7 +117,8 @@
       0.777
     ],
     "textures": [
-      "image-0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -106,5 +135,10 @@
     "notes": "v1 geometry (flat round cookie) retextured through Meshy with an original style prompt (10 credits): pale dough with dark chocolate chips; light golden tint for a baked look. v2/v3 had come out green.",
     "tint": "#f0c58a"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/cookie.a5cea9cc.glb",
+    "sha256": "a5cea9cce11f33176396b69faf0a90b99a94d88315f59d591fa67a86be9038c2",
+    "sizeBytes": 168552
+  }
 }

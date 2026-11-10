@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "sponge",
-  "file": "src/assets/models/sponge.b14804d4.glb",
-  "sha256": "b14804d4602f10359aeaef2a057d891db23370530ba5d9a35ee7aeffc7569e22",
-  "sizeBytes": 164648,
+  "file": "src/assets/models/sponge.be1e9fb8.glb",
+  "sha256": "be1e9fb8b880817cd98e137b5dd072a9573da3c6574cb220ead127054d4425e2",
+  "sizeBytes": 260516,
   "rigged": false,
   "clips": [],
   "heightM": 0.15,
@@ -45,11 +45,39 @@
       "bytesIn": 8888200,
       "bytesOut": 637604
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#f7dc5a",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#f7dc5a",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 230471,
+      "preservedPixels": 31172,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-2c135ef1cc011ab0bfd9e7239b0004c403020b98134b80d31aaa16fbf1d35283"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "organic_clay_food",
+      "roughnessFactor": 0.92,
+      "metallicFactor": 0,
+      "normalScale": 0.46,
+      "jpegBytes": 54708,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-2c135ef1cc011ab0bfd9e7239b0004c403020b98134b80d31aaa16fbf1d35283"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       1.901
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Rounded sponge block; tinted yellow per brief.",
     "tint": "#f7dc5a"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/sponge.b14804d4.glb",
+    "sha256": "b14804d4602f10359aeaef2a057d891db23370530ba5d9a35ee7aeffc7569e22",
+    "sizeBytes": 164648
+  }
 }

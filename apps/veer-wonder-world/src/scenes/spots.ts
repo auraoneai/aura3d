@@ -11,6 +11,8 @@
 import type { CameraPresetId, SpotId } from "../types.js";
 import { clamp, lerp, lerpVec3, type Vec3 } from "./motion.js";
 
+export type { Vec3 };
+
 // ---------------------------------------------------------------- spots
 
 export const SPOTS: Readonly<Record<SpotId, Vec3>> = {
@@ -62,6 +64,15 @@ export function defaultEntrySpot(at: SpotId, floats: boolean): SpotId {
 
 // ---------------------------------------------------------------- camera
 
+/**
+ * Reversed-Z depth convention with automatic hardware fallback so overlapping
+ * diorama rails, rugs, plinths, and layered eye/cheek features never z-fight.
+ */
+export const CAMERA_DEPTH_OPTIONS = {
+  mode: "reversed",
+  allowFallback: true
+} as const;
+
 export interface CameraPose {
   readonly position: Vec3;
   readonly target: Vec3;
@@ -69,6 +80,7 @@ export interface CameraPose {
   readonly fov: number;
   readonly near: number;
   readonly far: number;
+  readonly depth?: typeof CAMERA_DEPTH_OPTIONS;
 }
 
 export interface CameraPresetSpec extends CameraPose {
@@ -82,7 +94,7 @@ export interface CameraPresetSpec extends CameraPose {
   readonly maxFov: number;
 }
 
-const NEAR = 0.1;
+const NEAR = 0.12;
 const FAR = 120;
 
 export const CAMERA_PRESETS: Readonly<Record<CameraPresetId, CameraPresetSpec>> = {
@@ -120,23 +132,47 @@ function normalize(a: Vec3): Vec3 {
   return l > 1e-9 ? [a[0] / l, a[1] / l, a[2] / l] : [0, 0, -1];
 }
 
+function smoothstep01(value: number): number {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
 const DEG = Math.PI / 180;
+
+/** Smooth portrait weight (`0` for `aspect >= 1.0`, `1` on narrow `9:19.5` phones). */
+export function portraitFramingWeight(aspect: number): number {
+  const a = Number.isFinite(aspect) && aspect > 0.05 ? aspect : 16 / 9;
+  if (a >= 1) return 0;
+  return smoothstep01((1 - a) / 0.54);
+}
 
 /** The half-width a preset must keep visible at this aspect (narrow screens keep only the core of the stage). */
 export function requiredHalfWidth(spec: CameraPresetSpec, aspect: number): number {
-  const t = clamp((aspect - 0.5) / (1.3 - 0.5), 0, 1);
+  const t = smoothstep01((aspect - 0.5) / (1.3 - 0.5));
   return lerp(spec.minHalfWidth, spec.halfWidth, t);
 }
 
 /**
- * Fits a preset to the canvas aspect: widens the field of view (up to `maxFov`) and
- * then dollies back along the view line until the required half-width is visible;
- * on ultra-wide screens narrows the field of view instead. Pure.
+ * Fits a preset to the canvas aspect: smoothly settles vertical eye/target on
+ * portrait viewports, widens the field of view (up to `maxFov`) and dollies back
+ * along the view line until `requiredHalfWidth` is visible; on ultra-wide screens
+ * narrows the field of view instead, and stamps reversed-Z depth. Pure.
  */
 export function frameCamera(preset: CameraPresetId, aspect: number): CameraPose {
   const spec = CAMERA_PRESETS[preset];
   const a = Number.isFinite(aspect) && aspect > 0.05 ? aspect : 16 / 9;
-  const view = sub(spec.target, spec.position);
+  const pWeight = portraitFramingWeight(a);
+  const adjustedTarget: Vec3 = [
+    spec.target[0],
+    spec.target[1] + 0.04 * pWeight,
+    spec.target[2]
+  ];
+  const baseEye: Vec3 = [
+    spec.position[0],
+    spec.position[1] - 0.03 * pWeight,
+    spec.position[2]
+  ];
+  const view = sub(adjustedTarget, baseEye);
   const distance = length(view);
   const dir = normalize(view);
   const need = requiredHalfWidth(spec, a);
@@ -151,8 +187,19 @@ export function frameCamera(preset: CameraPresetId, aspect: number): CameraPose 
   } else if (halfWidthAt(fov, d) > spec.maxHalfWidth) {
     fov = (2 * Math.atan(spec.maxHalfWidth / (d * a))) / DEG;
   }
-  const position: Vec3 = [spec.target[0] - dir[0] * d, spec.target[1] - dir[1] * d, spec.target[2] - dir[2] * d];
-  return { position, target: spec.target, fov, near: spec.near, far: spec.far };
+  const position: Vec3 = [
+    adjustedTarget[0] - dir[0] * d,
+    adjustedTarget[1] - dir[1] * d,
+    adjustedTarget[2] - dir[2] * d
+  ];
+  return {
+    position,
+    target: adjustedTarget,
+    fov,
+    near: spec.near,
+    far: spec.far,
+    depth: CAMERA_DEPTH_OPTIONS
+  };
 }
 
 export function lerpCameraPose(a: CameraPose, b: CameraPose, t: number): CameraPose {
@@ -161,14 +208,17 @@ export function lerpCameraPose(a: CameraPose, b: CameraPose, t: number): CameraP
     target: lerpVec3(a.target, b.target, t),
     fov: lerp(a.fov, b.fov, t),
     near: lerp(a.near, b.near, t),
-    far: lerp(a.far, b.far, t)
+    far: lerp(a.far, b.far, t),
+    depth: b.depth ?? a.depth ?? CAMERA_DEPTH_OPTIONS
   };
 }
 
 export function sameCameraPose(a: CameraPose, b: CameraPose, epsilon = 1e-5): boolean {
-  return Math.abs(a.fov - b.fov) < epsilon
-    && length(sub(a.position, b.position)) < epsilon
-    && length(sub(a.target, b.target)) < epsilon;
+  return (
+    Math.abs(a.fov - b.fov) < epsilon &&
+    length(sub(a.position, b.position)) < epsilon &&
+    length(sub(a.target, b.target)) < epsilon
+  );
 }
 
 interface CameraBasis {
@@ -255,10 +305,10 @@ export function rayBoxDistance(origin: Vec3, direction: Vec3, box: Box3): number
   let tmin = -Infinity;
   let tmax = Infinity;
   for (let i = 0; i < 3; i += 1) {
-    const o = origin[i];
-    const d = direction[i];
-    const lo = box.min[i];
-    const hi = box.max[i];
+    const o = origin[i]!;
+    const d = direction[i]!;
+    const lo = box.min[i]!;
+    const hi = box.max[i]!;
     if (Math.abs(d) < 1e-9) {
       if (o < lo || o > hi) return null;
       continue;
@@ -338,13 +388,13 @@ const SPREAD_GAP_M = 0.14;
  */
 export function resolveLayout(entries: readonly LayoutEntry[]): ReadonlyMap<string, Vec3> {
   const out = new Map<string, Vec3>();
-  const groups = new Map<SpotId, LayoutEntry[]>();
+  const grouped = new Map<SpotId, LayoutEntry[]>();
   for (const entry of entries) {
-    const group = groups.get(entry.spot);
+    const group = grouped.get(entry.spot);
     if (group) group.push(entry);
-    else groups.set(entry.spot, [entry]);
+    else grouped.set(entry.spot, [entry]);
   }
-  for (const [spot, group] of groups) {
+  for (const [spot, group] of grouped) {
     const base = SPOTS[spot];
     const only = group.length === 1 ? group[0] : undefined;
     if (only) {

@@ -39,6 +39,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
+  ["@aura3d/engine/geometry-tools", "/packages/engine/src/public/geometry-tools.ts"],
+  ["@aura3d/engine/procedural", "/packages/engine/src/public/procedural.ts"],
+  ["@aura3d/engine/game/art", "/packages/game/src/art/index.ts"],
   ["@aura3d/engine/scatter", "/packages/engine/src/agent-api/nodes/scatter.ts"],
   ["@aura3d/engine/worker", "/packages/engine/src/public/worker.ts"],
   ["@aura3d/engine/shader-graph-runtime", "/packages/engine/src/public/shader-graph-runtime.ts"],
@@ -649,6 +652,13 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     // examples/00-basic-triangle was removed; the repository-root index.html is a meta-refresh to /marketing/,
     // which navigates away under page.setContent/evaluate. Serve the empty same-origin harness page at "/".
     candidates.push(join(root, "tests", "browser", "parity-audio-harness.html"));
+  } else if (normalizedPath.startsWith("aura-decoders/") || normalizedPath.startsWith("/aura-decoders/")) {
+    const decoderRel = normalizedPath.replace(/^[/\\]?aura-decoders[/\\]/, "");
+    candidates.push(join(root, "packages", "assets", "vendor", "decoders", decoderRel));
+    if (decoderRel === "basis/ktx2.worker.js") {
+      candidates.push(join(root, "packages", "assets", "dist", "workers", "ktx2.worker.js"));
+      candidates.push(join(root, "packages", "assets", "src", "workers", "ktx2.worker.ts"));
+    }
   } else if (normalizedPath.startsWith("assets/draco/") || normalizedPath.startsWith("/assets/draco/")) {
     const decoderFile = normalizedPath.replace(/^[/\\]?assets[/\\]draco[/\\]/, "");
     candidates.push(join(root, "marketing", "public", "assets", "draco", decoderFile));
@@ -910,6 +920,15 @@ function contentType(file: string): string {
       return "application/octet-stream";
     case ".css":
       return "text/css; charset=utf-8";
+    case ".woff2":
+      return "font/woff2";
+    case ".woff":
+      return "font/woff";
+    case ".hdr":
+    case ".exr":
+      return "application/octet-stream";
+    case ".mp3":
+      return "audio/mpeg";
     default:
       return "text/plain; charset=utf-8";
   }

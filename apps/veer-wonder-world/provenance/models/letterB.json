@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "letterB",
-  "file": "src/assets/models/letterB.6783674a.glb",
-  "sha256": "6783674a2bb95ce008b2acf4847f86d4943b573866d89baea3e0ab8112793a24",
-  "sizeBytes": 180916,
+  "file": "src/assets/models/letterB.20150bce.glb",
+  "sha256": "20150bce62fd660ffe8760941b01ef109884852047864f1a4bf51c5478f46698",
+  "sizeBytes": 244316,
   "rigged": false,
   "clips": [],
   "heightM": 0.8,
@@ -45,11 +45,39 @@
       "bytesIn": 8716640,
       "bytesOut": 614988
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#3f7fd9",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#3f7fd9",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 228937,
+      "preservedPixels": 32635,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-703d71c523669aa0f1ede925fb4b304680c17984e0a89c92738c15ded41487b5"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.44,
+      "metallicFactor": 0,
+      "normalScale": 0.28,
+      "jpegBytes": 23858,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-703d71c523669aa0f1ede925fb4b304680c17984e0a89c92738c15ded41487b5"
     }
   },
   "inspection": {
@@ -60,7 +88,8 @@
       0.419
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +106,10 @@
     "notes": "Clear capital B; tinted blue per brief.",
     "tint": "#3f7fd9"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/letterB.6783674a.glb",
+    "sha256": "6783674a2bb95ce008b2acf4847f86d4943b573866d89baea3e0ab8112793a24",
+    "sizeBytes": 180916
+  }
 }

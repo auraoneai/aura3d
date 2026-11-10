@@ -24,6 +24,7 @@ import {
   lumaStats,
   openWonderWorld,
   qaAdvance,
+  qaDiagnostics,
   qaStartStory,
   qaState,
   readBootError,
@@ -98,11 +99,28 @@ test.describe("Wonder World look-dev captures", () => {
       emitJson(`look-${shot.world}`, record);
       records.push(record);
       expect(state.storyId, `${shot.world}: the story is on stage`).toBe(shot.story);
+      const diag = await qaDiagnostics(page);
+      for (const w of diag?.warnings ?? []) {
+        expect(w, `${shot.world}: stage diagnostic warnings`).not.toMatch(
+          /WGSL_PROGRAM_MISSING|CUSTOM_SHADER_WGSL_MISSING|OPTION_IGNORED|KTX2_CSP_BLOCKED/i
+        );
+      }
       for (const label of ["desktop", "phone"] as const) {
-        const frame = frames[label] as { luma: { nonBlackRatio: number; coarseColours: number } };
+        const frame = frames[label] as {
+          luma: { nonBlackRatio: number; coarseColours: number };
+          colour: { meanSaturation: number };
+        };
         expect(frame.luma.nonBlackRatio, `${shot.world} ${label}: drawn, not black`).toBeGreaterThan(0.5);
         expect(frame.luma.coarseColours, `${shot.world} ${label}: more than a clear colour`).toBeGreaterThan(12);
+        if (shot.world === "learning-cloud") {
+          expect(frame.colour.meanSaturation, `learning-cloud ${label}: saturation floor >= 0.24`).toBeGreaterThanOrEqual(0.24);
+        }
       }
+    }
+    for (const entry of log.consoleLogs) {
+      expect(entry.text, "renderer/shader console warnings").not.toMatch(
+        /WGSL_PROGRAM_MISSING|CUSTOM_SHADER_WGSL_MISSING|OPTION_IGNORED|KTX2_CSP_BLOCKED/i
+      );
     }
     emitJson("look-summary", {
       worlds: records.map((record) => ({ world: record["world"], frames: record["frames"] }))
@@ -110,5 +128,32 @@ test.describe("Wonder World look-dev captures", () => {
     expect(await readBootError(page), "__AURA_WONDER_WORLD_ERROR__").toBeNull();
     expect(log.pageErrors, "page errors").toEqual([]);
     expect(log.consoleErrors, "console errors").toEqual([]);
+  });
+
+  test("?backend=webgl2 fallback renders error-free with rich colour parity", async ({ page }) => {
+    await page.setViewportSize(DESKTOP);
+    const log = attachPageLog(page);
+    const shot = WORLD_SHOTS[0];
+    await openWonderWorld(page, server, log, {
+      autostart: 1,
+      story: shot.story,
+      manual: 1,
+      mode: "watch-sing",
+      modelWaitMs: MODEL_WAIT_MS,
+      backend: "webgl2"
+    });
+    await waitForStoryOnStage(page, log, shot.story);
+    await remountIfModelsLate(page, log, shot.story, "watch-sing", shot.cast);
+    await qaAdvance(page, OPENING_MS);
+    const png = decodePng(await captureCanvas(page, { canvasOnly: true }));
+    const luma = lumaStats(png);
+    const colour = colourStats(png);
+    emitShot("look-meadow-webgl2-desktop", await captureCanvasJpeg(page), "jpg");
+    emitJson("look-meadow-webgl2", { viewport: DESKTOP, luma, colour });
+    expect(luma.nonBlackRatio, "webgl2 meadow: drawn, not black").toBeGreaterThan(0.5);
+    expect(luma.coarseColours, "webgl2 meadow: rich colours").toBeGreaterThan(12);
+    expect(await readBootError(page), "__AURA_WONDER_WORLD_ERROR__").toBeNull();
+    expect(log.pageErrors, "webgl2 page errors").toEqual([]);
+    expect(log.consoleErrors, "webgl2 console errors").toEqual([]);
   });
 });

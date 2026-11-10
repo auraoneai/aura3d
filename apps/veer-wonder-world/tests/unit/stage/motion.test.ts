@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createFixedStepPresenter, runMotionGate } from "@aura3d/engine/game";
 import { describe, expect, it } from "vitest";
+import { AUDIO_MANIFEST } from "../../../src/audio-manifest.js";
+import { CHARACTERS } from "../../../src/characters/character-registry.js";
+import { createAnimationDirector } from "../../../src/runtime/animation-director.js";
+import { decodeSpeechEnvelope, sampleSpeechEnvelope } from "../../../src/runtime/narration-player.js";
+import { mirrorPartPoses } from "../../../src/scenes/articulated-actors.js";
 import {
   DOOR_OPEN_ANGLE,
   INITIAL_OBJECT_STATE,
@@ -38,6 +44,7 @@ import {
   sampleGestureMotion,
   sampleLayer,
   sampleMove,
+  sampleObjectParts,
   sampleTransient,
   scalePoseTranslation,
   squashStretch,
@@ -487,6 +494,9 @@ describe("determinism guard", () => {
     "src/scenes/stand-ins.ts",
     "src/scenes/stage.ts",
     "src/scenes/looks.ts",
+    "src/scenes/diorama-terrain.ts",
+    "src/scenes/articulated-actors.ts",
+    "src/scenes/vfx-presets.ts",
     "src/scenes/worlds.ts",
     "src/scenes/meadow.ts",
     "src/scenes/music-garden.ts",
@@ -518,6 +528,114 @@ describe("determinism guard", () => {
       expect(source, file).not.toMatch(/effects\.vignette\s*\(/);
       // The chick is Peeko; "Pip" is only allowed when naming the other shipped game.
       expect(source, file).not.toMatch(/\bPip\b(?!'s Big Leap)/);
+    }
+  });
+});
+
+describe("articulated sub-parts, 20 Hz speech envelopes & runMotionGate (WP-4 / WP-8)", () => {
+  it("drives real articulated sub-parts on cast gestures without widening Peeko's body", () => {
+    const director = createAnimationDirector({ reducedMotion: false });
+    for (const id of ["momo", "lulu", "sheru", "peeko", "gogo"] as const) {
+      director.register({ id, profile: CHARACTERS[id], canPlayClips: false });
+    }
+
+    // Momo wave: raises right arm and tilts head warmly; mirror swaps armR -> armL.
+    director.gesture("momo", "wave", false);
+    director.update(0.45);
+    const momoParts = director.partsPose("momo");
+    expect(momoParts?.armR?.rotation).toBeDefined();
+    expect(Math.abs(momoParts?.armR?.rotation?.[2] ?? 0)).toBeGreaterThan(0.4);
+    const mirrored = mirrorPartPoses(momoParts);
+    expect(mirrored?.armL?.rotation?.[2]).toBeCloseTo(-(momoParts?.armR?.rotation?.[2] ?? 0), 6);
+
+    // Lulu clap & stomp: symmetric arms on clap, alternating feet on stomp.
+    director.gesture("lulu", "clap", false);
+    director.update(0.25);
+    const luluClap = director.partsPose("lulu");
+    expect(luluClap?.armL?.rotation).toBeDefined();
+    expect(luluClap?.armR?.rotation).toBeDefined();
+    director.gesture("lulu", "stomp", false);
+    director.update(0.3);
+    const luluStomp = director.partsPose("lulu");
+    expect(luluStomp?.footL !== undefined || luluStomp?.footR !== undefined).toBe(true);
+
+    // Sheru wag: tail swings on Y/Z.
+    director.gesture("sheru", "wag", false);
+    director.update(0.25);
+    const sheruWag = director.partsPose("sheru");
+    expect(Math.abs(sheruWag?.tail?.rotation?.[1] ?? 0) + Math.abs(sheruWag?.tail?.rotation?.[2] ?? 0)).toBeGreaterThan(0.15);
+
+    // Peeko happy flaps wingL & wingR while keeping whole-body sx === 1 (no pancake widening).
+    director.gesture("peeko", "happy", false);
+    director.update(0.2);
+    const peekoBody = director.pose("peeko");
+    const peekoParts = director.partsPose("peeko");
+    close(peekoBody.sx, 1, 0.06);
+    expect(peekoParts?.wingL?.rotation).toBeDefined();
+    expect(peekoParts?.wingR?.rotation).toBeDefined();
+  });
+
+  it("articulates hinged doors, box lids, lifts and rolling vehicle wheels", () => {
+    const openDoor = sampleObjectParts({ asset: "door", openProgress: 1, liftM: 0 });
+    expect(openDoor?.hingeLeaf?.rotation?.[1]).toBeCloseTo(DOOR_OPEN_ANGLE, 5);
+    expect(openDoor?.hingeLeaf?.offset).toBeUndefined();
+
+    const openBox = sampleObjectParts({ asset: "toyBox", openProgress: 1, liftM: 0 });
+    expect(Math.abs(openBox?.lid?.rotation?.[0] ?? 0)).toBeGreaterThan(0.8);
+
+    const raisedLift = sampleObjectParts({ asset: "lift", openProgress: 1, liftM: LIFT_STEP_M });
+    expect(raisedLift?.liftCab?.offset?.[1] ?? 0).toBeGreaterThan(0.1);
+    expect(raisedLift?.liftGate?.offset?.[0] ?? 0).toBeGreaterThan(0.05);
+
+    const rollingCar = sampleObjectParts({ asset: "car", openProgress: 0, liftM: 0, distanceTravelled: 1.2 });
+    expect(Math.abs(rollingCar?.wheelFL?.rotation?.[0] ?? 0)).toBeGreaterThan(1);
+    expect(rollingCar?.wheelFR?.rotation?.[0]).toBeCloseTo(rollingCar?.wheelFL?.rotation?.[0] ?? 0, 6);
+  });
+
+  it("decodes and interpolates pre-baked 20 Hz speech envelopes deterministically", () => {
+    const clip = AUDIO_MANIFEST.lines["e01.hook.2"];
+    expect(clip?.env).toBeDefined();
+    const bytes = decodeSpeechEnvelope(clip?.env);
+    expect(bytes.length).toBeGreaterThan(5);
+    const e1 = sampleSpeechEnvelope(clip?.env, 225, clip?.durationMs ?? 1500);
+    const e2 = sampleSpeechEnvelope(bytes, 225, clip?.durationMs ?? 1500);
+    close(e1, e2, 1e-9);
+    expect(e1).toBeGreaterThanOrEqual(0);
+    expect(e1).toBeLessThanOrEqual(1);
+  });
+
+  it("passes runMotionGate across 60 Hz, 120 Hz and 144 Hz display rates on the 50 ms presenter", () => {
+    for (const displayHz of [60, 120, 144]) {
+      let simTimeSec = 0;
+      const speedMps = MOVE_SPEED.walk;
+      const presenter = createFixedStepPresenter<{ readonly x: number; readonly z: number }>({
+        snapshot: () => ({ x: -2.0 + simTimeSec * speedMps, z: 0.4 * Math.sin(0.5 * simTimeSec) }),
+        blend: (a, b, u) => ({ x: a.x + (b.x - a.x) * u, z: a.z + (b.z - a.z) * u })
+      });
+      presenter.reset();
+
+      const report = runMotionGate({
+        displayHz,
+        seconds: 4,
+        warmupSeconds: 0.2,
+        stepSeconds: 0.05,
+        maxStillFraction: 0.05,
+        maxCv: 0.25,
+        step: (dt) => {
+          simTimeSec += dt;
+        },
+        afterStep: () => {
+          presenter.afterStep();
+        },
+        drawn: (alpha) => {
+          const shown = presenter.present({ alpha }, true);
+          return [shown.x, shown.z];
+        }
+      });
+
+      expect(report.passed, `${displayHz} Hz: ${report.failures.join("; ")}`).toBe(true);
+      expect(report.stillFraction).toBeLessThanOrEqual(0.05);
+      expect(report.cv).toBeLessThanOrEqual(0.25);
     }
   });
 });

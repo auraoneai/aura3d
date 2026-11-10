@@ -137,6 +137,7 @@ export const episode: EpisodeSpec = {
       camera: "left",
       stage: [
         { do: "face", actor: "momo", toward: "sink" },
+        { do: "object", target: "sink", action: "open" },
         { do: "object", target: "sink", action: "wash" },
         { do: "sfx", sound: "splash" },
         { do: "gesture", actor: "momo", gesture: "clap" }
@@ -162,12 +163,13 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "momo", key: "e19.wash-invite.1" }],
       holdMs: 1500,
-      input: { type: "tap", targets: ["sink"] },
+      input: { type: "tap", targets: ["sink", "towel"] },
       waitMs: 5000,
       caregiverPromptKey: "e19.tip.1",
       response: {
         stage: [
           { do: "face", actor: "momo", toward: "sink" },
+          { do: "object", target: "sink", action: "open" },
           { do: "object", target: "sink", action: "wash" },
           { do: "sfx", sound: "splash" },
           { do: "gesture", actor: "momo", gesture: "clap" }
@@ -177,6 +179,27 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e19.wash-invite.3" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        sink: {
+          stage: [
+            { do: "face", actor: "momo", toward: "sink" },
+            { do: "object", target: "sink", action: "open" },
+            { do: "object", target: "sink", action: "wash" },
+            { do: "sfx", sound: "splash" },
+            { do: "gesture", actor: "momo", gesture: "clap" }
+          ]
+        },
+        towel: {
+          stage: [
+            { do: "object", target: "towel", action: "wobble" },
+            { do: "face", actor: "momo", toward: "sink" },
+            { do: "object", target: "sink", action: "open" },
+            { do: "object", target: "sink", action: "wash" },
+            { do: "sfx", sound: "splash" },
+            { do: "gesture", actor: "momo", gesture: "clap" }
+          ]
+        }
       },
       words: [
         { wordId: "water", objectId: "sink" },
@@ -189,6 +212,7 @@ export const episode: EpisodeSpec = {
       kind: "event",
       stage: [
         { do: "object", target: "sink", action: "stop" },
+        { do: "object", target: "sink", action: "close" },
         { do: "gesture", actor: "momo", gesture: "pickUp" },
         { do: "carry", actor: "momo", item: "towel" },
         { do: "object", target: "towel", action: "dry" },
@@ -248,7 +272,7 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "momo", key: "e19.eat-invite.1" }],
       holdMs: 1500,
-      input: { type: "tap", targets: ["banana"] },
+      input: { type: "tap", targets: ["banana", "plate"] },
       waitMs: 5000,
       caregiverPromptKey: "e19.tip.2",
       response: {
@@ -263,6 +287,25 @@ export const episode: EpisodeSpec = {
           { speaker: "narrator", key: "e19.eat-invite.3" }
         ],
         holdMs: 2500
+      },
+      responseByTarget: {
+        banana: {
+          stage: [
+            { do: "face", actor: "momo", toward: "banana" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" },
+            { do: "object", target: "banana", action: "eat" }
+          ]
+        },
+        plate: {
+          stage: [
+            { do: "object", target: "plate", action: "wobble" },
+            { do: "face", actor: "momo", toward: "banana" },
+            { do: "gesture", actor: "momo", gesture: "eat" },
+            { do: "sfx", sound: "munch" },
+            { do: "object", target: "banana", action: "eat" }
+          ]
+        }
       },
       words: [
         { wordId: "more", objectId: "banana" },
@@ -356,16 +399,36 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "momo", key: "e19.sleep-invite.1" }],
       holdMs: 1500,
-      input: { type: "tap", targets: ["bed"] },
+      input: { type: "tap", targets: ["bed", "lumi"] },
       waitMs: 5000,
       caregiverPromptKey: "e19.tip.3",
       response: {
-        stage: [{ do: "gesture", actor: "momo", gesture: "sleep", loop: true }],
+        stage: [
+          { do: "object", target: "bed", action: "wobble" },
+          { do: "gesture", actor: "momo", gesture: "sleep", loop: true }
+        ],
         lines: [
           { speaker: "momo", key: "e19.sleep-invite.2" },
           { speaker: "narrator", key: "e19.sleep-invite.3" }
         ],
         holdMs: 3000
+      },
+      responseByTarget: {
+        bed: {
+          stage: [
+            { do: "object", target: "bed", action: "wobble" },
+            { do: "gesture", actor: "lumi", gesture: "glow" },
+            { do: "gesture", actor: "momo", gesture: "sleep", loop: true }
+          ]
+        },
+        lumi: {
+          stage: [
+            { do: "gesture", actor: "lumi", gesture: "glow" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "object", target: "bed", action: "glow" },
+            { do: "gesture", actor: "momo", gesture: "sleep", loop: true }
+          ]
+        }
       },
       words: [
         { wordId: "bed", objectId: "bed" },

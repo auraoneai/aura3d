@@ -101,6 +101,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "object", target: "box", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
         { do: "gesture", actor: "lumi", gesture: "float" }
       ],
       lines: [
@@ -203,6 +204,28 @@ export const episode: EpisodeSpec = {
         ],
         holdMs: 3000
       },
+      responseByTarget: {
+        teddy: {
+          stage: [
+            { do: "object", target: "box", action: "glow" },
+            { do: "object", target: "teddy", action: "bounce" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "move", actor: "ball", to: "frontLeft", style: "roll" },
+            { do: "face", actor: "momo", toward: "teddy" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        },
+        ball: {
+          stage: [
+            { do: "object", target: "box", action: "glow" },
+            { do: "sfx", sound: "boing" },
+            { do: "move", actor: "ball", to: "frontLeft", style: "roll" },
+            { do: "object", target: "teddy", action: "wobble" },
+            { do: "face", actor: "momo", toward: "ball" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        }
+      },
       words: [
         { wordId: "teddy", objectId: "teddy" },
         { wordId: "ball", objectId: "ball" }
@@ -259,6 +282,27 @@ export const episode: EpisodeSpec = {
           { speaker: "momo", key: "e20.pick-2.4" }
         ],
         holdMs: 3000
+      },
+      responseByTarget: {
+        car: {
+          stage: [
+            { do: "object", target: "box", action: "glow" },
+            { do: "sfx", sound: "beep" },
+            { do: "carry", actor: "car", item: "teddy" },
+            { do: "object", target: "car", action: "wobble" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "gesture", actor: "momo", gesture: "cheer" }
+          ]
+        },
+        teddy: {
+          stage: [
+            { do: "object", target: "box", action: "glow" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "carry", actor: "car", item: "teddy" },
+            { do: "face", actor: "momo", toward: "car" },
+            { do: "gesture", actor: "momo", gesture: "happy" }
+          ]
+        }
       },
       words: [
         { wordId: "car", objectId: "car" },

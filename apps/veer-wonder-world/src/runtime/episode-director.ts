@@ -45,6 +45,7 @@ import {
   firstCursor,
   lineDurationMs,
   nextCursor,
+  resolveBeatResponse,
   type BeatCursor,
   type LineMs
 } from "./beat-runner.js";
@@ -193,7 +194,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     waiting.start();
     if (!waiting.state().active) {
       // A zero wait ends at once: no targets flash on and off.
-      playResponse("timeout", out);
+      playResponse("timeout", null, out);
       return;
     }
     step = "wait";
@@ -202,16 +203,16 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     out.push({ type: "targets", targets });
   }
 
-  function closeWait(by: TurnResolution, out: DirectorEffect[]): void {
+  function closeWait(by: TurnResolution, tappedTarget: string | null, out: DirectorEffect[]): void {
     targets = [];
     out.push({ type: "targets", targets: null });
-    playResponse(by, out);
+    playResponse(by, tappedTarget, out);
   }
 
-  function playResponse(by: TurnResolution, out: DirectorEffect[]): void {
+  function playResponse(by: TurnResolution, tappedTarget: string | null, out: DirectorEffect[]): void {
     step = "none";
     if (beat?.input?.type === "more-or-done") moreChosen = by !== "timeout";
-    const response = beat?.response;
+    const response = beat ? resolveBeatResponse(beat, by, tappedTarget) : null;
     if (response) {
       part = "response";
       out.push({ type: "stage", actions: response.stage });
@@ -250,10 +251,10 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
       if (step === "wait" && turn) {
         const resolved = turn.tick(used);
         if (resolved) {
-          closeWait(resolved, out);
+          closeWait(resolved, null, out);
         } else if (used >= need) {
           turn.cancel();
-          closeWait("timeout", out);
+          closeWait("timeout", null, out);
         }
         continue;
       }
@@ -264,13 +265,13 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     }
   }
 
-  function accept(source: TurnSource, out: DirectorEffect[]): void {
+  function accept(source: TurnSource, tappedTarget: string | null, out: DirectorEffect[]): void {
     if (phase !== "waiting" || step !== "wait" || !turn) return;
     if (lastAcceptedAt !== null && elapsedMs - lastAcceptedAt < TAP_GUARD_MS) return;
     if (!turn.respond(source)) return;
     lastAcceptedAt = elapsedMs;
     if (source === "tap") taps += 1;
-    closeWait(source, out);
+    closeWait(source, tappedTarget, out);
   }
 
   function send(event: DirectorEvent): DirectorEffect[] {
@@ -315,11 +316,11 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
       }
       case "TAP": {
         if (!targets.includes(event.target)) return out;
-        accept("tap", out);
+        accept("tap", event.target, out);
         return out;
       }
       case "PARENT_CONFIRM": {
-        accept("parent", out);
+        accept("parent", null, out);
         return out;
       }
       case "PAUSE": {

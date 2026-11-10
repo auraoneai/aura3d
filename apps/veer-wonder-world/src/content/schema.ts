@@ -19,6 +19,7 @@
 
 import type {
   BeatKind,
+  BeatResponse,
   BeatSpec,
   CameraPresetId,
   CharacterId,
@@ -39,6 +40,7 @@ import type {
   WorldId,
   AudioClipRef
 } from "../types.js";
+import { applyRoundVariant } from "../runtime/beat-runner.js";
 import { ALPHABET, LETTERS, LETTER_NAMES, checkLetterTexts, equatesNameAndSound, letterInfo, lettersNamedIn, mentionsSound } from "./letters.js";
 import { COUNT_MAX, COUNT_MIN, COUNT_WORD_IDS, countsAboveLimit, highestSpokenNumber } from "./numbers.js";
 import { MUSIC_BEDS, BED_MAX_SEC, BED_MIN_SEC } from "./music.js";
@@ -338,12 +340,86 @@ function roundLimit(story: StorySpec): number {
   return story.kind === "activity" && Number.isFinite(story.roundLimit) ? Math.max(0, Math.floor(story.roundLimit)) : 0;
 }
 
-/** Beats in play order when `rounds` activity rounds are played. */
+/** Beats in play order when `rounds` activity rounds are played (applying `roundVariants` per round). */
 function playPath(story: StorySpec, rounds: number): BeatRef[] {
   if (story.kind === "episode") return beatRefs(story);
   const out: BeatRef[] = story.intro.map((beat, index) => ({ section: "intro", index, beat }));
-  for (let r = 0; r < rounds; r += 1) out.push(...story.round.map((beat, index): BeatRef => ({ section: "round", index, beat })));
+  for (let r = 0; r < rounds; r += 1) {
+    const variant = story.roundVariants?.[r];
+    out.push(...story.round.map((beat, index): BeatRef => ({ section: "round", index, beat: applyRoundVariant(beat, variant, index) })));
+  }
   out.push(...story.outro.map((beat, index): BeatRef => ({ section: "outro", index, beat })));
+  return out;
+}
+
+/** Every distinct response block (default + per-target overrides) on a beat. */
+function beatResponses(beat: BeatSpec): readonly { readonly labelSuffix: string; readonly response: BeatResponse }[] {
+  const out: { readonly labelSuffix: string; readonly response: BeatResponse }[] = [];
+  if (beat.response) out.push({ labelSuffix: "response", response: beat.response });
+  if (beat.responseByTarget) {
+    for (const [targetId, branch] of Object.entries(beat.responseByTarget)) {
+      if (branch) out.push({ labelSuffix: `responseByTarget["${targetId}"]`, response: branch });
+    }
+  }
+  return out;
+}
+
+/** Every spoken LineRef reachable in a story (including roundVariants and responseByTarget). */
+function allStoryLines(story: StorySpec): LineRef[] {
+  const out: LineRef[] = [];
+  const collectBeat = (beat: BeatSpec): void => {
+    out.push(...beat.lines);
+    if (beat.response) out.push(...beat.response.lines);
+    if (beat.responseByTarget) {
+      for (const branch of Object.values(beat.responseByTarget)) {
+        if (branch?.lines) out.push(...branch.lines);
+      }
+    }
+  };
+  for (const ref of beatRefs(story)) collectBeat(ref.beat);
+  if (story.kind === "activity" && story.roundVariants) {
+    for (const variant of story.roundVariants) {
+      for (const override of Object.values(variant.beatOverrides ?? {})) {
+        if (!override) continue;
+        if (override.lines) out.push(...override.lines);
+        if (override.response) out.push(...override.response.lines);
+        if (override.responseByTarget) {
+          for (const branch of Object.values(override.responseByTarget)) {
+            if (branch?.lines) out.push(...branch.lines);
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Every StageAction reachable in a story (including roundVariants and responseByTarget). */
+function allStoryActions(story: StorySpec): StageAction[] {
+  const out: StageAction[] = [];
+  const collectBeat = (beat: BeatSpec): void => {
+    out.push(...beat.stage, ...(beat.reducedMotionStage ?? []), ...(beat.response?.stage ?? []));
+    if (beat.responseByTarget) {
+      for (const branch of Object.values(beat.responseByTarget)) {
+        if (branch?.stage) out.push(...branch.stage);
+      }
+    }
+  };
+  for (const ref of beatRefs(story)) collectBeat(ref.beat);
+  if (story.kind === "activity" && story.roundVariants) {
+    for (const variant of story.roundVariants) {
+      out.push(...(variant.setupStage ?? []), ...(variant.reducedMotionSetupStage ?? []));
+      for (const override of Object.values(variant.beatOverrides ?? {})) {
+        if (!override) continue;
+        out.push(...(override.stage ?? []), ...(override.reducedMotionStage ?? []), ...(override.response?.stage ?? []));
+        if (override.responseByTarget) {
+          for (const branch of Object.values(override.responseByTarget)) {
+            if (branch?.stage) out.push(...branch.stage);
+          }
+        }
+      }
+    }
+  }
   return out;
 }
 
@@ -793,6 +869,7 @@ function checkInput(ctx: Ctx, ref: BeatRef, label: string): void {
   if (input === undefined || input.type === "none") {
     if (beat.waitMs !== undefined) errors.push(`${label}: waitMs is set but the beat waits for no input`);
     if (beat.response !== undefined) errors.push(`${label}: a response needs an input to answer`);
+    if (beat.responseByTarget !== undefined) errors.push(`${label}: responseByTarget needs an input to answer`);
     return;
   }
   if (input.type !== "tap" && input.type !== "more-or-done") {
@@ -806,6 +883,13 @@ function checkInput(ctx: Ctx, ref: BeatRef, label: string): void {
     if (!actorIds.has(target)) errors.push(`${label}: tap target "${target}" is not a cast or prop id`);
     if (seen.has(target)) errors.push(`${label}: tap target "${target}" is listed twice`);
     seen.add(target);
+  }
+  if (beat.responseByTarget !== undefined) {
+    for (const targetKey of Object.keys(beat.responseByTarget)) {
+      if (!seen.has(targetKey)) {
+        errors.push(`${label}: responseByTarget target "${targetKey}" is not listed in input.targets`);
+      }
+    }
   }
   if (beat.waitMs !== undefined && (!Number.isFinite(beat.waitMs) || beat.waitMs < MIN_WAIT_MS || beat.waitMs > MAX_WAIT_MS)) {
     errors.push(`${label}: waitMs ${beat.waitMs} must be ${MIN_WAIT_MS}-${MAX_WAIT_MS} (a wait always ends by itself)`);
@@ -826,6 +910,7 @@ function checkBeats(ctx: Ctx): void {
     if (beat.reducedMotionStage !== undefined) checkActions(ctx, `${label} reducedMotionStage`, beat.reducedMotionStage);
     checkLines(ctx, ref, label, beat.lines, seenKeys);
     checkInput(ctx, ref, label);
+    const seenBeforeResponse = new Map(seenKeys);
     if (beat.response) {
       const responseLabel = `${label} response`;
       if (!Number.isFinite(beat.response.holdMs) || beat.response.holdMs < 0 || beat.response.holdMs > MAX_HOLD_MS) {
@@ -833,6 +918,21 @@ function checkBeats(ctx: Ctx): void {
       }
       checkActions(ctx, responseLabel, beat.response.stage);
       checkLines(ctx, ref, responseLabel, beat.response.lines, seenKeys);
+    }
+    if (beat.responseByTarget) {
+      for (const [targetKey, branch] of Object.entries(beat.responseByTarget)) {
+        if (!branch) continue;
+        const branchLabel = `${label} responseByTarget["${targetKey}"]`;
+        if (branch.holdMs !== undefined && (!Number.isFinite(branch.holdMs) || branch.holdMs < 0 || branch.holdMs > MAX_HOLD_MS)) {
+          errors.push(`${branchLabel}: holdMs ${branch.holdMs} must be 0-${MAX_HOLD_MS}`);
+        }
+        if (branch.stage !== undefined) checkActions(ctx, branchLabel, branch.stage);
+        if (branch.lines !== undefined) {
+          const branchSeen = new Map(seenBeforeResponse);
+          checkLines(ctx, ref, branchLabel, branch.lines, branchSeen);
+          for (const [k, v] of branchSeen) if (!seenKeys.has(k)) seenKeys.set(k, v);
+        }
+      }
     }
     if (beat.caregiverPromptKey !== undefined) {
       if (!new RegExp(`^${escapeRegExp(ctx.code)}\\.tip\\.[1-9]\\d*$`).test(beat.caregiverPromptKey)) {
@@ -872,8 +972,8 @@ function checkStrings(ctx: Ctx): void {
   // Locale keys of this story that nothing uses (an unvoiced line or an orphan tip drifts silently).
   const usedLines = new Set<string>();
   const usedStrings = new Set<string>([story.titleKey, story.offlinePlayKey, story.caregiverBridgeKey]);
+  for (const line of allStoryLines(story)) usedLines.add(line.key);
   for (const ref of beatRefs(story)) {
-    for (const line of [...ref.beat.lines, ...(ref.beat.response?.lines ?? [])]) usedLines.add(line.key);
     if (ref.beat.caregiverPromptKey !== undefined) usedStrings.add(ref.beat.caregiverPromptKey);
   }
   const letter = story.letterConcept;
@@ -1129,6 +1229,14 @@ function checkVisibility(ctx: Ctx): void {
         afterResponse = cloneState(state);
         checkSpeakers(`${label} response`, beat.response.lines, afterResponse);
       }
+      if (beat.responseByTarget) {
+        for (const [targetKey, branch] of Object.entries(beat.responseByTarget)) {
+          if (!branch) continue;
+          const branchState = cloneState(afterStage);
+          applyActions(branchState, branch.stage ?? beat.response?.stage ?? []);
+          checkSpeakers(`${label} responseByTarget["${targetKey}"]`, branch.lines ?? beat.response?.lines ?? [], branchState);
+        }
+      }
       for (const entry of beat.words ?? []) {
         if (!ctx.actorIds.has(entry.objectId)) continue;
         const seen = isVisible(before, entry.objectId) || isVisible(afterStage, entry.objectId) || (afterResponse !== null && isVisible(afterResponse, entry.objectId));
@@ -1287,19 +1395,79 @@ function checkAudio(ctx: Ctx): void {
   }
   const missing = new Set<string>();
   const beds = new Set<string>(story.music !== undefined ? [story.music] : []);
-  for (const ref of beatRefs(story)) {
-    const beat = ref.beat;
-    for (const line of [...beat.lines, ...(beat.response?.lines ?? [])]) {
-      if (line.speaker !== "sheru" && audio.lines[line.key] === undefined) missing.add(`line ${line.key}`);
-    }
-    for (const action of [...beat.stage, ...(beat.reducedMotionStage ?? []), ...(beat.response?.stage ?? [])]) {
-      if (action.do === "sfx" && audio.sfx[action.sound] === undefined) missing.add(`sound effect ${action.sound}`);
-      if (action.do === "song" && audio.songs[action.song] === undefined) missing.add(`song ${action.song}`);
-      if (action.do === "music" && action.bed !== null) beds.add(action.bed);
-    }
+  for (const line of allStoryLines(story)) {
+    if (line.speaker !== "sheru" && audio.lines[line.key] === undefined) missing.add(`line ${line.key}`);
+  }
+  for (const action of allStoryActions(story)) {
+    if (action.do === "sfx" && audio.sfx[action.sound] === undefined) missing.add(`sound effect ${action.sound}`);
+    if (action.do === "song" && audio.songs[action.song] === undefined) missing.add(`song ${action.song}`);
+    if (action.do === "music" && action.bed !== null) beds.add(action.bed);
   }
   for (const bed of MUSIC_BED_IDS) if (beds.has(bed) && audio.beds[bed] === undefined) missing.add(`music bed ${bed}`);
   for (const item of missing) errors.push(`no recorded audio for ${item}`);
+}
+
+function checkRoundVariants(ctx: Ctx): void {
+  const { story, errors, locale } = ctx;
+  if (story.kind !== "activity" || !story.roundVariants) return;
+  const limit = roundLimit(story);
+  if (story.roundVariants.length > limit) {
+    errors.push(`roundVariants lists ${story.roundVariants.length} variants, exceeding roundLimit ${limit}`);
+  }
+  const roundBeatMap = new Map(story.round.map((b, idx) => [b.id, { beat: b, index: idx }]));
+  story.roundVariants.forEach((variant, rIdx) => {
+    const rLabel = `roundVariants[${rIdx}]`;
+    if (variant.setupStage) checkActions(ctx, `${rLabel}.setupStage`, variant.setupStage);
+    if (variant.reducedMotionSetupStage) checkActions(ctx, `${rLabel}.reducedMotionSetupStage`, variant.reducedMotionSetupStage);
+    for (const [beatId, override] of Object.entries(variant.beatOverrides ?? {})) {
+      if (!override) continue;
+      const found = roundBeatMap.get(beatId);
+      if (!found) {
+        errors.push(`${rLabel}: beatOverrides["${beatId}"] does not match any round beat id`);
+        continue;
+      }
+      const ref: BeatRef = { section: "round", index: found.index, beat: found.beat };
+      const bLabel = `${rLabel}.beatOverrides["${beatId}"]`;
+      if (override.stage) checkActions(ctx, `${bLabel}.stage`, override.stage);
+      if (override.reducedMotionStage) checkActions(ctx, `${bLabel}.reducedMotionStage`, override.reducedMotionStage);
+      if (override.lines) checkLines(ctx, ref, `${bLabel}.lines`, override.lines, new Map());
+      if (override.response) {
+        if (!Number.isFinite(override.response.holdMs) || override.response.holdMs < 0 || override.response.holdMs > MAX_HOLD_MS) {
+          errors.push(`${bLabel}.response: holdMs ${override.response.holdMs} must be 0-${MAX_HOLD_MS}`);
+        }
+        checkActions(ctx, `${bLabel}.response`, override.response.stage);
+        checkLines(ctx, ref, `${bLabel}.response`, override.response.lines, new Map());
+      }
+      if (override.responseByTarget) {
+        const targets = new Set(found.beat.input && found.beat.input.type !== "none" ? found.beat.input.targets : []);
+        for (const [targetKey, branch] of Object.entries(override.responseByTarget)) {
+          if (!targets.has(targetKey)) {
+            errors.push(`${bLabel}: responseByTarget target "${targetKey}" is not listed in "${beatId}" input.targets`);
+          }
+          if (!branch) continue;
+          if (branch.holdMs !== undefined && (!Number.isFinite(branch.holdMs) || branch.holdMs < 0 || branch.holdMs > MAX_HOLD_MS)) {
+            errors.push(`${bLabel}.responseByTarget["${targetKey}"]: holdMs ${branch.holdMs} must be 0-${MAX_HOLD_MS}`);
+          }
+          if (branch.stage) checkActions(ctx, `${bLabel}.responseByTarget["${targetKey}"]`, branch.stage);
+          if (branch.lines) checkLines(ctx, ref, `${bLabel}.responseByTarget["${targetKey}"]`, branch.lines, new Map());
+        }
+      }
+      if (locale.lines && override.lines) {
+        for (const entry of found.beat.words ?? []) {
+          const wordId = entry.wordId;
+          if (isWordId(wordId)) {
+            const texts = [...override.lines, ...(override.response?.lines ?? found.beat.response?.lines ?? [])].map((l) => locale.lines[l.key] ?? "");
+            const lyrics = [...songsIn(override.stage ?? found.beat.stage), ...songsIn(override.response?.stage ?? found.beat.response?.stage ?? [])].flatMap(
+              (s) => (has(SONGS, s) ? SONGS[s].lyrics : [])
+            );
+            if (![...texts, ...lyrics].some((t) => wordSpoken(wordId, t))) {
+              errors.push(`${bLabel}: names the word "${entry.wordId}" on beat "${beatId}" but none of its overridden lines say it`);
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 /**
@@ -1324,6 +1492,7 @@ export function validateStory(story: StorySpec, locale: LocalePack, opts: Valida
   checkWordLists(ctx);
   checkStructure(ctx);
   checkBeats(ctx);
+  checkRoundVariants(ctx);
   checkStrings(ctx);
   checkTargetCoverage(ctx);
   checkVisibility(ctx);
@@ -1476,12 +1645,10 @@ export function validateCatalogDetailed(stories: readonly StorySpec[], locale: L
   const owners = new Map<string, string>();
   for (const story of stories) {
     const code = storyCode(story);
-    for (const ref of beatRefs(story)) {
-      for (const line of [...ref.beat.lines, ...(ref.beat.response?.lines ?? [])]) {
-        const owner = owners.get(line.key);
-        if (owner !== undefined && owner !== code) catalog.push(`line key ${line.key} is used by both ${owner} and ${code}`);
-        owners.set(line.key, code);
-      }
+    for (const line of allStoryLines(story)) {
+      const owner = owners.get(line.key);
+      if (owner !== undefined && owner !== code) catalog.push(`line key ${line.key} is used by both ${owner} and ${code}`);
+      owners.set(line.key, code);
     }
   }
 

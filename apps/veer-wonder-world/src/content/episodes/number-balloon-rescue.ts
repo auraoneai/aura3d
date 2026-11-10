@@ -232,7 +232,7 @@ export const episode: EpisodeSpec = {
         { wordId: "up", objectId: "balloon-2" }
       ],
       holdMs: 500,
-      input: { type: "tap", targets: ["balloon-2"] },
+      input: { type: "tap", targets: ["balloon-2", "lumi"] },
       waitMs: 5000,
       caregiverPromptKey: "e11.tip.1",
       response: {
@@ -243,6 +243,25 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e11.turn-two.3" }],
         holdMs: 2200
+      },
+      responseByTarget: {
+        "balloon-2": {
+          stage: [
+            { do: "move", actor: "balloon-2", to: "right", style: "float" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "face", actor: "lulu", toward: "balloon-2" },
+            { do: "gesture", actor: "lulu", gesture: "happy" }
+          ]
+        },
+        lumi: {
+          stage: [
+            { do: "gesture", actor: "lumi", gesture: "glow" },
+            { do: "sfx", sound: "sparkle" },
+            { do: "move", actor: "balloon-2", to: "right", style: "float" },
+            { do: "face", actor: "lulu", toward: "balloon-2" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" }
+          ]
+        }
       }
     },
     {
@@ -278,7 +297,7 @@ export const episode: EpisodeSpec = {
       ],
       words: [{ wordId: "balloon", objectId: "balloon-3" }],
       holdMs: 500,
-      input: { type: "tap", targets: ["balloon-3"] },
+      input: { type: "tap", targets: ["balloon-3", "lumi"] },
       waitMs: 5000,
       caregiverPromptKey: "e11.tip.1",
       response: {
@@ -290,6 +309,25 @@ export const episode: EpisodeSpec = {
         ],
         lines: [{ speaker: "narrator", key: "e11.turn-three.3" }],
         holdMs: 2200
+      },
+      responseByTarget: {
+        "balloon-3": {
+          stage: [
+            { do: "move", actor: "balloon-3", to: "front", style: "float" },
+            { do: "sfx", sound: "ding" },
+            { do: "face", actor: "lulu", toward: "balloon-3" },
+            { do: "gesture", actor: "lulu", gesture: "happy" }
+          ]
+        },
+        lumi: {
+          stage: [
+            { do: "gesture", actor: "lumi", gesture: "glow" },
+            { do: "sfx", sound: "ding" },
+            { do: "move", actor: "balloon-3", to: "front", style: "float" },
+            { do: "face", actor: "lulu", toward: "balloon-3" },
+            { do: "gesture", actor: "lulu", gesture: "cheer" }
+          ]
+        }
       }
     },
     {

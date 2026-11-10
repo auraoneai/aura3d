@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "door",
-  "file": "src/assets/models/door.780b4b6e.glb",
-  "sha256": "780b4b6ec6134120e52536b38eb9af3fb1de9d245e0ebca36beab297b5b60576",
-  "sizeBytes": 230648,
+  "file": "src/assets/models/door.a61f7eaa.glb",
+  "sha256": "a61f7eaa37ebd44a0928c7bb5e32f5e2662d9bd058eee4223da80b69a28f4c0b",
+  "sizeBytes": 469552,
   "rigged": false,
   "clips": [],
   "heightM": 1.6,
@@ -45,22 +45,83 @@
       "bytesIn": 8192208,
       "bytesOut": 690264
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.64,
+      "metallicFactor": 0,
+      "normalScale": 0.38,
+      "jpegBytes": 66213,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-f083ef4242c789cf3877246bb7c63434bca66b4e2ebff99ce83fc5471dae7dcd"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "hingeLeaf"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 3633,
+      "trianglesAfter": 3633,
+      "verticesAfter": 4666,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.495e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "door_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 2274,
+          "vertices": 2959
+        },
+        "hingeLeaf": {
+          "parent": "body",
+          "worldPivot": [
+            -0.4689,
+            -0.08361,
+            0
+          ],
+          "localTranslation": [
+            -0.4689,
+            -0.08361,
+            0
+          ],
+          "triangles": 1359,
+          "vertices": 1707
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 4554,
+    "vertexCount": 4666,
     "bounds": [
       1.395,
       1.902,
       0.357
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +137,10 @@
     "date": "2026-10-29",
     "notes": "Arched play door with a round knob; matches brief."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/door.cc611d68.glb",
+    "sha256": "cc611d6831968b7e420d4d40ff2e29cd550e932d80ffb937d122f3b4878de9a6",
+    "sizeBytes": 297068
+  }
 }

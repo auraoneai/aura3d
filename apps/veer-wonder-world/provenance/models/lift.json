@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "lift",
-  "file": "src/assets/models/lift.6a0fbee0.glb",
-  "sha256": "6a0fbee0bf44c129c2703b6f2969b6322b1eb433b57a4b3cdaf6b5ef1fe31d92",
-  "sizeBytes": 321440,
+  "file": "src/assets/models/lift.b0080785.glb",
+  "sha256": "b00807852163b6c3a97a581710ed065a5b28dd9732186c924e91530884e33529",
+  "sizeBytes": 663344,
   "rigged": false,
   "clips": [],
   "heightM": 1.8,
@@ -45,22 +45,99 @@
       "bytesIn": 7821676,
       "bytesOut": 892728
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": null,
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "wood_painted",
+      "roughnessFactor": 0.58,
+      "metallicFactor": 0.04,
+      "normalScale": 0.34,
+      "jpegBytes": 66136,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-56a00e11ead0563467778bfd849641c4c6e43d7a638d4acab023f3112f599257"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "liftCab",
+        "liftGate"
+      ],
+      "hasAxleFrame": false,
+      "trianglesBefore": 3753,
+      "trianglesAfter": 3753,
+      "verticesAfter": 7839,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.564e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "lift_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 3003,
+          "vertices": 6118
+        },
+        "liftCab": {
+          "parent": "lift_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 223,
+          "vertices": 535
+        },
+        "liftGate": {
+          "parent": "liftCab",
+          "worldPivot": [
+            -0.28933,
+            -0.4058,
+            0.17239
+          ],
+          "localTranslation": [
+            -0.28933,
+            -0.4058,
+            0.17239
+          ],
+          "triangles": 527,
+          "vertices": 1186
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 7723,
+    "vertexCount": 7839,
     "bounds": [
       0.715,
       1.888,
       0.712
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -76,5 +153,10 @@
     "date": "2026-10-29",
     "notes": "Tall toy lift tower with a door; acceptable stylised lift."
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/lift.22bb41ea.glb",
+    "sha256": "22bb41ea92053e2c148c6ff40534fd60529c67cdc2337834462344b944f9523e",
+    "sizeBytes": 387784
+  }
 }

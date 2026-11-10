@@ -13,6 +13,7 @@ export const LUMI: CharacterDefinition = {
   color: "#FFD34D",
   voice: "lumi",
   speaks: true,
+  articulatedParts: ["body", "petals", "eyelidL", "eyelidR", "cheekPuff"],
   clipCandidates: {},
   locomotionClips: {},
   gestures: {
@@ -21,14 +22,15 @@ export const LUMI: CharacterDefinition = {
     cheer: gestureMotion([proc("spin", 1.6, 1), proc("hop", 1.6, 0.12)]),
     dance: gestureMotion([proc("rock", 2.4, 0.16, 2), proc("float", 2.4, 0.08, 2)]),
     wave: gestureMotion([proc("rock", 1.6, 0.14, 2)]),
-    float: gestureMotion([proc("float", 3.0, 0.12)]),
+    // Smooth figure-8 Lissajous hover (horizontal 1x + vertical 2x + gentle Z-bank).
+    float: gestureMotion([proc("shake", 3.6, 0.045, 1), proc("float", 3.6, 0.09, 2), proc("rock", 3.6, 0.065, 1)]),
     point: gestureMotion([proc("tilt", 1.4, 0.18)]),
     hop: gestureMotion([proc("hop", 0.8, 0.14)]),
     look: gestureMotion([proc("turn", 2.0, 0.4)]),
     // Surprised (07 B20): she floats up a little and swells softly; a floater never hops off the ground.
     surprise: gestureMotion([proc("bob", 0.8, 0.08), proc("pulse", 0.8, 0.05)])
   },
-  idleMotion: gestureMotion([proc("float", 2.6, 0.07)]),
+  idleMotion: gestureMotion([proc("shake", 5.2, 0.038, 1), proc("float", 5.2, 0.065, 2), proc("rock", 5.2, 0.06, 1)]),
   talkStrength: 0.05,
   carryOffset: [0, -0.2, 0.2],
   defaultStyle: "float"

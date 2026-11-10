@@ -13,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": []
   },
-  "include": ["src", "tests/unit"]
+  "include": ["src", "art", "tests/unit"]
 }

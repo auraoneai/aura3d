@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "gogo",
-  "file": "src/assets/models/gogo.a229380d.glb",
-  "sha256": "a229380d1a9a9fede2a56ba3c4be44156b8e27cf37fcf5485d744cf8b0656cb8",
-  "sizeBytes": 984984,
+  "file": "src/assets/models/gogo.78d570bf.glb",
+  "sha256": "78d570bf6df7323d6b3744cc3009aa3f5f20c0d41852bcf5928737b3699ad118",
+  "sizeBytes": 1637016,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -50,10 +50,152 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "chimney",
+        "cabDoorL",
+        "cabDoorR",
+        "wheelFL",
+        "wheelFR",
+        "wheelRL",
+        "wheelRR"
+      ],
+      "hasAxleFrame": true,
+      "trianglesBefore": 15534,
+      "trianglesAfter": 15534,
+      "verticesAfter": 17253,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.571e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "gogo_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 6624,
+          "vertices": 7173
+        },
+        "chimney": {
+          "parent": "body",
+          "worldPivot": [
+            -0.58069,
+            0.16895,
+            0
+          ],
+          "localTranslation": [
+            -0.58069,
+            0.16895,
+            0
+          ],
+          "triangles": 756,
+          "vertices": 745
+        },
+        "cabDoorL": {
+          "parent": "body",
+          "worldPivot": [
+            0.09857,
+            0.06517,
+            0.31136
+          ],
+          "localTranslation": [
+            0.09857,
+            0.06517,
+            0.31136
+          ],
+          "triangles": 580,
+          "vertices": 725
+        },
+        "cabDoorR": {
+          "parent": "body",
+          "worldPivot": [
+            0.09728,
+            0.08196,
+            -0.31755
+          ],
+          "localTranslation": [
+            0.09728,
+            0.08196,
+            -0.31755
+          ],
+          "triangles": 630,
+          "vertices": 805
+        },
+        "wheelFL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.39816,
+            -0.42392,
+            0.23729
+          ],
+          "localTranslation": [
+            0.23729,
+            -0.42392,
+            0.39816
+          ],
+          "triangles": 2042,
+          "vertices": 2324
+        },
+        "wheelFR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.4069,
+            -0.41384,
+            -0.23912
+          ],
+          "localTranslation": [
+            -0.23912,
+            -0.41384,
+            0.4069
+          ],
+          "triangles": 1357,
+          "vertices": 1492
+        },
+        "wheelRL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.42907,
+            -0.4305,
+            0.24963
+          ],
+          "localTranslation": [
+            0.24963,
+            -0.4305,
+            -0.42907
+          ],
+          "triangles": 2152,
+          "vertices": 2512
+        },
+        "wheelRR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.41513,
+            -0.43373,
+            -0.22677
+          ],
+          "localTranslation": [
+            -0.22677,
+            -0.43373,
+            -0.41513
+          ],
+          "triangles": 1393,
+          "vertices": 1477
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 16773,
+    "vertexCount": 17253,
     "bounds": [
       1.903,
       1.251,
@@ -79,5 +221,10 @@
     "notes": "v3: bright red toy steam engine, no text (texture prompt fix). The face is not visible in the side thumbnail and cannot be regenerated without credits. Remesh blocked (pinned key 402), so the refine model is simplified locally.",
     "source": "refine"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/gogo.a229380d.glb",
+    "sha256": "a229380d1a9a9fede2a56ba3c4be44156b8e27cf37fcf5485d744cf8b0656cb8",
+    "sizeBytes": 984984
+  }
 }

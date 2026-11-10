@@ -49,7 +49,7 @@ import { AUDIO_MANIFEST } from "./audio-manifest.js";
 import { LOCALE_PACKS, STORIES, storyByCode, storyById, storyCode } from "./content/catalog.js";
 import { estimateLineMs } from "./content/schema.js";
 import { createAudioMixer, type AudioMixer } from "./runtime/audio-mixer.js";
-import type { LineMs } from "./runtime/beat-runner.js";
+import { storyBeats, type LineMs } from "./runtime/beat-runner.js";
 import { createEpisodeDirector } from "./runtime/episode-director.js";
 import type { WonderFlags } from "./runtime/feature-flags.js";
 import { createLocale, type Locale } from "./runtime/locale.js";
@@ -80,6 +80,7 @@ import { showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
 import { showOfflineCard } from "./ui/offline-card.js";
 import { requireParent } from "./ui/parent-gate.js";
 import { openParentPanel } from "./ui/parent-panel.js";
+import { wordLabel } from "./ui/parent-wordlist.js";
 import { WAIT_MS_DEFAULT, clampWaitMs, saveSettings, type SettingsStorage } from "./ui/settings-store.js";
 import { showLoading, showStartScreen } from "./ui/start-screen.js";
 
@@ -211,24 +212,31 @@ export function talkingActorFor(story: StorySpec, speaker: SpeakerId): string | 
   return prop ? prop.id : null;
 }
 
-/** Every line key of a story in play order (one activity round), used to fetch upcoming clips early. */
+/** Every line key of a story in play order (including target-specific responses and round variants), used to fetch upcoming clips early. */
 export function storyLineKeys(story: StorySpec): readonly string[] {
-  const beats = story.kind === "episode" ? story.beats : [...story.intro, ...story.round, ...story.outro];
+  const beats = storyBeats(story);
   const keys: string[] = [];
+  const push = (key: string): void => {
+    if (!keys.includes(key)) keys.push(key);
+  };
   for (const beat of beats) {
-    for (const line of beat.lines) if (!keys.includes(line.key)) keys.push(line.key);
-    for (const line of beat.response?.lines ?? []) if (!keys.includes(line.key)) keys.push(line.key);
+    for (const line of beat.lines) push(line.key);
+    for (const line of beat.response?.lines ?? []) push(line.key);
+    for (const resp of Object.values(beat.responseByTarget ?? {})) {
+      for (const line of resp?.lines ?? []) push(line.key);
+    }
   }
   return keys;
 }
 
 /** The songs and music beds a story's stage actions can start. */
 export function storyMusic(story: StorySpec): { readonly songs: readonly SongId[]; readonly beds: readonly MusicBedId[] } {
-  const beats = story.kind === "episode" ? story.beats : [...story.intro, ...story.round, ...story.outro];
+  const beats = storyBeats(story);
   const songs: SongId[] = [];
   const beds: MusicBedId[] = [];
   const scan = (actions: readonly StageAction[] | undefined): void => {
     for (const action of actions ?? []) {
+      if (action.do === "sfx") continue;
       if (action.do === "song" && !songs.includes(action.song)) songs.push(action.song);
       if (action.do === "music" && action.bed !== null && !beds.includes(action.bed)) beds.push(action.bed);
       // A song's line cues can change the bed too (07 B20).
@@ -239,6 +247,9 @@ export function storyMusic(story: StorySpec): { readonly songs: readonly SongId[
     scan(beat.stage);
     scan(beat.reducedMotionStage);
     scan(beat.response?.stage);
+    for (const resp of Object.values(beat.responseByTarget ?? {})) {
+      scan(resp?.stage);
+    }
   }
   if (story.music && !beds.includes(story.music)) beds.push(story.music);
   return { songs, beds };
@@ -605,8 +616,21 @@ const MENU_ITEMS: readonly MenuItem[] = STORIES.map((story) => ({
   kind: story.kind,
   host: story.host,
   number: story.number,
-  phase: story.phase
+  phase: story.phase,
+  world: story.world,
+  targetWords: story.targetWords,
+  ...(story.kind === "episode" ? { durationSec: story.estimatedDurationSec } : { rounds: story.roundLimit })
 }));
+
+/** Story vocabulary words to highlight softly in caregiver captions. */
+function storyHighlightWords(story: StorySpec, settings: ParentSettings): readonly string[] {
+  const focusSet = new Set(settings.wordList);
+  const words = [...story.targetWords];
+  for (const word of story.supportWords) {
+    if (focusSet.has(word) && !words.includes(word)) words.push(word);
+  }
+  return words;
+}
 
 /** A story by slug or by code (`e17`, `g03`). */
 export function findStory(id: string): StorySpec | undefined {
@@ -768,6 +792,15 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (!current) return;
     current.runner.tick(STEP_MS);
     clock.advance(STEP_MS);
+    const timing = narration.timing();
+    stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
+    const snap = current.runner.snapshot();
+    if (snap.phase === "waiting") {
+      const beat = storyBeats(current.story).find((b) => b.id === snap.beatId);
+      const totalWaitMs = waitOverride(settings.waitMs) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
+      const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
+      current.controls.setWaitProgress?.(fracRemaining);
+    }
     if (withStage && active === current) stage?.update(STEP_MS / 1000);
   };
 
@@ -904,6 +937,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const current = active;
     if (current) {
       current.captions.setEnabled(settings.captions);
+      current.captions.setHighlightWords?.(storyHighlightWords(current.story, settings));
       current.runner.setReducedMotion(reduced);
       current.runner.setWaitMs(waitOverride(settings.waitMs));
     }
@@ -959,6 +993,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     mixer.resumeAll();
     stage?.setTargets(null);
     stage?.setTalking(null);
+    stage?.setSpeechEnergy?.(null);
     syncPresenter();
   };
 
@@ -976,7 +1011,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
         if (story) void openStory(story, settings.mode);
       },
       // After the stage failed to start, say so on the menu instead of bouncing back silently.
-      { onParent: () => void openParentFlow(), stageUnavailable: stageFailed }
+      { onParent: () => void openParentFlow(), stageUnavailable: stageFailed, selectedWords: settings.wordList }
     );
   };
 
@@ -997,8 +1032,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
         ended = null;
         showMenu();
       },
-      // The story's caregiver bridge (PRD 01 section 4.3) as a small grown-up note under the activity.
-      { note: locale.str(story.caregiverBridgeKey, "") }
+      // The story's caregiver bridge (PRD 01 section 4.3), target word recap chips, and story cast.
+      {
+        note: locale.str(story.caregiverBridgeKey, ""),
+        words: story.targetWords.map((id) => ({ id, label: wordLabel(id) })),
+        cast: story.cast.map((member) => member.id)
+      }
     );
   };
 
@@ -1097,7 +1136,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const token = storyToken;
     pending = story;
     screen = "story";
-    removeLoading = showLoading(uiRoot, locale);
+    removeLoading = showLoading(uiRoot, locale, {
+      world: story.world,
+      host: story.host,
+      title: locale.str(story.titleKey)
+    });
     let target: WonderStage;
     try {
       target = await stageReady;
@@ -1116,7 +1159,9 @@ export function createApp(options: WonderAppOptions): WonderApp {
     dropLoading();
     pending = null;
 
-    const captions = mountCaptions(uiRoot, locale);
+    const captions = mountCaptions(uiRoot, locale, {
+      highlightWords: storyHighlightWords(story, settings)
+    });
     captions.setEnabled(settings.captions);
     captions.setAudioUnavailable(audioFailed);
     const controls = mountChildControls(uiRoot, locale, {
@@ -1178,6 +1223,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return createStage({
       target: stageHost,
       reducedMotion: reducedMotionNow(),
+      backend: flags.backend,
       models: flags.models,
       ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
       ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),

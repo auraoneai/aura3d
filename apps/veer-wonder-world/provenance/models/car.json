@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "car",
-  "file": "src/assets/models/car.ce6531fe.glb",
-  "sha256": "ce6531fe3c58fadee7c3647507d0dfa97b0c3dd2d6fdbeb9ee6b6e703a1de94d",
-  "sizeBytes": 434504,
+  "file": "src/assets/models/car.368c4153.glb",
+  "sha256": "368c41534f14594572729feaf33637fbb72c8022546cf7026a17c234a77d2d35",
+  "sizeBytes": 909312,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -45,22 +45,145 @@
       "bytesIn": 10763640,
       "bytesOut": 1079660
     },
-    "strippedNormalAndRoughnessMaps": true,
+    "strippedNormalAndRoughnessMaps": false,
     "tint": "#5b9be6",
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "atlasRegionRecolor": {
+      "version": 1,
+      "targetHex": "#5b9be6",
+      "baseColorFactorResetTo": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "recoloredPixels": 166758,
+      "preservedPixels": 93675,
+      "totalPixels": 262144,
+      "geometryHash": "sha256-ad8e593bb1d0d20feda7ee8a14139237e1344ccf55481395eb2a03ce07bafc90"
+    },
+    "synthesizedNormalMap": {
+      "version": 1,
+      "family": "glossy_toy_lacquer",
+      "roughnessFactor": 0.36,
+      "metallicFactor": 0.05,
+      "normalScale": 0.26,
+      "jpegBytes": 32164,
+      "encoding": {
+        "quality": 90,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "geometryHash": "sha256-ad8e593bb1d0d20feda7ee8a14139237e1344ccf55481395eb2a03ce07bafc90"
+    },
+    "articulatedSubNodes": {
+      "version": 1,
+      "partIds": [
+        "body",
+        "wheelFL",
+        "wheelFR",
+        "wheelRL",
+        "wheelRR"
+      ],
+      "hasAxleFrame": true,
+      "trianglesBefore": 6137,
+      "trianglesAfter": 6137,
+      "verticesAfter": 10087,
+      "maxRestPosePosError": 0,
+      "maxRestPoseNormalError": 2.486e-8,
+      "maxUvError": 0,
+      "parts": {
+        "body": {
+          "parent": "car_root",
+          "worldPivot": [
+            0,
+            0,
+            0
+          ],
+          "localTranslation": [
+            0,
+            0,
+            0
+          ],
+          "triangles": 3712,
+          "vertices": 5772
+        },
+        "wheelFL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.38287,
+            -0.41618,
+            0.37979
+          ],
+          "localTranslation": [
+            0.37979,
+            -0.41618,
+            0.38287
+          ],
+          "triangles": 598,
+          "vertices": 1098
+        },
+        "wheelFR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            -0.39144,
+            -0.41454,
+            -0.37893
+          ],
+          "localTranslation": [
+            -0.37893,
+            -0.41454,
+            0.39144
+          ],
+          "triangles": 635,
+          "vertices": 1098
+        },
+        "wheelRL": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.32926,
+            -0.41218,
+            0.39233
+          ],
+          "localTranslation": [
+            0.39233,
+            -0.41218,
+            -0.32926
+          ],
+          "triangles": 594,
+          "vertices": 1059
+        },
+        "wheelRR": {
+          "parent": "@axleFrame",
+          "worldPivot": [
+            0.32885,
+            -0.42012,
+            -0.3822
+          ],
+          "localTranslation": [
+            -0.3822,
+            -0.42012,
+            -0.32885
+          ],
+          "triangles": 598,
+          "vertices": 1060
+        }
+      }
     }
   },
   "inspection": {
-    "vertexCount": 9884,
+    "vertexCount": 10087,
     "bounds": [
       1.902,
       1.319,
       1.233
     ],
     "textures": [
-      "texture_0"
+      "texture_0",
+      "normal"
     ],
     "animations": [],
     "skeleton": {
@@ -77,5 +200,10 @@
     "notes": "Rounded toy car with clear wheels; tinted blue per brief.",
     "tint": "#5b9be6"
   },
-  "admittedAt": "2026-10-29"
+  "admittedAt": "2026-10-29",
+  "previous": {
+    "file": "src/assets/models/car.0f52d120.glb",
+    "sha256": "0f52d120100cd3fa2899e2a82af6bd4f99a77f7ab9c3797657db9dc694924251",
+    "sizeBytes": 545616
+  }
 }
