@@ -33,18 +33,12 @@ without a look ships flat shading, void background and floating props.
 
 ## Procedure
 
-1. Start from working code: `aura3d examples "<task>"` prints the closest
-   runnable scene (product viewer, character, effect, outdoor, interior,
-   small game, materials, presentation) as a complete `src/main.ts` with its
-   setup; save it with `--id <id> --write src/main.ts --force` and adapt it.
-   Otherwise pick in this order: a template (`npx create-aura3d@latest <dir>
-   --template <name>`), then `sceneKits.*`, then `prefabs.*`, and use
-   `primitives.*` last, for set dressing only. After each edit run
-   `aura3d validate` (colours, unknown options, framing, lighting), then one
-   `aura3d render`: a text summary of framing, exposure, shadow and errors
-   (`--screenshot` only when you must see pixels).
-   Done rule: when `validate` passes and `render` says `done`, stop; do not
-   keep polishing.
+1. Pick the starting point in this order: a template (`npx create-aura3d@latest
+   <dir> --template <name>`), then `sceneKits.*`, then `prefabs.*`, and use
+   `primitives.*` last, for set dressing only. `aura3d examples "<task>"` finds
+   the closest recipe or template offline and prints its source. After each
+   edit run `aura3d validate` (colours, unknown options, framing, lighting),
+   then `aura3d render` and open the screenshot it saves.
 2. Add the look first — it supplies the sky/environment light, the key shadow,
    fog, background and the post grade as one unit:
 

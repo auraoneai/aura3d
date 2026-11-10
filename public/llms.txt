@@ -2,13 +2,6 @@
 
 > Aura3D 5.5.1: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai
 
-## Start here: four steps, then stop
-
-1. Start from working code: `aura3d examples "<what you are building>"` prints a complete, runnable `src/main.ts` for the closest scene (product viewer, character, portal or effect, outdoor, interior, small game, materials, presentation) and its setup. Save it with `aura3d examples --id <id> --write src/main.ts --force`, then change names, colours and numbers. Do not write a scene from memory or read `node_modules`.
-2. `aura3d validate` (about a second) and fix what it reports.
-3. `aura3d render` once. It prints a short text summary: subject framing (`framed`, `small`, `cropped`, `off-centre`), exposure, shadow, motion, errors, fps and `next`. Add `--screenshot` only when you must see the pixels; an image costs far more context than the summary.
-4. Done rule: when `aura3d validate` passes and one `aura3d render` says `done` (subject framed, exposure ok, no errors), stop and finish. Do not keep polishing: another tweak-and-render pass costs a turn and rarely changes the verdict. Outside a scaffold, `aura3d` is `npx @aura3d/cli@latest`.
-
 ## First screen: Aura3D patterns (copy the shape, change the subject)
 
 `@aura3d/engine` is installed; never open `node_modules` or `dist`. Blocks are typechecked, GPU-rendered patterns, not finished scenes: change subject and numbers; typecheck once. `createAuraApp(selector, { scene })` owns renderer, resize and loop. Vectors `[x, y, z]`, colours CSS strings, primitives are unit shapes scaled by `size`. Per frame `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds. To change a node later give it `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`.
@@ -159,30 +152,10 @@ Gotchas: `blend: "additive"` for glow, `"alpha"` for smoke; also `sprite`. Weath
 ### Assets and find more
 Whole starter scenes, each GPU-verified and passing `check-deploy`: `npx create-aura3d@latest my-app --template starter-product` (also `starter-outdoor`, `starter-interior`, `starter-game`, `starter-presentation`); list in `docs/agents/templates.md`. A real object named in the task: `npx @aura3d/cli@latest assets resolve "<object>" --name robot`, then `model(assets.robot)` from `./src/aura-assets`. Never invent paths or ids; a route-local `new URL(..., import.meta.url)` model URL draws black (use `/aura-assets/<file>`). No match: build it procedurally from the patterns above. Exact signatures for `lights`, `material`, `environments`, `sky`, `effects`: `docs/agents/api-signatures.md`. Complete scenes (forest, water, terrain, robot, props, sky, fire, night street): `docs/agents/recipes.md`. Setters `setUniform`, `setLight`, `app.atmosphere` are optional: use `?.`.
 
-## Exact signatures (the calls agents look up most; no `aura3d info` needed for these)
-
-Options are optional unless shown bare; vectors `[x, y, z]`, colours CSS strings, angles radians. Every line is type-checked in `docs/agents/recipes-src/llms-signatures.check.ts`.
-
-- `createAuraApp("#app", { scene, ...looks.appOptions(id) })`; `app.onFrame((f) => ...)` gives `f.dt`, `f.time` in seconds; `void app.ready()`; `app.pause()`, `app.resume()`.
-- `scene({ background })` `.add(node)` `.camera(spec)`. Any node builder: `.position(x, y, z)`, `.rotation(x, y, z)`, `.scale(s)` or `.scale([x, y, z])` (one argument), `.lookAt(x, y, z)`, `.runtime({ id, mutable: true })` (required before any runtime change).
-- `group(name, [children], { position, rotation, scale })`: name first, children an array.
-- `primitives.box|sphere|cylinder|cone|capsule|plane|torus|torusKnot|ring|circle|roundedBox({ name, size, material, castShadow, receiveShadow, params })`: `size` is a number or `[x, y, z]`; plane `[w, 1, d]`.
-- `instances.box|sphere|cylinder|cone({ name, transforms: [{ position, rotation, scale }], colors, material })`.
-- `lines.loop({ points: [[x, y, z], ...], colors })` (closed), `lines.line({ points })` (open).
-- Handle `const h = app.nodes.require(id)` (`app.nodes.get(id)` may be undefined): `h.setPosition(x, y, z)`, `h.setRotation(x, y, z)`, `h.translate(x, y, z)` take three numbers; `h.setScale(s)` or `h.setScale([x, y, z])` takes one (`setScale(x, y, z)` is TS2554).
-- `h.setVisible(b)`, `h.setMaterial(material.pbr({ ... }))`, `h.setColor?.(css)`, `h.setEmissive?.(css, intensity)`, `h.setOpacity?.(a)`; lights `h.setLight?.({ color, intensity, distance }, { transitionSeconds })`, `h.setIntensity?.(v)`; `h.setInstances(transforms, colors)`; `h.setUniform?.(name, value)`; `h.play(clip, { loop, crossFade })`. There is no `h.materials`, `h.timeScale` or `h.animation`.
-- `camera.auto({ subject, fill: 0.6, angle: "three-quarter" | "front" | "side" | "top", elevation, azimuth })`; `camera.orbit({ position, target, fov })` with `interactions.orbit({ target: "<node name>" })`; `camera.perspective({ position, target, fov })`; `camera.flythrough({ position, target, fov, from, to })`.
-- Move the camera: `app.camera?.setPose({ position, target, fov }, { cut: true })` (`app.camera` is optional, always `?.`); a framed pose for a box: `camera.framePose({ min, max }, { fill, azimuth, aspect })`.
-- `looks.preset(id, { exposureEv, background, accent })` plus `...looks.appOptions(id)`; `environments.neutral({ intensity, background: false })` (metals need it), `environments.studio({ preset: "studio" | "softbox", intensity })`.
-- `lights.key({ target, intensity, color, shadow })` (shadowed directional), `lights.directional({ position, target, intensity, color, shadow })`, `lights.point({ position, intensity, color, distance, decay })`, `lights.rect|softbox({ position, target, width, height, intensity })`, `lights.ambient({ intensity, color })`, `lights.hemisphere({ skyColor, groundColor, intensity })`.
-- `material.pbr({ color, metallic, roughness, emissive, emissiveIntensity, opacity, doubleSided })`; `material.physical({ ...those, clearcoat, clearcoatRoughness, sheen, transmission, ior, thickness })`; `material.carPaint|chrome|glass|ceramic|fabric({ color })`; `material.emissive({ color, emissive, emissiveIntensity })`.
-- `material.custom({ glsl: { vertex, fragment }, uniforms: { clk: { type: "f32", value: 0 } }, transparent })`, then `h.setUniform?.("clk", f.time)` every frame. `texture.data({ width, height, data, format: "rgba8" })`, `texture.canvas({ canvas })`.
-- `effects.bloom({ intensity, threshold, radius })`; `effects.particles({ name, position, rate, maxParticles, lifetime: [a, b], speed: [a, b], size: [a, b], color, gravity, drag, blend: "additive" | "alpha", seed })`; `effects.fog({ mode: "exp2" | "linear" | "height", color, density })`, at runtime `app.atmosphere?.setFog({ ... })`; `sky.gradient({ zenith, horizon, ground })`. Time scale: `if (app.time) app.time.scale = 0.5`.
-
 ## Read first
 
 1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked). Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.
-2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes are `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`); recipe 17 is a materials board.
+2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes are `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
 
 ## More pitfalls
 
