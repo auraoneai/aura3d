@@ -11,6 +11,12 @@ const specs: readonly (readonly [string, AuraCustomMaterialSpec, boolean])[] =
 describe("Splat Turf WGSL twins (A3/W6)", () => {
   it.each(specs)("%s: the WGSL twin matches the GLSL program's inputs and bindings", checkWgslTwin);
   it("keeps the GLSL stages the WebGL2 backend draws byte for byte", () => checkGlslUnchanged(specs));
+  it("draws the paint trail as streaks on WebGPU too, not the plain toon-tone twin", () => {
+    const paint = specs.find(([name]) => name === "paint")![1];
+    expect(paint.glsl!.fragment).toContain("float sm = streak(vUv);");
+    expect(paint.wgsl!.vertex).toContain("out.vLocal = a_position;");
+    expect(paint.wgsl!.fragment).toContain("let sm = streak(vUv, vLocal);");
+  });
   it("leaves no program without a twin, so ?backend=webgpu passes the engine's custom-shader pre-check", () => {
     expect(specs.filter(([, spec]) => !spec.wgsl).map(([name]) => name)).toEqual([]);
     const nodes = specs.map(([name, spec]) => ({ kind: "primitive", name, material: { kind: "custom", custom: spec } }));

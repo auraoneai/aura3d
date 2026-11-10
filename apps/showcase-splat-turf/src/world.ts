@@ -18,7 +18,7 @@ import {
 import type { CameraPose, Shown } from "./presentation";
 import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
 import { addScenery } from "./scenery";
-import { ballSquash, contactShadowSpec, glossyBallSpec, paintStreakFragment, PAINT_VERTEX } from "./art/ball";
+import { ballSquash, contactShadowSpec, glossyBallSpec, paintStreakFragment, paintStreakFragmentWgsl, PAINT_VERTEX, PAINT_VERTEX_WGSL } from "./art/ball";
 
 export const CAMERA_FAR = 400;
 export const ROAD_WIDTH = 6.4;
@@ -92,7 +92,12 @@ const PROGRAMS = {
   paint: (): CustomSpec => {
     const spec = toonSpec([1, 1, 1], undefined, [0, 0, 0], true);
     const glsl = spec.glsl as { vertex: string; fragment: string };
-    return hazed({ ...spec, glsl: { vertex: PAINT_VERTEX, fragment: paintStreakFragment(glsl.fragment) } }, NEAR_HAZE);
+    const wgsl = spec.wgsl as { vertex: string; fragment: string };
+    return hazed({
+      ...spec,
+      glsl: { vertex: PAINT_VERTEX, fragment: paintStreakFragment(glsl.fragment) },
+      wgsl: { vertex: PAINT_VERTEX_WGSL, fragment: paintStreakFragmentWgsl(wgsl.fragment) }
+    }, NEAR_HAZE);
   }
 };
 
