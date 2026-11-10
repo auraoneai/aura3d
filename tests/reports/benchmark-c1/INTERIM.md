@@ -131,3 +131,23 @@ Running medians over the 12 complete replicate(s) so far: aura n=11 turns 26 (ta
 | bridge | finished/finished | 38 (34) | 2.17M | 14K | 356 | 4.48 | 10.8 | yes | 8/8 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-bridge-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-bridge-r2-main-2.png) |
 
 Running medians over the 13 complete replicate(s) so far: aura n=12 turns 26 (task 22.5) in 1.51M out 10K $3.10 main-all 92% fu-all 100% | three n=13 turns 7 (task 4) in 87K out 8K $0.26 main-all 92% fu-all 100% | bridge n=13 turns 37 (task 32) in 2.17M out 12K $4.48 main-all 92% fu-all 69%
+
+## Task 101 spider replicate 2 (character / animation)
+
+| arm | end (task/follow-up) | turns (task) | input tokens | output tokens | wall s | list $ | Kiro credits | builds | main checks | follow-up checks | frames |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| aura | finished/finished | 14 (11) | 368K | 4K | 186 | 0.78 | 2.7 | yes | 1/1 | 4/4 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-aura-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-aura-r2-main-2.png) |
+| three | finished/finished | 7 (5) | 76K | 5K | 84 | 0.20 | 1.7 | yes | 1/1 | 4/4 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-three-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-three-r2-main-2.png) |
+| bridge | finished/finished | 28 (13) | 1.17M | 7K | 255 | 2.41 | 6.2 | yes | 1/1 | 4/4 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-bridge-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t101-bridge-r2-main-2.png) |
+
+Running medians over the 14 complete replicate(s) so far: aura n=13 turns 26 (task 22) in 1.48M out 9K $3.04 main-all 92% fu-all 100% | three n=14 turns 7 (task 4) in 84K out 8K $0.26 main-all 93% fu-all 100% | bridge n=14 turns 35 (task 29.5) in 1.97M out 12K $4.07 main-all 93% fu-all 71%
+
+## Task 103 canyon replicate 2 (outdoor)
+
+| arm | end (task/follow-up) | turns (task) | input tokens | output tokens | wall s | list $ | Kiro credits | builds | main checks | follow-up checks | frames |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| aura | finished/finished | 29 (26) | 1.49M | 9K | 280 | 3.08 | 7.6 | yes | 1/1 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-aura-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-aura-r2-main-2.png) |
+| three | finished/finished | 11 (9) | 269K | 11K | 495 | 0.65 | 5.4 | yes | 1/1 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-three-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-three-r2-main-2.png) |
+| bridge | finished/finished | 41 (39) | 2.76M | 13K | 429 | 5.66 | 12.4 | yes | 1/1 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-bridge-r2-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t103-bridge-r2-main-2.png) |
+
+Running medians over the 15 complete replicate(s) so far: aura n=14 turns 26 (task 22.5) in 1.49M out 9K $3.06 main-all 93% fu-all 100% | three n=15 turns 7 (task 4) in 87K out 8K $0.26 main-all 93% fu-all 100% | bridge n=15 turns 37 (task 32) in 2.17M out 12K $4.48 main-all 93% fu-all 73%
