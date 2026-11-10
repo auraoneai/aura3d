@@ -186,6 +186,16 @@ const FORM_TINT: Record<string, Tint> = {
 const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> = {
   scout: [1, 0.8, 0.72, 1], swordsman: [0.8, 0.86, 1, 1], caster: [0.92, 0.8, 1, 1], heavy: [1, 1, 1, 1]
 };
+/**
+ * The two meshy07 enemy rigs (owl caster, fox scout) ship a pale beige-grey base-colour atlas (mean saturation 0.22, value 0.53 to
+ * 0.60, against 0.57 saturation on the hero), so under the evening key and the sky probe they bleached to a ghostly grey-white.
+ * A multiply over that atlas gives them their robe and fur colours: deep violet for the caster, russet for the scout. The 4.6.2
+ * soldier, brute and sage atlases are dark and keep the mild `ENEMY_TINT`.
+ */
+const MESHY07_TINT: Partial<Record<CharacterId, readonly [number, number, number, number]>> = {
+  caster: [0.3, 0.22, 0.55, 1],
+  scout: [0.65, 0.26, 0.1, 1]
+};
 const CLONE_TINT: Tint = { base: [0.6, 0.85, 1, 1], emissive: [0.18, 0.45, 1], strength: 0.55 };
 const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };
 
@@ -893,7 +903,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           ea = { clip: attackClip, t: Math.max(0, Math.min(0.98, p)) * clipLength(has(attackClip, slot), slot) };
         } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
         else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
-        setTint(slot, kind, { base: ENEMY_TINT[kind] });
+        const rigTint = MESHY07_TINT[slotModels[slot]!];
+        setTint(slot, rigTint ? `${kind}-rig` : kind, { base: rigTint ?? ENEMY_TINT[kind] });
         place(slot, { s: e.s, x: e.lane * laneOffset(e.s), y: e.y + (dead ? (1 - pop) * 1.6 : 0) }, Math.PI, (kind === "heavy" ? 1.3 : 1) * (0.4 + 0.6 * pop), ea, dt, pop > 0.02);
         hideWeapons(w);
         if (pop > 0.5) {
