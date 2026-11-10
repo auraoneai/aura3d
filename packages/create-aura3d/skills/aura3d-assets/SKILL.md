@@ -147,5 +147,5 @@ lighting you evaluate materials and silhouettes against.
 - [Boundaries](../aura3d-core/references/boundaries.md)
 - [Asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Asset selection](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-selection.md)
-- [Assets docs](https://aura3d.auraone.ai/docs/assets.html)
+- [Assets docs](https://aura3d.auraone.ai/docs/assets)
 - [Previewing assets under a look](references/preview-under-look.md)

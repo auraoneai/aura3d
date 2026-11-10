@@ -135,6 +135,6 @@ one change per round (lint first, then the weakest category). Full loop spec:
 - [Prompt to 3D workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/prompt-to-3d-workflow.md)
 - [Benchmark recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/benchmark-recipes.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
-- [Prompt recipes](https://aura3d.auraone.ai/docs/prompt-recipes.html)
+- [Prompt recipes](https://aura3d.auraone.ai/docs/prompt-recipes)
 - [Look recipes](../aura3d-art-direction/references/look-recipes.md)
 - [Look by scene family](references/look-by-family.md)

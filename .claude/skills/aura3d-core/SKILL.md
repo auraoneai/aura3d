@@ -141,5 +141,5 @@ spec lives in `aura3d-art-direction`.
 - [Known pitfalls](references/pitfalls.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
-- [Agent quickstart](https://aura3d.auraone.ai/docs/agent-quickstart.html)
+- [Agent quickstart](https://aura3d.auraone.ai/docs/agent-quickstart)
 - [Agent tools: info, examples, validate, render](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-tools.md)

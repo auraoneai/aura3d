@@ -123,4 +123,4 @@ manual quality override invalidates every measurement that follows.
 - [Texture compression](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/texture-compression.md)
 - [Geometry, instancing, LOD, text](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/geometry-instancing-lod-text.md)
 - [Scatter and merge](https://github.com/auraoneai/aura3d/blob/main/docs/api/scatter-merge.md)
-- [Deployment](https://aura3d.auraone.ai/docs/deployment.html)
+- [Deployment](https://aura3d.auraone.ai/docs/deployment)
