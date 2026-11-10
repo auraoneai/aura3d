@@ -306,11 +306,11 @@ function startPlay(goal?: number): void {
 /** True from a render until the end of the current task: `pixels()` right after `frame()` (one evaluate) need not render again. */
 let freshFrame = false;
 /**
- * A lab backend (`?backend=webgpu|auto`) renders with async frames: on WebGPU the station reflection probes cannot capture
+ * A WebGPU-capable backend (the default `auto`, or `?backend=webgpu`) renders with async frames: on WebGPU the station reflection probes cannot capture
  * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
  * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
  */
-const LAB_ASYNC_FRAMES = resolveLabBackend(readLabFlags()) !== undefined;
+const LAB_ASYNC_FRAMES = resolveLabBackend(readLabFlags(), "auto") !== undefined;
 let asyncFrame: Promise<void> | null = null;
 /** A failed async frame (e.g. a mount failure) is reported once, not on every later frame; frames keep being attempted. */
 let asyncFrameErrorReported = false;
@@ -541,8 +541,9 @@ async function boot(): Promise<void> {
   mark("data loaded");
   const world = buildWorld(data);
   mark("scene built");
-  /* Lab flags (W-8): EXPERIMENTAL, default OFF. `?backend=auto|webgpu` and `?gamut=p3` only; worker/depth are not wired for this port. */
-  const lab = labAppOptions(readLabFlags(), { createWorker: labRenderWorker });
+  /* Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after the 5.5.1 draw-path work: same frame, 0 errors, median 0.97x WebGL2 over 3 load-clean pairs; owner-approved switch;
+     >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. `?gamut=p3` stays off by default; worker/depth are not wired for this port. */
+  const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     ...(lab.renderer ? { renderer: lab.renderer } : {}),

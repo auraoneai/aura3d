@@ -2403,7 +2403,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "52157a10aa2bc06fc3c90d9cfdfad12927eb2743a96f6b497d06ea5fd2386e69"
+        "sha256": "226088e63903e25785261bdd3459327cfac0ea5dc4ecbfd4c979656734dc7996"
       },
       "sourceDependencies": [
         {
@@ -5109,7 +5109,7 @@
       },
       "source": {
         "path": "examples/last-train-port/main.ts",
-        "sha256": "eddcca813431d0ef9089f5ac940fa1ff6b82522b91361f1728fb3763f0723a37"
+        "sha256": "c605abb978c86ad071444191b68e3c2a5ccd12411a69a8b42b4f52153cbbe910"
       },
       "sourceDependencies": [
         {
@@ -5118,7 +5118,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "9e442976491cdf0e609524974dbe5d96fdfbbb1d598946f41029360cfc90a104"
+          "sha256": "6353052d0219c09a6e6dc89e021f9cabab5a38bf0d24fd8616348d323b5e2319"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5218,11 +5218,11 @@
         },
         {
           "path": "examples/last-train-port/main.ts",
-          "sha256": "eddcca813431d0ef9089f5ac940fa1ff6b82522b91361f1728fb3763f0723a37"
+          "sha256": "c605abb978c86ad071444191b68e3c2a5ccd12411a69a8b42b4f52153cbbe910"
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "9e442976491cdf0e609524974dbe5d96fdfbbb1d598946f41029360cfc90a104"
+          "sha256": "6353052d0219c09a6e6dc89e021f9cabab5a38bf0d24fd8616348d323b5e2319"
         },
         {
           "path": "examples/last-train-port/sim.ts",

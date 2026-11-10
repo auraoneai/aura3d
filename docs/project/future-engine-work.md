@@ -25,9 +25,9 @@ Owner rule for these features: on by default in a game only after it passes a re
 
 **Status (2026-11-09 evening):**
 - P1 done: per-frame uniform arena, patch-range uploads, bind groups remembered per arena range (branch `exp/551-wgpu5`).
-- P2 not done: WebGPU draw merging.
+- P2 not needed for these scenes: native draw counts already match WebGL2 (1,138 per frame in Pip's Big Leap).
 - P3 partly done: native DoF passes share the batch encoder and keep their uniforms, samplers, views and bind groups; Lamplight quad sprites skip unchanged updates.
-- Game switches for Pip's Big Leap and Lamplight Line: being measured; each switches only at >= 0.92x.
+- Pip's Big Leap and Lamplight Line switched to WebGPU on the owner's go (same frame, 0 errors, 1.01x and 0.97x on load-clean pairs); live on the site. Open: repeat the 10-pair sample on a quiet machine.
 - P4 done: worker-presented frames counted (`exp/551-workerfps`); per-game worker fps being measured.
 - C1 phase 1 done (frozen spec, harness, stub dry run on `exp/551-c1bench`); the paid run starts once 5.5.0 is on npm.
 - Shipping: engine changes go live on the site through the site-only path, and npm gets them in the next batched release (AGENTS.md "Shipping rules").

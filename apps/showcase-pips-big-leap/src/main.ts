@@ -159,9 +159,10 @@ declare global {
 const pipsGame = createGame({
   id: "showcase-pips-big-leap",
   target: "#app",
-  // Lab flags ?gamut=p3 (Display-P3 canvas), ?backend=auto|webgpu (WebGL2 fallback kept) and ?worker=1 (worker rendering,
-  // main-thread fallback kept); defaults unchanged.
-  ...(() => { const { output, renderer, worker } = labAppOptions(readLabFlags(), createWorkerRendererWorker); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}), ...(worker ? { worker } : {}) }; })(),
+  // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after the 5.5.1 WebGPU
+  // draw-path work: same frame, 0 errors, 1.01x WebGL2 fps in the one load-clean pair; owner-approved switch); ?backend=webgl2 opts out. ?gamut=p3 (Display-P3 canvas) and ?worker=1
+  // (worker rendering, main-thread fallback kept) stay off by default.
+  ...(() => { const { output, renderer, worker } = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker }); return { ...(output ? { output } : {}), ...(renderer ? { renderer } : {}), ...(worker ? { worker } : {}) }; })(),
   autoStart: true,
   input: {
     actions: {

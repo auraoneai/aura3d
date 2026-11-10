@@ -97,7 +97,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
 
 ## WebGPU Limits
 
-- Showcase defaults (5.5.0): WebGPU is the default in 28 of 30 games; Pip's Big Leap and Lamplight Line stay on WebGL2 (0.89x after round 4) until the 5.5.1 draw-path work measures >= 0.92x. WebGPU draw merging (combining compatible draws as the WebGL2 path does) is not implemented yet.
+- Showcase defaults: WebGPU is the default in all 30 games since the 5.5.1 site update (28 in 5.5.0). Pip's Big Leap and Lamplight Line were switched on a small load-clean sample (1.01x on 1 pair, 0.97x median on 3 pairs, same frame, 0 errors); the 10-pair sample is still to be repeated on a quiet machine. WebGL2 stays available with `?backend=webgl2`.
 - Worker rendering is opt-in in all 30 games; worker fps is reported from 5.5.1 (worker-presented frames) and was not measurable in 5.5.0.
 - WebGPU behavior depends on browser and hardware support.
 - Native WebGPU claims require adapter/backend state, dispatch/render evidence,

@@ -15,8 +15,8 @@ Engine changes after 5.5.0. They go live on the showcase site through the site-o
 - **Material bind groups remembered per arena range.** A batched draw's material group is compared with the group its arena range bound last frame (layout, bindings, resource objects, buffer offset and size) before the keyed cache lookup; any difference falls through to the keyed cache.
 - **Native depth-of-field passes share the frame's batch encoder (P3).** DoF passes record into the open batch encoder instead of one encoder and queue submission each; each DoF pass keeps one uniform buffer per label and size, the sampler and bind group come from the caches, depth-only views are created once per depth texture, and the DoF pipeline key is looked up per fragment source instead of serialising the shader each pass. Stage markers and submission flags keep their failure semantics.
 - **Lamplight Line quad sprites (WebGPU path only)** skip an `updateAttribute` whose array and offset equal the last ones for that name. The WebGL2 point path is unchanged.
-- Draw merging on WebGPU (P2) is not done yet.
-- Per-game WebGPU defaults: Pip's Big Leap and Lamplight Line switch only if they hold >= 0.92x WebGL2 (load-gated pairs, matching frame, 0 errors); results are recorded in `docs/upgrade-5.0.0/README.md` when measured.
+- Draw merging (P2) turned out not to be needed for these scenes: Pip's Big Leap issues the same 1,138 native draws per frame on WebGPU and WebGL2, and WebGL2's multi-draw path is not active there.
+- WebGPU is now the default in Pip's Big Leap and Lamplight Line, so all 30 showcase games default to WebGPU (WebGL2 fallback kept, `?backend=webgl2` opts out). Real-GPU check 2026-11-09: same frame and 0 errors in every run; fps ratio 1.01x (Pip's, 1 load-clean pair) and median 0.97x (Lamplight, 3 load-clean pairs). The full 10-pair sample was not reachable under the machine's load, and the owner approved the switch on these results. Table in `docs/upgrade-5.0.0/README.md`.
 
 ### Worker rendering (P4)
 
