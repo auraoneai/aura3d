@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "car",
-  "file": "src/assets/models/car.368c4153.glb",
-  "sha256": "368c41534f14594572729feaf33637fbb72c8022546cf7026a17c234a77d2d35",
-  "sizeBytes": 909312,
+  "file": "src/assets/models/car.fcd2ca74.glb",
+  "sha256": "fcd2ca749824c625a407eaf773601ee2b6a06021358a02b5b025d4c6c2a411c6",
+  "sizeBytes": 899224,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -80,20 +80,17 @@
       "geometryHash": "sha256-ad8e593bb1d0d20feda7ee8a14139237e1344ccf55481395eb2a03ce07bafc90"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "wheelFL",
-        "wheelFR",
-        "wheelRL",
-        "wheelRR"
+        "body"
       ],
-      "hasAxleFrame": true,
+      "hasAxleFrame": false,
       "trianglesBefore": 6137,
       "trianglesAfter": 6137,
-      "verticesAfter": 10087,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.486e-8,
+      "verticesAfter": 9884,
+      "maxRestPosePosError": 2.871e-8,
+      "maxRestPoseNormalError": 1.42e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -108,74 +105,14 @@
             0,
             0
           ],
-          "triangles": 3712,
-          "vertices": 5772
-        },
-        "wheelFL": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            -0.38287,
-            -0.41618,
-            0.37979
-          ],
-          "localTranslation": [
-            0.37979,
-            -0.41618,
-            0.38287
-          ],
-          "triangles": 598,
-          "vertices": 1098
-        },
-        "wheelFR": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            -0.39144,
-            -0.41454,
-            -0.37893
-          ],
-          "localTranslation": [
-            -0.37893,
-            -0.41454,
-            0.39144
-          ],
-          "triangles": 635,
-          "vertices": 1098
-        },
-        "wheelRL": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            0.32926,
-            -0.41218,
-            0.39233
-          ],
-          "localTranslation": [
-            0.39233,
-            -0.41218,
-            -0.32926
-          ],
-          "triangles": 594,
-          "vertices": 1059
-        },
-        "wheelRR": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            0.32885,
-            -0.42012,
-            -0.3822
-          ],
-          "localTranslation": [
-            -0.3822,
-            -0.42012,
-            -0.32885
-          ],
-          "triangles": 598,
-          "vertices": 1060
+          "triangles": 6137,
+          "vertices": 9884
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 10087,
+    "vertexCount": 9884,
     "bounds": [
       1.902,
       1.319,

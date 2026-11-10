@@ -626,7 +626,8 @@ export function speechSubParts(
         scale: [1 + 0.09 * energy, 1 - 0.1 * energy, 1 + 0.09 * energy],
         offset: [0, 0.01 * energy, 0]
       },
-      jaw: { rotation: [0.12 * energy, 0, 0] }
+      jaw: { rotation: [0.12 * energy, 0, 0] },
+      body: { scale: [1 + 0.014 * energy, 1 + 0.022 * energy, 1 + 0.014 * energy] }
     };
   }
 

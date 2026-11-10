@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "door",
-  "file": "src/assets/models/door.a61f7eaa.glb",
-  "sha256": "a61f7eaa37ebd44a0928c7bb5e32f5e2662d9bd058eee4223da80b69a28f4c0b",
-  "sizeBytes": 469552,
+  "file": "src/assets/models/door.0cc5b258.glb",
+  "sha256": "0cc5b2583232483afbf0b168c913905314fe24fbc1801bf8245f637b5227ab03",
+  "sizeBytes": 465096,
   "rigged": false,
   "clips": [],
   "heightM": 1.6,
@@ -66,17 +66,17 @@
       "geometryHash": "sha256-f083ef4242c789cf3877246bb7c63434bca66b4e2ebff99ce83fc5471dae7dcd"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "hingeLeaf"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 3633,
       "trianglesAfter": 3633,
-      "verticesAfter": 4666,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.495e-8,
+      "verticesAfter": 4554,
+      "maxRestPosePosError": 2.803e-8,
+      "maxRestPoseNormalError": 7.372e-9,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -91,29 +91,14 @@
             0,
             0
           ],
-          "triangles": 2274,
-          "vertices": 2959
-        },
-        "hingeLeaf": {
-          "parent": "body",
-          "worldPivot": [
-            -0.4689,
-            -0.08361,
-            0
-          ],
-          "localTranslation": [
-            -0.4689,
-            -0.08361,
-            0
-          ],
-          "triangles": 1359,
-          "vertices": 1707
+          "triangles": 3633,
+          "vertices": 4554
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 4666,
+    "vertexCount": 4554,
     "bounds": [
       1.395,
       1.902,

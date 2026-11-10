@@ -2,7 +2,6 @@ import {
   effects,
   lights,
   looks,
-  sky,
   type AuraColor,
   type AuraHdriId,
   type AuraLookId,
@@ -81,10 +80,15 @@ const STORYBOOK_BLOOM = {
   clampLuminance: 4.0
 } as const;
 
+const STORYBOOK_POST = {
+  bloom: STORYBOOK_BLOOM,
+  antiAlias: { mode: "fxaa" }
+} as const;
+
 /**
  * Six bespoke Blender-Cycles storybook looks — one distinct CC0 HDRI, PCSS key
  * shadow, warm rim backlight, sky dome, bounce hemisphere fill, height fog,
- * contact shadows, half-res AO, and AgX grade per world.
+ * multi-bounce AO, and AgX grade per world.
  *
  * `effects.vignette` is never emitted in any world.
  */
@@ -93,17 +97,17 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     world: "meadow",
     look: "golden-hour",
     hdri: "autumn_field_puresky",
-    background: "#CFE8FA",
+    background: "#BCE1FA",
     overrides: {
       hdri: "autumn_field_puresky",
       sun: { azimuthDeg: 42, elevationDeg: 34 },
-      exposureEv: -0.06,
-      environmentIntensity: 0.92,
+      exposureEv: -0.22,
+      environmentIntensity: 0.88,
       environmentRotationDeg: 28,
-      background: "#CFE8FA",
+      background: "#BCE1FA",
       key: {
         color: "#FFF1D6",
-        intensity: 2.35,
+        intensity: 2.25,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
@@ -112,30 +116,28 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
         azimuthDeg: 218
       },
       fog: {
-        color: "#E8F3FC",
+        color: "#DCEFFA",
         height: {
           mode: "height",
-          density: 0.011,
-          heightFalloff: 0.22,
+          density: 0.004,
+          heightFalloff: 0.24,
           heightReference: 0
         }
       },
       grade: {
-        contrast: 1.05,
-        saturation: 1.12,
+        contrast: 1.1,
+        saturation: 1.26,
         temperature: 0.05
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.68, length: 0.26 },
     sky: {
-      zenith: "#6EB5F0",
-      horizon: "#FFECC9",
-      ground: "#8CC476",
+      zenith: "#5DAEF0",
+      horizon: "#FFE8BE",
+      ground: "#84C26E",
       exponent: 0.72,
-      horizonGlow: 0.25,
+      horizonGlow: 0.24,
       sun: {
         azimuthDeg: 42,
         elevationDeg: 34,
@@ -154,17 +156,17 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     world: "music-garden",
     look: "outdoor-day",
     hdri: "outdoor-midday",
-    background: "#CBEBFB",
+    background: "#BAE5FA",
     overrides: {
       hdri: "outdoor-midday",
       sun: { azimuthDeg: 54, elevationDeg: 46 },
-      exposureEv: -0.04,
-      environmentIntensity: 0.94,
+      exposureEv: -0.22,
+      environmentIntensity: 0.88,
       environmentRotationDeg: 40,
-      background: "#CBEBFB",
+      background: "#BAE5FA",
       key: {
         color: "#FFF6E3",
-        intensity: 2.3,
+        intensity: 2.2,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
@@ -173,28 +175,26 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
         azimuthDeg: 232
       },
       fog: {
-        color: "#E2F5FA",
+        color: "#D8F2FA",
         height: {
           mode: "height",
-          density: 0.01,
-          heightFalloff: 0.24,
+          density: 0.004,
+          heightFalloff: 0.25,
           heightReference: 0
         }
       },
       grade: {
-        contrast: 1.06,
-        saturation: 1.15,
-        temperature: 0.03
+        contrast: 1.12,
+        saturation: 1.44,
+        temperature: 0.04
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.66, length: 0.26 },
     sky: {
-      zenith: "#64B8EC",
-      horizon: "#EBF9F5",
-      ground: "#7EC29E",
+      zenith: "#54B0EC",
+      horizon: "#E4F7F2",
+      ground: "#75BF98",
       exponent: 0.75,
       horizonGlow: 0.2,
       sun: {
@@ -215,54 +215,52 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     world: "peekaboo-barn",
     look: "golden-hour",
     hdri: "spruit_sunrise",
-    background: "#F9E3C6",
+    background: "#F5DCB8",
     overrides: {
       hdri: "spruit_sunrise",
       sun: { azimuthDeg: -38, elevationDeg: 28 },
-      exposureEv: -0.2,
-      environmentIntensity: 0.88,
+      exposureEv: -0.26,
+      environmentIntensity: 0.86,
       environmentRotationDeg: 322,
-      background: "#F9E3C6",
+      background: "#F5DCB8",
       key: {
         color: "#FFE7C2",
-        intensity: 2.2,
+        intensity: 2.18,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
         color: "#FFD79E",
-        intensity: 0.7,
+        intensity: 0.68,
         azimuthDeg: 142
       },
       fog: {
-        color: "#F8E5CB",
+        color: "#F5DEC0",
         height: {
           mode: "height",
-          density: 0.012,
-          heightFalloff: 0.21,
+          density: 0.005,
+          heightFalloff: 0.23,
           heightReference: 0
         }
       },
       grade: {
-        contrast: 1.06,
-        saturation: 1.14,
-        temperature: 0.07
+        contrast: 1.08,
+        saturation: 1.22,
+        temperature: 0.06
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.7, length: 0.26 },
     sky: {
-      zenith: "#78B2E6",
-      horizon: "#FFE2BA",
-      ground: "#AEBA6C",
+      zenith: "#68A8E4",
+      horizon: "#FFDCAD",
+      ground: "#A6B664",
       exponent: 0.68,
-      horizonGlow: 0.28,
+      horizonGlow: 0.26,
       sun: {
         azimuthDeg: -38,
         elevationDeg: 28,
         color: "#FFE9BE",
-        intensity: 0.48,
+        intensity: 0.46,
         discSize: 0.05
       }
     },
@@ -276,17 +274,17 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     world: "station",
     look: "outdoor-day",
     hdri: "kloppenheim_06_puresky",
-    background: "#CDE6FA",
+    background: "#BCDFFA",
     overrides: {
       hdri: "kloppenheim_06_puresky",
       sun: { azimuthDeg: 28, elevationDeg: 42 },
-      exposureEv: -0.05,
-      environmentIntensity: 0.92,
+      exposureEv: -0.22,
+      environmentIntensity: 0.88,
       environmentRotationDeg: 18,
-      background: "#CDE6FA",
+      background: "#BCDFFA",
       key: {
         color: "#FFF4DF",
-        intensity: 2.32,
+        intensity: 2.2,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
@@ -295,28 +293,26 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
         azimuthDeg: 208
       },
       fog: {
-        color: "#E3EFFB",
+        color: "#DAEBFB",
         height: {
           mode: "height",
-          density: 0.011,
-          heightFalloff: 0.22,
+          density: 0.004,
+          heightFalloff: 0.24,
           heightReference: 0
         }
       },
       grade: {
-        contrast: 1.06,
-        saturation: 1.12,
+        contrast: 1.1,
+        saturation: 1.26,
         temperature: 0.02
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.7, length: 0.26 },
     sky: {
-      zenith: "#5FA9E8",
-      horizon: "#E9F3FC",
-      ground: "#8DB07E",
+      zenith: "#50A0E6",
+      horizon: "#E2EFFC",
+      ground: "#84AA75",
       exponent: 0.76,
       horizonGlow: 0.2,
       sun: {
@@ -337,79 +333,77 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     world: "learning-cloud",
     look: "outdoor-day",
     hdri: "kloppenheim_02",
-    background: "#B6CEFA",
+    background: "#83A8F8",
     overrides: {
       hdri: "kloppenheim_02",
       sun: { azimuthDeg: 18, elevationDeg: 52 },
-      exposureEv: 0,
-      environmentIntensity: 0.96,
+      exposureEv: -0.28,
+      environmentIntensity: 0.82,
       environmentRotationDeg: 12,
-      background: "#B6CEFA",
+      background: "#83A8F8",
       key: {
-        color: "#FFF7EC",
-        intensity: 2.25,
+        color: "#FFEAF8",
+        intensity: 1.72,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
-        color: "#FFE3F4",
-        intensity: 0.66,
+        color: "#FFC2E8",
+        intensity: 0.68,
         azimuthDeg: 198
       },
       fog: {
-        color: "#C9DBFC",
+        color: "#96B5FA",
         height: {
           mode: "height",
-          density: 0.008,
-          heightFalloff: 0.2,
+          density: 0.003,
+          heightFalloff: 0.22,
           heightReference: -0.4
         }
       },
       grade: {
-        contrast: 1.1,
-        saturation: 1.24,
-        temperature: 0.04,
-        tint: 0.02
+        contrast: 1.14,
+        saturation: 1.56,
+        temperature: 0.02,
+        tint: 0.04
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.64, length: 0.25 },
     sky: {
-      zenith: "#6F9AF2",
-      horizon: "#F6D9EE",
-      ground: "#A9C4F8",
-      exponent: 0.7,
-      horizonGlow: 0.24,
+      zenith: "#356BE8",
+      horizon: "#F290CA",
+      ground: "#6F97F5",
+      exponent: 0.72,
+      horizonGlow: 0.22,
       sun: {
         azimuthDeg: 18,
         elevationDeg: 52,
-        color: "#FFF5E8",
-        intensity: 0.42,
+        color: "#FFF2E4",
+        intensity: 0.36,
         discSize: 0.045
       }
     },
     hemisphere: {
-      skyColor: "#BDD4FF",
-      groundColor: "#F3D7EC",
-      intensity: 0.54
+      skyColor: "#8CB4FF",
+      groundColor: "#EDA6DA",
+      intensity: 0.56
     }
   },
   "home-nook": {
     world: "home-nook",
     look: "interior-warm",
     hdri: "warm_bar",
-    background: "#F5E4CE",
+    background: "#F2DFC6",
     overrides: {
       hdri: "warm_bar",
       sun: { azimuthDeg: -32, elevationDeg: 36 },
-      exposureEv: 0,
-      environmentIntensity: 0.88,
+      exposureEv: -0.06,
+      environmentIntensity: 0.86,
       environmentRotationDeg: 14,
-      background: "#F5E4CE",
+      background: "#F2DFC6",
       key: {
         color: "#FFEAD1",
-        intensity: 1.95,
+        intensity: 1.92,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
@@ -418,22 +412,20 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
         azimuthDeg: 152
       },
       fog: {
-        color: "#F6E7D4",
+        color: "#F3E3CD",
         height: {
           mode: "height",
-          density: 0.006,
+          density: 0.003,
           heightFalloff: 0.3,
           heightReference: 0
         }
       },
       grade: {
-        contrast: 1.05,
-        saturation: 1.1,
+        contrast: 1.06,
+        saturation: 1.14,
         temperature: 0.08
       },
-      post: {
-        bloom: STORYBOOK_BLOOM
-      }
+      post: STORYBOOK_POST
     },
     contactShadows: { intensity: 0.72, length: 0.25 },
     sky: null,
@@ -455,79 +447,31 @@ export function lookAppOptions(world: WorldId = "meadow"): ReturnType<typeof loo
 
 /**
  * Scene nodes emitted for a world's look: `looks.preset` (HDRI IBL, PCSS key
- * shadow, rim light, height fog, AgX grade, soft bloom, FXAA) layered with a
- * storybook `sky.gradient` dome, `lights.hemisphere` bounce fill, screen-space
- * `effects.contactShadows`, half-res `effects.ambientOcclusion`, and subtle
- * miniature `effects.depthOfField` tilt-shift when motion is enabled.
+ * shadow, rim light, height fog, AgX grade, soft bloom, SMAA) layered with a
+ * sunlit horizon backdrop + soft storybook sky clouds, `lights.hemisphere`
+ * bounce fill, and multi-bounce `effects.ambientOcclusion`.
  */
 export function worldLookNodes(
   world: WorldId,
-  options: WorldLookOptions = {}
+  _options: WorldLookOptions = {}
 ): readonly AuraNodeBuilder<AuraSceneNode>[] {
   const spec = WORLD_LOOKS[world];
-  const out: AuraNodeBuilder<AuraSceneNode>[] = [looks.preset(spec.look, spec.overrides)];
-
-  if (spec.sky) {
-    out.push(
-      sky.gradient({
-        name: `${world} sky dome`,
-        zenith: spec.sky.zenith,
-        horizon: spec.sky.horizon,
-        ground: spec.sky.ground,
-        ...(spec.sky.exponent !== undefined ? { exponent: spec.sky.exponent } : {}),
-        ...(spec.sky.horizonGlow !== undefined ? { horizonGlow: spec.sky.horizonGlow } : {}),
-        ...(spec.sky.sun ? { sun: spec.sky.sun } : {}),
-        captureEnvironment: false,
-        affectsFog: false
-      })
-    );
-  }
-
-  out.push(
+  return [
+    looks.preset(spec.look, spec.overrides),
     lights.hemisphere({
       name: `${world} bounce fill`,
       skyColor: spec.hemisphere.skyColor,
       groundColor: spec.hemisphere.groundColor,
       intensity: spec.hemisphere.intensity
     }),
-    effects.contactShadows({
-      intensity: spec.contactShadows.intensity,
-      length: spec.contactShadows.length,
-      thickness: 0.055,
-      steps: 12,
-      lights: "sun"
-    }),
     effects.ambientOcclusion({
       name: `${world} clay ambient occlusion`,
       radius: 0.45,
       intensity: 0.65,
-      quality: "balanced"
+      falloff: 0.45,
+      multiBounce: true
     })
-  );
-
-  const allowTiltShift =
-    !options.reducedMotion &&
-    (options.qualityTier === undefined ||
-      options.qualityTier === "high" ||
-      options.qualityTier === "ultra");
-
-  if (allowTiltShift) {
-    out.push(
-      effects.depthOfField({
-        name: `${world} miniature tilt-shift`,
-        focusDistance: 4.6,
-        focalLength: 42,
-        fStop: 4.0,
-        maxBlur: 0.0032,
-        tiltShift: {
-          bandCenter: 0.52,
-          bandWidth: 0.58
-        }
-      })
-    );
-  }
-
-  return out;
+  ];
 }
 
 /** The HDRI file (`<name>.hdr`, served from `/hdri/`) a world's look loads, or null for a look without one. */

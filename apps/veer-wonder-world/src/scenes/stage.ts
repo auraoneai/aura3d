@@ -1094,6 +1094,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion);
   let currentWorld: BuiltWorld | null = initialIdle.world;
 
+  // Wonder World's deterministic `advance(ms)` -> `app.step(0)` -> immediate canvas readback
+  // contract requires synchronous frame presentation (`hdr-msaa` RGBA16F WebGL2 pipeline:
+  // 2048 PCSS shadows, HDRI IBL, multi-bounce AO, AgX tone mapping, selective bloom, MSAA);
+  // `?backend=webgpu` remains available as an explicit opt-in.
+  const resolvedBackend: "auto" | "webgpu" | "webgl2" =
+    host === null
+      ? (options.backend ?? "auto")
+      : options.backend === "webgpu"
+        ? "webgpu"
+        : "webgl2";
+
   const lookOpts = lookAppOptions(initialWorld);
   const gameOptions = {
     id: "wonder-world",
@@ -1104,7 +1115,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     ...lookOpts,
     renderer: {
       ...lookOpts.renderer,
-      backend: options.backend ?? "auto",
+      backend: resolvedBackend,
       allowFallback: true,
       morph: "gpu" as const
     },
@@ -1204,6 +1215,28 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     });
   };
 
+  /**
+   * Stops the engine's own frames until the returned function runs (07 B41). A story's models load and warm behind the
+   * opaque veil, where nothing new needs drawing, preventing rAF overlap with `warmPrograms` device leases.
+   */
+  const pauseDrawing = (): (() => void) => {
+    const runtime = gameHandle?.runtime;
+    if (!runtime || !runtime.running) return () => undefined;
+    try {
+      runtime.pause();
+    } catch {
+      return () => undefined;
+    }
+    return () => {
+      if (disposed || runtime.disposed || !runtime.paused) return;
+      try {
+        runtime.resume();
+      } catch {
+        // disposed meanwhile: nothing to draw
+      }
+    };
+  };
+
   // ---- first frame: mount settled (a dressing model that breaks it is swapped for
   // its stand-in), a drawn frame (bounded), runtime effects off, warm programs
   const settleFirstMount = async (): Promise<void> => {
@@ -1240,10 +1273,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (presented === "timeout") warn(`first frame: no drawn frame within ${mountTimeoutMs} ms; continuing`);
     if (app.effects) app.effects.runtime = "off";
     applyCamera(frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), true);
+    const resumeFirstWarm = pauseDrawing();
     try {
       await warmPrograms(app, warmOptions());
     } catch (error) {
       warn(`warmPrograms: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      resumeFirstWarm();
     }
     syncEffectsRuntime();
     if (!disposed) await setVeil(0);
@@ -2203,31 +2239,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     return mountFailed(app) ? "failed" : "ok";
   };
 
-  /**
-   * Stops the engine's own frames until the returned function runs (07 B41). A story's models load behind the opaque
-   * veil, where nothing new needs drawing, so a slow device spends its main thread on reading and checking them instead
-   * of on frames nobody sees. On software WebGL2 those frames held the thread long enough that a model the server sent
-   * in milliseconds missed the 10 s wait and was drawn as its stand-in for the whole story (B21). A no-op when the
-   * engine is not running, and safe after dispose.
-   */
-  const pauseDrawing = (): (() => void) => {
-    const runtime = gameHandle?.runtime;
-    if (!runtime || !runtime.running) return () => undefined;
-    try {
-      runtime.pause();
-    } catch {
-      return () => undefined;
-    }
-    return () => {
-      if (disposed || runtime.disposed || !runtime.paused) return;
-      try {
-        runtime.resume();
-      } catch {
-        // disposed meanwhile: nothing to draw
-      }
-    };
-  };
-
   /** One story load. Loads run one at a time (see `stage.load`); a newer request makes an older one stop at its next check. */
   const load = async (next: StorySpec, seq: number): Promise<void> => {
     if (seq !== loadSeq || disposed) return;
@@ -2273,11 +2284,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     warming = true;
     mounted = true;
     renderWarmPose();
+    const resumeLoadWarm = pauseDrawing();
     try {
       await warmPrograms(app, warmOptions());
       warmed = true;
     } catch (error) {
       warn(`warmPrograms: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      resumeLoadWarm();
     }
     warming = false;
     if (seq !== loadSeq || disposed) return;

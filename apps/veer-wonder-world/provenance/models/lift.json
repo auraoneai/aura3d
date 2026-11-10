@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "lift",
-  "file": "src/assets/models/lift.b0080785.glb",
-  "sha256": "b00807852163b6c3a97a581710ed065a5b28dd9732186c924e91530884e33529",
-  "sizeBytes": 663344,
+  "file": "src/assets/models/lift.6cbe48d2.glb",
+  "sha256": "6cbe48d21b9a6dacad564338ca813eb9b915cb7d4858e62fbb11b048d1b5f0d4",
+  "sizeBytes": 657940,
   "rigged": false,
   "clips": [],
   "heightM": 1.8,
@@ -66,18 +66,17 @@
       "geometryHash": "sha256-56a00e11ead0563467778bfd849641c4c6e43d7a638d4acab023f3112f599257"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "liftCab",
-        "liftGate"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 3753,
       "trianglesAfter": 3753,
-      "verticesAfter": 7839,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.564e-8,
+      "verticesAfter": 7723,
+      "maxRestPosePosError": 2.98e-8,
+      "maxRestPoseNormalError": 1.428e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -92,44 +91,14 @@
             0,
             0
           ],
-          "triangles": 3003,
-          "vertices": 6118
-        },
-        "liftCab": {
-          "parent": "lift_root",
-          "worldPivot": [
-            0,
-            0,
-            0
-          ],
-          "localTranslation": [
-            0,
-            0,
-            0
-          ],
-          "triangles": 223,
-          "vertices": 535
-        },
-        "liftGate": {
-          "parent": "liftCab",
-          "worldPivot": [
-            -0.28933,
-            -0.4058,
-            0.17239
-          ],
-          "localTranslation": [
-            -0.28933,
-            -0.4058,
-            0.17239
-          ],
-          "triangles": 527,
-          "vertices": 1186
+          "triangles": 3753,
+          "vertices": 7723
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 7839,
+    "vertexCount": 7723,
     "bounds": [
       0.715,
       1.888,

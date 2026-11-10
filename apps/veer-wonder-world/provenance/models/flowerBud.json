@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "flowerBud",
-  "file": "src/assets/models/flowerBud.6bcdaaf7.glb",
-  "sha256": "6bcdaaf770e0a91061f4a2096862ea363f2daf1528cf9f51d6eaf3221ce6a6c3",
-  "sizeBytes": 491728,
+  "file": "src/assets/models/flowerBud.f22e7a09.glb",
+  "sha256": "f22e7a09353530fc67efd42c80ed8baa8587f3d144f5a8b9f47ec8ce71055599",
+  "sizeBytes": 490556,
   "rigged": false,
   "clips": [],
   "heightM": 0.8,
@@ -66,17 +66,17 @@
       "geometryHash": "sha256-49ba7bb33a2ae6e78d4dc9a7547e0b603b2a45c60e537e9541219cc8e2f5bb92"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "petals"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 3049,
       "trianglesAfter": 3049,
-      "verticesAfter": 5341,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.536e-8,
+      "verticesAfter": 5331,
+      "maxRestPosePosError": 2.527e-8,
+      "maxRestPoseNormalError": 1.408e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -91,29 +91,14 @@
             0,
             0
           ],
-          "triangles": 683,
-          "vertices": 1008
-        },
-        "petals": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            -0.19525,
-            0
-          ],
-          "localTranslation": [
-            0,
-            -0.19525,
-            0
-          ],
-          "triangles": 2366,
-          "vertices": 4333
+          "triangles": 3049,
+          "vertices": 5331
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 5341,
+    "vertexCount": 5331,
     "bounds": [
       0.86,
       1.9,

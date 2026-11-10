@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "gogoCarriage",
-  "file": "src/assets/models/gogoCarriage.d440cbbe.glb",
-  "sha256": "d440cbbe5498a81f7e5a7b841b8405450fc604b2b96f526693df372cb6499011",
-  "sizeBytes": 850816,
+  "file": "src/assets/models/gogoCarriage.fd937283.glb",
+  "sha256": "fd9372831353e8e2a13999d57d2bcb17209f69315d50979c338522da0a7d6659",
+  "sizeBytes": 840068,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -80,21 +80,17 @@
       "geometryHash": "sha256-aa7a6eb9a179dd4889a18903272c5f773bd56533176b7479ae006f25f73db4a9"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "cabDoorL",
-        "wheelFL",
-        "wheelFR",
-        "wheelRL",
-        "wheelRR"
+        "body"
       ],
-      "hasAxleFrame": true,
+      "hasAxleFrame": false,
       "trianglesBefore": 6160,
       "trianglesAfter": 6160,
-      "verticesAfter": 8800,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.496e-8,
+      "verticesAfter": 8604,
+      "maxRestPosePosError": 2.737e-8,
+      "maxRestPoseNormalError": 1.43e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -109,89 +105,14 @@
             0,
             0
           ],
-          "triangles": 2924,
-          "vertices": 3964
-        },
-        "cabDoorL": {
-          "parent": "body",
-          "worldPivot": [
-            -0.38252,
-            0.0372,
-            0.41405
-          ],
-          "localTranslation": [
-            -0.38252,
-            0.0372,
-            0.41405
-          ],
-          "triangles": 204,
-          "vertices": 351
-        },
-        "wheelFL": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            -0.3637,
-            -0.31881,
-            0.24277
-          ],
-          "localTranslation": [
-            0.24277,
-            -0.31881,
-            0.3637
-          ],
-          "triangles": 779,
-          "vertices": 1164
-        },
-        "wheelFR": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            -0.35895,
-            -0.32725,
-            -0.24214
-          ],
-          "localTranslation": [
-            -0.24214,
-            -0.32725,
-            0.35895
-          ],
-          "triangles": 753,
-          "vertices": 1054
-        },
-        "wheelRL": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            0.31043,
-            -0.24955,
-            0.23338
-          ],
-          "localTranslation": [
-            0.23338,
-            -0.24955,
-            -0.31043
-          ],
-          "triangles": 756,
-          "vertices": 1131
-        },
-        "wheelRR": {
-          "parent": "@axleFrame",
-          "worldPivot": [
-            0.28708,
-            -0.32575,
-            -0.24469
-          ],
-          "localTranslation": [
-            -0.24469,
-            -0.32575,
-            -0.28708
-          ],
-          "triangles": 744,
-          "vertices": 1136
+          "triangles": 6160,
+          "vertices": 8604
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 8800,
+    "vertexCount": 8604,
     "bounds": [
       1.902,
       1.048,

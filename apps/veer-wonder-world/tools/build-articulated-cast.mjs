@@ -613,7 +613,7 @@ for (const key of targetKeys) {
   const provPath = join(provDir, `${key}.json`);
   const prov = JSON.parse(readFileSync(provPath, "utf8"));
 
-  if (!force && prov.processing?.articulatedSubNodes?.version === 1) {
+  if (!force && prov.processing?.articulatedSubNodes?.version === 2) {
     skipped.push(key);
     continue;
   }
@@ -627,7 +627,9 @@ for (const key of targetKeys) {
   const origBounds = computePartBounds(extracted.tris);
   const spec = ARTICULATION_SPECS[key];
 
-  // Partition triangles into SubPartId buckets
+  // Partition triangles into candidate SubPartId buckets, then fold any sub-part that shares
+  // welded boundary vertices (`1e-4` m) with another sub-part back into watertight `body`
+  // so rotating sub-parts at runtime never tears cracks or holes in single-shell Meshy meshes.
   const buckets = new Map(spec.parts.map((p) => [p.id, []]));
   for (const tri of extracted.tris) {
     const [cx, cy, cz] = tri.centroid;
@@ -637,14 +639,71 @@ for (const key of targetKeys) {
     bucket.push(tri);
   }
 
-  // Assert every declared SubPartId received > 0 triangles
+  const posBucketKey = (pos) =>
+    `${Math.round(pos[0] * 1e4)},${Math.round(pos[1] * 1e4)},${Math.round(pos[2] * 1e4)}`;
+
+  let mergedAny = true;
+  while (mergedAny) {
+    mergedAny = false;
+    const ownersByPos = new Map();
+    for (const [partId, tris] of buckets.entries()) {
+      for (const tri of tris) {
+        for (const v of tri.verts) {
+          const pk = posBucketKey(v.pos);
+          let set = ownersByPos.get(pk);
+          if (!set) {
+            set = new Set();
+            ownersByPos.set(pk, set);
+          }
+          set.add(partId);
+        }
+      }
+    }
+
+    const weldedParts = new Set();
+    for (const owners of ownersByPos.values()) {
+      if (owners.size > 1) {
+        for (const pid of owners) {
+          if (pid !== "body") weldedParts.add(pid);
+        }
+      }
+    }
+
+    // Also fold any child whose parent SubPartId was folded or empty
+    for (const partDef of spec.parts) {
+      if (partDef.id === "body") continue;
+      if (
+        partDef.parent &&
+        partDef.parent !== "@axleFrame" &&
+        partDef.parent !== "body" &&
+        (weldedParts.has(partDef.parent) || (buckets.get(partDef.parent)?.length ?? 0) === 0)
+      ) {
+        if ((buckets.get(partDef.id)?.length ?? 0) > 0) weldedParts.add(partDef.id);
+      }
+    }
+
+    if (weldedParts.size > 0) {
+      const bodyTris = buckets.get("body");
+      for (const pid of weldedParts) {
+        const tris = buckets.get(pid);
+        if (tris && tris.length > 0) {
+          for (const t of tris) bodyTris.push(t);
+          buckets.set(pid, []);
+          mergedAny = true;
+        }
+      }
+    }
+  }
+
+  const activeParts = spec.parts.filter((partDef) => (buckets.get(partDef.id)?.length ?? 0) > 0);
+  if (activeParts.length === 0) {
+    throw new Error(`${key}: 0 active parts after watertight component check`);
+  }
+
   const partBoundsMap = new Map();
   const worldPivotMap = new Map();
-  for (const partDef of spec.parts) {
+  for (const partDef of activeParts) {
     const partTris = buckets.get(partDef.id);
-    if (!partTris || partTris.length === 0) {
-      throw new Error(`${key}: SubPartId "${partDef.id}" received 0 triangles! Check partition thresholds.`);
-    }
     const pb = computePartBounds(partTris);
     partBoundsMap.set(partDef.id, pb);
     const wp = partDef.pivot(pb);
@@ -678,7 +737,8 @@ for (const key of targetKeys) {
 
   let axleFrameNode = null;
   const invAxleQuat = quatConjugate(VEHICLE_AXLE_FRAME_QUAT);
-  if (spec.hasAxleFrame) {
+  const needsAxleFrame = spec.hasAxleFrame && activeParts.some((p) => p.parent === "@axleFrame");
+  if (needsAxleFrame) {
     axleFrameNode = inDoc
       .createNode(`${key}_axle_frame`)
       .setTranslation([0, 0, 0])
@@ -691,7 +751,7 @@ for (const key of targetKeys) {
   let totalVertsAfter = 0;
   let totalTrisAfter = 0;
 
-  for (const partDef of spec.parts) {
+  for (const partDef of activeParts) {
     const partTris = buckets.get(partDef.id);
     const worldPivot = worldPivotMap.get(partDef.id);
     const onAxleFrame = partDef.parent === "@axleFrame";
@@ -732,7 +792,7 @@ for (const key of targetKeys) {
       axleFrameNode.addChild(partNode);
     } else if (partDef.parent) {
       const parentNode = createdNodes.get(partDef.parent);
-      if (!parentNode) throw new Error(`${key}: parent "${partDef.parent}" must precede "${partDef.id}" in spec.parts`);
+      if (!parentNode) throw new Error(`${key}: parent "${partDef.parent}" must precede "${partDef.id}" in activeParts`);
       parentNode.addChild(partNode);
     } else {
       actorRoot.addChild(partNode);
@@ -774,7 +834,7 @@ for (const key of targetKeys) {
   // ---- Strict Rest-Pose Roundtrip Verification on Written Binary GLB ----
   const verifyDoc = await io.readBinary(new Uint8Array(afterBytes));
   const verifyNodeNames = new Set(verifyDoc.getRoot().listNodes().map((n) => n.getName()));
-  for (const partDef of spec.parts) {
+  for (const partDef of activeParts) {
     if (!verifyNodeNames.has(partDef.id)) {
       throw new Error(`${key}: written GLB missing SceneNode "${partDef.id}"`);
     }
@@ -820,9 +880,10 @@ for (const key of targetKeys) {
   prov.processing = {
     ...(prov.processing ?? {}),
     articulatedSubNodes: {
-      version: 1,
-      partIds: spec.parts.map((p) => p.id),
-      hasAxleFrame: Boolean(spec.hasAxleFrame),
+      version: 2,
+      watertightPreserved: true,
+      partIds: activeParts.map((p) => p.id),
+      hasAxleFrame: Boolean(needsAxleFrame),
       trianglesBefore: extracted.tris.length,
       trianglesAfter: totalTrisAfter,
       verticesAfter: totalVertsAfter,
@@ -838,7 +899,7 @@ for (const key of targetKeys) {
   };
   writeFileSync(provPath, `${JSON.stringify(prov, null, 2)}\n`);
 
-  const partSummary = spec.parts.map((p) => `${p.id}(${partStats[p.id].triangles}t)`).join(", ");
+  const partSummary = activeParts.map((p) => `${p.id}(${partStats[p.id].triangles}t)`).join(", ");
   summary.push(
     `${key.padEnd(14)} ${(previous.sizeBytes / 1024).toFixed(0).padStart(5)} KB -> ${(afterBytes.length / 1024).toFixed(0).padStart(5)} KB | err=${maxPosErr.toExponential(2)} | [${partSummary}]`
   );

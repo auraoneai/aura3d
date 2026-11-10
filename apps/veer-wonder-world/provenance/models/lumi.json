@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "lumi",
-  "file": "src/assets/models/lumi.2f333b43.glb",
-  "sha256": "2f333b43437bdbba2786b546f17fc36c1825fe76f83fc68fec1db553db1facf4",
-  "sizeBytes": 1329944,
+  "file": "src/assets/models/lumi.d006ab93.glb",
+  "sha256": "d006ab93d6b5bd58bf359507a2733b10e284b57f9bed275040bb440e7a14e667",
+  "sizeBytes": 1318188,
   "rigged": false,
   "clips": [],
   "heightM": 0.65,
@@ -87,21 +87,17 @@
       "geometryHash": "sha256-22174764da387eb3634a272b17edbe95ecd71e28ae91d42675cd05caf9553d5c"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "head",
-        "armL",
-        "armR",
-        "footL",
-        "footR"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 8313,
       "trianglesAfter": 8313,
-      "verticesAfter": 7394,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.588e-8,
+      "verticesAfter": 7156,
+      "maxRestPosePosError": 1.311e-8,
+      "maxRestPoseNormalError": 1.422e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -116,89 +112,14 @@
             0,
             0
           ],
-          "triangles": 4468,
-          "vertices": 4317
-        },
-        "head": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            0.46,
-            0
-          ],
-          "localTranslation": [
-            0,
-            0.46,
-            0
-          ],
-          "triangles": 832,
-          "vertices": 676
-        },
-        "armL": {
-          "parent": "body",
-          "worldPivot": [
-            0.33,
-            0.24,
-            0
-          ],
-          "localTranslation": [
-            0.33,
-            0.24,
-            0
-          ],
-          "triangles": 625,
-          "vertices": 513
-        },
-        "armR": {
-          "parent": "body",
-          "worldPivot": [
-            -0.33,
-            0.24,
-            0
-          ],
-          "localTranslation": [
-            -0.33,
-            0.24,
-            0
-          ],
-          "triangles": 609,
-          "vertices": 470
-        },
-        "footL": {
-          "parent": "lumi_root",
-          "worldPivot": [
-            0.16,
-            -0.55,
-            0
-          ],
-          "localTranslation": [
-            0.16,
-            -0.55,
-            0
-          ],
-          "triangles": 895,
-          "vertices": 682
-        },
-        "footR": {
-          "parent": "lumi_root",
-          "worldPivot": [
-            -0.16,
-            -0.55,
-            0
-          ],
-          "localTranslation": [
-            -0.16,
-            -0.55,
-            0
-          ],
-          "triangles": 884,
-          "vertices": 736
+          "triangles": 8313,
+          "vertices": 7156
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 7394,
+    "vertexCount": 7156,
     "bounds": [
       1.36,
       1.902,

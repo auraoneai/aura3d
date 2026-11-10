@@ -2,7 +2,7 @@ import {
   geometry,
   groups,
   material,
-  world,
+  primitives,
   type AuraColor,
   type AuraCustomGeometrySpec,
   type AuraInstanceWindOption,
@@ -196,16 +196,26 @@ export function fabricMat(color: AuraColor, rim: AuraMaterialRimSpec | false = W
 }
 
 export function clearGlassMat(color: AuraColor = "#E6F6FF"): AuraMaterialSpec {
-  return material.clearGlass({
+  return material.standard({
     color,
-    roughness: 0.08
+    roughness: 0.08,
+    metallic: 0,
+    opacity: 0.28,
+    clearcoat: 0.85,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.15
   });
 }
 
 export function frostedGlassMat(color: AuraColor = "#FFF6E6"): AuraMaterialSpec {
-  return material.frostedGlass({
+  return material.standard({
     color,
-    roughness: 0.42
+    roughness: 0.38,
+    metallic: 0,
+    opacity: 0.55,
+    clearcoat: 0.45,
+    clearcoatRoughness: 0.24,
+    envMapIntensity: 0.95
   });
 }
 
@@ -630,31 +640,25 @@ export interface DuckPondOptions {
 }
 
 /**
- * Registers and snapshots a calm `world.water` circular pond node without any
- * TypeScript `as` cast (`source-guards.test.ts` clean).
+ * Builds a calm sky-reflecting circular pond disc (WGSL + GLSL clean across
+ * both WebGPU and WebGL2, zero TypeScript casts).
  */
 export function buildCalmPondNode(options: DuckPondOptions): AuraSceneNode {
-  const waterBuilder = world.water({
-    id: options.id,
+  const diameter = options.radius * 2;
+  const pondBuilder = primitives.cylinder({
     name: options.name,
-    kind: "lake",
-    shape: {
-      kind: "circle",
-      center: [options.center[0], options.center[1]],
-      radius: options.radius
-    },
-    height: options.height ?? 0.01,
-    shallowColor: options.shallowColor ?? "#6EC1DA",
-    deepColor: options.deepColor ?? "#36819E",
-    waves: "calm",
-    normalSpeed: options.reducedMotion ? 0 : 0.24,
-    foam: {
-      shoreDepth: 0.18,
-      crest: 0.06
-    },
-    reflection: "ibl",
-    refraction: false
+    size: [diameter, 0.024, diameter],
+    position: [options.center[0], options.height ?? 0.012, options.center[1]],
+    material: material.standard({
+      color: options.shallowColor ?? "#54B5D4",
+      roughness: 0.07,
+      metallic: 0.08,
+      clearcoat: 0.94,
+      clearcoatRoughness: 0.05,
+      envMapIntensity: 1.3
+    }),
+    castShadow: false,
+    receiveShadow: true
   });
-  const parsed: AuraSceneNode = JSON.parse(JSON.stringify(waterBuilder.toJSON()));
-  return parsed;
+  return pondBuilder.toJSON();
 }

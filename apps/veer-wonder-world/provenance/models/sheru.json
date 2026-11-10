@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "sheru",
-  "file": "src/assets/models/sheru.a799e0d5.glb",
-  "sha256": "a799e0d5c014345a3965660a0f087746eaf2c02ce8cb84fd2988a5d1b90d4465",
-  "sizeBytes": 1651260,
+  "file": "src/assets/models/sheru.2fc1329a.glb",
+  "sha256": "2fc1329abacf448f41af535e451331f6fb77913cf57ca92809411fb97ff2845e",
+  "sizeBytes": 1631556,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -85,24 +85,17 @@
       "geometryHash": "sha256-83ae47a9ca86d862f40866e270369ffe5f04f70bbd0f22046f38f0ab41e9431b"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "head",
-        "earL",
-        "earR",
-        "tail",
-        "legFL",
-        "legFR",
-        "legBL",
-        "legBR"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 12484,
       "trianglesAfter": 12484,
-      "verticesAfter": 11160,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.554e-8,
+      "verticesAfter": 10753,
+      "maxRestPosePosError": 2.265e-8,
+      "maxRestPoseNormalError": 1.399e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -117,134 +110,14 @@
             0,
             0
           ],
-          "triangles": 1864,
-          "vertices": 1746
-        },
-        "head": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            0.08,
-            0.24
-          ],
-          "localTranslation": [
-            0,
-            0.08,
-            0.24
-          ],
-          "triangles": 4144,
-          "vertices": 4144
-        },
-        "earL": {
-          "parent": "head",
-          "worldPivot": [
-            0.26,
-            0.66,
-            0.24
-          ],
-          "localTranslation": [
-            0.26,
-            0.58,
-            0
-          ],
-          "triangles": 850,
-          "vertices": 693
-        },
-        "earR": {
-          "parent": "head",
-          "worldPivot": [
-            -0.26,
-            0.66,
-            0.24
-          ],
-          "localTranslation": [
-            -0.26,
-            0.58,
-            0
-          ],
-          "triangles": 821,
-          "vertices": 671
-        },
-        "tail": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            -0.34,
-            -0.44
-          ],
-          "localTranslation": [
-            0,
-            -0.34,
-            -0.44
-          ],
-          "triangles": 492,
-          "vertices": 397
-        },
-        "legFL": {
-          "parent": "sheru_root",
-          "worldPivot": [
-            0.22,
-            -0.56,
-            0.32
-          ],
-          "localTranslation": [
-            0.22,
-            -0.56,
-            0.32
-          ],
-          "triangles": 958,
-          "vertices": 770
-        },
-        "legFR": {
-          "parent": "sheru_root",
-          "worldPivot": [
-            -0.22,
-            -0.56,
-            0.32
-          ],
-          "localTranslation": [
-            -0.22,
-            -0.56,
-            0.32
-          ],
-          "triangles": 966,
-          "vertices": 792
-        },
-        "legBL": {
-          "parent": "sheru_root",
-          "worldPivot": [
-            0.22,
-            -0.56,
-            -0.22
-          ],
-          "localTranslation": [
-            0.22,
-            -0.56,
-            -0.22
-          ],
-          "triangles": 1189,
-          "vertices": 975
-        },
-        "legBR": {
-          "parent": "sheru_root",
-          "worldPivot": [
-            -0.22,
-            -0.56,
-            -0.22
-          ],
-          "localTranslation": [
-            -0.22,
-            -0.56,
-            -0.22
-          ],
-          "triangles": 1200,
-          "vertices": 972
+          "triangles": 12484,
+          "vertices": 10753
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 11160,
+    "vertexCount": 10753,
     "bounds": [
       1.204,
       1.902,

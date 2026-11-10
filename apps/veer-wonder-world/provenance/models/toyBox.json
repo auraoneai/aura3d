@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "toyBox",
-  "file": "src/assets/models/toyBox.3732cca7.glb",
-  "sha256": "3732cca76c83bc6c278e61ac684edd15c787e3d84c02092918ffef381cb169c9",
-  "sizeBytes": 520096,
+  "file": "src/assets/models/toyBox.1b0a14c4.glb",
+  "sha256": "1b0a14c4b9ab9802fbbf8ad6e8ed2046af9f42340ee75b8f502cf9c53006a158",
+  "sizeBytes": 515608,
   "rigged": false,
   "clips": [],
   "heightM": 0.6,
@@ -66,17 +66,17 @@
       "geometryHash": "sha256-1f3a7cca8d7ed7ef137ebd85d0d953403c91af9324899fac2b812e5712aee6db"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "lid"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 3678,
       "trianglesAfter": 3678,
-      "verticesAfter": 5260,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.284e-8,
+      "verticesAfter": 5146,
+      "maxRestPosePosError": 4.248e-8,
+      "maxRestPoseNormalError": 7.346e-9,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -91,29 +91,14 @@
             0,
             0
           ],
-          "triangles": 1270,
-          "vertices": 1762
-        },
-        "lid": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            -0.07374,
-            -0.61404
-          ],
-          "localTranslation": [
-            0,
-            -0.07374,
-            -0.61404
-          ],
-          "triangles": 2408,
-          "vertices": 3498
+          "triangles": 3678,
+          "vertices": 5146
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 5260,
+    "vertexCount": 5146,
     "bounds": [
       1.903,
       1.664,

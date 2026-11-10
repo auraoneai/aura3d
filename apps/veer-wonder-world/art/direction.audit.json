@@ -29,7 +29,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.35
+            "intensity": 2.25
           },
           {
             "type": "directional",
@@ -373,7 +373,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.3
+            "intensity": 2.2
           },
           {
             "type": "directional",
@@ -694,12 +694,12 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.2
+            "intensity": 2.18
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.7
+            "intensity": 0.68
           },
           {
             "type": "hemisphere",
@@ -819,6 +819,10 @@
           {
             "name": "matte clay",
             "node": "barn duck pond sandy basin",
+            "practical": false
+          },
+          {
+            "node": "barn calm duck pond",
             "practical": false
           },
           {
@@ -1001,7 +1005,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.32
+            "intensity": 2.2
           },
           {
             "type": "directional",
@@ -1361,17 +1365,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.25
+            "intensity": 1.72
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.66
+            "intensity": 0.68
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.54
+            "intensity": 0.56
           }
         ],
         "hasAmbient": false,
@@ -1711,7 +1715,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.95
+            "intensity": 1.92
           },
           {
             "type": "directional",
@@ -1876,7 +1880,6 @@
             "practical": false
           },
           {
-            "name": "clear glass",
             "node": "nook window clear glass pane",
             "practical": false
           },

@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "picnicBasket",
-  "file": "src/assets/models/picnicBasket.47bcd77c.glb",
-  "sha256": "47bcd77c58b4dad57432cb060f282c586ea7cf7347d06fae659df9354d0b9ef1",
-  "sizeBytes": 578060,
+  "file": "src/assets/models/picnicBasket.0c63da7b.glb",
+  "sha256": "0c63da7b386d62ddceeac4e9a9ce8226a6d0fc8a0e9c780294d27cea95730fb2",
+  "sizeBytes": 575140,
   "rigged": false,
   "clips": [],
   "heightM": 0.45,
@@ -66,17 +66,17 @@
       "geometryHash": "sha256-d8fc10567bc572eda7e3738752f9552b0d9a6a67b3febdf13af324e5adfd2f98"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "lid"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 3185,
       "trianglesAfter": 3185,
-      "verticesAfter": 7367,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.531e-8,
+      "verticesAfter": 7302,
+      "maxRestPosePosError": 3.864e-8,
+      "maxRestPoseNormalError": 1.424e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -91,29 +91,14 @@
             0,
             0
           ],
-          "triangles": 2798,
-          "vertices": 6416
-        },
-        "lid": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            -0.32493,
-            -0.85598
-          ],
-          "localTranslation": [
-            0,
-            -0.32493,
-            -0.85598
-          ],
-          "triangles": 387,
-          "vertices": 951
+          "triangles": 3185,
+          "vertices": 7302
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 7367,
+    "vertexCount": 7302,
     "bounds": [
       1.621,
       1.9,

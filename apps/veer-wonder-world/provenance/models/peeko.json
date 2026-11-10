@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "peeko",
-  "file": "src/assets/models/peeko.7a6a0458.glb",
-  "sha256": "7a6a0458326906d970f47334c567f0a53f6cbe938d0cb4bdf17a5b471c2933a9",
-  "sizeBytes": 1807716,
+  "file": "src/assets/models/peeko.43caaea2.glb",
+  "sha256": "43caaea2c421847798736aac92e46b0315805b9bda7870b2ca8ad9b7742a10e6",
+  "sizeBytes": 1794220,
   "rigged": false,
   "clips": [],
   "heightM": 0.55,
@@ -85,23 +85,17 @@
       "geometryHash": "sha256-520e576f3df7996426d00ca49e756b50a4c390dc48da84c4fefce9326d73c05f"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "head",
-        "tuft",
-        "beakLower",
-        "wingL",
-        "wingR",
-        "footL",
-        "footR"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 8015,
       "trianglesAfter": 8015,
-      "verticesAfter": 10219,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 2.527e-8,
+      "verticesAfter": 9981,
+      "maxRestPosePosError": 1.49e-8,
+      "maxRestPoseNormalError": 1.422e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -116,119 +110,14 @@
             0,
             0
           ],
-          "triangles": 1248,
-          "vertices": 1089
-        },
-        "head": {
-          "parent": "body",
-          "worldPivot": [
-            0,
-            0.07,
-            0.02
-          ],
-          "localTranslation": [
-            0,
-            0.07,
-            0.02
-          ],
-          "triangles": 1971,
-          "vertices": 2007
-        },
-        "tuft": {
-          "parent": "head",
-          "worldPivot": [
-            0,
-            0.65,
-            0
-          ],
-          "localTranslation": [
-            0,
-            0.58,
-            -0.02
-          ],
-          "triangles": 1992,
-          "vertices": 4272
-        },
-        "beakLower": {
-          "parent": "head",
-          "worldPivot": [
-            0,
-            0.28,
-            0.32
-          ],
-          "localTranslation": [
-            0,
-            0.21,
-            0.3
-          ],
-          "triangles": 45,
-          "vertices": 55
-        },
-        "wingL": {
-          "parent": "body",
-          "worldPivot": [
-            0.31,
-            -0.1,
-            0
-          ],
-          "localTranslation": [
-            0.31,
-            -0.1,
-            0
-          ],
-          "triangles": 626,
-          "vertices": 593
-        },
-        "wingR": {
-          "parent": "body",
-          "worldPivot": [
-            -0.31,
-            -0.1,
-            0
-          ],
-          "localTranslation": [
-            -0.31,
-            -0.1,
-            0
-          ],
-          "triangles": 633,
-          "vertices": 576
-        },
-        "footL": {
-          "parent": "peeko_root",
-          "worldPivot": [
-            0.14,
-            -0.68,
-            0
-          ],
-          "localTranslation": [
-            0.14,
-            -0.68,
-            0
-          ],
-          "triangles": 769,
-          "vertices": 758
-        },
-        "footR": {
-          "parent": "peeko_root",
-          "worldPivot": [
-            -0.14,
-            -0.68,
-            0
-          ],
-          "localTranslation": [
-            -0.14,
-            -0.68,
-            0
-          ],
-          "triangles": 731,
-          "vertices": 869
+          "triangles": 8015,
+          "vertices": 9981
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 10219,
+    "vertexCount": 9981,
     "bounds": [
       0.954,
       1.812,

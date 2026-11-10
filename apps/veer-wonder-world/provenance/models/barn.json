@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "barn",
-  "file": "src/assets/models/barn.c7db2a74.glb",
-  "sha256": "c7db2a748fdb60f29dd219d1c3bf25b73317f5b6ae70b4f3081670cd59e028c3",
-  "sizeBytes": 1063680,
+  "file": "src/assets/models/barn.e09f6e01.glb",
+  "sha256": "e09f6e0100d8faecc6a52906dceb2c12ac2e3b3d29f1ce6e9094642af6598fd5",
+  "sizeBytes": 1060676,
   "rigged": false,
   "clips": [],
   "heightM": 3.2,
@@ -80,18 +80,17 @@
       "geometryHash": "sha256-4477288dd9c5b477cfb92fc378e38be9c7e7bb48414a357803f0df0bb7b2b85a"
     },
     "articulatedSubNodes": {
-      "version": 1,
+      "version": 2,
+      "watertightPreserved": true,
       "partIds": [
-        "body",
-        "hingeLeaf",
-        "hingeLeafR"
+        "body"
       ],
       "hasAxleFrame": false,
       "trianglesBefore": 6582,
       "trianglesAfter": 6582,
-      "verticesAfter": 11894,
-      "maxRestPosePosError": 0,
-      "maxRestPoseNormalError": 3.512e-8,
+      "verticesAfter": 11855,
+      "maxRestPosePosError": 4.918e-8,
+      "maxRestPoseNormalError": 1.421e-8,
       "maxUvError": 0,
       "parts": {
         "body": {
@@ -106,44 +105,14 @@
             0,
             0
           ],
-          "triangles": 5279,
-          "vertices": 9344
-        },
-        "hingeLeaf": {
-          "parent": "body",
-          "worldPivot": [
-            -0.75965,
-            -0.16999,
-            0.894
-          ],
-          "localTranslation": [
-            -0.75965,
-            -0.16999,
-            0.894
-          ],
-          "triangles": 639,
-          "vertices": 1241
-        },
-        "hingeLeafR": {
-          "parent": "body",
-          "worldPivot": [
-            0.76678,
-            -0.42531,
-            0.89433
-          ],
-          "localTranslation": [
-            0.76678,
-            -0.42531,
-            0.89433
-          ],
-          "triangles": 664,
-          "vertices": 1309
+          "triangles": 6582,
+          "vertices": 11855
         }
       }
     }
   },
   "inspection": {
-    "vertexCount": 11894,
+    "vertexCount": 11855,
     "bounds": [
       1.897,
       1.816,

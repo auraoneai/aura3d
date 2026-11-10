@@ -1,5 +1,6 @@
 import {
   instances,
+  material,
   primitives,
   type AuraColor,
   type AuraNodeBuilder,
@@ -27,11 +28,11 @@ const RAINBOW_BANDS: readonly {
   readonly radiusY: number;
   readonly z: number;
 }[] = [
-  { name: "rose", color: "#F58EB6", radiusX: 7.45, radiusY: 5.55, z: -8.9 },
-  { name: "buttercup", color: "#FAD06C", radiusX: 7.06, radiusY: 5.18, z: -8.84 },
-  { name: "mint", color: "#9BE0B4", radiusX: 6.67, radiusY: 4.81, z: -8.78 },
-  { name: "sky", color: "#88C4F4", radiusX: 6.28, radiusY: 4.44, z: -8.72 },
-  { name: "lavender", color: "#C3A6F4", radiusX: 5.89, radiusY: 4.07, z: -8.66 }
+  { name: "rose", color: "#F46BA2", radiusX: 7.45, radiusY: 5.55, z: -8.9 },
+  { name: "buttercup", color: "#FAC54B", radiusX: 7.06, radiusY: 5.18, z: -8.84 },
+  { name: "mint", color: "#6FD89C", radiusX: 6.67, radiusY: 4.81, z: -8.78 },
+  { name: "sky", color: "#5FAEF2", radiusX: 6.28, radiusY: 4.44, z: -8.72 },
+  { name: "lavender", color: "#AE88F2", radiusX: 5.89, radiusY: 4.07, z: -8.66 }
 ];
 
 function rainbowSplinePoints(radiusX: number, radiusY: number, z: number): readonly ProceduralVec3[] {
@@ -52,17 +53,24 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
   const animated: WorldAnimatedNodeSpec[] = [];
 
+  const cloudIslandMat = {
+    ...material.felt({
+      color: "#9BB8FA",
+      roughness: 0.86,
+      sheen: 0.48,
+      sheenRoughness: 0.8,
+      sheenColor: "#E8B6FA"
+    }),
+    rim: { color: "#FFC6EB", power: 2.3, intensity: 0.38 }
+  };
+
   // 1. Sculpted plush quilted cloud-island floor (`y = 0.000` inside `r <= 3.75m`,
   //    soft quilted pillow swells around the outer deck — NO flat 90x40m box wall!)
   nodes.push(
     buildIslandPlinthNode({
       name: "learning cloud plush quilted island",
       seed: 606,
-      material: plushCloudMat("#FAF5FF", {
-        color: "#FFE3F6",
-        power: 2.3,
-        intensity: 0.36
-      }),
+      material: cloudIslandMat,
       span: [27, 25],
       segments: [56, 52],
       flatStageRadius: 3.75,
@@ -75,7 +83,7 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
       name: "learning cloud underbelly cushion",
       size: [22.5, 2.4, 20.8],
       position: [0, -1.28, -0.3],
-      material: plushCloudMat("#EADFF9", false),
+      material: plushCloudMat("#8EA9F4", false),
       castShadow: false,
       receiveShadow: false
     })
@@ -85,10 +93,10 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
   const billowTransforms: AuraTransformSpec[] = [];
   const billowColors: AuraColor[] = [];
   const billowPalette: readonly AuraColor[] = [
-    "#FFFBFD",
-    "#F6ECFF",
-    "#FCEBF5",
-    "#EBF2FF"
+    "#AFC8FF",
+    "#C8B4FF",
+    "#F8B6DF",
+    "#9ED2FF"
   ];
   const billowCount = 16;
   for (let i = 0; i < billowCount; i += 1) {
