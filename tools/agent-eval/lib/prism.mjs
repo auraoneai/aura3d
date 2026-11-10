@@ -10,6 +10,44 @@ export function loadKey(env = process.env, readFile = readFileSync) {
 
 const sleepMs = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Turn an Anthropic-style SSE stream into the non-streamed message shape: content blocks (text, tool_use with its
+ * input parsed from input_json_delta), stop_reason, and usage (message_start usage overlaid by message_delta usage,
+ * which on Prism carries the final input/output tokens and kiro_credits). A stream that ends without message_stop, or
+ * an error event, throws a retryable error.
+ */
+export async function assembleStream(response) {
+  const text = await response.text();
+  const message = { content: [], usage: {}, stop_reason: null };
+  const partial = {};
+  let stopped = false;
+  for (const chunk of text.split(/\n\n/)) {
+    const data = chunk.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join("");
+    if (!data) continue;
+    const ev = JSON.parse(data);
+    if (ev.type === "message_start") Object.assign(message, { ...ev.message, content: [], usage: { ...(ev.message?.usage ?? {}) } });
+    else if (ev.type === "content_block_start") {
+      message.content[ev.index] = { ...ev.content_block };
+      if (ev.content_block.type === "tool_use") partial[ev.index] = "";
+    } else if (ev.type === "content_block_delta") {
+      const b = message.content[ev.index];
+      if (ev.delta.type === "text_delta") b.text = (b.text ?? "") + ev.delta.text;
+      else if (ev.delta.type === "input_json_delta") partial[ev.index] += ev.delta.partial_json;
+      else if (ev.delta.type === "thinking_delta") b.thinking = (b.thinking ?? "") + ev.delta.thinking;
+      else if (ev.delta.type === "signature_delta") b.signature = ev.delta.signature;
+    } else if (ev.type === "content_block_stop") {
+      if (partial[ev.index] != null) message.content[ev.index].input = partial[ev.index] ? JSON.parse(partial[ev.index]) : {};
+    } else if (ev.type === "message_delta") {
+      Object.assign(message, ev.delta ?? {});
+      Object.assign(message.usage, ev.usage ?? {});
+    } else if (ev.type === "message_stop") stopped = true;
+    else if (ev.type === "error") throw new Error(`prism 503: stream error ${JSON.stringify(ev.error ?? ev).slice(0, 200)}`);
+  }
+  if (!stopped) throw new Error("prism 503: stream ended without message_stop");
+  message.content = message.content.filter(Boolean);
+  return message;
+}
+
 /** Anthropic-compatible Messages client for Kiro Prism. The key is only ever placed in a request header. */
 export function createPrismClient({
   key,
@@ -20,7 +58,10 @@ export function createPrismClient({
   sleep = sleepMs,
   // A request with no response after this long is abandoned and retried (C1 phase 2, 2026-11-09: three task-103 runs
   // sat >20 min on one open request each, with no timeout to end them). a full 8192-token turn can take several minutes on this route.
-  requestTimeoutMs = Number(process.env.AGENT_EVAL_REQUEST_TIMEOUT_MS ?? 900000)
+  requestTimeoutMs = Number(process.env.AGENT_EVAL_REQUEST_TIMEOUT_MS ?? 900000),
+  // Stream by default: a long non-streamed turn (a near-cap write_file) ends as a CloudFront 504 at Prism's edge on every
+  // retry (C1 run c1-551-t103-three-r1, 2026-11-09). The streamed events are assembled into the same message object.
+  stream = process.env.AGENT_EVAL_STREAM !== "0"
 } = {}) {
   if (!key) throw new Error("Prism key missing");
   async function messages(body, { session, jobType = "agent-eval" } = {}) {
@@ -37,10 +78,10 @@ export function createPrismClient({
             "X-Prism-Job-Type": jobType,
             ...(session ? { "X-Prism-Session": session } : {})
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify(stream ? { ...body, stream: true } : body),
           ...(requestTimeoutMs > 0 && typeof AbortSignal?.timeout === "function" ? { signal: AbortSignal.timeout(requestTimeoutMs) } : {})
         });
-        if (response.ok) return await response.json();
+        if (response.ok) return stream && /event-stream/.test(response.headers?.get?.("content-type") ?? "") ? await assembleStream(response) : await response.json();
         const text = (await response.text()).slice(0, 300);
         lastError = new Error(`prism ${response.status}: ${text}`);
         const retryable = response.status === 429 || response.status >= 500 || response.status === 409;
