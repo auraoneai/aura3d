@@ -80,14 +80,14 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // 0.95 at +1.15 EV read 59.3 in g15p3-r7), so the
     // low key models the riders and its shadow side reads.
     hemisphere: { sky: "#cfd6cc", ground: "#2a3a48", intensity: 0.95 },
-    environment: { kind: "capture", intensity: 1.0 },
+    environment: { kind: "capture", intensity: 0.5 },
     // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.0017 hazes
     // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
     fog: { color: "#2a4650", density: 0.0021, maxOpacity: 0.78, heightMist: 1 },
     post: {
       // GU47 phase 3 (rubric post 4.5: "milky veil"): less bloom, more contrast.
       bloom: { intensity: 0.22, threshold: 0.8, radius: 0.5 },
-      grade: { contrast: 1.16, saturation: 1.2 },
+      grade: { contrast: 1.2, saturation: 1.32 },
       vignette: { intensity: 0.34, smoothness: 0.62 },
       grain: { intensity: 0.035, size: 1.6 }
     },
@@ -99,7 +99,11 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
     // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the
     // frame stays inside 60-110.
-    exposureEV: 1.3,
+    // 2026-11-10 (owner: "washed out"): on a real GPU the 18-degree key (3.5) at +1.3 EV put the lit GLB riders and fairings at
+    // roughly three times the light of the 4.6.1 look, where ACES clips every channel and the teal and suit colours go
+    // white-grey (the software-WebGL2 calibration above predates the engine light fixes). +0.9 EV with the probe at 0.5 and
+    // a stronger grade keeps the ground and sky shaders' dusk and gives the riders their colour back.
+    exposureEV: 0.9,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {

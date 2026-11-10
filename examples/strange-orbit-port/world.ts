@@ -160,6 +160,15 @@ const beaconLampMaterial = (glow: number) => material.pbr({ color: "#ecb75f", em
 /** SO47-W2: metres between amber beacon posts. */
 export const BEACON_SPACING = 40;
 
+/**
+ * The hero model is one mesh with one pearl-white, light-grey-suit material, so the pick of Sol, Ciel or Ember shows as a
+ * base-colour multiply over the whole model: the rider's own colour, lifted a little towards white (a straight multiply by
+ * the saturated suit colour would black out the teal fairing).
+ */
+export function riderSuitTint(rider: number): string {
+  return mixHex(RIDERS[Math.max(0, Math.min(RIDERS.length - 1, rider))]!.color, "#ffffff", 0.22);
+}
+
 export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62cc", "#e2d6bb", "#2f7464"];
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -592,7 +601,7 @@ export function buildWorld(options: WorldOptions): World {
         ? [{
           // GU47 phase 4 (rubric: "near-uniform white, blown, fully matte"): the hero's white enamel is knocked down a
           // touch and every rider mirrors the captured nebula/giant probe harder (envMapIntensity), so the fairings read glossy.
-          ...(i === 0 ? { color: "#e2dcd4", colorMode: "multiply" as const, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.8 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const, clearcoat: 0.6, clearcoatRoughness: 0.18, envMapIntensity: 1.5 }),
+          ...(i === 0 ? { color: riderSuitTint(rider), colorMode: "multiply" as const, clearcoat: 0.7, clearcoatRoughness: 0.2, envMapIntensity: 0.9 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.15), colorMode: "multiply" as const, clearcoat: 0.6, clearcoatRoughness: 0.2, envMapIntensity: 0.9 }),
           rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];

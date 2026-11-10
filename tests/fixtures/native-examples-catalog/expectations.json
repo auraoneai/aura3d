@@ -6572,7 +6572,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
+          "sha256": "f467374e1367d7dbf7522029140e17866aca59c746779e0360633924148bff0f"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6596,7 +6596,7 @@
         },
         {
           "path": "examples/strange-orbit-port/art/look.ts",
-          "sha256": "5c0a6dea6d258103996a9ecbd40a2cdd97e52d5bf5ead7813591bffe1cd487da"
+          "sha256": "e78ec33d970c36ee4be884107e430a2d3412543ecf9cfe85a4bc18dbe6b78fd5"
         },
         {
           "path": "examples/strange-orbit-port/index.html",
@@ -6663,7 +6663,7 @@
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "0affcd5fb9c3f39a4b19001a5e3321117f39a5214a1414f2cd8581ce67796023"
+          "sha256": "f467374e1367d7dbf7522029140e17866aca59c746779e0360633924148bff0f"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6687,7 +6687,7 @@
         },
         {
           "path": "examples/strange-orbit-port/art/look.ts",
-          "sha256": "5c0a6dea6d258103996a9ecbd40a2cdd97e52d5bf5ead7813591bffe1cd487da"
+          "sha256": "e78ec33d970c36ee4be884107e430a2d3412543ecf9cfe85a4bc18dbe6b78fd5"
         },
         {
           "path": "apps/showcase-strange-orbit-port/index.html",

@@ -4,7 +4,7 @@ import type { AuraApp } from "@aura3d/engine";
 import direction from "../../../examples/strange-orbit-port/art/direction";
 import { LOOKS, SECTORS, lookFromSearch, sectorAt } from "../../../examples/strange-orbit-port/art/look";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_PRESETS, orbitVfxFor, registerOrbitVfx } from "../../../examples/strange-orbit-port/art/vfx";
-import { GOUACHE_LIVERIES, buildWorld } from "../../../examples/strange-orbit-port/world";
+import { GOUACHE_LIVERIES, buildWorld, riderSuitTint } from "../../../examples/strange-orbit-port/world";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /** GU47 WP-25 (lane g15): the art direction audits clean against the authored gouache scene (E-I compliance recipe). */
@@ -46,6 +46,16 @@ describe("strange-orbit-port art direction", () => {
       expect(reduced.count).toBeLessThanOrEqual(Math.ceil(full.count / 2));
     }
     expect(orbitVfxFor("tick")).toBeNull();
+  });
+
+  it("tints the hero model per rider so Sol, Ciel and Ember read as three distinct colours", () => {
+    const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const dist = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]!));
+    for (const [a, b] of [[0, 1], [0, 2], [1, 2]] as const) expect(dist(riderSuitTint(a), riderSuitTint(b))).toBeGreaterThanOrEqual(40);
+    for (const rider of [0, 1, 2]) {
+      const nodes = buildWorld({ vehicle: "skate", rider, quality: "high" }).scene.toJSON().nodes as readonly { name?: string; materialOverrides?: readonly { color?: string }[] }[];
+      expect(nodes.find((n) => n.name === "rider-0-model")!.materialOverrides![0]!.color).toBe(riderSuitTint(rider));
+    }
   });
 
   it("gives the five rivals pairwise-distinct liveries away from the objective colours (SO47-M2)", () => {
