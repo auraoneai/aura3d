@@ -12,10 +12,20 @@ export const AURA3D_COMMANDS = ["info", "examples", "validate", "render"];
 const RENDER_OUT = ".aura3d/render.png";
 const MAX_TEXT = 8000;
 
+/**
+ * C1 efficiency pass 2+ (AGENT_EVAL_RENDER_DESC=summary): the render clause matches the efficiency-branch CLI, whose render
+ * prints a short summary and writes a PNG only with --screenshot. Wording is the branch's own `aura3d --help` line and
+ * its llms.txt step 3 (exp/agent-efficiency 93c069d82), not new coaching. Default: the frozen C1 description below.
+ */
+export const RENDER_DESC_SUMMARY =
+  "`render` (build, serve and render in local headless Chrome; prints a short text summary (--json: same, as JSON): subject framing (engine measureFrameFill), exposure, shadow, motion, errors, fps, backend, done/next. PNG only with --screenshot; --full prints the full diagnostics report. Add `--screenshot` only when you must see the pixels; an image costs far more context than the summary).";
+const RENDER_DESC_FROZEN = "`render` (vite build, headless Chrome screenshot and diagnostics; returns the JSON report and the screenshot image).";
+export const renderDescMode = () => (process.env.AGENT_EVAL_RENDER_DESC === "summary" ? "summary" : "frozen");
+
 export const AURA3D_TOOL = {
   name: "aura3d",
   description:
-    "Run an Aura3D CLI agent tool in this project (see docs/agents/agent-tools.md). Commands: `info` (installed versions and engine API surface; args [\"--name\", \"material.pbr\"] for one builder's signature and option keys), `examples` (args [\"<query>\"]: best matching working recipe or template with its source; [\"--id\", \"<id>\", \"--write\", \"src/main.ts\"] saves one), `validate` (static checks of src/ in about a second: colours, unknown options and members, framing, lighting), `render` (vite build, headless Chrome screenshot and diagnostics; returns the JSON report and the screenshot image).",
+    "Run an Aura3D CLI agent tool in this project (see docs/agents/agent-tools.md). Commands: `info` (installed versions and engine API surface; args [\"--name\", \"material.pbr\"] for one builder's signature and option keys), `examples` (args [\"<query>\"]: best matching working recipe or template with its source; [\"--id\", \"<id>\", \"--write\", \"src/main.ts\"] saves one), `validate` (static checks of src/ in about a second: colours, unknown options and members, framing, lighting), " + (renderDescMode() === "summary" ? RENDER_DESC_SUMMARY : RENDER_DESC_FROZEN),
   input_schema: {
     type: "object",
     properties: {

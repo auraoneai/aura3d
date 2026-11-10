@@ -25,7 +25,9 @@ export function systemPrompt(arm, condition = {}) {
   const extra = [];
   if (arm !== "three" && condition.cliTools) {
     extra.push(
-      "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, screenshots it in headless Chrome and returns diagnostics plus the screenshot, so you can see what you made."
+      process.env.AGENT_EVAL_RENDER_DESC === "summary"
+        ? "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, renders it in headless Chrome and prints a short text summary: subject framing, exposure, shadow, motion, errors, fps and `next`. Add `--screenshot` only when you must see the pixels; an image costs far more context than the summary."
+        : "You also have the `aura3d` tool: the Aura3D CLI agent tools `info`, `examples`, `validate` and `render` (docs/agents/agent-tools.md). `render` builds the app, screenshots it in headless Chrome and returns diagnostics plus the screenshot, so you can see what you made."
     );
   }
   if (arm === "aura" && condition.lookup) {
