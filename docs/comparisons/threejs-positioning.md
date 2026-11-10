@@ -1,6 +1,6 @@
 # Why Aura3D over three.js
 
-Status: 2026-10-28, Aura3D 4.5.0 compared with three.js 0.185.1 (sections that cite 4.3.5 numbers keep their original figures). For marketing, sales and the site. Every claim below is one we can back: each row names its source, so copy built from this page holds up when a developer checks it.
+Status: 2026-11-09, Aura3D 5.5.1 (shipped features through 5.5.1; benchmark numbers from the 4.5.0 run against three.js 0.185.1, and sections that cite 4.3.5 numbers keep their original figures). For marketing, sales and the site. Every claim below is one we can back: each row names its source, so copy built from this page holds up when a developer checks it.
 
 ## The pitch
 
@@ -24,7 +24,9 @@ The source is the five-scene benchmark: a GLB with HDR environment lighting, a s
 
 | What you need | With Aura3D | With three.js | Source |
 |---|---|---|---|
-| A good-looking scene on first run | `looks.preset(id)` supplies HDRI lighting, a shadow-casting key light, background, grade and post effects in one call. 15 genre looks | No environment, tone mapping or shadows by default. PBR metals render dark until you wire an environment | `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` §11 |
+| A good-looking scene on first run | A bare scene keeps authored colours (neutral output), reflects a built-in studio room, gets a `lights.key` shadow and `camera.auto` framing. `looks.preset(id)` adds HDRI lighting, background, grade and post effects in one call. 15 genre looks | No environment, tone mapping or shadows by default. PBR metals render dark until you wire an environment | CHANGELOG 5.3.0 N1 to N4; `evidence/n4-frame/README.md`; `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` §11 |
+| WebGPU | `renderer: { backend: "auto" }`: WebGPU first, WebGL2 fallback on the same canvas, same scene code. Default in all 30 showcase games (`?backend=webgl2` opts out) | A separate `WebGPURenderer` from `three/webgpu` that you choose and wire yourself | CHANGELOG 5.3.0, 5.5.0, 5.5.1; `docs/upgrade-5.0.0/README.md` |
+| Rendering off the main thread | `worker: { createWorker }` with node patches, frame callbacks and host-side picking; opt-in, all 30 showcase games run with `?worker=1` | `OffscreenCanvas` plumbing and a message protocol of your own | CHANGELOG 5.3.0, 5.5.0, 5.5.1 |
 | Scene code | Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines of scene code (five small scenes, one author): viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer | `RESULTS.md` §1 |
 | Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS.md` §3 |
 | Bloom, shadows, custom post pass | One call each: `effects.bloom()`, `shadow: true`, `effects.shaderPass()` | `EffectComposer` plus 3 or 4 addon passes; shadow flags on every mesh | `RESULTS.md` §11 |
@@ -33,17 +35,17 @@ The source is the five-scene benchmark: a GLB with HDR environment lighting, a s
 | Type-safe assets | `model(assets.robot)`: a generated typed key, so a missing asset is a compile error | Asset paths are plain strings, checked only at run time | `templates/product-viewer/src/aura-assets.ts`; `tests/unit/agent-api/public-example-boundary.test.ts` |
 | Asset licence and integrity | Every admitted model records source, licence, author and sha256. In production, a model without a valid hash and same-origin URL does not draw | Loads any file from any URL | `docs/agents/claims-and-boundaries.md` §5 and §6; `docs/api/model-loader.md` |
 | Getting assets | `aura3d assets search` and `resolve` pull licence-tagged open models (CC0, CC-BY) and type them; Meshy generation, optimization, inspection and thumbnails from the same CLI | Bring your own files and tools | `packages/aura3d-cli/src/cli-help.ts` |
-| A deploy gate | `aura3d check-deploy --dist dist` fails the build on a missing hashed asset, stray files and asset-validation errors; `--release` adds licence and quality gates | None | `packages/aura3d-cli/src/index.ts:1097` |
+| A deploy gate | `aura3d check-deploy --dist dist` fails the build on a missing hashed asset, stray files and asset-validation errors; `--browser` loads every route in headless Chromium; `--release` adds licence and quality gates | None | `packages/aura3d-cli/src/index.ts:1097` |
 | Game shell | HUD, touch controls, juice and session flow (`@aura3d/engine/game`); genre kits for racket sports, karting, car soccer, fighting and platformer motion | Not included | `docs/api/root-exports.md` (27 exports in the game kit); `docs/api/game-kit.md` |
 | Fixed timestep, replay and QA | `createFixedStepLoop`, seeded `createCountedRng`, `installQaHooks` for scripted, repeatable test runs | Write your own | `packages/engine/src/qa/`; `docs/api/qa-kit.md` |
 | Smooth motion on 120 and 144 Hz screens | `createRenderInterpolator` and `createFixedStepPresenter`: a 60 Hz simulation no longer freezes on every second frame at 120 Hz (50% stalled frames before, 0% after) | Write your own | `docs/api/motion-presenter.md` |
 | Blank-screen protection | `installSafetyNet` detects black frames and recovers; `createFrameErrorBoundary` keeps rendering after a throwing frame callback; `?diag=1` diagnostics panel | Not included | `packages/debug/src/safety`; `docs/api/safety-net.md` |
 | Game audio | Procedural cue bank, step sequencer and tone loops on one shared audio context | Positional audio primitives only | `packages/audio/src/synth`; `docs/api/audio-synth.md` |
 | Shader safety | `material.custom` GLSL with a chunk library (`a3d_math`, `a3d_noise`, `a3d_sky`, `a3d_fog`, `a3d_toon`) and loud compile errors | `ShaderMaterial` with uniforms and varyings declared by hand | `docs/api/glsl-chunks.md`; `RESULTS.md` §11 |
-| Working with AI coding agents | `llms.txt`, 14 agent skills, compiled recipes and a type-traps table, written into every new project by `create-aura3d` | No official agent docs | `packages/aura3d-cli/skills/`; `create-aura3d --help` |
-| Coming from three.js | `aura3d migrate three` maps 245 three.js constructs and writes an annotated port worklist | n/a | `docs/aura3d-vs-threejs.md`; `packages/aura3d-cli/src/migrate-three/` |
-| Starting a project | 20 `create-aura3d` templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio and more), each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
-| Proof it ships | 25 playable games built on Aura3D | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
+| Working with AI coding agents | `llms.txt`, 14 agent skills, compiled recipes and a type-traps table, written into every new project by `create-aura3d`; `aura3d info`, `examples`, `validate` and `render`; guessed three.js names resolve or throw an error naming the Aura3D call | No official agent docs | `packages/aura3d-cli/skills/`; `docs/agents/agent-tools.md`; `docs/agents/guessable-api.md` |
+| Coming from three.js | `aura3d import-three` turns a three.js scene factory into a typed asset and an editable Aura3D scene (prototype); `aura3d migrate three` maps 245 three.js constructs and writes an annotated port worklist | n/a | `docs/agents/three-bridge.md`; `docs/aura3d-vs-threejs.md`; `packages/aura3d-cli/src/migrate-three/` |
+| Starting a project | 26 `create-aura3d` templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio and more), each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
+| Proof it ships | 30 playable games built on Aura3D, all on WebGPU by default | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
 
 ## The moat, ranked
 
@@ -51,8 +53,8 @@ What a three.js team cannot rebuild by adding a library or two:
 
 1. **Assets that are typed, hashed and licensed end to end, enforced at run time.** The CLI admits each model with provenance and a hash, generates the typed key, `check-deploy` fails the build when a hashed file is missing, and the renderer refuses to draw an unverified model. Copying this takes a loader policy, a build step, a manifest format and a CLI that all agree with each other. For anyone shipping AI-generated or third-party art, this is the licensing and supply-chain answer.
 2. **An engine designed to be written by AI agents, and tuned by measurement.** The API, docs, recipes and skills ship together and are improved by a repeatable cold-start trial (`tools/agent-eval`). In that trial, fresh agents working from the Aura3D docs alone went from 8 to 14 working scenes out of 15, and from 40 to 10 median turns, and every first build compiled (15 of 15). A library whose docs, engine and tooling have different owners cannot run that loop.
-3. **The whole game stack in one install.** Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits, proven across 25 shipped games. Pieces exist separately around three.js; the integration and the shipped games are what take time.
-4. **Quality gates built into the product.** The public-example boundary test, route-health specs in all 20 templates, `assets validate --release` and `check-deploy`. Teams adopting Aura3D get the release process along with the code.
+3. **The whole game stack in one install.** Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits, proven across 30 shipped games. Pieces exist separately around three.js; the integration and the shipped games are what take time.
+4. **Quality gates built into the product.** The public-example boundary test, route-health specs in all 26 templates, `assets validate --release` and `check-deploy`. Teams adopting Aura3D get the release process along with the code.
 
 Strong features that support the moat: the declarative typed scene, look presets, one-call effects, instancing, scatter, sky, water and weather nodes, and the migration codemod.
 
@@ -70,13 +72,20 @@ Use these as written. The sourced numbers carry the small print shown.
 | 6 | "Game batteries included: HUD, touch, audio, fixed-step loop, seeded replay and a safety net, in one install." | safe | none | `root-exports.md`, `game-kit.md` |
 | 7 | "Smooth on 120 and 144 Hz displays, out of the box." | safe | none | `motion-presenter.md` |
 | 8 | "Built for AI coding agents: llms.txt, 14 skills and recipes in every new project." | safe | none | `packages/aura3d-cli/skills/` |
-| 9 | "25 playable games built on Aura3D." | safe | none | `game-inventory.json` |
+| 9 | "30 playable games built on Aura3D." | safe | none | `game-inventory.json` |
 | 10 | "A one-cube scene in 12 lines of TypeScript." | safe | none | `tagline-check/run-4.5.0/`; gate line D1 |
 | 11 | "A one-cube scene reaches its first frame in about 420 ms." | needs-qualifier | "Published 4.5.0 bundle, median of 3 cold loads, software WebGL2, one run." | `RESULTS-4.5.0.md` section 0, gate line P3 |
 | 12 | "A one-cube scene draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25." | needs-qualifier | "Software WebGL2, benchmark scenes, one run." | `RESULTS-4.5.0.md` section 0, gate line P4 |
 | 13 | "The five benchmark scenes log no console warnings or errors." | needs-qualifier | "Software WebGL2, one run." | gate line Q2 |
 | 14 | "Every option covered by the option-coverage test either takes effect or raises OPTION_IGNORED: 16 of 16 tests pass." | safe | none | gate line D3; `tests/unit/agent-api/option-coverage.test.ts` |
 | 15 | "A one-cube scene is 12 lines of scene code; the shader-water scene is 71." | needs-qualifier | "Hand-tuned single source per scene." | gate lines D1, D2 |
+| 16 | "WebGPU with a WebGL2 fallback, from one option." | safe | none | `docs/rendering/native-backends.md`; CHANGELOG 5.3.0 |
+| 17 | "All 30 showcase games run on WebGPU by default." | needs-qualifier | "WebGL2 fallback kept; checked on one Apple GPU." | CHANGELOG 5.5.1; `docs/upgrade-5.0.0/README.md` |
+| 18 | "Render in a worker with one option; game code keeps its node handles." | needs-qualifier | "Opt-in." | CHANGELOG 5.3.0, 5.5.0 |
+| 19 | "A bare scene keeps your colours, reflects a studio room and casts a shadow, with no setup." | safe | none | CHANGELOG 5.3.0 N1 to N4; `evidence/n4-frame/` |
+| 20 | "Your agent can validate and screenshot its own scene: `aura3d validate`, `aura3d render`." | safe | none | `docs/agents/agent-tools.md` |
+| 21 | "Bring a three.js scene factory across as a typed asset and an editable Aura3D scene." | needs-qualifier | "Prototype; every run writes a carried / approximated / unsupported report." | `docs/agents/three-bridge.md` |
+| 22 | Agent-authoring benchmark (turns, tokens, time vs three.js) | pending | Results pending; the parent fills this row from `tests/reports/benchmark-c1/REPORT.md`. <!-- C1-RESULTS --> | `tests/reports/benchmark-c1/SPEC.md` |
 
 Claims to keep off the site (they don't hold today): "check-deploy catches failed requests and console errors" for the plain command (it is static, `packages/aura3d-cli/src/index.ts:1097`; only `check-deploy --browser` does that, since 4.3.7), and any "faster", "lighter" or "smaller than three.js" wording (see "Not unlocked" below).
 
@@ -117,8 +126,8 @@ The wording "faster than three.js", "lighter than three.js", "smaller bundle" an
 
 1. **Done in 4.3.7: `check-deploy --browser`.** It loads each route in headless Chromium and fails on HTTP errors, failed requests, uncaught errors and console errors, so the homepage can say what it says (the plain `check-deploy` stays the static asset check).
 2. **"A whole game in a fraction of the code."** Measured at 4.5.0, and it does not support that wording: the coin-dash game is 271 lines / 2,622 tokens on Aura3D against 373 / 3,529 on three.js, 27% fewer lines, with 32 of 32 behavioural checks passing and equal replay hashes (`RESULTS-4.5.0.md` section 11). The full game is not a gate target, so it carries no public claim. "27% fewer lines for one complete game" is the sourced figure if it is wanted later. The bundle for that game is 3,645,076 B raw against 516,898 B.
-3. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.5.0. The game kits should matter most there.
-4. **Real-device showcase numbers.** Capture the 25 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots. This is also the input for P7.
+3. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.5.0. The game kits should matter most there. The fixed C1 comparison against 5.5.x is running (`tests/reports/benchmark-c1/SPEC.md`); no claim until its report exists.
+4. **Real-device showcase numbers.** Capture the 30 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots. This is also the input for P7.
 5. **Next work on the failing rows:** [`docs/prds/beat-threejs/PRD-beat-threejs-3-after-450.md`](../prds/beat-threejs/PRD-beat-threejs-3-after-450.md).
 
 ## Reproduce the new tagline numbers

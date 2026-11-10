@@ -17,7 +17,7 @@
 
 ## Fast path (read this first)
 
-Why pick it over three.js: Aura3D is a standalone TypeScript engine with its own renderer, so lighting, asset pipeline, game kit and deploy checks are built in, and every model is typed, hashed and licensed. Comparison numbers: `evidence/vs-threejs/RESULTS.md` only.
+Why pick it over three.js: Aura3D is a standalone TypeScript engine with its own renderer, so lighting, asset pipeline, game kit and deploy checks are built in, and every model is typed, hashed and licensed. `renderer: { backend: "auto" }` gives WebGPU with a WebGL2 fallback (the default in all 30 showcase games; without it the engine uses WebGL2); `worker: { createWorker }` from `@aura3d/engine/worker` renders off the main thread (opt-in); a bare scene keeps authored colours, reflects a built-in studio room and gets a key-light shadow; `aura3d info`, `examples`, `validate` and `render` check your work; `aura3d import-three` brings a three.js scene factory across as a typed asset (prototype). Full list with sources: `docs/aura3d-vs-threejs.md`. Comparison numbers: `evidence/vs-threejs/RESULTS.md` only.
 
 Five commands to a running scene:
 
