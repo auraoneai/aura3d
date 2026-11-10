@@ -7389,5 +7389,488 @@
         }
       }
     }
+  },
+  "c1-551-t104-aura-r2": {
+    "runId": "c1-551-t104-aura-r2",
+    "arm": "aura",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 5023,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10140.3,
+          "jsKB": 7015.7,
+          "jsGzipKB": 2217.6,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 166,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 78.3,
+          "stdLuma": 31.6,
+          "motion": 3.85
+        },
+        "loaded": {
+          "totalKB": 5824.8,
+          "jsKB": 5824.8,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": false,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 0,
+              "endStatus": "lost"
+            },
+            "passed": 4,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4896,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10140.5,
+          "jsKB": 7016,
+          "jsGzipKB": 2217.7,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 200,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 78.4,
+          "stdLuma": 31.8,
+          "motion": 3.68
+        },
+        "loaded": {
+          "totalKB": 5825,
+          "jsKB": 5825,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": true,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0.13652488425925927
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": false,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 0,
+              "endStatus": "lost"
+            },
+            "passed": 4,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t104-bridge-r2": {
+    "runId": "c1-551-t104-bridge-r2",
+    "arm": "bridge",
+    "task": 104,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4835,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10140.7,
+          "jsKB": 7016.1,
+          "jsGzipKB": 2217.7,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 188,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 194.2,
+          "stdLuma": 21.7,
+          "motion": 3.2
+        },
+        "loaded": {
+          "totalKB": 8647.7,
+          "jsKB": 5700.7,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 15320,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10140.9,
+          "jsKB": 7016.3,
+          "jsGzipKB": 2217.8,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 362,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 192.9,
+          "stdLuma": 24.4,
+          "motion": 7.45
+        },
+        "loaded": {
+          "totalKB": 8647.9,
+          "jsKB": 5700.9,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "stacker-followup": {
+            "name": "stacker-followup",
+            "checks": {
+              "pPauses": true,
+              "hudSaysPaused": false,
+              "pausedIgnoresDrop": true,
+              "pausedFreezesSlab": true,
+              "pResumes": true
+            },
+            "notes": {
+              "frozen": 0.06786024305555556
+            },
+            "passed": 4,
+            "total": 5
+          },
+          "stacker": {
+            "name": "stacker",
+            "checks": {
+              "startsPlaying": true,
+              "dropStacks": true,
+              "gameEnds": true,
+              "hudShowsScore": true,
+              "restartResets": true
+            },
+            "notes": {
+              "bestHeight": 1,
+              "endStatus": "lost"
+            },
+            "passed": 5,
+            "total": 5
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t109-bridge-r2": {
+    "runId": "c1-551-t109-bridge-r2",
+    "arm": "bridge",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4681,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 11430.4,
+          "jsKB": 7017,
+          "jsGzipKB": 2217.5,
+          "assetKB": 4408.7,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 220,
+        "blank": false,
+        "frame": {
+          "lit": 0.381,
+          "meanLuma": 44.9,
+          "stdLuma": 62.7,
+          "motion": 12.12
+        },
+        "loaded": {
+          "totalKB": 8527,
+          "jsKB": 5949.8,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20,
+              "diff": 8.756371527777778
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 5687,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 11431.5,
+          "jsKB": 7018.1,
+          "jsGzipKB": 2218.1,
+          "assetKB": 4408.7,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 465,
+        "blank": false,
+        "frame": {
+          "lit": 0.381,
+          "meanLuma": 44.8,
+          "stdLuma": 62.6,
+          "motion": 12.18
+        },
+        "loaded": {
+          "totalKB": 8528.1,
+          "jsKB": 5951,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": false,
+              "blueButton": true,
+              "frameShiftsBlue": false,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": -2.403988715277778,
+              "blueMinusRedAfter": -2.422795138888889
+            },
+            "passed": 3,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 19.9,
+              "diff": 8.74404513888889
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "c1-551-t110-aura-r2": {
+    "runId": "c1-551-t110-aura-r2",
+    "arm": "aura",
+    "task": 110,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 10418,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10141.8,
+          "jsKB": 7017.3,
+          "jsGzipKB": 2217.6,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 346,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 184.2,
+          "stdLuma": 42,
+          "motion": 0.22
+        },
+        "loaded": {
+          "totalKB": 8648.9,
+          "jsKB": 5701.9,
+          "requests": 59
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": true
+            },
+            "notes": {
+              "diff": 0.2119777199074074
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 9453,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10142.5,
+          "jsKB": 7017.9,
+          "jsGzipKB": 2217.9,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 464,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 184.2,
+          "stdLuma": 42,
+          "motion": 0.22
+        },
+        "loaded": {
+          "totalKB": 8649.5,
+          "jsKB": 5702.5,
+          "requests": 58
+        },
+        "fps": 60,
+        "p95FrameMs": 16.8,
+        "pageErrors": [],
+        "probes": {
+          "clock-followup": {
+            "name": "clock-followup",
+            "checks": {
+              "stateExposed": true,
+              "pendulumSwings": true,
+              "lightsOffButton": true,
+              "lightsOffDims": true,
+              "lightsOnRestores": true
+            },
+            "notes": {
+              "lit": 185.30214446611265,
+              "dim": 29.61951404082355,
+              "relit": 185.55756420136532,
+              "angleRange": [
+                -9.157147651696278,
+                7.677893154906107
+              ]
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "clock": {
+            "name": "clock",
+            "checks": {
+              "pendulumMoves": true
+            },
+            "notes": {
+              "diff": 0.21126591435185185
+            },
+            "passed": 1,
+            "total": 1
+          }
+        }
+      }
+    }
   }
 }
