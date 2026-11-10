@@ -1,0 +1,69 @@
+{
+  "args": {
+    "arm": "aura",
+    "task": "109",
+    "runs": 1,
+    "seed": 20261108,
+    "concurrency": 4,
+    "model": "claude-sonnet-5.5",
+    "condition": "base",
+    "stub": false,
+    "estimate": false,
+    "idx": 1,
+    "batch": "c1-550-smoke",
+    "docsRef": "b0d56e3bf",
+    "score": true,
+    "maxTurns": 40,
+    "followUpTurns": 15,
+    "docsRoot": "/tmp/c1-551-work/c1-550-smoke/docs"
+  },
+  "plan": [
+    {
+      "task": 109,
+      "arm": "aura",
+      "idx": 1,
+      "order": 0,
+      "runId": "c1-550-smoke-t109-aura-r1",
+      "seed": 20261108000
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/c1-551-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.5.0",
+        "cli": "5.5.0",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": 109,
+      "slug": "product",
+      "coverage": "product viewer",
+      "category": "materials",
+      "source": "origin/bench/505-materials:tools/agent-eval/tasks/11-materials-2.md",
+      "bench505": {
+        "medianTurns": {
+          "aura": 33,
+          "auraSheet": 13,
+          "three": 6
+        }
+      },
+      "causes": [
+        "B clearcoat / metal against a uniform environment",
+        "A look"
+      ],
+      "probe": "product",
+      "followUp": {
+        "text": "Add three DOM buttons outside the canvas labelled 'Red', 'Blue' and 'Black' that repaint the car body (base paint colour only; the clear coat, flakes, chrome and glass stay) in candy red, deep metallic blue and gloss black. Red is the starting colour. Add paintColor: 'red' | 'blue' | 'black' to window.__TASK_STATE__.",
+        "probe": "product-followup"
+      },
+      "assetHeavy": true
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "c1-550-smoke-t109-aura-r1": {
+    "runId": "c1-550-smoke-t109-aura-r1",
+    "arm": "aura",
+    "task": 109,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4614,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10172.4,
+          "jsKB": 7047.9,
+          "jsGzipKB": 2228.4,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 251,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 51.6,
+          "stdLuma": 57.5,
+          "motion": 17.19
+        },
+        "loaded": {
+          "totalKB": 5739.8,
+          "jsKB": 5739.7,
+          "requests": 57
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 19.9,
+              "diff": 11.917608506944445
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4549,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10173.5,
+          "jsKB": 7048.9,
+          "jsGzipKB": 2228.9,
+          "assetKB": 3119.9,
+          "scaffoldKB": 40165.4,
+          "files": 85
+        },
+        "ready": true,
+        "loadMs": 279,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 51.6,
+          "stdLuma": 57.5,
+          "motion": 16.51
+        },
+        "loaded": {
+          "totalKB": 5740.8,
+          "jsKB": 5740.8,
+          "requests": 56
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "product-followup": {
+            "name": "product-followup",
+            "checks": {
+              "startsRed": true,
+              "blueButton": true,
+              "frameShiftsBlue": true,
+              "blackButton": true,
+              "redRestores": true
+            },
+            "notes": {
+              "blueMinusRedBefore": 3.602239583333333,
+              "blueMinusRedAfter": 15.704314236111111
+            },
+            "passed": 5,
+            "total": 5
+          },
+          "product": {
+            "name": "product",
+            "checks": {
+              "clearcoatState": true,
+              "turntableTurns": true,
+              "turntableRate": true,
+              "animated": true
+            },
+            "notes": {
+              "degPerSec": 20.2,
+              "diff": 12.113109085648148
+            },
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  }
+}

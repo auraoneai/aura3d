@@ -249,7 +249,20 @@ export async function startChrome(cdpPort) {
   for (let i = 0; i < 100; i += 1) {
     try {
       await (await fetch(`http://127.0.0.1:${cdpPort}/json/version`)).json();
-      return { chrome, profile, stop: () => { chrome.kill("SIGKILL"); rmSync(profile, { recursive: true, force: true }); } };
+      // Chrome's child processes can still be writing the profile right after SIGKILL (ENOTEMPTY on rm, phase-2 smoke
+      // run 2026-11-09); retry the removal and never let a leftover temp profile fail the scorer.
+      return {
+        chrome,
+        profile,
+        stop: () => {
+          chrome.kill("SIGKILL");
+          try {
+            rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+          } catch (error) {
+            console.warn(`[c1-score] could not remove Chrome profile ${profile}: ${error.code ?? error.message}`);
+          }
+        }
+      };
     } catch {
       await sleep(100);
     }
