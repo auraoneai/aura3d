@@ -26515,7 +26515,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.5.0`
-- Packed identity: `archive:@aura3d/cli@5.5.0#sha256=9e009c9bb4085d3e52dd19e2e128a7274a9e401679e607c9da86cb4b166c6244`
+- Packed identity: `archive:@aura3d/cli@5.5.0#sha256=f5568309d19685b54b13944ea74f24a9fa64c8351d4f125c757fb94f5fb18bc0`
 
 ### Export conditions
 
@@ -31004,7 +31004,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.5.0`
-- Packed identity: `archive:create-aura3d@5.5.0#sha256=28aeb5f9a6e6da9893936c1063795b8ea186dd589012b0a4bb52bdf9f612efe6`
+- Packed identity: `archive:create-aura3d@5.5.0#sha256=8bff88695e403f922fa85875974b09f64098195bd94432a22ea52707ecd6b08d`
 
 ### Export conditions
 
