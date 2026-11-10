@@ -1,0 +1,35 @@
+{
+  "bridgeVersion": 1,
+  "name": "metal",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "fdb12e0b2d72aae36150236c9d22967b8356a317347a82db19e2a81e44c336f0",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.62,
+    "spacing": 1.65,
+    "only": "metal"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/metal.glb",
+    "sha256": "f50844eb06771f6bf87bb613fdd0d0e7a4be9474b8258364c4344fef973b71a9",
+    "bytes": 285888
+  },
+  "nodeIds": [
+    "metal"
+  ],
+  "materials": [
+    "metal"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 4,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

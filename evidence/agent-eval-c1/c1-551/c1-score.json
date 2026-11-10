@@ -5906,5 +5906,146 @@
         }
       }
     }
+  },
+  "c1-551-t111-bridge-r1": {
+    "runId": "c1-551-t111-bridge-r1",
+    "arm": "bridge",
+    "task": 111,
+    "phases": {
+      "main": {
+        "build": {
+          "ok": true,
+          "ms": 4793,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10697.9,
+          "jsKB": 7063.9,
+          "jsGzipKB": 2234.8,
+          "assetKB": 3629.3,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 468,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 18,
+          "stdLuma": 19.7,
+          "motion": 1.32
+        },
+        "loaded": {
+          "totalKB": 6912.8,
+          "jsKB": 5894.6,
+          "requests": 63
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                122.77898956642392,
+                8.640000000000002,
+                8.64
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      },
+      "followup": {
+        "build": {
+          "ok": true,
+          "ms": 4507,
+          "log": ""
+        },
+        "size": {
+          "totalKB": 10698.6,
+          "jsKB": 7064.6,
+          "jsGzipKB": 2235,
+          "assetKB": 3629.3,
+          "scaffoldKB": 40165.4,
+          "files": 87
+        },
+        "ready": true,
+        "loadMs": 379,
+        "blank": false,
+        "frame": {
+          "lit": 1,
+          "meanLuma": 18,
+          "stdLuma": 19.7,
+          "motion": 1.31
+        },
+        "loaded": {
+          "totalKB": 6913.5,
+          "jsKB": 5895.3,
+          "requests": 62
+        },
+        "fps": 60,
+        "p95FrameMs": 16.7,
+        "pageErrors": [],
+        "probes": {
+          "solar-followup": {
+            "name": "solar-followup",
+            "checks": {
+              "tourButton": true,
+              "tourOrderInnerToOuter": true,
+              "stopTourReturns": true
+            },
+            "notes": {
+              "first": "Mercury",
+              "second": "Venus",
+              "innermost": [
+                "Mercury",
+                "Venus"
+              ]
+            },
+            "passed": 3,
+            "total": 3
+          },
+          "solar": {
+            "name": "solar",
+            "checks": {
+              "readyState": true,
+              "planetsOrbit": true,
+              "focusApi": true,
+              "panelShowsName": true,
+              "cameraFollows": true,
+              "escapeReturns": true,
+              "pauseFreezes": true,
+              "playResumes": true
+            },
+            "notes": {
+              "planets": 8,
+              "target": "Earth",
+              "distance": [
+                122.77898956642392,
+                8.64,
+                8.639999999999999
+              ]
+            },
+            "passed": 8,
+            "total": 8
+          }
+        }
+      }
+    }
   }
 }

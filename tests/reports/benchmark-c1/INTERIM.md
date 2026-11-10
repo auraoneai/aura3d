@@ -71,3 +71,13 @@ Running medians over the 6 complete replicate(s) so far: aura n=5 turns 20 (task
 | bridge | finished/finished | 24 (22) | 1.03M | 8K | 451 | 2.15 | 6.2 | yes | 5/5 | 5/5 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t104-bridge-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t104-bridge-r1-main-2.png) |
 
 Running medians over the 7 complete replicate(s) so far: aura n=6 turns 18 (task 15) in 649K out 6K $1.36 main-all 100% fu-all 100% | three n=7 turns 7 (task 5) in 72K out 5K $0.20 main-all 100% fu-all 100% | bridge n=7 turns 33 (task 24) in 1.68M out 8K $3.42 main-all 100% fu-all 57%
+
+## Task 111 solar replicate 1 (animated presentation)
+
+| arm | end (task/follow-up) | turns (task) | input tokens | output tokens | wall s | list $ | Kiro credits | builds | main checks | follow-up checks | frames |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| aura | finished/finished | 31 (28) | 1.96M | 15K | 366 | 4.07 | 10.2 | yes | 8/8 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-aura-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-aura-r1-main-2.png) |
+| three | stopped_without_finish/finished | 6 (4) | 87K | 9K | 108 | 0.26 | 2.7 | yes | 8/8 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-three-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-three-r1-main-2.png) |
+| bridge | finished/finished | 40 (37) | 2.62M | 18K | 447 | 5.42 | 13.2 | yes | 8/8 | 3/3 | [1](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-bridge-r1-main-1.png) [2](../../../evidence/agent-eval-c1/c1-551/frames/c1-551-t111-bridge-r1-main-2.png) |
+
+Running medians over the 8 complete replicate(s) so far: aura n=7 turns 20 (task 17) in 731K out 6K $1.52 main-all 100% fu-all 100% | three n=8 turns 7 (task 4.5) in 73K out 6K $0.20 main-all 100% fu-all 100% | bridge n=8 turns 35 (task 28) in 2.09M out 10K $4.28 main-all 100% fu-all 63%

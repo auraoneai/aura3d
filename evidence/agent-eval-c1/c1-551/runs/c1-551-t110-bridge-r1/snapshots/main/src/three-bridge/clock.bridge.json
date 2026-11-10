@@ -1,0 +1,80 @@
+{
+  "bridgeVersion": 1,
+  "name": "clock",
+  "generator": {
+    "path": "recipes/clock.mjs",
+    "sha256": "1732a0ce2ef0a25d9884cb765ed4e918d10c639f1c4aa83b1f3f61d49efc2f30",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {},
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/clock.glb",
+    "sha256": "20e9042b2fc448000663fa7cf70dfa0a135ec33fcf995edce65d16f130bd018c",
+    "bytes": 136588
+  },
+  "nodeIds": [
+    "wall",
+    "floor",
+    "baseboard",
+    "clock",
+    "clock__base",
+    "clock__base_top",
+    "clock__side_left",
+    "clock__side_right",
+    "clock__back_panel",
+    "clock__rail_top",
+    "clock__rail_bottom",
+    "clock__glass",
+    "clock__hood",
+    "clock__cap",
+    "clock__pediment",
+    "clock__finial",
+    "clock__face_rim",
+    "clock__face",
+    "clock__hour_mark_1",
+    "clock__hour_mark_2",
+    "clock__hour_mark_3",
+    "clock__hour_mark_4",
+    "clock__hour_mark_5",
+    "clock__hour_mark_6",
+    "clock__hour_mark_7",
+    "clock__hour_mark_8",
+    "clock__hour_mark_9",
+    "clock__hour_mark_10",
+    "clock__hour_mark_11",
+    "clock__hour_mark_12",
+    "clock__pendulum",
+    "clock__pendulum__rod",
+    "clock__pendulum__bob",
+    "clock__pendulum__bob_ring",
+    "clock__pendulum__pivot_pin",
+    "interior_lamp",
+    "room_lamp",
+    "fill_lamp"
+  ],
+  "materials": [
+    "clock_meshstandard_0",
+    "clock_meshstandard_1",
+    "clock_meshstandard_2",
+    "clock_meshstandard_3",
+    "clock_meshstandard_4",
+    "clock_meshstandard_5",
+    "clock_meshstandard_6",
+    "clock_meshstandard_7",
+    "clock_meshstandard_8",
+    "clock_meshstandard_9",
+    "clock_meshstandard_10"
+  ],
+  "clips": [
+    "pendulum_swing"
+  ],
+  "counts": {
+    "supported": 18,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "bridgeVersion": 1,
+  "name": "fabric",
+  "generator": {
+    "path": "recipes/studio.mjs",
+    "sha256": "fdb12e0b2d72aae36150236c9d22967b8356a317347a82db19e2a81e44c336f0",
+    "export": "default"
+  },
+  "seed": 1,
+  "params": {
+    "radius": 0.62,
+    "spacing": 1.65,
+    "only": "fabric"
+  },
+  "three": {
+    "revision": "185"
+  },
+  "glb": {
+    "path": ".aura3d/three-bridge/fabric.glb",
+    "sha256": "4806e612a2ae58225fbba57635bdf5635df23f6eec6577435b1bd5dc4ae83dd1",
+    "bytes": 342776
+  },
+  "nodeIds": [
+    "fabric"
+  ],
+  "materials": [
+    "fabric"
+  ],
+  "clips": [],
+  "counts": {
+    "supported": 5,
+    "approximated": 0,
+    "unsupported": 0
+  }
+}
