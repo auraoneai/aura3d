@@ -5,12 +5,13 @@ import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { afterEach, describe, expect, test } from "vitest";
 import { colorStringProblem, CSS_COLOR_NAMES } from "../../../packages/aura3d-cli/src/agent-tools/color.js";
-import { examplesCommand, loadExampleIndex, locateExampleSources, parseRecipeBook, searchExamples } from "../../../packages/aura3d-cli/src/agent-tools/examples.js";
+import { exampleCategoryOf, examplesCommand, loadExampleIndex, locateExampleSources, parseRecipeBook, searchExamples } from "../../../packages/aura3d-cli/src/agent-tools/examples.js";
 import { buildInfoReport, closeNames, describeExport, infoCommand, locateEngine } from "../../../packages/aura3d-cli/src/agent-tools/info.js";
-import { colorMetrics, renderCommand, runRender, subjectMetrics } from "../../../packages/aura3d-cli/src/agent-tools/render.js";
+import { colorMetrics, formatRenderSummary, measureSubjectFraming, renderCommand, runRender, subjectMetrics, type MeasureFrameFill } from "../../../packages/aura3d-cli/src/agent-tools/render.js";
+import { measureFrameFill } from "../../../packages/engine/src/agent-api/camera/frameSubject.js";
 import { runValidate, validateCommand } from "../../../packages/aura3d-cli/src/agent-tools/validate.js";
 import { cliCommandFor } from "../../../packages/aura3d-cli/src/contracts/commands.js";
-import type { RenderCapture, VerifyBrowserDriver } from "../../../packages/aura3d-cli/src/verify/cdp.js";
+import type { RenderCapture, RenderSceneProbe, VerifyBrowserDriver } from "../../../packages/aura3d-cli/src/verify/cdp.js";
 import { explainCode } from "../../../packages/aura3d-cli/src/verify/codes.js";
 import type { RgbImage } from "../../../packages/aura3d-cli/src/verify/frame.js";
 
@@ -247,6 +248,58 @@ void notAnExport;
   });
 });
 
+describe("aura3d examples: start from working code", () => {
+  const entries = loadExampleIndex(locateExampleSources(process.cwd()));
+  test("each common scene category puts a runnable starter first", () => {
+    const cases: [string, string, RegExp][] = [
+      ["clearcoat car paint on a turntable", "product", /^recipe-11-/],
+      ["a walking spider with eight legs", "character", /^recipe-8-/],
+      ["skinned character crossfade", "rigged-character", /^recipe-3-/],
+      ["glowing portal vortex with particles and bloom", "effect", /^recipe-14-/],
+      ["desert canyon at dusk with a camera flythrough", "outdoor", /^recipe-9-/],
+      ["pendulum clock in a cosy room", "interior", /^template-starter-interior$/],
+      ["stacker game with score and restart", "game", /^recipe-4-/],
+      ["metal glass and fabric spheres", "materials", /^recipe-17-/],
+      ["solar system presentation with orbits", "presentation", /^template-starter-presentation$/]
+    ];
+    for (const [query, category, top] of cases) {
+      expect(exampleCategoryOf(query)?.id, query).toBe(category);
+      const hit = searchExamples(entries, query)[0]!;
+      expect(hit.entry.id, query).toMatch(top);
+      // A skinned character needs a GLB, so its recipe is the one starter that does not run as is.
+      expect(hit.entry.runnable, query).toBe(category !== "rigged-character");
+    }
+    // A genre with its own template keeps it.
+    expect(searchExamples(entries, "racing game")[0]!.entry.id).toBe("template-racing-starter");
+  });
+
+  test("the top hit prints a complete src/main.ts with its setup and the done rule; templates with assets carry the copy step", async () => {
+    const dir = project({ "package.json": "{}" });
+    const q = io(dir);
+    expect(await examplesCommand(["metal", "glass", "spheres"], q)).toBe(0);
+    const text = q.out.join("\n");
+    expect(text).toMatch(/^1\. \[recipe, runs as is\] 17\. Material swatches.*\(materials starter\)/m);
+    expect(text).toContain("save: aura3d examples --id recipe-17-");
+    expect(text).toMatch(/setup: index\.html: a `<canvas id="app">`/);
+    expect(text).toMatch(/setup: No model assets and no local imports/);
+    expect(text).toMatch(/next: .*when render reports done, stop/);
+    expect(text).toMatch(/Complete src\/main\.ts:\n```ts\nimport \{[^}]*\} from "@aura3d\/engine";[\s\S]*createAuraApp\("#app"[\s\S]*```/);
+    const product = entries.find((e) => e.id === "template-starter-product")!;
+    expect(product.runnable).toBe(false);
+    expect(product.setup!.join("\n")).toMatch(/copies them, the template's aura\.assets\.json and public\/aura-assets/);
+  });
+
+  test("--write of a template that imports ./aura-assets also copies its siblings and assets, never overwriting", async () => {
+    const dir = project({ "package.json": "{}", "src/keep.ts": "// mine" });
+    const w = io(dir);
+    expect(await examplesCommand(["--id", "template-starter-product", "--write", "src/main.ts", "--project", dir], { ...w, cwd: dir })).toBe(0);
+    expect(existsSync(join(dir, "src", "aura-assets.ts"))).toBe(true);
+    expect(existsSync(join(dir, "aura.assets.json"))).toBe(true);
+    expect(w.out.join("")).toMatch(/Copied .*src\/aura-assets\.ts/);
+    expect(readFileSync(join(dir, "src", "keep.ts"), "utf8")).toBe("// mine");
+  });
+});
+
 // ---- render ------------------------------------------------------------------------------------------------------------
 const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
 const crc = (b: Buffer) => { let c = 0xffffffff; for (const x of b) c = crcTable[(c ^ x) & 255]! ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
@@ -334,13 +387,98 @@ describe("aura3d render", () => {
     const driver = mockDriver(big, { consoleMessages: [{ level: "error", text: "boom" }], pageErrors: ["TypeError: x"] });
     const wrapped: VerifyBrowserDriver = { ...driver, capture: (url, o) => { seen.push(url); return driver.capture(url, o); } };
     const out = io(dir);
-    expect(await renderCommand(["--url", "http://127.0.0.1:5199/", "--json", "--out", "shot.png"], out, { driver: wrapped })).toBe(1);
+    expect(await renderCommand(["--url", "http://127.0.0.1:5199/", "--json", "--full", "--screenshot", "--out", "shot.png"], out, { driver: wrapped })).toBe(1);
     const report = JSON.parse(out.out[0]!);
     expect(seen).toEqual(["http://127.0.0.1:5199/"]);
     expect(report.errors).toEqual(expect.arrayContaining(["CONSOLE_ERROR: boom", "PAGE_EXCEPTION: TypeError: x"]));
     expect(report.codes.slice(0, 2).sort()).toEqual(["CONSOLE_ERROR", "PAGE_EXCEPTION"]);
     expect(existsSync(join(dir, "shot.png"))).toBe(true);
     expect(await renderCommand(["--url", "ftp://x"], io(dir))).toBe(2);
+  });
+});
+
+// ---- render summary (text by default) ----------------------------------------------------------------------------------
+type V3 = [number, number, number];
+/** Column-major perspective * lookAt, as the engine's presented camera produces. */
+function viewProjection(position: V3, target: V3, fov: number, aspect: number): number[] {
+  const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const norm = (a: V3): V3 => { const l = Math.hypot(...a); return [a[0] / l, a[1] / l, a[2] / l]; };
+  const cross = (a: V3, b: V3): V3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const dot = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const z = norm(sub(position, target)), x = norm(cross([0, 1, 0], z)), y = cross(z, x);
+  const view = [x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -dot(x, position), -dot(y, position), -dot(z, position), 1];
+  const f = 1 / Math.tan((fov * Math.PI) / 360), near = 0.1, far = 1000;
+  const proj = [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, (2 * far * near) / (near - far), 0];
+  const out = new Array<number>(16).fill(0);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) out[c * 4 + r]! += proj[k * 4 + r]! * view[c * 4 + k]!;
+  return out;
+}
+const box = (id: string, min: V3, max: V3, extra: Partial<RenderSceneProbe["nodes"] extends readonly (infer T)[] | undefined ? T : never> = {}) => ({ id, kind: "primitive", visible: true, min, max, ...extra });
+function probeFor(position: V3, target: V3, nodes: ReturnType<typeof box>[], fov = 40): RenderSceneProbe {
+  return { apps: 1, pose: { position, target, fov, source: "camera.presented" }, viewProjection: viewProjection(position, target, fov, W / H), nodes, fps: 59.7, backend: "webgl2", shadows: { sampledLights: 1, contact: false, declaredLights: 1 } };
+}
+const engineFill = measureFrameFill as unknown as MeasureFrameFill;
+const ground = box("ground", [-20, -0.01, -20], [20, 0, 20], { primitive: "plane", name: "ground" });
+
+describe("aura3d render summary", () => {
+  const viewport = { width: W, height: H };
+  test("framing uses the engine's measureFrameFill on the live pose; ground planes are left out", () => {
+    const subject = box("vase", [-0.5, 0, -0.5], [0.5, 1.5, 0.5]);
+    const framed = measureSubjectFraming(probeFor([0, 0.75, 3.6], [0, 0.75, 0], [ground, subject]), viewport, engineFill)!;
+    expect(framed).toMatchObject({ verdict: "framed", inFrame: true, centred: true, nodes: 1, source: "engine" });
+    expect(framed.fill!).toBeCloseTo(measureFrameFill({ min: [-0.5, 0, -0.5], max: [0.5, 1.5, 0.5] }, { position: [0, 0.75, 3.6], target: [0, 0.75, 0], fov: 40 }, W / H), 6);
+    expect(measureSubjectFraming(probeFor([0, 0.75, 30], [0, 0.75, 0], [ground, subject]), viewport, engineFill)!.verdict).toBe("small");
+    expect(measureSubjectFraming(probeFor([0, 0.75, 4], [1.6, 0.75, 0], [subject]), viewport, engineFill)!).toMatchObject({ verdict: "off-centre", centred: false });
+    expect(measureSubjectFraming(probeFor([0, 0.75, 1.2], [0, 0.75, 0], [subject]), viewport, engineFill)!.verdict).toBe("cropped");
+    // Camera inside the subject box (a flythrough): no single subject to frame.
+    expect(measureSubjectFraming(probeFor([0, 1, 0], [0, 1, -5], [box("canyon", [-50, 0, -50], [50, 20, 50])]), viewport, engineFill)!).toMatchObject({ verdict: "scene-wide", inFrame: null });
+    // Without the engine the live matrix gives the same definition.
+    const matrixOnly = measureSubjectFraming(probeFor([0, 0.75, 3.6], [0, 0.75, 0], [subject]), viewport, null)!;
+    expect(matrixOnly.source).toBe("viewProjection");
+    expect(matrixOnly.fill!).toBeCloseTo(framed.fill!, 2);
+  });
+
+  test("default CLI output is a short deterministic summary, no PNG; --screenshot writes it; a stale PNG is removed", async () => {
+    const dir = project({ "package.json": "{}", "dist/index.html": "<!doctype html>" });
+    const scene = probeFor([0, 0.75, 3.6], [0, 0.75, 0], [ground, box("vase", [-0.5, 0, -0.5], [0.5, 1.5, 0.5])]);
+    const driver = (extra: Partial<RenderCapture> = {}) => mockDriver(big, { scene, ...extra });
+    const run = async (args: string[], d = driver()) => { const o = io(dir); const code = await renderCommand(["--no-build", "--settle-ms", "0", ...args], o, { driver: d, measureFrameFill: engineFill }); return { code, text: o.out.join("\n") }; };
+
+    mkdirSync(join(dir, ".aura3d"), { recursive: true });
+    writeFileSync(join(dir, ".aura3d", "render.png"), "stale");
+    const a = await run(["--json", "--out", ".aura3d/render.png"]);
+    expect(a.code).toBe(0);
+    expect(existsSync(join(dir, ".aura3d", "render.png"))).toBe(false);
+    const summary = JSON.parse(a.text);
+    expect(Object.keys(summary)).toEqual(["schema", "ok", "target", "subject", "exposure", "luma", "shadow", "motion", "fps", "backend", "drawCalls", "errors", "warnings", "notes", "done", "next"]);
+    expect(summary).toMatchObject({ schema: "aura3d.render-summary/1", ok: true, done: true, subject: { framing: "framed", inFrame: true, centred: true, source: "engine" }, exposure: "ok", shadow: "yes", fps: 60, backend: "webgl2" });
+    expect(summary.subject.fillPct % 5).toBe(0);
+    expect(summary.next).toMatch(/stop/i);
+    expect(a.text.length).toBeLessThan(900);
+    // Same scene, same bytes (no timestamps, durations or ports).
+    expect((await run(["--json"])).text).toBe(a.text);
+
+    const shot = await run(["--json", "--screenshot"]);
+    expect(JSON.parse(shot.text).screenshot).toBe(join(dir, ".aura3d", "render.png"));
+    expect(existsSync(join(dir, ".aura3d", "render.png"))).toBe(true);
+    expect((await run(["--image", "--out", ".aura3d/b.png"])).text).toContain("screenshot:");
+    expect(existsSync(join(dir, ".aura3d", "b.png"))).toBe(true);
+
+    const text = await run([]);
+    expect(text.text.split("\n")[0]).toMatch(/^aura3d render: PASS .* done/);
+    expect(text.text).toMatch(/subject: framed, \d+% of frame, centred \(engine measureFrameFill, 1 node\)/);
+    expect(text.text).toMatch(/next: Done/);
+  });
+
+  test("errors drop served ports so the summary stays stable; not done; a page without a live app falls back to pixels", async () => {
+    const dir = project({ "package.json": "{}", "dist/index.html": "<!doctype html>" });
+    const failing = mockDriver(tiny, { pageErrors: ["TypeError: x at http://127.0.0.1:53121/assets/index.js:1:2"] });
+    const report = await runRender({ projectDir: dir, build: false, settleMs: 0, screenshot: false, driver: failing });
+    expect(report.screenshot).toBeUndefined();
+    expect(report.summary).toMatchObject({ ok: false, done: false, subject: { source: "pixels", framing: "small" } });
+    expect(report.summary.errors).toEqual(["PAGE_EXCEPTION: TypeError: x at /assets/index.js:1:2"]);
+    expect(report.summary.next).toMatch(/^Fix PAGE_EXCEPTION/);
+    expect(formatRenderSummary(report.summary)).toMatch(/error PAGE_EXCEPTION/);
   });
 });
 

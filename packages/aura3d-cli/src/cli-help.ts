@@ -88,11 +88,11 @@ Commands:
   aura3d info [--json] [--members] [--name <export>[.<member>]]
       Installed Aura3D versions and the @aura3d/engine API surface read from the installed types; --name lists members, option keys and close names.
   aura3d examples <query> [--limit N] [--json] [--no-source] | --list | --id <id> [--write src/main.ts] [--force]
-      Offline search over the shipped recipes and create-aura3d templates; prints the best match's source.
+      Start every new scene here: offline search over the shipped recipes and create-aura3d templates; prints the best match's complete src/main.ts and its setup (product viewer, character, effect, outdoor, interior, small game, materials, presentation).
   aura3d validate [file.ts ... | projectDir] [--json] [--no-types] [--strict]
       Static checks: colour strings, unknown options/members/exports, invented asset paths and keys, framing, lighting, reflective materials.
-  aura3d render [projectDir] [--out shot.png] [--json] [--no-build] [--url http://127.0.0.1:5173/] [--route /path] [--dist dist] [--width N] [--height N]
-      Build, serve and screenshot in local headless Chrome; diagnostics JSON with errors, codes, luma, saturation and subject fill.
+  aura3d render [projectDir] [--json] [--screenshot|--image] [--out shot.png] [--full] [--no-build] [--url http://127.0.0.1:5173/] [--route /path] [--dist dist] [--width N] [--height N]
+      Build, serve and render in local headless Chrome; prints a short text summary (--json: same, as JSON): subject framing (engine measureFrameFill), exposure, shadow, motion, errors, fps, backend, done/next. PNG only with --screenshot; --full prints the full diagnostics report.
   aura3d import-three <factory.mjs> [--name <key>] [--seed <n>] [--params <json>] [--out <dir>] [--stage <dir>] [--three <dir>] [--no-admit] [--license <id>] [--json]
       Runs a three.js scene factory headless, admits its GLB as a typed asset and writes Aura3D source plus a supported/approximated/unsupported report (clips, simple ShaderMaterials as material.custom).
   aura3d init --agent all [--skills core|all|none] [--template <create-aura3d template>]

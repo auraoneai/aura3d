@@ -1,21 +1,31 @@
-// `aura3d render`: build (optional), serve, open the app in headless Chrome, save a screenshot and print diagnostics JSON:
-// console errors, page exceptions, failed requests, engine diagnostics codes, frame luma and saturation, and how much of the
-// frame the subject fills. It is `aura3d verify`'s browser half (same driver, same frame analysis, same codes) plus colour and
-// subject-fill metrics; `--url` renders an already running dev server instead of building.
+// `aura3d render`: build (optional), serve, open the app in headless Chrome and print a compact text (or `--json`) summary:
+// subject framing measured with the engine's own `measureFrameFill` on the live camera pose and node bounds, exposure,
+// shadows, motion, errors, fps and backend. It is `aura3d verify`'s browser half (same driver, same frame analysis, same
+// codes) plus colour and framing metrics; `--url` renders an already running dev server instead of building.
+// The PNG is written only with `--screenshot` (alias `--image`): an image costs an agent far more context than the summary,
+// and most render calls only need to know "framed, lit, no errors". `--full` prints the full diagnostics report.
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { explainCode } from "../verify/codes.js";
-import type { VerifyBrowserDriver } from "../verify/cdp.js";
+import { createChromeCdpDriver, type RenderSceneNodeBox, type RenderSceneProbe, type VerifyBrowserDriver } from "../verify/cdp.js";
 import { decodePng, type FrameAnalysis, type RgbImage } from "../verify/frame.js";
 import { runVerify, type VerifyFinding, type VerifyReport, type VerifyStep } from "../verify/run.js";
 import { optionNumber, optionValue, positionals, type AgentToolIo } from "./shared.js";
 
 export const RENDER_SCHEMA = "aura3d.render/1";
+export const RENDER_SUMMARY_SCHEMA = "aura3d.render-summary/1";
 export const RENDER_USAGE =
-  "aura3d render [projectDir] [--out shot.png] [--json] [--no-build] [--url http://127.0.0.1:5173/] [--route /path] [--dist dist]\n" +
-  "              [--width N --height N --settle-ms N --ready-timeout-ms N] [--chrome <path>] [--software-gl]\n" +
-  "  Builds (unless --no-build or --url), serves dist/, screenshots the app in headless Chrome and prints diagnostics.\n" +
+  "aura3d render [projectDir] [--json] [--screenshot|--image] [--out shot.png] [--full] [--no-build] [--url http://127.0.0.1:5173/] [--route /path]\n" +
+  "              [--dist dist] [--width N --height N --settle-ms N --ready-timeout-ms N] [--chrome <path>] [--software-gl]\n" +
+  "  Builds (unless --no-build or --url), serves dist/, renders the app in headless Chrome and prints a short summary:\n" +
+  "  subject framing (engine measureFrameFill on the live camera and node bounds), exposure, shadow, motion, errors, fps, backend,\n" +
+  "  and `done` / `next`. Text by default; --json prints the same summary as JSON (stable keys, rounded numbers).\n" +
+  "  --screenshot (or --image) also writes the PNG (to --out, default .aura3d/render.png); without it no PNG is written and a\n" +
+  "  stale one at that path is removed. --full prints the full diagnostics report (aura3d.render/1) instead of the summary.\n" +
+  "  When `done` is true (no errors, subject framed, exposure ok) and `aura3d validate` passes, stop: the scene is finished.\n" +
   "  Exit 0 when no error finding, 1 otherwise, 2 on usage error.";
 
 export interface ColorMetrics {
@@ -61,6 +71,66 @@ export interface RenderReport {
   readonly findings: readonly VerifyFinding[];
   readonly steps: VerifyReport["steps"];
   readonly counts: VerifyReport["counts"];
+  /** Subject framing from the live scene (engine `measureFrameFill`), or from pixels when the page has no live app. */
+  readonly framing?: SubjectFraming;
+  /** Live scene facts the framing was measured from (fps, backend, shadows); absent without a live app. */
+  readonly live?: { readonly fps?: number; readonly backend?: string; readonly shadows?: RenderSceneProbe["shadows"]; readonly pose?: RenderSceneProbe["pose"]; readonly probeError?: string };
+  /** The compact, deterministic summary `aura3d render` prints by default. */
+  readonly summary: RenderSummary;
+}
+
+/** `measureFrameFill(bounds, pose, aspect)` from `@aura3d/engine`. */
+export type MeasureFrameFill = (
+  bounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] },
+  pose: { readonly position: readonly [number, number, number]; readonly target: readonly [number, number, number]; readonly fov: number },
+  aspect?: number
+) => number;
+
+export type FramingVerdict = "framed" | "small" | "cropped" | "off-centre" | "out-of-frame" | "scene-wide" | "unknown";
+
+export interface SubjectFraming {
+  readonly verdict: FramingVerdict;
+  /** Larger of the subject's projected height / width as a fraction of the frame (the `camera.frame` definition); null when unmeasured. */
+  readonly fill: number | null;
+  /** Every corner of the subject box projects inside the frame. Null when the camera is inside the box or it was not measured. */
+  readonly inFrame: boolean | null;
+  readonly centred: boolean | null;
+  /** Centre of the projected subject box in frame units (-1..1, +x right, +y up); null when unmeasured. */
+  readonly offset: readonly [number, number] | null;
+  /** How many visible, non-ground models and primitives make up the subject box. */
+  readonly nodes: number | null;
+  /** `engine`: `measureFrameFill` on the live pose; `viewProjection`: the live camera matrix; `pixels`: border-background estimate. */
+  readonly source: "engine" | "viewProjection" | "pixels" | "none";
+}
+
+export type ExposureVerdict = "ok" | "too-dark" | "too-bright" | "unknown";
+export type ShadowVerdict = "yes" | "no" | "requested-not-drawn" | "unknown";
+
+/** Deterministic render summary: fixed key order, no timestamps or durations, coarse rounding, so an unchanged static scene prints the same bytes. */
+export interface RenderSummary {
+  readonly schema: typeof RENDER_SUMMARY_SCHEMA;
+  readonly ok: boolean;
+  /** No errors, subject framed (or a scene-wide shot), exposure ok: with a passing `aura3d validate`, stop here. */
+  readonly done: boolean;
+  readonly target: string;
+  readonly subject: { readonly framing: FramingVerdict; readonly fillPct: number | null; readonly inFrame: boolean | null; readonly centred: boolean | null; readonly offset: readonly [number, number] | null; readonly nodes: number | null; readonly source: SubjectFraming["source"] };
+  readonly exposure: ExposureVerdict;
+  readonly luma: { readonly mean: number; readonly p99: number } | null;
+  readonly shadow: ShadowVerdict;
+  readonly motion: "moving" | "static" | "unknown";
+  readonly fps: number | null;
+  readonly backend: string | null;
+  readonly drawCalls: number | null;
+  /** `CODE: message` for every error finding. */
+  readonly errors: readonly string[];
+  /** `CODE: message` for every warning finding. */
+  readonly warnings: readonly string[];
+  /** Codes of info findings. */
+  readonly notes: readonly string[];
+  /** The one next step. */
+  readonly next: string;
+  /** Present only when the PNG was written (`--screenshot`). */
+  readonly screenshot?: string;
 }
 
 const round = (v: number, d = 3): number => Math.round(v * 10 ** d) / 10 ** d;
@@ -136,6 +206,256 @@ export function subjectMetrics(image: RgbImage): { subject: SubjectMetrics | nul
   };
 }
 
+// ---- framing from the live scene ---------------------------------------------------------------------------------------
+type Vec3 = readonly [number, number, number];
+
+/** Same set the engine's scene-wide `camera.frame` leaves out (`isGroundLikeNode` in camera/frameNodes.ts): planes and nodes named like ground or set dressing. */
+const GROUND_NAME = /ground|floor|terrain|backdrop|skybox|sea|ocean|\bwalls?\b/i;
+export function isGroundLikeBox(node: Pick<RenderSceneNodeBox, "name" | "primitive">): boolean {
+  return node.primitive === "plane" || (typeof node.name === "string" && GROUND_NAME.test(node.name));
+}
+
+/** A wide, thin slab (a stage, rug or turntable disc under the subject): height under 8% of its larger horizontal side. */
+function isFlatSlab(n: RenderSceneNodeBox): boolean {
+  const w = n.max[0] - n.min[0], h = n.max[1] - n.min[1], d = n.max[2] - n.min[2];
+  return Math.max(w, d) > 0 && h <= 0.08 * Math.max(w, d);
+}
+
+/**
+ * World box of the subject: the visible models and primitives that are not ground-like (the engine's `camera.frameScene`
+ * filter) and not flat slabs, unioned. When only slabs remain they are the subject.
+ */
+export function subjectBoundsOf(nodes: readonly RenderSceneNodeBox[]): { min: Vec3; max: Vec3; count: number } | undefined {
+  const usable = nodes.filter((n) => n.visible && !isGroundLikeBox(n) && [...n.min, ...n.max].every(Number.isFinite));
+  const solid = usable.filter((n) => !isFlatSlab(n));
+  const pick = solid.length > 0 ? solid : usable;
+  if (pick.length === 0) return undefined;
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (const n of pick) for (let i = 0; i < 3; i++) { min[i] = Math.min(min[i]!, n.min[i]!); max[i] = Math.max(max[i]!, n.max[i]!); }
+  return { min: min as unknown as Vec3, max: max as unknown as Vec3, count: pick.length };
+}
+
+/** Column-major perspective x lookAt for a pose (what the presented camera draws with), for apps that expose no `viewProjection()`. */
+export function viewProjectionFromPose(pose: { readonly position: Vec3; readonly target: Vec3; readonly fov: number }, aspect: number): number[] | undefined {
+  const z = [pose.position[0] - pose.target[0], pose.position[1] - pose.target[1], pose.position[2] - pose.target[2]];
+  const zl = Math.hypot(z[0]!, z[1]!, z[2]!);
+  if (!(zl > 1e-9)) return undefined;
+  const zn = [z[0]! / zl, z[1]! / zl, z[2]! / zl];
+  let x = [zn[2]!, 0, -zn[0]!]; // cross(up=[0,1,0], z)
+  let xl = Math.hypot(x[0]!, x[2]!);
+  if (xl < 1e-6) { x = [1, 0, 0]; xl = 1; }
+  const xn = [x[0]! / xl, x[1]! / xl, x[2]! / xl];
+  const yn = [zn[1]! * xn[2]! - zn[2]! * xn[1]!, zn[2]! * xn[0]! - zn[0]! * xn[2]!, zn[0]! * xn[1]! - zn[1]! * xn[0]!];
+  const p = pose.position;
+  const dot = (a: number[], b: Vec3) => a[0]! * b[0] + a[1]! * b[1] + a[2]! * b[2];
+  const view = [xn[0]!, yn[0]!, zn[0]!, 0, xn[1]!, yn[1]!, zn[1]!, 0, xn[2]!, yn[2]!, zn[2]!, 0, -dot(xn, p), -dot(yn, p), -dot(zn, p), 1];
+  const f = 1 / Math.tan((pose.fov * Math.PI) / 360), near = 0.01, far = 1e5;
+  const proj = [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, (2 * far * near) / (near - far), 0];
+  const out = new Array<number>(16).fill(0);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) out[c * 4 + r]! += proj[k * 4 + r]! * view[c * 4 + k]!;
+  return out;
+}
+
+/** Project the 8 box corners through a column-major view-projection matrix; null when any corner is behind the camera. */
+function projectBox(box: { min: Vec3; max: Vec3 }, m: readonly number[]): { minX: number; maxX: number; minY: number; maxY: number } | null {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const x of [box.min[0], box.max[0]]) for (const y of [box.min[1], box.max[1]]) for (const z of [box.min[2], box.max[2]]) {
+    const w = m[3]! * x + m[7]! * y + m[11]! * z + m[15]!;
+    if (!(w > 1e-6)) return null;
+    const nx = (m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w;
+    const ny = (m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w;
+    minX = Math.min(minX, nx); maxX = Math.max(maxX, nx); minY = Math.min(minY, ny); maxY = Math.max(maxY, ny);
+  }
+  return { minX, maxX, minY, maxY };
+}
+
+const SCENE_WIDE_NODES = 8;
+
+function framingVerdict(fill: number | null, inFrame: boolean | null, centred: boolean | null, nodes: number): FramingVerdict {
+  if (fill === null) return "unknown";
+  // Many pieces spread wider than the frame, or a camera inside the box: an environment or flythrough, not one subject.
+  if (inFrame === null || (fill > 1.2 && nodes >= SCENE_WIDE_NODES)) return "scene-wide";
+  if (fill > 1.05) return "cropped";
+  if (inFrame === false) return fill < 0.2 ? "out-of-frame" : "cropped";
+  if (fill < 0.2) return "small";
+  if (centred === false) return "off-centre";
+  return "framed";
+}
+
+/**
+ * Framing of the live scene's subject: `measureFrameFill` (the engine's `camera.frame` definition: larger of projected height /
+ * width fraction) on the presented camera pose, plus in-frame / centring from the live view-projection matrix. Null when the
+ * probe has no pose or no spatial nodes.
+ */
+export function measureSubjectFraming(probe: RenderSceneProbe | null | undefined, viewport: { readonly width: number; readonly height: number }, engine?: MeasureFrameFill | EngineFramingTools | null): SubjectFraming | null {
+  const tools: EngineFramingTools | null = typeof engine === "function" ? { measureFrameFill: engine } : engine ?? null;
+  const measureFrameFill = tools?.measureFrameFill;
+  const boxes = [...(probe?.nodes ?? []), ...(tools?.worldBounds && probe?.sceneNodes ? sceneNodeBoxes(probe.sceneNodes, tools.worldBounds) : [])];
+  if (!probe || boxes.length === 0) return null;
+  const box = subjectBoundsOf(boxes);
+  if (!box) return { verdict: "unknown", fill: null, inFrame: null, centred: null, offset: null, nodes: 0, source: "none" };
+  const aspect = viewport.width / Math.max(1, viewport.height);
+  const matrix = probe.viewProjection?.length === 16 ? probe.viewProjection : probe.pose ? viewProjectionFromPose(probe.pose, aspect) : undefined;
+  const projected = matrix ? projectBox(box, matrix) : undefined;
+  let fill: number | null = null;
+  let source: SubjectFraming["source"] = "none";
+  if (probe.pose && measureFrameFill) {
+    try { const f = measureFrameFill(box, probe.pose, aspect); if (Number.isFinite(f)) { fill = f; source = "engine"; } } catch { /* fall through to the matrix */ }
+  }
+  if (fill === null && projected) { fill = Math.max((projected.maxX - projected.minX) / 2, (projected.maxY - projected.minY) / 2); source = "viewProjection"; }
+  if (fill === null && !projected) return { verdict: matrix ? "scene-wide" : "unknown", fill: null, inFrame: null, centred: null, offset: null, nodes: box.count, source: "none" };
+  let inFrame: boolean | null = null, centred: boolean | null = null, offset: readonly [number, number] | null = null;
+  if (projected) {
+    const tol = 0.02;
+    inFrame = projected.minX >= -1 - tol && projected.maxX <= 1 + tol && projected.minY >= -1 - tol && projected.maxY <= 1 + tol;
+    offset = [(projected.minX + projected.maxX) / 2, (projected.minY + projected.maxY) / 2];
+    centred = Math.abs(offset[0]) <= 0.25 && Math.abs(offset[1]) <= 0.3;
+  }
+  return { verdict: framingVerdict(fill, inFrame, centred, box.count), fill, inFrame, centred, offset, nodes: box.count, source };
+}
+
+/** Framing from the pixel subject estimate when the page exposes no live app (bbox in 0..1 frame units, y down). */
+export function framingFromPixels(subject: SubjectMetrics | null): SubjectFraming {
+  if (!subject || subject.fill === 0) return { verdict: "unknown", fill: null, inFrame: null, centred: null, offset: null, nodes: null, source: subject ? "pixels" : "none" };
+  const { x, y, width, height } = subject.bbox;
+  const fill = Math.max(width, height);
+  const edge = 0.01;
+  const inFrame = x > edge && y > edge && x + width < 1 - edge && y + height < 1 - edge;
+  const offset: [number, number] = [(x + width / 2) * 2 - 1, 1 - (y + height / 2) * 2];
+  const centred = Math.abs(offset[0]) <= 0.25 && Math.abs(offset[1]) <= 0.3;
+  // A box touching the border may just be a subject that fills the frame; only call it cropped when it is also large.
+  const verdict: FramingVerdict = fill < 0.2 ? "small" : !inFrame && fill > 0.9 ? "cropped" : !centred ? "off-centre" : "framed";
+  return { verdict, fill, inFrame, centred, offset, nodes: null, source: "pixels" };
+}
+
+/** The engine's framing maths, loaded from the project's own `@aura3d/engine`. */
+export interface EngineFramingTools {
+  readonly measureFrameFill: MeasureFrameFill;
+  /** `camera.worldBounds(node)`: the world box `camera.frame` uses (size, scale, rotation, model fit, groups, instances). */
+  readonly worldBounds?: (subject: unknown) => { readonly min: Vec3; readonly max: Vec3 };
+}
+
+/** Per top-level snapshot node, the engine's own world box (`camera.worldBounds`); nodes that occupy no space are skipped. */
+export function sceneNodeBoxes(sceneNodes: readonly unknown[], worldBounds: NonNullable<EngineFramingTools["worldBounds"]>): RenderSceneNodeBox[] {
+  const out: RenderSceneNodeBox[] = [];
+  sceneNodes.forEach((raw, index) => {
+    const node = raw as { kind?: string; name?: string; primitive?: string; visible?: boolean; runtime?: { id?: string } };
+    if (!node || typeof node !== "object" || node.kind === "light" || node.kind === "environment" || node.kind === "interaction" || node.kind === "effect") return;
+    try {
+      const b = worldBounds(node);
+      if (!b || ![...b.min, ...b.max].every(Number.isFinite)) return;
+      out.push({ id: node.runtime?.id ?? `${node.kind ?? "node"}-${index}`, kind: String(node.kind ?? "node"), ...(node.name ? { name: node.name } : {}), ...(node.primitive ? { primitive: node.primitive } : {}), visible: node.visible !== false, min: b.min, max: b.max });
+    } catch { /* not spatial, or a shape the engine cannot bound offline */ }
+  });
+  return out;
+}
+
+const engineCache = new Map<string, EngineFramingTools | null>();
+
+/** `measureFrameFill` and `camera.worldBounds` from the project's installed `@aura3d/engine` (pure maths; the import takes about 0.4 s). Null when not installed. */
+export async function loadEngineFraming(projectDir: string): Promise<EngineFramingTools | null> {
+  const key = resolve(projectDir);
+  if (engineCache.has(key)) return engineCache.get(key)!;
+  let tools: EngineFramingTools | null = null;
+  try {
+    const entry = createRequire(join(key, "package.json")).resolve("@aura3d/engine");
+    const mod = (await import(pathToFileURL(entry).href)) as { measureFrameFill?: MeasureFrameFill; camera?: { worldBounds?: EngineFramingTools["worldBounds"] } };
+    if (typeof mod.measureFrameFill === "function") {
+      const wb = mod.camera?.worldBounds;
+      tools = { measureFrameFill: mod.measureFrameFill, ...(typeof wb === "function" ? { worldBounds: (subject: unknown) => wb(subject) } : {}) };
+    }
+  } catch { tools = null; }
+  engineCache.set(key, tools);
+  return tools;
+}
+
+// ---- summary -----------------------------------------------------------------------------------------------------------
+const step = (v: number, unit: number): number => Math.round(Math.round(v / unit) * unit * 1000) / 1000;
+/** Absolute served origins (random port) and long numbers make repeated renders differ; strip them. */
+const stableText = (text: string): string => text.replace(/https?:\/\/(127\.0\.0\.1|localhost|\[::1\]):\d+/g, "").replace(/\s+/g, " ").trim().slice(0, 240);
+
+export function exposureVerdict(frame: FrameAnalysis | undefined, color: ColorMetrics | undefined, codes: readonly string[]): ExposureVerdict {
+  if (!frame || !color) return "unknown";
+  if (frame.black || frame.dim || color.meanLuma < 28) return "too-dark";
+  if (codes.includes("RENDER_WASHED_OUT") || (color.meanLuma >= 225 && color.lumaStddev < 25)) return "too-bright";
+  return "ok";
+}
+
+export function shadowVerdict(shadows: RenderSceneProbe["shadows"] | undefined): ShadowVerdict {
+  if (!shadows) return "unknown";
+  if ((shadows.sampledLights ?? 0) > 0 || shadows.contact === true) return "yes";
+  if (shadows.declaredLights > 0) return shadows.sampledLights === undefined && shadows.contact === undefined ? "yes" : "requested-not-drawn";
+  return shadows.sampledLights === undefined && shadows.contact === undefined ? "unknown" : "no";
+}
+
+function nextStep(s: Omit<RenderSummary, "next" | "done" | "schema" | "screenshot">, done: boolean): string {
+  if (s.errors.length > 0) return `Fix ${s.errors[0]!.split(":")[0]} first, then render again.`;
+  if (s.exposure === "too-dark") return "Frame too dark: add a key light (lights.directional or lights.key) or a looks.preset, then render again.";
+  if (s.exposure === "too-bright") return "Frame washed out: lower ambient/hemisphere or fog, or use a look with a grade, then render again.";
+  const fill = s.subject.fillPct;
+  switch (s.subject.framing) {
+    case "small": return `Subject fills ${fill}% of the frame: use camera.frame(subject, { fill: 0.6 }) or move the camera closer.`;
+    case "cropped": return `Subject is cropped (${fill}% fill): use camera.frame(subject, { fill: 0.6 }) or move the camera back.`;
+    case "out-of-frame": return "Subject is outside the frame: aim the camera target at it or use camera.frame(subject).";
+    case "off-centre": return "Subject is off-centre: set the camera target to the subject centre or use camera.frame(subject).";
+    default: break;
+  }
+  if (done) return "Done: no errors, subject framed, exposure ok. If `aura3d validate` passes, stop and finish; do not keep polishing.";
+  return "Check the warnings; if they are expected for this scene and `aura3d validate` passes, stop.";
+}
+
+/** Build the deterministic summary from a full report. */
+export function summarizeRender(report: Omit<RenderReport, "summary">): RenderSummary {
+  const framing = report.framing ?? framingFromPixels(report.subject);
+  const pick = (severity: VerifyFinding["severity"]) => report.findings.filter((f) => f.severity === severity);
+  const uniq = (list: string[]) => [...new Set(list)];
+  const fps = report.live?.fps;
+  const base = {
+    ok: report.ok,
+    target: report.target,
+    subject: {
+      framing: framing.verdict,
+      fillPct: framing.fill === null ? null : Math.round(step(framing.fill, 0.05) * 100),
+      inFrame: framing.inFrame,
+      centred: framing.centred,
+      offset: framing.offset ? ([step(framing.offset[0], 0.05), step(framing.offset[1], 0.05)] as const) : null,
+      nodes: framing.nodes,
+      source: framing.source
+    },
+    exposure: exposureVerdict(report.frame, report.color, report.codes),
+    luma: report.frame ? { mean: Math.round(report.frame.meanLuma), p99: Math.round(report.frame.p99Luma) } : null,
+    shadow: shadowVerdict(report.live?.shadows),
+    motion: report.motion ? (report.motion.moved ? "moving" as const : "static" as const) : "unknown" as const,
+    fps: fps === undefined ? null : Math.round(fps / 10) * 10,
+    backend: report.live?.backend ?? report.backend ?? null,
+    drawCalls: report.drawCalls ?? null,
+    errors: uniq(pick("error").map((f) => `${f.code}: ${stableText(f.message)}`)),
+    warnings: uniq(pick("warning").map((f) => `${f.code}: ${stableText(f.message)}`)),
+    notes: uniq(pick("info").map((f) => f.code))
+  };
+  const framedEnough = framing.verdict === "framed" || framing.verdict === "scene-wide" || (framing.verdict === "unknown" && !!report.frame?.drawn);
+  const done = report.ok && base.errors.length === 0 && base.exposure === "ok" && framedEnough;
+  return { schema: RENDER_SUMMARY_SCHEMA, ...base, done, next: nextStep(base, done), ...(report.screenshot ? { screenshot: report.screenshot } : {}) };
+}
+
+/** Short text form of the summary (what `aura3d render` prints without --json). */
+export function formatRenderSummary(s: RenderSummary): string {
+  const sub = s.subject;
+  const where = sub.fillPct === null ? "" : `, ${sub.fillPct}% of frame${sub.inFrame === false ? ", partly outside" : ""}${sub.centred === false ? ", off-centre" : sub.centred ? ", centred" : ""}`;
+  const lines = [
+    `aura3d render: ${s.ok ? "PASS" : "FAIL"} ${s.target}${s.done ? "  done" : ""} (${s.errors.length} error, ${s.warnings.length} warning)`,
+    `  subject: ${sub.framing}${where}${sub.source === "none" ? "" : ` (${sub.source === "engine" ? "engine measureFrameFill" : sub.source}${sub.nodes ? `, ${sub.nodes} node${sub.nodes === 1 ? "" : "s"}` : ""})`}`,
+    `  exposure: ${s.exposure}${s.luma ? ` (mean luma ${s.luma.mean}, p99 ${s.luma.p99})` : ""}   shadow: ${s.shadow}   motion: ${s.motion}`,
+    `  ${s.backend ?? "?"}, ${s.drawCalls ?? "?"} draw calls${s.fps === null ? "" : `, ~${s.fps} fps`}`
+  ];
+  if (s.screenshot) lines.push(`  screenshot: ${s.screenshot}`);
+  for (const e of s.errors) lines.push(`  error ${e}`);
+  for (const w of s.warnings) lines.push(`  warning ${w}`);
+  if (s.notes.length) lines.push(`  notes: ${s.notes.join(", ")}`);
+  lines.push(`  next: ${s.next}`);
+  return lines.join("\n");
+}
+
 function extraFinding(code: string, message: string, evidence: Record<string, unknown>): VerifyFinding {
   const entry = explainCode(code)!;
   return { code, severity: entry.severity, step: entry.step, message, cause: entry.cause, fix: entry.fix, evidence };
@@ -144,6 +464,8 @@ function extraFinding(code: string, message: string, evidence: Record<string, un
 export interface RenderOptions {
   readonly projectDir: string;
   readonly out?: string;
+  /** Write the PNG (to `out`, default `.aura3d/render.png`). Default true for API callers; the CLI passes false unless `--screenshot`. */
+  readonly screenshot?: boolean;
   readonly build?: boolean;
   readonly url?: string;
   readonly route?: string;
@@ -156,6 +478,8 @@ export interface RenderOptions {
   readonly softwareGl?: boolean;
   readonly driver?: VerifyBrowserDriver;
   readonly runCommand?: Parameters<typeof runVerify>[0]["runCommand"];
+  /** Framing maths; default: `measureFrameFill` + `camera.worldBounds` from the project's installed `@aura3d/engine`. `null` skips it (live boxes and matrix only). */
+  readonly measureFrameFill?: MeasureFrameFill | EngineFramingTools | null;
 }
 
 export async function runRender(options: RenderOptions): Promise<RenderReport> {
@@ -163,14 +487,19 @@ export async function runRender(options: RenderOptions): Promise<RenderReport> {
   const framesDir = mkdtempSync(join(tmpdir(), "aura3d-render-"));
   const skip: VerifyStep[] = ["typecheck", "assets", "lint"];
   if (options.build === false || options.url) skip.push("build");
+  const writeShot = options.screenshot !== false;
+  const shotPath = resolve(projectDir, options.out ?? join(".aura3d", "render.png"));
+  // Keep the live scene probe the driver reads right after the first frame (verify's own report does not carry it).
+  const inner = options.driver ?? createChromeCdpDriver({ ...(options.chromePath ? { chromePath: options.chromePath } : {}), ...(options.softwareGl ? { softwareGl: true } : {}) });
+  let probe: RenderSceneProbe | null | undefined;
+  const driver: VerifyBrowserDriver = { name: inner.name, close: () => inner.close(), capture: async (url, o) => { const c = await inner.capture(url, o); probe = c.scene; return c; } };
   try {
     const report = await runVerify({
-      projectDir, skip, framesDir,
+      projectDir, skip, framesDir, driver,
       ...(options.url ? { url: options.url } : {}), ...(options.route ? { route: options.route } : {}), ...(options.distDir ? { distDir: options.distDir } : {}),
       ...(options.width ? { width: options.width } : {}), ...(options.height ? { height: options.height } : {}),
       ...(options.settleMs !== undefined ? { settleMs: options.settleMs } : {}), ...(options.readyTimeoutMs !== undefined ? { readyTimeoutMs: options.readyTimeoutMs } : {}),
-      ...(options.chromePath ? { chromePath: options.chromePath } : {}), ...(options.softwareGl ? { softwareGl: true } : {}),
-      ...(options.driver ? { driver: options.driver } : {}), ...(options.runCommand ? { runCommand: options.runCommand } : {})
+      ...(options.runCommand ? { runCommand: options.runCommand } : {})
     });
     const findings: VerifyFinding[] = [...report.findings];
     let screenshot: string | undefined;
@@ -178,11 +507,18 @@ export async function runRender(options: RenderOptions): Promise<RenderReport> {
     let subject: SubjectMetrics | null = null;
     let subjectNote: string | undefined;
     const first = report.render?.frames?.[0];
+    if (!writeShot && /\.png$/i.test(shotPath) && existsSync(shotPath)) {
+      // A PNG left by an earlier `--screenshot` run would describe an old frame; nothing at this path may outlive its render.
+      rmSync(shotPath, { force: true });
+    }
     if (first && existsSync(join(framesDir, first))) {
-      screenshot = resolve(projectDir, options.out ?? join(".aura3d", "render.png"));
-      mkdirSync(dirname(screenshot), { recursive: true });
-      copyFileSync(join(framesDir, first), screenshot);
-      const image = decodePng(readFileSync(screenshot));
+      const framePath = join(framesDir, first);
+      if (writeShot) {
+        screenshot = shotPath;
+        mkdirSync(dirname(screenshot), { recursive: true });
+        copyFileSync(framePath, screenshot);
+      }
+      const image = decodePng(readFileSync(framePath));
       color = colorMetrics(image);
       const measured = subjectMetrics(image);
       subject = measured.subject;
@@ -197,11 +533,21 @@ export async function runRender(options: RenderOptions): Promise<RenderReport> {
         findings.push(extraFinding("RENDER_SUBJECT_SMALL", `The subject covers ${Math.round(subject.fill * 100)}% of the frame and ${Math.round(subject.heightFraction * 100)}% of its height.`, { ...subject }));
       }
     }
+    const viewport = report.render?.viewport ?? { width: options.width ?? 960, height: options.height ?? 540 };
+    let framing: SubjectFraming | undefined;
+    if (probe && ((probe.nodes?.length ?? 0) > 0 || (probe.sceneNodes?.length ?? 0) > 0)) {
+      const tools = options.measureFrameFill === undefined ? await loadEngineFraming(projectDir) : options.measureFrameFill;
+      framing = measureSubjectFraming(probe, viewport, tools) ?? undefined;
+    }
     const counts = { error: 0, warning: 0, info: 0 };
     for (const f of findings) counts[f.severity]++;
     const order = { error: 0, warning: 1, info: 2 } as const;
     const codes = [...new Set([...findings].sort((a, b) => order[a.severity] - order[b.severity]).map((f) => f.code))];
-    return {
+    const live = probe ? {
+      ...(probe.fps !== undefined ? { fps: probe.fps } : {}), ...(probe.backend ? { backend: probe.backend } : {}),
+      ...(probe.shadows ? { shadows: probe.shadows } : {}), ...(probe.pose ? { pose: probe.pose } : {}), ...(probe.error ? { probeError: probe.error } : {})
+    } : undefined;
+    const full: Omit<RenderReport, "summary"> = {
       schema: RENDER_SCHEMA,
       ok: counts.error === 0,
       target: options.url ?? `${basename(projectDir)}${options.route ?? "/"}`,
@@ -218,8 +564,11 @@ export async function runRender(options: RenderOptions): Promise<RenderReport> {
       errors: findings.filter((f) => f.severity === "error").map((f) => `${f.code}: ${f.message}`),
       findings,
       steps: report.steps,
-      counts
+      counts,
+      ...(framing ? { framing } : {}),
+      ...(live ? { live } : {})
     };
+    return { ...full, summary: summarizeRender(full) };
   } finally {
     rmSync(framesDir, { recursive: true, force: true });
   }
@@ -227,7 +576,8 @@ export async function runRender(options: RenderOptions): Promise<RenderReport> {
 
 export function formatRender(report: RenderReport): string {
   const lines = [`aura3d render: ${report.ok ? "PASS" : "FAIL"} ${report.target} (${report.counts.error} error, ${report.counts.warning} warning)`];
-  if (report.screenshot) lines.push(`  screenshot: ${report.screenshot}  (open it and look before calling the scene done)`);
+  if (report.screenshot) lines.push(`  screenshot: ${report.screenshot}`);
+  if (report.framing) lines.push(`  framing: ${report.framing.verdict}${report.framing.fill === null ? "" : `, fill ${report.framing.fill.toFixed(2)}`} (${report.framing.source})`);
   if (report.backend || report.drawCalls !== undefined) lines.push(`  backend ${report.backend ?? "?"}, ${report.drawCalls ?? "?"} draw calls`);
   if (report.frame) lines.push(`  frame: mean luma ${report.frame.meanLuma}, p99 ${report.frame.p99Luma}, ${report.frame.distinctColors} colours, ${(report.frame.texturedBlockFraction * 100).toFixed(1)}% textured${report.frame.drawn ? "" : `  (${report.frame.reasons.join("; ")})`}`);
   if (report.color) lines.push(`  colour: mean saturation ${report.color.meanSaturation}, ${(report.color.saturatedFraction * 100).toFixed(1)}% saturated, ${(report.color.clippedFraction * 100).toFixed(2)}% clipped`);
@@ -239,9 +589,11 @@ export function formatRender(report: RenderReport): string {
   return lines.join("\n");
 }
 
-export async function renderCommand(argv: readonly string[], io: AgentToolIo, injected?: { driver?: VerifyBrowserDriver; runCommand?: RenderOptions["runCommand"] }): Promise<number> {
+export async function renderCommand(argv: readonly string[], io: AgentToolIo, injected?: { driver?: VerifyBrowserDriver; runCommand?: RenderOptions["runCommand"]; measureFrameFill?: RenderOptions["measureFrameFill"] }): Promise<number> {
   if (argv.includes("--help") || argv.includes("-h")) { io.stdout(RENDER_USAGE); return 0; }
   const valueFlags = new Set(["--out", "--url", "--route", "--dist", "--width", "--height", "--settle-ms", "--ready-timeout-ms", "--chrome"]);
+  // The PNG is opt-in: an image in an agent's context costs far more than the summary. AURA3D_RENDER_SCREENSHOT=1 restores the old default.
+  const screenshot = argv.includes("--screenshot") || argv.includes("--image") || process.env.AURA3D_RENDER_SCREENSHOT === "1";
   let report: RenderReport;
   try {
     const url = optionValue(argv, "--url");
@@ -249,6 +601,7 @@ export async function renderCommand(argv: readonly string[], io: AgentToolIo, in
     report = await runRender({
       projectDir: resolve(io.cwd, positionals(argv, valueFlags)[0] ?? "."),
       build: !argv.includes("--no-build"),
+      screenshot,
       ...(optionValue(argv, "--out") ? { out: resolve(io.cwd, optionValue(argv, "--out")!) } : {}),
       ...(url ? { url } : {}),
       ...(optionValue(argv, "--route") ? { route: optionValue(argv, "--route")! } : {}),
@@ -260,9 +613,12 @@ export async function renderCommand(argv: readonly string[], io: AgentToolIo, in
       ...(optionValue(argv, "--chrome") ? { chromePath: optionValue(argv, "--chrome")! } : {}),
       ...(argv.includes("--software-gl") ? { softwareGl: true } : {}),
       ...(injected?.driver ? { driver: injected.driver } : {}),
-      ...(injected?.runCommand ? { runCommand: injected.runCommand } : {})
+      ...(injected?.runCommand ? { runCommand: injected.runCommand } : {}),
+      ...(injected?.measureFrameFill !== undefined ? { measureFrameFill: injected.measureFrameFill } : {})
     });
   } catch (error) { io.stderr(String((error as Error).message ?? error)); return 2; }
-  io.stdout(argv.includes("--json") ? JSON.stringify(report, null, 2) : formatRender(report));
+  const json = argv.includes("--json");
+  if (argv.includes("--full")) io.stdout(json ? JSON.stringify(report, null, 2) : formatRender(report));
+  else io.stdout(json ? JSON.stringify(report.summary) : formatRenderSummary(report.summary));
   return report.ok ? 0 : 1;
 }

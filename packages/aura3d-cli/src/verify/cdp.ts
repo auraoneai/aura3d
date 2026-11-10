@@ -36,7 +36,89 @@ export interface RenderCapture {
   /** PNG frames: [first, second]. */
   readonly frames: readonly Buffer[];
   readonly driver: string;
+  /** Live scene facts read from the first app on `globalThis.__AURA3D_LIVE_APPS__` right after the first frame (absent when the page has no live app). */
+  readonly scene?: RenderSceneProbe | null;
 }
+
+/** World-space box of one visible model or primitive, from the engine's own `node.bounds()`. */
+export interface RenderSceneNodeBox {
+  readonly id: string;
+  readonly kind: string;
+  readonly name?: string;
+  readonly primitive?: string;
+  readonly visible: boolean;
+  readonly min: readonly [number, number, number];
+  readonly max: readonly [number, number, number];
+}
+
+/**
+ * What `aura3d render` reads from the running app to measure framing with the engine's own maths (`measureFrameFill`)
+ * instead of guessing from pixels: the presented camera pose, the view-projection matrix, every spatial node's world box,
+ * and the engine's own fps and shadow diagnostics.
+ */
+export interface RenderSceneProbe {
+  readonly apps?: number;
+  readonly pose?: { readonly position: readonly [number, number, number]; readonly target: readonly [number, number, number]; readonly fov: number; readonly source: string };
+  /** Column-major view-projection matrix of the presented camera (`app.viewProjection()`). */
+  readonly viewProjection?: readonly number[];
+  readonly nodes?: readonly RenderSceneNodeBox[];
+  /**
+   * Top-level scene snapshot nodes (`app.scene.nodes`, JSON, heavy vertex/pixel arrays dropped) whose ids have no live handle,
+   * for `camera.worldBounds` in Node. Absent when the snapshot is too large to send.
+   */
+  readonly sceneNodes?: readonly unknown[];
+  readonly fps?: number;
+  readonly backend?: string;
+  /** Shadow evidence: lights the renderer sampled shadows for, whether the contact-shadow pass ran, and lights that ask for shadows. */
+  readonly shadows?: { readonly sampledLights?: number; readonly contact?: boolean; readonly declaredLights: number };
+  readonly error?: string;
+}
+
+/**
+ * Page expression for `RenderSceneProbe`. Plain ES2017, no engine import: it only calls the public members of the live app
+ * (`camera.presented()`, `viewProjection()`, `nodes.all()`, `node.snapshot()`, `node.bounds()`, `diagnostics()`).
+ */
+export const SCENE_PROBE_EXPRESSION = `(() => { try {
+  var reg = globalThis.__AURA3D_LIVE_APPS__;
+  var app = reg && typeof reg.all === 'function' ? reg.all()[0] : undefined;
+  if (!app) return JSON.stringify(null);
+  var num = function (v) { return typeof v === 'number' && isFinite(v) ? v : undefined; };
+  var vec = function (v) { return v && v.length >= 3 && isFinite(v[0]) && isFinite(v[1]) && isFinite(v[2]) ? [Number(v[0]), Number(v[1]), Number(v[2])] : undefined; };
+  var snap = app.scene || {};
+  var pose;
+  try { var p = app.camera && typeof app.camera.presented === 'function' ? app.camera.presented() : undefined; if (p && vec(p.position) && vec(p.target)) pose = { position: vec(p.position), target: vec(p.target), fov: num(p.fov) || 45, source: 'camera.presented' }; } catch (e) {}
+  if (!pose && snap.camera && vec(snap.camera.position) && vec(snap.camera.target)) pose = { position: vec(snap.camera.position), target: vec(snap.camera.target), fov: num(snap.camera.fov) || 45, source: 'scene.camera' };
+  var vp;
+  try { var m = typeof app.viewProjection === 'function' ? app.viewProjection() : undefined; if (m && m.length === 16) vp = Array.prototype.slice.call(m).map(Number); } catch (e) {}
+  var prim = {}, declared = 0;
+  var walk = function (list) { for (var i = 0; list && i < list.length; i++) { var n = list[i]; if (!n) continue; if (n.id && n.primitive) prim[n.id] = String(n.primitive); if (n.kind === 'light' && (n.shadow || n.castShadow)) declared++; if (n.children) walk(n.children); if (n.nodes) walk(n.nodes); } };
+  walk(snap.nodes);
+  var nodes = [];
+  var handles = app.nodes && typeof app.nodes.all === 'function' ? app.nodes.all() : [];
+  for (var j = 0; j < handles.length && nodes.length < 500; j++) {
+    try {
+      var s = handles[j].snapshot();
+      if (s.kind !== 'model' && s.kind !== 'primitive') continue;
+      var b = handles[j].bounds();
+      if (!b || !vec(b.min) || !vec(b.max)) continue;
+      nodes.push({ id: String(s.id), kind: s.kind, name: s.name, primitive: prim[s.id], visible: s.visible !== false, min: vec(b.min), max: vec(b.max) });
+    } catch (e) {}
+  }
+  var live = {}; for (var k = 0; k < nodes.length; k++) live[nodes[k].id] = true;
+  var heavy = { positions: 1, normals: 1, uvs: 1, uv: 1, uv2: 1, indices: 1, colors: 1, tangents: 1, data: 1, pixels: 1, heights: 1, skinIndices: 1, skinWeights: 1, morphTargets: 1, instanceMatrices: 1, instanceRgba: 1, image: 1, source: 1 };
+  var sceneNodes;
+  try {
+    var top = (snap.nodes || []).filter(function (n) { return n && !(n.id && live[n.id]) && !(n.runtime && n.runtime.id && live[n.runtime.id]); });
+    var text = JSON.stringify(top, function (key, value) { if (heavy[key] && key !== '') return undefined; if (value && typeof value === 'object' && ArrayBuffer.isView(value)) return undefined; if (typeof value === 'function') return undefined; return value; });
+    if (text && text.length <= 1500000) sceneNodes = JSON.parse(text);
+  } catch (e) {}
+  var diag = {};
+  try { diag = app.diagnostics() || {}; } catch (e) {}
+  var lighting = diag.lighting || {};
+  var sampled = Array.isArray(lighting.shadows) ? lighting.shadows.filter(function (x) { return x && x.sampled !== false; }).length : undefined;
+  var contact = lighting.contactShadows ? !!lighting.contactShadows.passExecuted : undefined;
+  return JSON.stringify({ apps: typeof reg.count === 'function' ? reg.count() : undefined, pose: pose, viewProjection: vp, nodes: nodes, sceneNodes: sceneNodes, fps: num(diag.fps), backend: typeof diag.backend === 'string' ? diag.backend : undefined, shadows: { sampledLights: sampled, contact: contact, declaredLights: declared } });
+} catch (e) { return JSON.stringify({ error: String(e && e.message || e).slice(0, 300) }); } })()`;
 
 export interface VerifyBrowserDriver {
   readonly name: string;
@@ -209,10 +291,16 @@ export function createChromeCdpDriver(options: ChromeDriverOptions = {}): Verify
         await sleep(o.settleMs);
         const shot = async (): Promise<Buffer> => Buffer.from(((await send("Page.captureScreenshot", { format: "png" })) as { data: string }).data, "base64");
         const first = await shot();
+        // Read the live scene at (nearly) the instant of the first frame, so framing is measured on what that frame shows.
+        let scene: RenderSceneProbe | null = null;
+        try {
+          const probe = (await send("Runtime.evaluate", { expression: SCENE_PROBE_EXPRESSION, returnByValue: true })) as { result?: { value?: string } };
+          scene = JSON.parse(probe.result?.value ?? "null") as RenderSceneProbe | null;
+        } catch { scene = null; }
         await sleep(o.motionGapMs);
         const second = await shot();
         state = await readState();
-        return { status, consoleMessages, pageErrors, failedRequests: failedRequests.map((f) => f), badResponses, appState: state, frames: [first, second], driver: "chrome-cdp" };
+        return { status, consoleMessages, pageErrors, failedRequests: failedRequests.map((f) => f), badResponses, appState: state, frames: [first, second], driver: "chrome-cdp", scene };
       } finally {
         await cdp.send("Target.closeTarget", { targetId }).catch(() => undefined);
       }
