@@ -43,8 +43,10 @@ look renders flat on a void.
 1. Restate the prompt as scene intent: subject, scene family, camera, lighting,
    effects, interaction, and what a screenshot must visibly show.
 2. Pick the starting point in this order: a template, then a scene kit, then
-   `prefabs.*`, and `primitives.*` only for set dressing, guides, or explicitly
-   abstract visuals.
+   `prefabs.*`, and when no clean GLB exists, sculpt multi-part, multi-material
+   procedural `@aura3d/engine` models (`primitives.extrude`, `primitives.lathe`,
+   `primitives.tube`, `primitives.roundedBox`, `geometry.define`,
+   `geometry.merge`, `geometry.multiMaterial`) rather than 1-box placeholders or Meshy clay.
 
    | Prompt family | Start from | Screenshot must show |
    | --- | --- | --- |
@@ -115,9 +117,10 @@ one change per round (lint first, then the weakest category). Full loop spec:
 
 ## Stop and report
 
-- The subject is a named real object with no typed asset key: stop, load
-  `aura3d-assets`, and label the scene `blocked` until the key exists.
-- The only way to satisfy the prompt is a primitive stand-in for the primary
+- The subject is a named real object with no typed asset key: load
+  `aura3d-assets` for a clean GLB, or sculpt a multi-part, multi-material
+  procedural `@aura3d/engine` assembly (`geometry.define`, `geometry.multiMaterial`).
+- A single unchamfered box/cone/sphere placeholder stands in for the primary
   subject: stop and label it `prototype`.
 - An effect, PBR, skinning, WebGPU, or postprocess claim has no pixel evidence
   from a route importing only `@aura3d/engine`: drop the claim or label it

@@ -11,11 +11,11 @@
 import {
   camera,
   effects,
+  geometry,
   instances,
   lights,
   looks,
   material,
-  model,
   primitives,
   scene,
   sky,
@@ -27,14 +27,48 @@ import {
   type AuraNodeBuilder,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../aura-assets.route";
 import { MATERIALS, type SiegeMaterialId } from "./materials";
 import type { AmmoId } from "./ammo";
 import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
-import { SEA_STACK_PLACEMENT, farSetPiecesFor, setPieces, type FarSetPiece as FarSetPiecePlacement } from "../art/setPieces";
+import { SEA_STACK_PLACEMENT, farSetPiecesFor, type FarSetPiece as FarSetPiecePlacement } from "../art/setPieces";
+import {
+  CRAFT_MATS,
+  bevelBoxMesh,
+  buildArchedStoneBridgeNode,
+  buildBarrelHoopsSpec,
+  buildChapterBackdropLandmark,
+  buildCliffTurfCapSpec,
+  buildCoastalPinesNodes,
+  buildDriftwoodSpec,
+  buildFacetedSeaCliffMesh,
+  buildFlagBastionNode,
+  buildFortressFoundationNode,
+  buildGatehouseNode,
+  buildHeroSiegeBirdNode,
+  buildHorizonCloudsNode,
+  buildLaunchBastionNode,
+  buildLobsterPotSpec,
+  buildPlankScatterNode,
+  buildProceduralBarrelSpec,
+  buildProceduralCrateSpec,
+  buildProceduralPlankSpec,
+  buildQuayBollardSpec,
+  buildRaiderBossNode,
+  buildScallopShellSpec,
+  buildSeaGrassClumpSpec,
+  buildSeaStackLighthouseLandmark,
+  buildSiegeSlingshotRigNode,
+  buildSlingshotYokeNode,
+  buildTerracedIslandSpec,
+  buildWatchtowerNode,
+  buildWindmillNode,
+  buildWindmillSailBladeNode,
+  latheMesh,
+  mergeRawMeshes
+} from "../art/proceduralModels";
 import { levelSignNodes } from "./sign";
 import {
   BARREL_BAND_POOL_ID,
@@ -47,7 +81,6 @@ import {
   blastSparksMaterial,
   coastalSeaMaterial,
   elasticBandMaterial,
-  limestoneCliffMaterial,
   masonryPlumeMaterial,
   trajectoryRibbonMaterial
 } from "./shaders";
@@ -218,12 +251,11 @@ export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMateria
   }),
   stone: material.ceramic({
     name: "chiseled limestone",
-    color: "#c8c2b5",
-    roughness: 0.76,
-    clearcoat: 0.24,
-    clearcoatRoughness: 0.36,
-    normal: material.proceduralTextures.rubber({ scale: 26, strength: 0.4, contrast: 0.76 }),
-    envMapIntensity: 1.14,
+    color: "#d4cec0",
+    roughness: 0.74,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.38,
+    envMapIntensity: 1.15,
     rim: { color: "#fff7e8", power: 3, intensity: 0.1 }
   }),
   glass: material.studioGlass({
@@ -416,7 +448,7 @@ export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[
   const out: StageNode[] = [
     effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.54, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
     effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: 0.85, lights: "sun" }),
-    effects.screenSpaceReflections({ intensity: 0.42, maxDistance: 22, roughness: 0.22, thickness: 0.25 }),
+    effects.screenSpaceReflections({ intensity: 0.12, maxDistance: 16, roughness: 0.14, thickness: 0.2 }),
     { ...effects.cinematicBloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
   ];
   if (row.chapter === 2 && !options.reducedMotion) {
@@ -467,32 +499,63 @@ export function chapterWeather(row: ChapterLook, options: StageOptions): StageNo
   return [];
 }
 
+export function cliffRockMaterial(row: ChapterLook): AuraMaterialSpec {
+  const isNight = row.chapter === 5;
+  return material.ceramic({
+    name: "faceted coastal chalk cliff",
+    color: isNight ? "#3a465c" : row.terrain.chalk,
+    roughness: 0.8,
+    clearcoat: 0.15,
+    clearcoatRoughness: 0.44,
+    envMapIntensity: isNight ? 0.95 : 1.15
+  });
+}
+
 export function beachDressingNodes(row: ChapterLook, options: StageOptions): StageNode[] {
   const d = beachDressing();
   const t = row.terrain;
   const tone = (base: string, n: number, mix: string, amt: number): string[] =>
     Array.from({ length: n }, (_, i) => mixHex(base, mix, (i % 3) * amt));
   return [
-    instances.cone({
-      name: "dressing-sea-grass", material: pbr("#ffffff", { roughness: 0.9 }), transforms: d.grass,
-      colors: tone(mixHex(t.turf, "#c8c27a", 0.25), d.grass.length, "#556b34", 0.18),
-      castShadow: true, receiveShadow: true, ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.5 } })
+    instances.custom(buildSeaGrassClumpSpec(), {
+      name: "dressing-sea-grass",
+      material: pbr("#ffffff", { roughness: 0.84 }),
+      transforms: d.grass,
+      colors: tone(mixHex(t.turf, "#b9ca72", 0.25), d.grass.length, "#3f6a34", 0.2),
+      castShadow: true,
+      receiveShadow: true,
+      ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.8 } })
     }),
-    instances.sphere({
-      name: "dressing-shells", material: pbr("#ffffff", { roughness: 0.55 }), transforms: d.shell,
-      colors: tone("#f4e7d6", d.shell.length, "#e9b9a0", 0.2), castShadow: false, receiveShadow: true
+    instances.custom(buildScallopShellSpec(), {
+      name: "dressing-shells",
+      material: material.ceramic({ color: "#ffffff", roughness: 0.38, clearcoat: 0.45 }),
+      transforms: d.shell,
+      colors: tone("#f6ead9", d.shell.length, "#eb9d82", 0.24),
+      castShadow: false,
+      receiveShadow: true
     }),
-    instances.cylinder({
-      name: "dressing-driftwood", material: pbr(t.driftwood, { roughness: 0.92 }), transforms: d.driftwood,
-      colors: tone(t.driftwood, d.driftwood.length, "#d8cbb2", 0.2), castShadow: true, receiveShadow: true
+    instances.custom(buildDriftwoodSpec(), {
+      name: "dressing-driftwood",
+      material: pbr("#ffffff", { roughness: 0.88 }),
+      transforms: d.driftwood,
+      colors: tone(t.driftwood, d.driftwood.length, "#dfd2ba", 0.22),
+      castShadow: true,
+      receiveShadow: true
     }),
-    instances.cylinder({
-      name: "dressing-rope-posts", material: pbr("#7c6248", { roughness: 0.88 }), transforms: d.ropePost,
-      castShadow: true, receiveShadow: true
+    instances.custom(buildQuayBollardSpec(), {
+      name: "dressing-rope-posts",
+      material: CRAFT_MATS.darkWalnut,
+      transforms: d.ropePost,
+      castShadow: true,
+      receiveShadow: true
     }),
-    instances.box({
-      name: "dressing-lobster-pots", material: pbr("#8f6b45", { roughness: 0.85 }), transforms: d.lobsterPot,
-      colors: tone("#8f6b45", d.lobsterPot.length, row.accent, 0.12), castShadow: true, receiveShadow: true
+    instances.custom(buildLobsterPotSpec(), {
+      name: "dressing-lobster-pots",
+      material: pbr("#ffffff", { roughness: 0.78 }),
+      transforms: d.lobsterPot,
+      colors: tone("#9b7042", d.lobsterPot.length, row.accent, 0.14),
+      castShadow: true,
+      receiveShadow: true
     })
   ];
 }
@@ -552,66 +615,90 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   ];
 
   nodes.push(
-    primitives.cylinder({ name: "stage-ground", material: islandSurface("turf", groundColor, 0.78, textured), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.175, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
-    primitives.cylinder({ name: "stage-ground-rim", material: islandSurface("wetRock", rimColor, 0.88, textured), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.2, 0).scale([18.5, 0.36, 14.5]).runtime({ id: "stage-ground-rim", tags: ["stage"] }),
-    primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
-      .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
+    geometry.custom(buildTerracedIslandSpec(17, 0.045, true), {
+      name: "stage-ground",
+      material: islandSurface("turf", groundColor, 0.78, textured),
+      castShadow: false,
+      receiveShadow: true
+    }).position(1.5, -0.185, 0).scale([18.2, 0.36, 14.2]).runtime({ id: "stage-ground", tags: ["stage"] }),
+    geometry.custom(buildTerracedIslandSpec(29, 0.065, true), {
+      name: "stage-ground-rim",
+      material: islandSurface("wetRock", rimColor, 0.88, textured),
+      castShadow: false,
+      receiveShadow: true
+    }).position(1.5, -0.22, 0).scale([18.9, 0.38, 14.8]).runtime({ id: "stage-ground-rim", tags: ["stage"] }),
+    geometry.custom(buildTerracedIslandSpec(43, 0.075, false), {
+      name: "stage-far-ground",
+      material: islandSurface("sand", farColor, 0.92, textured),
+      castShadow: false,
+      receiveShadow: true
+    }).position(1.6, -0.275, -0.4).scale([20.2, 0.34, 15.8]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
     primitives.cylinder({ name: "stage-shallows", material: seaGloss(shallowColor, row.seaReflection), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]).runtime({ id: "stage-shallows", tags: ["stage"] }),
+      .position(1.5, -0.315, -0.4).scale([22.5, 0.05, 17.5]).runtime({ id: "stage-shallows", tags: ["stage"] }),
     // Animated dual-backend GLSL 300 es + WGSL coastal water (`dualAnimatedWaterSpec`).
     primitives.cylinder({ name: "stage-ocean", material: coastalSeaMaterial(row, options.reducedMotion), castShadow: false, receiveShadow: true })
       .position(1.5, -0.42, -2.0).scale([72, 0.24, 58]).runtime({ id: "stage-ocean", tags: ["stage"] }),
     ...(row.worldWater ? [seaNode(row, options)] : []),
-    primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: true, receiveShadow: false }),
-    // Stylized coastal sea-stack + chapter horizon set pieces (all mounted with runtime IDs so chapters swap live).
-    model(setPieces.sling_seaStackIsland, { name: "far-sea-stack", position: SEA_STACK_PLACEMENT.position, rotation: [0, SEA_STACK_PLACEMENT.rotationY, 0], castShadow: false, receiveShadow: false })
-      .scale(SEA_STACK_PLACEMENT.scale),
+    instances.custom(buildSeaGrassClumpSpec(), {
+      name: "grass-tufts",
+      material: pbr("#ffffff", { roughness: 0.86 }),
+      transforms: tuftInst.map((t) => ({ position: t.position, rotation: t.rotation, scale: [t.scale[0] * 2.2, t.scale[1] * 1.15, t.scale[2] * 2.2] as [number, number, number] })),
+      colors: tuftColors,
+      castShadow: true,
+      receiveShadow: false
+    }),
+    // Sculpted coastal sea-stack + striped lighthouse & chapter horizon landmarks (zero Meshy blobs).
+    buildSeaStackLighthouseLandmark(
+      "far-sea-stack",
+      SEA_STACK_PLACEMENT.position,
+      SEA_STACK_PLACEMENT.rotationY,
+      SEA_STACK_PLACEMENT.scale * 0.38
+    ),
     ...ALL_FAR_PIECES.map(({ chapter: onlyChapter, piece }) => {
       const id = farPieceNodeId(piece.key);
       const active = onlyChapter === null || onlyChapter === chapter.id;
-      return model(setPieces[piece.key], {
-        name: id,
-        position: active ? [piece.position[0], piece.position[1], piece.position[2]] : [0, -160, 0],
-        rotation: [0, piece.rotationY, 0],
-        visible: active,
-        castShadow: false,
-        receiveShadow: false
-      }).scale(piece.scale).runtime({ id, tags: ["backdrop"] });
+      return buildChapterBackdropLandmark(
+        piece.key,
+        id,
+        active ? [piece.position[0], piece.position[1], piece.position[2]] : [0, -160, 0],
+        piece.rotationY,
+        piece.scale,
+        active
+      );
     }),
-    instances.model(assets.gullsiegeBridgeMeshy, {
-      name: "launch-knoll-and-bridge", castShadow: true, receiveShadow: true,
-      transforms: [
-        { position: [-7.4, -0.1, 0], rotation: [0, 0, 0], scale: [2.2, 1.1, 2.2] },
-        { position: [0.2, 0.05, -2.4], rotation: [0, 0.1, 0], scale: [2.0, 2.0, 2.0] }
-      ]
-    }).runtime({ id: "launch-knoll", tags: ["stage"] }),
-    model(assets.gullsiegeBridgeMeshy, {
-      name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0],
-      ...(row.weather === "drizzle" ? { materialOverrides: [{ color: "#b9b3a8", colorMode: "multiply" as const, roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.15 }] } : {})
-    }).scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
+    buildLaunchBastionNode(),
+    buildArchedStoneBridgeNode(),
+    buildFortressFoundationNode()
   );
 
   nodes.push(...beachDressingNodes(row, options), ...chapterWeather(row, options));
   nodes.push(...levelSignNodes(chapter.id));
 
-  // Sun-bleached coastal limestone strata bluffs + lightweight 61 KB instanced coastal pines (1 draw each).
+  // Faceted, stepped coastal chalk/limestone sea-cliffs + overhanging turf caps + wind-swept Monterey pines + horizon clouds.
+  const cliffMeshSpec = mergeRawMeshes([buildFacetedSeaCliffMesh(11)]);
   nodes.push(
-    instances.roundedBox({
+    instances.custom(cliffMeshSpec, {
       name: PROP_IDS.cliffs,
-      params: { radius: 0.18, widthSegments: 3 },
-      material: limestoneCliffMaterial(row),
+      material: cliffRockMaterial(row),
       transforms: cliffTransforms,
       castShadow: true,
       receiveShadow: true
     }).runtime({ id: PROP_IDS.cliffs, tags: ["dressing"] }),
-    instances.model(assets.propConifer, {
-      name: "island-trees",
+    instances.custom(buildCliffTurfCapSpec(), {
+      name: "coastal-cliff-turf-caps",
+      material: material.physical({
+        name: "cliff headland meadow",
+        color: mixHex(groundColor, "#6a994e", 0.35),
+        roughness: 0.8,
+        sheen: 0.28,
+        sheenColor: "#b8d982"
+      }),
+      transforms: cliffTransforms,
       castShadow: true,
-      receiveShadow: true,
-      transforms: pineTransforms
-    }).runtime({ id: "island-trees", tags: ["cloud"] })
+      receiveShadow: true
+    }),
+    ...buildCoastalPinesNodes(pineTransforms, row),
+    buildHorizonCloudsNode(row)
   );
 
   // ------------------------------------------------------------- slingshot --
@@ -626,66 +713,26 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     clearcoatRoughness: 0.35,
     normal: material.proceduralTextures.fabric({ scale: 24, strength: 0.4, contrast: 0.65 })
   });
-  const carvedDriftwood = material.physical({
-    name: "carved driftwood fork",
-    color: "#8f6339",
-    roughness: 0.74,
-    metallic: 0,
-    clearcoat: 0.28,
-    clearcoatRoughness: 0.36,
-    normal: material.proceduralTextures.fabric({ scale: 16, strength: 0.35, contrast: 0.62 })
-  });
 
   nodes.push(
-    model(assets.gullsiegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.42, 0], rotation: [0, 0.35, 0] })
-      .scale(1.35)
-      .runtime({ id: SLING_IDS.catapult, tags: ["sling"] }),
-    // Carved driftwood Y-fork yoke + bronze binding collars above the catapult base.
-    instances.cylinder({
-      name: "sling-driftwood-yoke",
-      material: carvedDriftwood,
-      castShadow: true,
-      receiveShadow: true,
-      transforms: [
-        { position: [-7.42, 1.08, 0], rotation: [0, 0, 0.06], scale: [0.1, 0.82, 0.1] },
-        { position: [-7.64, 1.56, -0.22], rotation: [0.16, 0, 0.42], scale: [0.068, 0.86, 0.068] },
-        { position: [-7.64, 1.56, 0.22], rotation: [-0.16, 0, 0.42], scale: [0.068, 0.86, 0.068] }
-      ]
-    }),
-    // Sculpted saddle-leather cradle pouch (replaces the squashed crate!).
+    buildSiegeSlingshotRigNode([-7.4, 0.42, 0], 0.08, SLING_IDS.catapult),
+    buildSlingshotYokeNode(),
+    // Sculpted saddle-leather cradle pouch.
     primitives.roundedBox({ name: "sling-pouch", params: { radius: 0.045, widthSegments: 2 }, material: saddleLeather, castShadow: true, receiveShadow: true })
-      .position(-7.4, 1.6, 0).scale([0.24, 0.11, 0.24]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
+      .position(-7.4, 1.6, 0).scale([0.26, 0.12, 0.26]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
     // Paired GLSL 300 es + WGSL strain-colored elastic band ribbons.
     primitives.box({ name: "sling-band-l", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
       .position(-7.5, 1.7, -0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
     primitives.box({ name: "sling-band-r", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "sling-loaded", position: [-7.4, 1.62, 0], rotation: [0, Math.PI * 0.5, 0], materialOverrides: ammoGullLook("pebble") })
-      .scale(0.46)
-      .animate({ clip: "Ready", loop: true, speed: 1.0 })
-      .runtime({ id: SLING_IDS.loaded, tags: ["sling"] }),
-    // Per-ammo helm / crest / cinder crown perched on the loaded Hero Gull.
-    primitives.sphere({
-      name: SLING_IDS.ammoCrest,
-      material: material.lacquer({ name: "ammo crest", color: "#ffd766", roughness: 0.2, clearcoat: 1 }),
-      castShadow: false,
-      receiveShadow: false
-    }).position(-7.4, 1.98, 0).scale(0.08).runtime({ id: SLING_IDS.ammoCrest, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-0", position: [-8.35, 0.25, 0.52], rotation: [0, Math.PI * 0.42, 0], materialOverrides: ammoGullLook("stone") })
-      .scale(0.52)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-      .runtime({ id: "ammo-wait-0", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-1", position: [-8.95, 0.2, -0.42], rotation: [0, Math.PI * 0.48, 0], materialOverrides: ammoGullLook("triple") })
-      .scale(0.48)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 1.05 })
-      .runtime({ id: "ammo-wait-1", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-2", position: [-9.45, 0.16, 0.28], rotation: [0, Math.PI * 0.45, 0], materialOverrides: ammoGullLook("ember") })
-      .scale(0.45)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
-      .runtime({ id: "ammo-wait-2", tags: ["stage"] })
+    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.5, SLING_IDS.loaded, "sling"),
+    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.44, 0.52], Math.PI * 0.42, 0.5, "ammo-wait-0", "stage"),
+    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.18, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage"),
+    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.15, 0.28], Math.PI * 0.45, 0.46, "ammo-wait-2", "stage")
   );
 
   // ------------------------------------------------------- piece pools ------
+  const blockFallbackSpec = mergeRawMeshes([bevelBoxMesh(1, 1, 1, 0.06)]);
   if (row.solidBlocks) {
     for (const family of BLOCK_FAMILIES) {
       nodes.push(instances.roundedBox({
@@ -695,40 +742,48 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     }
   } else {
     for (let i = 0; i < POOL.blocks; i += 1) {
-      nodes.push(model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
-        .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
+      nodes.push(geometry.custom(blockFallbackSpec, { name: blockNodeId(i), material: SOLID_BLOCK_MATERIALS.stone, castShadow: true, receiveShadow: true })
+        .position(0, -120, 0).scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
     }
   }
 
-  // WP-12: 84 individual crate/barrel/plank/debris model nodes collapsed into 4 `instances.model` pools + 1 keg band pool!
+  // Sculpted procedural crate, coopered barrel + dual iron/crimson keg hoops, and mortised plank pools!
+  const crateSpec = buildProceduralCrateSpec();
+  const barrelSpec = buildProceduralBarrelSpec();
+  const barrelHoopsSpec = buildBarrelHoopsSpec();
+  const plankSpec = buildProceduralPlankSpec();
   nodes.push(
-    instances.model(assets.gullsiegeCrateMeshy, {
+    instances.custom(crateSpec, {
       name: propPoolNodeId("crate"),
+      material: CRAFT_MATS.cratePine,
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.crates }, () => PARKED_BLOCK)
     }).runtime({ id: propPoolNodeId("crate"), tags: ["piece"] }),
-    instances.model(assets.gullsiegeBarrelMeshy, {
+    instances.custom(barrelSpec, {
       name: propPoolNodeId("barrel"),
+      material: CRAFT_MATS.seasonedOak,
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)
     }).runtime({ id: propPoolNodeId("barrel"), tags: ["piece"] }),
-    instances.cylinder({
+    instances.custom(barrelHoopsSpec, {
       name: BARREL_BAND_POOL_ID,
       material: KEG_BAND_MATERIAL,
       castShadow: false,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)
     }).runtime({ id: BARREL_BAND_POOL_ID, tags: ["piece"] }),
-    instances.model(assets.gullsiegePlanksMeshy, {
+    instances.custom(plankSpec, {
       name: propPoolNodeId("plank"),
+      material: SOLID_BLOCK_MATERIALS.wood,
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.planks }, () => PARKED_BLOCK)
     }).runtime({ id: propPoolNodeId("plank"), tags: ["piece"] }),
-    instances.model(assets.gullsiegePlanksMeshy, {
+    instances.custom(plankSpec, {
       name: propPoolNodeId("debris"),
+      material: SOLID_BLOCK_MATERIALS.wood,
       castShadow: true,
       receiveShadow: false,
       transforms: Array.from({ length: POOL.debris }, () => PARKED_BLOCK)
@@ -737,20 +792,23 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
   // ------------------------------------------------------- raider rigs ------
   for (let g = 0; g < POOL.gullRigs; g += 1) {
-    nodes.push(
-      model(assets.gullsiegeRaiderBossMeshy, { name: gullPartId(g, "body"), position: [0, -120, 0], rotation: [0, -Math.PI * 0.45, 0] })
-        .scale([0.54, 0.54, 0.54])
-        .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 + (g % 3) * 0.08 })
-        .runtime({ id: gullPartId(g, "body"), tags: ["gull"] })
-    );
+    nodes.push(buildRaiderBossNode(g, gullPartId(g, "body")));
   }
 
   // ------------------------------------------------- projectiles + ribbon ---
+  const projAmmos: readonly AmmoId[] = ["pebble", "stone", "triple", "squid", "ember"];
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(1)
-      .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
-      .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
+    nodes.push(
+      buildHeroSiegeBirdNode(
+        projectileNodeId(i),
+        projAmmos[i % projAmmos.length]!,
+        [0, -120, 0],
+        Math.PI * 0.5,
+        0.5,
+        projectileNodeId(i),
+        "projectile"
+      )
+    );
   }
 
   // Predictive parabolic trajectory ribbon segments (paired GLSL 300 es + WGSL flow-pulsed arc dashes).
@@ -777,89 +835,90 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   }
 
   // ------------------------------------------------------- windmill rigs ----
+  const hubSpec = mergeRawMeshes([latheMesh([[0, -0.6], [0.75, -0.5], [0.75, 0.5], [0, 0.6]], 12)]);
   for (let m = 0; m < POOL.windmills; m += 1) {
     nodes.push(
-      model(assets.gullsiegeWindmillMeshy, { name: millPoleNodeId(m), position: [0, -120, 0] })
-        .scale(0.9).runtime({ id: millPoleNodeId(m), tags: ["windmill"] }),
-      model(assets.gullsiegeBarrelMeshy, { name: millHubNodeId(m), position: [0, -120, 0] })
-        .scale([0.18, 0.18, 0.18]).runtime({ id: millHubNodeId(m), tags: ["windmill"] })
+      buildWindmillNode(millPoleNodeId(m), millPoleNodeId(m), ["windmill"], [0, -120, 0], 0, 0.9, false),
+      geometry.custom(hubSpec, { name: millHubNodeId(m), material: CRAFT_MATS.navalBrass, castShadow: true, receiveShadow: true })
+        .position(0, -120, 0).scale([0.18, 0.18, 0.18]).runtime({ id: millHubNodeId(m), tags: ["windmill"] })
     );
     for (let b = 0; b < POOL.windmillBlades; b += 1) {
-      nodes.push(model(assets.gullsiegePlanksMeshy, { name: bladeNodeId(m, b), position: [0, -120, 0] })
-        .scale([0.22, 0.9, 0.12]).runtime({ id: bladeNodeId(m, b), tags: ["windmill"] }));
+      nodes.push(buildWindmillSailBladeNode(bladeNodeId(m, b), bladeNodeId(m, b)));
     }
   }
 
   // -------------------------------------------------- chapter dressing ------
   nodes.push(
-    model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-12.4, 0, 4.2], rotation: [0, 0.5, 0] })
-      .scale(1.85).runtime({ id: PROP_IDS.watchtower, tags: ["dressing"] }),
-    model(assets.gullsiegeGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [9.8, 0, -2.4], rotation: [0, -0.45, 0] })
-      .scale(2.1).runtime({ id: PROP_IDS.gatehouse, tags: ["dressing"] }),
-    model(assets.gullsiegeWindmillMeshy, { name: PROP_IDS.windmillProp, position: [4.2, 0, -3.2], rotation: [0, 0.25, 0] })
-      .scale(2.2).runtime({ id: PROP_IDS.windmillProp, tags: ["dressing"] }),
-    model(assets.gullsiegePlanksMeshy, { name: PROP_IDS.plankScatter, position: [5.2, 0.08, 2.1], rotation: [0, 0.7, 0] })
-      .scale(1.45).runtime({ id: PROP_IDS.plankScatter, tags: ["dressing"] })
+    buildWatchtowerNode(PROP_IDS.watchtower),
+    buildGatehouseNode(PROP_IDS.gatehouse),
+    buildWindmillNode(PROP_IDS.windmillProp, PROP_IDS.windmillProp, ["dressing"], [4.2, 0, -3.2], 0.25, 1.35, true),
+    buildPlankScatterNode(PROP_IDS.plankScatter)
   );
 
   // -------------------------------------------------- foreground framing ----
   nodes.push(
-    instances.model(assets.gullsiegeCrateMeshy, {
-      name: "fg-crates", castShadow: true, receiveShadow: true,
+    instances.custom(crateSpec, {
+      name: "fg-crates",
+      material: CRAFT_MATS.cratePine,
+      castShadow: true,
+      receiveShadow: true,
       transforms: [
-        { position: [-4.9, 0, 4.6], rotation: [0, 0.35, 0], scale: 0.6 },
-        { position: [-4.95, 0.8, 4.55], rotation: [0, 0.9, 0], scale: 0.42 },
-        { position: [-10.2, 0, 3.6], rotation: [0, 0.7, 0], scale: 0.42 }
+        { position: [-4.9, 0.34, 4.6], rotation: [0, 0.35, 0], scale: 0.44 },
+        { position: [-4.95, 0.92, 4.55], rotation: [0, 0.9, 0], scale: 0.32 },
+        { position: [-10.2, 0.28, 3.6], rotation: [0, 0.7, 0], scale: 0.34 }
       ]
     }).runtime({ id: "fg-crates", tags: ["dressing"] }),
-    instances.model(assets.gullsiegeBarrelMeshy, {
-      name: "fg-barrels", castShadow: true, receiveShadow: true,
+    instances.custom(barrelSpec, {
+      name: "fg-barrels",
+      material: CRAFT_MATS.seasonedOak,
+      castShadow: true,
+      receiveShadow: true,
       transforms: [
-        { position: [-4.0, 0, 4.95], rotation: [0, 0.2, 0], scale: 0.5 },
-        { position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0], scale: 0.38 }
+        { position: [-4.0, 0.34, 4.95], rotation: [0, 0.2, 0], scale: 0.44 },
+        { position: [-9.6, 0.27, 4.1], rotation: [0, 0.5, 0], scale: 0.36 }
       ]
     }).runtime({ id: "fg-barrels", tags: ["dressing"] }),
-    instances.cylinder({
-      name: "fg-barrel-bands", material: KEG_BAND_MATERIAL, castShadow: false, receiveShadow: true,
+    instances.custom(barrelHoopsSpec, {
+      name: "fg-barrel-bands",
+      material: KEG_BAND_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
       transforms: [
-        { position: [-4.0, 0.26, 4.95], rotation: [0, 0.2, 0], scale: [0.44, 0.18, 0.44] },
-        { position: [-9.6, 0.2, 4.1], rotation: [0, 0.5, 0], scale: [0.34, 0.14, 0.34] }
+        { position: [-4.0, 0.38, 4.95], rotation: [0, 0.2, 0], scale: 0.44 },
+        { position: [-9.6, 0.30, 4.1], rotation: [0, 0.5, 0], scale: 0.36 }
       ]
     }),
     instances.cylinder({
-      name: "flag-poles", material: pbr("#ffffff", { roughness: 0.82 }), castShadow: true, receiveShadow: true,
+      name: "flag-poles", material: CRAFT_MATS.darkWalnut, castShadow: true, receiveShadow: true,
       transforms: [
         { position: [6.3, 1.35, 5.15], scale: [0.06, 2.7, 0.06] },
-        { position: [7.2, 1.14, -0.6], scale: [0.42, 0.18, 0.42] },
-        { position: [7.2, 3.4, -0.6], scale: [0.07, 4.5, 0.07] }
-      ],
-      colors: ["#7a4e26", "#5a5448", "#6a4a2a"]
+        { position: [7.2, 3.4, -0.6], scale: [0.075, 4.5, 0.075] }
+      ]
     }),
     instances.box({
       name: "flag-cloths", material: pbr("#ffffff", { roughness: 0.72 }), castShadow: false, receiveShadow: true,
       transforms: [
         { position: [6.66, 2.14, 5.13], scale: [0.72, 0.92, 0.035] },
         { position: [6.66, 2.62, 5.12], scale: [0.76, 0.08, 0.045] },
-        { position: [7.74, 5.42, -0.6], scale: [1.06, 0.022, 0.022] },
+        { position: [7.74, 5.42, -0.6], scale: [1.06, 0.026, 0.026] },
         { position: [7.62, 4.82, -0.605], scale: [0.78, 0.075, 0.02] }
       ],
       colors: [mixHex(accentColor, "#c8452e", 0.4), mixHex(accentColor, "#ffe9b0", 0.5), "#3a2c20", mixHex(accentColor, "#f0b45a", 0.5)]
     }),
     instances.sphere({
-      name: "flag-finials", material: material.studioMetal({ color: "#e8cf8c", roughness: 0.24 }), castShadow: false, receiveShadow: true,
+      name: "flag-finials", material: CRAFT_MATS.navalBrass, castShadow: false, receiveShadow: true,
       transforms: [
-        { position: [6.3, 2.75, 5.15], scale: [0.13, 0.13, 0.13] },
-        { position: [7.2, 5.7, -0.6], scale: [0.16, 0.16, 0.16] }
+        { position: [6.3, 2.75, 5.15], scale: [0.14, 0.14, 0.14] },
+        { position: [7.2, 5.7, -0.6], scale: [0.18, 0.18, 0.18] }
       ]
     })
   );
 
-  // Fortress flag bastion + animated pennant.
+  // Sculpted crenelated stone flag bastion + animated heraldic pennant.
   nodes.push(
-    primitives.box({ name: "fortress-flag-bastion", material: SOLID_BLOCK_MATERIALS.stone, castShadow: true, receiveShadow: true })
-      .position(7.2, 0.55, -0.6).scale([1.15, 1.1, 1.15]),
-    primitives.box({ name: "flag-pennant", material: material.physical({ color: "#ff4d5a", roughness: 0.65, sheen: 0.45, sheenColor: "#ffb3b8" }), castShadow: false })
-      .position(7.74, 5.15, -0.6).scale([1.04, 0.5, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
+    buildFlagBastionNode(),
+    primitives.box({ name: "flag-pennant", material: material.physical({ color: "#ff4d5a", roughness: 0.62, sheen: 0.48, sheenColor: "#ffb3b8" }), castShadow: false })
+      .position(7.74, 5.15, -0.6).scale([1.06, 0.52, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
   );
 
   // --------------------------------------------------------------- post ----

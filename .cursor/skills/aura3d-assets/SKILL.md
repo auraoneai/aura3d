@@ -44,9 +44,10 @@ lighting you evaluate materials and silhouettes against.
 
    Use `--type texture|environment|audio|navigation` for non-model files, and
    `--public-path /cdn/aura-assets/` when assets are served from a CDN.
-2. Prompt names a real object: let `assets resolve` decide (project asset,
-   open licence-clear source, Meshy only with `--allow meshy --budget N`, else a
-   primitives recipe), or search to choose yourself. There is no hosted catalog.
+2. Prompt names a real object: check `assets resolve` or `assets search` for a
+   clean project or open CC0/CC-BY GLB first; if none is clean, sculpt a
+   multi-part procedural `@aura3d/engine` model rather than Meshy clay (use
+   `--allow meshy --budget N` only when explicitly requested).
 
    ```bash
    npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --dry-run
@@ -92,12 +93,11 @@ lighting you evaluate materials and silhouettes against.
    "typed-aura-assets-manifest"`. Never omit `hash` in `defineAuraAssets(...)`
    and never place unhashed duplicate GLBs in route-local
    `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.
-7. Use the key as generated. Every character, athlete, enemy, vehicle, weapon,
-   tree, and landmark mounts a real 3D GLB via `model(assets.<name>,
-   { targetMaxDimension, role })`: `targetHeight` only for upright humanoids,
-   `targetMaxDimension` for vehicles, rackets, weapons, and wide props. Drive
-   rigged characters (`skins > 0`) with `handle.setAnimation({ clip, loop: true,
-   speed })`, and never build stick-figure humans or box cars from primitives.
+7. Mount typed keys via `model(assets.<name>, { targetMaxDimension, role })`
+   (`targetHeight` only for upright humanoids; `handle.setAnimation({ clip, loop:
+   true, speed })` on `skins > 0`). With no clean GLB, sculpt multi-part
+   `@aura3d/engine` geometry (`primitives.extrude`, `primitives.lathe`,
+   `geometry.define`, `geometry.multiMaterial`) — never 1-box placeholders or blurry Meshy clay.
 
    Worked example: [preview under look](references/preview-under-look.md#grounded-placement-example).
 
@@ -130,11 +130,11 @@ lighting you evaluate materials and silhouettes against.
 
 ## Stop and report
 
-- Search returns no auto-pullable candidate, or every candidate fails the
-  reject list: stop, list the query, profile, and rejection reasons, and offer
-  two options: a user-supplied licensed file, or Meshy generation from a text
-  prompt (load `meshy-cli`, dry run first, then reserve credits in the ledger; never
-  from screenshots or frames of another game or product). Do not model the subject from primitives.
+- Search returns no clean auto-pullable candidate, or candidates fail the reject
+  list: sculpt a multi-part, multi-material procedural `@aura3d/engine` assembly
+  (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `geometry.define`,
+  `geometry.multiMaterial`) or accept a user-supplied licensed GLB; use `meshy-cli`
+  (dry run + ledger reserve, never from competitor frames) only when requested, and never drop 1-box placeholders.
 - Search prints a source fetch warning (for example an HTTP 404): report it
   verbatim, label asset-dependent work `blocked`, and never treat fallback
   deep-links as auto-pullable.

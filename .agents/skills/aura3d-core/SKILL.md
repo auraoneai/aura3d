@@ -34,11 +34,13 @@ without a look ships flat shading, void background and floating props.
 ## Procedure
 
 1. Pick the starting point in this order: a template (`npx create-aura3d@latest
-   <dir> --template <name>`), then `sceneKits.*`, then `prefabs.*`, and use
-   `primitives.*` last, for set dressing only. `aura3d examples "<task>"` finds
-   the closest recipe or template offline and prints its source. After each
-   edit run `aura3d validate` (colours, unknown options, framing, lighting),
-   then `aura3d render` and open the screenshot it saves.
+   <dir> --template <name>`), then `sceneKits.*`, then `prefabs.*`, and when no
+   clean GLB exists, sculpt multi-part, multi-material procedural models
+   (`primitives.extrude`, `primitives.lathe`, `primitives.tube`,
+   `primitives.roundedBox`, `geometry.define`, `geometry.merge`,
+   `geometry.multiMaterial`) rather than 1-box placeholders or Meshy clay.
+   `aura3d examples "<task>"` finds the closest recipe offline; after each edit run
+   `aura3d validate`, then `aura3d render` and open the screenshot it saves.
 2. Add the look first — it supplies the sky/environment light, the key shadow,
    fog, background and the post grade as one unit:
 
@@ -64,22 +66,18 @@ without a look ships flat shading, void background and floating props.
    model code (load `aura3d-assets`).
 5. Load the next skill from the routing table below. Load more than one when
    the task spans them.
-6. A named real object (character, athlete, vehicle, aircraft, landmark) uses a
-   real GLB via `model(assets.<name>, { targetMaxDimension, role })` from
-   `src/aura-assets.ts` (`targetHeight` only for upright humanoids, so aspect
-   ratios stay proportional); drive rigged characters (`skins > 0`) with
-   `handle.setAnimation({ clip, loop: true, speed })`. No model admitted and
-   none wanted (a world, a creature, a prop set, an abstract piece)? Build it
-   procedurally from `primitives.*`, `geometry.define`, `instances.*`,
-   `material.*`, `group` joints and `environments.neutral`, starting from a
-   recipe in [recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) (recipes 8 to 15: humanoid with joints,
-   terrain, props kit, PBR viewer, custom-shader water, sky and day/night,
-   fire, night street). Label such a route `procedural`, not a showcase claim,
-   and never leave flat unlit placeholders.
-   Capabilities in the 5.0 scope list that matter for visuals (try them, judge
-   by capture, claim nothing unproven): shader graphs through `material.node`,
-   `renderOrder` on nodes, post effects through `effects.*` including
-   `effects.shaderPass`, depth and normal inputs for post, motion vectors.
+6. Two high-craft 3D subject paths: (a) a clean, crisp, UV'd or rigged GLB via
+   `model(assets.<name>, { targetMaxDimension, role })` (`targetHeight` only for
+   upright humanoids; drive `skins > 0` with `handle.setAnimation({ clip, loop:
+   true, speed })`), or (b) when no clean GLB exists, sculpt a multi-part,
+   multi-material procedural assembly in `@aura3d/engine` (`primitives.extrude`,
+   `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`,
+   `geometry.define`, `geometry.merge`, `geometry.multiMaterial`, `instances.custom`,
+   `group` joints across 3–8 physical `material.*` lobes, adapting
+   [recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md)
+   8–15) instead of defaulting to muddy single-texture Meshy clay—and never drop
+   1–3 raw box/cone/sphere placeholders. Visuals to judge by capture:
+   `material.node`, `renderOrder`, `effects.*`, and `effects.shaderPass`.
 7. For interactive and game routes, gate Frame 1 on `app.ready().then(...)`
    (never a module top-level `await app.ready()`: a production build deadlocks
    on it and the page stays black) before fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully

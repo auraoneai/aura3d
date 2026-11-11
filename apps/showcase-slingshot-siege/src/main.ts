@@ -26,13 +26,13 @@ import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   ALL_FAR_PIECES, ammoGullLook, barrelNodeId, bladeNodeId, blastNodeId, blockLook, blockNodeId, buildScene,
-  crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
+  cliffRockMaterial, crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
   plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SLING_IDS,
   SOLID_BLOCK_MATERIALS, solidBlockMaterial
 } from "./game/stage";
 import { BlockInstancePool, PropInstancePool } from "./game/blockInstances";
 import { islandSurface } from "./art/surfaces";
-import { coastalSeaSpec, dualLimestoneStrataSpec, hexToRgb } from "./game/shaders";
+import { coastalSeaSpec, elasticBandMaterial } from "./game/shaders";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, FlipbookBurstController, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
 import { chapterLook, sunDirection, useOriginalLook } from "./game/look";
@@ -178,12 +178,13 @@ function flushInstancePools(): void {
   PROP_POOL?.flush();
 }
 function setNodeAnim(id: string, clip: string, speed = 1): void {
+  if (!ORIGINAL_LOOK) return;
   const h = node(id);
   if (!h) return;
   const key = `${clip}:${speed.toFixed(2)}`;
   if (animCache.get(id) === key) return;
   animCache.set(id, key);
-  h.setAnimation({ clip, loop: true, speed });
+  try { h.setAnimation({ clip, loop: true, speed }); } catch { /* procedural multi-material group */ }
 }
 function setPose(id: string, u: VisualUpdate, scale?: number | readonly [number, number, number]): void {
   const h = node(id);
@@ -218,7 +219,7 @@ function modelMaterials(id: string): AuraModelMaterialHandle | undefined {
   return m && m.inspectMaterials().length > 0 ? m : undefined;
 }
 function applyLook(id: string, key: string, overrides: readonly AuraModelMaterialOverride[]): void {
-  if (isInstancedPropId(id)) return;
+  if (!ORIGINAL_LOOK || isInstancedPropId(id)) return;
   if (lookKeys.get(id) === key && !pendingLooks.has(id)) return;
   lookKeys.set(id, key);
   const m = modelMaterials(id);
@@ -416,12 +417,12 @@ function assignPieceVisuals(): void {
     if (visual === "crate") scale = 0.38;
     else if (visual === "barrel") scale = 0.42;
     else if (visual === "plank") scale = [Math.max(0.4, p.spec.hx * 1.1), Math.max(0.4, p.spec.hy * 2.4), Math.max(0.35, p.spec.hz * 0.9)];
-    else if (SOLID_BLOCKS) scale = [p.spec.hx * 2, p.spec.hy * 2, p.spec.hz * 2];
+    else if (SOLID_BLOCKS || !ORIGINAL_LOOK) scale = [p.spec.hx * 2, p.spec.hy * 2, p.spec.hz * 2];
     else scale = [Math.max(0.28, p.spec.hx * 1.15), Math.max(0.28, p.spec.hy * 1.45), Math.max(0.28, p.spec.hz * 1.25)];
     pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
     // Every assignment sets the look, so a pooled node never keeps the last level's material.
     const mat = visual === "block" ? p.spec.material : "authored";
-    if (SOLID_BLOCKS && visual === "block") {
+    if ((SOLID_BLOCKS || !ORIGINAL_LOOK) && visual === "block") {
       if (lookKeys.get(id) !== `solid:${mat}`) {
         lookKeys.set(id, `solid:${mat}`);
         node(id)?.setMaterial(solidBlockMaterial(p.spec.material));
@@ -505,21 +506,7 @@ function syncChapterAtmosphere(chapterId: number): void {
     }
   }
 
-  const cliffs = node(PROP_IDS.cliffs);
-  const isNight = row.chapter === 5;
-  const cliffSpec = dualLimestoneStrataSpec({
-    baseColor: isNight ? [0.16, 0.2, 0.3] : hexToRgb(row.terrain.chalk),
-    bandColor: isNight ? [0.09, 0.12, 0.2] : hexToRgb("#b8ae99"),
-    sunDir: sunDirection(row.sun),
-    sunGain: isNight ? 0.55 : 1.05
-  });
-  if (cliffs && cliffSpec.uniforms) {
-    for (const [uKey, uEntry] of Object.entries(cliffSpec.uniforms)) {
-      if (uEntry && typeof uEntry === "object" && "value" in uEntry) {
-        try { cliffs.setUniform?.(uKey, uEntry.value as number | readonly number[]); } catch { /* shader uniform */ }
-      }
-    }
-  }
+  node(PROP_IDS.cliffs)?.setMaterial(cliffRockMaterial(row));
 
   for (const { chapter: onlyChapter, piece } of ALL_FAR_PIECES) {
     const fh = node(farPieceNodeId(piece.key));
@@ -1361,13 +1348,17 @@ const hud = new SiegeHud(document.getElementById("hud") ?? stageEl, {
   },
   onBandColor: (c) => {
     saved.bandColor = c; persist();
-    const mat = material.pbr({ color: c, roughness: 0.6 });
+    const mat = ORIGINAL_LOOK ? material.pbr({ color: c, roughness: 0.6 }) : elasticBandMaterial(c, 0);
     node(SLING_IDS.bandL)?.setMaterial(mat);
     node(SLING_IDS.bandR)?.setMaterial(mat);
   },
   onFlagColor: (c) => {
     saved.flagColor = c; persist();
-    node(PROP_IDS.flag)?.setMaterial(material.pbr({ color: c, roughness: 0.7 }));
+    node(PROP_IDS.flag)?.setMaterial(
+      ORIGINAL_LOOK
+        ? material.pbr({ color: c, roughness: 0.7 })
+        : material.physical({ name: "banner cloth", color: c, roughness: 0.72, sheen: 0.52, sheenColor: "#ffb8a0" })
+    );
   },
   onRangeShot: (ammo, powerPct, angleDeg) => {
     const power = (powerPct / 100) * 16.5;
@@ -1386,10 +1377,14 @@ function resetLevel(): void {
 
 // apply persisted studio colours
 {
-  const mat = material.pbr({ color: saved.bandColor, roughness: 0.6 });
+  const mat = ORIGINAL_LOOK ? material.pbr({ color: saved.bandColor, roughness: 0.6 }) : elasticBandMaterial(saved.bandColor, 0);
   node(SLING_IDS.bandL)?.setMaterial(mat);
   node(SLING_IDS.bandR)?.setMaterial(mat);
-  node(PROP_IDS.flag)?.setMaterial(material.pbr({ color: saved.flagColor, roughness: 0.7 }));
+  node(PROP_IDS.flag)?.setMaterial(
+    ORIGINAL_LOOK
+      ? material.pbr({ color: saved.bandColor === "#d94f30" ? saved.flagColor : saved.flagColor, roughness: 0.7 })
+      : material.physical({ name: "banner cloth", color: saved.flagColor, roughness: 0.72, sheen: 0.52, sheenColor: "#ffb8a0" })
+  );
 }
 
 function setMode(m: ModeId): void {

@@ -45,13 +45,13 @@ export function signTextPlacement(name: string): TextPlacement {
 }
 
 export function levelSignNodes(bootChapter: number): AuraNodeBuilder<AuraSceneNode>[] {
-  const wood = material.pbr({ color: SIEGE_PALETTE.driftwood, roughness: 0.82, metallic: 0 });
-  const post = material.pbr({ color: "#6b5440", roughness: 0.88, metallic: 0 });
-  const ink = material.pbr({ color: "#3a2a1c", roughness: 0.7, metallic: 0 });
+  const wood = material.physical({ name: "carved sign walnut", color: "#52351f", roughness: 0.68, clearcoat: 0.28, clearcoatRoughness: 0.34 });
+  const post = material.physical({ name: "sign oak post", color: "#3d2615", roughness: 0.78, clearcoat: 0.2 });
+  const ink = material.pbr({ color: "#fcf2d9", roughness: 0.45, metallic: 0 });
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
-    primitives.box({ name: "siege-level-sign-board", material: wood, castShadow: true, receiveShadow: true })
+    primitives.roundedBox({ name: "siege-level-sign-board", params: { radius: 0.025, widthSegments: 2 }, material: wood, castShadow: true, receiveShadow: true })
       .position(...SIGN_CENTER).rotate(0, SIGN_YAW, 0).scale([...SIGN_BOARD]) as AuraNodeBuilder<AuraSceneNode>,
-    primitives.box({ name: "siege-level-sign-post", material: post, castShadow: true, receiveShadow: true })
+    primitives.roundedBox({ name: "siege-level-sign-post", params: { radius: 0.02, widthSegments: 2 }, material: post, castShadow: true, receiveShadow: true })
       .position(SIGN_CENTER[0], SIGN_CENTER[1] / 2 - 0.06, SIGN_CENTER[2] - 0.06).rotate(0, SIGN_YAW, 0).scale([0.1, SIGN_CENTER[1] + 0.1, 0.08]) as AuraNodeBuilder<AuraSceneNode>
   ];
   for (const ch of CHAPTERS) {

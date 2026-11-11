@@ -201,25 +201,12 @@ export class PropInstancePool {
       if (live === 0) node.setVisible(false);
       else node.setInstances(transforms).setVisible(true);
 
-      // Sync dark forged-iron / crimson-lacquer explosive keg collar bands onto every live barrel!
+      // Sync dual forged-iron / crimson-lacquer explosive keg hoops onto every live barrel in full 3D rotation!
       if (family === "barrel") {
         const bandNode = this.resolve(BARREL_BAND_POOL_ID);
         if (bandNode) {
-          if (live === 0) {
-            bandNode.setVisible(false);
-          } else {
-            const bandTransforms: AuraTransformSpec[] = transforms.map((t, idx) => {
-              if (idx >= live) return PARKED_BLOCK;
-              const sc = Array.isArray(t.scale) ? t.scale : [0.42, 0.42, 0.42];
-              const p = t.position ?? [0, -120, 0];
-              return {
-                position: [p[0], p[1] + 0.19, p[2]],
-                rotation: t.rotation ? [...t.rotation] : [0, 0, 0],
-                scale: [Math.max(1e-4, sc[0]! * 0.88), Math.max(1e-4, sc[1]! * 0.42), Math.max(1e-4, sc[2]! * 0.88)]
-              };
-            });
-            bandNode.setInstances(bandTransforms).setVisible(true);
-          }
+          if (live === 0) bandNode.setVisible(false);
+          else bandNode.setInstances(transforms).setVisible(true);
         }
       }
       this.dirty.delete(family);

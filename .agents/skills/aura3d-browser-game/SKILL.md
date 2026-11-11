@@ -77,19 +77,19 @@ Pick the genre's recipe row before adding props: [genre looks](references/genre-
    `game` lane on; install the safety net instead), and never
    set `emissive: "#ffffff"` on instanced pool materials (`instanceColors`
    multiply `u_baseColor`, not `u_emissiveColor`).
-3. Mount typed 3D GLBs for every character, athlete, enemy, vehicle, weapon,
-   tree, and landmark (`model(assets.<name>, { targetMaxDimension, role })`,
-   emissive 3–5 on pickups, and explicit `material: material.pbr({ color })` on
-   untextured preview GLBs); use `targetHeight` only for upright humanoids and
-   `targetMaxDimension` for vehicles, rackets, paddles, weapons, and wide props
-   so silhouettes never stretch vertically. Drive rigged characters (`skins > 0`)
-   with `handle.setAnimation({ clip, loop: true, speed })` synced to locomotion
-   (`idle`, `walk`, `run`, `attack`) for real pixel motion under the key shadow
-   instead of sliding rigid statues. Never build stick-figure humans or box cars
-   from primitives; ground `model()` actors (`minY = 0`) at `y + sy / 2` of
-   centered platforms; wind custom `geometry.custom` triangles CCW from `+Y`; and
-   run Meshy GLBs through `assets optimize --role` before admission and mount
-   them with a valid 64-char `sha256-...` `hash` (`defineModelAssets`).
+3. Build every character, enemy, vehicle, weapon, tree, and landmark from either
+   clean typed GLBs (`model(assets.<name>, { targetMaxDimension, role })`,
+   `targetHeight` only for upright humanoids, `handle.setAnimation({ clip, loop:
+   true, speed })` on `skins > 0`) OR crisp multi-part, multi-material procedural
+   `@aura3d/engine` assemblies (`primitives.extrude`, `primitives.lathe`,
+   `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`,
+   `geometry.multiMaterial`, `instances.custom`) instead of blurry Meshy clay.
+   Split procedural parts across 3–8 physical materials (`material.carPaint`,
+   `material.lacquer`, `material.brushedMetal`, `material.ceramic`,
+   `material.studioGlass`) so bevels, rims, canopies, and foliage catch real key
+   light, specular highlights, and contact shadows. Never build 1-box cars,
+   stick-figure humans, or raw cone trees; ground `model()` at `y + sy / 2` and
+   wind `geometry.custom` triangles CCW from `+Y`.
 4. Camera state drives `app.camera` every frame — size `html, body, #app, canvas`
    to `100vw × 100vh` (`position: fixed; inset: 0`), extend the 3D ground apron
    deep in `+Z`/`-Z` so the bottom frame is never a black void, disable

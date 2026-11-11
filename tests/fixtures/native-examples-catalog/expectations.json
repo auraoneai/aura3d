@@ -2518,7 +2518,7 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "375734041521b400f1d570fcbf46c452ed99da0707a793539ec4c7abb149d09e"
+        "sha256": "c0b76d7413bd45f42acb0a2fbd41562c95d6d656c58960ae568c9bfb87e16a41"
       },
       "sourceDependencies": [
         {
@@ -2539,7 +2539,7 @@
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/stage.ts",
-          "sha256": "6ff91641ae1d294eb702b1a8a5699239960698bd62754e55fa296dd7c958870a"
+          "sha256": "82892b708bf4252e38c40d5f522bfb79955b3660c8122f0aaa9ef7d0afbe0c4a"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/look.ts",

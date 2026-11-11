@@ -24,7 +24,7 @@ compiles, or produces a large screenshot is not proof.
 ## Forbidden patterns
 
 - no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
-- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
+- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives (1–3 unchamfered box/cone/sphere programmer-art placeholders) unless the route is explicitly abstract visualization — sculpted multi-part, multi-material `@aura3d/engine` assemblies (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial` across 3–8 physical `material.*` lobes) are first-class procedural models, not placeholders;
 - no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
 - no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
 - no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
@@ -34,17 +34,26 @@ camera loop; no memorized or guessed model URLs (they are hallucinated
 provenance); no `createAuraApp()` call per frame; no CSS, DOM, or canvas
 overlay standing in for 3D effects, labels on models, or renderer output.
 
-## Resolve-first rule
+## Resolve-first & multi-part procedural sculpting rule
 
-A prompt that names a real object goes through `npx @aura3d/cli@latest assets
-resolve "<descriptive phrase>" --name <key>` before any model code. It uses an
-admitted project asset, then an open licence-clear source, then Meshy (only with
-`--allow meshy` and a budget), and otherwise prints a primitives recipe for
-simple props. There is no hosted catalog.
+A prompt that names a real object checks `npx @aura3d/cli@latest assets
+resolve "<descriptive phrase>" --name <key>` for a clean admitted project asset
+or open licence-clear (CC0/CC-BY) GLB first. There is no hosted catalog.
 Auto-pullable means verified, redistributable (CC0 or CC-BY), and
 direct-download. Marketplace and deep-link results are user-handled: the user
 downloads and licenses them, then admits the file with `assets add`.
-Primitives are set dressing around a resolved asset, never the named subject.
+
+When no clean project or open-source GLB exists, **do not default to single-mesh,
+melted-clay Meshy GLBs and never drop 1–3 raw box/cone/sphere placeholders**.
+Instead, sculpt a rich multi-part, multi-material procedural assembly in
+`@aura3d/engine` using `primitives.extrude`, `primitives.lathe`,
+`primitives.tube`, `primitives.roundedBox`, `primitives.polyhedron`,
+`geometry.define`, `geometry.applyMatrix4`, `geometry.merge`,
+`geometry.multiMaterial`, and `instances.custom` split across 3–8 distinct
+physical materials (`material.carPaint`, `material.lacquer`,
+`material.brushedMetal`, `material.ceramic`, `material.studioGlass`,
+`material.fabric`, `material.physical`). Reserve Meshy (`--allow meshy` with an
+approved budget) strictly for explicit user requests or organic skeletal rigs.
 
 ## Typed-asset rule
 

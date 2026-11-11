@@ -13,7 +13,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-11-09
+- Last updated: 2026-11-10
 
 ## Pages
 
@@ -219,11 +219,11 @@ cd my-scene && npm run dev
 
 Mandatory 3D game & scene anti-failure guardrails:
 
-1. No primitive-box characters, vehicles, or hero props ("no stick-figure humans or box cars") & prop normalization (`targetMaxDimension` vs `targetHeight`):
-   - Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or architectural landmarks out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder` — keep every silhouette, look, lighting, and shadow readable with real 3D geometry.
-   - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts` (use `targetHeight` only for upright humanoids and `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios and silhouettes never stretch vertically). If the catalog lacks a required 3D model, generate a bespoke PBR 3D model with Meshy (`meshy`) and admit it via `aura3d assets import-meshy`.
-   - Drive rigged humanoid and creature GLBs (`skins > 0`) via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synchronized to locomotion (`idle`, `walk`, `run`, `attack`, `swing`) so limbs articulate under the key light and shadow instead of sliding rigid statues across the floor.
-   - Primitives (`primitives.plane`, `primitives.box`, `primitives.cylinder`, `primitives.torus`) are reserved strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.
+1. High-craft 3D models — curated/rigged GLBs or multi-part procedural `@aura3d/engine` sculpting (never 1-box programmer art and never default to melted-clay Meshy blobs) & prop normalization (`targetMaxDimension` vs `targetHeight`):
+   - Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or architectural landmarks out of 1 to 3 raw unchamfered `primitives.box`, `primitives.sphere`, or `primitives.cone` placeholders ("no stick-figure humans, 1-box cars, or single-cone trees").
+   - When a clean, crisp, properly UV'd or rigged skeletal 3D GLB exists in `src/aura-assets.ts` or open CC0/CC-BY sources, mount it via `model(assets.<name>, { targetMaxDimension, role })` (use `targetHeight` only for upright humanoids and `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios and silhouettes never stretch vertically).
+   - When no clean GLB exists (or when existing candidates are muddy single-texture Meshy clay blobs), sculpt a bespoke multi-part, multi-material procedural assembly directly in `@aura3d/engine` using `primitives.extrude` (beveled 2D profiles), `primitives.lathe` (turned domes, wheels, barrels, hulls, foliage), `primitives.tube` (spline arches, roll-cages, branches, rigging), `primitives.roundedBox` (chamfered plates and timbers), `primitives.polyhedron`, and `geometry.define` + `geometry.applyMatrix4` + `geometry.merge` + `geometry.multiMaterial` + `instances.custom` split across 3 to 8 distinct physical materials (`material.carPaint`, `material.lacquer`, `material.brushedMetal`, `material.ceramic`, `material.studioGlass`, `material.fabric`, `material.physical`). Reserve Meshy (`meshy` + `aura3d assets import-meshy`) strictly for explicit user requests or organic/rigged generation.
+   - Drive rigged humanoid and creature GLBs (`skins > 0`) via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synchronized to locomotion (`idle`, `walk`, `run`, `attack`, `swing`), and articulate multi-part procedural characters/machines (`group` joints, rotors, wings, suspension, turrets) every frame under the key light and shadow instead of sliding rigid statues across the floor.
 2. Boot sequence gate (`app.ready().then(...)`, never a module top-level `await`) & default manual control (`autopilot = false` on Frame 1):
    - Gate Frame 1 on `app.ready().then(...)` (a module top-level `await app.ready()` deadlocks a production build: black page) before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes never pop in mid-frame.
    - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button, and yield back to manual control on keyboard (`keydown`), pointer, touch, or gamepad input.

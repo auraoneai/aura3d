@@ -155,7 +155,9 @@ Whole starter scenes, each GPU-verified and passing `check-deploy`: `npx create-
 ## Read first
 
 1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked). Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.
-2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes are `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
+2. Two high-craft 3D modeling paths (never default to melted-clay single-mesh Meshy blobs or 1-box programmer art):
+   - Clean, sharp, properly UV'd or rigged skeletal GLBs via `model(assets.x)` when one exists in the project or open CC0/CC-BY sources.
+   - Multi-part, multi-material procedural sculpting in `@aura3d/engine`: compose `primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `primitives.polyhedron`, `geometry.define`, `geometry.applyMatrix4`, `geometry.merge`, `geometry.multiMaterial`, and `instances.custom` across 3 to 8 distinct physical materials (`material.carPaint`, `material.lacquer`, `material.brushedMetal`, `material.ceramic`, `material.studioGlass`, `material.fabric`, `material.physical`) so every bevel, seam, window pane, trim collar, and foliage tier catches crisp IBL and key-light speculars. Eight complete procedural scenes are in `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
 
 ## More pitfalls
 
@@ -204,7 +206,7 @@ createAuraApp("#app", {
 - Never a solid void background; the look's sky, biome or studio backdrop owns it.
 - Never a hand-placed camera for the subject: `.camera(camera.auto())` frames what the scene holds (`{ subject: "name", fill }` for one node). Hand-built light: `lights.key({ target })` casts the shadow; give it a ground plane.
 - Never `pixelRatio`, `qualityProfile`, `safe-basic`, FXAA or `replaceTextures: true` overrides; `looks.appOptions(id)` carries the renderer contract.
-- Hero subject: use `model(assets.x)` with a typed asset when one exists or the prompt names a real object. With no admitted model (a world, a creature, a prop set, an abstract piece) build it procedurally as in recipes 8 to 15, never as a flat placeholder.
+- Hero subject & props: use `model(assets.x)` when a clean, sharp, properly UV'd or rigged skeletal GLB exists. When no clean asset exists, sculpt a multi-part, multi-material procedural `@aura3d/engine` model (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial` across 3 to 8 distinct physical materials) instead of defaulting to muddy single-texture Meshy clay—and never drop 1 to 3 raw box/cone/sphere programmer-art placeholders.
 - Never emissive cards or sprites faking reflections, puddles or glows; use the look's grade and `effects.*`.
 - Never CSS/DOM particles or labels standing in for rendered output. HUD lives in the DOM, the scene does not.
 - Gate frame 1 on `app.ready().then(...)` (never a module top-level `await app.ready()`: a production build deadlocks and the page stays black); mutate node handles on restart instead of calling `app.setScene()` again.
@@ -232,12 +234,12 @@ Porting existing three.js code: `aura3d migrate three` and the `aura3d-threejs-m
 
 ## Assets
 
-Never invent asset paths, URLs or ids. Every model comes from a generated `assets.<key>`.
+Do not invent asset paths, URLs or ids. Every model comes from a generated `assets.<key>`.
 
 - `npx @aura3d/cli@latest assets search "<object>"` searches licence-tagged open public sources and a starter pack; results are candidates to check, and there is no Aura3D-run search service to rely on.
 - `assets resolve "<object>" --name <name>` pulls the top match and types it as `assets.<name>`.
 - `assets add ./assets/model.glb --name model` adds a local file; then read the generated `src/aura-assets.ts`.
-- No catalog match: generate with Meshy (`meshy-cli` skill), optimize (`assets optimize --file in.glb --out out.glb --role <role>`), then admit (`assets import-meshy`).
+- No open/project asset match: prefer sculpting a multi-part, multi-material procedural `@aura3d/engine` model (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial`) over single-mesh Meshy clay; use Meshy (`meshy-cli` skill, then `assets optimize --file in.glb --out out.glb --role <role>` and `assets import-meshy`) only when explicitly requested by the user or when organic rigged generation is required.
 - Production needs every model to have a same-origin URL, a 64-character sha256 and provenance, otherwise it draws nothing.
 
 ## Kits (build the shell from these)
@@ -283,4 +285,4 @@ Release integrity rules:
 - Docs: https://aura3d.auraone.ai/docs/api, https://aura3d.auraone.ai/docs/agent-quickstart, https://aura3d.auraone.ai/docs/claims
 - Showcase (30 playable games): https://aura3d.auraone.ai/apps/showcase-index/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml; crawl policy: https://aura3d.auraone.ai/robots.txt
-- Last updated: 2026-11-09
+- Last updated: 2026-11-10
