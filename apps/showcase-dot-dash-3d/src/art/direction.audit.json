@@ -127,7 +127,6 @@
         "practical": false
       },
       {
-        "name": "studio glass",
         "node": "prisms",
         "practical": false
       },
@@ -200,7 +199,6 @@
         "practical": true
       },
       {
-        "name": "studio glass",
         "node": "nixie-tubes",
         "practical": false
       },
