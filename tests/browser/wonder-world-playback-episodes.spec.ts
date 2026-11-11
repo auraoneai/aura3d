@@ -23,10 +23,10 @@ test("Wonder World J09: the canonical 20-episode list matches src/content/episod
 defineStorySuite({
   title: "Wonder World J09 episode playback E01-E10",
   stories: EPISODES.slice(0, 10),
-  storiesPerTest: 5,
+  storiesPerTest: 3,
   mode: "watch-sing",
   style: "sampled",
   micProbe: false,
   reportPrefix: "playback",
-  viewport: { width: 640, height: 480 }
+  viewport: { width: 320, height: 240 }
 });

@@ -13,10 +13,10 @@ import { EPISODES, defineStorySuite } from "./wonder-world-lib";
 defineStorySuite({
   title: "Wonder World J09 episode playback E11-E20",
   stories: EPISODES.slice(10),
-  storiesPerTest: 5,
+  storiesPerTest: 3,
   mode: "watch-sing",
   style: "sampled",
   micProbe: false,
   reportPrefix: "playback",
-  viewport: { width: 640, height: 480 }
+  viewport: { width: 320, height: 240 }
 });
