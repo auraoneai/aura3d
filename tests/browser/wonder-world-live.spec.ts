@@ -126,10 +126,14 @@ function sampleUrls(log: PageLog): string[] {
   const seen = new Set<string>();
   for (const request of log.requests) {
     if (request.origin !== "same-origin") continue;
-    const extension = new URL(request.url).pathname.split(".").pop() ?? "";
+    const schemeEnd = request.url.indexOf("://");
+    const pathStart = schemeEnd >= 0 ? request.url.indexOf("/", schemeEnd + 3) : -1;
+    const pathAndQuery = pathStart >= 0 ? request.url.slice(pathStart) : "/";
+    const fullUrl = new URL(pathAndQuery, LIVE_URL);
+    const extension = fullUrl.pathname.split(".").pop() ?? "";
     if (!(extension in CONTENT_TYPES) || seen.has(extension)) continue;
     seen.add(extension);
-    urls.add(request.url);
+    urls.add(fullUrl.href);
   }
   return [...urls];
 }
@@ -150,14 +154,15 @@ async function hostingRules(request: APIRequestContext, log: PageLog): Promise<{
       robots: headers["x-robots-tag"] ?? null
     };
     checked.push(row);
-    if (row.status !== 200) problems.push(`${path}: status ${row.status}`);
+    const canonicalIndexRedirect = path === "/index.html" && row.status === 308 && headers["location"] === "/";
+    if (row.status !== 200 && !canonicalIndexRedirect) problems.push(`${path}: status ${row.status}`);
     if (!/\bnoindex\b/.test(row.robots ?? "")) problems.push(`${path}: no X-Robots-Tag noindex`);
     if (extension === "html" && row.cacheControl !== "no-cache") problems.push(`${path}: cache-control ${row.cacheControl}, not no-cache`);
     if (path.startsWith("/assets/") && row.cacheControl !== "public, max-age=31536000, immutable") {
       problems.push(`${path}: cache-control ${row.cacheControl}, not immutable`);
     }
     const expected = CONTENT_TYPES[extension];
-    if (expected && !expected.test(row.contentType ?? "")) problems.push(`${path}: content-type ${row.contentType}`);
+    if (!canonicalIndexRedirect && expected && !expected.test(row.contentType ?? "")) problems.push(`${path}: content-type ${row.contentType}`);
   }
   // A missing file must answer 404, not the page (no SPA fallback, DEPLOYMENT.md section 3).
   const missing = await request.get(new URL("assets/no-such-file.js", LIVE_URL).href, { maxRedirects: 0 });
