@@ -680,14 +680,14 @@ function pieceMaterial(p: StandInPiece, color: string): PieceMaterial {
         color,
         roughness: p.roughness ?? 0.03,
         metallic: 0.0,
-        transmission: 0.88,
-        ior: 1.33,
-        thickness: 0.08,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
         iridescence: 1.0,
         iridescenceIOR: 1.33,
         iridescenceThicknessRange: [180, 480],
         opacity: p.opacity ?? 0.36,
-        alphaMode: "blend"
+        alphaMode: "blend",
+        ...emissiveSpec
       });
     case "clay":
       return material.matteClay({
@@ -735,10 +735,14 @@ function pieceMaterial(p: StandInPiece, color: string): PieceMaterial {
         ...emissiveSpec
       });
     case "frostedGlass":
-      return material.frostedGlass({
+      return material.physical({
         color,
-        ...(p.roughness !== undefined ? { roughness: p.roughness } : {}),
+        roughness: p.roughness ?? 0.14,
+        metallic: 0.06,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.1,
         opacity: p.opacity ?? 0.52,
+        alphaMode: "blend",
         ...emissiveSpec
       });
     case "carPaint":
@@ -784,11 +788,15 @@ export function standInPieceMaterial(key: StageAssetKey, index: number, color: s
 function primitiveFor(p: StandInPiece, h: number, color: string, name: string, castShadow: boolean) {
   const size: Vec3 = [p.size[0] * h, p.size[1] * h, p.size[2] * h];
   const params = primitiveParams(p.shape, p.segments, p.tube);
+  const translucent =
+    (p.opacity !== undefined && p.opacity < 1) ||
+    p.craft === "soapBubble" ||
+    p.craft === "frostedGlass";
   const options = {
     name,
     size,
     material: pieceMaterial(p, color),
-    castShadow,
+    castShadow: castShadow && !translucent,
     receiveShadow: true,
     ...(params ? { params } : {})
   };

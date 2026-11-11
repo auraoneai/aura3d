@@ -61,6 +61,7 @@ export type WorldLookSpec = WorldLook;
 export interface WorldLookOptions {
   readonly reducedMotion?: boolean;
   readonly qualityTier?: "low" | "medium" | "high" | "ultra";
+  readonly softwareRenderer?: boolean;
 }
 
 const STORYBOOK_PCSS_SHADOW = {
@@ -70,6 +71,15 @@ const STORYBOOK_PCSS_SHADOW = {
   filter: "pcss",
   softness: 0.65,
   bias: 0.0015,
+  normalBias: 0.02
+} as const;
+
+const SOFTWARE_GL_SHADOW = {
+  mapSize: 512,
+  cascades: 1,
+  maxDistance: 24,
+  filter: "pcf",
+  bias: 0.002,
   normalBias: 0.02
 } as const;
 
@@ -453,25 +463,39 @@ export function lookAppOptions(world: WorldId = "meadow"): ReturnType<typeof loo
  */
 export function worldLookNodes(
   world: WorldId,
-  _options: WorldLookOptions = {}
+  options: WorldLookOptions = {}
 ): readonly AuraNodeBuilder<AuraSceneNode>[] {
   const spec = WORLD_LOOKS[world];
-  return [
-    looks.preset(spec.look, spec.overrides),
+  const overrides: AuraLookOverrides =
+    options.softwareRenderer === true
+      ? {
+          ...spec.overrides,
+          ...(spec.overrides.key
+            ? { key: { ...spec.overrides.key, shadow: SOFTWARE_GL_SHADOW } }
+            : {})
+        }
+      : spec.overrides;
+  const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
+    looks.preset(spec.look, overrides),
     lights.hemisphere({
       name: `${world} bounce fill`,
       skyColor: spec.hemisphere.skyColor,
       groundColor: spec.hemisphere.groundColor,
       intensity: spec.hemisphere.intensity
-    }),
-    effects.ambientOcclusion({
-      name: `${world} clay ambient occlusion`,
-      radius: 0.45,
-      intensity: 0.65,
-      falloff: 0.45,
-      multiBounce: true
     })
   ];
+  if (options.softwareRenderer !== true) {
+    nodes.push(
+      effects.ambientOcclusion({
+        name: `${world} clay ambient occlusion`,
+        radius: 0.45,
+        intensity: 0.65,
+        falloff: 0.45,
+        multiBounce: true
+      })
+    );
+  }
+  return nodes;
 }
 
 /** The HDRI file (`<name>.hdr`, served from `/hdri/`) a world's look loads, or null for a look without one. */

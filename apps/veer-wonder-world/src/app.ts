@@ -1204,6 +1204,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     runner.start();
     // Draw the opening beat's state at once (camera, entrances), also when only QA calls move time.
     target.update(0);
+    if (query.manual) presentNow();
     if (active?.runner === runner) {
       if (audioFailed) runner.audioUnavailable();
       if (pauseReasons.paused()) {
@@ -1223,6 +1224,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return createStage({
       target: stageHost,
       reducedMotion: reducedMotionNow(),
+      manualClock: query.manual,
       backend: flags.backend,
       models: flags.models,
       ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
@@ -1367,6 +1369,10 @@ export function createApp(options: WonderAppOptions): WonderApp {
     setReducedMotion(on) {
       forcedReducedMotion = false;
       applySettings({ ...settings, reducedMotion: on });
+      if (query.manual && active) {
+        stage?.update(0);
+        presentNow();
+      }
     },
     targetRects() {
       const target = stage;
@@ -1390,6 +1396,10 @@ export function createApp(options: WonderAppOptions): WonderApp {
     stageApply(actions) {
       if (disposed || !active) return;
       stage?.apply(actions);
+      if (query.manual) {
+        stage?.update(0);
+        presentNow();
+      }
     },
     setTalking(actor) {
       if (disposed || !active) return;

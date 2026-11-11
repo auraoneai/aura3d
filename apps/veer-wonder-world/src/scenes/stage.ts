@@ -172,6 +172,8 @@ export interface StageOptions {
   readonly models?: boolean;
   /** Bound on each wait for a scene mount or a first drawn frame. Default 20000 ms. */
   readonly mountTimeoutMs?: number;
+  /** Deterministic QA mode (`?manual=1`): pauses background rAF after warm-up so `app.step(0)` draws on demand. */
+  readonly manualClock?: boolean;
   /**
    * Called once each time a song line's cues have been applied (07 B20), with the actions applied. The stage
    * plays no sound itself: the app routes the cue's `sfx` and `music` actions to the mixer, as it does for a
@@ -494,6 +496,28 @@ function resolveTarget(target: HTMLElement | string | null): HTMLElement | null 
   if (typeof target !== "string") return target;
   const found = document.querySelector(target);
   return found instanceof HTMLElement ? found : null;
+}
+
+/** Detects CPU software WebGL2 (`SwiftShader`/`llvmpipe`) so CI containers avoid 2048-PCSS + SSAO stalls while real GPUs keep full Cycles-grade settings. */
+function detectSoftwareWebGL(host: HTMLElement | null): boolean {
+  if (host === null || typeof document === "undefined") return false;
+  try {
+    const probe = document.createElement("canvas");
+    probe.width = 1;
+    probe.height = 1;
+    const gl = probe.getContext("webgl2");
+    if (!gl) return false;
+    const ext = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = String(
+      (ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null) ??
+        gl.getParameter(gl.RENDERER) ??
+        ""
+    );
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return /SwiftShader|llvmpipe|Software|Subzero/i.test(renderer);
+  } catch {
+    return false;
+  }
 }
 
 const MOUNT_FAILURE = /failed to mount|renderer-mount-failed|RENDERER_MOUNT_FAILED/i;
@@ -829,11 +853,12 @@ function buildStory(
   story: StorySpec,
   available: (key: ModelKey) => boolean,
   cameraPose: CameraPose,
-  reducedMotion = false
+  reducedMotion = false,
+  softwareRenderer = false
 ): BuiltStory {
   const look = worldLook(story.world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(story.world, { reducedMotion })) builder.add(node);
+  for (const node of worldLookNodes(story.world, { reducedMotion, softwareRenderer })) builder.add(node);
   const world = buildWorldNodes(story.world, available, { reducedMotion });
   builder.addMany(world.nodes);
   const seeds = nodeSeeds(story);
@@ -1033,11 +1058,12 @@ function buildIdleScene(
   world: WorldId,
   available: (key: ModelKey) => boolean,
   cameraPose: CameraPose,
-  reducedMotion = false
+  reducedMotion = false,
+  softwareRenderer = false
 ): { readonly builder: AuraSceneBuilder; readonly world: BuiltWorld } {
   const look = worldLook(world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(world, { reducedMotion })) builder.add(node);
+  for (const node of worldLookNodes(world, { reducedMotion, softwareRenderer })) builder.add(node);
   const builtWorld = buildWorldNodes(world, available, { reducedMotion });
   builder.addMany(builtWorld.nodes);
   builder.camera(camera.perspective({ position: cameraPose.position, target: cameraPose.target, fov: cameraPose.fov, near: cameraPose.near, far: cameraPose.far }));
@@ -1048,6 +1074,7 @@ function buildIdleScene(
 
 export async function createStage(options: StageOptions): Promise<WonderStage> {
   let reducedMotion = options.reducedMotion;
+  const manualClock = options.manualClock === true;
   const director: AnimationDirector = createAnimationDirector({ reducedMotion });
   const preloader: AssetPreloader = createAssetPreloader({
     ...(options.modelTimeoutMs !== undefined ? { timeoutMs: options.modelTimeoutMs } : {}),
@@ -1055,6 +1082,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   });
   const mountTimeoutMs = options.mountTimeoutMs !== undefined && options.mountTimeoutMs > 0 ? options.mountTimeoutMs : MOUNT_TIMEOUT_MS;
   const host = resolveTarget(options.target);
+  const softwareRenderer = detectSoftwareWebGL(host);
   const warnings: string[] = [];
   const warn = (message: string): void => {
     if (!warnings.includes(message)) {
@@ -1091,7 +1119,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   };
   const initialWorld: WorldId = "meadow";
   const initialPre = await preloader.preload(worldDressingKeys(initialWorld));
-  let initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion);
+  let initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion, softwareRenderer);
   let currentWorld: BuiltWorld | null = initialIdle.world;
 
   // Wonder World's deterministic `advance(ms)` -> `app.step(0)` -> immediate canvas readback
@@ -1117,6 +1145,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       ...lookOpts.renderer,
       backend: resolvedBackend,
       allowFallback: true,
+      ...(softwareRenderer ? { antialias: false } : {}),
       morph: "gpu" as const
     },
     ...(options.sound !== undefined ? { sound: options.sound } : {})
@@ -1143,7 +1172,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     ...WARM_OPTIONS,
     // Headless Node tests (`host === null`) have no HTTP server or GPU canvas for HDRI/texture fetches.
     frames: host !== null ? 1 : 0,
-    maxFrames: host !== null ? WARM_OPTIONS.maxFrames : 2,
+    maxFrames: host !== null ? (softwareRenderer ? 4 : WARM_OPTIONS.maxFrames) : 2,
     waitForEnvironment: host !== null,
     waitForTextures: host !== null
   });
@@ -1228,7 +1257,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       return () => undefined;
     }
     return () => {
-      if (disposed || runtime.disposed || !runtime.paused) return;
+      if (disposed || manualClock || runtime.disposed || !runtime.paused) return;
       try {
         runtime.resume();
       } catch {
@@ -1252,7 +1281,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       preloader.markFailed(drop);
       warn(`first mount failed; ${drop.join(", ")} drawn as stand-ins`);
       try {
-        initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key) && !dropped.includes(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion);
+        initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key) && !dropped.includes(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion, softwareRenderer);
         currentWorld = initialIdle.world;
         await created.setScene(initialIdle.builder.toJSON());
         await withTimeout(app.ready(), mountTimeoutMs);
@@ -1282,6 +1311,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       resumeFirstWarm();
     }
     syncEffectsRuntime();
+    if (manualClock && !disposed) {
+      try {
+        if (created.runtime.running) created.runtime.pause();
+        app.step(0);
+      } catch {
+        // Headless or lost-context fallback.
+      }
+    }
     if (!disposed) await setVeil(0);
   };
   let readyPromise: Promise<void> = settleFirstMount();
@@ -2255,7 +2292,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
     if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
-    let built = buildStory(next, (key) => pre.available.has(key), aspectPose, reducedMotion);
+    let built = buildStory(next, (key) => pre.available.has(key), aspectPose, reducedMotion, softwareRenderer);
     recovered = false;
     let result = await mountScene(built, seq);
     if (result === "stale") return;
@@ -2270,7 +2307,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       dropped = [...dropped, ...drop];
       preloader.markFailed(drop);
       warn(`mount of ${next.id} failed; ${drop.join(", ")} drawn as stand-ins`);
-      built = buildStory(next, (key) => pre.available.has(key) && !dropped.includes(key), aspectPose, reducedMotion);
+      built = buildStory(next, (key) => pre.available.has(key) && !dropped.includes(key), aspectPose, reducedMotion, softwareRenderer);
       recovered = true;
       result = await mountScene(built, seq);
       if (result === "stale") return;
@@ -2298,6 +2335,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     syncEffectsRuntime();
     written.clear();
     frame(0);
+    if (manualClock) {
+      try {
+        if (created.runtime.running) created.runtime.pause();
+        app.step(0);
+      } catch {
+        // Headless or lost-context fallback.
+      }
+    }
     await setVeil(0);
   };
 
