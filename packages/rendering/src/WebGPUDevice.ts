@@ -614,6 +614,7 @@ interface WebGPUDrawBatch {
   bound: WebGPUBatchPassBindings;
   /** Fullscreen post passes recorded into this batch (see `runWebGPUFullscreenPass`). */
   postPasses: number;
+  mrt: boolean;
   readonly accesses: Map<object, "read" | "write" | "readwrite">;
   readonly releaseUniforms: TransientUniform[];
   readonly retirements: { destroy(): void }[];
@@ -1645,8 +1646,8 @@ export class WebGPUDevice implements RenderDevice {
    * Generated-PBR material bytes per draw slot (the nth draw of a shader in a frame), kept with a value snapshot of the
    * uniforms they were packed from. A slot whose uniforms are unchanged reuses its bytes instead of repacking 8 KB.
    */
-  readonly #pbrPackSlots = new WeakMap<WebGPUShaderProgram, (GeneratedPbrPackSlot | undefined)[]>();
-  readonly #pbrPackOrdinals = new Map<WebGPUShaderProgram, number>();
+  readonly #pbrPackSlots = new WeakMap<WebGPUShaderProgram, WeakMap<object, Map<number, (GeneratedPbrPackSlot | undefined)[]>>>();
+  readonly #pbrPackOrdinals = new Map<WebGPUShaderProgram, Map<object, Map<number, number>>>();
   #pbrPackFrame: object | null = null;
   /** The same per-slot reuse for fast portable uniform blocks (shadow casters, post and custom portable shaders). */
   readonly #portableSlots = new WeakMap<readonly PortableShaderBinding[], (PortableUniformSlot | undefined)[]>();
@@ -1707,11 +1708,13 @@ export class WebGPUDevice implements RenderDevice {
   readonly #nativeDofPipelineKeys = new Map<string, Map<string, string>>();
   /** Depth-only views by native depth texture. */
   readonly #depthOnlyViews = new WeakMap<WebGPUTextureLike, unknown>();
+  /** Immutable subresource/dimension views by native texture and descriptor key. */
+  readonly #cachedViews = new WeakMap<WebGPUTextureLike, Map<string, unknown>>();
   /** The last material bind group per arena range, with the entries it was created from (see `cachedBindGroup`). */
   readonly #bindGroupMemo = new WeakMap<object, { readonly layout: unknown; readonly entries: readonly WebGPUBindGroupEntryLike[]; readonly group: WebGPUBindGroupLike }>();
   /** The attachments of the last batched draw and their pass key (object ids are stable per object). */
-  #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly sampleCount: number;
-    readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
+  #batchPassKey: { readonly nativeView: unknown; readonly resolveView: unknown; readonly depthView: unknown; readonly extraColor0: unknown;
+    readonly sampleCount: number; readonly hasDepthStencil: boolean; readonly depthSlice: number | undefined; readonly key: string } | null = null;
   private readonly pendingRenderTargetDisposals = new Set<WebGPURenderTarget>();
   private readonly activeTargetDisposals = new Set<WebGPURenderTarget>();
   /** Identities of the color resolve pair allocated for each native target. */
@@ -1959,6 +1962,18 @@ export class WebGPUDevice implements RenderDevice {
     this.assertAlive();
     if (this.#nativeDofActive) this.#nativeDofActive.phase = "invalid";
     return this.device;
+  }
+
+  /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+  supportsSubmittedWorkCompletion(): boolean {
+    try {
+      const generation = this.generation;
+      if (this.disposed || this.deviceDisposing || this.contextLost) return false;
+      return typeof this.device.queue?.onSubmittedWorkDone === "function"
+        && !this.disposed && !this.deviceDisposing && !this.contextLost && this.generation === generation;
+    } catch {
+      return false;
+    }
   }
 
   /** Opt into timing the first native forward draw with this exact label in each frame. */
@@ -4053,10 +4068,10 @@ export class WebGPUDevice implements RenderDevice {
     for (let level = 1; level < owned.colorTexture.mipLevelCount; level += 1) {
       const width = Math.max(1, Math.floor(owned.width / 2 ** level));
       const height = Math.max(1, Math.floor(owned.height / 2 ** level));
-      this.runWebGPUFullscreenPass({ label: "webgpu-render-target-mip", fragment: WEBGPU_MIP_AREA_FRAGMENT, entryPoint: "fs_mip",
-        uniforms: new Float32Array([width, height, 0, 0]), exposureBindings: true,
-        views: [texture.createView({ baseMipLevel: level - 1, mipLevelCount: 1 })],
-        target: owned, targetViewOverride: texture.createView({ baseMipLevel: level, mipLevelCount: 1 }), reuseUniforms: true,
+      this.runWebGPUFullscreenPass({ label: "webgpu-render-target-mip", uniformTag: `webgpu-render-target-mip:${level}`, fragment: WEBGPU_MIP_AREA_FRAGMENT, entryPoint: "fs_mip",
+        uniforms: new Float32Array([width, height, 0, 0]), textureLoadBindings: true,
+        views: [this.cachedTextureView(texture, `mip:${level - 1}:1`, { baseMipLevel: level - 1, mipLevelCount: 1 })],
+        target: owned, targetViewOverride: this.cachedTextureView(texture, `mip:${level}:1`, { baseMipLevel: level, mipLevelCount: 1 }), reuseUniforms: true,
         accesses: [{ resource: texture, mode: "readwrite" }] });
     }
     owned.nativeMipsReady = true;
@@ -6945,6 +6960,15 @@ export class WebGPUDevice implements RenderDevice {
     return view;
   }
 
+  /** An immutable view of a native texture, created once per texture and descriptor key. */
+  private cachedTextureView(texture: WebGPUTextureLike, key: string, descriptor?: Parameters<WebGPUTextureLike["createView"]>[0]): unknown {
+    let map = this.#cachedViews.get(texture);
+    if (!map) { map = new Map(); this.#cachedViews.set(texture, map); }
+    let view = map.get(key);
+    if (view === undefined) { view = texture.createView(descriptor); map.set(key, view); }
+    return view;
+  }
+
   private executeNativeLinearDepthPass(pass: WebGPULinearDepthDraw, assertCurrent: () => void): void {
     const source = this.assertNativeDofTarget(pass.source), target = this.assertNativeDofTarget(pass.target);
     const depth = source.nativeDepthTexture;
@@ -7455,11 +7479,12 @@ export class WebGPUDevice implements RenderDevice {
     }
     this.flushNativeRenderTargetClear(src);
     recordPostStage(`custom:${pass.id}@${pass.insertAt}`, diagnosticToken);
-    const target = this.createRenderTarget({
+    const target = this.transientPostTarget({
       width: src.width,
       height: src.height,
       format: pass.space === "display" ? "rgba8" : "rgba16f",
-      label: `a3d-webgpu-custom-${pass.id}`
+      label: `a3d-webgpu-custom-${pass.id}`,
+      depth: false
     });
     const views: unknown[] = [srcView];
     const declared = pass.uniforms?.(frameContext) ?? {};
@@ -7482,13 +7507,14 @@ export class WebGPUDevice implements RenderDevice {
       });
       return target;
     } catch (error) {
-      target.dispose();
+      this.releaseTransientPostTarget(target);
       throw error;
     }
   }
 
   private runWebGPUFullscreenPass(args: {
     readonly label: string;
+    readonly uniformTag?: string;
     readonly fragment: string;
     readonly entryPoint: string;
     readonly uniforms: ArrayBufferView;
@@ -7543,7 +7569,7 @@ export class WebGPUDevice implements RenderDevice {
     const scopedErrors = Boolean(scopeDevice.pushErrorScope && scopeDevice.popErrorScope) && scopeUses < WEBGPU_POST_SCOPED_USES;
     if (scopeUses < WEBGPU_POST_SCOPED_USES) this.#webgpuPostScopeUses.set(scopeKey, scopeUses + 1);
     const batched = this.#drawBatchingEnabled && this.frameActive && !scopedErrors && validationFailure === null
-      && !args.beforeSubmit && !args.protectedSubmission && args.accesses === undefined && !this.#drawBatchRecording && !this.#drawBatchDrawActive;
+      && !args.beforeSubmit && !args.protectedSubmission && !this.#drawBatchRecording && !this.#drawBatchDrawActive;
     if (!batched && this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
     if (scopedErrors) scopeDevice.pushErrorScope?.("validation");
     try {
@@ -7581,7 +7607,7 @@ export class WebGPUDevice implements RenderDevice {
       // queue.writeBuffer into the same buffer is ordered after the earlier submission: one buffer per pass label and size
       // (the exposure chain shares one per size) serves every frame, with no per-pass allocation or fenced retirement
       // (including on devices without fences).
-      const uniformKey = args.exposureBindings || args.reuseUniforms ? args.uniforms.byteLength : `${args.label}:${args.uniforms.byteLength}`;
+      const uniformKey = args.exposureBindings || (args.reuseUniforms && !batched) ? args.uniforms.byteLength : `${args.uniformTag ?? args.label}:${args.uniforms.byteLength}`;
       let uniformBuffer = this.webgpuExposureUniformBuffers.get(uniformKey);
       if (!uniformBuffer) {
         const created = this.device.createBuffer({ label: `${args.label}-uniforms`, size: args.uniforms.byteLength, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
@@ -7628,6 +7654,13 @@ export class WebGPUDevice implements RenderDevice {
         batch.postPasses += 1;
         const previous = batch.accesses.get(uniformBuffer);
         batch.accesses.set(uniformBuffer, previous === undefined || previous === "read" ? "read" : "readwrite");
+        if (args.accesses) {
+          for (let ai = 0; ai < args.accesses.length; ai += 1) {
+            const access = args.accesses[ai]!;
+            const prevAccess = batch.accesses.get(access.resource);
+            batch.accesses.set(access.resource, prevAccess === undefined || prevAccess === access.mode ? access.mode : "readwrite");
+          }
+        }
         if (target) target.nativeNeedsClear = false;
         return;
       }
@@ -9384,15 +9417,15 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeRenderPipelinesCreated += 1;
       if (!pointCheck) shader.renderPipelines.set(pipelineKey, pipeline);
     }
-    if (this.tryNativeForwardBundle({
+    if (!(this.#drawBatchingEnabled && this.#drawBatchWindows > 0) && this.tryNativeForwardBundle({
       command, shader, pipeline, pipelineKey, streams, frameBuffer, targetFormats, sampleCount,
       nativeView, resolveView, depthView, hasDepthStencil, shouldClear, resolvedState,
       pointCheck, p3Surface, generatedCoverage
     })) return;
     // Batched draws share one encoder (and one pass while the attachments match) and submit together at the flush.
-    const batchable = this.#drawBatchingEnabled && this.#drawBatchWindows > 0 && !pointCheck && !p3Surface && !morphPacket && !mrtTarget
-      && !generatedCoverage && !dofProof && !checkDofDraw && !checkP3Draw && !this.gaussianSplatBorrowedDepth && !this.forwardPassProfiler
-      && !this.activeRenderTarget?.nativeExtraColors.length && !(command.nativeStorageBindings?.length) && !this.vertexConversionCheck;
+    const batchable = this.#drawBatchingEnabled && this.#drawBatchWindows > 0 && !pointCheck && !p3Surface && !morphPacket
+      && !dofProof && !checkDofDraw && !checkP3Draw && !this.gaussianSplatBorrowedDepth && !this.forwardPassProfiler
+      && !(command.nativeStorageBindings?.length) && !this.vertexConversionCheck;
     if (!batchable) this.flushDrawBatch();
     // Every uniform block below is acquired after this point of this call; batched draws in a frame take arena ranges.
     this.#arenaDraw = batchable && this.frameActive;
@@ -9421,7 +9454,7 @@ export class WebGPUDevice implements RenderDevice {
         const texture = binding?.texture;
         if (!texture) throw new RenderDeviceError("Generated PBR clustered light texture is unavailable", "WEBGPU_CLUSTER_LIGHTING_INVALID");
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d:0:1", { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
       }
       if (resource.uniform === "u_a3dPhotometricAtlas") {
         const texture = binding?.texture;
@@ -9440,34 +9473,52 @@ export class WebGPUDevice implements RenderDevice {
         }
         const packet = validateGeneratedPhotometricPacket(command.uniforms ?? new Map(), texture.width * texture.height);
         const pixels = texture.data;
-        for (let slot = 0; slot < 16; slot += 1) {
-          const base = slot * 4, count = packet.offsets[base + 3]!;
-          if (count === 0) continue;
-          const vOffset = packet.offsets[base]!, hOffset = packet.offsets[base + 1]!, cOffset = packet.offsets[base + 2]!;
-          const hCount = packet.meta[base]!, symmetry = packet.meta[base + 1]!, scale = packet.meta[base + 2]!;
-          for (const [offset, length, max] of [[vOffset, count, 180], [hOffset, hCount, 360]] as const) {
-            let previous = -Infinity;
-            for (let index = 0; index < length; index += 1) {
-              const angle = pixels[offset + index]!;
-              if (!Number.isFinite(angle) || angle < 0 || angle > max || angle <= previous) {
-                throw new RenderDeviceError("Invalid photometric atlas angle table", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
+        const cachedAtlas = validatedPhotometricAtlases.get(pixels);
+        const sameAtlasPacket = cachedAtlas !== undefined && cachedAtlas.width === texture.width && cachedAtlas.height === texture.height
+          && cachedAtlas.offsets.every((v, idx) => Object.is(v, packet.offsets[idx]))
+          && cachedAtlas.meta.every((v, idx) => Object.is(v, packet.meta[idx]));
+        if (!sameAtlasPacket) {
+          for (let slot = 0; slot < 16; slot += 1) {
+            const base = slot * 4, count = packet.offsets[base + 3]!;
+            if (count === 0) continue;
+            const vOffset = packet.offsets[base]!, hOffset = packet.offsets[base + 1]!, cOffset = packet.offsets[base + 2]!;
+            const hCount = packet.meta[base]!, symmetry = packet.meta[base + 1]!, scale = packet.meta[base + 2]!;
+            for (const [offset, length, max] of [[vOffset, count, 180], [hOffset, hCount, 360]] as const) {
+              let previous = -Infinity;
+              for (let index = 0; index < length; index += 1) {
+                const angle = pixels[offset + index]!;
+                if (!Number.isFinite(angle) || angle < 0 || angle > max || angle <= previous) {
+                  throw new RenderDeviceError("Invalid photometric atlas angle table", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
+                }
+                previous = angle;
               }
-              previous = angle;
+            }
+            const end = pixels[hOffset + hCount - 1]!;
+            if (pixels[hOffset] !== 0 || (symmetry === 1 && end !== 90) || (symmetry === 2 && end !== 180) || (symmetry === 3 && end !== 360)) {
+              throw new RenderDeviceError("Photometric atlas symmetry does not match its angles", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
+            }
+            for (let index = 0; index < count * hCount; index += 1) {
+              const candela = pixels[cOffset + index]!, scaled = Math.fround(candela * scale);
+              if (!Number.isFinite(candela) || candela < 0 || !Number.isFinite(scaled) || (candela !== 0 && scale !== 0 && scaled === 0)) {
+                throw new RenderDeviceError("Photometric atlas candelas exceed the supported float32 range", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
+              }
             }
           }
-          const end = pixels[hOffset + hCount - 1]!;
-          if (pixels[hOffset] !== 0 || (symmetry === 1 && end !== 90) || (symmetry === 2 && end !== 180) || (symmetry === 3 && end !== 360)) {
-            throw new RenderDeviceError("Photometric atlas symmetry does not match its angles", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
-          }
-          for (let index = 0; index < count * hCount; index += 1) {
-            const candela = pixels[cOffset + index]!, scaled = Math.fround(candela * scale);
-            if (!Number.isFinite(candela) || candela < 0 || !Number.isFinite(scaled) || (candela !== 0 && scale !== 0 && scaled === 0)) {
-              throw new RenderDeviceError("Photometric atlas candelas exceed the supported float32 range", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
+          // Copy pixels signature only if immutable static R32F texture (already enforced above: !texture.dynamic && texture.revision === 0).
+          validatedPhotometricAtlases.set(pixels, { width: texture.width, height: texture.height, offsets: packet.offsets, meta: packet.meta, snapshot: pixels.slice() });
+        } else {
+          // Guard against caller in-place mutation of `texture.data` Float32Array via fast Uint32Array bit compare.
+          const cu = new Uint32Array(pixels.buffer, pixels.byteOffset, pixels.length);
+          const su = new Uint32Array(cachedAtlas.snapshot.buffer, cachedAtlas.snapshot.byteOffset, cachedAtlas.snapshot.length);
+          for (let k = 0; k < cu.length; k += 1) {
+            if (cu[k] !== su[k]) {
+              validatedPhotometricAtlases.delete(pixels);
+              throw new RenderDeviceError("Invalid photometric atlas angle table", "WEBGPU_PHOTOMETRIC_ATLAS_INVALID");
             }
           }
         }
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d:0:1", { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
       }
       if (resource.uniform === "u_boneTexture") {
         const texture = binding?.texture;
@@ -9477,7 +9528,7 @@ export class WebGPUDevice implements RenderDevice {
           throw new RenderDeviceError("Generated PBR skinning requires a matching live linear rgba32f bone texture", "WEBGPU_BONE_TEXTURE_INVALID");
         }
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d:0:1", { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
       }
       if (resource.uniform === "u_morphTexture") {
         const texture = binding?.texture, morph = shader.generatedPbr?.morph;
@@ -9499,7 +9550,7 @@ export class WebGPUDevice implements RenderDevice {
           throw new RenderDeviceError("Generated PBR morph texture or active weights are invalid", "WEBGPU_MORPH_TEXTURE_INVALID");
         }
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d-array", baseMipLevel: 0, mipLevelCount: 1 }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d-array:0:1", { dimension: "2d-array", baseMipLevel: 0, mipLevelCount: 1 }), native };
       }
       if (resource.uniform === "u_a3dNativeProbeTexture" || resource.uniform === "u_a3dNativeVoxelTexture" || resource.uniform === "u_a3dNativeLightmapTexture") {
         const texture = binding?.texture;
@@ -9551,7 +9602,7 @@ export class WebGPUDevice implements RenderDevice {
           }
         }
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d:0:1", { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 }), native };
       }
       if (resource.dimension === "2d-array") {
         const texture = binding?.texture;
@@ -9565,7 +9616,7 @@ export class WebGPUDevice implements RenderDevice {
           throw new RenderDeviceError("Generated PBR irradiance texture dimensions must match the grid", "WEBGPU_PBR_IRRADIANCE_GRID_MISMATCH", { binding: resource.uniform, grid, width: texture.width, height: texture.height, layers: texture.layers });
         }
         const native = this.getNativeSampledTexture(texture);
-        return { ...resource, view: native.createView({ dimension: "2d-array" }), native };
+        return { ...resource, view: this.cachedTextureView(native, "2d-array", { dimension: "2d-array" }), native };
       }
       if (resource.uniform === "u_localShadowAtlas") {
         const paramsValue = command.uniforms?.get("u_localShadowParams");
@@ -9817,15 +9868,19 @@ export class WebGPUDevice implements RenderDevice {
         this.nativeRenderPasses += 1;
       } else {
         const depthSlice = this.activeRenderTarget?.nativeDepthSlice;
+        const extraColors = this.activeRenderTarget?.nativeExtraColors;
+        const extraColor0 = extraColors?.length ? (extraColors[0]!.multisampleView ?? extraColors[0]!.view) : null;
         let memo = this.#batchPassKey;
         if (!memo || memo.nativeView !== nativeView || memo.resolveView !== resolveView || memo.depthView !== depthView
-          || memo.sampleCount !== sampleCount || memo.hasDepthStencil !== hasDepthStencil || memo.depthSlice !== depthSlice) {
-          memo = this.#batchPassKey = { nativeView, resolveView, depthView, sampleCount, hasDepthStencil, depthSlice,
+          || memo.extraColor0 !== extraColor0 || memo.sampleCount !== sampleCount || memo.hasDepthStencil !== hasDepthStencil || memo.depthSlice !== depthSlice || (extraColors && extraColors.length > 1)) {
+          const extraKey = extraColors?.length ? extraColors.map((c) => `${this.bindGroupObjectId(c.multisampleView ?? c.view)}:${this.bindGroupObjectId(c.view)}`).join(",") : "";
+          memo = this.#batchPassKey = { nativeView, resolveView, depthView, extraColor0, sampleCount, hasDepthStencil, depthSlice,
             key: [nativeView, resolveView, depthView].map(value => this.bindGroupObjectId(value)).join(":")
-              + `:${sampleCount}:${hasDepthStencil ? 1 : 0}:${JSON.stringify(nativeColorSlice(this.activeRenderTarget))}` };
+              + `:${extraKey}:${sampleCount}:${hasDepthStencil ? 1 : 0}:${JSON.stringify(nativeColorSlice(this.activeRenderTarget))}` };
         }
         const passKey = memo.key;
         pass = this.drawBatchPass(passKey, shouldClear, passDescriptor);
+        if (mrtTarget) this.#drawBatch!.mrt = true;
         this.#drawBatchRecording = true;
       }
       const endPass = (): void => {
@@ -10097,7 +10152,7 @@ export class WebGPUDevice implements RenderDevice {
         if (!binding.texture.usage.includes("storage")) throw new RenderDeviceError("Texture was not created for storage use", "WEBGPU_STORAGE_TEXTURE_REQUIRED", { name: binding.name });
         const actualFormat = webgpuSampledTextureFormat(binding.texture, binding.texture.format);
         if (binding.format && binding.format !== actualFormat) throw new RenderDeviceError("Storage texture format does not match", "WEBGPU_STORAGE_TEXTURE_FORMAT_MISMATCH", { name: binding.name, expected: binding.format, actual: actualFormat });
-        resource = this.getNativeTexture(binding.texture).createView(explicitStorageLayout ? { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 } : undefined);
+        resource = this.cachedTextureView(this.getNativeTexture(binding.texture), explicitStorageLayout ? "2d:0:1" : "default", explicitStorageLayout ? { dimension: "2d", baseMipLevel: 0, mipLevelCount: 1 } : undefined);
       }
       const entries = groups.get(binding.group) ?? [];
       entries.push({ binding: binding.binding, resource });
@@ -10146,7 +10201,7 @@ export class WebGPUDevice implements RenderDevice {
       batch.pass = null;
       const finished = batch.encoder.finish();
       if (!this.disposed && !this.contextLost) {
-        this.resourceInterop.submit([finished], [...batch.accesses].map(([resource, mode]) => ({ resource, mode })));
+        this.submitMrtAware([finished], [...batch.accesses].map(([resource, mode]) => ({ resource, mode })), batch.mrt);
       }
     } finally {
       this.#drawBatchFlushing = false;
@@ -10161,7 +10216,7 @@ export class WebGPUDevice implements RenderDevice {
     let batch = this.#drawBatch;
     if (!batch) {
       batch = { encoder: this.device.createCommandEncoder!({ label: "aura3d-draw-batch-encoder" }), pass: null, passKey: null,
-        bound: emptyBatchPassBindings(), postPasses: 0, accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0 };
+        bound: emptyBatchPassBindings(), postPasses: 0, mrt: false, accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0 };
       this.#drawBatch = batch;
     }
     if (batch.pass && batch.passKey === key && !clear) return batch.pass;
@@ -10195,7 +10250,7 @@ export class WebGPUDevice implements RenderDevice {
         return buffer;
       },
       write: (buffer, offset, bytes) => this.device.queue.writeBuffer(buffer, offset, bytes)
-    }, { alignment, maxChunkSize, firstChunkSize: Math.min(256 * 1024, maxChunkSize) });
+    }, { alignment, maxChunkSize, firstChunkSize: Math.min(256 * 1024, maxChunkSize), mergeGap: 32 * 1024 });
     return this.#uniformArena;
   }
 
@@ -11188,25 +11243,39 @@ export class WebGPUDevice implements RenderDevice {
       uniforms = copy;
     }
     const data = this.packGeneratedPbrForSlot(command.shader ? this.requireShader(command.shader) : undefined, uniforms,
-      Boolean(program?.packedLoopColor), Boolean(program?.photometricProfile));
+      Boolean(program?.packedLoopColor), Boolean(program?.photometricProfile), command.vertexBuffer, command.firstIndex ?? 0);
     return this.acquireTransientUniform(`${command.label ?? "draw"}-generated-pbr-material`, data);
   }
 
   /**
-   * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-   * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-   * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-   * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-   * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+   * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+   * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+   * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
    */
-  private packGeneratedPbrForSlot(shader: WebGPUShaderProgram | undefined, uniforms: ReadonlyMap<string, UniformValue>, packedLoopColor: boolean, photometricProfile: boolean): Uint8Array {
+  private packGeneratedPbrForSlot(
+    shader: WebGPUShaderProgram | undefined,
+    uniforms: ReadonlyMap<string, UniformValue>,
+    packedLoopColor: boolean,
+    photometricProfile: boolean,
+    meshKey?: object,
+    submeshOffset = 0
+  ): Uint8Array {
     // The puddle-noise refusal reads the binding's texture, which a by-reference snapshot would not see change.
     if (!shader || !this.frameToken || uniforms.has("u_puddleNoise")) return packGeneratedPbrMaterialUniforms(uniforms, packedLoopColor, photometricProfile);
     if (this.#pbrPackFrame !== this.frameToken) { this.#pbrPackFrame = this.frameToken; this.#pbrPackOrdinals.clear(); }
-    const ordinal = this.#pbrPackOrdinals.get(shader) ?? 0;
-    this.#pbrPackOrdinals.set(shader, ordinal + 1);
-    let slots = this.#pbrPackSlots.get(shader);
-    if (!slots) { slots = []; this.#pbrPackSlots.set(shader, slots); }
+    const bucketObj = meshKey ?? shader;
+    let shaderOrds = this.#pbrPackOrdinals.get(shader);
+    if (!shaderOrds) { shaderOrds = new Map(); this.#pbrPackOrdinals.set(shader, shaderOrds); }
+    let meshOrds = shaderOrds.get(bucketObj);
+    if (!meshOrds) { meshOrds = new Map(); shaderOrds.set(bucketObj, meshOrds); }
+    const ordinal = meshOrds.get(submeshOffset) ?? 0;
+    meshOrds.set(submeshOffset, ordinal + 1);
+    let shaderSlots = this.#pbrPackSlots.get(shader);
+    if (!shaderSlots) { shaderSlots = new WeakMap(); this.#pbrPackSlots.set(shader, shaderSlots); }
+    let meshSlots = shaderSlots.get(bucketObj);
+    if (!meshSlots) { meshSlots = new Map(); shaderSlots.set(bucketObj, meshSlots); }
+    let slots = meshSlots.get(submeshOffset);
+    if (!slots) { slots = []; meshSlots.set(submeshOffset, slots); }
     const slot = slots[ordinal];
     if (slot && slot.packedLoopColor === packedLoopColor && slot.photometricProfile === photometricProfile) {
       const differing = diffUniformSnapshot(slot.snapshot, uniforms, GENERATED_PBR_PATCH_LIMIT);
@@ -12570,7 +12639,14 @@ const GENERATED_PBR_VEC4_LOCATIONS: ReadonlySet<number> = new Set([3, 4, 5, 6, 8
 /** Draw slots per generated-PBR shader whose packed material bytes are kept between frames. */
 const GENERATED_PBR_PACK_SLOTS = 4096;
 /** More differing uniforms than this repack the slot instead of rewriting each one. */
-const GENERATED_PBR_PATCH_LIMIT = 8;
+const GENERATED_PBR_PATCH_LIMIT = 24;
+const validatedPhotometricAtlases = new WeakMap<Float32Array, {
+  readonly width: number;
+  readonly height: number;
+  readonly offsets: readonly number[];
+  readonly meta: readonly number[];
+  readonly snapshot: Float32Array;
+}>();
 interface GeneratedPbrPackSlot {
   readonly snapshot: UniformSnapshot;
   bytes: Uint8Array;

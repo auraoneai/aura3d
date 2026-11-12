@@ -27,12 +27,12 @@ const REFERENCE = -2;
 const NUMBER = -1;
 
 function sameNumber(a: number, b: number): boolean {
-  return a === b && (a !== 0 || 1 / a === 1 / b);
+  return a === b && (a !== 0 || Object.is(a, b));
 }
 
 /** The value as a numeric sequence when it is an array or a non-BigInt typed array; otherwise null. */
 export function numericSequence(value: unknown): ArrayLike<number> | null {
-  if (Array.isArray(value)) return value as number[];
+  if (value instanceof Float32Array || Array.isArray(value)) return value as ArrayLike<number>;
   if (ArrayBuffer.isView(value) && !(value instanceof DataView) && !(value instanceof BigInt64Array) && !(value instanceof BigUint64Array)) {
     return value as unknown as ArrayLike<number>;
   }
@@ -97,9 +97,17 @@ function entryMatches(snapshot: UniformSnapshot, index: number, uniforms: Readon
   const value = uniforms.get(name);
   if (kind === REFERENCE) return value === snapshot.refs[index] && (value !== undefined || !uniforms.has(name));
   if (kind === NUMBER) return typeof value === "number" && sameNumber(value, snapshot.numbers[snapshot.starts[index]!]!);
+  const numbers = snapshot.numbers, start = snapshot.starts[index]!;
+  if (value instanceof Float32Array) {
+    if (value.length !== kind) return false;
+    for (let i = 0; i < kind; i += 1) {
+      const item = value[i]!, expected = numbers[start + i]!;
+      if (item !== expected || (item === 0 && !Object.is(item, expected))) return false;
+    }
+    return true;
+  }
   const sequence = numericSequence(value);
   if (!sequence || sequence.length !== kind) return false;
-  const numbers = snapshot.numbers, start = snapshot.starts[index]!;
   for (let i = 0; i < kind; i += 1) {
     const item = sequence[i];
     if (typeof item !== "number" || !sameNumber(item, numbers[start + i]!)) return false;

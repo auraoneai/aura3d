@@ -60,8 +60,8 @@ export function headlampPose(here: { x: number; y: number; z: number }, f: V3): 
   return { position, target, direction: [d[0] / l, d[1] / l, d[2] / l] };
 }
 
-/** GU47 LT-08: one box reflection probe per station, updated once (128 px; 6 probes x 6 faces x 128^2 RGBA16F with mips ~ 6.3 MB). */
-export const STATION_PROBE_RESOLUTION = 128;
+/** GU47 LT-08: one box reflection probe per station, updated once (64 px; 6 probes x 6 faces x 64^2 RGBA16F with mips ~ 1.6 MB). */
+export const STATION_PROBE_RESOLUTION = 64;
 export interface StationProbe { readonly name: string; readonly position: V3; readonly box: { readonly min: V3; readonly max: V3 } }
 
 const stationProbeCache = new WeakMap<SimData["route"], readonly StationProbe[]>();

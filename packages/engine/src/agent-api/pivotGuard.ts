@@ -4,7 +4,10 @@ import type { AuraSceneNode, AuraTransformSpec, AuraVec3 } from "./nodes/types.j
 export function assertValidPivot(value: unknown): asserts value is AuraVec3 | undefined {
   if (value === undefined) return;
   if (!Array.isArray(value) || value.length !== 3 ||
-      !Array.from(value).every((coordinate) => typeof coordinate === "number" && Number.isFinite(coordinate))) {
+      !(0 in value && 1 in value && 2 in value) ||
+      typeof value[0] !== "number" || !Number.isFinite(value[0]) ||
+      typeof value[1] !== "number" || !Number.isFinite(value[1]) ||
+      typeof value[2] !== "number" || !Number.isFinite(value[2])) {
     throw new RangeError("PIVOT_INVALID: pivot must be a finite vec3.");
   }
 }

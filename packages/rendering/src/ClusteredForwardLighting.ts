@@ -23,6 +23,112 @@ export interface ClusteredForwardLightingOptions {
    * grid configuration so per-frame clustered builds do not spam the console.
    */
   readonly onWarning?: (message: string) => void;
+  /**
+   * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+   * textures update in-place via `Texture.update()` instead of allocating and
+   * fence-retiring two `GPUTexture`s on every forward pass.
+   */
+  readonly pool?: ClusteredForwardTexturePool;
+}
+
+interface ClusteredForwardPoolSlot {
+  inUse: boolean;
+  lightTexture: Texture | null;
+  indexTexture: Texture | null;
+  lightBinding: TextureBinding | null;
+  indexBinding: TextureBinding | null;
+  readonly sampler: Sampler;
+}
+
+export class ClusteredForwardTexturePool {
+  private readonly slots: ClusteredForwardPoolSlot[] = [];
+  private disposed = false;
+
+  acquire(
+    lightHeight: number,
+    lightPixels: Float32Array,
+    clusterCount: number,
+    indexPixels: Float32Array
+  ): { readonly lightData: TextureBinding; readonly lightIndices: TextureBinding; release(): void } {
+    let slot = this.slots.find((candidate) => !candidate.inUse);
+    if (!slot) {
+      slot = {
+        inUse: false,
+        lightTexture: null,
+        indexTexture: null,
+        lightBinding: null,
+        indexBinding: null,
+        sampler: new Sampler({
+          minFilter: "nearest",
+          magFilter: "nearest",
+          addressU: "clamp-to-edge",
+          addressV: "clamp-to-edge"
+        })
+      };
+      this.slots.push(slot);
+    }
+    slot.inUse = true;
+    if (slot.lightTexture && !slot.lightTexture.disposed && slot.lightTexture.width === 6 && slot.lightTexture.height === lightHeight) {
+      slot.lightTexture.update(lightPixels);
+    } else {
+      slot.lightTexture?.dispose();
+      slot.lightTexture = new Texture({
+        width: 6,
+        height: lightHeight,
+        format: "rgba32f",
+        colorSpace: "linear",
+        dynamic: true,
+        label: "clustered-forward-light-data",
+        data: lightPixels
+      });
+      slot.lightBinding = new TextureBinding({ name: "u_clusterLightData", texture: slot.lightTexture, sampler: slot.sampler, required: true });
+    }
+    if (slot.indexTexture && !slot.indexTexture.disposed && slot.indexTexture.width === MAX_LIGHTS_PER_CLUSTER && slot.indexTexture.height === clusterCount) {
+      slot.indexTexture.update(indexPixels);
+    } else {
+      slot.indexTexture?.dispose();
+      slot.indexTexture = new Texture({
+        width: MAX_LIGHTS_PER_CLUSTER,
+        height: clusterCount,
+        format: "rgba32f",
+        colorSpace: "linear",
+        dynamic: true,
+        label: "clustered-forward-light-indices",
+        data: indexPixels
+      });
+      slot.indexBinding = new TextureBinding({ name: "u_clusterLightIndices", texture: slot.indexTexture, sampler: slot.sampler, required: true });
+    }
+    const targetSlot = slot;
+    return {
+      lightData: targetSlot.lightBinding!,
+      lightIndices: targetSlot.indexBinding!,
+      release: () => {
+        targetSlot.inUse = false;
+        if (this.disposed) {
+          targetSlot.lightTexture?.dispose();
+          targetSlot.indexTexture?.dispose();
+          targetSlot.lightTexture = null;
+          targetSlot.indexTexture = null;
+          targetSlot.lightBinding = null;
+          targetSlot.indexBinding = null;
+        }
+      }
+    };
+  }
+
+  dispose(): void {
+    this.disposed = true;
+    for (const slot of this.slots) {
+      slot.inUse = false;
+      slot.lightTexture?.dispose();
+      slot.indexTexture?.dispose();
+      slot.lightTexture = null;
+      slot.indexTexture = null;
+      slot.lightBinding = null;
+      slot.indexBinding = null;
+    }
+    this.slots.length = 0;
+  }
 }
 
 export interface ClusteredForwardLightingDiagnostics {
@@ -157,13 +263,47 @@ export function createClusteredForwardLighting(
     );
     emitClusteredForwardWarning(warnings[0]!, options.onWarning, gridWidth, gridHeight, maxRequestedLightsInCluster, fallbackPolicy);
   }
+  const lightHeight = Math.max(1, lights.length);
+  const diagnostics: ClusteredForwardLightingDiagnostics = {
+    source: "createClusteredForwardLighting",
+    mode: "screen-tile-texture-grid",
+    gridWidth,
+    gridHeight,
+    clusterCount,
+    viewportWidth,
+    viewportHeight,
+    requestedLightCount: lights.length,
+    indexedLightCount: referencedLights.size,
+    maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
+    maxIndexedLightsInCluster,
+    totalLightReferences,
+    culledLightCount: culledLights.size,
+    droppedLightCount: lights.length - culledLights.size - referencedLights.size,
+    overBudgetClusterCount,
+    maxRequestedLightsInCluster,
+    requestedPerCluster,
+    indexedPerCluster,
+    fallbackPolicy,
+    warnings
+  };
+  if (options.pool) {
+    const lease = options.pool.acquire(lightHeight, lightPixels, clusterCount, indexPixels);
+    return {
+      lightData: lease.lightData,
+      lightIndices: lease.lightIndices,
+      diagnostics,
+      dispose() {
+        lease.release();
+      }
+    };
+  }
   const lightTexture = new Texture({
     width: 6,
-    height: Math.max(1, lights.length),
+    height: lightHeight,
     format: "rgba32f",
     colorSpace: "linear",
     label: "clustered-forward-light-data",
-    mipLevels: [{ width: 6, height: Math.max(1, lights.length), data: lightPixels }]
+    mipLevels: [{ width: 6, height: lightHeight, data: lightPixels }]
   });
   const indexTexture = new Texture({
     width: MAX_LIGHTS_PER_CLUSTER,
@@ -182,28 +322,7 @@ export function createClusteredForwardLighting(
   return {
     lightData: new TextureBinding({ name: "u_clusterLightData", texture: lightTexture, sampler, required: true }),
     lightIndices: new TextureBinding({ name: "u_clusterLightIndices", texture: indexTexture, sampler, required: true }),
-    diagnostics: {
-      source: "createClusteredForwardLighting",
-      mode: "screen-tile-texture-grid",
-      gridWidth,
-      gridHeight,
-      clusterCount,
-      viewportWidth,
-      viewportHeight,
-      requestedLightCount: lights.length,
-      indexedLightCount: referencedLights.size,
-      maxLightsPerCluster: MAX_LIGHTS_PER_CLUSTER,
-      maxIndexedLightsInCluster,
-      totalLightReferences,
-      culledLightCount: culledLights.size,
-      droppedLightCount: lights.length - culledLights.size - referencedLights.size,
-      overBudgetClusterCount,
-      maxRequestedLightsInCluster,
-      requestedPerCluster,
-      indexedPerCluster,
-      fallbackPolicy,
-      warnings
-    },
+    diagnostics,
     dispose() {
       lightTexture.dispose();
       indexTexture.dispose();

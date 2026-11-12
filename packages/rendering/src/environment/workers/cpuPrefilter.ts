@@ -280,6 +280,18 @@ export function prefilterLevelGGX(
   // bright panels that dominate the Monte Carlo variance.
   const outputLod = Math.round(roughnessToLod(effectiveRoughness, mipCountForFaceSize(source.faceSize)));
   const footprint = pyramid[Math.min(pyramid.length - 1, outputLod + 1)]!;
+  const fSize = footprint.faceSize;
+  const fFaces = footprint.faces;
+  const hx = new Float32Array(samples);
+  const hy = new Float32Array(samples);
+  const hz = new Float32Array(samples);
+  for (let s = 0; s < samples; s += 1) {
+    const [xi1, xi2] = hammersley(s, samples);
+    const h = importanceSampleGGX(xi1, xi2, effectiveRoughness);
+    hx[s] = h[0];
+    hy[s] = h[1];
+    hz[s] = h[2];
+  }
   for (let face = 0; face < 6; face += 1) {
     onFace?.(face);
     const out = new Float32Array(size * size * 4);
@@ -289,29 +301,51 @@ export function prefilterLevelGGX(
       for (let x = 0; x < size; x += 1) {
         const u = (x + 0.5) * step - 1;
         const n = faceUvToDir(face, u, v);
+        const nx = n[0], ny = n[1], nz = n[2];
         const [t, b] = tangentBasis(n);
+        const tx = t[0], ty = t[1], tz = t[2];
+        const bx = b[0], by = b[1], bz = b[2];
         let r = 0, g = 0, bl = 0, wSum = 0;
         for (let s = 0; s < samples; s += 1) {
-          const [xi1, xi2] = hammersley(s, samples);
-          const h = importanceSampleGGX(xi1, xi2, effectiveRoughness);
-          const hw: [number, number, number] = [
-            t[0] * h[0] + b[0] * h[1] + n[0] * h[2],
-            t[1] * h[0] + b[1] * h[1] + n[1] * h[2],
-            t[2] * h[0] + b[2] * h[1] + n[2] * h[2]
-          ];
-          const ndh = Math.max(0, n[0] * hw[0] + n[1] * hw[1] + n[2] * hw[2]);
+          const hsx = hx[s]!, hsy = hy[s]!, hsz = hz[s]!;
+          const hwx = tx * hsx + bx * hsy + nx * hsz;
+          const hwy = ty * hsx + by * hsy + ny * hsz;
+          const hwz = tz * hsx + bz * hsy + nz * hsz;
+          const ndh = nx * hwx + ny * hwy + nz * hwz;
           if (ndh <= 0) continue;
-          const l: [number, number, number] = [
-            2 * ndh * hw[0] - n[0],
-            2 * ndh * hw[1] - n[1],
-            2 * ndh * hw[2] - n[2]
-          ];
-          const ndl = Math.max(0, n[0] * l[0] + n[1] * l[1] + n[2] * l[2]);
+          const twoNdh = 2 * ndh;
+          const lx = twoNdh * hwx - nx;
+          const ly = twoNdh * hwy - ny;
+          const lz = twoNdh * hwz - nz;
+          const ndl = nx * lx + ny * ly + nz * lz;
           if (ndl <= 0) continue;
-          const [sr, sg, sb] = sampleCubeBilinear(footprint, l);
-          r += sr * ndl;
-          g += sg * ndl;
-          bl += sb * ndl;
+          const ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
+          let sFace = 0, su = 0, sv = 0;
+          if (ax >= ay && ax >= az) {
+            sFace = lx > 0 ? 0 : 1;
+            su = lx > 0 ? -lz / ax : lz / ax;
+            sv = -ly / ax;
+          } else if (ay >= ax && ay >= az) {
+            sFace = ly > 0 ? 2 : 3;
+            su = lx / ay;
+            sv = ly > 0 ? lz / ay : -lz / ay;
+          } else {
+            sFace = lz > 0 ? 4 : 5;
+            su = lz > 0 ? lx / az : -lx / az;
+            sv = -ly / az;
+          }
+          const fxCoord = Math.min(fSize - 1, Math.max(0, (su * 0.5 + 0.5) * fSize - 0.5));
+          const fyCoord = Math.min(fSize - 1, Math.max(0, (sv * 0.5 + 0.5) * fSize - 0.5));
+          const x0 = Math.floor(fxCoord), y0 = Math.floor(fyCoord);
+          const x1 = Math.min(fSize - 1, x0 + 1), y1 = Math.min(fSize - 1, y0 + 1);
+          const fx = fxCoord - x0, fy = fyCoord - y0;
+          const w00 = (1 - fx) * (1 - fy), w10 = fx * (1 - fy), w01 = (1 - fx) * fy, w11 = fx * fy;
+          const fData = fFaces[sFace]!;
+          const i00 = (y0 * fSize + x0) * 4, i10 = (y0 * fSize + x1) * 4;
+          const i01 = (y1 * fSize + x0) * 4, i11 = (y1 * fSize + x1) * 4;
+          r += (fData[i00]! * w00 + fData[i10]! * w10 + fData[i01]! * w01 + fData[i11]! * w11) * ndl;
+          g += (fData[i00 + 1]! * w00 + fData[i10 + 1]! * w10 + fData[i01 + 1]! * w01 + fData[i11 + 1]! * w11) * ndl;
+          bl += (fData[i00 + 2]! * w00 + fData[i10 + 2]! * w10 + fData[i01 + 2]! * w01 + fData[i11 + 2]! * w11) * ndl;
           wSum += ndl;
         }
         const i = (y * size + x) * 4;

@@ -289,17 +289,23 @@ function readVec3Attribute(value: AuraVec3Attribute | undefined, label: string):
   if (isFlatAttributeArray(value)) {
     const flat = value instanceof Float32Array ? value : Float32Array.from(value as readonly number[]);
     if (flat.length % 3 !== 0) throw new Error(`Aura3D geometry ${label} array length must be a multiple of 3.`);
-    for (const component of flat) if (!Number.isFinite(component)) throw new Error(`Aura3D geometry ${label} must contain finite values.`);
+    for (let i = 0, len = flat.length; i < len; i += 1) {
+      if (!Number.isFinite(flat[i])) throw new Error(`Aura3D geometry ${label} must contain finite values.`);
+    }
     return flat;
   }
-  const flat = new Float32Array((value as readonly AuraRootVec3[]).length * 3);
-  (value as readonly AuraRootVec3[]).forEach((tuple, index) => {
+  const tuples = value as readonly AuraRootVec3[];
+  const flat = new Float32Array(tuples.length * 3);
+  for (let index = 0, len = tuples.length; index < len; index += 1) {
+    const tuple = tuples[index]!;
     validateVec3(tuple, `${label} ${index}`);
     flat[index * 3] = tuple[0];
     flat[index * 3 + 1] = tuple[1];
     flat[index * 3 + 2] = tuple[2];
-  });
-  for (const component of flat) if (!Number.isFinite(component)) throw new Error(`Aura3D geometry ${label} must contain finite float32 values.`);
+  }
+  for (let i = 0, len = flat.length; i < len; i += 1) {
+    if (!Number.isFinite(flat[i])) throw new Error(`Aura3D geometry ${label} must contain finite float32 values.`);
+  }
   return flat;
 }
 
@@ -308,16 +314,22 @@ function readVec2Attribute(value: AuraVec2Attribute | undefined, label: string):
   if (isFlatAttributeArray(value)) {
     const flat = value instanceof Float32Array ? value : Float32Array.from(value as readonly number[]);
     if (flat.length % 2 !== 0) throw new Error(`Aura3D geometry ${label} array length must be a multiple of 2.`);
-    for (const component of flat) if (!Number.isFinite(component)) throw new Error(`Aura3D geometry ${label} must contain finite values.`);
+    for (let i = 0, len = flat.length; i < len; i += 1) {
+      if (!Number.isFinite(flat[i])) throw new Error(`Aura3D geometry ${label} must contain finite values.`);
+    }
     return flat;
   }
-  const flat = new Float32Array((value as readonly (readonly [number, number])[]).length * 2);
-  (value as readonly (readonly [number, number])[]).forEach((tuple, index) => {
+  const tuples = value as readonly (readonly [number, number])[];
+  const flat = new Float32Array(tuples.length * 2);
+  for (let index = 0, len = tuples.length; index < len; index += 1) {
+    const tuple = tuples[index]!;
     if (tuple.length !== 2 || !Number.isFinite(tuple[0]) || !Number.isFinite(tuple[1])) throw new Error(`Aura3D geometry ${label} ${index} must be a finite vec2.`);
     flat[index * 2] = tuple[0];
     flat[index * 2 + 1] = tuple[1];
-  });
-  for (const component of flat) if (!Number.isFinite(component)) throw new Error(`Aura3D geometry ${label} must contain finite float32 values.`);
+  }
+  for (let i = 0, len = flat.length; i < len; i += 1) {
+    if (!Number.isFinite(flat[i])) throw new Error(`Aura3D geometry ${label} must contain finite float32 values.`);
+  }
   return flat;
 }
 
@@ -386,7 +398,9 @@ export function normalizeGeometryAttributes(spec: {
         colors![index * 4 + 3] = rgba[3];
       });
     }
-    for (const component of colors) if (!Number.isFinite(component)) throw new Error("Aura3D geometry colors must contain finite values.");
+    for (let i = 0, len = colors.length; i < len; i += 1) {
+      if (!Number.isFinite(colors[i])) throw new Error("Aura3D geometry colors must contain finite values.");
+    }
   }
   let indices: Uint16Array | Uint32Array | undefined;
   // An empty index list means "non-indexed" (sequential 0..n-1) — e.g. the
@@ -396,16 +410,19 @@ export function normalizeGeometryAttributes(spec: {
     if (!indices) {
       const list = spec.indices as readonly number[];
       let max = 0;
-      for (const [offset, value] of list.entries()) {
+      for (let offset = 0, len = list.length; offset < len; offset += 1) {
+        const value = list[offset]!;
         if (!Number.isInteger(value) || value < 0) throw new Error("Aura3D geometry indices must be non-negative integers.");
         // Validate before converting: Uint32Array would wrap 2^32 to zero.
         if (value > 0xffffffff || value >= vertexCount) throw new Error(`Aura3D geometry index ${offset} is outside the position buffer.`);
         if (value > max) max = value;
       }
       indices = max > 65535 ? Uint32Array.from(list) : Uint16Array.from(list);
-    }
-    for (const [offset, value] of indices.entries()) {
-      if (!Number.isInteger(value) || value < 0 || value >= vertexCount) throw new Error(`Aura3D geometry index ${offset} is outside the position buffer.`);
+    } else {
+      for (let offset = 0, len = indices.length; offset < len; offset += 1) {
+        const value = indices[offset]!;
+        if (value >= vertexCount) throw new Error(`Aura3D geometry index ${offset} is outside the position buffer.`);
+      }
     }
   }
   return { positions, vertexCount, custom: normalizeCustomVertexAttributes(spec.attributes, vertexCount), normals, uvs, uv1s, colors, indices };

@@ -541,7 +541,7 @@
       "sourceDependencies": [
         {
           "path": "packages/engine/src/agent-api/RootGeometry.ts",
-          "sha256": "e3694c61eb829a818208bf9d1b542c3403b6d4926c92f897dad61efe0e95ac6e"
+          "sha256": "2b1de43931c1556cd601f784c9fe2544b37bdbe3e0e1bbdaa0f4ac5cbe98607f"
         }
       ],
       "regions": [
@@ -1034,7 +1034,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "d89bcb74f49156526103c84d96ce50ab9f91cae1b7c82c50337f5ed8a32aab22"
+          "sha256": "f9c64294922c626f87c4703cb78b2c0d116aa3faef8e2066ccb158d1f52639f6"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1066,7 +1066,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "50569a9d6005d7c6a914442c41c3b807b81136fe92dcd788b9fec4de70ae7d0b"
+          "sha256": "33a505e00324d7bbecb1aea8578310f476b0d54a822a9c6acae0b5b7e8bda4a9"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
@@ -1074,7 +1074,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "c37ceec9865914790aee1f6ab5c5af882fe642b6e74cdb43b1d191127feda27b"
+          "sha256": "3c5449fd62ddc95c5656675251d61752b1b1fc813afd48691046648b1a1fc7b2"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
@@ -2923,7 +2923,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "c37ceec9865914790aee1f6ab5c5af882fe642b6e74cdb43b1d191127feda27b"
+          "sha256": "3c5449fd62ddc95c5656675251d61752b1b1fc813afd48691046648b1a1fc7b2"
         }
       ],
       "regions": [
@@ -2981,7 +2981,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
+          "sha256": "38040d457411d657fbfb729c3ee312752b0f9980dbbcfe72854d996eb51c3f6a"
         }
       ],
       "regions": [
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
+          "sha256": "38040d457411d657fbfb729c3ee312752b0f9980dbbcfe72854d996eb51c3f6a"
         }
       ],
       "regions": [
@@ -3506,7 +3506,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/RootGeometry.ts",
-          "sha256": "e3694c61eb829a818208bf9d1b542c3403b6d4926c92f897dad61efe0e95ac6e"
+          "sha256": "2b1de43931c1556cd601f784c9fe2544b37bdbe3e0e1bbdaa0f4ac5cbe98607f"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/text3d.ts",
@@ -7657,7 +7657,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
+          "sha256": "38040d457411d657fbfb729c3ee312752b0f9980dbbcfe72854d996eb51c3f6a"
         }
       ],
       "regions": [
@@ -7727,7 +7727,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "79ad5420a37697918798bd9b5e3c49888b8cfd42857acfd0b5fafca62e3b5899"
+          "sha256": "38040d457411d657fbfb729c3ee312752b0f9980dbbcfe72854d996eb51c3f6a"
         }
       ],
       "regions": [
@@ -8905,7 +8905,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "1106ab7a1addd86b34fe6a7a0d4a51df1bf043b9b207eb213f17e2b6ff2442b5"
+          "sha256": "e54e9dc2962c5528458ac6a7206b9f015ef6bb0803fcd478cb00a02117e7078b"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",

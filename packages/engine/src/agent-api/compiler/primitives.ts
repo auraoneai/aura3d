@@ -1619,10 +1619,37 @@ function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2Attrib
   };
   // Validate the entire update before mutating any vertex, so a malformed
   // later component cannot leave a partially applied GPU buffer.
-  for (let i = 0; i < data.length; i += 1) checked(data[i]!);
+  if (!source && storageType === "float32" && data instanceof Float32Array) {
+    for (let i = 0; i < data.length; i += 1) {
+      const v = data[i]!;
+      if (v - v !== 0) {
+        throw new RangeError(`Aura3D updateAttribute("${update.name}") value is outside the float32 storage range.`);
+      }
+    }
+  } else {
+    for (let i = 0; i < data.length; i += 1) checked(data[i]!);
+  }
   if (elements > 0) {
     geometry.ensureWritableBuffers({ vertex: true });
     vertexBuffer = geometry.vertexBuffer;
+    const attribute = vertexBuffer.format.getAttribute(semantic);
+    const stream = vertexBuffer.format.streams.find((candidate) => candidate.slot === vertexBuffer.bufferSlot);
+    if (!source && storageType === "float32" && stream && stream.stride % 4 === 0 && attribute.offset % 4 === 0) {
+      const floats = vertexBuffer.floats;
+      const strideWords = stream.stride >> 2;
+      const firstByteOffset = start * stream.stride + attribute.offset;
+      let dst = firstByteOffset >> 2;
+      let src = 0;
+      for (let element = 0; element < elements; element += 1) {
+        for (let component = 0; component < components; component += 1) {
+          floats[dst + component] = data[src + component]!;
+        }
+        dst += strideWords;
+        src += components;
+      }
+      vertexBuffer.markDirtyRange(firstByteOffset, (elements - 1) * stream.stride + attribute.byteLength);
+      return semantic === "position";
+    }
   }
   for (let element = 0; element < elements; element += 1) {
     for (let component = 0; component < components; component += 1) {

@@ -3,7 +3,7 @@
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { applyShadowPcfTapTier, type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
 import { MAX_FORWARD_LOCAL_SHADOW_TILES, MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
-import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { createClusteredForwardLighting, type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import { MAX_DIRECT_LIGHTS, recordAuraLightsCounters } from "../LightUniforms.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
@@ -643,7 +643,8 @@ export function resolveForwardClusteredLighting(
   lights: readonly CollectedLight[] | undefined,
   width: number,
   height: number,
-  cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined
+  cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined,
+  pool?: ClusteredForwardTexturePool
 ): ClusteredForwardLightingResources | null {
   // T0-27: the forward pass uploads direct lights through `LightUniforms.pack`
   // (MAX_DIRECT_LIGHTS = 16) into `u_lightData[96]` (16 × 6 vec4). The 32-light
@@ -657,7 +658,8 @@ export function resolveForwardClusteredLighting(
         lights ?? [],
         width,
         height,
-        cameraViewProjectionMatrix
+        cameraViewProjectionMatrix,
+        pool ? { pool } : undefined
       )
     : null;
   // The caller cannot own the cluster until this function returns. In

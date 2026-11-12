@@ -10,7 +10,7 @@ import { StructuralMemo } from "../contracts/structuralMemo";
 import { normalizeProgramFeatures } from "./ProgramFeatures";
 
 /** The sparse record a caller builds each frame -> its key, so a repeated record skips normalisation as well as serialisation. */
-const sparseKeyMemo = new StructuralMemo<string>(24);
+const sparseKeyMemo = new StructuralMemo<string>(512);
 
 export function programKey(features: Partial<ProgramFeatures>): string {
   return sparseKeyMemo.resolve(features, () => computeProgramKey(normalizeProgramFeatures(features)));

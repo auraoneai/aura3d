@@ -111,6 +111,7 @@ import { setContactShadowMask } from "./forward/contactShadowMaskStore";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
 import { probeHdrTargetFormat, DEFAULT_TONE_MAPPING, type AuraToneMappingOperatorLike, type OutputOverlayUniforms } from "./contracts/output";
 import { resolveForwardClusteredLighting } from "./forward/Lighting";
+import { ClusteredForwardTexturePool } from "./ClusteredForwardLighting";
 import { assertRendererFeatures, createRendererFeatureReport, type RendererFeature, type RendererFeatureReport } from "./RendererFeatureGates";
 import { armFirstFrameGate, notifyFirstFramePresented } from "./environment/FirstFrameGate";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
@@ -1048,6 +1049,7 @@ export class Renderer {
   private probeShaderLibrary?: ShaderLibrary;
   private readonly photometricProfiles?: RendererOptions["photometricProfiles"];
   private photometricResources?: PhotometricFrameResources;
+  private clusteredLightingPool?: ClusteredForwardTexturePool;
   private readonly projectedSpotImages?: RendererOptions["projectedSpotImages"];
   /**
    * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -2696,6 +2698,8 @@ export class Renderer {
     if (this.pendingAuthoredFrame) this.abortAuthoredFrame(this.pendingAuthoredFrame);
     this.photometricResources?.dispose();
     this.photometricResources = undefined;
+    this.clusteredLightingPool?.dispose();
+    this.clusteredLightingPool = undefined;
     this.finishProjectedSpotFrame();
     this.transmissionViews.clear();
     this.lastBenchmarkMaskFrame = null;
@@ -4220,7 +4224,8 @@ export class Renderer {
           outputColorSpace: postprocess || qrOutput ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage,
-          qualityTier: this.liveQualityTier()?.settings
+          qualityTier: this.liveQualityTier()?.settings,
+          clusteredLightingPool: this.device.kind === "webgpu" ? (this.clusteredLightingPool ??= new ClusteredForwardTexturePool()) : undefined
         };
         // The graph enforces unique names + single-producer writes; per-phase
         // resources chain the order, and `aura.scene.color` is written once —
@@ -5112,7 +5117,8 @@ export class Renderer {
           outputColorSpace: postprocess || qrOutput ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage,
-          qualityTier: this.liveQualityTier()?.settings
+          qualityTier: this.liveQualityTier()?.settings,
+          clusteredLightingPool: this.device.kind === "webgpu" ? (this.clusteredLightingPool ??= new ClusteredForwardTexturePool()) : undefined
         };
         // The graph enforces unique names + single-producer writes; per-phase
         // resources chain the order, and `aura.scene.color` is written once —
@@ -5764,6 +5770,7 @@ export class Renderer {
       if (!rendererDeviceOwners.has(this.device)) release(() => this.disposeOwnedDevice());
     }
     release(() => this.photometricResources?.dispose());
+    release(() => this.clusteredLightingPool?.dispose());
     release(() => this.finishProjectedSpotFrame());
   }
 
@@ -5827,6 +5834,7 @@ export class Renderer {
     this.targetTemporalIds.clear();
     release(() => this.host.post.drainRetainedChainTargets());
     release(() => this.photometricResources?.dispose());
+    release(() => this.clusteredLightingPool?.dispose());
     release(() => this.finishProjectedSpotFrame());
     release(() => disposePrd07RendererAuthority(this));
     release(() => this.disposeParticleSimulations());

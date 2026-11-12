@@ -590,19 +590,44 @@ function snapshotDepthGeometry(geometry: Geometry): Geometry {
   }
 }
 
-function sameNumbers(current: ArrayLike<number> | undefined, snapshot: readonly number[] | undefined): boolean {
+function sameNumbers(current: ArrayLike<number> | undefined, snapshot: ArrayLike<number> | undefined): boolean {
   if (current === undefined || snapshot === undefined) return current === undefined && snapshot === undefined;
-  if (current.length !== snapshot.length) return false;
-  for (let index = 0; index < snapshot.length; index += 1) if (!Object.is(current[index], snapshot[index])) return false;
+  const len = snapshot.length;
+  if (current.length !== len) return false;
+  if (current instanceof Float32Array && snapshot instanceof Float32Array && (current.byteOffset & 3) === 0 && (snapshot.byteOffset & 3) === 0) {
+    const cu = new Uint32Array(current.buffer, current.byteOffset, len);
+    const su = new Uint32Array(snapshot.buffer, snapshot.byteOffset, len);
+    for (let index = 0; index < len; index += 1) {
+      if (cu[index] !== su[index]) {
+        const a = current[index]!, b = snapshot[index]!;
+        if (a === a || b === b) return false;
+      }
+    }
+    return true;
+  }
+  for (let index = 0; index < len; index += 1) {
+    const a = current[index]!;
+    const b = snapshot[index]!;
+    if (a !== b) {
+      if (a === a || b === b) return false;
+    } else if (a === 0 && !Object.is(a, b)) {
+      return false;
+    }
+  }
   return true;
 }
 
 function recursiveMaterialParameters(material: Material | MaterialInstance): ReadonlyMap<string, RecursiveUniformValue> {
-  return material.getRecursiveParameters();
+  return material.parameterSnapshot();
 }
+
+const geometryValidityMemo = new WeakMap<Geometry, () => boolean>();
+const materialValidityMemo = new WeakMap<NonNullable<RenderItem["material"]>, () => boolean>();
 
 function captureGeometryValidity(geometry: Geometry | undefined): () => boolean {
   if (!geometry) return () => true;
+  const cached = geometryValidityMemo.get(geometry);
+  if (cached && cached()) return cached;
   const format = geometry.vertexBuffer.format;
   const topology = geometry.topology;
   const buffers = format.streams.map((stream) => {
@@ -613,21 +638,24 @@ function captureGeometryValidity(geometry: Geometry | undefined): () => boolean 
   });
   const index = geometry.indexBuffer;
   const indexRevision = index?.revision;
-  return () => {
+  const check = () => {
     try {
       if (geometry.vertexBuffer.format !== format || geometry.topology !== topology || geometry.indexBuffer !== index || index?.revision !== indexRevision) return false;
       for (const entry of buffers) {
         const buffer = geometry.getVertexBuffer(entry.slot);
-        if (buffer !== entry.buffer || buffer.revision !== entry.revision) return false;
-        buffer.getAttribute(0, entry.semantic);
+        if (buffer !== entry.buffer || buffer.revision !== entry.revision || buffer.disposed) return false;
       }
       return true;
     } catch { return false; }
   };
+  geometryValidityMemo.set(geometry, check);
+  return check;
 }
 
 function captureMaterialValidity(material: RenderItem["material"]): () => boolean {
   if (!material) return () => true;
+  const cached = materialValidityMemo.get(material);
+  if (cached && cached()) return cached;
   const base = material instanceof MaterialInstance ? material.baseMaterial : material;
   const revision = base.getRevision();
   const shaderKey = base.shaderKey, shaderVariant = base.shaderVariant;
@@ -653,7 +681,7 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
   const textureParams = params.filter((entry) => isTextureBinding(entry.value));
   const storage = base instanceof PortableShaderMaterial && graphRequiresWebGPU
     ? base.graphStorageBindings("depth").map((binding) => ({ ...binding })) : undefined;
-  return () => {
+  const check = () => {
     try {
       if (base.disposed || base.getRevision() !== revision || base.shaderKey !== shaderKey || base.shaderVariant !== shaderVariant || base.renderState.cullMode !== cullMode
         || base.renderState.blend !== blend || base.renderState.blendMode !== blendMode || base.renderState.alphaToCoverage !== alphaToCoverage
@@ -684,6 +712,8 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
       return true;
     } catch { return false; }
   };
+  materialValidityMemo.set(material, check);
+  return check;
 }
 
 function captureCasterValidity(source: RenderItem, library: ShaderLibrary): () => boolean {
@@ -694,7 +724,8 @@ function captureCasterValidity(source: RenderItem, library: ShaderLibrary): () =
   const customSource = customKey ? library.get(customKey) : undefined;
   const customVertex = customSource?.vertex, customFragment = customSource?.fragment, customMarker = customSource?.marker;
   const arrays = [source.modelMatrix, source.geometryMatrix, source.normalMatrix, source.modelViewProjectionMatrix,
-    source.instanceTransforms, source.instanceColors, source.morphWeights, source.skinning?.matrices].map((value) => value === undefined ? undefined : Array.from(value));
+    source.instanceTransforms, source.instanceColors, source.morphWeights, source.skinning?.matrices].map((value) =>
+    value === undefined ? undefined : value instanceof Float32Array ? value.slice() : Array.from(value));
   const skin = source.skinning, morphTargets = source.morphTargets;
   const jointCount = skin?.jointCount, extraInfluences = skin?.extraInfluences;
   const targetRefs = morphTargets?.map((target) => [target, target.positions, target.normals, target.tangents] as const);
@@ -1108,7 +1139,7 @@ export class DepthPass extends BaseRenderPass {
     const log = logarithmic ? this.logDepthUniforms() : undefined;
     const shader = this.getClippedLineShader(device, logarithmic);
     const { model, modelViewProjection, inverse } = clippedLineDepthTransforms(source, camera);
-    const uniforms = new Map<string, UniformValue>(material.getParameters());
+    const uniforms = new Map<string, UniformValue>(material.parameterSnapshot() as ReadonlyMap<string, UniformValue>);
     uniforms.set("u_modelMatrix", model);
     uniforms.set("u_viewMatrix", camera.view);
     uniforms.set("u_projectionMatrix", camera.projection);
@@ -1263,7 +1294,7 @@ export class DepthPass extends BaseRenderPass {
     }
     if (!variant) {
       this.material.setParameter("u_modelViewProjection", mvp);
-      const uniforms = new Map(this.material.getParameters());
+      const uniforms = new Map(this.material.parameterSnapshot() as ReadonlyMap<string, UniformValue>);
       this.bindDepthUniforms(uniforms, clip, modelMatrix, logarithmic);
       const command: DrawCommand = {
         label: caster.label ?? "shadow-caster",
@@ -1682,10 +1713,24 @@ export class DepthPass extends BaseRenderPass {
   }
 }
 
+function hasNonFiniteTransformScalar(transforms: ArrayLike<number>): boolean {
+  if (transforms instanceof Float32Array) {
+    for (let i = 0; i < transforms.length; i += 1) {
+      const v = transforms[i]!;
+      if (v - v !== 0) return true;
+    }
+    return false;
+  }
+  for (let i = 0; i < transforms.length; i += 1) {
+    if (!Number.isFinite(transforms[i])) return true;
+  }
+  return false;
+}
+
 /** Validate the draw count before allocating or binding any geometry streams. */
 function depthInstanceCount(caster: RenderItem): number {
   const transforms = caster.instanceTransforms;
-  if (transforms !== undefined && (transforms.length % 16 !== 0 || transforms.some((value) => !Number.isFinite(value)))) {
+  if (transforms !== undefined && (transforms.length % 16 !== 0 || hasNonFiniteTransformScalar(transforms))) {
     throw new RenderDeviceError("Instance transforms must contain finite mat4 values", "INSTANCING_CONTRACT", { label: caster.label, scalars: transforms.length });
   }
   const count = caster.instanceCount ?? (transforms ? transforms.length / 16 : 1);

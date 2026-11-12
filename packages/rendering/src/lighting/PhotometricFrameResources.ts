@@ -173,8 +173,13 @@ export class PhotometricFrameResources {
           const probe = (this.device as RenderDevice & { supportsSubmittedWorkCompletion?: () => boolean }).supportsSubmittedWorkCompletion;
           if (typeof probe !== "function" || probe.call(this.device) !== true) return false;
         } else if (this.device.kind === "webgpu") {
-          const native = (this.device as RenderDevice & { readonly nativeGpuDevice?: { readonly queue?: { readonly onSubmittedWorkDone?: unknown } } }).nativeGpuDevice;
-          if (typeof native?.queue?.onSubmittedWorkDone !== "function") return false;
+          const probe = (this.device as RenderDevice & { supportsSubmittedWorkCompletion?: () => boolean }).supportsSubmittedWorkCompletion;
+          if (typeof probe === "function") {
+            if (probe.call(this.device) !== true) return false;
+          } else {
+            const native = (this.device as RenderDevice & { readonly nativeGpuDevice?: { readonly queue?: { readonly onSubmittedWorkDone?: unknown } } }).nativeGpuDevice;
+            if (typeof native?.queue?.onSubmittedWorkDone !== "function") return false;
+          }
         } else return false;
       }
       // Capability probes can call into a device; verify the frame still

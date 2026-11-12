@@ -293,6 +293,18 @@ export function writeShaderData(
       case "vector": {
         const items = values(input, type.length, parent, key);
         if (type.element === "f32") {
+          if (f32 !== undefined) {
+            const base = offset >> 2;
+            for (let i = 0; i < type.length; i += 1) {
+              const item = items[i];
+              if (typeof item === "number") {
+                f32[base + i] = item;
+                if (Number.isFinite(f32[base + i]!)) continue;
+              }
+              storeScalar("f32", item, offset + i * 4, joinPath(parent, key), i);
+            }
+            return;
+          }
           for (let i = 0; i < type.length; i += 1) storeF32(items[i], offset + i * 4, parent, key, i);
           return;
         }
@@ -305,6 +317,18 @@ export function writeShaderData(
       }
       case "matrix": {
         const items = values(input, type.columns * type.rows, parent, key);
+        if (f32 !== undefined && current.stride === type.rows * 4) {
+          const base = offset >> 2, count = type.columns * type.rows;
+          for (let i = 0; i < count; i += 1) {
+            const item = items[i];
+            if (typeof item === "number") {
+              f32[base + i] = item;
+              if (Number.isFinite(f32[base + i]!)) continue;
+            }
+            storeScalar("f32", item, offset + i * 4, joinPath(parent, key), i);
+          }
+          return;
+        }
         for (let c = 0; c < type.columns; c += 1) {
           for (let r = 0; r < type.rows; r += 1) {
             storeF32(items[c * type.rows + r], offset + c * current.stride! + r * 4, parent, key, c * type.rows + r);
@@ -363,14 +387,22 @@ export function writeShaderData(
           return fail("SHADER_DATA_VALUE", path, "expected an object with every struct field");
         }
         const record = input as Record<string, unknown>;
-        for (const member of current.members!) {
+        const members = current.members!;
+        for (let m = 0; m < members.length; m += 1) {
+          const member = members[m]!;
           if (!Object.prototype.hasOwnProperty.call(record, member.name)) {
             fail("SHADER_DATA_VALUE", `${path}.${member.name}`, "missing field");
           }
           store(member.layout, record[member.name], offset + member.offset, path, member.name);
         }
-        const names = memberNames(current);
-        for (const key of Object.keys(record)) if (!names.has(key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
+        const recordKeys = Object.keys(record);
+        if (recordKeys.length !== members.length) {
+          const names = memberNames(current);
+          for (let k = 0; k < recordKeys.length; k += 1) {
+            const recordKey = recordKeys[k]!;
+            if (!names.has(recordKey)) fail("SHADER_DATA_VALUE", `${path}.${recordKey}`, "unknown field");
+          }
+        }
       }
     }
   }

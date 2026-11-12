@@ -63,7 +63,7 @@ function stableSerialize(value: unknown): string {
  * are rebuilt each time but identical from frame to frame. Serialising one costs ~15 us; comparing it with a recent record
  * costs ~1 us. A small ring of recent (record snapshot, key) pairs turns the steady state into compares only.
  */
-const keyMemo = new StructuralMemo<string>(24);
+const keyMemo = new StructuralMemo<string>(512);
 
 export function computeProgramKey(features: ProgramFeatures): string {
   return keyMemo.resolve(features, () => stableSerialize(features));

@@ -1371,7 +1371,30 @@ function runtimeHandleSubtree(root: AuraRuntimeNodeHandle): AuraRuntimeNodeHandl
 /** Live CPU-side state used by scene queries. The renderer publishes its actual
  * submitted items here, so animated models use the current palette and morph
  * weights rather than a guessed bind pose. The registry owns these references. */
+interface OwnedQueryCustomAttr {
+  readonly itemSize: number;
+  readonly stride: number;
+  readonly offset: number;
+  readonly data: number[] | ArrayBufferView;
+  readonly probe: ArrayLike<number> & Record<number, number> | null;
+  rawSpec: import("../RootGeometry.js").AuraCustomVertexAttributeSpec;
+}
+
+interface OwnedQueryBufferState {
+  readonly baseGeometry: AuraCustomGeometrySpec | undefined;
+  spec: AuraCustomGeometrySpec;
+  readonly vertexCount: number;
+  positions: Float32Array;
+  normals?: Float32Array;
+  uvs?: Float32Array;
+  uv1s?: Float32Array;
+  colors?: Float32Array;
+  readonly indices?: Uint16Array | Uint32Array;
+  readonly custom: Map<string, OwnedQueryCustomAttr>;
+}
+
 const runtimeQueryGeometry = new WeakMap<AuraRuntimeNodeHandle, AuraCustomGeometrySpec>();
+const runtimeOwnedQueryBuffers = new WeakMap<AuraRuntimeNodeHandle, OwnedQueryBufferState>();
 const runtimeQueryItems = new WeakMap<AuraRuntimeNodeHandle, readonly RenderItem[]>();
 const disposedQueryHandles = new WeakSet<AuraRuntimeNodeHandle>();
 
@@ -1385,6 +1408,7 @@ export function invalidateRuntimeQueryHandle(handle: AuraRuntimeNodeHandle): voi
   for (const child of [...(parityL7Children.get(handle) ?? [])]) invalidateRuntimeQueryHandle(child);
   runtimeQueryItems.delete(handle);
   runtimeQueryGeometry.delete(handle);
+  runtimeOwnedQueryBuffers.delete(handle);
   runtimeParentedNodes.delete(handle);
   runtimeNodeChanged.delete(handle);
   runtimeHierarchyEnabled.delete(handle);
@@ -1445,46 +1469,128 @@ function queryGeometryForUpdate(node: MutableAuraRuntimeSceneNode): AuraCustomGe
   }
 }
 
-function updatedQueryGeometry(spec: AuraCustomGeometrySpec, name: string, update: { readonly array: ArrayLike<number>; readonly offset: number }, lineDefaults = false): AuraCustomGeometrySpec {
+function buildOwnedQueryBufferState(spec: AuraCustomGeometrySpec, baseGeometry: AuraCustomGeometrySpec | undefined): OwnedQueryBufferState {
   const normalized = normalizeGeometryAttributes(spec);
+  const positions = normalized.positions.slice();
+  const normals = normalized.normals?.slice();
+  const uvs = normalized.uvs?.slice();
+  const uv1s = normalized.uv1s?.slice();
+  const colors = normalized.colors?.slice();
+  const custom = new Map<string, OwnedQueryCustomAttr>();
+  const customRecord: Record<string, import("../RootGeometry.js").AuraCustomVertexAttributeSpec> = {};
+  if (spec.attributes) {
+    for (const [attrName, attribute] of Object.entries(spec.attributes)) {
+      const raw = attribute.data;
+      const data = Array.isArray(raw) ? [...raw] : raw.slice();
+      const probe = !Array.isArray(data) && !(data instanceof Float32Array)
+        ? new (data.constructor as { new(length: number): ArrayLike<number> & Record<number, number> })(1)
+        : null;
+      const rawSpec = { ...attribute, data: data as typeof attribute.data };
+      customRecord[attrName] = rawSpec;
+      custom.set(attrName, {
+        itemSize: attribute.itemSize,
+        stride: attribute.stride ?? attribute.itemSize,
+        offset: attribute.offset ?? 0,
+        data,
+        probe,
+        rawSpec
+      });
+    }
+  }
+  const ownedSpec: AuraCustomGeometrySpec = {
+    ...spec,
+    positions,
+    ...(normals ? { normals } : {}),
+    ...(uvs ? { uvs } : {}),
+    ...(uv1s ? { uv1s } : {}),
+    ...(colors ? { colors } : {}),
+    ...(spec.attributes ? { attributes: customRecord } : {})
+  };
+  runtimeGeometryPositionsCache.set(ownedSpec, positions);
+  return {
+    baseGeometry,
+    spec: ownedSpec,
+    vertexCount: normalized.vertexCount,
+    positions,
+    normals,
+    uvs,
+    uv1s,
+    colors,
+    indices: normalized.indices,
+    custom
+  };
+}
+
+function applyOwnedQueryGeometryUpdate(
+  handle: AuraRuntimeNodeHandle,
+  node: MutableAuraRuntimeSceneNode,
+  name: string,
+  update: { readonly array: ArrayLike<number>; readonly offset: number }
+): void {
+  const baseGeometry = node.kind === "primitive" ? node.geometry : undefined;
+  let state = runtimeOwnedQueryBuffers.get(handle);
+  if (!state || state.baseGeometry !== baseGeometry) {
+    const querySpec = runtimeQueryGeometry.get(handle) ?? queryGeometryForUpdate(node);
+    if (!querySpec) return;
+    state = buildOwnedQueryBufferState(querySpec, baseGeometry);
+    runtimeOwnedQueryBuffers.set(handle, state);
+  }
+  const lineDefaults = node.kind === "line";
   const aliases: Record<string, "positions" | "normals" | "uvs" | "uv1s" | "colors"> = {
     position: "positions", positions: "positions", normal: "normals", normals: "normals",
     uv: "uvs", uv0: "uvs", uvs: "uvs", uv1: "uv1s", uv1s: "uv1s", color: "colors", colors: "colors"
   };
   const field = aliases[name];
   if (field) {
-    const source = normalized[field] ?? (field === "colors" && lineDefaults ? new Float32Array(normalized.vertexCount * 4).fill(1) : field === "normals" ? (spec.topology === "lines" || spec.topology === "points"
-      ? Float32Array.from({ length: normalized.positions.length }, (_, i) => i % 3 === 1 ? 1 : 0)
-      : computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices })) : undefined);
-    if (!source) throw new Error(`Aura3D geometry has no attribute "${name}".`);
+    let source = state[field];
+    if (!source) {
+      if (field === "colors" && lineDefaults) {
+        source = new Float32Array(state.vertexCount * 4).fill(1);
+      } else if (field === "normals") {
+        source = state.spec.topology === "lines" || state.spec.topology === "points"
+          ? Float32Array.from({ length: state.positions.length }, (_, i) => i % 3 === 1 ? 1 : 0)
+          : computeAuraGeometryNormals({ positions: state.positions, indices: state.indices });
+      }
+      if (!source) throw new Error(`Aura3D geometry has no attribute "${name}".`);
+      state[field] = source;
+    }
     const itemSize = field === "uvs" || field === "uv1s" ? 2 : field === "colors" ? 4 : 3;
-    if (update.array.length % itemSize || update.offset + update.array.length / itemSize > normalized.vertexCount) {
+    if (update.array.length % itemSize || update.offset + update.array.length / itemSize > state.vertexCount) {
       throw new RangeError(`Aura3D attribute "${name}" update exceeds its vertex range or has incomplete items.`);
     }
-    const data = source.slice();
-    for (let index = 0; index < update.array.length; index += 1) data[update.offset * itemSize + index] = update.array[index]!;
-    // Explicit bounds describe the old positions; after an edit they cannot be
-    // used for culling or queries until recomputed.
-    return { ...spec, [field]: data, ...(field === "positions" ? { bounds: undefined } : {}) };
+    const baseOffset = update.offset * itemSize;
+    for (let index = 0, len = update.array.length; index < len; index += 1) {
+      source[baseOffset + index] = update.array[index]!;
+    }
+    state.spec = { ...state.spec, [field]: source, ...(field === "positions" ? { bounds: undefined } : {}) };
+    runtimeGeometryPositionsCache.set(state.spec, state.positions);
+    runtimeQueryGeometry.set(handle, state.spec);
+    return;
   }
-  const attribute = spec.attributes?.[name];
-  if (!attribute) throw new Error(`Aura3D geometry has no attribute "${name}".`);
-  const { itemSize } = attribute;
-  if (update.array.length % itemSize || update.offset + update.array.length / itemSize > normalized.vertexCount) {
+  const entry = state.custom.get(name);
+  if (!entry) throw new Error(`Aura3D geometry has no attribute "${name}".`);
+  const { itemSize, stride, offset: attributeOffset, data, probe } = entry;
+  if (update.array.length % itemSize || update.offset + update.array.length / itemSize > state.vertexCount) {
     throw new RangeError(`Aura3D attribute "${name}" update exceeds its vertex range or has incomplete items.`);
   }
-  const raw = attribute.data;
-  const data = Array.isArray(raw) ? [...raw] : raw.slice();
-  const stride = attribute.stride ?? itemSize;
-  const attributeOffset = attribute.offset ?? 0;
-  for (let i = 0; i < update.array.length; i += 1) {
-    const destination = (update.offset + Math.floor(i / itemSize)) * stride + attributeOffset + i % itemSize;
-    (data as number[] | Float32Array)[destination] = update.array[i]!;
-    if (!Array.isArray(data) && !(data instanceof Float32Array) && (data as ArrayLike<number>)[destination] !== update.array[i]) {
-      throw new RangeError(`Aura3D attribute "${name}" update is outside its declared storage range.`);
+  if (probe) {
+    for (let i = 0, len = update.array.length; i < len; i += 1) {
+      const val = update.array[i]!;
+      probe[0] = val;
+      if (probe[0] !== val) {
+        throw new RangeError(`Aura3D attribute "${name}" update is outside its declared storage range.`);
+      }
     }
   }
-  return { ...spec, attributes: { ...spec.attributes, [name]: { ...attribute, data } } };
+  const writable = data as unknown as Record<number, number>;
+  for (let i = 0, len = update.array.length; i < len; i += 1) {
+    const destination = (update.offset + Math.floor(i / itemSize)) * stride + attributeOffset + (i % itemSize);
+    writable[destination] = update.array[i]!;
+  }
+  entry.rawSpec = { ...entry.rawSpec, data: data as typeof entry.rawSpec.data };
+  state.spec = { ...state.spec, attributes: { ...state.spec.attributes, [name]: entry.rawSpec } };
+  runtimeGeometryPositionsCache.set(state.spec, state.positions);
+  runtimeQueryGeometry.set(handle, state.spec);
 }
 
 const runtimeGeometryPositionsCache = new WeakMap<AuraCustomGeometrySpec, Float32Array>();
@@ -2145,6 +2251,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       (this as unknown as { __parityL2Geometry?: import("../RootGeometry.js").AuraCustomGeometrySpec }).__parityL2Geometry = normalized;
       (this as unknown as { __parityL2AttributeUpdates?: unknown[] }).__parityL2AttributeUpdates = [];
       runtimeQueryGeometry.set(this, normalized);
+      runtimeOwnedQueryBuffers.delete(this);
       bumpVersion();
       return this;
     },
@@ -2172,8 +2279,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       for (let i = 0, len = raw.length; i < len; i += 1) {
         if (!Number.isFinite(raw[i])) throw new RangeError(`Aura3D attribute "${name}" update must contain finite values.`);
       }
-      const querySpec = runtimeQueryGeometry.get(this) ?? queryGeometryForUpdate(node);
-      if (querySpec) runtimeQueryGeometry.set(this, updatedQueryGeometry(querySpec, name, { array: raw, offset }, node.kind === "line"));
+      applyOwnedQueryGeometryUpdate(this, node, name, { array: raw, offset });
       // Copy the input: mutation by a caller after the update must not race the next frame.
       const array = Array.isArray(raw) ? Float32Array.from(raw) : raw.slice();
       const pending = { name, array, offset, skipBoundsRefresh: update.skipBoundsRefresh === true };

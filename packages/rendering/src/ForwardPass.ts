@@ -42,7 +42,7 @@ import { type RenderItem } from "./contracts/renderItem";
 import { hasPotentiallyActiveFrameContributors, type FrameContributorContext } from "./contracts/frameGraph";
 import { instanceBufferSlot, type InstanceBufferLike } from "./contracts/geometry";
 import { VertexFormat } from "./VertexFormat";
-import { MAX_LIGHTS_PER_CLUSTER, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+import { MAX_LIGHTS_PER_CLUSTER, type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "./ClusteredForwardLighting";
 import { allShaderFeatures, potentiallyActiveShaderFeatures, programCacheSlot, shaderFeaturesFor, type ProgramCacheLike, type ProgramFeatures, type ShaderFeature } from "./contracts/program";
 import { materialLobes, potentiallyActiveMaterialLobes } from "./contracts/materialLobes";
 import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_REVERSED_FOG_DEPTH_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
@@ -213,15 +213,19 @@ function pooledPrimitiveGeometry(geometry: Geometry): boolean {
 /** `allowPooled` is for the contact-shadow depth proof only; replay and batching keep the plain-Geometry rule. */
 function replayGeometrySafe(geometry: Geometry, allowPooled = false): boolean {
   if (!replayBuiltinObject(geometry, Geometry.prototype) && !(allowPooled && pooledPrimitiveGeometry(geometry))) return false;
-  const streams = [geometry.vertexBuffer, ...geometry.additionalVertexBuffers];
-  if (streams.some((stream) => !replayBuiltinObject(stream, VertexBuffer.prototype)
-    || !replayBuiltinObject(stream.format, VertexFormat.prototype))) return false;
+  const primary = geometry.vertexBuffer;
+  if (!replayBuiltinObject(primary, VertexBuffer.prototype) || !replayBuiltinObject(primary.format, VertexFormat.prototype)) return false;
+  const additional = geometry.additionalVertexBuffers;
+  for (let i = 0; i < additional.length; i += 1) {
+    const stream = additional[i]!;
+    if (!replayBuiltinObject(stream, VertexBuffer.prototype) || !replayBuiltinObject(stream.format, VertexFormat.prototype)) return false;
+  }
   return geometry.indexBuffer === null || replayBuiltinObject(geometry.indexBuffer, IndexBuffer.prototype);
 }
 
 function replayMaterialTexturesSafe(material: Material | MaterialInstance): boolean {
   try {
-    for (const value of material.getParameters().values()) {
+    for (const value of material.parameterSnapshot().values()) {
       if (!isTextureBinding(value)) continue;
       if (!replayBuiltinObject(value, TextureBinding.prototype) || !replayBuiltinObject(value.sampler, Sampler.prototype)
         || (value.texture && !replayBuiltinObject(value.texture, Texture.prototype))) return false;
@@ -737,6 +741,8 @@ export interface ForwardPassOptions {
     readonly leases: PhotometricFrameLease[];
     readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
   };
+  /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+  readonly clusteredLightingPool?: ClusteredForwardTexturePool;
   /** Internal per-view projected-light admission, cache and frame leases. */
   readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
   readonly lights?: readonly CollectedLight[];
@@ -1299,11 +1305,12 @@ export class ForwardPass extends BaseRenderPass {
       this.photometricUnsupported("material-unsupported", "This lit draw cannot use generated photometric profile lighting; scalar lighting is used.");
       return undefined;
     }
-    if (this.photometricCache?.lease.isCurrent(frame.identity) && this.photometricCache.sourceCurrent()) {
-      const cached = this.photometricCache;
+    const sharedFrameCache = this.photometricCache ?? sharedPhotometricCaches.get(frame);
+    if (sharedFrameCache?.lease.isCurrent(frame.identity) && sharedFrameCache.sourceCurrent()) {
       const current = LightUniforms.pack(lights).data;
-      if (current.length === cached.selection.packed.data.length && current.every((value, index) => Object.is(value, cached.selection.packed.data[index]))) {
-        return { ...cached, active: true };
+      if (current.length === sharedFrameCache.selection.packed.data.length && current.every((value, index) => Object.is(value, sharedFrameCache.selection.packed.data[index]))) {
+        this.photometricCache = sharedFrameCache;
+        return { ...sharedFrameCache, active: true };
       }
     }
     let selection: PackedLightsWithSelection;
@@ -1349,6 +1356,7 @@ export class ForwardPass extends BaseRenderPass {
     }
     frame.leases.push(adopted.lease);
     this.photometricCache = { packet: result, selection, lease: adopted.lease, sourceCurrent };
+    sharedPhotometricCaches.set(frame, this.photometricCache);
     return { ...this.photometricCache, active: true };
   }
 
@@ -1369,7 +1377,7 @@ export class ForwardPass extends BaseRenderPass {
       timeSeconds: this.options.timeSeconds ?? 0, viewProjectionMatrix: this.options.cameraViewProjectionMatrix ?? identityMatrix(), frame: this.options.frameContext };
     this.beginFramePools(context.device);
     try {
-      this.clusteredLighting = resolveForwardClusteredLighting(this.shadedLights(), context.width, context.height, this.options.cameraViewProjectionMatrix);
+      this.clusteredLighting = resolveForwardClusteredLighting(this.shadedLights(), context.width, context.height, this.options.cameraViewProjectionMatrix, this.options.clusteredLightingPool);
       const flags = rendererQrFlags(context.device);
       if (qrGeneratedProgramsOn(flags)) {
         const auraFrame = rendererAuraFrame(context.device, flags);
@@ -1962,10 +1970,16 @@ export class ForwardPass extends BaseRenderPass {
     // generated program must not silently lose features through that fallback.
     let binding: ReturnType<MaterialBinding["bindRecursive"]> | null = null;
     const bindMaterial = (currentShader: RenderShaderProgram) => {
-      const recursive = baseMaterial instanceof PortableShaderMaterial
-        && (baseMaterial.uniformSchema.some((uniform) => uniform.kind === "data")
-          || [...material.getRecursiveParameters().values()].some((value) => !isFlatUniformValue(value)));
-      return recursive ? this.materialBinding.bindRecursive(material, currentShader) : this.materialBinding.bind(material, currentShader);
+      let hasNonFlat = false;
+      if (baseMaterial instanceof PortableShaderMaterial) {
+        hasNonFlat = baseMaterial.uniformSchema.some((uniform) => uniform.kind === "data");
+        if (!hasNonFlat) {
+          for (const value of material.parameterSnapshot().values()) {
+            if (!isFlatUniformValue(value)) { hasNonFlat = true; break; }
+          }
+        }
+      }
+      return hasNonFlat ? this.materialBinding.bindRecursive(material, currentShader) : this.materialBinding.bind(material, currentShader);
     };
     try {
       binding = generated
@@ -5632,7 +5646,16 @@ function validateInstanceTransformSource(item: RenderItem): Float32Array | reado
   return source;
 }
 
+const sharedPhotometricCaches = new WeakMap<object, NonNullable<ForwardPass["photometricCache"]>>();
+
 export function isFiniteArrayLike(values: ArrayLike<number>): boolean {
+  if (values instanceof Float32Array) {
+    for (let index = 0; index < values.length; index += 1) {
+      const v = values[index]!;
+      if (v - v !== 0) return false;
+    }
+    return true;
+  }
   for (let index = 0; index < values.length; index += 1) {
     if (!Number.isFinite(values[index])) return false;
   }

@@ -244,11 +244,45 @@ export function instancedPrimitiveModelNode(node: AuraPrimitiveNode, cache: Rend
   return sizeless;
 }
 
+function appendNumberFp(parts: string[], value: unknown): void {
+  if (typeof value === "number") parts.push(Object.is(value, -0) ? "-0" : String(value));
+  else if (Array.isArray(value)) {
+    parts.push("[");
+    for (let i = 0; i < value.length; i += 1) {
+      if (i > 0) parts.push(",");
+      const v = value[i];
+      parts.push(typeof v === "number" ? (Object.is(v, -0) ? "-0" : String(v)) : JSON.stringify(v));
+    }
+    parts.push("]");
+  } else if (value === undefined) parts.push("u");
+  else parts.push(JSON.stringify(value));
+}
+
 function instanceTransformFp(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): string {
   // Compare actual transform inputs instead of a lossy numeric hash, which
-  // can collide after in-place changes. Exclude arbitrary userData.
-  return JSON.stringify([node.primitive, node.size, transforms.map(({ position, rotation, scale, pivot, lookAt, rotationOrder, quaternion }) =>
-    [position, rotation, scale, pivot, lookAt, rotationOrder, quaternion])]);
+  // can collide after in-place changes. Exclude arbitrary userData without allocating per-item tuple arrays.
+  const parts: string[] = [String(node.primitive), "|"];
+  appendNumberFp(parts, node.size);
+  parts.push("|", String(transforms.length));
+  for (let i = 0; i < transforms.length; i += 1) {
+    const t = transforms[i]!;
+    parts.push(";");
+    appendNumberFp(parts, t.position);
+    parts.push(":");
+    appendNumberFp(parts, t.rotation);
+    parts.push(":");
+    appendNumberFp(parts, t.scale);
+    if (t.pivot !== undefined || t.lookAt !== undefined || t.rotationOrder !== undefined || t.quaternion !== undefined) {
+      parts.push(":");
+      appendNumberFp(parts, t.pivot);
+      parts.push(":");
+      appendNumberFp(parts, t.lookAt);
+      parts.push(":");
+      parts.push(t.rotationOrder ?? "u", ":");
+      appendNumberFp(parts, t.quaternion);
+    }
+  }
+  return parts.join("");
 }
 
 function instanceColorFp(colors: readonly AuraColor[]): string {

@@ -1664,8 +1664,14 @@ export function validateGeneratedPhotometricPacket(
   const read = (name: string): number[] => {
     const value = uniforms.get(name);
     if (!Array.isArray(value) && (!ArrayBuffer.isView(value) || value instanceof DataView)) return invalid();
-    const values = Array.from(value as ArrayLike<number>);
-    if (values.length !== 64 || values.some((v) => !Number.isFinite(v) || !Number.isFinite(Math.fround(v)) || (v !== 0 && Math.fround(v) === 0))) return invalid();
+    const seq = value as ArrayLike<number>;
+    if (seq.length !== 64) return invalid();
+    const values = new Array<number>(64);
+    for (let k = 0; k < 64; k += 1) {
+      const v = seq[k]!;
+      if (typeof v !== "number" || !Number.isFinite(v) || !Number.isFinite(Math.fround(v)) || (v !== 0 && Math.fround(v) === 0)) return invalid();
+      values[k] = v;
+    }
     return values;
   };
   const offsets = read("u_a3dPhotometricOffsets"), meta = read("u_a3dPhotometricMeta");
@@ -1673,27 +1679,35 @@ export function validateGeneratedPhotometricPacket(
   const rawLights = uniforms.get("u_lightData");
   if (!Number.isInteger(lightCount) || lightCount < 1 || lightCount > 16 ||
       (!Array.isArray(rawLights) && (!ArrayBuffer.isView(rawLights) || rawLights instanceof DataView))) return invalid();
-  const lights = Array.from(rawLights as ArrayLike<number>);
-  if (lights.length < lightCount * 24 || lights.length > 384 || !lights.every(Number.isFinite)) return invalid();
+  const lights = rawLights as ArrayLike<number>;
+  if (lights.length < lightCount * 24 || lights.length > 384) return invalid();
+  for (let k = 0; k < lights.length; k += 1) {
+    const lv = lights[k]!;
+    if (typeof lv !== "number" || !Number.isFinite(lv)) return invalid();
+  }
   let enabled = 0;
   for (let slot = 0; slot < 16; slot += 1) {
     const i = slot * 4;
-    const [vOffset, hOffset, cOffset, vCount] = offsets.slice(i, i + 4) as [number, number, number, number];
-    const [hCount, symmetry, scale, rotation] = meta.slice(i, i + 4) as [number, number, number, number];
+    const vOffset = offsets[i]!, hOffset = offsets[i + 1]!, cOffset = offsets[i + 2]!, vCount = offsets[i + 3]!;
+    const hCount = meta[i]!, symmetry = meta[i + 1]!, scale = meta[i + 2]!, rotation = meta[i + 3]!;
     if (vCount === 0) {
-      if ([vOffset, hOffset, cOffset, hCount, symmetry, scale, rotation].some((v) => v !== 0)) return invalid();
+      if (vOffset !== 0 || hOffset !== 0 || cOffset !== 0 || hCount !== 0 || symmetry !== 0 || scale !== 0 || rotation !== 0) return invalid();
       continue;
     }
-    const kind = lights[slot * 24 + 11];
+    const baseL = slot * 24;
+    const kind = lights[baseL + 11];
+    const px = Math.fround(lights[baseL + 4]!), py = Math.fround(lights[baseL + 5]!), pz = Math.fround(lights[baseL + 6]!);
+    const dx = Math.fround(lights[baseL + 8]!), dy = Math.fround(lights[baseL + 9]!), dz = Math.fround(lights[baseL + 10]!);
     if (slot >= lightCount || (kind !== 1 && kind !== 2) ||
-        ![vOffset, hOffset, cOffset, vCount, hCount, symmetry].every(Number.isSafeInteger) ||
+        !Number.isSafeInteger(vOffset) || !Number.isSafeInteger(hOffset) || !Number.isSafeInteger(cOffset) ||
+        !Number.isSafeInteger(vCount) || !Number.isSafeInteger(hCount) || !Number.isSafeInteger(symmetry) ||
         vOffset < 0 || vCount < 1 || vCount > 4096 || hCount < 1 || hCount > 4096 || vCount * hCount > 1_048_576 ||
         (hCount === 1 ? symmetry !== 0 : symmetry < 1 || symmetry > 3) ||
         hOffset !== vOffset + vCount || cOffset !== hOffset + hCount || cOffset + vCount * hCount > capacity ||
         scale < 0 || Math.abs(rotation) > Math.PI + 1e-6 ||
-        !lights.slice(slot * 24 + 4, slot * 24 + 7).every((v) => Number.isFinite(Math.fround(v))) ||
-        !lights.slice(slot * 24 + 8, slot * 24 + 11).every((v) => Number.isFinite(Math.fround(v))) ||
-        Math.hypot(...lights.slice(slot * 24 + 8, slot * 24 + 11).map(Math.fround)) === 0) return invalid();
+        !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(pz) ||
+        !Number.isFinite(dx) || !Number.isFinite(dy) || !Number.isFinite(dz) ||
+        Math.hypot(dx, dy, dz) === 0) return invalid();
     enabled += 1;
   }
   if (enabled === 0) return invalid();
@@ -1711,7 +1725,38 @@ const GENERATED_PBR_DIRECT_UNIFORMS: ReadonlyMap<string, { readonly field: strin
   ["u_shadowMapMatrix", { field: "shadowMatrix", component: 0, length: 16 }],
   ["u_shadowMapNormalBias", { field: "shadowTexel", component: 2, length: -1 }],
   ["u_baseColor", { field: "baseColor", component: 0, length: 4 }],
+  ["u_emissiveColor", { field: "emissive", component: 0, length: 3 }],
+  ["u_emissiveStrength", { field: "emissive", component: 3, length: -1 }],
+  ["u_roughness", { field: "surface", component: 1, length: -1 }],
+  ["u_environmentColor", { field: "ambient", component: 0, length: 3 }],
+  ["u_environmentIntensity", { field: "ambient", component: 3, length: -1 }],
+  ["u_ambientIrradiance", { field: "ambientIrradiance", component: 0, length: 3 }],
+  ["u_hemiSky", { field: "hemiSky", component: 0, length: 3 }],
+  ["u_hemiGround", { field: "hemiGround", component: 0, length: 3 }],
+  ["u_hemiDirection", { field: "hemiDirection", component: 0, length: 3 }],
+  ["u_prd02ProbeCenterA", { field: "localCenterA", component: 0, length: 4 }],
+  ["u_prd02ProbeHalfA", { field: "localHalfA", component: 0, length: 4 }],
+  ["u_prd02ProbeOriginA", { field: "localOriginA", component: 0, length: 4 }],
+  ["u_prd02ProbeCenterB", { field: "localCenterB", component: 0, length: 4 }],
+  ["u_prd02ProbeHalfB", { field: "localHalfB", component: 0, length: 4 }],
+  ["u_prd02ProbeOriginB", { field: "localOriginB", component: 0, length: 4 }],
+  ["u_prd02ProbeWeights", { field: "localWeights", component: 0, length: 4 }],
+  ["u_envSH", { field: "sh", component: 0, length: 28 }],
+  ["u_localShadowMatrices", { field: "localShadowMatrices", component: 0, length: 96 }],
+  ["u_localShadowRects", { field: "localShadowRects", component: 0, length: 24 }],
+  ["u_localShadowTexelScale", { field: "localShadowScales", component: 0, length: 8 }],
+  ["u_localShadowParams", { field: "localShadowParams", component: 0, length: 4 }],
+  ["u_spotShadowLightPosition", { field: "spotShadowPositionRange", component: 0, length: 3 }],
+  ["u_spotShadowRange", { field: "spotShadowPositionRange", component: 3, length: -1 }],
+  ["u_spotShadowMatrix", { field: "spotShadowMatrix", component: 0, length: 16 }],
+  ["u_pointShadowLightPosition", { field: "pointShadowPositionRange", component: 0, length: 3 }],
+  ["u_pointShadowFaceMatrices", { field: "pointShadowMatrices", component: 0, length: 96 }],
+  ["u_pointShadowFaceRects", { field: "pointShadowRects", component: 0, length: 24 }],
   ["u_windDirStrength", { field: "windDirStrength", component: 0, length: 4 }],
+  ["u_windGust", { field: "windGust", component: 0, length: 4 }],
+  ["u_wetness", { field: "wetness", component: 0, length: -1 }],
+  ["u_rainRipples", { field: "wetness", component: 2, length: -1 }],
+  ["u_snowCover", { field: "wetness", component: 3, length: -1 }],
   // Read only through the prd07.fog fields, as a vec3 (only while u_fogMode is present).
   ["u_cameraPosition", { field: "prd07FogCamera", component: 0, length: 3 }],
   // Rows of vec4 from the start of `lights`; the photometric packet also validates them, so not with a profile.
