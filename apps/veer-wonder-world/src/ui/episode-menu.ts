@@ -16,6 +16,7 @@ import {
   el,
   enableGridNavigation,
   humanizeId,
+  icon,
   iconButton,
   inertOthers,
   speakerName,
@@ -63,6 +64,10 @@ export type WorldFilterValue = WorldId | "all";
 export interface EpisodeMenuOptions {
   /** When given, a "Grown-ups" button in the header calls it (the app runs the parent gate). */
   readonly onParent?: () => void;
+  /** Whether continuous Auto-play mode is currently active (`mode === "auto"`). */
+  readonly autoPlay?: boolean;
+  /** One-tap continuous Auto-play toggle in the menu header. */
+  readonly onToggleAuto?: (next: boolean) => void;
   /**
    * The 3D stage could not start on this device (no WebGL2, a blocked GPU): a
    * calm status line under the title says so, instead of a picked story
@@ -202,11 +207,40 @@ export function showEpisodeMenu(
   const inner = el(doc, "div", { className: "ww-menu-inner" });
   const title = el(doc, "h1", { className: "ww-menu-title", text: uiText(locale, "ui.menu.title"), attrs: { id: titleId, tabindex: "-1" } });
   const header = el(doc, "div", { className: "ww-menu-header" }, [title]);
-  if (options.onParent) {
-    const onParent = options.onParent;
-    const parent = iconButton(doc, "settings", uiText(locale, "ui.parentButton"), { "data-control": "parent" });
-    parent.addEventListener("click", () => onParent());
-    header.appendChild(parent);
+  if (options.onToggleAuto || options.onParent) {
+    const actions = options.onToggleAuto ? el(doc, "div", { className: "ww-menu-actions" }) : header;
+    if (options.onToggleAuto) {
+      const onToggleAuto = options.onToggleAuto;
+      let autoOn = options.autoPlay === true;
+      const autoBtn = el(
+        doc,
+        "button",
+        {
+          className: "ww-pill-button ww-auto-toggle",
+          attrs: { type: "button", "data-control": "auto", "aria-pressed": String(autoOn) }
+        },
+        [icon(doc, "auto"), el(doc, "span", { text: uiText(locale, "ui.mode.auto") })]
+      );
+      const syncAuto = (): void => {
+        autoBtn.classList.toggle("is-active", autoOn);
+        autoBtn.setAttribute("aria-pressed", String(autoOn));
+        autoBtn.dataset["auto"] = String(autoOn);
+      };
+      syncAuto();
+      autoBtn.addEventListener("click", () => {
+        autoOn = !autoOn;
+        syncAuto();
+        onToggleAuto(autoOn);
+      });
+      actions.appendChild(autoBtn);
+    }
+    if (options.onParent) {
+      const onParent = options.onParent;
+      const parent = iconButton(doc, "settings", uiText(locale, "ui.parentButton"), { "data-control": "parent" });
+      parent.addEventListener("click", () => onParent());
+      actions.appendChild(parent);
+    }
+    if (actions !== header) header.appendChild(actions);
   }
   inner.appendChild(header);
   if (options.stageUnavailable === true) {

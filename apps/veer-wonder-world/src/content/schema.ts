@@ -233,7 +233,7 @@ export function familyNamesIn(text: string, guardNames: readonly string[] = []):
 
 /** Every UI string key the app shell and UI modules look up (src/localization/en/ui.ts defines them). */
 export const REQUIRED_UI_KEYS: readonly string[] = [
-  "ui.start.tap", "ui.start.title", "ui.start.sound", "ui.mode.play", "ui.mode.watch", "ui.mode.label",
+  "ui.start.tap", "ui.start.title", "ui.start.sound", "ui.mode.play", "ui.mode.watch", "ui.mode.auto", "ui.mode.label",
   "ui.menu.episodes", "ui.menu.activities", "ui.menu.title", "ui.menu.label",
   "ui.parent.title", "ui.parent.open", "ui.parent.mode", "ui.parent.display", "ui.parent.music", "ui.parent.sound",
   "ui.parent.sfx", "ui.parent.sfxHelp", "ui.parent.sfx.off", "ui.parent.sfx.soft", "ui.parent.sfx.normal",

@@ -76,12 +76,12 @@ import type {
 import { applyDisplaySettings } from "./ui/accessibility.js";
 import { mountCaptions, type Captions } from "./ui/captions.js";
 import { mountChildControls, type ChildControls } from "./ui/child-controls.js";
-import { showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
+import { menuSection, showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
 import { showOfflineCard } from "./ui/offline-card.js";
 import { requireParent } from "./ui/parent-gate.js";
 import { openParentPanel } from "./ui/parent-panel.js";
 import { wordLabel } from "./ui/parent-wordlist.js";
-import { WAIT_MS_DEFAULT, clampWaitMs, saveSettings, type SettingsStorage } from "./ui/settings-store.js";
+import { WAIT_MS_DEFAULT, WAIT_MS_MIN, clampWaitMs, saveSettings, type SettingsStorage } from "./ui/settings-store.js";
 import { showLoading, showStartScreen } from "./ui/start-screen.js";
 
 // ---------------------------------------------------------------- constants
@@ -622,6 +622,15 @@ const MENU_ITEMS: readonly MenuItem[] = STORIES.map((story) => ({
   ...(story.kind === "episode" ? { durationSec: story.estimatedDurationSec } : { rounds: story.roundLimit })
 }));
 
+/** Continuous Auto-play order: matches the Story Menu order (P1 episodes, P2 episodes, then G01-G12 games). */
+const ORDERED_STORIES: readonly StorySpec[] = [
+  ...menuSection(MENU_ITEMS, "episode"),
+  ...menuSection(MENU_ITEMS, "activity")
+].flatMap((item) => {
+  const found = storyById(item.id);
+  return found ? [found] : [];
+});
+
 /** Story vocabulary words to highlight softly in caregiver captions. */
 function storyHighlightWords(story: StorySpec, settings: ParentSettings): readonly string[] {
   const focusSet = new Set(settings.wordList);
@@ -666,7 +675,8 @@ function afterFirstPaint(win: Window | null): Promise<void> {
   });
 }
 
-function waitOverride(waitMs: number): number | undefined {
+function waitOverride(waitMs: number, mode?: PlayMode): number | undefined {
+  if (mode === "auto" && waitMs === WAIT_MS_DEFAULT) return WAIT_MS_MIN;
   return waitMs === WAIT_MS_DEFAULT ? undefined : clampWaitMs(waitMs);
 }
 
@@ -797,7 +807,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const snap = current.runner.snapshot();
     if (snap.phase === "waiting") {
       const beat = storyBeats(current.story).find((b) => b.id === snap.beatId);
-      const totalWaitMs = waitOverride(settings.waitMs) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
+      const totalWaitMs = waitOverride(settings.waitMs, settings.mode) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
       const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
       current.controls.setWaitProgress?.(fracRemaining);
     }
@@ -834,6 +844,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
       const dt = shown - stageShownMs;
       if (dt <= 0) return;
       stageShownMs = shown;
+      const timing = narration.timing();
+      stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
       updateStage(dt);
     }
   });
@@ -919,10 +931,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
   };
 
   // ---- settings
+  let manualMode: "play-together" | "watch-sing" = settings.mode === "watch-sing" ? "watch-sing" : "play-together";
+
   const applySettings = (next: ParentSettings): void => {
     if (disposed) return;
     const previous = settings;
     settings = { ...next, wordList: [...next.wordList] };
+    if (settings.mode === "play-together" || settings.mode === "watch-sing") manualMode = settings.mode;
     saveSettings(storage, settings);
     if (previous.music !== settings.music) mixer.setMusicEnabled(settings.music);
     if (previous.sfxVolume !== settings.sfxVolume) mixer.setSfxVolume(settings.sfxVolume);
@@ -938,9 +953,14 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (current) {
       current.captions.setEnabled(settings.captions);
       current.captions.setHighlightWords?.(storyHighlightWords(current.story, settings));
+      current.controls.setAutoPlay?.(settings.mode === "auto");
       current.runner.setReducedMotion(reduced);
-      current.runner.setWaitMs(waitOverride(settings.waitMs));
+      current.runner.setWaitMs(waitOverride(settings.waitMs, settings.mode));
     }
+  };
+
+  const toggleAutoPlay = (on: boolean): void => {
+    applySettings({ ...settings, mode: on ? "auto" : manualMode });
   };
 
   // ---- screens
@@ -1011,7 +1031,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
         if (story) void openStory(story, settings.mode);
       },
       // After the stage failed to start, say so on the menu instead of bouncing back silently.
-      { onParent: () => void openParentFlow(), stageUnavailable: stageFailed, selectedWords: settings.wordList }
+      {
+        onParent: () => void openParentFlow(),
+        autoPlay: settings.mode === "auto",
+        onToggleAuto: toggleAutoPlay,
+        stageUnavailable: stageFailed,
+        selectedWords: settings.wordList
+      }
     );
   };
 
@@ -1043,7 +1069,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   const proceedFromStart = (mode: PlayMode): void => {
     started = true;
-    const story = initialStory;
+    const story = initialStory ?? (mode === "auto" ? (ORDERED_STORIES[0] ?? STORIES[0] ?? null) : null);
     initialStory = null;
     if (story) void openStory(story, mode);
     else showMenu();
@@ -1123,8 +1149,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
   };
 
   const nextInCatalog = (story: StorySpec): StorySpec | undefined => {
-    const index = STORIES.indexOf(story);
-    return STORIES[(index + 1) % STORIES.length];
+    const playlist = ORDERED_STORIES.length > 0 ? ORDERED_STORIES : STORIES;
+    const index = playlist.indexOf(story);
+    if (index >= 0) return playlist[(index + 1) % playlist.length];
+    const rawIndex = STORIES.indexOf(story);
+    return STORIES[(rawIndex + 1) % STORIES.length];
   };
 
   /** Loads a story's world and starts its director. Resolves "started", "cancelled" (a newer request won) or "failed". */
@@ -1174,10 +1203,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
       onParent: () => void openParentFlow(),
       onConfirmTurn: () => {
         active?.runner.confirm(clock.now());
-      }
+      },
+      initialAuto: settings.mode === "auto",
+      onToggleAuto: toggleAutoPlay
     });
     controls.setReplayAvailable(false);
-    const override = waitOverride(settings.waitMs);
+    const override = waitOverride(settings.waitMs, settings.mode);
     const runner = createStoryRunner({
       story,
       mode,
@@ -1189,7 +1220,16 @@ export function createApp(options: WonderAppOptions): WonderApp {
         text,
         onMediaPaused: (paused) => controls.setPaused(paused),
         onTurn: (waiting) => controls.setTurnWaiting(waiting),
-        onOffline: (key) => showOffline(story, key)
+        onOffline: (key) => {
+          if (settings.mode === "auto" && runner.finishReason() === "complete") {
+            const next = nextInCatalog(story);
+            if (next) {
+              void openStory(next, settings.mode);
+              return;
+            }
+          }
+          showOffline(story, key);
+        }
       },
       lineMs: (key) => lineLength(key) + (query.manual ? 0 : LINE_GRACE_MS),
       followNarration: !query.manual,

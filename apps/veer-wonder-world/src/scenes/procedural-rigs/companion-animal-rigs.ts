@@ -371,15 +371,17 @@ function buildTeddyRig(): ProceduralAssetRig {
       part(
         sculptCurvedLimb(
           [
-            [-0.042, 0.635, 0.245],
-            [0, 0.618, 0.255],
-            [0.042, 0.635, 0.245]
+            [-0.042, 0.638, 0.245],
+            [0, 0.626, 0.256],
+            [0.042, 0.638, 0.245]
           ],
-          0.008,
-          { steps: 6, radialSegments: 6 }
+          0.0075,
+          { steps: 4, radialSegments: 5 }
         ),
         "#5A3622"
       ),
+      part(cabochonCapSpec(0.036, 0.018, 0.012, 8, 1), "#6E2038", { position: [0, 0.618, 0.246] }),
+      part(cabochonCapSpec(0.024, 0.01, 0.01, 8, 1), "#F28A9E", { position: [0, 0.611, 0.249] }),
       ...eyes.browParts
     ]
   });
@@ -390,6 +392,29 @@ function buildTeddyRig(): ProceduralAssetRig {
     parts: [
       part(smoothPuffSpec(0.034, 0.025, 0.026, 10, 5), "#3A2218", { position: [0, 0.698, 0.258] }),
       part(smoothPuffSpec(0.01, 0.007, 0.008, 6, 3), "#FFFFFF", { position: [-0.01, 0.706, 0.28] })
+    ]
+  });
+
+  const teddyJawAnchor: Vec3 = [0, 0.628, 0.215];
+  const teddyJawLobe = composeLobe({
+    suffix: "teddyJaw",
+    craft: "felt",
+    craftTexture: "feltBoucle",
+    hinge: teddyJawAnchor,
+    parts: [
+      part(smoothPuffSpec(0.052, 0.024, 0.034, 8, 4), "#F6E7D0", { position: [0, 0.615, 0.236] }),
+      part(
+        sculptCurvedLimb(
+          [
+            [-0.038, 0.634, 0.246],
+            [0, 0.622, 0.262],
+            [0.038, 0.634, 0.246]
+          ],
+          0.007,
+          { steps: 4, radialSegments: 5 }
+        ),
+        "#5A3622"
+      )
     ]
   });
 
@@ -481,6 +506,7 @@ function buildTeddyRig(): ProceduralAssetRig {
   return finalizeProceduralRig("teddy", [
     makeSubPartRig("body", ORIGIN, [bodyFelt, bodyWoodButton]),
     makeSubPartRig("head", headAnchor, [headFelt, headGloss], "body"),
+    teddyJawAnchor ? makeSubPartRig("jaw", teddyJawAnchor, [teddyJawLobe], "head") : makeEar(-1),
     makeEar(-1),
     makeEar(1),
     makeArm(-1),
@@ -572,6 +598,8 @@ function buildRobotRig(): ProceduralAssetRig {
     parts: [
       part(headShell, "#F4F8FC", { position: [0, 0.7, 0] }),
       part(visorFrame, "#28394F", { position: [0, 0.717, 0.118] }),
+      part(chamferedBoxSpec(0.135, 0.036, 0.014, 0.006), "#1E2F44", { position: [0, 0.618, 0.122] }),
+      part(chamferedBoxSpec(0.095, 0.016, 0.012, 0.004), "#FF7A66", { position: [0, 0.618, 0.126] }),
       // Side ear domes & antenna stem socketed flush against headShell
       part(cylinderSpec(0.048, 0.054, 0.038, 12, 0.008), "#7EC4F2", {
         position: [-0.172, 0.7, 0],
@@ -794,8 +822,9 @@ function buildCowRig(): ProceduralAssetRig {
         position: [0.068, 0.785, 0.445],
         rotation: [0, 0, -0.25]
       }),
-      // Wide rosy velvet muzzle + nostrils
-      part(smoothPuffSpec(0.135, 0.092, 0.095, 14, 7), "#F7B3C0", { position: [0, 0.642, 0.568] }),
+      // Wide rosy velvet muzzle + nostrils + recessed berry mouth pad
+      part(smoothPuffSpec(0.135, 0.09, 0.095, 14, 7), "#F7B3C0", { position: [0, 0.646, 0.568] }),
+      part(smoothPuffSpec(0.072, 0.024, 0.055, 10, 5), "#75223B", { position: [0, 0.596, 0.566] }),
       part(smoothPuffSpec(0.022, 0.016, 0.016, 8, 4), "#8C4A58", {
         position: [-0.052, 0.658, 0.65],
         rotation: [0, -0.2, 0.25]
@@ -969,7 +998,8 @@ function buildSheepRig(): ProceduralAssetRig {
     hinge: headAnchor,
     parts: [
       part(smoothPuffSpec(0.128, 0.135, 0.155, 10, 5), "#4A4348", { position: [0, 0.65, 0.415] }),
-      part(smoothPuffSpec(0.095, 0.075, 0.085, 8, 4), "#5A5157", { position: [0, 0.605, 0.515] }),
+      part(smoothPuffSpec(0.095, 0.072, 0.085, 8, 4), "#5A5157", { position: [0, 0.61, 0.515] }),
+      part(smoothPuffSpec(0.052, 0.02, 0.045, 8, 4), "#75223B", { position: [0, 0.576, 0.518] }),
       part(smoothPuffSpec(0.032, 0.02, 0.018, 6, 3), "#F29EB0", { position: [-0.095, 0.625, 0.485] }),
       part(smoothPuffSpec(0.032, 0.02, 0.018, 6, 3), "#F29EB0", { position: [0.095, 0.625, 0.485] }),
       part(smoothPuffSpec(0.024, 0.016, 0.018, 6, 3), "#F5B0BE", { position: [0, 0.625, 0.592] }),
@@ -1306,7 +1336,8 @@ function buildHorseRig(): ProceduralAssetRig {
         position: [0, 0.845, 0.485],
         rotation: [0.42, 0, 0]
       }),
-      part(smoothPuffSpec(0.082, 0.068, 0.075, 12, 6), "#EAD7BF", { position: [0, 0.745, 0.575] }),
+      part(smoothPuffSpec(0.082, 0.066, 0.075, 12, 6), "#EAD7BF", { position: [0, 0.748, 0.575] }),
+      part(smoothPuffSpec(0.048, 0.018, 0.042, 8, 4), "#75223B", { position: [0, 0.718, 0.568] }),
       part(smoothPuffSpec(0.018, 0.014, 0.014, 6, 3), "#5C3A28", { position: [-0.042, 0.762, 0.638] }),
       part(smoothPuffSpec(0.018, 0.014, 0.014, 6, 3), "#5C3A28", { position: [0.042, 0.762, 0.638] }),
       // Forelock mane tuft between ears

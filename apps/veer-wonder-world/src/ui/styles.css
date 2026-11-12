@@ -319,6 +319,17 @@ b {
   border-color: var(--ww-line-strong);
 }
 
+.ww-auto-toggle.is-active {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
+}
+
+.ww-auto-toggle.is-active:hover {
+  border-color: var(--ww-primary-hover);
+  background: var(--ww-primary-hover);
+}
+
 .ww-button {
   display: inline-flex;
   align-items: center;
@@ -894,7 +905,7 @@ b {
 }
 
 .ww-start .ww-segmented {
-  width: min(100%, 26rem);
+  width: min(100%, 31rem);
 }
 
 .ww-start .ww-legend {
@@ -1099,9 +1110,16 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face .
 
 .ww-menu-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.ww-menu-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ww-menu-title {

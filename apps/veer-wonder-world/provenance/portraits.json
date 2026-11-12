@@ -1,74 +1,74 @@
 {
   "momo": {
     "file": "src/assets/portraits/momo.webp",
-    "sha256": "430459f4bf06207324fe01397612754899a34c26eef030104178b7c482fb7c60",
+    "sha256": "49607a10533475acf0d6e44bebc8f27c3069311606f5d8ed7acddc9053a824c6",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   },
   "lulu": {
     "file": "src/assets/portraits/lulu.webp",
-    "sha256": "999eabcf1dcf1b919282057be2d71f583b3ddd47906e237992ed628fdcadd443",
+    "sha256": "0a7bd753c55f8627e3fc88948bbfe0fd989268b1a6f049f5787e9b6c7704dc01",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   },
   "sheru": {
     "file": "src/assets/portraits/sheru.webp",
-    "sha256": "2310b68ef862ef185ff16111c8f43494ca84539a69252b522bbe7d04e81d6640",
+    "sha256": "373dadfe19dfaf259a8934b2576cf9f7152650d39d9c2f6b7b76e5e1d40dded0",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   },
   "gogo": {
     "file": "src/assets/portraits/gogo.webp",
-    "sha256": "63d76124f40906ac7bc98c53459d5f9a0f7176184dfccd9a453009f286aa96bc",
+    "sha256": "965342f06f0d96e5202a3d699356adc16cce547323404e6dbed38256fb337760",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   },
   "lumi": {
     "file": "src/assets/portraits/lumi.webp",
-    "sha256": "411fe321ab0ece2411b946f00a9ff43124bf1509233b644cb579e8fe07dfdecb",
+    "sha256": "2c3e964a3abcd0492dae765ccfd9f2fdd6659420bee49152b4c19823b2c2f490",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   },
   "peeko": {
     "file": "src/assets/portraits/peeko.webp",
-    "sha256": "99e58798c1a0c4f2095dae6bc649efc03d920bdaf762c67e00a75ecc5b1437eb",
+    "sha256": "cba52fdf44a34fa21e8bbb631fec985ede2e4dfff22553fea463e09af39c3987",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "review": {
       "status": "approved",
       "reviewer": "agent:gemini-4-carbon-high",
-      "date": "2026-11-11"
+      "date": "2026-11-12"
     }
   }
 }

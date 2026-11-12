@@ -24,6 +24,7 @@ export const strings: Record<string, string> = {
   "ui.mode.label": "How do you want to play?",
   "ui.mode.play": "Play together",
   "ui.mode.watch": "Watch and sing",
+  "ui.mode.auto": "Auto play",
 
   // Menu.
   "ui.menu.title": "Choose a story or a game",

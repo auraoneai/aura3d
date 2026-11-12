@@ -52,7 +52,7 @@ export const WORD_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,31}$/;
 /** A stored record longer than this is not a settings record; it is ignored. */
 const MAX_STORED_LENGTH = 4096;
 
-const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing"];
+const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing", "auto"];
 /** The sound-effect levels a grown-up can pick (01 section 9; 07 B20). */
 export const SFX_VOLUMES: readonly SfxVolume[] = ["off", "soft", "normal"];
 

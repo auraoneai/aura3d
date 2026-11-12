@@ -2193,6 +2193,11 @@
           },
           {
             "name": "felt",
+            "node": "lumi-jaw-starJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
             "node": "lumi-cheekPuff-starCheeks",
             "practical": false
           },
@@ -2315,6 +2320,11 @@
           {
             "name": "lacquer",
             "node": "bear-head-teddyNoseGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-jaw-teddyJaw",
             "practical": false
           },
           {

@@ -18,6 +18,10 @@ export interface ChildControlHandlers {
   onParent(): void;
   /** The grown-up saw the child take the turn (a point, a look, a sound). Only called while a turn is waiting. */
   onConfirmTurn?(): void;
+  /** Initial continuous Auto-play state (`mode === "auto"`). */
+  readonly initialAuto?: boolean;
+  /** One-tap continuous Auto-play toggle right from the play bar. */
+  onToggleAuto?(next: boolean): void;
 }
 
 export interface ChildControls {
@@ -29,6 +33,8 @@ export interface ChildControls {
   setTurnWaiting(waiting: boolean): void;
   /** Updates the calm radial wait ring around "Your child had a turn" (`1` = full wait left, `0` = elapsed). */
   setWaitProgress?(fractionRemaining: number): void;
+  /** Syncs the continuous Auto-play pill state when mode changes in settings. */
+  setAutoPlay?(on: boolean): void;
   /** Hides or shows the whole bar (for example under the offline card). */
   setVisible(visible: boolean): void;
   dispose(): void;
@@ -84,6 +90,27 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
   const replay = iconButton(doc, "replay", uiText(locale, "ui.replay"), { "data-control": "replay" });
   const parent = iconButton(doc, "settings", uiText(locale, "ui.parentButton"), { "data-control": "parent" });
 
+  let autoOn = handlers.initialAuto === true;
+  const autoToggle = handlers.onToggleAuto
+    ? el(
+        doc,
+        "button",
+        {
+          className: "ww-pill-button ww-auto-toggle",
+          attrs: { type: "button", "data-control": "auto", "aria-pressed": String(autoOn) }
+        },
+        [icon(doc, "auto"), el(doc, "span", { text: uiText(locale, "ui.mode.auto") })]
+      )
+    : null;
+
+  const syncAuto = (): void => {
+    if (!autoToggle) return;
+    autoToggle.classList.toggle("is-active", autoOn);
+    autoToggle.setAttribute("aria-pressed", String(autoOn));
+    autoToggle.dataset["auto"] = String(autoOn);
+  };
+  syncAuto();
+
   const bar = el(
     doc,
     "div",
@@ -93,7 +120,13 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     },
     [
       el(doc, "div", { className: "ww-controls-group" }, [allDone]),
-      el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [confirm, pause, replay, parent])
+      el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [
+        ...(autoToggle ? [autoToggle] : []),
+        confirm,
+        pause,
+        replay,
+        parent
+      ])
     ]
   );
 
@@ -137,6 +170,16 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       handlers.onConfirmTurn?.();
     })
   );
+  if (autoToggle) {
+    autoToggle.addEventListener(
+      "click",
+      ignoreRepeats(() => {
+        autoOn = !autoOn;
+        syncAuto();
+        handlers.onToggleAuto?.(autoOn);
+      })
+    );
+  }
   replay.addEventListener("click", ignoreRepeats(() => handlers.onReplayWord()));
   parent.addEventListener("click", ignoreRepeats(() => handlers.onParent()));
   allDone.addEventListener("click", ignoreRepeats(() => handlers.onAllDone()));
@@ -162,6 +205,11 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     setWaitProgress(fractionRemaining: number): void {
       waitFraction = Number.isFinite(fractionRemaining) ? Math.min(1, Math.max(0, fractionRemaining)) : 0;
       syncRing();
+    },
+    setAutoPlay(on: boolean): void {
+      if (autoOn === on) return;
+      autoOn = on;
+      syncAuto();
     },
     setVisible(visible: boolean): void {
       bar.hidden = !visible;

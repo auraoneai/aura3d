@@ -698,7 +698,9 @@ export function wheelSpinParts(distanceTravelled: number, wheelRadius: number): 
 // ---------------------------------------------------------------- speech & locomotion sub-parts
 
 /**
- * 20 Hz syllable-envelope speech sub-parts (`jaw` / `beakLower` / `cheekPuff` + `head` nod + gentle `body` breath).
+ * 20 Hz syllable-envelope speech & vocalization sub-parts (`jaw` / `beakLower` / `cheekPuff` + `head` nod + `body` breath).
+ * Uses a noise-gated perceptual curve plus natural ~3.8 Hz syllable articulation so mouths stay 100% closed at rest
+ * (`speechEnergy <= 0.025`) and visibly open and close on every spoken line, song lyric, and animal call.
  */
 export function speechSubParts(
   actorId: string,
@@ -707,18 +709,27 @@ export function speechSubParts(
   reducedMotion = false
 ): ArticulatedPoseMap | undefined {
   const e = clamp01(speechEnergy);
-  if (e <= 1e-3) return undefined;
-  const damp = reducedMotion ? 0.55 : 1;
-  const energy = e * damp;
-  const cadence = Math.sin(TAU * 2.8 * timeSec + phaseOf(actorId) * TAU);
-  const breath = 1 + 0.018 * energy;
+  if (e <= 0.025) return undefined;
+  const damp = reducedMotion ? 0.65 : 1;
+  const lifted = Math.pow(clamp01((e - 0.025) / 0.68), 0.62) * damp;
+  const phase = phaseOf(actorId) * TAU;
+  const cadence = Math.sin(TAU * 2.8 * timeSec + phase);
+  const syllableWave = 0.5 + 0.5 * Math.sin(TAU * 3.9 * timeSec + phase * 1.3);
+  const open = lifted * (reducedMotion ? 0.78 : 0.32 + 0.68 * syllableWave);
+  const breath = 1 + 0.018 * lifted;
 
-  if (actorId === "peeko") {
-    // Peeko opens beakLower 0..0.24 rad cleanly from speechEnergy.
+  if (actorId === "peeko" || actorId === "duck" || actorId === "bird") {
     return {
-      beakLower: { rotation: [0.24 * e * (reducedMotion ? 0.7 : 1), 0, 0] },
-      head: { rotation: [0.045 * energy * (0.6 + 0.4 * cadence), 0.02 * energy * cadence, 0.025 * energy * cadence] },
-      tuft: { rotation: [-0.08 * energy, 0, 0.05 * energy * cadence] },
+      beakLower: {
+        rotation: [0.46 * open, 0, 0],
+        offset: [0, -0.012 * open, 0]
+      },
+      head: {
+        rotation: [0.055 * lifted * (0.6 + 0.4 * cadence), 0.025 * lifted * cadence, 0.03 * lifted * cadence]
+      },
+      ...(actorId === "peeko"
+        ? { tuft: { rotation: [-0.1 * lifted, 0, 0.06 * lifted * cadence] } }
+        : {}),
       body: { scale: [1, breath, 1] }
     };
   }
@@ -726,36 +737,56 @@ export function speechSubParts(
   if (actorId === "gogo") {
     return {
       chimney: {
-        scale: [1 + 0.09 * energy, 1 - 0.1 * energy, 1 + 0.09 * energy],
-        offset: [0, 0.01 * energy, 0]
+        scale: [1 + 0.1 * lifted, 1 - 0.11 * lifted, 1 + 0.1 * lifted],
+        offset: [0, 0.012 * lifted, 0]
       },
-      jaw: { rotation: [0.12 * energy, 0, 0] },
-      body: { scale: [1 + 0.014 * energy, 1 + 0.022 * energy, 1 + 0.014 * energy] }
+      jaw: {
+        rotation: [0.3 * open, 0, 0],
+        offset: [0, -0.028 * open, 0]
+      },
+      body: { scale: [1 + 0.012 * lifted, 1 + 0.018 * lifted, 1 + 0.012 * lifted] }
     };
   }
 
   if (actorId === "lumi") {
-    const shimmer = 1 + 0.045 * energy;
+    const shimmer = 1 + 0.035 * lifted;
     return {
+      jaw: {
+        rotation: [0.34 * open, 0, 0],
+        offset: [0, -0.024 * open, 0]
+      },
       body: { scale: [shimmer, shimmer, shimmer] },
-      cheekPuff: { scale: [1 + 0.08 * energy, 1 + 0.08 * energy, 1 + 0.08 * energy] }
+      cheekPuff: { scale: [1 + 0.1 * open, 1 + 0.1 * open, 1 + 0.1 * open] }
     };
   }
 
-  // Momo, Lulu, Sheru, and speaking props/friends: subtle jaw + warm cheekPuff + expressive head nod.
+  if (actorId === "robot") {
+    return {
+      jaw: {
+        rotation: [0.36 * open, 0, 0],
+        offset: [0, -0.026 * open, 0]
+      },
+      head: {
+        rotation: [0.05 * lifted * (0.6 + 0.4 * cadence), 0.03 * lifted * cadence, 0.025 * lifted * cadence]
+      },
+      body: { scale: [1 + 0.01 * lifted, breath, 1 + 0.01 * lifted] }
+    };
+  }
+
+  // Momo, Lulu, Sheru, Teddy, Cow, Sheep, Horse: crisp jaw articulation + rosy cheekPuff + warm head nod.
   return {
     jaw: {
-      rotation: [0.18 * energy, 0, 0],
-      offset: [0, -0.01 * energy, 0]
+      rotation: [0.44 * open, 0, 0],
+      offset: [0, -0.025 * open, 0.004 * open]
     },
     cheekPuff: {
-      scale: [1 + 0.09 * energy, 1 + 0.07 * energy, 1 + 0.09 * energy]
+      scale: [1 + 0.11 * open, 1 + 0.09 * open, 1 + 0.11 * open]
     },
     head: {
-      rotation: [0.055 * energy * (0.65 + 0.35 * cadence), 0.025 * energy * cadence, 0.03 * energy * cadence]
+      rotation: [0.06 * lifted * (0.65 + 0.35 * cadence), 0.03 * lifted * cadence, 0.032 * lifted * cadence]
     },
     body: {
-      scale: [1 + 0.01 * energy, breath, 1 + 0.01 * energy]
+      scale: [1 + 0.01 * lifted, breath, 1 + 0.01 * lifted]
     }
   };
 }
@@ -868,6 +899,17 @@ export function locomotionSubParts(
 
 // ---------------------------------------------------------------- signature character gesture sub-parts (PRD §5.2)
 
+export type ActiveCharacterPropAction =
+  | "brushTeeth"
+  | "washHands"
+  | "dryHands"
+  | "scrubTarget"
+  | "dryTarget"
+  | "blowBubble"
+  | "playDrum"
+  | "playShaker"
+  | "playPiano";
+
 export interface CharacterSubPartSampleInput {
   readonly id: string;
   readonly gesture: Gesture | null;
@@ -879,6 +921,8 @@ export interface CharacterSubPartSampleInput {
   readonly locomotion: MoveStyle | null;
   readonly speechEnergy: number;
   readonly carrying?: boolean;
+  readonly activeAction?: ActiveCharacterPropAction | null;
+  readonly activeActionWeight?: number;
   readonly timeSec: number;
   readonly reducedMotion: boolean;
   readonly distanceTravelled?: number;
@@ -886,6 +930,236 @@ export interface CharacterSubPartSampleInput {
 
 function holdRamp01(u: number): number {
   return ease("inOutSine", clamp01(u / 0.35));
+}
+
+const BIPED_ACTORS: ReadonlySet<string> = new Set(["momo", "lulu", "teddy", "robot"]);
+const QUADRUPED_ACTORS: ReadonlySet<string> = new Set(["sheru", "cow", "sheep", "horse"]);
+const BIRD_ACTORS: ReadonlySet<string> = new Set(["peeko", "duck", "bird"]);
+
+function bipedPeekabooHideParts(holdEnv: number): ArticulatedPoseMap {
+  return {
+    body: {
+      offset: [0, -0.125 * holdEnv, 0.02 * holdEnv],
+      rotation: [0.2 * holdEnv, 0, 0]
+    },
+    footL: { rotation: [-0.24 * holdEnv, 0, 0] },
+    footR: { rotation: [-0.24 * holdEnv, 0, 0] },
+    // Raise both hands cleanly over the eyes in a classic toddler peekaboo pose (zero head/eye squish!).
+    armL: {
+      rotation: [-2.12 * holdEnv, 0.56 * holdEnv, -0.34 * holdEnv],
+      offset: [0.02 * holdEnv, 0.045 * holdEnv, 0.055 * holdEnv]
+    },
+    armR: {
+      rotation: [-2.12 * holdEnv, -0.56 * holdEnv, 0.34 * holdEnv],
+      offset: [-0.02 * holdEnv, 0.045 * holdEnv, 0.055 * holdEnv]
+    },
+    head: { rotation: [0.1 * holdEnv, 0, 0] },
+    eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1], offset: [0, -0.012 * holdEnv, 0.004 * holdEnv] },
+    eyelidR: { scale: [1, lerp(1, 0.12, holdEnv), 1], offset: [0, -0.012 * holdEnv, 0.004 * holdEnv] }
+  };
+}
+
+function bipedPeekParts(env: number, k: number): ArticulatedPoseMap {
+  return {
+    armL: {
+      rotation: [-1.45 * env, -0.38 * env, -0.58 * env],
+      offset: [-0.02 * env, 0.04 * env, 0.03 * env]
+    },
+    armR: {
+      rotation: [-1.45 * env, 0.38 * env, 0.58 * env],
+      offset: [0.02 * env, 0.04 * env, 0.03 * env]
+    },
+    head: { rotation: [-0.08 * env, 0.1 * env * k, -0.1 * env * k] },
+    jaw: { rotation: [0.36 * env, 0, 0], offset: [0, -0.022 * env, 0] },
+    cheekPuff: { scale: [1 + 0.1 * env, 1 + 0.08 * env, 1 + 0.1 * env] }
+  };
+}
+
+function bipedEatParts(u: number, env: number, k: number): ArticulatedPoseMap {
+  const bite = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+  return {
+    armL: {
+      rotation: [-0.95 * env - 0.72 * bite, 0.62 * bite, -0.26 * bite],
+      offset: [0.02 * bite, 0.035 * bite, 0.045 * bite]
+    },
+    armR: {
+      rotation: [-0.95 * env - 0.72 * bite, -0.62 * bite, 0.26 * bite],
+      offset: [-0.02 * bite, 0.035 * bite, 0.045 * bite]
+    },
+    jaw: {
+      rotation: [0.42 * bite, 0, 0],
+      offset: [0, -0.024 * bite, 0]
+    },
+    cheekPuff: {
+      scale: [1 + 0.14 * bite, 1 + 0.11 * bite, 1 + 0.14 * bite]
+    },
+    head: {
+      rotation: [0.1 * bite * k, 0, 0.04 * Math.sin(TAU * 3 * u) * env * k]
+    }
+  };
+}
+
+export function propActionSubParts(
+  actorId: string,
+  action: ActiveCharacterPropAction | null | undefined,
+  weight: number,
+  timeSec: number,
+  reducedMotion: boolean
+): ArticulatedPoseMap | undefined {
+  if (!action) return undefined;
+  const w = clamp01(weight);
+  if (w <= 1e-3) return undefined;
+  const k = reducedMotion ? 0.45 : 1;
+
+  switch (action) {
+    case "brushTeeth": {
+      const scrub = Math.sin(TAU * 4.4 * timeSec) * k;
+      const upDown = Math.cos(TAU * 2.2 * timeSec) * k;
+      return {
+        // Right hand holds the toothbrush right at the open mouth and scrubs side-to-side across the teeth!
+        armR: {
+          rotation: [-1.68 * w + 0.06 * upDown * w, (-0.72 + 0.26 * scrub) * w, 0.34 * w],
+          offset: [(-0.025 + 0.032 * scrub) * w, 0.038 * w, 0.048 * w]
+        },
+        armL: {
+          rotation: [-0.45 * w, 0.15 * w, -0.18 * w]
+        },
+        jaw: {
+          rotation: [0.34 * w, 0, 0],
+          offset: [0, -0.022 * w, 0]
+        },
+        cheekPuff: {
+          scale: [1 + 0.09 * w, 1 + 0.07 * w, 1 + 0.09 * w]
+        },
+        head: {
+          rotation: [-0.05 * w, -0.06 * scrub * w, 0.05 * scrub * w]
+        }
+      };
+    }
+    case "washHands": {
+      const rub = Math.sin(TAU * 3.8 * timeSec) * k;
+      const lather = Math.cos(TAU * 3.8 * timeSec) * k;
+      return {
+        body: {
+          rotation: [0.14 * w, 0, 0],
+          offset: [0, -0.02 * w, 0.03 * w]
+        },
+        armL: {
+          rotation: [(-1.34 + 0.16 * rub) * w, (0.58 + 0.12 * lather) * w, -0.22 * w],
+          offset: [0.025 * w, 0.02 * w, 0.055 * w]
+        },
+        armR: {
+          rotation: [(-1.34 - 0.16 * rub) * w, (-0.58 + 0.12 * lather) * w, 0.22 * w],
+          offset: [-0.025 * w, 0.02 * w, 0.055 * w]
+        },
+        head: {
+          rotation: [0.18 * w, 0.05 * rub * w, 0]
+        },
+        jaw: {
+          rotation: [0.16 * w, 0, 0],
+          offset: [0, -0.01 * w, 0]
+        }
+      };
+    }
+    case "dryHands": {
+      const rub = Math.sin(TAU * 3.4 * timeSec) * k;
+      return {
+        armL: {
+          rotation: [(-1.22 + 0.18 * rub) * w, 0.54 * w, -0.2 * w],
+          offset: [0.025 * w, 0.02 * w, 0.045 * w]
+        },
+        armR: {
+          rotation: [(-1.22 - 0.18 * rub) * w, -0.54 * w, 0.2 * w],
+          offset: [-0.025 * w, 0.02 * w, 0.045 * w]
+        },
+        head: {
+          rotation: [0.12 * w, 0, 0.06 * rub * w]
+        }
+      };
+    }
+    case "scrubTarget":
+    case "dryTarget": {
+      const sweepX = Math.sin(TAU * 3.2 * timeSec) * k;
+      const sweepY = Math.cos(TAU * 3.2 * timeSec) * k;
+      return {
+        body: {
+          rotation: [0.22 * w, 0.08 * sweepX * w, 0],
+          offset: [0.03 * sweepX * w, -0.025 * w, 0.26 * w]
+        },
+        footL: {
+          offset: [0.015 * sweepX * w, 0, 0.23 * w]
+        },
+        footR: {
+          offset: [0.015 * sweepX * w, 0, 0.25 * w]
+        },
+        armL: {
+          rotation: [(-1.46 + 0.22 * sweepY) * w, (0.38 + 0.24 * sweepX) * w, -0.16 * w],
+          offset: [0.025 * w, 0.03 * w, 0.1 * w]
+        },
+        armR: {
+          rotation: [(-1.46 - 0.18 * sweepY) * w, (-0.38 + 0.24 * sweepX) * w, 0.16 * w],
+          offset: [-0.025 * w, 0.03 * w, 0.1 * w]
+        },
+        head: {
+          rotation: [0.08 * w, 0.08 * sweepX * w, 0.05 * sweepX * w]
+        },
+        jaw: {
+          rotation: [0.2 * w, 0, 0],
+          offset: [0, -0.012 * w, 0]
+        }
+      };
+    }
+    case "blowBubble": {
+      const puff = (0.75 + 0.25 * Math.sin(TAU * 2.2 * timeSec)) * w;
+      return {
+        armR: {
+          rotation: [-1.62 * w, -0.68 * w, 0.3 * w],
+          offset: [-0.02 * w, 0.035 * w, 0.045 * w]
+        },
+        jaw: {
+          rotation: [0.24 * puff, 0, 0],
+          offset: [0, -0.014 * puff, 0]
+        },
+        cheekPuff: {
+          scale: [1 + 0.22 * puff, 1 + 0.18 * puff, 1 + 0.22 * puff]
+        },
+        head: {
+          rotation: [-0.06 * w, 0, 0]
+        }
+      };
+    }
+    case "playDrum":
+    case "playPiano": {
+      const strike = Math.sin(TAU * 4.2 * timeSec) * k;
+      if (BIRD_ACTORS.has(actorId)) {
+        return {
+          wingL: { rotation: [0.2, 0, -0.55 * Math.max(0, strike) * w] },
+          wingR: { rotation: [0.2, 0, 0.55 * Math.max(0, -strike) * w] },
+          beakLower: { rotation: [0.28 * Math.abs(strike) * w, 0, 0] }
+        };
+      }
+      return {
+        armL: { rotation: [(-1.18 + 0.38 * strike) * w, 0.34 * w, -0.14 * w] },
+        armR: { rotation: [(-1.18 - 0.38 * strike) * w, -0.34 * w, 0.14 * w] },
+        head: { rotation: [0.08 * Math.abs(strike) * w, 0, 0.06 * strike * w] },
+        jaw: { rotation: [0.22 * Math.abs(strike) * w, 0, 0], offset: [0, -0.012 * Math.abs(strike) * w, 0] }
+      };
+    }
+    case "playShaker": {
+      const shake = Math.sin(TAU * 5.0 * timeSec) * k;
+      return {
+        armR: {
+          rotation: [(-1.45 + 0.36 * shake) * w, -0.22 * w, (0.35 + 0.22 * shake) * w],
+          offset: [0, 0.04 * w, 0.03 * w]
+        },
+        armL: {
+          rotation: [(-0.75 - 0.2 * shake) * w, 0.2 * w, -0.2 * w]
+        },
+        head: { rotation: [0.06 * shake * w, 0, 0.08 * shake * w] },
+        jaw: { rotation: [0.24 * w, 0, 0], offset: [0, -0.014 * w, 0] }
+      };
+    }
+  }
 }
 
 function gestureSpecificSubParts(
@@ -908,7 +1182,14 @@ function gestureSpecificSubParts(
     return eyelidPoseFromWeight(s * s);
   }
 
-  // ---- Momo: warm host (wave armR +1.9 rad, point armR + head lock, carry cradle)
+  // ---- Universal non-squished "hide", "peek", and "eat" across biped characters & companions
+  if (BIPED_ACTORS.has(actorId)) {
+    if (gesture === "hide") return bipedPeekabooHideParts(holdEnv);
+    if (gesture === "peek") return bipedPeekParts(env, k);
+    if (gesture === "eat") return bipedEatParts(u, env, k);
+  }
+
+  // ---- Momo: warm host (wave armR +1.9 rad, point armR + head lock, mirror silly faces, happy/cheer/surprise)
   if (actorId === "momo") {
     switch (gesture) {
       case "wave": {
@@ -925,6 +1206,10 @@ function gestureSpecificSubParts(
           },
           armL: {
             rotation: [0.08 * waveEnvelope, 0, -0.1 * waveEnvelope * lift]
+          },
+          jaw: {
+            rotation: [0.22 * waveEnvelope, 0, 0],
+            offset: [0, -0.012 * waveEnvelope, 0]
           }
         };
       }
@@ -946,21 +1231,33 @@ function gestureSpecificSubParts(
         };
       case "pickUp":
         return {
-          armL: { rotation: [-0.95 * env, 0.28 * env, 0.15 * env] },
-          armR: { rotation: [-0.95 * env, -0.28 * env, -0.15 * env] },
-          head: { rotation: [0.18 * env * k, 0, 0] }
+          armL: { rotation: [-1.05 * env, 0.38 * env, -0.18 * env], offset: [0.02 * env, -0.02 * env, 0.04 * env] },
+          armR: { rotation: [-1.05 * env, -0.38 * env, 0.18 * env], offset: [-0.02 * env, -0.02 * env, 0.04 * env] },
+          body: { rotation: [0.18 * env, 0, 0], offset: [0, -0.04 * env, 0.02 * env] },
+          head: { rotation: [0.16 * env * k, 0, 0] }
         };
       case "clap": {
         const beat = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
         return {
-          armL: { rotation: [-0.85 * env, -0.58 * beat, 0.22 * beat] },
-          armR: { rotation: [-0.85 * env, 0.58 * beat, -0.22 * beat] }
+          armL: { rotation: [-1.18 * env, 0.62 * beat, -0.24 * beat], offset: [0.03 * beat, 0.02 * beat, 0.05 * beat] },
+          armR: { rotation: [-1.18 * env, -0.62 * beat, 0.24 * beat], offset: [-0.03 * beat, 0.02 * beat, 0.05 * beat] },
+          jaw: { rotation: [0.24 * beat, 0, 0], offset: [0, -0.014 * beat, 0] }
+        };
+      }
+      case "mirror": {
+        const faceWave = Math.abs(Math.sin(TAU * 2 * u)) * env;
+        return {
+          armL: { rotation: [-1.52 * env, 0.44 * env, -0.28 * env], offset: [0.01 * env, 0.03 * env, 0.04 * env] },
+          armR: { rotation: [-1.52 * env, -0.44 * env, 0.28 * env], offset: [-0.01 * env, 0.03 * env, 0.04 * env] },
+          jaw: { rotation: [0.42 * faceWave, 0, 0], offset: [0, -0.024 * faceWave, 0] },
+          cheekPuff: { scale: [1 + 0.16 * faceWave, 1 + 0.12 * faceWave, 1 + 0.16 * faceWave] },
+          head: { rotation: [-0.06 * faceWave, 0.14 * Math.sin(TAU * 2 * u) * env * k, 0.1 * Math.sin(TAU * 2 * u) * env * k] }
         };
       }
       case "shrug":
         return {
-          armL: { rotation: [-0.35 * env, 0.2 * env, -0.65 * env], offset: [0, 0.04 * env, 0] },
-          armR: { rotation: [-0.35 * env, -0.2 * env, 0.65 * env], offset: [0, 0.04 * env, 0] },
+          armL: { rotation: [-0.35 * env, -0.2 * env, -0.65 * env], offset: [0, 0.04 * env, 0] },
+          armR: { rotation: [-0.35 * env, 0.2 * env, 0.65 * env], offset: [0, 0.04 * env, 0] },
           head: { rotation: [0, 0, 0.12 * env * k] }
         };
       default:
@@ -975,13 +1272,14 @@ function gestureSpecificSubParts(
         const beat = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
         return {
           armL: {
-            rotation: [-0.88 * env, -0.64 * beat, 0.26 * beat],
-            offset: [0.05 * beat, 0.03 * beat, 0.06 * beat]
+            rotation: [-1.18 * env, 0.64 * beat, -0.26 * beat],
+            offset: [0.04 * beat, 0.03 * beat, 0.06 * beat]
           },
           armR: {
-            rotation: [-0.88 * env, 0.64 * beat, -0.26 * beat],
-            offset: [-0.05 * beat, 0.03 * beat, 0.06 * beat]
+            rotation: [-1.18 * env, -0.64 * beat, 0.26 * beat],
+            offset: [-0.04 * beat, 0.03 * beat, 0.06 * beat]
           },
+          jaw: { rotation: [0.26 * beat, 0, 0], offset: [0, -0.015 * beat, 0] },
           head: { rotation: [0.07 * beat * k, 0, 0] },
           tail: { rotation: [0.05, 0.18 * Math.sin(TAU * 3 * u) * env * k, 0] }
         };
@@ -1029,7 +1327,7 @@ function gestureSpecificSubParts(
     }
   }
 
-  // ---- Sheru: floppy-eared puppy (wag tail 5.5 Hz ±0.48 rad, sit hind tuck + level head, sniff +0.42 rad nose-down + ear lag)
+  // ---- Sheru & quadrupeds: floppy-eared puppy & farm friends
   if (actorId === "sheru") {
     switch (gesture) {
       case "wag":
@@ -1045,7 +1343,45 @@ function gestureSpecificSubParts(
           },
           earL: { rotation: [0.08 * env, 0, -0.12 - Math.abs(earBounce)] },
           earR: { rotation: [0.08 * env, 0, 0.12 + Math.abs(earBounce)] },
+          jaw: gesture === "happy" || gesture === "cheer"
+            ? { rotation: [0.3 * env, 0, 0], offset: [0, -0.016 * env, 0] }
+            : undefined,
           head: { rotation: [-0.05 * env * k, 0.06 * Math.sin(TAU * 2 * u) * env * k, 0.08 * Math.sin(TAU * u) * env * k] }
+        };
+      }
+      case "hide": {
+        return {
+          body: {
+            rotation: [0.2 * holdEnv, 0, 0],
+            offset: [0, -0.1 * holdEnv, 0]
+          },
+          legFL: { rotation: [-0.45 * holdEnv, 0, 0], offset: [0, 0.02 * holdEnv, 0.03 * holdEnv] },
+          legFR: { rotation: [-0.45 * holdEnv, 0, 0], offset: [0, 0.02 * holdEnv, 0.03 * holdEnv] },
+          legBL: { rotation: [-0.35 * holdEnv, 0, 0] },
+          legBR: { rotation: [-0.35 * holdEnv, 0, 0] },
+          head: { rotation: [0.22 * holdEnv, 0, 0], offset: [0, -0.03 * holdEnv, 0] },
+          earL: { rotation: [0.42 * holdEnv, 0.22 * holdEnv, 0.12 * holdEnv] },
+          earR: { rotation: [0.42 * holdEnv, -0.22 * holdEnv, -0.12 * holdEnv] },
+          eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1] },
+          eyelidR: { scale: [1, lerp(1, 0.12, holdEnv), 1] }
+        };
+      }
+      case "peek":
+        return {
+          head: { rotation: [-0.1 * env, 0.1 * env * k, -0.1 * env * k] },
+          earL: { rotation: [-0.14 * env, 0, -0.2 * env] },
+          earR: { rotation: [-0.14 * env, 0, 0.2 * env] },
+          jaw: { rotation: [0.34 * env, 0, 0], offset: [0, -0.018 * env, 0] },
+          tail: { rotation: [0.2, 0.36 * Math.sin(TAU * 4 * u) * env * k, 0] }
+        };
+      case "eat": {
+        const bite = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+        return {
+          jaw: { rotation: [0.42 * bite, 0, 0], offset: [0, -0.022 * bite, 0] },
+          head: { rotation: [0.24 * bite * k, 0, 0] },
+          earL: { rotation: [0.18 * bite, 0, -0.1 * env] },
+          earR: { rotation: [0.18 * bite, 0, 0.1 * env] },
+          tail: { rotation: [0.2, 0.32 * Math.sin(TAU * 4 * elapsedSec) * env * k, 0] }
         };
       }
       case "sit":
@@ -1096,7 +1432,7 @@ function gestureSpecificSubParts(
       }
       case "bark":
         return {
-          jaw: { rotation: [0.28 * env, 0, 0] },
+          jaw: { rotation: [0.42 * env, 0, 0], offset: [0, -0.022 * env, 0] },
           head: { rotation: [-0.14 * env * k, 0, 0] },
           earL: { rotation: [-0.12 * env, 0, -0.18 * env] },
           earR: { rotation: [-0.12 * env, 0, 0.18 * env] },
@@ -1106,6 +1442,7 @@ function gestureSpecificSubParts(
         return {
           earL: { rotation: [-0.18 * env, 0, -0.26 * env], offset: [0, 0.02 * env, 0] },
           earR: { rotation: [-0.18 * env, 0, 0.26 * env], offset: [0, 0.02 * env, 0] },
+          jaw: { rotation: [0.3 * env, 0, 0], offset: [0, -0.016 * env, 0] },
           head: { rotation: [-0.08 * env, 0, 0.14 * env * k] }
         };
       default:
@@ -1113,8 +1450,8 @@ function gestureSpecificSubParts(
     }
   }
 
-  // ---- Peeko: round peekaboo chick (wingL/wingR ±0.65 rad Z-flap + tuft bounce, zero torso X-stretch!)
-  if (actorId === "peeko") {
+  // ---- Peeko & birds: round peekaboo chick & feathered friends
+  if (actorId === "peeko" || BIRD_ACTORS.has(actorId)) {
     switch (gesture) {
       case "wave":
       case "happy":
@@ -1132,32 +1469,50 @@ function gestureSpecificSubParts(
             rotation: [0.08 * flapWave, 0, 0.65 * flapWave],
             offset: [0.02 * flapWave, 0.03 * flapWave, 0]
           },
-          tuft: {
-            rotation: [-0.22 * tuftLag, 0, 0.1 * Math.sin(TAU * cycles * u) * env * k],
-            offset: [0, 0.035 * tuftLag, 0]
-          },
+          ...(actorId === "peeko"
+            ? {
+                tuft: {
+                  rotation: [-0.22 * tuftLag, 0, 0.1 * Math.sin(TAU * cycles * u) * env * k],
+                  offset: [0, 0.035 * tuftLag, 0]
+                }
+              }
+            : {}),
           beakLower: {
-            rotation: [gesture === "cheer" || gesture === "happy" ? 0.16 * env : 0.08 * env, 0, 0]
+            rotation: [gesture === "cheer" || gesture === "happy" ? 0.34 * env : 0.22 * env, 0, 0],
+            offset: [0, -0.01 * env, 0]
           }
         };
       }
       case "hide": {
         const tuck = holdEnv;
         return {
-          wingL: { rotation: [0.22 * tuck, 0.18 * tuck, 0.24 * tuck] },
-          wingR: { rotation: [0.22 * tuck, -0.18 * tuck, -0.24 * tuck] },
-          head: { rotation: [0.28 * tuck, 0, 0], offset: [0, -0.05 * tuck, 0] },
-          tuft: { rotation: [0.35 * tuck, 0, 0], scale: [1, 1 - 0.25 * tuck, 1] },
-          eyelidL: { scale: [1, 0.15, 1] },
-          eyelidR: { scale: [1, 0.15, 1] }
+          body: { offset: [0, -0.085 * tuck, 0], rotation: [0.16 * tuck, 0, 0] },
+          wingL: { rotation: [-0.95 * tuck, 0.52 * tuck, -0.22 * tuck], offset: [0.02 * tuck, 0.03 * tuck, 0.04 * tuck] },
+          wingR: { rotation: [-0.95 * tuck, -0.52 * tuck, 0.22 * tuck], offset: [-0.02 * tuck, 0.03 * tuck, 0.04 * tuck] },
+          head: { rotation: [0.22 * tuck, 0, 0], offset: [0, -0.03 * tuck, 0] },
+          ...(actorId === "peeko" ? { tuft: { rotation: [0.3 * tuck, 0, 0] } } : {}),
+          eyelidL: { scale: [1, lerp(1, 0.12, tuck), 1] },
+          eyelidR: { scale: [1, lerp(1, 0.12, tuck), 1] }
         };
       }
       case "peek": {
         return {
-          wingL: { rotation: [0, 0, -0.35 * env] },
-          wingR: { rotation: [0, 0, 0.35 * env] },
-          tuft: { rotation: [-0.2 * env, 0, -0.14 * env], offset: [0, 0.03 * env, 0] },
+          wingL: { rotation: [0, 0, -0.38 * env] },
+          wingR: { rotation: [0, 0, 0.38 * env] },
+          ...(actorId === "peeko"
+            ? { tuft: { rotation: [-0.2 * env, 0, -0.14 * env], offset: [0, 0.03 * env, 0] } }
+            : {}),
+          beakLower: { rotation: [0.38 * env, 0, 0], offset: [0, -0.01 * env, 0] },
           head: { rotation: [-0.08 * env, 0.14 * env * k, -0.12 * env * k] }
+        };
+      }
+      case "eat": {
+        const bite = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+        return {
+          beakLower: { rotation: [0.42 * bite, 0, 0], offset: [0, -0.012 * bite, 0] },
+          head: { rotation: [0.22 * bite * k, 0, 0] },
+          wingL: { rotation: [0, 0, -0.2 * bite] },
+          wingR: { rotation: [0, 0, 0.2 * bite] }
         };
       }
       default:
@@ -1186,9 +1541,24 @@ function gestureSpecificSubParts(
         const swell = 1 + 0.06 * env * k;
         return {
           body: { scale: [swell, swell, swell] },
-          petals: { scale: [swell * 1.02, swell * 1.02, 1] }
+          petals: { scale: [swell * 1.02, swell * 1.02, 1] },
+          jaw: { rotation: [0.22 * env, 0, 0], offset: [0, -0.015 * env, 0] }
         };
       }
+      case "hide": {
+        return {
+          body: { offset: [0, -0.1 * holdEnv, 0], rotation: [0.18 * holdEnv, 0, 0] },
+          petals: { scale: [lerp(1, 0.92, holdEnv), lerp(1, 0.92, holdEnv), 1] },
+          eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1] },
+          eyelidR: { scale: [1, lerp(1, 0.12, holdEnv), 1] }
+        };
+      }
+      case "peek":
+        return {
+          petals: { scale: [1 + 0.06 * env, 1 + 0.06 * env, 1] },
+          jaw: { rotation: [0.34 * env, 0, 0], offset: [0, -0.022 * env, 0] },
+          cheekPuff: { scale: [1 + 0.12 * env, 1 + 0.12 * env, 1 + 0.12 * env] }
+        };
       default:
         break;
     }
@@ -1210,21 +1580,102 @@ function gestureSpecificSubParts(
           chimney: {
             scale: [1 + 0.14 * puff, 1 - 0.16 * puff, 1 + 0.14 * puff],
             offset: [0, 0.015 * puff, 0]
+          },
+          jaw: {
+            rotation: [0.26 * env, 0, 0],
+            offset: [0, -0.022 * env, 0]
           }
         };
       }
+      case "hide":
+        return {
+          eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1] },
+          eyelidR: { scale: [1, lerp(1, 0.12, holdEnv), 1] }
+        };
       default:
         break;
     }
   }
 
-  // Generic warm sub-part accents for any actor with head/arms/wings.
+  // ---- Farm quadrupeds (`cow`, `sheep`, `horse`) eat / bark / happy
+  if (QUADRUPED_ACTORS.has(actorId)) {
+    if (gesture === "eat") {
+      const bite = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+      return {
+        jaw: { rotation: [0.4 * bite, 0, 0], offset: [0, -0.02 * bite, 0] },
+        head: { rotation: [0.22 * bite * k, 0, 0] },
+        tail: { rotation: [0.14, 0.26 * Math.sin(TAU * 3 * u) * env * k, 0] }
+      };
+    }
+    if (gesture === "bark" || gesture === "happy" || gesture === "cheer") {
+      return {
+        jaw: { rotation: [0.36 * env, 0, 0], offset: [0, -0.018 * env, 0] },
+        head: { rotation: [-0.1 * env * k, 0, 0] },
+        tail: { rotation: [0.16, 0.28 * Math.sin(TAU * 3 * u) * env * k, 0] }
+      };
+    }
+  }
+
+  // Generic warm sub-part accents for any actor with head/arms/jaw (`momo`, `lulu`, `teddy`, `robot`, etc.).
   switch (gesture) {
     case "wave":
       return {
         armR: { rotation: [-0.25 * env, 0, 1.55 * env + 0.28 * Math.sin(TAU * 2 * u) * env * k] },
-        head: { rotation: [0, 0, 0.1 * env * k] }
+        head: { rotation: [0, 0, 0.1 * env * k] },
+        jaw: { rotation: [0.2 * env, 0, 0], offset: [0, -0.012 * env, 0] }
       };
+    case "clap": {
+      const beat = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+      return {
+        armL: { rotation: [-1.18 * env, 0.6 * beat, -0.24 * beat], offset: [0.03 * beat, 0.02 * beat, 0.04 * beat] },
+        armR: { rotation: [-1.18 * env, -0.6 * beat, 0.24 * beat], offset: [-0.03 * beat, 0.02 * beat, 0.04 * beat] },
+        jaw: { rotation: [0.24 * beat, 0, 0], offset: [0, -0.014 * beat, 0] }
+      };
+    }
+    case "stomp": {
+      const stepOsc = Math.sin(TAU * 2 * u) * env;
+      const leftLift = Math.max(0, stepOsc) * 0.12 * (reducedMotion ? 0.6 : 1);
+      const rightLift = Math.max(0, -stepOsc) * 0.12 * (reducedMotion ? 0.6 : 1);
+      return {
+        footL: { offset: [0, leftLift, 0.02 * (leftLift / 0.12)], rotation: [-0.24 * (leftLift / 0.12), 0, 0] },
+        footR: { offset: [0, rightLift, 0.02 * (rightLift / 0.12)], rotation: [-0.24 * (rightLift / 0.12), 0, 0] },
+        armL: { rotation: [0.3 * stepOsc * k, 0, -0.15] },
+        armR: { rotation: [-0.3 * stepOsc * k, 0, 0.15] }
+      };
+    }
+    case "happy":
+    case "cheer":
+    case "wake":
+      return {
+        armL: { rotation: [-1.55 * env, -0.22 * env, -0.55 * env], offset: [0, 0.05 * env, 0] },
+        armR: { rotation: [-1.55 * env, 0.22 * env, 0.55 * env], offset: [0, 0.05 * env, 0] },
+        jaw: { rotation: [0.34 * env, 0, 0], offset: [0, -0.02 * env, 0] },
+        cheekPuff: { scale: [1 + 0.12 * env, 1 + 0.1 * env, 1 + 0.12 * env] },
+        head: { rotation: [-0.08 * env * k, 0, 0.06 * Math.sin(TAU * 2 * u) * env * k] }
+      };
+    case "surprise":
+      return {
+        armL: { rotation: [-1.35 * env, 0.42 * env, -0.28 * env], offset: [0.01 * env, 0.03 * env, 0.04 * env] },
+        armR: { rotation: [-1.35 * env, -0.42 * env, 0.28 * env], offset: [-0.01 * env, 0.03 * env, 0.04 * env] },
+        jaw: { rotation: [0.38 * env, 0, 0], offset: [0, -0.022 * env, 0] },
+        head: { rotation: [-0.08 * env * k, 0, 0] }
+      };
+    case "talk": {
+      const syl = 0.5 * (1 - Math.cos(TAU * 3 * u)) * env;
+      return {
+        jaw: { rotation: [0.38 * syl, 0, 0], offset: [0, -0.022 * syl, 0] },
+        head: { rotation: [0.06 * syl * k, 0, 0.04 * Math.sin(TAU * u) * env * k] }
+      };
+    }
+    case "dance":
+    case "sway": {
+      const groove = Math.sin(TAU * (gesture === "dance" ? 3 : 1) * u) * env * k;
+      return {
+        armL: { rotation: [-0.55 * env + 0.35 * groove, 0.15 * groove, -0.32 - 0.22 * groove] },
+        armR: { rotation: [-0.55 * env - 0.35 * groove, 0.15 * groove, 0.32 - 0.22 * groove] },
+        head: { rotation: [0.04 * Math.abs(groove), 0.08 * groove, 0.1 * groove] }
+      };
+    }
     case "nod":
       return {
         head: { rotation: [0.2 * 0.5 * (1 - Math.cos(TAU * 2 * u)) * k, 0, 0] }
@@ -1235,7 +1686,10 @@ function gestureSpecificSubParts(
       };
     case "sleep":
       return {
-        head: { rotation: [0.22 * holdEnv, 0, 0.08 * holdEnv] },
+        body: { offset: [0, -0.06 * holdEnv, 0], rotation: [0.12 * holdEnv, 0, 0] },
+        head: { rotation: [0.22 * holdEnv, 0, 0.1 * holdEnv] },
+        armL: { rotation: [-0.45 * holdEnv, 0.25 * holdEnv, -0.1 * holdEnv] },
+        armR: { rotation: [-0.45 * holdEnv, -0.25 * holdEnv, 0.1 * holdEnv] },
         eyelidL: { scale: [1, lerp(1, 0.08, holdEnv), 1] },
         eyelidR: { scale: [1, lerp(1, 0.08, holdEnv), 1] }
       };
@@ -1246,7 +1700,7 @@ function gestureSpecificSubParts(
 
 /**
  * Full articulated sub-part pose for an actor at the current instant:
- * natural eyelid blink + locomotion gait + gesture / held pose + carry cradle + 20 Hz speech sync.
+ * natural eyelid blink + locomotion gait + gesture / held pose + active prop choreography / carry cradle + 20 Hz speech sync.
  */
 export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): ArticulatedPoseMap | undefined {
   const blink = blinkPartsAt(input.id, input.timeSec, input.reducedMotion);
@@ -1258,6 +1712,7 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
     input.distanceTravelled ?? 0
   );
 
+  const activeGesture: Gesture | null = input.gesture ?? (input.holding ? (input.holdGesture ?? null) : null);
   let gestureParts: ArticulatedPoseMap | undefined;
   if (input.gesture) {
     gestureParts = gestureSpecificSubParts(
@@ -1291,16 +1746,35 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
     };
   }
 
-  const carryParts: ArticulatedPoseMap | undefined = input.carrying && (input.id === "momo" || input.id === "lulu")
-    ? {
-        armL: { rotation: [-0.88, 0.26, 0.16], offset: [0.02, 0.02, 0.04] },
-        armR: { rotation: [-0.88, -0.26, -0.16], offset: [-0.02, 0.02, 0.04] }
-      }
-    : undefined;
+  const propParts = propActionSubParts(
+    input.id,
+    input.activeAction,
+    input.activeActionWeight ?? (input.activeAction ? 1 : 0),
+    input.timeSec,
+    input.reducedMotion
+  );
+
+  const gestureDrivesArms =
+    activeGesture === "hide" ||
+    activeGesture === "peek" ||
+    activeGesture === "eat" ||
+    activeGesture === "clap" ||
+    activeGesture === "wave" ||
+    activeGesture === "mirror" ||
+    activeGesture === "cheer" ||
+    activeGesture === "happy";
+
+  const carryParts: ArticulatedPoseMap | undefined =
+    input.carrying && !propParts && !gestureDrivesArms && BIPED_ACTORS.has(input.id)
+      ? {
+          armL: { rotation: [-0.96, 0.34, -0.16], offset: [0.02, 0.02, 0.04] },
+          armR: { rotation: [-0.96, -0.34, 0.16], offset: [-0.02, 0.02, 0.04] }
+        }
+      : undefined;
 
   const speech = speechSubParts(input.id, input.speechEnergy, input.timeSec, input.reducedMotion);
 
-  return mergePartPoses(loco, gestureParts, carryParts, speech, blink);
+  return mergePartPoses(loco, gestureParts, propParts, carryParts, speech, blink);
 }
 
 // ---------------------------------------------------------------- optional skinned clip + AuraVoice viseme bridge

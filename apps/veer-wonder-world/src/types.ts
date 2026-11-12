@@ -258,7 +258,7 @@ export interface AudioClipRef {
   readonly env?: string;
 }
 
-export type PlayMode = "watch-sing" | "play-together";
+export type PlayMode = "watch-sing" | "play-together" | "auto";
 
 /** Events the episode director accepts. */
 export type DirectorEvent =

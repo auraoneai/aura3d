@@ -487,15 +487,18 @@ function buildMomoRig(): ProceduralAssetRig {
   const buttonNoseGeo = smoothPuffSpec(0.024, 0.018, 0.018, 14, 7);
   const smileUpperArc = sculptCurvedLimb(
     [
-      [-0.086, 0.592, 0.258],
-      [-0.042, 0.574, 0.278],
-      [0, 0.569, 0.284],
-      [0.042, 0.574, 0.278],
-      [0.086, 0.592, 0.258]
+      [-0.086, 0.594, 0.26],
+      [-0.042, 0.581, 0.284],
+      [0, 0.578, 0.292],
+      [0.042, 0.581, 0.284],
+      [0.086, 0.594, 0.26]
     ],
     0.0085,
     { steps: 8, radialSegments: 7 }
   );
+  // Recessed warm-berry mouth cavity + two tiny rounded cream baby front teeth revealed when `jaw` opens.
+  const momoMouthCavityGeo = cabochonCapSpec(0.056, 0.02, 0.014, 14, 3);
+  const momoBabyToothGeo = cabochonCapSpec(0.013, 0.007, 0.006, 8, 2);
 
   const eyes = buildCastEyePair({
     eyeX: 0.112,
@@ -529,33 +532,38 @@ function buildMomoRig(): ProceduralAssetRig {
       part(crownCurlGeo, coatSoft),
       part(crownCurlSubGeo, coat),
       part(buttonNoseGeo, blush, { position: [0, 0.632, 0.286] }),
+      part(momoMouthCavityGeo, "#6E1F3E", { position: [0, 0.558, 0.275] }),
+      part(momoBabyToothGeo, "#FFFDF8", { position: [-0.014, 0.571, 0.285] }),
+      part(momoBabyToothGeo, "#FFFDF8", { position: [0.014, 0.571, 0.285] }),
       part(smileUpperArc, "#6D467E"),
       ...eyes.headAccentParts
     ]
   });
   const headPart = makeSubPartRig("head", headAnchor, [headLobe], "body");
 
-  // Articulated smiling lower jaw + coral inner mouth cushion.
-  const jawAnchor: Vec3 = [0, 0.568, 0.225];
-  const jawCradleGeo = sculptCurvedLimb(
+  // Articulated lower plush lip/chin cushion + rosy tongue: closes flush at rest and parts cleanly when speaking/brushing.
+  const jawAnchor: Vec3 = [0, 0.572, 0.248];
+  const jawChinPuffGeo = cabochonCapSpec(0.068, 0.024, 0.022, 16, 3);
+  const jawLowerLipArc = sculptCurvedLimb(
     [
-      [-0.068, 0.574, 0.246],
-      [0, 0.552, 0.266],
-      [0.068, 0.574, 0.246]
+      [-0.072, 0.584, 0.264],
+      [-0.036, 0.574, 0.288],
+      [0, 0.571, 0.295],
+      [0.036, 0.574, 0.288],
+      [0.072, 0.584, 0.264]
     ],
-    (t) => 0.015 + 0.006 * Math.sin(t * Math.PI),
-    { steps: 6, radialSegments: 7 }
+    0.007,
+    { steps: 6, radialSegments: 6 }
   );
-  const innerMouthGeo = smoothPuffSpec(0.046, 0.018, 0.024, 12, 6);
-  const tongueGeo = smoothPuffSpec(0.032, 0.011, 0.02, 12, 6);
+  const tongueGeo = cabochonCapSpec(0.035, 0.012, 0.014, 12, 2);
   const jawLobe = composeLobe({
     suffix: "smileJaw",
     craft: "clay",
     hinge: jawAnchor,
     parts: [
-      part(jawCradleGeo, coat),
-      part(innerMouthGeo, "#A83B5E", { position: [0, 0.566, 0.252] }),
-      part(tongueGeo, "#F586A2", { position: [0, 0.561, 0.261] })
+      part(jawChinPuffGeo, coat, { position: [0, 0.556, 0.274] }),
+      part(jawLowerLipArc, "#6D467E"),
+      part(tongueGeo, "#F68BA6", { position: [0, 0.568, 0.282] })
     ]
   });
   const jawPart = makeSubPartRig("jaw", jawAnchor, [jawLobe], "head");
@@ -707,20 +715,22 @@ function buildLuluRig(): ProceduralAssetRig {
   const craniumGeo = sculptOrganicLathe(craniumProfile, { segments: 32 });
   const dinoCheekSwellGeo = smoothPuffSpec(0.105, 0.084, 0.094, 16, 8);
 
-  // Chubby wide baby-dinosaur muzzle cushion (no pointy drooping cone!).
-  const dinoMuzzleGeo = smoothPuffSpec(0.132, 0.074, 0.095, 22, 10);
+  // Chubby wide baby-dinosaur muzzle cushion + recessed berry mouth + cute baby-dino front teeth.
+  const dinoMuzzleGeo = smoothPuffSpec(0.132, 0.062, 0.094, 22, 10);
   const nostrilGeo = cabochonCapSpec(0.012, 0.01, 0.01, 10, 2);
   const dinoSmileArc = sculptCurvedLimb(
     [
-      [-0.084, 0.606, 0.278],
-      [-0.042, 0.59, 0.296],
-      [0, 0.586, 0.302],
-      [0.042, 0.59, 0.296],
-      [0.084, 0.606, 0.278]
+      [-0.084, 0.608, 0.278],
+      [-0.042, 0.594, 0.298],
+      [0, 0.59, 0.305],
+      [0.042, 0.594, 0.298],
+      [0.084, 0.608, 0.278]
     ],
     0.0075,
     { steps: 7, radialSegments: 6 }
   );
+  const dinoMouthCavityGeo = cabochonCapSpec(0.062, 0.025, 0.018, 16, 3);
+  const dinoToothGeo = smoothPuffSpec(0.014, 0.011, 0.008, 8, 4, 0.25);
 
   // Cute side cheek/ear nubs + rounded dorsal crown plates (clean mint eye sockets without oversized white halo!).
   const sideEarNubGeo = smoothPuffSpec(0.038, 0.054, 0.044, 12, 6);
@@ -754,10 +764,13 @@ function buildLuluRig(): ProceduralAssetRig {
       part(craniumGeo, mint, { position: [0, 0, 0.025], scale: [1.05, 1, 0.96] }),
       part(dinoCheekSwellGeo, mint, { position: [-0.155, 0.645, 0.09] }),
       part(dinoCheekSwellGeo, mint, { position: [0.155, 0.645, 0.09] }),
-      part(dinoMuzzleGeo, mintSoft, { position: [0, 0.625, 0.215], rotation: [0.06, 0, 0] }),
-      part(nostrilGeo, "#2E7A5C", { position: [-0.046, 0.648, 0.298] }),
-      part(nostrilGeo, "#2E7A5C", { position: [0.046, 0.648, 0.298] }),
+      part(dinoMuzzleGeo, mintSoft, { position: [0, 0.638, 0.215], rotation: [0.04, 0, 0] }),
+      part(nostrilGeo, "#2E7A5C", { position: [-0.046, 0.654, 0.298] }),
+      part(nostrilGeo, "#2E7A5C", { position: [0.046, 0.654, 0.298] }),
       part(dinoSmileArc, "#2E7A5C"),
+      part(dinoMouthCavityGeo, "#6E1F3E", { position: [0, 0.576, 0.285] }),
+      part(dinoToothGeo, "#FFFDF8", { position: [-0.02, 0.585, 0.296] }),
+      part(dinoToothGeo, "#FFFDF8", { position: [0.02, 0.585, 0.296] }),
       part(sideScaleDotGeo, mintSoft, { position: [-0.195, 0.725, 0.135], rotation: [0, -0.75, 0] }),
       part(sideScaleDotGeo, mintSoft, { position: [0.195, 0.725, 0.135], rotation: [0, 0.75, 0] }),
       part(sideEarNubGeo, mintDeep, { position: [-0.238, 0.675, 0.03] }),
@@ -770,17 +783,29 @@ function buildLuluRig(): ProceduralAssetRig {
   });
   const headPart = makeSubPartRig("head", headAnchor, [headLobe], "body");
 
-  // Happy lower dino jaw tucked cleanly under the chubby muzzle (`clay` craft).
-  const jawAnchor: Vec3 = [0, 0.582, 0.175];
-  const lowerJawGeo = smoothPuffSpec(0.086, 0.034, 0.072, 10, 5);
-  const dinoTongueGeo = smoothPuffSpec(0.048, 0.014, 0.046, 8, 4);
+  // Surface-proud lower dino jaw flush with muzzle front (`clay` craft) so speech opens cleanly.
+  const jawAnchor: Vec3 = [0, 0.586, 0.245];
+  const lowerJawGeo = smoothPuffSpec(0.094, 0.032, 0.072, 14, 7);
+  const dinoLowerLipArc = sculptCurvedLimb(
+    [
+      [-0.078, 0.602, 0.278],
+      [-0.04, 0.588, 0.3],
+      [0, 0.584, 0.308],
+      [0.04, 0.588, 0.3],
+      [0.078, 0.602, 0.278]
+    ],
+    0.007,
+    { steps: 7, radialSegments: 6 }
+  );
+  const dinoTongueGeo = smoothPuffSpec(0.046, 0.013, 0.042, 10, 5);
   const jawLobe = composeLobe({
     suffix: "dinoJaw",
     craft: "clay",
     hinge: jawAnchor,
     parts: [
-      part(lowerJawGeo, cream, { position: [0, 0.576, 0.212] }),
-      part(dinoTongueGeo, "#F48792", { position: [0, 0.588, 0.232] })
+      part(lowerJawGeo, cream, { position: [0, 0.57, 0.24] }),
+      part(dinoLowerLipArc, "#2E7A5C"),
+      part(dinoTongueGeo, "#F48792", { position: [0, 0.579, 0.264] })
     ]
   });
   const jawPart = makeSubPartRig("jaw", jawAnchor, [jawLobe], "head");
@@ -993,9 +1018,19 @@ function buildSheruRig(): ProceduralAssetRig {
     { steps: 5, radialSegments: 5 }
   );
 
-  // Plump double-whisker-pad cream muzzle + snout bridge + glossy dark-chocolate heart nose!
-  const snoutBridgeGeo = smoothPuffSpec(0.088, 0.068, 0.095, 8, 4);
-  const whiskerPadGeo = smoothPuffSpec(0.068, 0.052, 0.065, 7, 4);
+  // Plump double-whisker-pad cream muzzle + berry mouth cavity + snout bridge + glossy chocolate nose!
+  const snoutBridgeGeo = smoothPuffSpec(0.088, 0.066, 0.095, 8, 4);
+  const whiskerPadGeo = smoothPuffSpec(0.068, 0.048, 0.065, 8, 4);
+  const puppyUpperLipArc = sculptCurvedLimb(
+    [
+      [-0.064, 0.6, 0.425],
+      [0, 0.612, 0.454],
+      [0.064, 0.6, 0.425]
+    ],
+    0.007,
+    { steps: 6, radialSegments: 6 }
+  );
+  const puppyMouthCavityGeo = smoothPuffSpec(0.052, 0.022, 0.042, 12, 6);
   const noseGeo = smoothPuffSpec(0.038, 0.028, 0.028, 8, 4, 0.18);
   const noseShineGeo = cabochonCapSpec(0.011, 0.007, 0.008, 6, 1);
 
@@ -1028,24 +1063,35 @@ function buildSheruRig(): ProceduralAssetRig {
       part(tuftCenterGeo, cream),
       part(tuftLeftGeo, cream),
       part(tuftRightGeo, biscuit),
-      part(snoutBridgeGeo, cream, { position: [0, 0.635, 0.365], rotation: [0.12, 0, 0] }),
-      part(whiskerPadGeo, cream, { position: [-0.052, 0.618, 0.395] }),
-      part(whiskerPadGeo, cream, { position: [0.052, 0.618, 0.395] }),
-      part(noseGeo, "#261612", { position: [0, 0.652, 0.456], rotation: [0.14, 0, 0] }),
-      part(noseShineGeo, "#FFFFFF", { position: [-0.012, 0.664, 0.478] }),
+      part(snoutBridgeGeo, cream, { position: [0, 0.638, 0.365], rotation: [0.1, 0, 0] }),
+      part(whiskerPadGeo, cream, { position: [-0.052, 0.624, 0.395] }),
+      part(whiskerPadGeo, cream, { position: [0.052, 0.624, 0.395] }),
+      part(puppyUpperLipArc, "#4A2B1D"),
+      part(puppyMouthCavityGeo, "#6E2038", { position: [0, 0.588, 0.408] }),
+      part(noseGeo, "#261612", { position: [0, 0.654, 0.456], rotation: [0.14, 0, 0] }),
+      part(noseShineGeo, "#FFFFFF", { position: [-0.012, 0.666, 0.478] }),
       ...eyes.headAccentParts
     ]
   });
   const headPart = makeSubPartRig("head", headAnchor, [headLobe], "body");
 
-  // Happy lower puppy jaw + adorable soft pink tongue (`ceramic` craft).
-  const jawAnchor: Vec3 = [0, 0.585, 0.3];
-  const puppyJawGeo = smoothPuffSpec(0.068, 0.032, 0.088, 8, 4);
+  // Surface-proud lower puppy jaw + cocoa lip rim + soft pink tongue (`ceramic` craft).
+  const jawAnchor: Vec3 = [0, 0.592, 0.355];
+  const puppyJawGeo = smoothPuffSpec(0.068, 0.03, 0.086, 12, 6);
+  const puppyLowerLipArc = sculptCurvedLimb(
+    [
+      [-0.058, 0.596, 0.422],
+      [0, 0.588, 0.456],
+      [0.058, 0.596, 0.422]
+    ],
+    0.0065,
+    { steps: 6, radialSegments: 6 }
+  );
   const puppyTongueGeo = sculptCurvedLimb(
     [
-      [0, 0.59, 0.345],
-      [0, 0.584, 0.395],
-      [0, 0.568, 0.432]
+      [0, 0.588, 0.375],
+      [0, 0.584, 0.415],
+      [0, 0.578, 0.448]
     ],
     (t) => 0.034 * (1 - 0.22 * t),
     { steps: 5, radialSegments: 6, profileScaleX: 1.15, profileScaleY: 0.38 }
@@ -1055,7 +1101,8 @@ function buildSheruRig(): ProceduralAssetRig {
     craft: "ceramic",
     hinge: jawAnchor,
     parts: [
-      part(puppyJawGeo, cream, { position: [0, 0.576, 0.365] }),
+      part(puppyJawGeo, cream, { position: [0, 0.576, 0.374] }),
+      part(puppyLowerLipArc, "#4A2B1D"),
       part(puppyTongueGeo, "#F48B9A")
     ]
   });
@@ -1270,12 +1317,29 @@ function buildGogoRig(): ProceduralAssetRig {
     part(steamDomeGeo, brass, { position: [0, 0.71, 0.06] }),
     part(whistleGeo, brass, { position: [0.095, 0.755, -0.06] }),
 
-    // Friendly +Z smokebox porcelain face (warm sculpted biscuit nose, NOT red clown nose!)
+    // Friendly +Z smokebox porcelain face + upper smile lip + recessed berry mouth & teeth
     part(smokeboxRimGeo, brass, { position: [0, 0.495, 0.5] }),
     part(facePlateGeo, creamFace, { position: [0, 0.495, 0.506] }),
-    part(buttonNoseGeo, "#F2DAC0", { position: [0, 0.478, 0.534] }),
+    part(buttonNoseGeo, "#F2DAC0", { position: [0, 0.482, 0.534] }),
     part(cheekRivetGeo, "#FFACA3", { position: [-0.148, 0.456, 0.522] }),
     part(cheekRivetGeo, "#FFACA3", { position: [0.148, 0.456, 0.522] }),
+    part(
+      sculptCurvedLimb(
+        [
+          [-0.088, 0.438, 0.525],
+          [-0.044, 0.426, 0.533],
+          [0, 0.422, 0.536],
+          [0.044, 0.426, 0.533],
+          [0.088, 0.438, 0.525]
+        ],
+        0.008,
+        { steps: 8, radialSegments: 7 }
+      ),
+      "#6E3B2E"
+    ),
+    part(cabochonCapSpec(0.066, 0.028, 0.012, 16, 3), "#681E32", { position: [0, 0.415, 0.522] }),
+    part(cabochonCapSpec(0.042, 0.009, 0.008, 12, 2), "#FFFDF8", { position: [0, 0.425, 0.527] }),
+    part(cabochonCapSpec(0.044, 0.014, 0.011, 12, 2), "#F28588", { position: [0, 0.404, 0.525] }),
     ...eyes.headAccentParts,
 
     // Running boards, front buffer beam, twin brass-faced railway buffers & headlamps
@@ -1353,27 +1417,27 @@ function buildGogoRig(): ProceduralAssetRig {
   });
   const chimneyPart = makeSubPartRig("chimney", chimneyAnchor, [chimneyLobe], "body");
 
-  // Friendly carved storybook smile on +Z (`clay` craft — warm cocoa smile arc, never clown lipstick).
-  const jawAnchor: Vec3 = [0, 0.425, 0.485];
+  // Articulated lower smokebox chin & cocoa smile lip (`clay` craft — covers mouth interior at rest, parts cleanly when speaking).
+  const jawAnchor: Vec3 = [0, 0.426, 0.495];
+  const gogoChinCoverGeo = cabochonCapSpec(0.078, 0.033, 0.016, 16, 3);
   const smileLipGeo = sculptCurvedLimb(
     [
-      [-0.092, 0.442, 0.524],
-      [-0.046, 0.412, 0.534],
-      [0, 0.402, 0.538],
-      [0.046, 0.412, 0.534],
-      [0.092, 0.442, 0.524]
+      [-0.086, 0.436, 0.526],
+      [-0.044, 0.422, 0.537],
+      [0, 0.418, 0.541],
+      [0.044, 0.422, 0.537],
+      [0.086, 0.436, 0.526]
     ],
-    0.0085,
+    0.008,
     { steps: 8, radialSegments: 7 }
   );
-  const happyMouthGeo = cabochonCapSpec(0.052, 0.02, 0.012, 16, 3);
   const jawLobe = composeLobe({
     suffix: "smokeboxSmile",
     craft: "clay",
     hinge: jawAnchor,
     parts: [
-      part(smileLipGeo, "#6E3B2E"),
-      part(happyMouthGeo, "#DF736A", { position: [0, 0.42, 0.526] })
+      part(gogoChinCoverGeo, creamFace, { position: [0, 0.412, 0.524] }),
+      part(smileLipGeo, "#6E3B2E")
     ]
   });
   const jawPart = makeSubPartRig("jaw", jawAnchor, [jawLobe], "body");
@@ -1464,13 +1528,15 @@ function buildLumiRig(): ProceduralAssetRig {
   const noseButtonGeo = cabochonCapSpec(0.016, 0.013, 0.012, 10, 2);
   const lumiSmileArc = sculptCurvedLimb(
     [
-      [-0.048, 0.468, 0.198],
-      [0, 0.448, 0.21],
-      [0.048, 0.468, 0.198]
+      [-0.048, 0.468, 0.196],
+      [0, 0.456, 0.206],
+      [0.048, 0.468, 0.196]
     ],
-    0.008,
+    0.0075,
     { steps: 7, radialSegments: 6 }
   );
+  const lumiMouthCavityGeo = cabochonCapSpec(0.042, 0.022, 0.012, 14, 3);
+  const lumiTongueGeo = cabochonCapSpec(0.028, 0.012, 0.01, 12, 2);
   const handMittenGeo = smoothPuffSpec(0.042, 0.036, 0.036, 8, 4);
   const starBootieGeo = smoothPuffSpec(0.052, 0.036, 0.062, 8, 4);
 
@@ -1501,8 +1567,10 @@ function buildLumiRig(): ProceduralAssetRig {
     parts: [
       part(starCenterPuffGeo, starGold, { position: [0, 0.505, 0] }),
       part(faceCushionGeo, butterCream, { position: [0, 0.515, 0.138] }),
-      part(noseButtonGeo, honeyGold, { position: [0, 0.492, 0.202] }),
+      part(noseButtonGeo, honeyGold, { position: [0, 0.494, 0.202] }),
       part(lumiSmileArc, "#6B3E1E"),
+      part(lumiMouthCavityGeo, "#75203E", { position: [0, 0.446, 0.191] }),
+      part(lumiTongueGeo, "#FF8DA1", { position: [0, 0.438, 0.195] }),
       part(handMittenGeo, butterCream, { position: [-0.255, 0.46, 0.082], rotation: [0, 0.25, 0.2] }),
       part(handMittenGeo, butterCream, { position: [0.255, 0.46, 0.082], rotation: [0, -0.25, -0.2] }),
       part(starBootieGeo, honeyGold, { position: [-0.225, 0.165, 0.042], rotation: [0, -0.22, 0] }),
@@ -1588,11 +1656,35 @@ function buildLumiRig(): ProceduralAssetRig {
   });
   const cheekPart = makeSubPartRig("cheekPuff", cheekAnchor, [cheekLobe], "body");
 
+  // Articulated lower star chin & smile lip (`felt` craft) so Lumi visibly sings & speaks!
+  const lumiJawAnchor: Vec3 = [0, 0.456, 0.175];
+  const lumiChinCoverGeo = cabochonCapSpec(0.05, 0.026, 0.016, 14, 3);
+  const lumiLowerLipArc = sculptCurvedLimb(
+    [
+      [-0.044, 0.464, 0.197],
+      [0, 0.45, 0.21],
+      [0.044, 0.464, 0.197]
+    ],
+    0.007,
+    { steps: 7, radialSegments: 6 }
+  );
+  const lumiJawLobe = composeLobe({
+    suffix: "starJaw",
+    craft: "felt",
+    hinge: lumiJawAnchor,
+    parts: [
+      part(lumiChinCoverGeo, butterCream, { position: [0, 0.445, 0.193] }),
+      part(lumiLowerLipArc, "#6B3E1E")
+    ]
+  });
+  const lumiJawPart = makeSubPartRig("jaw", lumiJawAnchor, [lumiJawLobe], "body");
+
   return finalizeProceduralRig("lumi", [
     bodyPart,
     petalsPart,
     eyes.eyelidL,
     eyes.eyelidR,
+    lumiJawPart,
     cheekPart
   ]);
 }
@@ -1707,6 +1799,7 @@ function buildPeekoRig(): ProceduralAssetRig {
 
   // Sculpted plump baby-chick bill (`lacquer` 2nd lobe on head — cute wide diamond bill, not narrow spike!).
   const upperBeakGeo = smoothPuffSpec(0.056, 0.034, 0.062, 16, 8, 0.22);
+  const peekoMouthRoofGeo = smoothPuffSpec(0.042, 0.014, 0.046, 12, 5);
   const beakNostrilGeo = cabochonCapSpec(0.006, 0.005, 0.006, 8, 1);
   const upperBeakLobe = composeLobe({
     suffix: "upperBeak",
@@ -1714,6 +1807,7 @@ function buildPeekoRig(): ProceduralAssetRig {
     hinge: headAnchor,
     parts: [
       part(upperBeakGeo, beakOrange, { position: [0, 0.594, 0.246], rotation: [0.12, 0, 0] }),
+      part(peekoMouthRoofGeo, "#721F3A", { position: [0, 0.578, 0.252] }),
       part(beakNostrilGeo, "#C95812", { position: [-0.018, 0.608, 0.292] }),
       part(beakNostrilGeo, "#C95812", { position: [0.018, 0.608, 0.292] })
     ]
@@ -1721,16 +1815,16 @@ function buildPeekoRig(): ProceduralAssetRig {
   const headPart = makeSubPartRig("head", headAnchor, [headPlushLobe, upperBeakLobe], "body");
 
   // Hinged lower tangerine beak + cute coral chick tongue (`lacquer` craft).
-  const beakLowerAnchor: Vec3 = [0, 0.568, 0.228];
-  const lowerBeakGeo = smoothPuffSpec(0.044, 0.024, 0.05, 14, 7, 0.18);
-  const chickTongueGeo = smoothPuffSpec(0.024, 0.01, 0.026, 10, 5);
+  const beakLowerAnchor: Vec3 = [0, 0.57, 0.228];
+  const lowerBeakGeo = smoothPuffSpec(0.046, 0.024, 0.056, 14, 7, 0.18);
+  const chickTongueGeo = smoothPuffSpec(0.026, 0.011, 0.03, 10, 5);
   const beakLowerLobe = composeLobe({
     suffix: "lowerBeak",
     craft: "lacquer",
     hinge: beakLowerAnchor,
     parts: [
-      part(lowerBeakGeo, beakDeep, { position: [0, 0.568, 0.238], rotation: [-0.08, 0, 0] }),
-      part(chickTongueGeo, "#FF7D8C", { position: [0, 0.578, 0.248] })
+      part(lowerBeakGeo, beakDeep, { position: [0, 0.568, 0.244], rotation: [-0.06, 0, 0] }),
+      part(chickTongueGeo, "#FF7D8C", { position: [0, 0.579, 0.256] })
     ]
   });
   const beakLowerPart = makeSubPartRig("beakLower", beakLowerAnchor, [beakLowerLobe], "head");

@@ -38,7 +38,7 @@ const QA_PARAMS = {
   seed: { type: "int", default: 1 }
 } as const;
 
-const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing"];
+const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing", "auto"];
 
 function playModeOf(value: string | undefined): PlayMode | undefined {
   return PLAY_MODES.find((mode) => mode === value);

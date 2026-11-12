@@ -13,7 +13,7 @@ export const LUMI: CharacterDefinition = {
   color: "#FFD34D",
   voice: "lumi",
   speaks: true,
-  articulatedParts: ["body", "petals", "eyelidL", "eyelidR", "cheekPuff"],
+  articulatedParts: ["body", "petals", "eyelidL", "eyelidR", "jaw", "cheekPuff"],
   clipCandidates: {},
   locomotionClips: {},
   gestures: {

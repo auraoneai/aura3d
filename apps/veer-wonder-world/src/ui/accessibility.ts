@@ -71,6 +71,7 @@ export const UI_STRINGS = {
   "ui.audio.unavailable": "Sound is not available right now. The story carries on with pictures, and captions show the words.",
 
   "ui.start.sound": "Sound starts after you tap.",
+  "ui.mode.auto": "Auto play",
   "ui.prototype": "Prototype",
   "ui.controls.label": "Grown-up controls",
   "ui.confirm": "Your child had a turn",
@@ -254,10 +255,11 @@ export function castDots(doc: Document): HTMLElement {
   return row;
 }
 
-/** The two play modes, in the order the UI lists them. */
+/** The three play modes, in the order the UI lists them. */
 export const MODE_CHOICES: readonly { readonly mode: PlayMode; readonly key: UiStringKey }[] = [
   { mode: "play-together", key: "ui.mode.play" },
-  { mode: "watch-sing", key: "ui.mode.watch" }
+  { mode: "watch-sing", key: "ui.mode.watch" },
+  { mode: "auto", key: "ui.mode.auto" }
 ];
 
 export interface ModeChoice {
@@ -266,13 +268,13 @@ export interface ModeChoice {
 }
 
 /**
- * The "Play together / Watch and sing" choice as a native radio group (arrow
- * keys work as usual), drawn as two large segments.
+ * The "Play together / Watch and sing / Auto play" choice as a native radio group
+ * (arrow keys work as usual), drawn as three clear segments.
  */
 export function buildModeChoice(doc: Document, locale: UiLocale, selected: PlayMode, onSelect: (mode: PlayMode) => void): ModeChoice {
   const name = uniqueId("ww-mode");
   const fieldset = el(doc, "fieldset", { className: "ww-field ww-segmented", attrs: { "data-setting": "mode" } });
-  const options = el(doc, "div", { className: "ww-segmented-options" });
+  const options = el(doc, "div", { className: "ww-segmented-options ww-segmented-three" });
   // The label sits in its own span, so the start screen can give it a soft backing over the sky (styles.css).
   fieldset.append(el(doc, "legend", { className: "ww-legend" }, [el(doc, "span", { className: "ww-legend-text", text: uiText(locale, "ui.mode.label") })]), options);
   const inputs = new Map<PlayMode, HTMLInputElement>();
@@ -586,7 +588,8 @@ export const ICONS = {
   close: [{ d: "M6.5 6.5l11 11M17.5 6.5l-11 11" }],
   sound: [{ d: "M4 9.5h3.5L12 6v12l-4.5-3.5H4z", fill: true }, { d: "M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8" }],
   hold: [{ d: "M12 9a3 3 0 1 1 0 6a3 3 0 1 1 0-6z", fill: true }, { d: "M12 4.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 1 1 0-15z" }],
-  tip: [{ d: "M12 3.5a5.5 5.5 0 0 0-3 10.1V16h6v-2.4a5.5 5.5 0 0 0-3-10.1zM9.5 19h5" }]
+  tip: [{ d: "M12 3.5a5.5 5.5 0 0 0-3 10.1V16h6v-2.4a5.5 5.5 0 0 0-3-10.1zM9.5 19h5" }],
+  auto: [{ d: "M17 4l3 3-3 3M4 11V9a2 2 0 0 1 2-2h14M7 20l-3-3 3-3M20 13v2a2 2 0 0 1-2 2H4" }]
 } as const satisfies Readonly<Record<string, readonly IconPart[]>>;
 
 export type IconName = keyof typeof ICONS;

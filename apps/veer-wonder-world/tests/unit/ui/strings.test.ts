@@ -81,6 +81,7 @@ const SHARED_UI_KEYS = [
  */
 const PACK_UI_KEYS = [
   "ui.start.sound",
+  "ui.mode.auto",
   "ui.prototype",
   "ui.controls.label",
   "ui.confirm",

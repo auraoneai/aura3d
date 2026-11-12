@@ -376,3 +376,60 @@ describe("animation director", () => {
     expect(director.halo("nobody")).toBe(0);
   });
 });
+
+describe("lip-sync, non-squished crouch gestures and coupled prop actions", () => {
+  it("opens every character's and companion's jaw or beak during speech, and closes cleanly at rest", async () => {
+    const { speechSubParts, propActionSubParts } = await import("../../../src/scenes/articulated-actors.js");
+    for (const id of [...CHARACTER_IDS, "robot", "teddy", "cow", "sheep", "horse", "duck", "bird"]) {
+      expect(speechSubParts(id, 0, 0.4, false), `${id} silent`).toBeUndefined();
+      expect(speechSubParts(id, 0.01, 0.4, false), `${id} noise floor`).toBeUndefined();
+      const speaking = speechSubParts(id, 0.85, 0.06, false);
+      expect(speaking, `${id} speaking`).toBeDefined();
+      const mouthPart = id === "peeko" || id === "duck" || id === "bird" ? speaking?.beakLower : speaking?.jaw;
+      expect(mouthPart?.rotation?.[0] ?? 0, `${id} mouth opens`).toBeGreaterThan(0.12);
+    }
+    const brushing = propActionSubParts("momo", "brushTeeth", 1, 0.35, false);
+    expect(brushing?.jaw?.rotation?.[0] ?? 0).toBeGreaterThan(0.2);
+    expect(brushing?.armR?.rotation?.[0] ?? 0).toBeLessThan(-0.9);
+  });
+
+  it("keeps character piece scales uniform on stage (zero pancake squish on hide) and couples toothbrush to mouth", async () => {
+    const { createStage } = await import("../../../src/scenes/stage.js");
+    const { storyById } = await import("../../../src/content/catalog.js");
+    const e19 = storyById("momos-day");
+    expect(e19).toBeDefined();
+    if (!e19) return;
+    const stage = await createStage({ target: null, reducedMotion: false, manualClock: true, mountTimeoutMs: 50 });
+    try {
+      await stage.load(e19);
+      stage.apply([
+        { do: "enter", actor: "momo", at: "center", from: "center" },
+        { do: "gesture", actor: "momo", gesture: "hide" }
+      ]);
+      for (let i = 0; i < 24; i += 1) stage.update(1 / 30);
+      const app = stage.game().app;
+      const momoHeadPieceIds = app.nodes.ids().filter((id) => id === "momo" || id === "momo__head" || id.startsWith("momo__head~"));
+      expect(momoHeadPieceIds.length).toBeGreaterThan(1);
+      for (const pieceId of momoHeadPieceIds) {
+        const handle = app.nodes.get(pieceId);
+        expect(handle).toBeDefined();
+        const rawScale = handle?.scale ?? [1, 1, 1];
+        const scale = typeof rawScale === "number" ? [rawScale, rawScale, rawScale] : rawScale;
+        expect(scale[0], `${pieceId} sx==sy`).toBeCloseTo(scale[1], 4);
+        expect(scale[1], `${pieceId} sy==sz`).toBeCloseTo(scale[2], 4);
+      }
+
+      stage.apply([
+        { do: "gesture", actor: "momo", gesture: "idle" },
+        { do: "enter", actor: "toothbrush", at: "right", from: "right" },
+        { do: "carry", actor: "momo", item: "toothbrush" }
+      ]);
+      for (let i = 0; i < 15; i += 1) stage.update(1 / 30);
+      const brushNode = stage.snapshot().nodes.find((n) => n.id === "toothbrush");
+      expect(brushNode).toBeDefined();
+      expect(brushNode?.position[1] ?? 0).toBeGreaterThan(0.32);
+    } finally {
+      stage.dispose();
+    }
+  });
+});

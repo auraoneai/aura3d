@@ -716,4 +716,30 @@ describe("story menu (PRD 04 E02)", () => {
     remove();
     expect(byAttr(root, "data-ui", "menu")).toEqual([]);
   });
+
+  it("offers Auto play in Grown-up settings and as a one-tap toggle in the menu header", () => {
+    const { root, storage, changes, close } = openPanel();
+    const modeInputs = byAttr(root, "data-mode");
+    expect(modeInputs.map((n) => n.getAttribute("data-mode"))).toEqual(["play-together", "watch-sing", "auto"]);
+    const autoRadio = modeInputs[2];
+    expect(autoRadio).toBeDefined();
+    if (autoRadio) choose(autoRadio);
+    expect(changes.at(-1)?.mode).toBe("auto");
+    expect(loadSettings(storage).mode).toBe("auto");
+    close();
+
+    const menuSetup = setup();
+    const toggled: boolean[] = [];
+    const remove = showEpisodeMenu(asHtml(menuSetup.root), ENGLISH_ONLY, catalogItems(), () => {}, {
+      portraits: {},
+      autoPlay: false,
+      onToggleAuto: (on) => toggled.push(on)
+    });
+    const autoBtn = only(byAttr(menuSetup.root, "data-control", "auto"));
+    expect(autoBtn.getAttribute("aria-pressed")).toBe("false");
+    tap(autoBtn);
+    expect(autoBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(toggled).toEqual([true]);
+    remove();
+  });
 });

@@ -58,7 +58,11 @@ import type {
 import {
   mergePartPoses,
   mirrorPartPoses,
+  propActionSubParts,
   resolveHierarchicalPartTransform,
+  sampleCharacterSubParts,
+  speechSubParts,
+  type ActiveCharacterPropAction,
   type ArticulatedPoseMap,
   type SubPartId
 } from "./articulated-actors.js";
@@ -481,6 +485,30 @@ function mountFailureMessage(app: AuraApp): string | null {
     return null;
   }
 }
+
+const ARTICULATED_CREATURE_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>([
+  "momo",
+  "lulu",
+  "sheru",
+  "gogo",
+  "lumi",
+  "peeko",
+  "teddy",
+  "robot",
+  "cow",
+  "sheep",
+  "duck",
+  "horse",
+  "bird",
+  "butterfly"
+]);
+
+const BIPED_CARRIER_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>([
+  "momo",
+  "lulu",
+  "teddy",
+  "robot"
+]);
 
 function idleProfileFor(traits: AssetTraits): ReturnType<typeof propAnimationProfile> {
   return propAnimationProfile(traits.idle);
@@ -1192,10 +1220,50 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let cameraDuration = 0;
   let cameraApplied: CameraPose | null = null;
   const written = new Map<string, WrittenTransform>();
+  const lastPartsByNode = new Map<string, ArticulatedPoseMap | undefined>();
+  const vocalTimers = new Map<string, { remainingSec: number; durationSec: number }>();
+  const propActionTimers = new Map<
+    string,
+    { action: ActiveCharacterPropAction; remainingSec: number; durationSec: number; targetId?: string }
+  >();
   /** Which target each highlight ring circles, and since when (stage time), for the soft opening. */
   const ringOwner: (string | null)[] = RING_IDS.map(() => null);
   const ringSince: number[] = RING_IDS.map(() => 0);
   let proceduralNodeCount = 0;
+
+  const startVocalBurst = (nodeId: string, durationSec = 0.95): void => {
+    vocalTimers.set(nodeId, { remainingSec: durationSec, durationSec });
+  };
+
+  const startPropAction = (
+    actorId: string,
+    action: ActiveCharacterPropAction,
+    durationSec: number,
+    targetId?: string
+  ): void => {
+    propActionTimers.set(actorId, {
+      action,
+      remainingSec: durationSec,
+      durationSec,
+      ...(targetId !== undefined ? { targetId } : {})
+    });
+  };
+
+  const nearestShownHostActor = (nearPos?: Vec3): StageNode | undefined => {
+    let best: StageNode | undefined;
+    let bestDist = Infinity;
+    for (const candidate of order) {
+      if (candidate.role !== "actor" || !isShown(candidate) || isOffStage(candidate.home)) continue;
+      if (!BIPED_CARRIER_ASSETS.has(candidate.asset) && candidate.characterId === null) continue;
+      if (!nearPos) return candidate;
+      const d = distance3(currentPosition(candidate), nearPos);
+      if (d < bestDist) {
+        bestDist = d;
+        best = candidate;
+      }
+    }
+    return best;
+  };
 
   const handle = (id: string): AuraRuntimeNodeHandle | undefined => {
     try {
@@ -1504,6 +1572,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     } else if (action === "eat") {
       vfx?.fire("cookieCrumb", fxAt);
       if (n.asset === "banana") shiftHomeNookTimeOfDay("midday");
+      const eater = n.carriedBy ? nodes.get(n.carriedBy) : nearestShownHostActor(position);
+      if (eater && director.snapshot(eater.id)?.gesture !== "eat") {
+        director.gesture(eater.id, "eat", false);
+      }
     } else if (action === "bloom") {
       vfx?.fire("meadowPollen", fxAt);
     } else if (action === "glow") {
@@ -1514,15 +1586,26 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         const carNode = nodes.get("car");
         const carAt = carNode ? currentPosition(carNode) : fxAt;
         const burstPos: Vec3 = [carAt[0], carAt[1] + 0.45, carAt[2]];
-        if (n.asset === "sponge") {
+        const washer = n.carriedBy ? nodes.get(n.carriedBy) : nodes.get("momo") ?? nearestShownHostActor(carAt);
+        const holdingSponge = washer !== undefined && washer.carrying !== null;
+        if (n.asset === "sponge" || holdingSponge) {
           applyCarWashState("foamy");
           vfx?.fire("soapFoam", burstPos);
         } else {
           applyCarWashState("wet");
           vfx?.fire("waterDroplets", burstPos);
         }
+        if (washer && isShown(washer) && holdingSponge) {
+          startPropAction(washer.id, "scrubTarget", 2.8, "car");
+        }
       } else {
         vfx?.fire("waterDroplets", fxAt);
+        if (n.asset === "sink") {
+          const washer = nodes.get("momo") ?? nearestShownHostActor(position);
+          if (washer && isShown(washer)) {
+            startPropAction(washer.id, "washHands", 2.8, n.id);
+          }
+        }
       }
       if (n.asset === "sink") shiftHomeNookTimeOfDay("morning");
     } else if (action === "dry") {
@@ -1531,6 +1614,32 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         const carAt = carNode ? currentPosition(carNode) : fxAt;
         applyCarWashState("gleaming");
         vfx?.fire("starDust", [carAt[0], carAt[1] + 0.5, carAt[2]]);
+        const dryer = n.carriedBy ? nodes.get(n.carriedBy) : nodes.get("momo") ?? nearestShownHostActor(carAt);
+        if (dryer && isShown(dryer)) {
+          startPropAction(dryer.id, "dryTarget", 2.6, "car");
+        }
+      } else {
+        const dryer = n.carriedBy ? nodes.get(n.carriedBy) : nodes.get("momo") ?? nearestShownHostActor(position);
+        if (dryer && isShown(dryer)) {
+          startPropAction(dryer.id, "dryHands", 2.6, n.id);
+        }
+      }
+    } else if (action === "wobble") {
+      if (n.asset === "toothbrush") {
+        const brusher = n.carriedBy ? nodes.get(n.carriedBy) : nodes.get("momo") ?? nearestShownHostActor(position);
+        if (brusher && isShown(brusher)) {
+          startPropAction(brusher.id, "brushTeeth", 3.0, n.id);
+        }
+      } else if (n.asset === "bubbleWand") {
+        const blower = n.carriedBy ? nodes.get(n.carriedBy) : nodes.get("momo") ?? nearestShownHostActor(position);
+        if (blower && isShown(blower)) {
+          startPropAction(blower.id, "blowBubble", 2.2, n.id);
+        }
+      } else if (n.asset === "shaker") {
+        const player = n.carriedBy ? nodes.get(n.carriedBy) : nearestShownHostActor(position);
+        if (player && isShown(player)) {
+          startPropAction(player.id, "playShaker", 1.8, n.id);
+        }
       }
     } else if (action === "ring") {
       vfx?.fire(n.asset === "gogo" ? "steamPuff" : "musicNotes", fxAt);
@@ -1540,6 +1649,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       vfx?.fire("turfStep", [position[0], Math.max(0.05, position[1]), position[2]]);
     } else if (action === "bounce" && (n.asset === "drum" || n.asset === "toyPiano" || n.asset === "shaker")) {
       vfx?.fire("musicNotes", fxAt);
+      const player = n.carriedBy ? nodes.get(n.carriedBy) : nearestShownHostActor(position);
+      if (player && isShown(player)) {
+        const playKind: ActiveCharacterPropAction =
+          n.asset === "shaker" ? "playShaker" : n.asset === "toyPiano" ? "playPiano" : "playDrum";
+        startPropAction(player.id, playKind, 1.8, n.id);
+      }
     }
   };
 
@@ -1553,6 +1668,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const item = carrier.carrying ? nodes.get(carrier.carrying) : undefined;
       carrier.carrying = null;
       director.setCarrying(carrier.id, false);
+      propActionTimers.delete(carrier.id);
       if (!item) return;
       item.carriedBy = null;
       const ahead = Math.max(carrier.carryOffset[2] * carrier.heightM, carrier.size[2] / 2 + item.size[2] / 2 + 0.05);
@@ -1577,12 +1693,48 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     carrier.carrying = item.id;
     director.setCarrying(carrier.id, true);
     if (!item.visible) show(item);
+    if (item.asset === "toothbrush") {
+      startPropAction(carrier.id, "brushTeeth", 3.2, item.id);
+    } else if (item.asset === "towel" && story?.id !== "splashy-car-wash") {
+      startPropAction(carrier.id, "dryHands", 2.8, item.id);
+    }
   };
 
   // ---- actions
   const applyOne = (action: StageAction): void => {
     switch (action.do) {
-      case "sfx":
+      case "sfx": {
+        const sfxAssetMap: Partial<Readonly<Record<string, readonly StageAssetKey[]>>> = {
+          woof: ["sheru"],
+          moo: ["cow"],
+          baa: ["sheep"],
+          quack: ["duck"],
+          neigh: ["horse"],
+          tweet: ["bird", "peeko"],
+          trainChug: ["gogo"],
+          whistle: ["gogo"],
+          horn: ["gogo"]
+        };
+        const matchedAssets = sfxAssetMap[action.sound];
+        if (matchedAssets) {
+          for (const candidate of order) {
+            if (isShown(candidate) && matchedAssets.includes(candidate.asset)) {
+              startVocalBurst(candidate.id, 1.05);
+            }
+          }
+        } else if (action.sound === "giggle" || action.sound === "yawn") {
+          const hostActor = nearestShownHostActor();
+          if (hostActor) startVocalBurst(hostActor.id, 0.9);
+        } else if (action.sound === "bubbleBlow") {
+          const wandNode = order.find((c) => c.asset === "bubbleWand" && c.carriedBy !== null);
+          const blower = (wandNode?.carriedBy ? nodes.get(wandNode.carriedBy) : undefined) ?? nodes.get("momo") ?? nearestShownHostActor();
+          if (blower && isShown(blower)) startPropAction(blower.id, "blowBubble", 2.1, wandNode?.id);
+        } else if (action.sound === "drum" || action.sound === "shaker") {
+          const player = nearestShownHostActor();
+          if (player) startPropAction(player.id, action.sound === "shaker" ? "playShaker" : "playDrum", 1.6);
+        }
+        return;
+      }
       case "music":
         return;
       case "song":
@@ -1875,6 +2027,223 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     return n.appear.showing ? 0.6 + 0.4 * ease("outBackSoft", u) : 1 - 0.4 * ease("inOutSine", u);
   };
 
+  const carriedSocketTransform = (
+    item: StageNode,
+    carrier: StageNode
+  ): { readonly position: Vec3; readonly extraRotation: Vec3; readonly yaw: number } => {
+    const cb = carrier.drawn.base;
+    const h = carrier.heightM;
+    const itemH = item.heightM;
+    const carrierParts = lastPartsByNode.get(carrier.id);
+    const activeProp = propActionTimers.get(carrier.id);
+    const k = reducedMotion ? 0.45 : 1;
+
+    // 1. Toothbrush: scrubs horizontally right across the carrier's open teeth during "brushTeeth" (tracked in head space), or rests angled in armR hand.
+    if (item.asset === "toothbrush" && BIPED_CARRIER_ASSETS.has(carrier.asset)) {
+      if (activeProp?.action === "brushTeeth") {
+        const headAnchor = carrier.partAnchorsM.head ?? [0, 0.52 * h, 0];
+        const headXform = resolveHierarchicalPartTransform(
+          carrier.drawn,
+          carrierParts,
+          "head",
+          headAnchor,
+          carrier.partAnchorsM,
+          "body"
+        );
+        const scrub = Math.sin(Math.PI * 2 * 4.4 * time) * 0.034 * k;
+        const teethWorld = placePiece(
+          { base: headXform.position, rotation: headXform.rotation, scale: headXform.scale, pivot: "base", centerHeight: 0 },
+          [scrub, 0.562 * h - headAnchor[1], 0.305 * h - headAnchor[2]]
+        );
+        const tiltZ = 1.48;
+        const headYaw = headXform.rotation[1];
+        const bristleTipOffset = rotateYaw(headYaw, [
+          -Math.sin(tiltZ) * 0.88 * itemH,
+          Math.cos(tiltZ) * 0.88 * itemH,
+          -0.09 * itemH
+        ]);
+        return {
+          position: [
+            teethWorld[0] - bristleTipOffset[0],
+            Math.max(0.14, teethWorld[1] - bristleTipOffset[1]),
+            teethWorld[2] - bristleTipOffset[2]
+          ],
+          extraRotation: [0, Math.PI, tiltZ],
+          yaw: headYaw
+        };
+      }
+      const restHand = rotateYaw(carrier.yaw, [0.22 * h, 0.28 * h, 0.24 * h]);
+      return {
+        position: [cb[0] + restHand[0], Math.max(0.14, cb[1] + restHand[1]), cb[2] + restHand[2]],
+        extraRotation: [0.28, 0, 0.25],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 2. Bubble wand: raised to mouth during "blowBubble" so the soap-film ring sits right in front of puffed cheeks.
+    if (item.asset === "bubbleWand" && BIPED_CARRIER_ASSETS.has(carrier.asset)) {
+      if (activeProp?.action === "blowBubble") {
+        const headAnchor = carrier.partAnchorsM.head ?? [0, 0.52 * h, 0];
+        const headXform = resolveHierarchicalPartTransform(
+          carrier.drawn,
+          carrierParts,
+          "head",
+          headAnchor,
+          carrier.partAnchorsM,
+          "body"
+        );
+        const mouthWorld = placePiece(
+          { base: headXform.position, rotation: headXform.rotation, scale: headXform.scale, pivot: "base", centerHeight: 0 },
+          [0.02 * h, 0.566 * h - headAnchor[1], 0.35 * h - headAnchor[2]]
+        );
+        const headYaw = headXform.rotation[1];
+        const ringTipOffset = rotateYaw(headYaw, [-Math.sin(0.14) * 0.81 * itemH, Math.cos(0.14) * 0.81 * itemH, 0]);
+        return {
+          position: [
+            mouthWorld[0] - ringTipOffset[0],
+            Math.max(0.14, mouthWorld[1] - ringTipOffset[1]),
+            mouthWorld[2] - ringTipOffset[2]
+          ],
+          extraRotation: [0, 0, 0.14],
+          yaw: headYaw
+        };
+      }
+      const restHand = rotateYaw(carrier.yaw, [0.2 * h, 0.26 * h, 0.25 * h]);
+      return {
+        position: [cb[0] + restHand[0], Math.max(0.14, cb[1] + restHand[1]), cb[2] + restHand[2]],
+        extraRotation: [0.2, 0, -0.18],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 3. Sponge / Towel physically held in outstretched palms right against the car door in G06 (`splashy-car-wash`).
+    if (
+      (item.asset === "sponge" || item.asset === "towel") &&
+      (activeProp?.action === "scrubTarget" || activeProp?.action === "dryTarget")
+    ) {
+      const sweepZ = Math.sin(Math.PI * 2 * 3.2 * time) * 0.18 * k;
+      if (carrier.partAnchorsM.armL && carrier.partAnchorsM.armR) {
+        const armL = resolveHierarchicalPartTransform(
+          carrier.drawn,
+          carrierParts,
+          "armL",
+          carrier.partAnchorsM.armL,
+          carrier.partAnchorsM,
+          "body"
+        );
+        const armR = resolveHierarchicalPartTransform(
+          carrier.drawn,
+          carrierParts,
+          "armR",
+          carrier.partAnchorsM.armR,
+          carrier.partAnchorsM,
+          "body"
+        );
+        const palmL = placePiece({ base: armL.position, rotation: armL.rotation, scale: armL.scale, pivot: "base", centerHeight: 0 }, [-0.04 * h, -0.19 * h, 0.06 * h]);
+        const palmR = placePiece({ base: armR.position, rotation: armR.rotation, scale: armR.scale, pivot: "base", centerHeight: 0 }, [0.04 * h, -0.19 * h, 0.06 * h]);
+        const reachNudge = rotateYaw(carrier.yaw, [0, 0, 0.09]);
+        return {
+          position: [
+            (palmL[0] + palmR[0]) * 0.5 + reachNudge[0],
+            Math.max(0.16, (palmL[1] + palmR[1]) * 0.5 - itemH * 0.42),
+            (palmL[2] + palmR[2]) * 0.5 + reachNudge[2]
+          ],
+          extraRotation: [0.22, 0, sweepZ],
+          yaw: carrier.yaw
+        };
+      }
+    }
+
+    // 4. Towel held between rubbing hands during "dryHands" (`E19`).
+    if (item.asset === "towel" && activeProp?.action === "dryHands") {
+      const rub = Math.sin(Math.PI * 2 * 3.4 * time) * k;
+      const worldOff = rotateYaw(carrier.yaw, [0.03 * rub, 0.42 * h - itemH * 0.45, 0.31 * h]);
+      return {
+        position: [cb[0] + worldOff[0], Math.max(0.15, cb[1] + worldOff[1]), cb[2] + worldOff[2]],
+        extraRotation: [0.18, 0, 0.16 * rub],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 5. Hat perched on Robot's articulated head (`E13`).
+    if (item.asset === "hat" && carrier.asset === "robot") {
+      const headAnchor = carrier.partAnchorsM.head ?? [0, 0.565 * h, 0];
+      const headXform = resolveHierarchicalPartTransform(
+        carrier.drawn,
+        carrierParts,
+        "head",
+        headAnchor,
+        carrier.partAnchorsM,
+        "body"
+      );
+      const crown = placePiece(
+        {
+          base: headXform.position,
+          rotation: headXform.rotation,
+          scale: headXform.scale,
+          pivot: "base",
+          centerHeight: 0
+        },
+        [0, 0.835 * h - headAnchor[1], 0]
+      );
+      return {
+        position: [crown[0], Math.max(0.2, crown[1]), crown[2]],
+        extraRotation: [headXform.rotation[0], 0, headXform.rotation[2]],
+        yaw: headXform.rotation[1]
+      };
+    }
+
+    // 6. Bipeds (`momo`, `lulu`, `teddy`, `robot`) carrying food, balls, blocks, or shakers between articulated hands!
+    if (
+      BIPED_CARRIER_ASSETS.has(carrier.asset) &&
+      carrier.partAnchorsM.armL &&
+      carrier.partAnchorsM.armR &&
+      item.characterId === null &&
+      !ARTICULATED_CREATURE_ASSETS.has(item.asset)
+    ) {
+      const armL = resolveHierarchicalPartTransform(
+        carrier.drawn,
+        carrierParts,
+        "armL",
+        carrier.partAnchorsM.armL,
+        carrier.partAnchorsM,
+        "body"
+      );
+      const armR = resolveHierarchicalPartTransform(
+        carrier.drawn,
+        carrierParts,
+        "armR",
+        carrier.partAnchorsM.armR,
+        carrier.partAnchorsM,
+        "body"
+      );
+      const palmRelL: Vec3 = [-0.06 * h, -0.205 * h, 0.048 * h];
+      const palmRelR: Vec3 = [0.06 * h, -0.205 * h, 0.048 * h];
+      const palmL = placePiece({ base: armL.position, rotation: armL.rotation, scale: armL.scale, pivot: "base", centerHeight: 0 }, palmRelL);
+      const palmR = placePiece({ base: armR.position, rotation: armR.rotation, scale: armR.scale, pivot: "base", centerHeight: 0 }, palmRelR);
+      const forwardNudge = rotateYaw(carrier.yaw, [0, 0, Math.max(0.05, item.size[2] * 0.35)]);
+      const midX = (palmL[0] + palmR[0]) * 0.5 + forwardNudge[0];
+      const midY = Math.max(cb[1] + 0.16, (palmL[1] + palmR[1]) * 0.5 - itemH * 0.36);
+      const midZ = (palmL[2] + palmR[2]) * 0.5 + forwardNudge[2];
+      return {
+        position: [midX, midY, midZ],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // Fallback (e.g. riders on GoGo/carriage, Sheru mouth carry, Lumi/Peeko carryOffset):
+    const offset = rotateYaw(
+      carrier.yaw,
+      [carrier.carryOffset[0] * h, carrier.carryOffset[1] * h, carrier.carryOffset[2] * h]
+    );
+    return {
+      position: [cb[0] + offset[0], cb[1] + offset[1] - itemH * 0.5, cb[2] + offset[2]],
+      extraRotation: [0, 0, 0],
+      yaw: carrier.yaw
+    };
+  };
+
   const poseOf = (n: StageNode): { pose: StagePose; visible: boolean } => {
     let position: Vec3;
     let moveOffset: PoseOffset = NEUTRAL_POSE;
@@ -1887,17 +2256,15 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       position = n.base;
     }
     let carrierYaw: number | null = null;
+    let carrierExtraRot: Vec3 = [0, 0, 0];
     let carrierVisible = true;
     if (n.carriedBy) {
       const carrier = nodes.get(n.carriedBy);
       if (carrier) {
-        const cb = carrier.drawn.base;
-        const offset = rotateYaw(
-          carrier.yaw,
-          [carrier.carryOffset[0] * carrier.heightM, carrier.carryOffset[1] * carrier.heightM, carrier.carryOffset[2] * carrier.heightM]
-        );
-        position = [cb[0] + offset[0], cb[1] + offset[1] - n.heightM * 0.5, cb[2] + offset[2]];
-        carrierYaw = carrier.yaw;
+        const socket = carriedSocketTransform(n, carrier);
+        position = socket.position;
+        carrierYaw = socket.yaw;
+        carrierExtraRot = socket.extraRotation;
         carrierVisible = carrier.visible;
       }
     }
@@ -1928,10 +2295,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       base = [base[0] + tip[0], base[1] + tip[1], base[2] + tip[2]];
     }
     const roll = n.traits.round ? n.rollAngle : 0;
+    // Characters and articulated creatures NEVER use non-uniform squash/stretch on their root StagePose
+    // so circular heads and circular eyes never pancake-squish on "hide", "eat", "sit", or "sleep".
+    const preventRootSquish = n.characterId !== null || ARTICULATED_CREATURE_ASSETS.has(n.asset);
+    const baseRot: Vec3 = [p.rx + roll, yaw + p.ry + openYaw, p.rz + n.topple.value];
+    const finalRot: Vec3 =
+      carrierExtraRot[0] !== 0 || carrierExtraRot[1] !== 0 || carrierExtraRot[2] !== 0
+        ? composeRotation(baseRot, carrierExtraRot)
+        : baseRot;
     const pose: StagePose = {
       base,
-      rotation: [p.rx + roll, yaw + p.ry + openYaw, p.rz + n.topple.value],
-      scale: [p.sx * mul, p.sy * mul, p.sz * mul],
+      rotation: finalRot,
+      scale: preventRootSquish ? [mul, mul, mul] : [p.sx * mul, p.sy * mul, p.sz * mul],
       pivot: n.traits.round ? "center" : "base",
       centerHeight: n.heightM / 2
     };
@@ -2012,8 +2387,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       for (const piece of r.pieces) write(piece.runtimeId, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
       return;
     }
-    const mirroredParts = mirrorPartPoses(director.partsPose(actor.id));
-    writeReflection(r, reflectionPose(mirror.drawn, r, director.pose(actor.id), appearScaleOf(actor) * actor.scaleMul.value), mirroredParts);
+    const mirroredParts = mirrorPartPoses(lastPartsByNode.get(actor.id) ?? director.partsPose(actor.id));
+    const rawActorPose = director.pose(actor.id);
+    const unsquishedActorPose: PoseOffset = { ...rawActorPose, sx: 1, sy: 1, sz: 1 };
+    writeReflection(r, reflectionPose(mirror.drawn, r, unsquishedActorPose, appearScaleOf(actor) * actor.scaleMul.value), mirroredParts);
   };
 
   /** Height of the bottom of a node's body as drawn last frame. */
@@ -2097,7 +2474,80 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     });
   };
 
+  const songSpeechEnergyFor = (n: StageNode): number => {
+    const run = songRun;
+    if (!run || !isShown(n)) return 0;
+    const isPerformer =
+      run.performers.includes(n.id) ||
+      (run.performers.length === 0 && n.role === "actor" && n.characterId !== null && !isOffStage(n.home));
+    if (!isPerformer) return 0;
+    const lineIndex = run.next - 1;
+    if (lineIndex < 0 || lineIndex >= run.startsMs.length) return 0;
+    const lineStart = run.startsMs[lineIndex] ?? 0;
+    const rawEnd = run.startsMs[lineIndex + 1] ?? run.totalMs;
+    const lineEnd = Math.max(lineStart + 320, rawEnd - 180);
+    if (run.elapsedMs < lineStart || run.elapsedMs > lineEnd) return 0;
+    const u = (run.elapsedMs - lineStart) / Math.max(1, lineEnd - lineStart);
+    const edgeFade = Math.min(clamp(u / 0.1, 0, 1), clamp((1 - u) / 0.12, 0, 1));
+    return 0.72 * edgeFade;
+  };
+
+  const vocalBurstEnergyFor = (n: StageNode): number => {
+    const entry = vocalTimers.get(n.id);
+    if (!entry || entry.durationSec <= 0) return 0;
+    const progress = 1 - clamp(entry.remainingSec / entry.durationSec, 0, 1);
+    return 0.84 * Math.sin(Math.PI * progress);
+  };
+
   const partsPoseFor = (n: StageNode): ArticulatedPoseMap | undefined => {
+    let baseParts = director.partsPose(n.id);
+    // If a companion/animal prop uses a custom node id (e.g. `cow1` with `asset: "cow"`), sample under its canonical asset id.
+    if (n.characterId === null && n.id !== n.asset && ARTICULATED_CREATURE_ASSETS.has(n.asset)) {
+      const snap = director.snapshot(n.id);
+      if (snap) {
+        baseParts = sampleCharacterSubParts({
+          id: n.asset,
+          gesture: snap.gesture,
+          gestureElapsedSec: snap.elapsed,
+          gestureDurationSec: 1.4,
+          loop: snap.loop,
+          holding: snap.holding,
+          locomotion: snap.locomotion,
+          speechEnergy: snap.speechEnergy,
+          carrying: n.carrying !== null,
+          timeSec: time,
+          reducedMotion,
+          distanceTravelled: n.travelledDistance
+        });
+      }
+    }
+
+    const activeProp = propActionTimers.get(n.id);
+    let propOverlay: ArticulatedPoseMap | undefined;
+    if (activeProp && activeProp.durationSec > 0) {
+      const progress = 1 - clamp(activeProp.remainingSec / activeProp.durationSec, 0, 1);
+      const fade = Math.min(clamp(progress / 0.12, 0, 1), clamp((1 - progress) / 0.16, 0, 1));
+      propOverlay = propActionSubParts(n.asset, activeProp.action, fade, time, reducedMotion);
+      // Strip static `carryParts` arm curl from `baseParts` while `propOverlay` actively choreographs the arms.
+      if (propOverlay && baseParts && (propOverlay.armL || propOverlay.armR)) {
+        const stripped: Partial<Record<SubPartId, { readonly offset?: Vec3; readonly rotation?: Vec3; readonly scale?: Vec3 }>> = {
+          ...baseParts
+        };
+        if (propOverlay.armL) delete stripped.armL;
+        if (propOverlay.armR) delete stripped.armR;
+        baseParts = stripped;
+      }
+    }
+
+    // Extra mouth articulation during songs & animal SFX calls when `director.talking()` is not already driving `n.id`.
+    let extraSpeechParts: ArticulatedPoseMap | undefined;
+    if (director.talking() !== n.id) {
+      const extraEnergy = Math.max(songSpeechEnergyFor(n), vocalBurstEnergyFor(n));
+      if (extraEnergy > 0.025) {
+        extraSpeechParts = speechSubParts(n.asset, extraEnergy, time, reducedMotion);
+      }
+    }
+
     const objectParts = sampleObjectParts({
       asset: n.asset,
       openProgress: n.openProgress.value,
@@ -2111,11 +2561,19 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       timeSec: time,
       reducedMotion
     });
-    return mergePartPoses(director.partsPose(n.id), objectParts);
+    return mergePartPoses(baseParts, propOverlay, extraSpeechParts, objectParts);
   };
 
   const frame = (dt: number): void => {
     time += dt;
+    for (const [key, timer] of [...vocalTimers.entries()]) {
+      timer.remainingSec -= dt;
+      if (timer.remainingSec <= 0) vocalTimers.delete(key);
+    }
+    for (const [key, timer] of [...propActionTimers.entries()]) {
+      timer.remainingSec -= dt;
+      if (timer.remainingSec <= 0) propActionTimers.delete(key);
+    }
     advanceSong(dt * 1000);
     director.update(dt);
     if (host !== null) currentWorld?.updateWorld(handle, time, reducedMotion);
@@ -2127,8 +2585,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         const position = currentPosition(n);
         const target = targetYawFor(n, position);
         n.yaw = reducedMotion ? target : approachAngle(n.yaw, target, TURN_RATE * dt);
+        const parts = partsPoseFor(n);
+        lastPartsByNode.set(n.id, parts);
         const { pose, visible } = poseOf(n);
-        render(n, pose, visible, partsPoseFor(n));
+        render(n, pose, visible, parts);
       }
     }
     for (const r of reflections) renderReflection(r);
@@ -2169,6 +2629,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const adopt = (built: BuiltStory): void => {
     director.clear();
     written.clear();
+    lastPartsByNode.clear();
+    vocalTimers.clear();
+    propActionTimers.clear();
     vfx?.resetSeed();
     ringOwner.fill(null);
     currentWorld = built.world;
@@ -2345,6 +2808,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       reflections = [];
       activeTargets = [];
       written.clear();
+      lastPartsByNode.clear();
+      vocalTimers.clear();
+      propActionTimers.clear();
       veil?.remove();
       veil = null;
       const canvas = app.canvas;
