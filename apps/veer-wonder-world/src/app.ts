@@ -76,11 +76,11 @@ import type {
   StorySpec,
   WorldId
 } from "./types.js";
-import { applyDisplaySettings } from "./ui/accessibility.js";
+import { applyDisplaySettings, uiText } from "./ui/accessibility.js";
 import { mountCaptions, type Captions } from "./ui/captions.js";
 import { mountChildControls, type ChildControls } from "./ui/child-controls.js";
 import { SONG_WORLDS, menuSection, showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
-import { bindViewportCssVars, canFullscreen, isFullscreen, requestAppFullscreen, syncThemeColor } from "./ui/fullscreen.js";
+import { bindViewportCssVars, dismissIosFullscreenTip, enterLandscapeFullMode, syncThemeColor } from "./ui/fullscreen.js";
 import { showOfflineCard } from "./ui/offline-card.js";
 import { requireParent } from "./ui/parent-gate.js";
 import { openParentPanel } from "./ui/parent-panel.js";
@@ -842,10 +842,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
       syncThemeColor(doc, "#ffffff");
       return;
     }
-    if (windDownNow()) {
-      syncThemeColor(doc, "#181324");
-      return;
-    }
     if (screen === "story") {
       const currentSongId = activeSong?.songId ?? pendingSong;
       const isSleepStory =
@@ -864,6 +860,10 @@ export function createApp(options: WonderAppOptions): WonderApp {
         syncThemeColor(doc, WORLD_LOOKS[world].background);
         return;
       }
+    }
+    if (windDownNow()) {
+      syncThemeColor(doc, "#181324");
+      return;
     }
     if (screen === "start") {
       syncThemeColor(doc, "#e3edf6");
@@ -1192,6 +1192,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     removeStart = null;
     removeMenu = null;
     removeOffline = null;
+    dismissIosFullscreenTip(doc);
     start?.();
     menu?.();
     offline?.();
@@ -1351,11 +1352,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
       (mode) => {
         removeStart = null;
         unlockFromStartTap();
-        if (canFullscreen(doc) && view && view.innerWidth > view.innerHeight && !isFullscreen(doc)) {
-          void requestAppFullscreen(doc);
-        }
         if (mode !== settings.mode) applySettings({ ...settings, mode });
         proceedFromStart(mode);
+        enterLandscapeFullMode(doc, uiRoot.querySelector('[data-ui="menu"]') ?? uiRoot, {
+          swipe: uiText(locale, "ui.fullscreen.iosSwipe"),
+          home: uiText(locale, "ui.fullscreen.iosHome"),
+          close: uiText(locale, "ui.fullscreen.iosClose")
+        });
       },
       {
         initialMode: settings.mode,

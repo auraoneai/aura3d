@@ -81,6 +81,10 @@ export const UI_STRINGS = {
   "ui.controls.label": "Grown-up controls",
   "ui.fullscreen.enter": "Full screen",
   "ui.fullscreen.exit": "Exit full screen",
+  "ui.fullscreen.iosSwipe":
+    "Swipe up on the scene or tap the address-bar menu \u2192 Hide Toolbar for full screen (swipe down from top to bring it back).",
+  "ui.fullscreen.iosHome": "For permanent full screen with no browser bar, choose Add to Home Screen in Safari.",
+  "ui.fullscreen.iosClose": "Got it",
   "ui.confirm": "Your child had a turn",
   "ui.stage.unavailable": "The 3D pictures could not start on this device. Reload the page or try another browser.",
   "ui.gate.title": "For grown-ups",

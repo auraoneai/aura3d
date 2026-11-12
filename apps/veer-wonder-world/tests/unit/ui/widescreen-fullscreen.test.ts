@@ -16,9 +16,14 @@ import { showEpisodeMenu } from "../../../src/ui/episode-menu.js";
 import {
   FULLSCREEN_CLASS,
   IOS_BAR_COLLAPSIBLE_CLASS,
+  IOS_BAR_EXPANDED_CLASS,
+  IOS_FULLBLEED_CLASS,
+  IOS_UNWRAP_SCROLL_CLASS,
   STANDALONE_CLASS,
   bindViewportCssVars,
   canFullscreen,
+  canFullscreenControl,
+  isEffectiveFullscreen,
   isFullscreen,
   isStandaloneDisplay,
   requestAppFullscreen,
@@ -35,6 +40,7 @@ interface MockFsDocOptions {
   readonly coarsePointer?: boolean;
   readonly innerWidth?: number;
   readonly innerHeight?: number;
+  readonly lvhHeight?: number;
 }
 
 class MockNode {
@@ -145,6 +151,12 @@ class MockNode {
     this.parentNode = null;
   }
   focus(): void {}
+  getBoundingClientRect(): { width: number; height: number } {
+    if (this.hasAttribute("data-ww-lvh-probe") && this.ownerDocument.lvhHeight > 0) {
+      return { width: 0, height: this.ownerDocument.lvhHeight };
+    }
+    return { width: 0, height: 0 };
+  }
   addEventListener(type: string, fn: (ev: { type: string; timeStamp: number; target: MockNode; preventDefault(): void }) => void): void {
     const list = this.listeners.get(type) ?? [];
     list.push(fn);
@@ -191,10 +203,14 @@ class MockDoc {
   fullscreenEnabled: boolean;
   fullscreenElement: MockNode | null = null;
   lastRequestOptions: unknown = undefined;
+  lvhHeight: number;
+  lastScrollTo: readonly [number, number] | null = null;
   readonly defaultView: {
     innerWidth: number;
     innerHeight: number;
+    scrollY: number;
     navigator: { standalone?: boolean };
+    scrollTo: (x: number, y: number) => void;
     matchMedia: (q: string) => { matches: boolean; addEventListener(): void; removeEventListener(): void };
     addEventListener(type: string, fn: () => void): void;
     removeEventListener(type: string, fn: () => void): void;
@@ -204,6 +220,7 @@ class MockDoc {
 
   constructor(opts: MockFsDocOptions = {}) {
     this.fullscreenEnabled = opts.fullscreenSupported !== false;
+    this.lvhHeight = opts.lvhHeight ?? 0;
     this.documentElement = new MockNode(this, "html");
     this.head = new MockNode(this, "head");
     this.body = new MockNode(this, "body");
@@ -221,7 +238,13 @@ class MockDoc {
     this.defaultView = {
       innerWidth: opts.innerWidth ?? 1920,
       innerHeight: opts.innerHeight ?? 1080,
+      scrollY: 0,
       navigator: { standalone: opts.standalone === true },
+      scrollTo: (x: number, y: number): void => {
+        this.lastScrollTo = [x, y];
+        this.defaultView.scrollY = y;
+        for (const fn of winListeners.get("scroll") ?? []) fn();
+      },
       matchMedia: (query: string) => ({
         matches:
           (opts.standalone === true && query.includes("standalone")) ||
@@ -362,6 +385,62 @@ describe("Fullscreen API, standalone PWA & iOS Safari bar-collapse helpers", () 
     expect(playFs?.getAttribute("aria-label")).toBe("Full screen");
     controls.dispose();
   });
+
+  it("mounts data-control='fullscreen' on iPhone Safari, opens swipe/Hide-Toolbar helper, and auto-dismisses when bar retracts to 100lvh", async () => {
+    const iosMock = new MockDoc({
+      fullscreenSupported: false,
+      standalone: false,
+      coarsePointer: true,
+      innerWidth: 932,
+      innerHeight: 364,
+      lvhHeight: 430
+    });
+    const doc = iosMock as unknown as Document;
+    const root = iosMock.createElement("div");
+    iosMock.body.appendChild(root);
+    const uiRoot = root as unknown as HTMLElement;
+
+    expect(canFullscreen(doc)).toBe(false);
+    expect(canFullscreenControl(doc)).toBe(true);
+
+    const unbind = bindViewportCssVars(doc.defaultView, doc);
+    expect(iosMock.documentElement.classList.contains(IOS_BAR_COLLAPSIBLE_CLASS)).toBe(true);
+    expect(iosMock.documentElement.classList.contains(IOS_BAR_EXPANDED_CLASS)).toBe(true);
+    expect(iosMock.documentElement.classList.contains(IOS_UNWRAP_SCROLL_CLASS)).toBe(true);
+    expect(isEffectiveFullscreen(doc)).toBe(false);
+
+    const controls = mountChildControls(uiRoot, ENGLISH_ONLY, {
+      onPause() {},
+      onResume() {},
+      onReplayWord() {},
+      onAllDone() {},
+      onParent() {}
+    });
+    const playFs = root.querySelectorAll('[data-control="fullscreen"]')[0];
+    expect(playFs).toBeDefined();
+    expect(playFs?.getAttribute("aria-label")).toBe("Full screen");
+
+    playFs?.click(1500);
+    await Promise.resolve();
+    expect(iosMock.lastScrollTo).toEqual([0, 160]);
+    expect(iosMock.documentElement.classList.contains(IOS_UNWRAP_SCROLL_CLASS)).toBe(false);
+    const tip = root.querySelectorAll('[data-ui="ios-fullscreen-tip"]')[0];
+    expect(tip).toBeDefined();
+    expect(tip?.textContent).toContain("Hide Toolbar");
+    expect(tip?.textContent).toContain("Add to Home Screen");
+
+    // Simulate iPhone Safari collapsing its landscape top bar so visual height reaches 100lvh (430px).
+    iosMock.emitResize(932, 430);
+    expect(iosMock.documentElement.classList.contains(IOS_FULLBLEED_CLASS)).toBe(true);
+    expect(iosMock.documentElement.classList.contains(FULLSCREEN_CLASS)).toBe(true);
+    expect(isEffectiveFullscreen(doc)).toBe(true);
+    expect(root.querySelectorAll('[data-ui="ios-fullscreen-tip"]')).toHaveLength(0);
+    expect(playFs?.getAttribute("aria-pressed")).toBe("true");
+    expect(playFs?.getAttribute("aria-label")).toBe("Exit full screen");
+
+    controls.dispose();
+    unbind();
+  });
 });
 
 describe("PWA manifest, Apple TV / widescreen CSS & full-bleed 3D diorama coverage", () => {
@@ -379,6 +458,7 @@ describe("PWA manifest, Apple TV / widescreen CSS & full-bleed 3D diorama covera
     expect(html).toContain('rel="manifest" href="/manifest.webmanifest"');
     expect(html).toContain('name="apple-mobile-web-app-capable" content="yes"');
     expect(html).toContain('name="apple-mobile-web-app-status-bar-style" content="black-translucent"');
+    expect(html).toContain('class="ww-ios-scroll-spacer"');
     expect(manifest.name).toBe("Wonder World");
     expect(manifest.short_name).toBe("Wonder World");
     expect(manifest.display).toBe("standalone");
@@ -395,6 +475,8 @@ describe("PWA manifest, Apple TV / widescreen CSS & full-bleed 3D diorama covera
     expect(css).toContain("width: min(100%, 96rem);");
     expect(css).toContain("width: var(--ww-vw, 100dvw);");
     expect(css).toContain("height: var(--ww-vh, 100dvh);");
+    expect(css).toContain("height: calc(100lvh + 240px);");
+    expect(css).toContain("touch-action: pan-y !important;");
   });
 
   it("covers the full camera frustum width across 16:9 Apple TV, 19.5:9 phone landscape, and 21:9 ultrawide in all 8 worlds", () => {

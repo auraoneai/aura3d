@@ -213,20 +213,54 @@ b {
   overflow: hidden;
 }
 
+.ww-ios-scroll-spacer {
+  display: none;
+}
+
 @media (orientation: landscape) and (hover: none) and (pointer: coarse) {
   html.ww-ios-bar-collapsible {
     height: auto;
     min-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior-y: auto;
   }
 
   html.ww-ios-bar-collapsible body {
     height: auto;
-    min-height: calc(100lvh + 2px);
-    overflow-x: hidden;
-    overflow-y: auto;
+    min-height: 0;
+    overflow: visible;
     overscroll-behavior-y: auto;
+  }
+
+  html.ww-ios-bar-collapsible .ww-ios-scroll-spacer {
+    display: block;
+    width: 1px;
+    height: calc(100lvh + 240px);
+    pointer-events: none;
+  }
+
+  html.ww-ios-bar-collapsible #stage,
+  html.ww-ios-bar-collapsible #stage canvas,
+  html.ww-ios-bar-collapsible .ww-start,
+  html.ww-ios-bar-collapsible .ww-loading,
+  html.ww-ios-bar-collapsible .ww-offline {
+    touch-action: pan-y !important;
+    overscroll-behavior-y: auto;
+  }
+
+  html.ww-ios-bar-collapsible .ww-start,
+  html.ww-ios-bar-collapsible .ww-offline {
+    overflow-y: visible;
+  }
+
+  html.ww-ios-bar-collapsible .ww-menu {
+    overscroll-behavior-y: auto;
+  }
+
+  html.ww-ios-bar-collapsible.ww-ios-unwrap-scroll .ww-menu {
+    overflow-y: hidden;
+    touch-action: pan-y;
   }
 }
 
@@ -391,6 +425,63 @@ b {
   top: calc(12px + var(--ww-safe-top));
   right: calc(14px + var(--ww-safe-right));
   z-index: 2;
+}
+
+.ww-ios-fs-tip {
+  position: fixed;
+  top: calc(66px + var(--ww-safe-top));
+  left: 50%;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(calc(100% - 32px), 38rem);
+  padding: 10px 14px;
+  border: 1px solid var(--ww-line-strong);
+  border-radius: 16px;
+  background: var(--ww-control-bg);
+  color: var(--ww-ink);
+  box-shadow: 0 10px 28px rgba(24, 19, 36, 0.18);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.ww-ios-fs-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.ww-ios-fs-primary {
+  color: var(--ww-ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.ww-ios-fs-secondary {
+  color: var(--ww-ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.ww-ios-fs-close {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.high-contrast .ww-ios-fs-tip {
+  border: 2px solid #000000;
+  background: #ffffff;
+  box-shadow: none;
 }
 
 .ww-icon-button:disabled {
@@ -2648,7 +2739,8 @@ html:not(.high-contrast) .ww-offline.is-sleep .ww-offline-done:hover {
   .ww-chip-face,
   .ww-offline-word-chip,
   .ww-switch-track,
-  .ww-caption-line {
+  .ww-caption-line,
+  .ww-ios-fs-tip {
     border: 2px solid CanvasText;
   }
 

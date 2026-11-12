@@ -9,7 +9,13 @@
 // tap never pauses and resumes, or ends twice.
 
 import { docOf, el, icon, iconButton, ignoreRepeats, uiText, type UiLocale } from "./accessibility.js";
-import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
+import {
+  canFullscreenControl,
+  isEffectiveFullscreen,
+  toggleFullscreenControl,
+  watchFullscreen,
+  type IosFullscreenStrings
+} from "./fullscreen.js";
 
 export interface ChildControlHandlers {
   onPause(): void;
@@ -99,7 +105,12 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
   const replay = iconButton(doc, "replay", uiText(locale, "ui.replay"), { "data-control": "replay" });
   const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
   const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
-  const fullscreenBtn = canFullscreen(doc)
+  const iosFsStrings: IosFullscreenStrings = {
+    swipe: uiText(locale, "ui.fullscreen.iosSwipe"),
+    home: uiText(locale, "ui.fullscreen.iosHome"),
+    close: uiText(locale, "ui.fullscreen.iosClose")
+  };
+  const fullscreenBtn = canFullscreenControl(doc)
     ? iconButton(doc, "fullscreen", enterFsLabel, {
         "data-control": "fullscreen",
         "aria-pressed": "false"
@@ -107,7 +118,7 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     : null;
   const syncFullscreen = (): void => {
     if (!fullscreenBtn) return;
-    const active = isFullscreen(doc);
+    const active = isEffectiveFullscreen(doc);
     const label = active ? exitFsLabel : enterFsLabel;
     fullscreenBtn.textContent = "";
     fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
@@ -255,7 +266,7 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     fullscreenBtn.addEventListener(
       "click",
       ignoreRepeats(() => {
-        void toggleAppFullscreen(doc).then(() => syncFullscreen());
+        void toggleFullscreenControl(doc, root, iosFsStrings).then(() => syncFullscreen());
       })
     );
   }

@@ -41,6 +41,10 @@ export const strings: Record<string, string> = {
   "ui.controls.label": "Grown-up controls",
   "ui.fullscreen.enter": "Full screen",
   "ui.fullscreen.exit": "Exit full screen",
+  "ui.fullscreen.iosSwipe":
+    "Swipe up on the scene or tap the address-bar menu \u2192 Hide Toolbar for full screen (swipe down from top to bring it back).",
+  "ui.fullscreen.iosHome": "For permanent full screen with no browser bar, choose Add to Home Screen in Safari.",
+  "ui.fullscreen.iosClose": "Got it",
   "ui.pause": "Pause",
   "ui.resume": "Resume",
   "ui.replay": "Replay word",

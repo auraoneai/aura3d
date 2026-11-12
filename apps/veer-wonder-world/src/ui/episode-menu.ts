@@ -28,7 +28,13 @@ import {
   type UiStringKey
 } from "./accessibility.js";
 import { PORTRAITS } from "./portraits.js";
-import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
+import {
+  canFullscreenControl,
+  isEffectiveFullscreen,
+  toggleFullscreenControl,
+  watchFullscreen,
+  type IosFullscreenStrings
+} from "./fullscreen.js";
 import { loadSettings, safeLocalStorage } from "./settings-store.js";
 
 export interface MenuItem {
@@ -267,7 +273,12 @@ export function showEpisodeMenu(
   const header = el(doc, "div", { className: "ww-menu-header" }, [title]);
   const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
   const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
-  const fullscreenBtn = canFullscreen(doc)
+  const iosFsStrings: IosFullscreenStrings = {
+    swipe: uiText(locale, "ui.fullscreen.iosSwipe"),
+    home: uiText(locale, "ui.fullscreen.iosHome"),
+    close: uiText(locale, "ui.fullscreen.iosClose")
+  };
+  const fullscreenBtn = canFullscreenControl(doc)
     ? iconButton(doc, "fullscreen", enterFsLabel, {
         "data-control": "fullscreen",
         "aria-pressed": "false"
@@ -275,7 +286,7 @@ export function showEpisodeMenu(
     : null;
   const syncMenuFullscreen = (): void => {
     if (!fullscreenBtn) return;
-    const active = isFullscreen(doc);
+    const active = isEffectiveFullscreen(doc);
     const label = active ? exitFsLabel : enterFsLabel;
     fullscreenBtn.textContent = "";
     fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
@@ -289,7 +300,7 @@ export function showEpisodeMenu(
   const unwatchFullscreen = fullscreenBtn ? watchFullscreen(doc, () => syncMenuFullscreen()) : () => {};
   if (fullscreenBtn) {
     fullscreenBtn.addEventListener("click", () => {
-      void toggleAppFullscreen(doc).then(() => syncMenuFullscreen());
+      void toggleFullscreenControl(doc, screen, iosFsStrings).then(() => syncMenuFullscreen());
     });
   }
   if (options.onToggleWindDown || options.onToggleAuto || fullscreenBtn || options.onParent) {

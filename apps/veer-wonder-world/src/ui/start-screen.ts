@@ -31,7 +31,13 @@ import {
   type UiLocale
 } from "./accessibility.js";
 import type { PortraitMap } from "./episode-menu.js";
-import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
+import {
+  canFullscreenControl,
+  isEffectiveFullscreen,
+  toggleFullscreenControl,
+  watchFullscreen,
+  type IosFullscreenStrings
+} from "./fullscreen.js";
 import { PORTRAITS } from "./portraits.js";
 
 /** The welcome title's big line: "<name>'s Wonder World", or "Wonder World" when no name is set. */
@@ -152,7 +158,12 @@ export function showStartScreen(
 
   const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
   const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
-  const fullscreenBtn = canFullscreen(doc)
+  const iosFsStrings: IosFullscreenStrings = {
+    swipe: uiText(locale, "ui.fullscreen.iosSwipe"),
+    home: uiText(locale, "ui.fullscreen.iosHome"),
+    close: uiText(locale, "ui.fullscreen.iosClose")
+  };
+  const fullscreenBtn = canFullscreenControl(doc)
     ? iconButton(doc, "fullscreen", enterFsLabel, {
         "data-control": "fullscreen",
         "aria-pressed": "false"
@@ -163,7 +174,7 @@ export function showStartScreen(
   }
   const syncStartFullscreen = (): void => {
     if (!fullscreenBtn) return;
-    const active = isFullscreen(doc);
+    const active = isEffectiveFullscreen(doc);
     const label = active ? exitFsLabel : enterFsLabel;
     fullscreenBtn.textContent = "";
     fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
@@ -177,7 +188,7 @@ export function showStartScreen(
   const unwatchFullscreen = fullscreenBtn ? watchFullscreen(doc, () => syncStartFullscreen()) : () => {};
   if (fullscreenBtn) {
     fullscreenBtn.addEventListener("click", () => {
-      void toggleAppFullscreen(doc).then(() => syncStartFullscreen());
+      void toggleFullscreenControl(doc, screen, iosFsStrings).then(() => syncStartFullscreen());
     });
   }
 
