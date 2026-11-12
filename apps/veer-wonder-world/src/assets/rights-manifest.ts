@@ -545,7 +545,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "momo",
     "file": "src/assets/portraits/momo.webp",
-    "sha256": "49607a10533475acf0d6e44bebc8f27c3069311606f5d8ed7acddc9053a824c6",
+    "sha256": "0b473ff04aecc82c7f6cd0e4f5af7a07625525f60dcc6318ffc71b5846795dcd",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
@@ -555,7 +555,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "lulu",
     "file": "src/assets/portraits/lulu.webp",
-    "sha256": "0a7bd753c55f8627e3fc88948bbfe0fd989268b1a6f049f5787e9b6c7704dc01",
+    "sha256": "d19cc335f0f6c37a8c7a83cd1f239a1a1277a3fdf2851fa8d68681624d979fad",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
@@ -565,7 +565,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "sheru",
     "file": "src/assets/portraits/sheru.webp",
-    "sha256": "373dadfe19dfaf259a8934b2576cf9f7152650d39d9c2f6b7b76e5e1d40dded0",
+    "sha256": "bc3ff07370f8ec7a5719e54b40078e28bca6f1535589e2bf71d4c83684837841",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
@@ -575,7 +575,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "gogo",
     "file": "src/assets/portraits/gogo.webp",
-    "sha256": "965342f06f0d96e5202a3d699356adc16cce547323404e6dbed38256fb337760",
+    "sha256": "35c44ffbd2deb95a1adeefb00ce5760eb57d9ab22f62937c09fe6ceac56f1e6b",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
@@ -585,7 +585,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "lumi",
     "file": "src/assets/portraits/lumi.webp",
-    "sha256": "2c3e964a3abcd0492dae765ccfd9f2fdd6659420bee49152b4c19823b2c2f490",
+    "sha256": "780e9805c5234a40bb4a01193d7abbe6d46e4cae6288465d221541606d76dd4d",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",
@@ -595,7 +595,7 @@ export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = [
   {
     "id": "peeko",
     "file": "src/assets/portraits/peeko.webp",
-    "sha256": "cba52fdf44a34fa21e8bbb631fec985ede2e4dfff22553fea463e09af39c3987",
+    "sha256": "52cfe2c9fe22691d22931630d92b5c1d9554c1ad0d47d81f6e71ce9a8e6525bb",
     "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
     "source": "procedural:@aura3d/engine",
     "generator": "tools/render-character-portraits.mjs",

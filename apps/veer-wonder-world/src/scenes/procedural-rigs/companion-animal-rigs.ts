@@ -212,6 +212,7 @@ function buildCompactEyes(opts: {
   readonly browColor: string;
   readonly parentPart: SubPartId;
   readonly outwardYaw?: number;
+  readonly hiRes?: boolean;
 }): {
   readonly browParts: readonly LobePartInput[];
   readonly eyelidL: BuiltSubPart;
@@ -219,11 +220,14 @@ function buildCompactEyes(opts: {
 } {
   const r = opts.radius;
   const yawMag = opts.outwardYaw ?? 0.22;
-  const sclera = cabochonCapSpec(r, r * 1.05, r * 0.42, 12, 2);
-  const iris = cabochonCapSpec(r * 0.76, r * 0.8, r * 0.28, 12, 2);
-  const pupil = cabochonCapSpec(r * 0.48, r * 0.52, r * 0.22, 10, 2);
-  const catchMain = cabochonCapSpec(r * 0.25, r * 0.25, r * 0.14, 8, 2);
-  const catchSub = cabochonCapSpec(r * 0.12, r * 0.12, r * 0.1, 6, 2);
+  const seg = opts.hiRes ? 18 : 12;
+  const rng = opts.hiRes ? 3 : 2;
+  const sclera = cabochonCapSpec(r, r * 1.04, r * 0.35, seg, rng);
+  const limbal = opts.hiRes ? cabochonCapSpec(r * 0.84, r * 0.87, r * 0.29, 16, 3) : null;
+  const iris = cabochonCapSpec(r * 0.76, r * 0.79, r * 0.27, seg, rng);
+  const pupil = cabochonCapSpec(r * 0.5, r * 0.53, r * 0.23, opts.hiRes ? 14 : 10, rng);
+  const catchMain = cabochonCapSpec(r * 0.25, r * 0.25, r * 0.14, opts.hiRes ? 10 : 8, 2);
+  const catchSub = cabochonCapSpec(r * 0.12, r * 0.12, r * 0.1, opts.hiRes ? 8 : 6, 2);
 
   const makeSide = (sign: -1 | 1): BuiltSubPart => {
     const anchor: Vec3 = [sign * opts.eyeX, opts.eyeY, opts.eyeZ];
@@ -232,39 +236,48 @@ function buildCompactEyes(opts: {
     const cosY = Math.cos(yaw);
     const lash = sculptCurvedLimb(
       [
-        [-r * 0.94 * sign, r * 0.16, r * 0.12],
-        [0, r * 0.92, r * 0.26],
-        [r * 0.96 * sign, r * 0.12, r * 0.1]
+        [-r * 0.95 * sign, r * 0.15, r * 0.15],
+        [-r * 0.34 * sign, r * 0.82, r * 0.29],
+        [r * 0.34 * sign, r * 0.84, r * 0.29],
+        [r * 0.97 * sign, r * 0.11, r * 0.13]
       ],
-      (t) => r * (0.1 + 0.05 * Math.sin(t * Math.PI)),
-      { steps: 4, radialSegments: 5 }
+      (t) => r * (0.095 + 0.055 * Math.sin(t * Math.PI)),
+      { steps: opts.hiRes ? 6 : 4, radialSegments: opts.hiRes ? 6 : 5 }
+    );
+    const eyeParts: LobePartInput[] = [
+      part(sclera, "#FFFDF9", {
+        rotation: [-0.03, yaw, 0]
+      })
+    ];
+    if (limbal) {
+      eyeParts.push(
+        part(limbal, opts.lashColor, {
+          position: [sinY * r * 0.15, r * 0.01, cosY * r * 0.15],
+          rotation: [-0.03, yaw, 0]
+        })
+      );
+    }
+    eyeParts.push(
+      part(iris, opts.irisColor, {
+        position: [sinY * r * 0.19, 0, cosY * r * 0.19],
+        rotation: [-0.03, yaw, 0]
+      }),
+      part(pupil, "#150E16", {
+        position: [sinY * r * 0.27, r * 0.01, cosY * r * 0.27],
+        rotation: [-0.03, yaw, 0]
+      }),
+      part(catchMain, "#FFFFFF", {
+        position: [-r * 0.21 + sinY * r * 0.36, r * 0.25, cosY * r * 0.38]
+      }),
+      part(catchSub, "#FFFFFF", {
+        position: [r * 0.19 + sinY * r * 0.35, -r * 0.19, cosY * r * 0.37]
+      }),
+      part(lash, opts.lashColor, { rotation: [-0.03, yaw, 0] })
     );
     const lobe = composeLobe({
       suffix: "eyeGloss",
       craft: "lacquer",
-      parts: [
-        part(sclera, "#FFFDF9", {
-          position: [-sinY * r * 0.08, 0, -cosY * r * 0.08],
-          rotation: [-0.03, yaw, 0]
-        }),
-        part(iris, opts.irisColor, {
-          position: [sinY * r * 0.14, -r * 0.01, cosY * r * 0.14],
-          rotation: [-0.03, yaw, 0]
-        }),
-        part(pupil, "#171018", {
-          position: [sinY * r * 0.25, 0, cosY * r * 0.25],
-          rotation: [-0.03, yaw, 0]
-        }),
-        part(catchMain, "#FFFFFF", {
-          position: [-r * 0.2 + sinY * r * 0.36, r * 0.24, cosY * r * 0.37],
-          rotation: [-0.03, yaw, 0]
-        }),
-        part(catchSub, "#FFFFFF", {
-          position: [r * 0.18 + sinY * r * 0.35, -r * 0.19, cosY * r * 0.36],
-          rotation: [-0.03, yaw, 0]
-        }),
-        part(lash, opts.lashColor, { rotation: [-0.03, yaw, 0] })
-      ]
+      parts: eyeParts
     });
     return makeSubPartRig(sign < 0 ? "eyelidL" : "eyelidR", anchor, [lobe], opts.parentPart);
   };
@@ -1083,19 +1096,19 @@ function buildDuckRig(): ProceduralAssetRig {
       [0, 0.585, 0.205]
     ],
     (t) => 0.145 + 0.082 * Math.sin(t * Math.PI) - 0.042 * Math.pow(t, 2.2),
-    { steps: 10, radialSegments: 16 }
+    { steps: 12, radialSegments: 18 }
   );
   const headAnchor: Vec3 = [0, 0.52, 0.18];
   const eyes = buildCompactEyes({
-    eyeX: 0.084,
+    eyeX: 0.082,
     eyeY: 0.725,
-    eyeZ: 0.33,
-    radius: 0.04,
-    irisColor: "#2C4B78",
-    lashColor: "#3D2A1A",
-    browColor: "#E8A61C",
+    eyeZ: 0.34,
+    radius: 0.042,
+    irisColor: "#2C5288",
+    lashColor: "#2A1B12",
+    browColor: "#D99216",
     parentPart: "head",
-    outwardYaw: 0.26
+    outwardYaw: 0.2
   });
 
   const bodyFelt = composeLobe({
@@ -1104,10 +1117,10 @@ function buildDuckRig(): ProceduralAssetRig {
     craftTexture: "feltBoucle",
     parts: [
       part(hull, "#FFE055"),
-      part(smoothPuffSpec(0.155, 0.115, 0.125, 12, 6), "#FFF5BA", { position: [0, 0.335, 0.205] }),
+      part(smoothPuffSpec(0.155, 0.115, 0.125, 14, 7), "#FFF5BA", { position: [0, 0.335, 0.205] }),
       part(smoothPuffSpec(0.11, 0.085, 0.12, 10, 5), "#FFF5BA", { position: [0, 0.205, 0.02] }),
       // Sailor neckerchief ribbon for extra storybook charm
-      part(torusSpec(0.132, 0.018, 16, 8), "#4FA3E8", {
+      part(torusSpec(0.132, 0.018, 18, 8), "#4FA3E8", {
         position: [0, 0.485, 0.195],
         rotation: [1.15, 0, 0]
       })
@@ -1120,9 +1133,9 @@ function buildDuckRig(): ProceduralAssetRig {
     craftTexture: "feltBoucle",
     hinge: headAnchor,
     parts: [
-      part(smoothPuffSpec(0.155, 0.16, 0.158, 14, 7), "#FFE055", { position: [0, 0.695, 0.2] }),
-      part(smoothPuffSpec(0.036, 0.024, 0.02, 8, 4), "#FFA38C", { position: [-0.11, 0.665, 0.295] }),
-      part(smoothPuffSpec(0.036, 0.024, 0.02, 8, 4), "#FFA38C", { position: [0.11, 0.665, 0.295] }),
+      part(smoothPuffSpec(0.155, 0.16, 0.158, 18, 9), "#FFE055", { position: [0, 0.695, 0.2] }),
+      part(smoothPuffSpec(0.036, 0.024, 0.02, 8, 4), "#FFA38C", { position: [-0.112, 0.665, 0.304] }),
+      part(smoothPuffSpec(0.036, 0.024, 0.02, 8, 4), "#FFA38C", { position: [0.112, 0.665, 0.304] }),
       // Cute 2-curl head tuft
       part(
         sculptCurvedLimb(
@@ -1145,9 +1158,9 @@ function buildDuckRig(): ProceduralAssetRig {
     craft: "clay",
     hinge: headAnchor,
     parts: [
-      part(smoothPuffSpec(0.098, 0.038, 0.105, 12, 6), "#FF9436", { position: [0, 0.662, 0.365] }),
-      part(smoothPuffSpec(0.012, 0.008, 0.012, 6, 3), "#C45B16", { position: [-0.032, 0.686, 0.395] }),
-      part(smoothPuffSpec(0.012, 0.008, 0.012, 6, 3), "#C45B16", { position: [0.032, 0.686, 0.395] })
+      part(smoothPuffSpec(0.098, 0.038, 0.105, 14, 7), "#FF9436", { position: [0, 0.662, 0.368] }),
+      part(smoothPuffSpec(0.012, 0.008, 0.012, 6, 3), "#C45B16", { position: [-0.032, 0.686, 0.398] }),
+      part(smoothPuffSpec(0.012, 0.008, 0.012, 6, 3), "#C45B16", { position: [0.032, 0.686, 0.398] })
     ]
   });
 

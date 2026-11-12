@@ -275,10 +275,7 @@ const STUDIO_HTML = `<!doctype html>
               saturation: 1.15,
               temperature: 0.02
             },
-            post: {
-              bloom: { intensity: 0.18, threshold: 1.2, knee: 0.45, clampLuminance: 4.0 },
-              antiAlias: { mode: "fxaa" }
-            }
+            post: "product-studio"
           })
         );
         builder.add(
@@ -635,9 +632,9 @@ async function main() {
     const cdp = await connectCdp(wsUrl);
     cdpSessions.push(cdp);
 
-    // 1. Render 6 studio portraits at 512x512 -> 256x256 WebP (quality 92)
+    // 1. Render 6 studio portraits at 1024x1024 -> 512x512 WebP (quality 95) for Retina crispness
     if (!skipPortraits) {
-      await cdp.setViewport(512, 512);
+      await cdp.setViewport(1024, 1024);
       cdp.clearLogs();
       await cdp.navigate(`${baseUrl}/__studio.html`);
       const studioBootDeadline = Date.now() + 15_000;
@@ -669,8 +666,8 @@ async function main() {
         }
         const pngBuf = await cdp.screenshotPng();
         const webpBuf = await sharp(pngBuf)
-          .resize(256, 256, { kernel: sharp.kernel.lanczos3 })
-          .webp({ quality: 92 })
+          .resize(512, 512, { kernel: sharp.kernel.lanczos3 })
+          .webp({ quality: 95 })
           .toBuffer();
         const outPath = join(portraitDir, `${spec.key}.webp`);
         writeFileSync(outPath, webpBuf);
@@ -953,7 +950,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

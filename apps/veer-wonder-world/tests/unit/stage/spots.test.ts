@@ -395,7 +395,9 @@ describe("worlds and looks", () => {
       expect(lookHasEnvironment(id)).toBe(true);
       expect(lookHdriFile(id)).toMatch(/\.hdr$/);
       const nodes = worldLookNodes(id).map((node) => JSON.stringify(node.toJSON()));
+      expect(WORLD_LOOKS[id].overrides.post, `${id} post preset`).toBe("product-studio");
       expect(nodes.join("\n")).not.toMatch(/"effect":"vignette"/);
+      expect(nodes.join("\n")).not.toMatch(/depth[-_]?of[-_]?field|miniature lens|cinematic-film/i);
       expect(nodes.join("\n")).toMatch(/"environment":"hdri"/);
       // Pastel worlds sit about a stop under the presets (look-dev round 1), never so far that frames go murky.
       expect(WORLD_LOOKS[id].overrides.exposureEv ?? 0).toBeGreaterThanOrEqual(-1.5);

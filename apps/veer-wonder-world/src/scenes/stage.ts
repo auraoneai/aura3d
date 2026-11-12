@@ -1220,6 +1220,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     autoStart: true,
     qualityRebuild: { flags: ["game"] },
     ...lookOpts,
+    output: {
+      preset: "product-studio" as const,
+      toneMapping: "agx" as const
+    },
     renderer: {
       ...lookOpts.renderer,
       backend: resolvedBackend,

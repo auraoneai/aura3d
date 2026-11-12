@@ -93,16 +93,25 @@ const SOFTWARE_GL_SHADOW = {
 } as const;
 
 const STORYBOOK_BLOOM = {
-  intensity: 0.16,
-  threshold: 1.55,
-  knee: 0.4,
+  intensity: 0.12,
+  threshold: 1.65,
+  knee: 0.35,
   clampLuminance: 3.5
 } as const;
 
-const STORYBOOK_POST = {
-  bloom: STORYBOOK_BLOOM,
-  antiAlias: { mode: "fxaa" }
+const BEDTIME_BLOOM = {
+  intensity: 0.08,
+  threshold: 1.8,
+  knee: 0.35,
+  clampLuminance: 3.0
 } as const;
+
+/**
+ * `"product-studio"` post preset keeps ONLY ambient-occlusion — stripping
+ * `"cinematic-film"`'s implicit depth-of-field, chromatic-aberration, film-grain,
+ * and vignette so every character at every stage depth renders tack-sharp.
+ */
+const STORYBOOK_POST = "product-studio" as const;
 
 /**
  * Six bespoke Blender-Cycles storybook looks — one distinct CC0 HDRI, PCSS key
@@ -696,11 +705,13 @@ function buildStorybookSkyDomeNode(world: WorldId, skySpec: WorldSkyGradientSpec
 
 /**
  * Scene nodes emitted for a world's look: `looks.preset` (HDRI IBL, PCSS key
- * shadow, rim light, height fog, AgX grade, soft bloom, FXAA) layered with a
- * WebGPU-native vertex-colored sunlit sky dome (`buildStorybookSkyDomeNode` so
- * the real CC0 HDRI remains authoritative on both WebGPU and WebGL2),
- * `lights.hemisphere` bounce fill, multi-bounce `effects.ambientOcclusion`,
- * close-range `effects.contactShadows`, and subtle miniature-diorama `effects.depthOfField`.
+ * shadow, rim light, height fog, AgX grade, soft bloom, MSAA via `looks.appOptions`)
+ * layered with a WebGPU-native vertex-colored sunlit sky dome (`buildStorybookSkyDomeNode`
+ * so the real CC0 HDRI remains authoritative on both WebGPU and WebGL2),
+ * `lights.hemisphere` bounce fill, multi-bounce `effects.ambientOcclusion`, and
+ * close-range `effects.contactShadows`. Depth-of-field is intentionally omitted so
+ * characters and touch targets at every stage depth (`frontLeft`..`backRight` and
+ * `close`..`wide` cameras) stay tack-sharp.
  */
 export function worldLookNodes(
   world: WorldId,
@@ -729,7 +740,12 @@ export function worldLookNodes(
     if (spec.sky !== null) {
       nodes.push(buildStorybookSkyDomeNode(world, spec.sky));
     }
+    const bloomSpec = world === "moonlit-nursery" || world === "starlight-cloud" ? BEDTIME_BLOOM : STORYBOOK_BLOOM;
     nodes.push(
+      effects.bloom({
+        name: `${world} storybook bloom`,
+        ...bloomSpec
+      }),
       effects.ambientOcclusion({
         name: `${world} clay ambient occlusion`,
         radius: 0.45,
@@ -745,19 +761,6 @@ export function worldLookNodes(
         lights: "sun"
       })
     );
-    if (options.qualityTier !== "low") {
-      nodes.push(
-        effects.depthOfField({
-          name: `${world} miniature lens`,
-          focusDistance: 4.5,
-          fStop: 5.6,
-          focalLength: 50,
-          maxBlur: 1.5,
-          focus: 0.09,
-          aperture: 0.28
-        })
-      );
-    }
   }
   return nodes;
 }
