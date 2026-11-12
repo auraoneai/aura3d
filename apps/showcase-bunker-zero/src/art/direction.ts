@@ -5,13 +5,6 @@
 import { defineArtDirection } from "@aura3d/engine/game/art";
 import { BZ_HDRI, BZ_PALETTE, BZ_PRACTICALS } from "./look";
 
-const enemy = (assetKey: string, maxTriangles: number) =>
-  ({ role: "enemy", assetKey, maxTriangles, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["Walk_Loop", "Run", "Shoot", "Contest", "Idle_Loop"] } }) as const;
-const prop = (assetKey: string, maxTriangles = 30000, maxTextureSize: 1024 | 2048 = 1024) =>
-  ({ role: "prop", assetKey, maxTriangles, textureSet: "BC+N+ORM", maxTextureSize }) as const;
-const world = (assetKey: string, maxTriangles = 40000) =>
-  ({ role: "world", assetKey, maxTriangles, textureSet: "BC+N+ORM", maxTextureSize: 1024 }) as const;
-
 export default defineArtDirection({
   id: "showcase-bunker-zero",
   genre: "arena-shooter",
@@ -53,16 +46,7 @@ export default defineArtDirection({
   },
   // First person: the game writes the camera pose every frame (app.camera.setPose); C-22 has no first-person factory.
   framing: { rig: "static", subjectHeightFraction: [0.18, 0.62], fovDeg: [72, 76], mobile: "both" },
-  assets: [
-    enemy("bzGuardMeshy", 60000),
-    enemy("bzHoundMeshy", 60000),
-    enemy("bzGunnerMeshy", 60000),
-    enemy("bzWardenMeshy", 90000),
-    prop("bzMachete"),
-    prop("bzMedicalBox"),
-    prop("bzBulkheadLamp"),
-    world("bzShutterDoor")
-  ],
+  assets: [],
   vfx: [
     { event: "player-fire", kind: "bz-muzzle", flipbook: "muzzle" },
     { event: "enemy-fire", kind: "bz-enemy-muzzle", flipbook: "muzzle" },

@@ -59,7 +59,7 @@ export const skySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => {
 export const valleySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: VALLEY_VERTEX, fragment: VALLEY_FRAGMENT },
   wgsl: { vertex: VALLEY_VERTEX_WGSL, fragment: VALLEY_FRAGMENT_WGSL },
-  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: 0.0011 }, cloudPhase: { type: "f32", value: 0 } },
+  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: 0.00038 }, cloudPhase: { type: "f32", value: 0 } },
   side: "double"
 });
 

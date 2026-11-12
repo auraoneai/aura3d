@@ -163,7 +163,7 @@ describe("Aura Hoops squads and kits (C8, C9)", () => {
   });
 
   it("athletes wear per-team kits on region materials, rings differ in shape, and APPLY FIT reaches the materials", () => {
-    expect(MAIN).toMatch(/assets\.hoopsAthleteBigKit : assets\.hoopsAthleteGuardKit/);
+    expect(MAIN).toMatch(/buildArticulatedHoopsAthleteNode\(id/);
     expect(MAIN).toMatch(/target: RegExp, color: string/);
     expect(MAIN).toMatch(/team === "away" \? \{ params: \{ tubularSegments: 4 \} \}/);
     expect(MAIN).toMatch(/game_\.appliedFit = \{ \.\.\.game_\.fit \};\n\s+rebuildScene\(\);/);

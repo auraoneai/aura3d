@@ -1,27 +1,43 @@
 /**
- * Meshy-generated model layer (text prompts only; prompts and task ids in assets/ATTRIBUTION.md).
- * Replaces the procedural cottages, trees, traveller, wisp and boat when the matching GLB is present.
+ * Procedural multi-material `@aura3d/engine` model & locomotion layer (`art/proceduralModels.ts`).
+ *
+ * Zero external `.glb` files are loaded: mounts the articulated Bellkeeper Wanderer (`hero`),
+ * highland cottages, belfry & bronze sanctuary bell, flora batches, standing stones, letters,
+ * kite/wisp, and clinker skiff directly on `@aura3d/engine`.
  */
-import { createAnimationController, model, type AuraApp, type scene } from "@aura3d/engine";
+import { createAnimationController, type AuraApp, type scene } from "@aura3d/engine";
 import { createLocomotion } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
-import { MODEL_ASSETS, hasModel } from "./model-assets";
+import { hasModel } from "./model-assets";
 import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
 import type { Scenery } from "./scenery";
 import {
-  HERO_SHEEN_OVERRIDES,
+  applyBellkeeperRigPose,
+  blendBellkeeperRigPoses,
   mountProceduralAnimatedActors,
-  mountProceduralStaticScenery
+  mountProceduralStaticScenery,
+  sampleBellkeeperRigPose,
+  type BellkeeperRigPose
 } from "./art/proceduralModels";
 
-export interface ModelSet { letter: boolean; bell: boolean; bellModel?: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; kite?: boolean; boat: boolean; stones: boolean; shrubs: boolean }
+export interface ModelSet {
+  letter: boolean;
+  bell: boolean;
+  bellModel?: boolean;
+  cottage: boolean;
+  trees: boolean;
+  hero: boolean;
+  wisp: boolean;
+  kite?: boolean;
+  boat: boolean;
+  stones: boolean;
+  shrubs: boolean;
+}
 
 /**
- * The bell is split out of belltower.glb (assets/models/belltower-bell.glb, see model-assets.ts) so it can swing. Both
- * files share the Meshy file's units: the tower is placed with `targetHeight` (normalised: bottom-centre of its bounds at
- * the node position), and the bell file is re-centred on its yoke, so the bell node goes where the yoke sits in the
- * placed tower and a z rotation swings it from there.
+ * Canonical belfry bounds and yoke pivot so the sculpted bronze sanctuary bell hangs on the mortised oak
+ * crossbeam of `createBellShrineBelfryNode` and swings cleanly about `z`.
  */
 export const BELLTOWER_FILE_BOUNDS = { min: [-0.576689, -0.951994, -0.531289], max: [0.575231, 0.950971, 0.52925] } as const;
 export const BELL_PIVOT_IN_FILE = [0.002974, 0.621514, 0.190564] as const;
@@ -36,35 +52,23 @@ export function bellModelPose(tower: { x: number; y: number; z: number; h?: numb
   };
 }
 
-type MaterialOverrides = NonNullable<Parameters<typeof model>[1]>["materialOverrides"];
-
-/**
- * WW47-M1: painted-look overrides on the GLBs' own materials (textures kept: `replaceTextures` is never set, so the
- * audit's `asset-texture-override` rule stays clean). Matte plaster and stone, a polished brass bell with a warm rim,
- * a waxy letter, and a dry fabric-and-timber boat. Only the GU47 look applies them; `?look=original` mounts the GLBs as
- * in 4.6. Every GLB has one material, so the overrides target all of it.
- */
-export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
-  hero: HERO_SHEEN_OVERRIDES
-};
-
 /** WW47-A1 kite: height of the placed kite (m), and where it flies relative to the traveller (downwind, up). */
 export const KITE_HEIGHT = 1.5;
 export const KITE_FLIGHT = { downwind: 4.6, up: 5.2, hand: [0.35, 1.55, 0.1] as const, towardViewDeg: 25 } as const;
 
 export function availableModels(): ModelSet {
   return {
-    letter: true,
-    bell: true,
-    bellModel: true,
-    cottage: true,
-    trees: true,
+    letter: hasModel("letter"),
+    bell: hasModel("belltower"),
+    bellModel: hasModel("bell"),
+    cottage: hasModel("cottage"),
+    trees: hasModel("pine") && hasModel("oak"),
     hero: hasModel("hero"),
-    wisp: true,
-    kite: true,
-    boat: true,
-    stones: true,
-    shrubs: true
+    wisp: hasModel("wisp"),
+    kite: hasModel("kite"),
+    boat: hasModel("boat"),
+    stones: hasModel("stones"),
+    shrubs: hasModel("shrub")
   };
 }
 
@@ -77,10 +81,12 @@ export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shad
   mountProceduralStaticScenery(builder, sc, set, castShadow, receiveShadow, bellModelPose);
 }
 
-export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false, painted = false): void {
+/**
+ * Animated actors: articulated multi-material Bellkeeper Wanderer (`hero`), wax-sealed letters,
+ * swallowtail kite or filigree wisp, and clinker rowboat.
+ */
+export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false, _painted = false): void {
   const castShadow = shadows, receiveShadow = shadows;
-  const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
-  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", rotationOrder: "YXZ", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
   mountProceduralAnimatedActors(builder, set, letterCount, castShadow, receiveShadow);
 }
 
@@ -88,7 +94,20 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
 export const SPEED_SMOOTH_SECONDS = 0.05;
 export const GAIT_DWELL_SECONDS = 0.08;
 
-export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }
+export interface HeroDrive {
+  x: number;
+  z: number;
+  airborne: boolean;
+  onBoat: boolean;
+  time: number;
+  windTime?: number;
+  gust?: number;
+  hopPhase?: string;
+  bellRing?: number;
+  lookYaw?: number;
+  lookPitch?: number;
+}
+
 export interface HeroAnimator {
   update(drive: HeroDrive): Gait;
   reset(x: number, z: number, time?: number): void;
@@ -101,74 +120,132 @@ export interface HeroAnimator {
   readonly phaseSeconds: number;
   /** Playback rate of the current gait's clip (ground speed over its planted-foot speed, clamped). */
   readonly rate: number;
+  /** Current bounded procedural Bellkeeper rig pose. */
+  readonly pose: BellkeeperRigPose;
 }
-/** The hero.glb clips as the engine animation controller registers them (all loop; durations from the GLB). */
+
 const HERO_CLIPS: readonly Gait[] = ["Idle", "Walk", "Run"];
+const CROSSFADE_SECONDS = 0.15;
+
 /**
- * Drives the traveller's walk, run and idle clips with the library's `createLocomotion`, fed the real ground speed once
- * per sim step (the stepped QA path calls `update` twice per step, so a zero time delta is skipped).
- *
- * The clips play through the engine's `createAnimationController` bound to the hero node, advanced by the game's own
- * clock times the dominant gait's rate (ground speed over the clip's planted-foot speed), so a planted foot keeps pace
- * with the ground and the controller's clip time is exactly the stride phase `cycle` (the body bob uses the same
- * phase). The controller publishes explicit clip samples (clip, time, weight) that the renderer applies as given.
- *
- * Why not `hero.play(...)`: the game renders with `app.step(0)` (its own fixed-step clock), so the engine's per-actor
- * mixer never advances. The old pinned pose (`loop: false` plus a moving `captureTime`) set the mixer clock to 0 and
- * read the captureTime only on a clip change, and the Idle-to-Walk crossfade never progressed: the walker stayed in
- * the first Idle frame and slid (owner report, 2026-11-09).
+ * Drives the Bellkeeper Wanderer's walk, run, and idle locomotion with `@aura3d/engine/game` `createLocomotion`
+ * and `createAnimationController`, synchronizing both the animation controller playback state and the
+ * articulated procedural Bellkeeper joint hierarchy (`art/proceduralModels.ts`).
  */
 export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
+  const getJoint = (id: string) => app.nodes.get?.(id);
+  const hasProceduralRig = () => Boolean(getJoint("hero-hips"));
   const controller = createAnimationController<Gait>({
     id: "hero-animation",
     clipRegistry: { kind: "aura3d-embedded-glb-animation-registry", clips: HERO_CLIPS.map((id) => ({ id, name: id, duration: CLIP_SECONDS[id], loop: true })) },
     requiredClips: [...HERO_CLIPS],
     suppressRootMotion: true
   });
-  const binding = controller.bindRuntimeNode(hero, { id: "hero-binding", defaultClipId: "Idle" });
+  const sinkTarget = {
+    play(clip: string, opts: Record<string, unknown>) {
+      if (!hasProceduralRig() && typeof (hero as { play?: unknown }).play === "function") {
+        (hero as { play(c: string, o: Record<string, unknown>): unknown }).play(clip, opts);
+      }
+      return sinkTarget;
+    }
+  } as unknown as typeof hero;
+  const binding = controller.bindRuntimeNode(sinkTarget, { id: "hero-binding", defaultClipId: "Idle" });
   const loco = createLocomotion({ gaits: HERO_GAITS, minRate: 0.6, maxRate: 1.7 });
+
   let gait: Gait = "Idle", issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, phaseSeconds = 0, primed = false;
-  // stride phase (0..1) of the moving gaits, kept here so a held gait never jumps when the library's dominant gait flickers
   let cycle = 0, candidate: Gait = "Idle", candidateFor = 0, speedSmooth = 0, rate = 1;
+  let currentPose: BellkeeperRigPose = sampleBellkeeperRigPose({ gait: "Idle", phaseSeconds: 0 });
+  let fadeFromPose: BellkeeperRigPose = currentPose;
+  let fadeElapsed = CROSSFADE_SECONDS;
+  let fadeDuration = 0;
+
   return {
     get gait() { return gait; },
     get cycle() { return cycle; },
     get speed() { return speedSmooth; },
     get phaseSeconds() { return phaseSeconds; },
     get rate() { return rate; },
-    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; cycle = 0; candidate = "Idle"; candidateFor = 0; speedSmooth = 0; rate = 1; primed = true; },
-    update({ x, z, airborne, onBoat, time }) {
+    get pose() { return currentPose; },
+    reset(x, z, time) {
+      loco.reset();
+      gait = "Idle";
+      issued = "";
+      lastX = x;
+      lastZ = z;
+      if (time !== undefined) lastTime = time;
+      phaseSeconds = 0;
+      cycle = 0;
+      candidate = "Idle";
+      candidateFor = 0;
+      speedSmooth = 0;
+      rate = 1;
+      primed = true;
+      currentPose = sampleBellkeeperRigPose({ gait: "Idle", phaseSeconds: 0 });
+      fadeFromPose = currentPose;
+      fadeElapsed = CROSSFADE_SECONDS;
+      fadeDuration = 0;
+      if (hasProceduralRig()) applyBellkeeperRigPose(getJoint, currentPose);
+    },
+    update(drive) {
+      const { x, z, airborne, onBoat, time } = drive;
       if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
       const dt = time - lastTime;
       let clipStep = 0;
       if (dt > 0) {
         const raw = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
-        // a very short frame (coalesced timestamps on a 120 to 240 Hz display) makes the per-frame delta noisy: low-pass the
-        // speed over about 50 ms so one outlier cannot flip the gait; the hop and boat overrides apply at once
         speedSmooth = airborne || onBoat ? raw : speedSmooth + (raw - speedSmooth) * Math.min(1, dt / SPEED_SMOOTH_SECONDS);
         const frame = loco.update(speedSmooth, dt);
-        // a gait must stay dominant for GAIT_DWELL_SECONDS before the pose changes, so a borderline speed (wall slide, stop and
-        // start) cannot re-issue the crossfade every few frames
         const dominant = frame.dominant as Gait;
         if (dominant === gait) candidateFor = 0;
-        else { if (dominant !== candidate) candidateFor = 0; candidate = dominant; candidateFor += dt; if (candidateFor >= GAIT_DWELL_SECONDS) { gait = dominant; candidateFor = 0; } }
+        else {
+          if (dominant !== candidate) candidateFor = 0;
+          candidate = dominant;
+          candidateFor += dt;
+          if (candidateFor >= GAIT_DWELL_SECONDS) {
+            gait = dominant;
+            candidateFor = 0;
+          }
+        }
         rate = frame.rates[gait] ?? 1;
         clipStep = dt * rate;
         if (gait !== "Idle") cycle = (cycle + clipStep / CLIP_SECONDS[gait]) % 1;
         phaseSeconds = gait === "Idle" ? time % CLIP_SECONDS.Idle : cycle * CLIP_SECONDS[gait];
+        fadeElapsed = Math.min(CROSSFADE_SECONDS, fadeElapsed + dt);
         lastTime = time;
-        lastX = x; lastZ = z;
+        lastX = x;
+        lastZ = z;
       }
       if (issued !== gait) {
-        // the new clip starts where the stride phase is (one clip step back: the update below adds it), crossfading over 0.15 s
         const d = CLIP_SECONDS[gait];
-        controller.crossFade(gait, issued === "" ? 0 : 0.15, { loop: true, startTime: (((phaseSeconds - clipStep) % d) + d) % d });
+        const firstIssue = issued === "";
+        controller.crossFade(gait, firstIssue ? 0 : CROSSFADE_SECONDS, { loop: true, startTime: (((phaseSeconds - clipStep) % d) + d) % d });
+        fadeFromPose = currentPose;
+        fadeDuration = firstIssue ? 0 : CROSSFADE_SECONDS;
+        fadeElapsed = 0;
         issued = gait;
-        // a gait change on a zero-length frame (reset, the stepped QA path) still reaches the node
         if (clipStep === 0) binding.update();
       }
       if (clipStep > 0) controller.update(clipStep);
+
+      const targetPose = sampleBellkeeperRigPose({
+        gait,
+        phaseSeconds,
+        windTime: drive.windTime ?? time,
+        gust: drive.gust,
+        hopPhase: drive.hopPhase ?? (airborne ? "air" : "idle"),
+        onBoat,
+        bellRing: drive.bellRing,
+        lookYaw: drive.lookYaw,
+        lookPitch: drive.lookPitch
+      });
+      currentPose =
+        fadeDuration > 0 && fadeElapsed < fadeDuration
+          ? blendBellkeeperRigPoses(fadeFromPose, targetPose, fadeElapsed / fadeDuration)
+          : targetPose;
+      if (hasProceduralRig()) {
+        applyBellkeeperRigPose(getJoint, currentPose);
+      }
       return gait;
     }
   };

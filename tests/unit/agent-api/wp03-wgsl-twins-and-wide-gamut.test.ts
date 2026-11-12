@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { defineAuraAssets, effects, material, primitives, scene } from "../../../packages/engine/src/public/index.js";
 import { parseAuraColorLinear, parseAuraColorSrgb } from "../../../packages/engine/src/agent-api/color.js";
+import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess.js";
+import { collectExposureSection, recordAuthoredPostContext, resetAuthoredPostContext } from "../../../packages/engine/src/agent-api/postBridge.js";
 import { parseAuraColor } from "../../../packages/engine/src/contracts/sceneGraph.js";
+import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core.js";
 import { resolveToonPass } from "../../../packages/engine/src/agent-api/nodes/effects.toon.js";
 import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap.js";
 import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-api/nodes/types.js";
@@ -127,6 +130,27 @@ describe("WP-03: wide-gamut Display-P3 & hardened CSS Color 4 parser", () => {
     for (const bad of ["rgb(%, %, %)", "rgba(255, 0, 0, %)", "hsl(deg, 50%, 50%)", "oklch(% % deg)", "color(display-p3 % 0 0)"]) {
       expect(() => parseAuraColorSrgb(bad), bad).toThrow(/COLOR_INVALID/);
       expect(() => parseAuraColorLinear(bad), bad).toThrow(/COLOR_INVALID/);
+    }
+  });
+
+  it("omits conflicting legacy srgb outputColorSpace on v2 toneMapping when outputColorSpace is display-p3", () => {
+    const snap = scene().add(primitives.box({ name: "cube" })).add(effects.bloom({ intensity: 0.25 })).toJSON();
+    try {
+      recordAuthoredPostContext({
+        flags: createTrustedQrFlags({ A3D_QR_POST: true }),
+        options: { output: { outputColorSpace: "display-p3", toneMapping: "agx" } }
+      });
+      const compiled = createProductionRuntimePostprocess(snap, []);
+      expect(compiled.v2).toBe(true);
+      expect(compiled.pipeline?.outputColorSpace).toBe("display-p3");
+      expect(compiled.toneMapping).toBeTruthy();
+      if (compiled.toneMapping && typeof compiled.toneMapping === "object") {
+        expect(compiled.toneMapping.outputColorSpace).toBeUndefined();
+        expect(compiled.toneMapping.operator).toBe("agx");
+      }
+      expect(collectExposureSection({ canvas: undefined } as never).outputColorSpace).toBe("display-p3");
+    } finally {
+      resetAuthoredPostContext();
     }
   });
 });

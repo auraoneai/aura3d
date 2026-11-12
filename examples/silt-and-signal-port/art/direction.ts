@@ -44,9 +44,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.07, 0.2], fovDeg: [62, 86], mobile: "both" },
-  assets: [
-    { role: "character", assetKey: "courier", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "walk", "run"] } }
-  ],
+  assets: [],
   vfx: [
     { event: "board-low-fast", kind: "silt-sand-wake" },
     { event: "board-over-canal", kind: "silt-canal-spray" },

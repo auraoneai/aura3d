@@ -1,8 +1,7 @@
 /**
  * WP-26: Saltwind Highway (`roadster-hours-port`) — Procedural Multi-Material Models.
  *
- * Replaces every single-material baked Meshy prop and traffic vehicle with sculpted,
- * multi-material `@aura3d/engine` 5.5.1 procedural assemblies built on `proceduralKernel.ts`:
+ * Builds sculpted, multi-material `@aura3d/engine` procedural assemblies on `proceduralKernel.ts`:
  *   - 8 distinct smooth-normal lofted highway traffic classes (`sedan`, `hatch`, `suv`,
  *     `pickup`, `bus`, `boxtruck`, `semi`, `tanker`) with separated paint, chrome trim,
  *     4-part wheel tires, cabin glass, headlamps, taillamps, and lightweight `-far` LODs.

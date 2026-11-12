@@ -1,10 +1,9 @@
 /**
- * WP-27 — The Bellkeeper's Walk (`where-the-wind-wanders-port`) Procedural Multi-Material Art Module.
+ * The Bellkeeper's Walk (`where-the-wind-wanders-port`) — 100% Procedural Multi-Material Art Module.
  *
- * Replaces all static Meshy scenery/prop GLBs with bespoke multi-material `@aura3d/engine` 5.5.1
- * pastoral highland sculptures built on `apps/showcase-port-shared/proceduralKernel.ts`, while
- * preserving the rigged `hero.glb` traveller (`skins=1`), exact chimney smoke world coordinates,
- * and deterministic valley simulation/placements. Zero `three` imports.
+ * Sculpts the articulated multi-material Bellkeeper Wanderer (`hero`) and all pastoral highland
+ * sanctuary architecture, flora, and interactive props directly on `@aura3d/engine` +
+ * `apps/showcase-port-shared/proceduralKernel.ts` with zero external `.glb` files and zero `three` imports.
  */
 import {
   geometry,
@@ -42,6 +41,8 @@ import {
   type V3,
   type V4
 } from "../../../apps/showcase-port-shared/proceduralKernel";
+import { RIGHT_STRIKE_PHASE } from "../gait-motion";
+import { CLIP_SECONDS, STRIDE_SPEED, type Gait } from "../locomotion";
 import { STRUCTURES } from "../sim";
 import { SEA_LEVEL, terrainHeight } from "../terrain";
 import type { Scenery } from "../scenery";
@@ -78,7 +79,13 @@ export const MAT = {
   HULL_TIMBER: 19,
   TERRACOTTA_SUN: 20,
   CLOAK_SAFFRON: 21,
-  CLOAK_INDIGO: 22
+  CLOAK_INDIGO: 22,
+  CLOAK_SAGE: 23,
+  TUNIC_SLATE: 24,
+  REED_STRAW: 25,
+  SKIN_SERENE: 26,
+  LEATHER_SUPPLE: 27,
+  EYE_INK: 28
 } as const;
 
 let cachedHighlandMaterials: readonly AuraMaterialSpec[] | null = null;
@@ -126,7 +133,13 @@ export function getHighlandMaterials(): readonly AuraMaterialSpec[] {
     unnamed(material.pbr({ color: "#3b6883", roughness: 0.68, metallic: 0, clearcoat: 0.18, clearcoatRoughness: 0.35, envMapIntensity: 0.85 })),
     unnamed(material.ceramic({ color: "#da6040", roughness: 0.36, clearcoat: 0.42, clearcoatRoughness: 0.22, envMapIntensity: 0.92 })),
     unnamed(material.fabric({ color: "#df9428", roughness: 0.82, sheen: 0.86, sheenColor: "#ffe09a", sheenRoughness: 0.56, envMapIntensity: 0.66 })),
-    unnamed(material.fabric({ color: "#2b427d", roughness: 0.84, sheen: 0.78, sheenColor: "#89a8f2", sheenRoughness: 0.6, envMapIntensity: 0.62 }))
+    unnamed(material.fabric({ color: "#2b427d", roughness: 0.84, sheen: 0.78, sheenColor: "#89a8f2", sheenRoughness: 0.6, envMapIntensity: 0.62 })),
+    unnamed(material.fabric({ color: "#688262", roughness: 0.83, sheen: 0.82, sheenColor: "#c8dfb8", sheenRoughness: 0.58, envMapIntensity: 0.66 })),
+    unnamed(material.fabric({ color: "#48596a", roughness: 0.85, sheen: 0.74, sheenColor: "#a6bdd4", sheenRoughness: 0.62, envMapIntensity: 0.62 })),
+    unnamed(material.fabric({ color: "#cfa665", roughness: 0.84, sheen: 0.68, sheenColor: "#f7e2b2", sheenRoughness: 0.66, envMapIntensity: 0.68 })),
+    unnamed(material.matteClay({ color: "#ecc4a0", roughness: 0.78, envMapIntensity: 0.72 })),
+    unnamed(material.pbr({ color: "#6c4527", roughness: 0.68, metallic: 0, clearcoat: 0.12, clearcoatRoughness: 0.42, envMapIntensity: 0.68 })),
+    unnamed(material.pbr({ color: "#261c18", roughness: 0.28, metallic: 0, clearcoat: 0.55, clearcoatRoughness: 0.18, envMapIntensity: 0.9 }))
   ]);
 }
 
@@ -160,17 +173,19 @@ function getInstFloraMats() {
   });
 }
 
-/** Upgraded saffron/ochre & indigo woven-wool cloak sheen override for the rigged `hero.glb` traveller (`replaceTextures` unset). */
-export const HERO_SHEEN_OVERRIDES = [
-  {
-    roughness: 0.72,
-    sheen: 0.78,
-    sheenColor: "#f7c46c",
-    sheenRoughness: 0.54,
-    envMapIntensity: 0.94,
-    rim: { color: "#ffd584", power: 2.2, intensity: 0.82 }
+/** Subdivided icosphere with smooth radial outward vertex normals (`jitter = 0`), for serene sculpted organic forms. */
+export function icosphereSmoothMesh(radius: number, subdivisions: 0 | 1 | 2 = 2): RawMesh {
+  const base = icosphereFacetMesh(radius, subdivisions, 0, 1);
+  const normals = new Array<number>(base.positions.length);
+  for (let i = 0; i < base.positions.length; i += 3) {
+    const x = base.positions[i]!, y = base.positions[i + 1]!, z = base.positions[i + 2]!;
+    const len = Math.hypot(x, y, z) || 1;
+    normals[i] = x / len;
+    normals[i + 1] = y / len;
+    normals[i + 2] = z / len;
   }
-] as const;
+  return { ...base, normals };
+}
 
 function slot(mesh: RawMesh, materialIndex: number, xf?: TransformOpts): MultiMatSlot {
   return { mesh: xf ? transformMesh(mesh, xf) : mesh, materialIndex };
@@ -1277,68 +1292,858 @@ export function createClinkerRowboatNode(opts: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 5. Sculpted Multi-Material Bellkeeper Wanderer & Articulated Stride Rig
+// ---------------------------------------------------------------------------
+
+/** Canonical joint offsets and limb lengths (model/world metres) for the 2.90 m Bellkeeper Wanderer. */
+export const BELLKEEPER_RIG_SPEC = {
+  totalHeight: 2.9,
+  hipsRestY: 1.37,
+  torsoOffsetY: 0.05,
+  headOffset: [0, 0.59, 0.01] as const,
+  cloakTailOffset: [0, 0.56, -0.12] as const,
+  leftShoulderOffset: [0.3, 0.54, 0] as const,
+  rightShoulderOffset: [-0.3, 0.54, 0] as const,
+  staffChimeOffset: [-0.04, 0.48, 0.48] as const,
+  staffRibbonOffset: [-0.04, 0.53, 0.4] as const,
+  rightHandGripOffset: [-0.04, -0.44, 0.24] as const,
+  hipHalfWidth: 0.15,
+  thighLen: 0.65,
+  shinLen: 0.6,
+  soleOffset: 0.12,
+  toeFromAnkle: [0, -0.1, 0.17] as const
+} as const;
+
+export const BELLKEEPER_JOINT_IDS = [
+  "hero-hips",
+  "hero-torso",
+  "hero-head",
+  "hero-cloak-tail",
+  "hero-arm-l",
+  "hero-arm-r",
+  "hero-staff-chime",
+  "hero-staff-ribbon",
+  "hero-leg-l",
+  "hero-shin-l",
+  "hero-foot-l",
+  "hero-leg-r",
+  "hero-shin-r",
+  "hero-foot-r"
+] as const;
+
+export interface BellkeeperRigPose {
+  readonly hipsPos: V3;
+  readonly hipsRot: V3;
+  readonly torsoRot: V3;
+  readonly headRot: V3;
+  readonly cloakTailRot: V3;
+  readonly leftArmRot: V3;
+  readonly rightArmRot: V3;
+  readonly staffChimeRot: V3;
+  readonly staffRibbonRot: V3;
+  readonly leftLegRot: V3;
+  readonly leftShinRot: V3;
+  readonly leftFootRot: V3;
+  readonly rightLegRot: V3;
+  readonly rightShinRot: V3;
+  readonly rightFootRot: V3;
+}
+
+export interface BellkeeperPoseInput {
+  readonly gait: Gait;
+  readonly phaseSeconds: number;
+  readonly windTime?: number;
+  readonly gust?: number;
+  readonly hopPhase?: string;
+  readonly onBoat?: boolean;
+  readonly bellRing?: number;
+  readonly lookYaw?: number;
+  readonly lookPitch?: number;
+}
+
+function buildPartNode(name: string, slots: readonly MultiMatSlot[], castShadow: boolean, receiveShadow: boolean) {
+  return assembleMultiMaterialNode(name, slots, getHighlandMaterials(), {
+    castShadow,
+    receiveShadow
+  });
+}
+
+function buildBellkeeperPelvisSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Draped woven slate-indigo lower tunic skirt (`loftSectionsMesh`) with warm ochre border hem
+  const skirtStations: V3[][] = [0, 0.45, 0.85, 1].map((u) => {
+    const y = 0.08 - u * 0.42;
+    const rx = 0.22 + u * 0.1;
+    const rz = 0.17 + u * 0.085;
+    return Array.from({ length: 10 }, (_, k) => {
+      const a = (k / 10) * Math.PI * 2;
+      const pleat = 1 + 0.045 * u * Math.cos(a * 5);
+      return [Math.cos(a) * rx * pleat, y, Math.sin(a) * rz * pleat] as V3;
+    });
+  });
+  slots.push(slot(loftSectionsMesh(skirtStations.slice(0, 3), true, true), MAT.TUNIC_SLATE));
+  slots.push(slot(loftSectionsMesh(skirtStations.slice(2), true, false), MAT.CLOAK_SAFFRON));
+
+  // Supple saddle-leather waist belt & polished brass sanctuary buckle
+  slots.push(slot(latheMesh([[0.215, 0.01], [0.232, 0.025], [0.232, 0.075], [0.215, 0.09]], 16, true), MAT.LEATHER_SUPPLE, { scale: [1, 1, 0.78] }));
+  slots.push(slot(bevelBoxMesh(0.075, 0.068, 0.032, 0.008), MAT.BRASS_POLISHED, { pos: [0, 0.05, 0.182] }));
+
+  // Courier leather satchel pouch at left hip (+X) with folded flap, brass clasp & rolled letter scroll
+  slots.push(slot(bevelBoxMesh(0.11, 0.22, 0.24, 0.024), MAT.LEATHER_SUPPLE, { pos: [0.24, -0.07, -0.02], rot: [0.05, 0.08, -0.12] }));
+  slots.push(slot(bevelBoxMesh(0.12, 0.09, 0.245, 0.02), MAT.OAK_DARK, { pos: [0.248, 0.01, -0.02], rot: [0.05, 0.08, -0.15] }));
+  slots.push(slot(bevelBoxMesh(0.026, 0.045, 0.036, 0.006), MAT.BRASS_POLISHED, { pos: [0.305, -0.03, -0.02] }));
+  slots.push(slot(transformMesh(latheMesh([[0, -0.11], [0.028, -0.11], [0.028, 0.11], [0, 0.11]], 10), { rot: [Math.PI * 0.5, 0, 0.1] }), MAT.LINEN_CLOTH, { pos: [0.23, 0.065, -0.02] }));
+
+  // Small brass waist-sash sanctuary chime at right hip (-X)
+  slots.push(slot(latheMesh([[0.034, -0.11], [0.042, -0.1], [0.028, -0.05], [0.014, -0.02], [0, -0.015]], 12), MAT.BRASS_POLISHED, { pos: [-0.225, 0.02, 0.06] }));
+  slots.push(slot(icosphereSmoothMesh(0.012, 1), MAT.BRONZE_BELL, { pos: [-0.225, -0.105, 0.06] }));
+  return slots;
+}
+
+function buildBellkeeperTorsoSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Sculpted woven sage-green & slate upper tunic (`loftSectionsMesh`)
+  const chestStations: V3[][] = [
+    [0, -0.03, 0.21, 0.16],
+    [0.22, 0.18, 0.23, 0.175],
+    [0.44, 0.39, 0.265, 0.19],
+    [0.62, 0.57, 0.24, 0.165],
+    [0.72, 0.64, 0.15, 0.125]
+  ].map(([, y, rx, rz]) =>
+    Array.from({ length: 10 }, (_, k) => {
+      const a = (k / 10) * Math.PI * 2;
+      return [Math.cos(a) * rx!, y!, Math.sin(a) * rz!] as V3;
+    })
+  );
+  slots.push(slot(loftSectionsMesh(chestStations, true, true), MAT.CLOAK_SAGE));
+
+  // Layered multi-material wind-cloak shoulder mantle (woven sage outer cape + saffron/indigo trim cowl)
+  const mantleStations: V3[][] = [0, 0.48, 1].map((u) => {
+    const y = 0.62 - u * 0.36;
+    const rx = 0.2 + u * 0.18;
+    const rz = 0.15 + u * 0.13;
+    return Array.from({ length: 12 }, (_, k) => {
+      const a = (k / 12) * Math.PI * 2;
+      const drape = 1 + 0.06 * u * Math.sin(a * 3);
+      return [Math.cos(a) * rx * drape, y, Math.sin(a) * rz * drape - u * 0.02] as V3;
+    });
+  });
+  slots.push(slot(loftSectionsMesh(mantleStations, true, false), MAT.CLOAK_SAGE));
+  slots.push(slot(latheMesh([[0.155, 0.63], [0.285, 0.57], [0.315, 0.47], [0.225, 0.45]], 16, true), MAT.CLOAK_SAFFRON, { scale: [1.04, 1, 0.84] }));
+  slots.push(slot(latheMesh([[0.145, 0.65], [0.235, 0.61], [0.25, 0.53], [0.175, 0.51]], 14, true), MAT.CLOAK_INDIGO, { scale: [1.02, 1, 0.84] }));
+
+  // Diagonal saddle-leather cross-body courier satchel strap across front & back of torso
+  const strapLoop = catmullRomSpline3(
+    [
+      [-0.21, 0.61, 0.02],
+      [-0.04, 0.38, 0.2],
+      [0.18, 0.1, 0.15],
+      [0.24, -0.02, -0.01],
+      [0.14, 0.14, -0.17],
+      [-0.06, 0.4, -0.19]
+    ],
+    4,
+    true
+  );
+  slots.push(slot(tubeSweepMesh(strapLoop.map(([x, y, z]) => [x, y, z, 0.022] as V4), 6, true), MAT.LEATHER_SUPPLE));
+
+  // Burnished brass cloak clasp brooch at chest
+  slots.push(slot(latheMesh([[0.024, -0.008], [0.048, 0], [0.048, 0.014], [0.02, 0.018], [0, 0.02]], 14), MAT.BRASS_POLISHED, { pos: [0.03, 0.52, 0.195], rot: [Math.PI * 0.46, 0, 0] }));
+  return slots;
+}
+
+function buildBellkeeperCloakTailSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Flowing multi-panel woven wind-cloak cape (`loftSectionsMesh`) in highland sage, slate-indigo & saffron
+  const outerCape: V3[][] = [0, 0.35, 0.72, 1].map((u) => {
+    const y = 0.02 - u * 1.04;
+    const hw = 0.27 + u * 0.25;
+    const zBack = -0.03 - u * 0.22 - Math.sin(u * Math.PI) * 0.05;
+    return [
+      [-hw, y, 0.04 - u * 0.06],
+      [-hw * 0.58, y, zBack - 0.045],
+      [0, y, zBack - 0.07],
+      [hw * 0.58, y, zBack - 0.045],
+      [hw, y, 0.04 - u * 0.06],
+      [0, y, zBack + 0.018]
+    ];
+  });
+  slots.push(slot(loftSectionsMesh(outerCape, true, false), MAT.CLOAK_SAGE));
+
+  const innerLining: V3[][] = [0, 0.5, 1].map((u) => {
+    const y = 0.0 - u * 0.86;
+    const hw = 0.24 + u * 0.21;
+    const zBack = -0.05 - u * 0.2;
+    return [
+      [-hw, y, 0.01 - u * 0.05],
+      [-hw * 0.52, y, zBack - 0.035],
+      [0, y, zBack - 0.055],
+      [hw * 0.52, y, zBack - 0.035],
+      [hw, y, 0.01 - u * 0.05],
+      [0, y, zBack]
+    ];
+  });
+  slots.push(slot(loftSectionsMesh(innerLining, true, false), MAT.CLOAK_INDIGO));
+
+  // Woven saffron & indigo wind-scarf streamers trailing behind the collar
+  const scarfA = catmullRomSpline3([[0.11, 0.03, 0.04], [0.2, -0.2, -0.14], [0.24, -0.48, -0.36], [0.18, -0.72, -0.56]], 6);
+  const scarfB = catmullRomSpline3([[-0.1, 0.02, 0.03], [-0.18, -0.22, -0.15], [-0.16, -0.46, -0.34]], 5);
+  slots.push(slot(tubeSweepMesh(scarfA.map(([x, y, z], i) => [x, y, z, 0.044 - i * 0.0018] as V4), 6), MAT.CLOAK_SAFFRON));
+  slots.push(slot(tubeSweepMesh(scarfB.map(([x, y, z], i) => [x, y, z, 0.036 - i * 0.0015] as V4), 6), MAT.CLOAK_INDIGO));
+  return slots;
+}
+
+function buildBellkeeperHeadSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Tucked warm scarf & neck collar
+  slots.push(slot(latheMesh([[0.11, -0.01], [0.165, 0.02], [0.175, 0.085], [0.135, 0.13]], 14, true), MAT.CLOAK_SAFFRON));
+  slots.push(slot(latheMesh([[0.1, 0.08], [0.145, 0.1], [0.13, 0.15]], 12, true), MAT.LINEN_CLOTH));
+
+  // Sculpted serene head (`icosphereSmoothMesh` warm skin), soft nose bridge, tucked hair, and gentle eyes
+  slots.push(slot(icosphereSmoothMesh(0.185, 2), MAT.SKIN_SERENE, { pos: [0, 0.255, 0.015], scale: [0.94, 1.04, 0.96] }));
+  slots.push(slot(icosphereSmoothMesh(0.032, 1), MAT.SKIN_SERENE, { pos: [0, 0.242, 0.192], scale: [0.78, 1.05, 0.95] }));
+  slots.push(slot(icosphereSmoothMesh(0.188, 2), MAT.OAK_DARK, { pos: [0, 0.285, -0.025], scale: [0.96, 0.88, 0.94] }));
+  for (const sx of [-1, 1]) {
+    slots.push(slot(icosphereSmoothMesh(0.024, 1), MAT.EYE_INK, { pos: [sx * 0.064, 0.262, 0.182], scale: [0.88, 1.12, 0.55] }));
+  }
+
+  // Woven conical/hooded traveller hat (`latheMesh` multi-ring woven reed/straw profile with wide sun-brim -> apex y = 0.89 => world 2.90 m)
+  const reedHatProfile: V2[] = [
+    [0.175, 0.355],
+    [0.34, 0.33],
+    [0.475, 0.295],
+    [0.488, 0.312],
+    [0.39, 0.365],
+    [0.315, 0.425],
+    [0.325, 0.442],
+    [0.255, 0.515],
+    [0.264, 0.532],
+    [0.195, 0.615],
+    [0.203, 0.63],
+    [0.132, 0.725],
+    [0.068, 0.815],
+    [0.02, 0.872],
+    [0, 0.89]
+  ];
+  slots.push(slot(latheMesh(reedHatProfile, 24), MAT.REED_STRAW));
+  // Concentric darker-timber woven reed accent rings under & over the sun-brim
+  slots.push(slot(latheMesh([[0.468, 0.294], [0.492, 0.308], [0.482, 0.322], [0.458, 0.308]], 24, true), MAT.TIMBER_WARM));
+
+  // Indigo cloth hatband + knotted sash tail at back of crown
+  slots.push(slot(latheMesh([[0.308, 0.395], [0.332, 0.402], [0.312, 0.452], [0.292, 0.448]], 22, true), MAT.CLOAK_INDIGO));
+  const bandTail = catmullRomSpline3([[0.04, 0.41, -0.31], [0.08, 0.33, -0.39], [0.11, 0.22, -0.44]], 4);
+  slots.push(slot(tubeSweepMesh(bandTail.map(([x, y, z], i) => [x, y, z, 0.024 - i * 0.002] as V4), 5), MAT.CLOAK_INDIGO));
+
+  // Subtle braided chin cord looping under the chin with a carved wooden toggle bead
+  const chinCord = catmullRomSpline3(
+    [
+      [-0.175, 0.34, 0.03],
+      [-0.145, 0.19, 0.09],
+      [0, 0.095, 0.135],
+      [0.145, 0.19, 0.09],
+      [0.175, 0.34, 0.03]
+    ],
+    4
+  );
+  slots.push(slot(tubeSweepMesh(chinCord.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 5), MAT.LEATHER_SUPPLE));
+  slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.TIMBER_WARM, { pos: [0, 0.085, 0.138] }));
+  return slots;
+}
+
+function buildBellkeeperLeftArmSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  const armCurve = catmullRomSpline3(
+    [
+      [0, 0.02, 0],
+      [0.04, -0.25, -0.02],
+      [0.05, -0.49, 0.08]
+    ],
+    5
+  );
+  slots.push(slot(tubeSweepMesh(armCurve.map(([x, y, z], i) => [x, y, z, 0.086 - i * 0.0022] as V4), 8, true), MAT.TUNIC_SLATE));
+  slots.push(slot(latheMesh([[0.068, -0.45], [0.082, -0.47], [0.078, -0.52], [0.06, -0.53]], 10, true), MAT.CLOAK_SAFFRON, { pos: [0.05, 0, 0.07], rot: [-0.22, 0, 0] }));
+  slots.push(slot(icosphereSmoothMesh(0.062, 1), MAT.SKIN_SERENE, { pos: [0.055, -0.55, 0.1], scale: [0.85, 1.12, 0.95] }));
+  return slots;
+}
+
+function buildBellkeeperRightArmAndStaffSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Right sleeve poised forward to carry the sanctuary bell-staff
+  const armCurve = catmullRomSpline3(
+    [
+      [0, 0.02, 0],
+      [-0.04, -0.24, 0.08],
+      [-0.04, -0.44, 0.24]
+    ],
+    5
+  );
+  slots.push(slot(tubeSweepMesh(armCurve.map(([x, y, z], i) => [x, y, z, 0.086 - i * 0.0022] as V4), 8, true), MAT.TUNIC_SLATE));
+  slots.push(slot(latheMesh([[0.068, -0.39], [0.082, -0.41], [0.078, -0.46], [0.06, -0.47]], 10, true), MAT.CLOAK_SAFFRON, { pos: [-0.04, 0.02, 0.2], rot: [-0.45, 0, 0] }));
+  slots.push(slot(icosphereSmoothMesh(0.064, 1), MAT.SKIN_SERENE, { pos: [-0.04, -0.44, 0.24], scale: [0.9, 1.05, 1.05] }));
+
+  // Carved wooden bell-chime staff (`tubeSweepMesh` curved shepherd/sanctuary crook; ferrule safely at y = -1.48 => world y = 0.45 m)
+  const staffPts = catmullRomSpline3(
+    [
+      [-0.06, -1.48, 0.2],
+      [-0.05, -0.92, 0.22],
+      [-0.04, -0.44, 0.24],
+      [-0.04, 0.14, 0.27],
+      [-0.04, 0.48, 0.31],
+      [-0.04, 0.62, 0.41],
+      [-0.04, 0.52, 0.5],
+      [-0.04, 0.41, 0.45]
+    ],
+    5
+  );
+  slots.push(
+    slot(
+      tubeSweepMesh(
+        staffPts.map(([x, y, z], i, arr) => {
+          const u = i / Math.max(1, arr.length - 1);
+          const r = 0.032 - u * 0.011;
+          return [x, y, z, r] as V4;
+        }),
+        8,
+        true
+      ),
+      MAT.TIMBER_WARM
+    )
+  );
+  // Leather hand-grip wrap + brass ferrule & sanctuary crook collar rings
+  slots.push(slot(latheMesh([[0.033, -0.52], [0.037, -0.5], [0.037, -0.37], [0.033, -0.35]], 10, true), MAT.LEATHER_SUPPLE, { pos: [-0.04, 0, 0.24] }));
+  slots.push(slot(latheMesh([[0, -1.5], [0.028, -1.48], [0.034, -1.38], [0.03, -1.36]], 10), MAT.BRASS_POLISHED, { pos: [-0.06, 0, 0.2] }));
+  slots.push(slot(latheMesh([[0.026, 0.16], [0.036, 0.18], [0.036, 0.22], [0.026, 0.24]], 10, true), MAT.BRASS_POLISHED, { pos: [-0.04, 0, 0.27] }));
+  return slots;
+}
+
+function buildStaffChimeSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Suspension ring + gleaming brass sanctuary chime bell + resonant bronze clapper
+  slots.push(slot(latheMesh([[0.008, 0], [0.014, -0.02], [0.008, -0.04]], 8, true), MAT.IRON_FORGED));
+  const chimeProfile: V2[] = [
+    [0.068, -0.175],
+    [0.078, -0.168],
+    [0.062, -0.135],
+    [0.046, -0.088],
+    [0.034, -0.048],
+    [0, -0.035]
+  ];
+  slots.push(slot(latheMesh(chimeProfile, 16), MAT.BRASS_POLISHED));
+  slots.push(slot(latheMesh([[0.066, -0.176], [0.081, -0.166], [0.078, -0.154], [0.062, -0.15]], 16, true), MAT.BRONZE_BELL));
+  slots.push(slot(icosphereSmoothMesh(0.02, 1), MAT.BRONZE_BELL, { pos: [0, -0.17, 0] }));
+  return slots;
+}
+
+function buildStaffRibbonSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Fluttering crimson (`MAT.SILK_ACCENT`) & gold (`MAT.CLOAK_SAFFRON`) sanctuary wind-ribbons
+  const crimson = catmullRomSpline3(
+    [
+      [0, 0, 0],
+      [0.03, -0.14, -0.1],
+      [0.05, -0.31, -0.24],
+      [0.02, -0.48, -0.38]
+    ],
+    5
+  );
+  const gold = catmullRomSpline3(
+    [
+      [0, -0.01, -0.01],
+      [-0.03, -0.16, -0.12],
+      [-0.04, -0.34, -0.26]
+    ],
+    5
+  );
+  slots.push(slot(tubeSweepMesh(crimson.map(([x, y, z], i) => [x, y, z, 0.022 - i * 0.0011] as V4), 5), MAT.SILK_ACCENT));
+  slots.push(slot(tubeSweepMesh(gold.map(([x, y, z], i) => [x, y, z, 0.018 - i * 0.001] as V4), 5), MAT.CLOAK_SAFFRON));
+  return slots;
+}
+
+function buildBellkeeperThighSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  slots.push(
+    slot(
+      latheMesh(
+        [
+          [0, -0.63],
+          [0.082, -0.6],
+          [0.095, -0.34],
+          [0.115, -0.08],
+          [0.105, 0.04],
+          [0, 0.05]
+        ],
+        12
+      ),
+      MAT.TUNIC_SLATE
+    )
+  );
+  return slots;
+}
+
+function buildBellkeeperShinSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  // Criss-cross linen & supple leather wrapped calf gaiters
+  slots.push(
+    slot(
+      latheMesh(
+        [
+          [0, -0.55],
+          [0.068, -0.53],
+          [0.076, -0.38],
+          [0.088, -0.2],
+          [0.084, -0.03],
+          [0, 0.03]
+        ],
+        12
+      ),
+      MAT.LINEN_CLOTH
+    )
+  );
+  for (const bandY of [-0.14, -0.27, -0.4]) {
+    slots.push(
+      slot(
+        latheMesh(
+          [
+            [0.072, bandY - 0.025],
+            [0.09, bandY - 0.012],
+            [0.09, bandY + 0.012],
+            [0.072, bandY + 0.025]
+          ],
+          12,
+          true
+        ),
+        MAT.LEATHER_SUPPLE
+      )
+    );
+  }
+  return slots;
+}
+
+function buildBellkeeperFootSlots(): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  const soleY = -BELLKEEPER_RIG_SPEC.soleOffset; // exact -0.12 m => world minY = 0.000 m at rest
+  const bootRing = (y: number, hw: number, zBack: number, zFront: number): V3[] => [
+    [-hw * 0.85, y, zBack],
+    [hw * 0.85, y, zBack],
+    [hw, y, 0.03],
+    [hw * 0.72, y, zFront],
+    [0, y, zFront + 0.022],
+    [-hw * 0.72, y, zFront],
+    [-hw, y, 0.03]
+  ];
+  // Grounded dark leather sole (`minY = -0.120` exact)
+  const soleStations: V3[][] = [
+    bootRing(soleY, 0.076, -0.085, 0.17),
+    bootRing(soleY + 0.032, 0.078, -0.085, 0.172)
+  ];
+  slots.push(slot(loftSectionsMesh(soleStations, true, true), MAT.EYE_INK));
+
+  // Supple saddle-leather traveller boot vamp, instep & folded cuff
+  const upperStations: V3[][] = [
+    bootRing(soleY + 0.03, 0.074, -0.08, 0.168),
+    bootRing(-0.045, 0.072, -0.076, 0.135),
+    bootRing(0.02, 0.068, -0.068, 0.072),
+    bootRing(0.085, 0.074, -0.07, 0.068)
+  ];
+  slots.push(slot(loftSectionsMesh(upperStations, true, true), MAT.LEATHER_SUPPLE));
+  return slots;
+}
+
 /**
- * Woven saffron/ochre & deep-indigo pilgrim cloak mantle (`material.fabric`) worn by the Bellkeeper:
- * sculpted shoulder cowl, draped indigo inner cape, warm saffron/ochre outer mantle, wind-streamed
- * woven scarf tails, and burnished brass bell-clasp brooch (`origin = shoulder collar`).
+ * Sculpts the poetic multi-material **Bellkeeper Wanderer** (`id: "hero"`, height `2.90` m, boot soles
+ * grounded at `minY = 0.000`) as an articulated `@aura3d/engine` `group` hierarchy using `"ZYX"` Euler
+ * rotation order on all articulated limbs, cloak tail, staff chime, and ribbon nodes.
  */
-export function createBellkeeperCloakNode(opts: {
+export function createBellkeeperWandererNode(opts: {
   readonly name: string;
   readonly id: string;
   readonly castShadow: boolean;
   readonly receiveShadow: boolean;
 }): AuraNodeBuilder<AuraGroupNode> {
-  const slots: MultiMatSlot[] = [];
+  const { castShadow, receiveShadow } = opts;
+  const R = BELLKEEPER_RIG_SPEC;
 
-  // Woven saffron/ochre pilgrim shoulder collar & hooded cowl
-  slots.push(slot(latheMesh([[0.17, 0.04], [0.33, -0.02], [0.36, -0.14], [0.24, -0.17]], 16, true), MAT.CLOAK_SAFFRON));
-  slots.push(slot(latheMesh([[0.16, 0.06], [0.26, 0.02], [0.29, -0.08], [0.19, -0.1]], 14, true), MAT.CLOAK_INDIGO));
+  const staffChime = group(
+    "hero-staff-chime",
+    [buildPartNode("hero-staff-chime-mesh", buildStaffChimeSlots(), castShadow, receiveShadow)],
+    { position: [...R.staffChimeOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-staff-chime" });
 
-  // Draped deep-indigo inner woven cape (`loftSectionsMesh`) + rich saffron/ochre outer travel mantle
-  const indigoSections: V3[][] = [0, 0.36, 0.72, 1].map((u) => {
-    const y = -0.08 - u * 0.96;
-    const hw = 0.28 + u * 0.22;
-    const zBack = -0.14 - u * 0.22 - Math.sin(u * Math.PI) * 0.05;
-    return [
-      [-hw, y, -0.04 - u * 0.08],
-      [-hw * 0.55, y, zBack - 0.04],
-      [0, y, zBack - 0.06],
-      [hw * 0.55, y, zBack - 0.04],
-      [hw, y, -0.04 - u * 0.08],
-      [0, y, zBack + 0.025]
-    ];
-  });
-  slots.push(slot(loftSectionsMesh(indigoSections, true, false), MAT.CLOAK_INDIGO));
+  const staffRibbon = group(
+    "hero-staff-ribbon",
+    [buildPartNode("hero-staff-ribbon-mesh", buildStaffRibbonSlots(), false, receiveShadow)],
+    { position: [...R.staffRibbonOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-staff-ribbon" });
 
-  const saffronSections: V3[][] = [0, 0.45, 1].map((u) => {
-    const y = -0.04 - u * 0.68;
-    const hw = 0.31 + u * 0.19;
-    const zBack = -0.16 - u * 0.19;
-    return [
-      [-hw, y, 0.02 - u * 0.06],
-      [-hw * 0.52, y, zBack - 0.04],
-      [0, y, zBack - 0.065],
-      [hw * 0.52, y, zBack - 0.04],
-      [hw, y, 0.02 - u * 0.06],
-      [0, y, zBack - 0.01]
-    ];
-  });
-  slots.push(slot(loftSectionsMesh(saffronSections, true, false), MAT.CLOAK_SAFFRON));
+  const rightArm = group(
+    "hero-arm-r",
+    [
+      buildPartNode("hero-arm-r-mesh", buildBellkeeperRightArmAndStaffSlots(), castShadow, receiveShadow),
+      staffChime,
+      staffRibbon
+    ],
+    { position: [...R.rightShoulderOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-arm-r" });
 
-  // Wind-swept saffron & indigo woven scarf ribbons + brass pilgrim brooch at chest
-  const scarfMain = catmullRomSpline3([[0.12, -0.04, 0.14], [0.22, -0.22, -0.12], [0.26, -0.46, -0.42], [0.2, -0.64, -0.68]], 6);
-  const scarfTrim = catmullRomSpline3([[-0.11, -0.05, 0.12], [-0.2, -0.24, -0.14], [-0.18, -0.48, -0.4]], 5);
-  slots.push(slot(tubeSweepMesh(scarfMain.map(([x, y, z], i) => [x, y, z, 0.048 - i * 0.002] as V4), 6), MAT.CLOAK_SAFFRON));
-  slots.push(slot(tubeSweepMesh(scarfTrim.map(([x, y, z], i) => [x, y, z, 0.038 - i * 0.002] as V4), 6), MAT.CLOAK_INDIGO));
-  slots.push(slot(icosphereFacetMesh(0.042, 1, 0.02, 13), MAT.BRASS_POLISHED, { pos: [0.06, -0.05, 0.19], scale: [1.1, 1.1, 0.45] }));
+  const leftArm = group(
+    "hero-arm-l",
+    [buildPartNode("hero-arm-l-mesh", buildBellkeeperLeftArmSlots(), castShadow, receiveShadow)],
+    { position: [...R.leftShoulderOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-arm-l" });
 
-  const spec = buildGroupedGeometrySpec(slots);
-  return geometry.multiMaterial(spec, getHighlandMaterials(), {
-    name: opts.name,
-    rotationOrder: "YXZ",
-    castShadow: opts.castShadow,
-    receiveShadow: opts.receiveShadow
-  }).runtime({ id: opts.id });
+  const head = group(
+    "hero-head",
+    [buildPartNode("hero-head-mesh", buildBellkeeperHeadSlots(), castShadow, receiveShadow)],
+    { position: [...R.headOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-head" });
+
+  const cloakTail = group(
+    "hero-cloak-tail",
+    [buildPartNode("hero-cloak-tail-mesh", buildBellkeeperCloakTailSlots(), castShadow, receiveShadow)],
+    { position: [...R.cloakTailOffset], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-cloak-tail" });
+
+  const torso = group(
+    "hero-torso",
+    [
+      buildPartNode("hero-torso-mesh", buildBellkeeperTorsoSlots(), castShadow, receiveShadow),
+      cloakTail,
+      head,
+      leftArm,
+      rightArm
+    ],
+    { position: [0, R.torsoOffsetY, 0], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-torso" });
+
+  const makeLeg = (side: "l" | "r", signX: number) => {
+    const foot = group(
+      `hero-foot-${side}`,
+      [buildPartNode(`hero-foot-${side}-mesh`, buildBellkeeperFootSlots(), castShadow, receiveShadow)],
+      { position: [0, -R.shinLen, 0], rotationOrder: "ZYX" }
+    ).runtime({ id: `hero-foot-${side}` });
+
+    const shin = group(
+      `hero-shin-${side}`,
+      [buildPartNode(`hero-shin-${side}-mesh`, buildBellkeeperShinSlots(), castShadow, receiveShadow), foot],
+      { position: [0, -R.thighLen, 0], rotationOrder: "ZYX" }
+    ).runtime({ id: `hero-shin-${side}` });
+
+    return group(
+      `hero-leg-${side}`,
+      [buildPartNode(`hero-leg-${side}-mesh`, buildBellkeeperThighSlots(), castShadow, receiveShadow), shin],
+      { position: [signX * R.hipHalfWidth, 0, 0], rotationOrder: "ZYX" }
+    ).runtime({ id: `hero-leg-${side}` });
+  };
+
+  const hips = group(
+    "hero-hips",
+    [
+      buildPartNode("hero-pelvis-mesh", buildBellkeeperPelvisSlots(), castShadow, receiveShadow),
+      torso,
+      makeLeg("l", 1),
+      makeLeg("r", -1)
+    ],
+    { position: [0, R.hipsRestY, 0], rotationOrder: "ZYX" }
+  ).runtime({ id: "hero-hips" });
+
+  return group(opts.name, [hips], { rotationOrder: "YXZ" }).runtime({ id: opts.id });
+}
+
+/** Measures the exact static rest-pose vertex Y bounds of the procedural Bellkeeper Wanderer (`minY === 0`, `maxY === 2.9`). */
+export function measureBellkeeperRestBounds(): { readonly minY: number; readonly maxY: number; readonly height: number } {
+  const R = BELLKEEPER_RIG_SPEC;
+  const torsoY = R.hipsRestY + R.torsoOffsetY;
+  const shinY = R.hipsRestY - R.thighLen;
+  const footY = shinY - R.shinLen;
+  const groups: readonly [readonly MultiMatSlot[], number][] = [
+    [buildBellkeeperPelvisSlots(), R.hipsRestY],
+    [buildBellkeeperTorsoSlots(), torsoY],
+    [buildBellkeeperCloakTailSlots(), torsoY + R.cloakTailOffset[1]],
+    [buildBellkeeperHeadSlots(), torsoY + R.headOffset[1]],
+    [buildBellkeeperLeftArmSlots(), torsoY + R.leftShoulderOffset[1]],
+    [buildBellkeeperRightArmAndStaffSlots(), torsoY + R.rightShoulderOffset[1]],
+    [buildStaffChimeSlots(), torsoY + R.rightShoulderOffset[1] + R.staffChimeOffset[1]],
+    [buildStaffRibbonSlots(), torsoY + R.rightShoulderOffset[1] + R.staffRibbonOffset[1]],
+    [buildBellkeeperThighSlots(), R.hipsRestY],
+    [buildBellkeeperShinSlots(), shinY],
+    [buildBellkeeperFootSlots(), footY]
+  ];
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  for (const [slots, baseY] of groups) {
+    for (const s of slots) {
+      const p = s.mesh.positions;
+      for (let i = 1; i < p.length; i += 3) {
+        const y = p[i]! + baseY;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return { minY, maxY, height: maxY - minY };
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function solveTwoBoneLegPitch(hipsY: number, soleY: number, soleZ: number, swingFootPitch: number): {
+  readonly thighPitch: number;
+  readonly kneePitch: number;
+  readonly footPitch: number;
+} {
+  const { thighLen: L1, shinLen: L2, soleOffset } = BELLKEEPER_RIG_SPEC;
+  const ankleY = soleY + soleOffset;
+  const dy = Math.max(0.25, hipsY - ankleY);
+  const dz = soleZ;
+  const reachMax = L1 + L2 - 0.002;
+  const reachMin = Math.abs(L1 - L2) + 0.02;
+  const dist = clamp(Math.hypot(dz, dy), reachMin, reachMax);
+  const cosKnee = clamp((dist * dist - L1 * L1 - L2 * L2) / (2 * L1 * L2), -1, 1);
+  const kneePitch = Math.acos(cosKnee);
+  const phi = Math.atan2(-dz, dy);
+  const gamma = Math.atan2(L2 * Math.sin(kneePitch), L1 + L2 * Math.cos(kneePitch));
+  const thighPitch = phi - gamma;
+  const footPitch = -(thighPitch + kneePitch) + swingFootPitch;
+  return { thighPitch, kneePitch, footPitch };
+}
+
+function sampleFootStepCurve(
+  gait: Gait,
+  cycle01: number,
+  strikePhase: number
+): { readonly soleY: number; readonly soleZ: number; readonly swingPitch: number } {
+  if (gait === "Idle") {
+    return { soleY: 0, soleZ: strikePhase < 0.3 ? -0.024 : 0.024, swingPitch: 0 };
+  }
+  const p = (((cycle01 - strikePhase) % 1) + 1) % 1;
+  const isRun = gait === "Run";
+  const T = CLIP_SECONDS[gait];
+  const V = STRIDE_SPEED[gait];
+  const stanceFrac = isRun ? 0.3 : 0.5;
+  const zHalf = 0.5 * V * (stanceFrac * T);
+  if (p <= stanceFrac) {
+    const s = p / stanceFrac;
+    return { soleY: 0, soleZ: zHalf * (1 - 2 * s), swingPitch: 0 };
+  }
+  const w = (p - stanceFrac) / (1 - stanceFrac);
+  const liftPeak = isRun ? 0.3 : 0.22;
+  const pitchAmp = isRun ? 0.28 : 0.18;
+  return {
+    soleY: liftPeak * Math.pow(Math.max(0, Math.sin(Math.PI * w)), 0.45),
+    soleZ: -zHalf * Math.cos(Math.PI * w),
+    swingPitch: pitchAmp * Math.sin(Math.PI * 2 * w)
+  };
+}
+
+/**
+ * Pure bounded non-cumulative pose sampler for the articulated Bellkeeper Wanderer.
+ * Synchronized with `CLIP_SECONDS`, `STRIDE_SPEED`, and `RIGHT_STRIKE_PHASE`:
+ * planted boot soles stay flush at `y = 0` (`minY = 0`) and sweep backward at the exact gait stride speed.
+ */
+export function sampleBellkeeperRigPose(input: BellkeeperPoseInput): BellkeeperRigPose {
+  const R = BELLKEEPER_RIG_SPEC;
+  const { gait, phaseSeconds } = input;
+  const dur = CLIP_SECONDS[gait];
+  const u = (((phaseSeconds / dur) % 1) + 1) % 1;
+  const tau = u * Math.PI * 2;
+  const windT = input.windTime ?? phaseSeconds;
+  const gust = clamp(input.gust ?? 1, 0.5, 2.6);
+  const ring = clamp(input.bellRing ?? 0, 0, 1);
+  const lookYaw = clamp(input.lookYaw ?? 0, -0.7, 0.7);
+  const lookPitch = clamp(input.lookPitch ?? 0, -0.38, 0.38);
+  const hop = input.hopPhase ?? "idle";
+  const onBoat = input.onBoat === true;
+
+  if (onBoat) {
+    const breath = Math.sin(windT * 1.55);
+    const leftIk = solveTwoBoneLegPitch(1.25, 0, 0.05, 0);
+    const rightIk = solveTwoBoneLegPitch(1.25, 0, -0.05, 0);
+    return {
+      hipsPos: [0, 1.25, 0],
+      hipsRot: [0, 0, 0],
+      torsoRot: [0.03 + 0.014 * breath, 0.04 * Math.sin(windT * 0.7), 0.02 * Math.sin(windT * 0.9)],
+      headRot: [-0.04 + lookPitch, lookYaw + 0.08 * Math.sin(windT * 0.5), 0],
+      cloakTailRot: [0.16 + 0.06 * gust + 0.05 * Math.sin(windT * 2.1), 0.06 * Math.sin(windT * 1.4), 0.04 * Math.cos(windT * 1.7)],
+      leftArmRot: [0.08 + 0.02 * breath, 0, 0.08],
+      rightArmRot: [-0.22 + 0.02 * breath, -0.05, -0.06],
+      staffChimeRot: [0.08 * Math.sin(windT * 2.6), 0, 0.07 * Math.cos(windT * 2.1)],
+      staffRibbonRot: [0.22 + 0.08 * gust + 0.09 * Math.sin(windT * 3.1), 0.12 * Math.sin(windT * 2.4), 0.08 * Math.cos(windT * 2.8)],
+      leftLegRot: [leftIk.thighPitch, 0, 0],
+      leftShinRot: [leftIk.kneePitch, 0, 0],
+      leftFootRot: [leftIk.footPitch, 0, 0],
+      rightLegRot: [rightIk.thighPitch, 0, 0],
+      rightShinRot: [rightIk.kneePitch, 0, 0],
+      rightFootRot: [rightIk.footPitch, 0, 0]
+    };
+  }
+
+  const isIdle = gait === "Idle";
+  const isRun = gait === "Run";
+  const breath = Math.sin(tau);
+  const strikeAngle = (u - RIGHT_STRIKE_PHASE) * Math.PI * 2;
+  const hipsY = isIdle
+    ? 1.26 + 0.007 * breath
+    : isRun
+      ? 1.075 + 0.026 * Math.cos(strikeAngle * 2)
+      : 1.135 + 0.016 * Math.cos(strikeAngle * 2);
+
+  const rightStep = sampleFootStepCurve(gait, u, RIGHT_STRIKE_PHASE);
+  const leftStep = sampleFootStepCurve(gait, u, (RIGHT_STRIKE_PHASE + 0.5) % 1);
+
+  // Graceful mid-air tuck during meadow hops while preserving grounded soles otherwise
+  const hopTuck = hop === "air" ? 1 : hop === "takeoff" ? 0.45 : hop === "landing" ? 0.35 : 0;
+  const leftSoleY = leftStep.soleY + hopTuck * 0.12;
+  const rightSoleY = rightStep.soleY + hopTuck * 0.16;
+
+  const leftIk = solveTwoBoneLegPitch(hipsY, leftSoleY, leftStep.soleZ, leftStep.swingPitch);
+  const rightIk = solveTwoBoneLegPitch(hipsY, rightSoleY, rightStep.soleZ, rightStep.swingPitch);
+
+  // Counter-swinging arms & poised shepherd staff + sanctuary bell-ring salute
+  const strideSin = Math.sin(strikeAngle);
+  const moveAmt = isIdle ? 0 : isRun ? 1 : 0.68;
+  const leftArmSwing = isIdle ? 0.03 * breath : -0.44 * moveAmt * strideSin - 0.12 * hopTuck;
+  const rightArmBase = isIdle ? -0.26 + 0.025 * breath : -0.34 + 0.24 * moveAmt * strideSin - 0.14 * hopTuck;
+  const rightArmSalute = -0.68 * Math.sin(ring * Math.PI);
+
+  const torsoLean = (isIdle ? 0.02 + 0.014 * breath : isRun ? 0.13 : 0.065) - 0.06 * Math.sin(ring * Math.PI);
+  const torsoTwist = isIdle ? 0.018 * Math.sin(tau * 0.5) : -0.11 * moveAmt * strideSin;
+  const torsoSway = isIdle ? 0.01 * Math.cos(tau) : 0.032 * moveAmt * strideSin;
+
+  const cloakBillow = 0.08 + 0.24 * moveAmt + 0.07 * (gust - 1) + 0.055 * Math.sin(windT * 2.35 + u * Math.PI * 2);
+  const chimePendulumX =
+    0.16 * moveAmt * Math.cos(strikeAngle * 2) +
+    0.06 * gust * Math.sin(windT * 3.2) +
+    0.36 * ring * Math.sin(windT * 9.5);
+  const chimePendulumZ = 0.07 * gust * Math.cos(windT * 2.7) + 0.22 * ring * Math.cos(windT * 8.2);
+
+  return {
+    hipsPos: [0, clamp(hipsY, 0.95, R.hipsRestY), 0],
+    hipsRot: [0, 0, 0],
+    torsoRot: [torsoLean, torsoTwist, torsoSway],
+    headRot: [-torsoLean * 0.55 + lookPitch - 0.14 * Math.sin(ring * Math.PI), -torsoTwist * 0.65 + lookYaw, -torsoSway * 0.5],
+    cloakTailRot: [clamp(cloakBillow, 0.02, 0.62), 0.08 * Math.sin(windT * 1.65) - torsoTwist * 0.5, 0.06 * gust * Math.cos(windT * 1.9)],
+    leftArmRot: [leftArmSwing, 0.04 * moveAmt * strideSin, 0.09 + 0.08 * hopTuck],
+    rightArmRot: [rightArmBase + rightArmSalute, -0.06 + 0.08 * Math.sin(ring * Math.PI), -0.08 - 0.06 * hopTuck],
+    staffChimeRot: [clamp(chimePendulumX, -0.65, 0.65), 0, clamp(chimePendulumZ, -0.5, 0.5)],
+    staffRibbonRot: [0.24 + 0.22 * moveAmt + 0.1 * gust + 0.12 * Math.sin(windT * 3.8), 0.16 * Math.sin(windT * 2.9), 0.12 * Math.cos(windT * 3.3)],
+    leftLegRot: [leftIk.thighPitch, 0, 0],
+    leftShinRot: [leftIk.kneePitch, 0, 0],
+    leftFootRot: [leftIk.footPitch, 0, 0],
+    rightLegRot: [rightIk.thighPitch, 0, 0],
+    rightShinRot: [rightIk.kneePitch, 0, 0],
+    rightFootRot: [rightIk.footPitch, 0, 0]
+  };
+}
+
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+const lerp3 = (a: V3, b: V3, t: number): V3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+
+/** Smoothly blends two bounded Bellkeeper poses across a gait crossfade (`0 <= t <= 1`). */
+export function blendBellkeeperRigPoses(a: BellkeeperRigPose, b: BellkeeperRigPose, t: number): BellkeeperRigPose {
+  const s = clamp(t, 0, 1);
+  if (s <= 0) return a;
+  if (s >= 1) return b;
+  return {
+    hipsPos: lerp3(a.hipsPos, b.hipsPos, s),
+    hipsRot: lerp3(a.hipsRot, b.hipsRot, s),
+    torsoRot: lerp3(a.torsoRot, b.torsoRot, s),
+    headRot: lerp3(a.headRot, b.headRot, s),
+    cloakTailRot: lerp3(a.cloakTailRot, b.cloakTailRot, s),
+    leftArmRot: lerp3(a.leftArmRot, b.leftArmRot, s),
+    rightArmRot: lerp3(a.rightArmRot, b.rightArmRot, s),
+    staffChimeRot: lerp3(a.staffChimeRot, b.staffChimeRot, s),
+    staffRibbonRot: lerp3(a.staffRibbonRot, b.staffRibbonRot, s),
+    leftLegRot: lerp3(a.leftLegRot, b.leftLegRot, s),
+    leftShinRot: lerp3(a.leftShinRot, b.leftShinRot, s),
+    leftFootRot: lerp3(a.leftFootRot, b.leftFootRot, s),
+    rightLegRot: lerp3(a.rightLegRot, b.rightLegRot, s),
+    rightShinRot: lerp3(a.rightShinRot, b.rightShinRot, s),
+    rightFootRot: lerp3(a.rightFootRot, b.rightFootRot, s)
+  };
+}
+
+export interface BellkeeperJointHandle {
+  setPosition(x: number, y: number, z: number): unknown;
+  setRotation(x: number, y: number, z: number): unknown;
+}
+
+/** Writes a `BellkeeperRigPose` onto the live runtime group handles (non-cumulative absolute transforms). */
+export function applyBellkeeperRigPose(
+  getNode: (id: string) => BellkeeperJointHandle | undefined,
+  pose: BellkeeperRigPose
+): void {
+  const hips = getNode("hero-hips");
+  if (!hips) return;
+  hips.setPosition(pose.hipsPos[0], pose.hipsPos[1], pose.hipsPos[2]);
+  hips.setRotation(pose.hipsRot[0], pose.hipsRot[1], pose.hipsRot[2]);
+  const rot = (id: string, r: V3): void => {
+    getNode(id)?.setRotation(r[0], r[1], r[2]);
+  };
+  rot("hero-torso", pose.torsoRot);
+  rot("hero-head", pose.headRot);
+  rot("hero-cloak-tail", pose.cloakTailRot);
+  rot("hero-arm-l", pose.leftArmRot);
+  rot("hero-arm-r", pose.rightArmRot);
+  rot("hero-staff-chime", pose.staffChimeRot);
+  rot("hero-staff-ribbon", pose.staffRibbonRot);
+  rot("hero-leg-l", pose.leftLegRot);
+  rot("hero-shin-l", pose.leftShinRot);
+  rot("hero-foot-l", pose.leftFootRot);
+  rot("hero-leg-r", pose.rightLegRot);
+  rot("hero-shin-r", pose.rightShinRot);
+  rot("hero-foot-r", pose.rightFootRot);
+}
+
+function rotateZYX(v: V3, r: V3): V3 {
+  const cx = Math.cos(r[0]), sx = Math.sin(r[0]);
+  const cy = Math.cos(r[1]), sy = Math.sin(r[1]);
+  const cz = Math.cos(r[2]), sz = Math.sin(r[2]);
+  const x1 = v[0];
+  const y1 = v[1] * cx - v[2] * sx;
+  const z1 = v[1] * sx + v[2] * cx;
+  const x2 = x1 * cy + z1 * sy;
+  const y2 = y1;
+  const z2 = -x1 * sy + z1 * cy;
+  return [x2 * cz - y2 * sz, x2 * sz + y2 * cz, z2];
+}
+
+const add3 = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+
+/** Exact forward-kinematics ankle and toe positions in hero root space for a `BellkeeperRigPose`. */
+export function computeBellkeeperFootWorld(pose: BellkeeperRigPose): {
+  readonly left: V3;
+  readonly right: V3;
+  readonly toeLeft: V3;
+  readonly toeRight: V3;
+} {
+  const R = BELLKEEPER_RIG_SPEC;
+  const legFk = (signX: number, legRot: V3, shinRot: V3, footRot: V3): { readonly ankle: V3; readonly toe: V3 } => {
+    const hipLocal: V3 = [signX * R.hipHalfWidth, 0, 0];
+    const kneeFromHip = rotateZYX([0, -R.thighLen, 0], legRot);
+    const ankleFromKnee = rotateZYX(rotateZYX([0, -R.shinLen, 0], shinRot), legRot);
+    const toeInFoot = rotateZYX([...R.toeFromAnkle], footRot);
+    const toeFromAnkle = rotateZYX(rotateZYX(toeInFoot, shinRot), legRot);
+    const ankleInHips = add3(hipLocal, add3(kneeFromHip, ankleFromKnee));
+    const toeInHips = add3(ankleInHips, toeFromAnkle);
+    return {
+      ankle: add3(pose.hipsPos, rotateZYX(ankleInHips, pose.hipsRot)),
+      toe: add3(pose.hipsPos, rotateZYX(toeInHips, pose.hipsRot))
+    };
+  };
+  const L = legFk(1, pose.leftLegRot, pose.leftShinRot, pose.leftFootRot);
+  const Rt = legFk(-1, pose.rightLegRot, pose.rightShinRot, pose.rightFootRot);
+  return { left: L.ankle, right: Rt.ankle, toeLeft: L.toe, toeRight: Rt.toe };
+}
+
+/** Exact forward-kinematics position of the Bellkeeper's staff-holding right hand in hero root space. */
+export function computeBellkeeperRightHandLocal(pose: BellkeeperRigPose): V3 {
+  const R = BELLKEEPER_RIG_SPEC;
+  const gripInArm = rotateZYX([...R.rightHandGripOffset], pose.rightArmRot);
+  const inTorso = add3([...R.rightShoulderOffset], gripInArm);
+  const inHips = add3([0, R.torsoOffsetY, 0], rotateZYX(inTorso, pose.torsoRot));
+  return add3(pose.hipsPos, rotateZYX(inHips, pose.hipsRot));
 }
 
 export function mountProceduralStaticScenery(
@@ -1423,7 +2228,9 @@ export function mountProceduralAnimatedActors(
   castShadow: boolean,
   receiveShadow: boolean
 ): void {
-  builder.add(createBellkeeperCloakNode({ name: "bellkeeper-cloak", id: "bellkeeper-cloak", castShadow, receiveShadow }));
+  if (flags.hero) {
+    builder.add(createBellkeeperWandererNode({ name: "hero", id: "hero", castShadow, receiveShadow }));
+  }
   if (flags.letter) {
     for (let i = 0; i < letterCount; i += 1) {
       builder.add(createSealedLetterNode({ name: `letter-${i}`, id: `letter-${i}`, receiveShadow }));

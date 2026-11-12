@@ -7,6 +7,7 @@
  */
 import {
   geometry,
+  group,
   material,
   primitives,
   type AuraColor,
@@ -17,6 +18,16 @@ import {
   type AuraSceneNode,
   type AuraVec3
 } from "@aura3d/engine";
+import {
+  gripQAxis,
+  gripQConj,
+  gripQFromTo,
+  gripQMul,
+  gripQRot,
+  gripQToEulerZYX,
+  gripUnit,
+  type GripQuat
+} from "@aura3d/engine/game";
 import {
   archwayVoussoirSlots,
   articulatedFolkSlots,
@@ -1805,3 +1816,1568 @@ export function buildProceduralBleacherNodes(
 
 // Re-export `buildGroupedGeometrySpec` so procedural tests or callers can inspect grouped specs directly if needed.
 export { buildGroupedGeometrySpec };
+
+/* -------------------------------------------------------------------------- */
+/* 4. Articulated Streetball Athlete Rig & Seated Courtside Fan Rig           */
+/* -------------------------------------------------------------------------- */
+
+export const HOOPS_GUARD_HEIGHT = 1.92;
+export const HOOPS_BIG_HEIGHT = 1.99;
+
+export const HOOPS_ATHLETE_JOINT_SUFFIXES = [
+  "hips",
+  "spine",
+  "chest",
+  "head",
+  "arm-l",
+  "forearm-l",
+  "arm-r",
+  "forearm-r",
+  "leg-l",
+  "calf-l",
+  "shoe-l",
+  "leg-r",
+  "calf-r",
+  "shoe-r"
+] as const;
+
+export type HoopsAthleteJointSuffix = (typeof HOOPS_ATHLETE_JOINT_SUFFIXES)[number];
+
+export interface HoopsAthleteRigOptions {
+  readonly kit: { readonly jersey: string; readonly shorts: string; readonly socks: string };
+  readonly big?: boolean;
+  readonly lookOriginal?: boolean;
+  readonly position?: AuraVec3;
+  readonly runtimeFactory?: (nodeId: string) => unknown;
+}
+
+const HOOPS_SKIN_PALETTE: readonly AuraColor[] = [
+  "#8d5534",
+  "#b6774d",
+  "#6b3d24",
+  "#d89c70",
+  "#522e1b"
+];
+
+function athleteSeedFromId(id = "p0"): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < id.length; i++) {
+    h = Math.imul(h ^ id.charCodeAt(i), 16777619) >>> 0;
+  }
+  return h;
+}
+
+function attachRt<T extends AuraNodeBuilder<AuraSceneNode>>(
+  node: T,
+  nodeId: string,
+  runtimeFactory?: (id: string) => unknown
+): T {
+  if (!runtimeFactory) return node;
+  return (node as unknown as { runtime(ext: unknown): T }).runtime(runtimeFactory(nodeId));
+}
+
+function buildHoopsHairMesh(style: number, hs: number): RawMesh {
+  if (style === 0) {
+    // High-top taper fade
+    return loftSuper(
+      [
+        { y: 0.14 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.65 },
+        { y: 0.21 * hs, rx: 0.094 * hs, rz: 0.104 * hs, roundness: 0.55 },
+        { y: 0.265 * hs, rx: 0.086 * hs, rz: 0.095 * hs, roundness: 0.45 }
+      ],
+      14,
+      true
+    );
+  }
+  if (style === 1) {
+    // Sculpted cornrow braids sweeping back
+    const rows: RawMesh[] = [];
+    for (let r = -2; r <= 2; r++) {
+      const bx = r * 0.028 * hs;
+      rows.push(
+        tube(
+          [
+            [bx, 0.205 * hs, 0.065 * hs],
+            [bx * 1.04, 0.232 * hs, 0.01 * hs],
+            [bx * 0.98, 0.205 * hs, -0.072 * hs],
+            [bx * 0.9, 0.135 * hs, -0.102 * hs]
+          ],
+          0.016 * hs,
+          7
+        )
+      );
+    }
+    return combineRaw([
+      place(icosphereFacetMesh(0.088 * hs, 2, 0, 1), [0, 0.175 * hs, -0.008 * hs], [0, 0, 0], [0.96, 0.72, 1.05]),
+      ...rows
+    ]);
+  }
+  if (style === 2) {
+    // Textured streetball afro taper
+    return place(
+      icosphereFacetMesh(0.112 * hs, 2, 0.06, 17),
+      [0, 0.205 * hs, -0.012 * hs],
+      [0, 0, 0],
+      [1.02, 0.88, 1.06]
+    );
+  }
+  // Clean athletic buzz crown
+  return loftSuper(
+    [
+      { y: 0.135 * hs, rx: 0.086 * hs, rz: 0.096 * hs, roundness: 0.75 },
+      { y: 0.195 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.78 },
+      { y: 0.228 * hs, rx: 0.062 * hs, rz: 0.072 * hs, roundness: 0.85 }
+    ],
+    14,
+    true
+  );
+}
+
+function buildHighTopSneakerNode(
+  name: string,
+  hs: number,
+  ws: number,
+  mats: {
+    readonly upper: AuraMaterialSpec;
+    readonly overlay: AuraMaterialSpec;
+    readonly midsole: AuraMaterialSpec;
+    readonly outsole: AuraMaterialSpec;
+  },
+  castShadow: boolean
+): AuraNodeBuilder<AuraSceneNode> {
+  // Ankle joint sits at [0, 0, 0], floor is at y = -0.06 * hs!
+  const yFloor = -0.06 * hs;
+  const outsole = place(
+    loftSuper(
+      [
+        { y: yFloor, rx: 0.056 * ws, rz: 0.138 * hs, roundness: 0.45 },
+        { y: yFloor + 0.014 * hs, rx: 0.058 * ws, rz: 0.142 * hs, roundness: 0.48 }
+      ],
+      14,
+      true
+    ),
+    [0, 0, 0.048 * hs]
+  );
+  const midsole = place(
+    loftSuper(
+      [
+        { y: yFloor + 0.013 * hs, rx: 0.058 * ws, rz: 0.14 * hs, roundness: 0.5 },
+        { y: yFloor + 0.034 * hs, rx: 0.055 * ws, rz: 0.134 * hs, roundness: 0.56 }
+      ],
+      14,
+      true
+    ),
+    [0, 0, 0.046 * hs]
+  );
+  const upperBody = combineRaw([
+    // Sculpted toe-box & vamp
+    place(
+      loftSuper(
+        [
+          { y: yFloor + 0.032 * hs, rx: 0.053 * ws, rz: 0.128 * hs, roundness: 0.58 },
+          { y: yFloor + 0.066 * hs, rx: 0.048 * ws, rz: 0.104 * hs, roundness: 0.64 },
+          { y: yFloor + 0.088 * hs, rx: 0.042 * ws, rz: 0.062 * hs, roundness: 0.7 }
+        ],
+        14,
+        true
+      ),
+      [0, 0, 0.038 * hs]
+    ),
+    // Padded high-top ankle collar wrapping cleanly up around calf sock
+    loftSuper(
+      [
+        { y: yFloor + 0.052 * hs, rx: 0.046 * ws, rz: 0.054 * hs, roundness: 0.74 },
+        { y: yFloor + 0.108 * hs, rx: 0.048 * ws, rz: 0.055 * hs, roundness: 0.78 },
+        { y: yFloor + 0.128 * hs, rx: 0.044 * ws, rz: 0.05 * hs, roundness: 0.8 }
+      ],
+      14,
+      true
+    )
+  ]);
+  const overlayTrim = combineRaw([
+    // Molded heel counter & mid-foot lockdown strap
+    place(
+      loftSuper(
+        [
+          { y: yFloor + 0.03 * hs, rx: 0.054 * ws, rz: 0.052 * hs, roundness: 0.62 },
+          { y: yFloor + 0.082 * hs, rx: 0.049 * ws, rz: 0.048 * hs, roundness: 0.68 }
+        ],
+        12,
+        true
+      ),
+      [0, 0, -0.028 * hs]
+    ),
+    place(box(0.106 * ws, 0.018 * hs, 0.044 * hs, 0.005 * hs), [0, yFloor + 0.072 * hs, 0.045 * hs], [0.32, 0, 0])
+  ]);
+
+  return multiNode(
+    name,
+    [
+      { mesh: upperBody, material: mats.upper },
+      { mesh: overlayTrim, material: mats.overlay },
+      { mesh: midsole, material: mats.midsole },
+      { mesh: outsole, material: mats.outsole }
+    ],
+    { castShadow, receiveShadow: true }
+  );
+}
+
+/**
+ * Builds a sculpted, multi-material, anatomically connected 14-joint Streetball Athlete Rig
+ * (`guard` 1.92 m lean vs `big` 1.99 m broad-shouldered power build), grounded cleanly at `y = 0`.
+ */
+export function buildArticulatedHoopsAthleteNode(
+  id: string,
+  options: HoopsAthleteRigOptions
+): AuraNodeBuilder<AuraSceneNode> {
+  const { kit, big = false, lookOriginal = false, position = [0, 0, 6], runtimeFactory } = options;
+  const seed = athleteSeedFromId(id);
+  const hs = (big ? HOOPS_BIG_HEIGHT : HOOPS_GUARD_HEIGHT) / 1.748;
+  const ws = (big ? 1.095 : 1.0) * hs;
+  const skinHex = HOOPS_SKIN_PALETTE[seed % HOOPS_SKIN_PALETTE.length]!;
+  const hairStyle = (seed >>> 3) % 4;
+  const wearsHeadband = ((seed >>> 5) & 1) === 0;
+  const wearsShootingSleeve = ((seed >>> 6) & 1) === 0;
+
+  const jerseyMat = material.fabric({
+    name: `${id}-kit`,
+    color: kit.jersey,
+    roughness: 0.66,
+    ...(lookOriginal ? {} : { sheen: 0.26, sheenColor: kit.jersey, sheenRoughness: 0.56 })
+  });
+  const shortsMat = material.fabric({
+    name: `${id}-shorts`,
+    color: kit.shorts,
+    roughness: 0.68,
+    ...(lookOriginal ? {} : { sheen: 0.22, sheenColor: kit.shorts, sheenRoughness: 0.6 })
+  });
+  const sockMat = material.fabric({
+    name: `${id}-socks`,
+    color: kit.socks,
+    roughness: 0.74,
+    ...(lookOriginal ? {} : { sheen: 0.16, sheenColor: kit.socks, sheenRoughness: 0.68 })
+  });
+  const trimMat = material.lacquer({
+    name: `${id}-trim`,
+    color: "#f8fafc",
+    roughness: 0.28,
+    clearcoat: 0.68
+  });
+  const accentTrimMat = material.clearcoatPaint({
+    name: `${id}-accent`,
+    color: kit.jersey,
+    roughness: 0.24,
+    clearcoat: 0.82
+  });
+  const skinMat = material.physical({
+    name: `${id}-skin`,
+    color: skinHex,
+    roughness: 0.52,
+    clearcoat: 0.08,
+    clearcoatRoughness: 0.62,
+    sheen: 0.12,
+    sheenColor: "#f5cba7",
+    sheenRoughness: 0.75
+  });
+  const hairMat = material.matteClay({
+    name: `${id}-hair`,
+    color: "#1a1512",
+    roughness: 0.88
+  });
+  const eyeDarkMat = material.lacquer({
+    name: `${id}-eyes`,
+    color: "#141110",
+    roughness: 0.18,
+    clearcoat: 0.9
+  });
+  const sneakerMats = {
+    upper: material.sneakerMesh({ color: "#eef2f6", roughness: 0.8, sheen: 0.18 }),
+    overlay: accentTrimMat,
+    midsole: material.sneakerRubber({ color: "#f8fafc", roughness: 0.78 }),
+    outsole: material.blackRubber({ color: "#111827", roughness: 0.88 })
+  };
+
+  const hipsBindY = 0.96 * hs;
+  const spineOffY = 0.08 * hs;
+  const chestOffY = 0.16 * hs;
+  const headOffY = 0.30 * hs;
+  const shoulderX = 0.205 * ws;
+  const shoulderOffY = 0.23 * hs;
+  const upperLen = 0.255 * hs;
+  const foreLen = 0.300 * hs;
+  const hipX = 0.105 * ws;
+  const hipOffY = -0.05 * hs;
+  const thighLen = 0.43 * hs;
+  const shinLen = 0.42 * hs;
+
+  // 1. HIPS / CONNECTED BASKETBALL SHORTS PELVIS
+  const pelvisShortsMesh = combineRaw([
+    loftSuper(
+      [
+        { y: -0.115 * hs, rx: 0.182 * ws, rz: 0.132 * ws, roundness: 0.62 },
+        { y: -0.03 * hs, rx: 0.174 * ws, rz: 0.126 * ws, roundness: 0.68 },
+        { y: 0.055 * hs, rx: 0.158 * ws, rz: 0.112 * ws, roundness: 0.72 },
+        { y: 0.095 * hs, rx: 0.152 * ws, rz: 0.106 * ws, roundness: 0.74 }
+      ],
+      16,
+      true
+    ),
+    // Connected hip-socket bridges so legs never separate on deep crouch or windmill dunks
+    place(icosphereFacetMesh(0.082 * ws, 2, 0, 2), [hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0]),
+    place(icosphereFacetMesh(0.082 * ws, 2, 0, 3), [-hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0])
+  ]);
+  const waistbandMesh = combineRaw([
+    loftSuper(
+      [
+        { y: 0.062 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.74 },
+        { y: 0.098 * hs, rx: 0.154 * ws, rz: 0.108 * ws, roundness: 0.74 }
+      ],
+      16,
+      false
+    ),
+    // Side stripe accents on pelvis
+    place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [0.174 * ws, -0.02 * hs, 0]),
+    place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [-0.174 * ws, -0.02 * hs, 0])
+  ]);
+  const hipsMeshNode = multiNode(
+    `${id}-hips-mesh`,
+    [
+      { mesh: pelvisShortsMesh, material: shortsMat },
+      { mesh: waistbandMesh, material: trimMat }
+    ],
+    { castShadow: true, receiveShadow: true }
+  );
+
+  // 2. SPINE / WAIST TUCKED JERSEY
+  const spineJerseyMesh = loftSuper(
+    [
+      { y: -0.035 * hs, rx: 0.148 * ws, rz: 0.104 * ws, roundness: 0.72 },
+      { y: 0.065 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.68 },
+      { y: 0.175 * hs, rx: 0.168 * ws, rz: 0.118 * ws, roundness: 0.64 }
+    ],
+    16,
+    true
+  );
+  const spineSidePiping = combineRaw([
+    place(box(0.016 * ws, 0.19 * hs, 0.032 * ws, 0.004), [0.158 * ws, 0.07 * hs, 0]),
+    place(box(0.016 * ws, 0.19 * hs, 0.032 * ws, 0.004), [-0.158 * ws, 0.07 * hs, 0])
+  ]);
+  const spineMeshNode = multiNode(
+    `${id}-spine-mesh`,
+    [
+      { mesh: spineJerseyMesh, material: jerseyMat },
+      { mesh: spineSidePiping, material: trimMat }
+    ],
+    { castShadow: true, receiveShadow: true }
+  );
+
+  // 3. CHEST / SLEEVELESS STREETBALL TANK JERSEY + SCULPTED TRAPS & RIB-KNIT PIPING
+  const chestTankMesh = loftSuper(
+    [
+      { y: -0.025 * hs, rx: 0.166 * ws, rz: 0.116 * ws, roundness: 0.64 },
+      { y: 0.11 * hs, rx: 0.188 * ws, rz: 0.128 * ws, roundness: 0.58 },
+      { y: 0.22 * hs, rx: 0.178 * ws, rz: 0.118 * ws, roundness: 0.6 },
+      { y: 0.275 * hs, rx: 0.145 * ws, rz: 0.096 * ws, roundness: 0.68 }
+    ],
+    18,
+    true
+  );
+  const chestTrimMesh = combineRaw([
+    // Rib-knit V-neck collar ring
+    place(
+      latheMesh(
+        [
+          [0.074 * ws, -0.012 * hs],
+          [0.092 * ws, 0.006 * hs],
+          [0.088 * ws, 0.022 * hs],
+          [0.072 * ws, 0.018 * hs]
+        ],
+        16
+      ),
+      [0, 0.272 * hs, 0.012 * ws],
+      [0.24, 0, 0]
+    ),
+    // Sleeveless armhole rib-knit piping rings
+    place(
+      tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false),
+      [0.174 * ws, 0.212 * hs, 0],
+      [0, Math.PI / 2, -0.18]
+    ),
+    place(
+      tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false),
+      [-0.174 * ws, 0.212 * hs, 0],
+      [0, Math.PI / 2, 0.18]
+    ),
+    // Bold horizontal chest court band + squad number plaque front & back
+    place(box(0.28 * ws, 0.042 * hs, 0.018 * ws, 0.005), [0, 0.155 * hs, 0.124 * ws]),
+    place(box(0.11 * ws, 0.095 * hs, 0.016 * ws, 0.004), [0, 0.09 * hs, 0.123 * ws]),
+    place(box(0.12 * ws, 0.105 * hs, 0.016 * ws, 0.004), [0, 0.125 * hs, -0.121 * ws])
+  ]);
+  const chestTrapsSkinMesh = loftSuper(
+    [
+      { y: 0.255 * hs, rx: 0.132 * ws, rz: 0.082 * ws, roundness: 0.72 },
+      { y: 0.298 * hs, rx: 0.068 * ws, rz: 0.066 * ws, roundness: 0.8 }
+    ],
+    14,
+    true
+  );
+  const chestMeshNode = multiNode(
+    `${id}-chest-mesh`,
+    [
+      { mesh: chestTankMesh, material: jerseyMat },
+      { mesh: chestTrimMesh, material: trimMat },
+      { mesh: chestTrapsSkinMesh, material: skinMat }
+    ],
+    { castShadow: true, receiveShadow: true }
+  );
+
+  // 4. HEAD + NECK + FACIAL STRUCTURE + TERRYCLOTH HEADBAND + HAIRSTYLE
+  const headSkinMesh = combineRaw([
+    // Muscular neck column overlapping traps
+    loftSuper(
+      [
+        { y: -0.025 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.8 },
+        { y: 0.048 * hs, rx: 0.052 * ws, rz: 0.054 * ws, roundness: 0.82 }
+      ],
+      12,
+      true
+    ),
+    // Sculpted jaw, cheekbones, brow & cranium (+z = face forward)
+    place(
+      loftSuper(
+        [
+          { y: 0.032 * hs, rx: 0.056 * hs, rz: 0.064 * hs, roundness: 0.68 },
+          { y: 0.078 * hs, rx: 0.078 * hs, rz: 0.092 * hs, roundness: 0.64 },
+          { y: 0.135 * hs, rx: 0.085 * hs, rz: 0.098 * hs, roundness: 0.72 },
+          { y: 0.195 * hs, rx: 0.081 * hs, rz: 0.094 * hs, roundness: 0.78 },
+          { y: 0.228 * hs, rx: 0.052 * hs, rz: 0.062 * hs, roundness: 0.85 }
+        ],
+        16,
+        true
+      ),
+      [0, 0, 0.006 * hs]
+    ),
+    // Nose bridge & ears
+    place(box(0.022 * hs, 0.038 * hs, 0.028 * hs, 0.007 * hs), [0, 0.115 * hs, 0.102 * hs], [-0.18, 0, 0]),
+    place(icosphereFacetMesh(0.018 * hs, 1, 0, 4), [0.084 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8]),
+    place(icosphereFacetMesh(0.018 * hs, 1, 0, 5), [-0.084 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8])
+  ]);
+  const headEyesBrowsMesh = combineRaw([
+    place(icosphereFacetMesh(0.011 * hs, 1, 0, 6), [0.03 * hs, 0.132 * hs, 0.095 * hs]),
+    place(icosphereFacetMesh(0.011 * hs, 1, 0, 7), [-0.03 * hs, 0.132 * hs, 0.095 * hs]),
+    place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [0.031 * hs, 0.148 * hs, 0.096 * hs], [0, 0, -0.08]),
+    place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [-0.031 * hs, 0.148 * hs, 0.096 * hs], [0, 0, 0.08])
+  ]);
+  const headHairMesh = buildHoopsHairMesh(hairStyle, hs);
+  const headParts: { readonly mesh: RawMesh; readonly material: AuraMaterialSpec }[] = [
+    { mesh: headSkinMesh, material: skinMat },
+    { mesh: headHairMesh, material: hairMat },
+    { mesh: headEyesBrowsMesh, material: eyeDarkMat }
+  ];
+  if (wearsHeadband) {
+    const headbandMesh = place(
+      loftSuper(
+        [
+          { y: 0.148 * hs, rx: 0.088 * hs, rz: 0.101 * hs, roundness: 0.74 },
+          { y: 0.174 * hs, rx: 0.089 * hs, rz: 0.102 * hs, roundness: 0.74 }
+        ],
+        16,
+        false
+      ),
+      [0, 0, 0.005 * hs]
+    );
+    headParts.push({ mesh: headbandMesh, material: jerseyMat });
+  }
+  const headMeshNode = multiNode(`${id}-head-mesh`, headParts, { castShadow: true, receiveShadow: true });
+
+  // 5. ARMS (Left = +x, Right = -x; bind hangs cleanly along -Y with sculpted deltoid, bicep, forearm & spread basketball hand)
+  const buildUpperArmNode = (side: "l" | "r", sleeved: boolean): AuraNodeBuilder<AuraSceneNode> => {
+    const sgn = side === "l" ? 1 : -1;
+    const deltoidAndBicep = combineRaw([
+      // Rounded deltoid cap tucked cleanly into tank armhole
+      place(icosphereFacetMesh(0.064 * ws, 2, 0, side === "l" ? 8 : 9), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
+      // Sculpted bicep / tricep shaft down to elbow (-upperLen)
+      loftSuper(
+        [
+          { y: -upperLen - 0.012 * hs, rx: 0.043 * ws, rz: 0.045 * ws, roundness: 0.78 },
+          { y: -upperLen * 0.52, rx: 0.052 * ws, rz: 0.055 * ws, roundness: 0.74 },
+          { y: 0.01 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.76 }
+        ],
+        14,
+        true
+      )
+    ]);
+    if (!sleeved) {
+      return singleMeshNode(`${id}-upper-arm-${side}-mesh`, [deltoidAndBicep], skinMat, { castShadow: true, receiveShadow: true });
+    }
+    const deltoidSkin = combineRaw([
+      place(icosphereFacetMesh(0.064 * ws, 2, 0, 10), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
+      loftSuper(
+        [
+          { y: -upperLen * 0.34, rx: 0.053 * ws, rz: 0.055 * ws, roundness: 0.75 },
+          { y: 0.01 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.76 }
+        ],
+        14,
+        true
+      )
+    ]);
+    const sleeveUpper = loftSuper(
+      [
+        { y: -upperLen - 0.014 * hs, rx: 0.045 * ws, rz: 0.047 * ws, roundness: 0.78 },
+        { y: -upperLen * 0.32, rx: 0.054 * ws, rz: 0.056 * ws, roundness: 0.75 }
+      ],
+      14,
+      true
+    );
+    return multiNode(
+      `${id}-upper-arm-${side}-mesh`,
+      [
+        { mesh: deltoidSkin, material: skinMat },
+        { mesh: sleeveUpper, material: shortsMat }
+      ],
+      { castShadow: true, receiveShadow: true }
+    );
+  };
+
+  const buildForearmAndHandNode = (side: "l" | "r", sleeved: boolean): AuraNodeBuilder<AuraSceneNode> => {
+    const sgn = side === "l" ? 1 : -1;
+    const wristY = -foreLen + 0.068 * hs;
+    const palmY = -foreLen;
+    const forearmShaft = loftSuper(
+      [
+        { y: wristY, rx: 0.032 * ws, rz: 0.036 * ws, roundness: 0.76 },
+        { y: -foreLen * 0.42, rx: 0.044 * ws, rz: 0.046 * ws, roundness: 0.76 },
+        { y: 0.014 * hs, rx: 0.043 * ws, rz: 0.045 * ws, roundness: 0.78 }
+      ],
+      12,
+      true
+    );
+    // Spread basketball hand centered around [0, -foreLen, 0.03 * hs]
+    const handSkin = combineRaw([
+      place(
+        loftSuper(
+          [
+            { y: palmY - 0.012 * hs, rx: 0.04 * ws, rz: 0.018 * ws, roundness: 0.55 },
+            { y: wristY + 0.006 * hs, rx: 0.034 * ws, rz: 0.022 * ws, roundness: 0.68 }
+          ],
+          12,
+          true
+        ),
+        [0, 0, 0.018 * hs]
+      ),
+      // 4 spread fingers + opposed thumb curving slightly forward (+z) to cup the rock
+      ...[-0.026, -0.009, 0.009, 0.026].map((fx, fi) =>
+        tube(
+          [
+            [fx * ws, palmY - 0.006 * hs, 0.02 * hs],
+            [fx * 1.12 * ws, palmY - (0.036 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.032 * hs],
+            [fx * 1.16 * ws, palmY - (0.058 + (fi === 1 || fi === 2 ? 0.01 : 0)) * hs, 0.044 * hs]
+          ],
+          0.0075 * ws,
+          6
+        )
+      ),
+      tube(
+        [
+          [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs],
+          [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs],
+          [-sgn * 0.054 * ws, palmY - 0.024 * hs, 0.048 * hs]
+        ],
+        0.0085 * ws,
+        6
+      )
+    ]);
+    const wristband = loftSuper(
+      [
+        { y: wristY - 0.004 * hs, rx: 0.036 * ws, rz: 0.039 * ws, roundness: 0.76 },
+        { y: wristY + 0.034 * hs, rx: 0.038 * ws, rz: 0.041 * ws, roundness: 0.76 }
+      ],
+      12,
+      true
+    );
+    return multiNode(
+      `${id}-forearm-${side}-mesh`,
+      sleeved
+        ? [
+          { mesh: forearmShaft, material: shortsMat },
+          { mesh: handSkin, material: skinMat },
+          { mesh: wristband, material: jerseyMat }
+        ]
+        : [
+          { mesh: combineRaw([forearmShaft, handSkin]), material: skinMat },
+          { mesh: wristband, material: jerseyMat }
+        ],
+      { castShadow: true, receiveShadow: true }
+    );
+  };
+
+  // 6. LEGS (Wide streetball shorts leg cuff + muscular quad + kneecap + gastrocnemius calf + ribbed crew sock + high-top sneaker)
+  const buildThighNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
+    const sgn = side === "l" ? 1 : -1;
+    const shortsLegMesh = loftSuper(
+      [
+        { y: -thighLen * 0.62, rx: 0.098 * ws, rz: 0.104 * ws, roundness: 0.68 },
+        { y: -thighLen * 0.25, rx: 0.095 * ws, rz: 0.102 * ws, roundness: 0.7 },
+        { y: 0.028 * hs, rx: 0.088 * ws, rz: 0.095 * ws, roundness: 0.74 }
+      ],
+      14,
+      true
+    );
+    const shortsSideStripe = place(
+      box(0.016 * ws, thighLen * 0.62, 0.032 * ws, 0.003),
+      [sgn * 0.094 * ws, -thighLen * 0.3, 0]
+    );
+    const quadAndKneeSkin = combineRaw([
+      loftSuper(
+        [
+          { y: -thighLen - 0.016 * hs, rx: 0.058 * ws, rz: 0.062 * ws, roundness: 0.76 },
+          { y: -thighLen * 0.75, rx: 0.072 * ws, rz: 0.078 * ws, roundness: 0.74 },
+          { y: -thighLen * 0.56, rx: 0.078 * ws, rz: 0.084 * ws, roundness: 0.74 }
+        ],
+        14,
+        true
+      ),
+      place(icosphereFacetMesh(0.056 * ws, 2, 0, side === "l" ? 11 : 12), [0, -thighLen, 0.008 * hs], [0, 0, 0], [0.96, 0.92, 1.04])
+    ]);
+    return multiNode(
+      `${id}-thigh-${side}-mesh`,
+      [
+        { mesh: shortsLegMesh, material: shortsMat },
+        { mesh: shortsSideStripe, material: trimMat },
+        { mesh: quadAndKneeSkin, material: skinMat }
+      ],
+      { castShadow: true, receiveShadow: true }
+    );
+  };
+
+  const buildCalfNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
+    const sockTopY = -shinLen * 0.52;
+    const calfSkin = loftSuper(
+      [
+        { y: sockTopY - 0.01 * hs, rx: 0.05 * ws, rz: 0.055 * ws, roundness: 0.76 },
+        { y: -shinLen * 0.28, rx: 0.062 * ws, rz: 0.068 * ws, roundness: 0.74 },
+        { y: 0.012 * hs, rx: 0.056 * ws, rz: 0.06 * ws, roundness: 0.76 }
+      ],
+      14,
+      true
+    );
+    const crewSock = loftSuper(
+      [
+        { y: -shinLen - 0.006 * hs, rx: 0.043 * ws, rz: 0.048 * ws, roundness: 0.78 },
+        { y: -shinLen * 0.75, rx: 0.047 * ws, rz: 0.052 * ws, roundness: 0.78 },
+        { y: sockTopY, rx: 0.053 * ws, rz: 0.058 * ws, roundness: 0.76 }
+      ],
+      14,
+      true
+    );
+    const sockStripes = loftSuper(
+      [
+        { y: sockTopY - 0.028 * hs, rx: 0.054 * ws, rz: 0.059 * ws, roundness: 0.76 },
+        { y: sockTopY - 0.008 * hs, rx: 0.054 * ws, rz: 0.059 * ws, roundness: 0.76 }
+      ],
+      14,
+      false
+    );
+    return multiNode(
+      `${id}-calf-${side}-mesh`,
+      [
+        { mesh: calfSkin, material: skinMat },
+        { mesh: crewSock, material: sockMat },
+        { mesh: sockStripes, material: trimMat }
+      ],
+      { castShadow: true, receiveShadow: true }
+    );
+  };
+
+  const forearmL = attachRt(
+    group(`${id}-forearm-l`, [buildForearmAndHandNode("l", false)], { position: [0, -upperLen, 0] }),
+    `${id}-forearm-l`,
+    runtimeFactory
+  );
+  const forearmR = attachRt(
+    group(`${id}-forearm-r`, [buildForearmAndHandNode("r", wearsShootingSleeve)], { position: [0, -upperLen, 0] }),
+    `${id}-forearm-r`,
+    runtimeFactory
+  );
+  const armL = attachRt(
+    group(`${id}-arm-l`, [buildUpperArmNode("l", false), forearmL], { position: [shoulderX, shoulderOffY, 0] }),
+    `${id}-arm-l`,
+    runtimeFactory
+  );
+  const armR = attachRt(
+    group(`${id}-arm-r`, [buildUpperArmNode("r", wearsShootingSleeve), forearmR], { position: [-shoulderX, shoulderOffY, 0] }),
+    `${id}-arm-r`,
+    runtimeFactory
+  );
+  const headGroup = attachRt(
+    group(`${id}-head`, [headMeshNode], { position: [0, headOffY, 0] }),
+    `${id}-head`,
+    runtimeFactory
+  );
+  const chestGroup = attachRt(
+    group(`${id}-chest`, [chestMeshNode, headGroup, armL, armR], { position: [0, chestOffY, 0] }),
+    `${id}-chest`,
+    runtimeFactory
+  );
+  const spineGroup = attachRt(
+    group(`${id}-spine`, [spineMeshNode, chestGroup], { position: [0, spineOffY, 0] }),
+    `${id}-spine`,
+    runtimeFactory
+  );
+
+  const shoeL = attachRt(
+    group(`${id}-shoe-l`, [buildHighTopSneakerNode(`${id}-shoe-l-mesh`, hs, ws, sneakerMats, true)], { position: [0, -shinLen, 0] }),
+    `${id}-shoe-l`,
+    runtimeFactory
+  );
+  const shoeR = attachRt(
+    group(`${id}-shoe-r`, [buildHighTopSneakerNode(`${id}-shoe-r-mesh`, hs, ws, sneakerMats, true)], { position: [0, -shinLen, 0] }),
+    `${id}-shoe-r`,
+    runtimeFactory
+  );
+  const calfL = attachRt(
+    group(`${id}-calf-l`, [buildCalfNode("l"), shoeL], { position: [0, -thighLen, 0] }),
+    `${id}-calf-l`,
+    runtimeFactory
+  );
+  const calfR = attachRt(
+    group(`${id}-calf-r`, [buildCalfNode("r"), shoeR], { position: [0, -thighLen, 0] }),
+    `${id}-calf-r`,
+    runtimeFactory
+  );
+  const legL = attachRt(
+    group(`${id}-leg-l`, [buildThighNode("l"), calfL], { position: [hipX, hipOffY, 0] }),
+    `${id}-leg-l`,
+    runtimeFactory
+  );
+  const legR = attachRt(
+    group(`${id}-leg-r`, [buildThighNode("r"), calfR], { position: [-hipX, hipOffY, 0] }),
+    `${id}-leg-r`,
+    runtimeFactory
+  );
+
+  const hipsGroup = attachRt(
+    group(`${id}-hips`, [hipsMeshNode, spineGroup, legL, legR], { position: [0, hipsBindY, 0] }),
+    `${id}-hips`,
+    runtimeFactory
+  );
+
+  return attachRt(
+    group(id, [hipsGroup], { position }),
+    id,
+    runtimeFactory
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Stateless "ZYX" Pose Solver & Forward Kinematics for Hoops Athletes        */
+/* -------------------------------------------------------------------------- */
+
+const Q_ID: GripQuat = [0, 0, 0, 1];
+const qEulerXYZ = (rx: number, ry: number, rz: number): GripQuat =>
+  gripQMul(gripQAxis([0, 0, 1], rz), gripQMul(gripQAxis([0, 1, 0], ry), gripQAxis([1, 0, 0], rx)));
+
+const addV3 = (a: readonly [number, number, number], b: readonly [number, number, number]): [number, number, number] => [
+  a[0] + b[0],
+  a[1] + b[1],
+  a[2] + b[2]
+];
+
+function solveTwoBoneArmQuats(
+  chestRot: GripQuat,
+  shoulder: readonly [number, number, number],
+  palmTarget: readonly [number, number, number],
+  upperLen: number,
+  foreLen: number,
+  forePalmLocal: readonly [number, number, number],
+  pole: readonly [number, number, number]
+): {
+  readonly upperLocal: GripQuat;
+  readonly foreLocal: GripQuat;
+  readonly elbowActor: [number, number, number];
+  readonly palmActor: [number, number, number];
+} {
+  const dx = palmTarget[0] - shoulder[0];
+  const dy = palmTarget[1] - shoulder[1];
+  const dz = palmTarget[2] - shoulder[2];
+  const raw = Math.hypot(dx, dy, dz) || 1e-6;
+  const foreSpan = Math.hypot(forePalmLocal[0], forePalmLocal[1], forePalmLocal[2]) || foreLen;
+  const dist = Math.max(1e-4, Math.min(upperLen + foreSpan - 1e-4, raw));
+  const ux = dx / raw;
+  const uy = dy / raw;
+  const uz = dz / raw;
+  const a = (upperLen * upperLen - foreSpan * foreSpan + dist * dist) / (2 * dist);
+  const h = Math.sqrt(Math.max(0, upperLen * upperLen - a * a));
+  let px = pole[0], py = pole[1], pz = pole[2];
+  const pd = px * ux + py * uy + pz * uz;
+  px -= ux * pd;
+  py -= uy * pd;
+  pz -= uz * pd;
+  const pl = Math.hypot(px, py, pz) || 1;
+  const elbowActor: [number, number, number] = [
+    shoulder[0] + ux * a + (px / pl) * h,
+    shoulder[1] + uy * a + (py / pl) * h,
+    shoulder[2] + uz * a + (pz / pl) * h
+  ];
+  const clampedTarget: [number, number, number] = [
+    shoulder[0] + ux * dist,
+    shoulder[1] + uy * dist,
+    shoulder[2] + uz * dist
+  ];
+  const upperDir = gripUnit([elbowActor[0] - shoulder[0], elbowActor[1] - shoulder[1], elbowActor[2] - shoulder[2]]);
+  const foreDir = gripUnit([clampedTarget[0] - elbowActor[0], clampedTarget[1] - elbowActor[1], clampedTarget[2] - elbowActor[2]]);
+  const foreBindDir = gripUnit([forePalmLocal[0], forePalmLocal[1], forePalmLocal[2]]);
+  const upperWorld = gripQFromTo([0, -1, 0], upperDir);
+  const foreWorld = gripQFromTo(foreBindDir, foreDir);
+  const upperLocal = gripQMul(gripQConj(chestRot), upperWorld);
+  const foreLocal = gripQMul(gripQConj(upperWorld), foreWorld);
+  const palmActor = addV3(elbowActor, gripQRot(foreWorld, [forePalmLocal[0], forePalmLocal[1], forePalmLocal[2]]));
+  return { upperLocal, foreLocal, elbowActor, palmActor };
+}
+
+export interface HoopsAthletePoseInput {
+  readonly id?: string;
+  readonly big?: boolean;
+  readonly clip: string;
+  readonly time: number;
+  readonly speed: number;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly yaw: number;
+  readonly stanceNow?: boolean;
+  readonly dribbleNow?: boolean;
+  readonly checkHold?: boolean;
+  readonly carryNow?: boolean;
+  readonly dribbleCycleT?: number;
+  readonly idleHandDrop?: number;
+  readonly qaLean?: number;
+  readonly shooting?: boolean;
+  readonly shotMeterT?: number;
+  readonly dunkT?: number;
+  readonly dunkKind?: string;
+  readonly jumpT?: number;
+  readonly stumble?: number;
+  /** Optional head-look override quaternion `[x, y, z, w]` in chest-local space. */
+  readonly headLookLocalQuat?: GripQuat;
+}
+
+export interface HoopsAthletePoseResult {
+  readonly hipsPos: [number, number, number];
+  readonly rotations: Readonly<Record<HoopsAthleteJointSuffix, [number, number, number]>>;
+  readonly shoulderY: number;
+  readonly shoulderRWorld: [number, number, number];
+  readonly palmRWorld: [number, number, number];
+  readonly palmLWorld: [number, number, number];
+  readonly checkAimPalmWorld: [number, number, number];
+  readonly elbowRWorld: [number, number, number];
+  readonly hipsWorld: [number, number, number];
+  readonly footLActor: [number, number, number];
+  readonly footRActor: [number, number, number];
+  readonly footLWorld: [number, number, number];
+  readonly footRWorld: [number, number, number];
+  /** Head position in `[x, y - 0.96, z]` frame expected by `headLookAngles` + `worldToActor`. */
+  readonly headLookSocketPos: [number, number, number];
+  readonly chestActorQuat: GripQuat;
+}
+
+export interface RuntimePoseNodeLike {
+  setPosition?(x: number, y: number, z: number): unknown;
+  setRotation?(rx: number, ry: number, rz: number): unknown;
+}
+
+/**
+ * Pure stateless pose & forward-kinematics solver for an articulated streetball athlete.
+ * Computes `"ZYX"` Euler angles for all 14 joints plus exact world/actor hand, shoulder, head, and foot coordinates.
+ */
+export function computeHoopsAthleteJointPose(rawInput: HoopsAthletePoseInput): HoopsAthletePoseResult {
+  const input = {
+    id: rawInput.id ?? "p0",
+    big: rawInput.big ?? false,
+    clip: rawInput.clip,
+    time: rawInput.time,
+    speed: rawInput.speed,
+    x: rawInput.x,
+    y: rawInput.y,
+    z: rawInput.z,
+    yaw: rawInput.yaw,
+    stanceNow: rawInput.stanceNow ?? false,
+    dribbleNow: rawInput.dribbleNow ?? false,
+    checkHold: rawInput.checkHold ?? false,
+    carryNow: rawInput.carryNow ?? false,
+    dribbleCycleT: rawInput.dribbleCycleT ?? 0,
+    idleHandDrop: rawInput.idleHandDrop ?? 0.53,
+    qaLean: rawInput.qaLean,
+    shooting: rawInput.shooting ?? false,
+    shotMeterT: rawInput.shotMeterT ?? 0,
+    dunkT: rawInput.dunkT ?? 0,
+    dunkKind: rawInput.dunkKind ?? "POWER JAM",
+    jumpT: rawInput.jumpT ?? 0,
+    stumble: rawInput.stumble ?? 0,
+    headLookLocalQuat: rawInput.headLookLocalQuat
+  };
+  const hs = (input.big ? HOOPS_BIG_HEIGHT : HOOPS_GUARD_HEIGHT) / 1.748;
+  const ws = (input.big ? 1.095 : 1.0) * hs;
+
+  const hipsBindY = 0.96 * hs;
+  const spineOff: [number, number, number] = [0, 0.08 * hs, 0];
+  const chestOff: [number, number, number] = [0, 0.16 * hs, 0];
+  const headOff: [number, number, number] = [0, 0.30 * hs, 0];
+  const shoulderOffL: [number, number, number] = [0.205 * ws, 0.23 * hs, 0];
+  const shoulderOffR: [number, number, number] = [-0.205 * ws, 0.23 * hs, 0];
+  const upperLen = 0.255 * hs;
+  const foreLen = 0.300 * hs;
+  const forePalmLocal: [number, number, number] = [0, -foreLen, 0.03 * hs];
+  const hipOffL: [number, number, number] = [0.105 * ws, -0.05 * hs, 0];
+  const hipOffR: [number, number, number] = [-0.105 * ws, -0.05 * hs, 0];
+  const thighLen = 0.43 * hs;
+  const shinLen = 0.42 * hs;
+
+  let hipsPos: [number, number, number] = [0, hipsBindY, 0];
+  let qHips: GripQuat = Q_ID;
+  let qSpine: GripQuat = Q_ID;
+  let qChest: GripQuat = Q_ID;
+  let qHead: GripQuat = Q_ID;
+  let qArmL: GripQuat = Q_ID;
+  let qForeL: GripQuat = Q_ID;
+  let qArmR: GripQuat = Q_ID;
+  let qForeR: GripQuat = Q_ID;
+  let qLegL: GripQuat = Q_ID;
+  let qCalfL: GripQuat = Q_ID;
+  let qShoeL: GripQuat = Q_ID;
+  let qLegR: GripQuat = Q_ID;
+  let qCalfR: GripQuat = Q_ID;
+  let qShoeR: GripQuat = Q_ID;
+
+  // Helper replicating dribbleCycleY effort & palmY without circular imports
+  const dribbleEval = (phaseRaw: number, shoulderWorldY: number, moving: boolean) => {
+    const t = ((phaseRaw % 1) + 1) % 1;
+    const effort = Math.pow(Math.sin(Math.min(1, t / 0.66) * Math.PI), 1.15);
+    const topY = Math.max(0.76, Math.min(1.06, shoulderWorldY - (moving ? 0.46 : 0.42)));
+    const lowY = moving ? 0.52 : 0.44;
+    let palmY: number;
+    if (t < 0.56) {
+      const k = t / 0.56;
+      const e = k * k * (3 - 2 * k);
+      palmY = topY - (topY - lowY) * e;
+    } else {
+      const k = (t - 0.56) / 0.44;
+      const e = k * k * (3 - 2 * k);
+      palmY = lowY + (topY - lowY) * e;
+    }
+    return { effort, palmY };
+  };
+
+  if (input.dunkT > 0) {
+    // High-flying dunk packages: POWER JAM, WINDMILL, 360, LOB OOP
+    const u = Math.max(0, Math.min(1, input.dunkT / 0.62));
+    const slam = u < 0.58 ? -u / 0.58 : (u - 0.58) / 0.42; // -1 cocked back -> +1 rim flush
+    hipsPos = [0, hipsBindY - 0.04 * hs, 0];
+    qSpine = qEulerXYZ(slam * 0.24, 0, 0);
+    qChest = qEulerXYZ(slam * 0.22, 0, 0);
+    qHead = qEulerXYZ(-0.22 - slam * 0.14, 0, 0);
+    qLegL = qEulerXYZ(-0.55 + u * 0.25, 0, 0.08);
+    qCalfL = qEulerXYZ(0.95 - u * 0.35, 0, 0);
+    qShoeL = qEulerXYZ(0.28, 0, 0);
+    qLegR = qEulerXYZ(-0.25 - u * 0.2, 0, -0.08);
+    qCalfR = qEulerXYZ(0.62 + u * 0.2, 0, 0);
+    qShoeR = qEulerXYZ(0.32, 0, 0);
+
+    if (input.dunkKind === "WINDMILL") {
+      const ang = u * Math.PI * 2;
+      qArmR = qEulerXYZ(-1.55 - Math.cos(ang) * 1.25, 0, -0.35 - Math.sin(ang) * 0.3);
+      qForeR = qEulerXYZ(-0.35, 0, 0);
+      qArmL = qEulerXYZ(-0.7, 0, 0.38);
+      qForeL = qEulerXYZ(-0.75, 0, 0);
+    } else if (input.dunkKind === "360") {
+      const flush = Math.max(0, (u - 0.52) / 0.48);
+      qArmR = qEulerXYZ(-0.85 - flush * 1.95, 0.25 * (1 - flush), -0.18);
+      qForeR = qEulerXYZ(-1.05 * (1 - flush) - 0.25, 0, 0);
+      qArmL = qEulerXYZ(-0.75 - flush * 0.5, -0.22, 0.28);
+      qForeL = qEulerXYZ(-0.85, 0, 0);
+    } else {
+      // Two-hand POWER JAM / LOB OOP overhead cock-back -> rim slam
+      const reach = -2.35 + slam * 0.55;
+      qArmR = qEulerXYZ(reach, 0.18, -0.12);
+      qForeR = qEulerXYZ(-0.42 + slam * 0.28, 0, 0);
+      qArmL = qEulerXYZ(reach, -0.18, 0.12);
+      qForeL = qEulerXYZ(-0.42 + slam * 0.28, 0, 0);
+    }
+  } else if (input.shooting || input.clip === "Shoot" || input.clip === "Load") {
+    // Jump-shot gather -> set-point lift
+    const g = Math.max(0, Math.min(1, input.shotMeterT / 0.72));
+    const dip = (1 - g) * 0.16;
+    hipsPos = [0, hipsBindY - dip * hs, 0];
+    qSpine = qEulerXYZ(0.12 * (1 - g) - 0.04 * g, 0, 0);
+    qChest = qEulerXYZ(0.08 * (1 - g) - 0.05 * g, -0.12, 0);
+    qHead = qEulerXYZ(-0.24 - 0.12 * g, 0.08, 0);
+    // Shooting right arm lifts from pocket (-0.95) to forehead set-point (-2.05) with tucked elbow
+    qArmR = qEulerXYZ(-0.95 - 1.12 * g, 0.14, -0.06);
+    qForeR = qEulerXYZ(-1.35 + 0.35 * g, 0, 0);
+    // Guide left hand cradles side of the basketball
+    qArmL = qEulerXYZ(-0.88 - 0.92 * g, -0.32, 0.16);
+    qForeL = qEulerXYZ(-1.12 + 0.24 * g, 0, 0);
+    const knee = (1 - g) * 0.52 + 0.14;
+    qLegL = qEulerXYZ(-knee * 0.55, 0, 0.04);
+    qCalfL = qEulerXYZ(knee, 0, 0);
+    qShoeL = qEulerXYZ(-knee * 0.35 + g * 0.24, 0, 0);
+    qLegR = qEulerXYZ(-knee * 0.58, 0, -0.04);
+    qCalfR = qEulerXYZ(knee * 1.04, 0, 0);
+    qShoeR = qEulerXYZ(-knee * 0.35 + g * 0.26, 0, 0);
+  } else if (input.clip === "Release" || input.clip === "FollowThrough") {
+    // Classic high gooseneck jump-shot release ("hand in the cookie jar")
+    const follow = input.clip === "FollowThrough" ? 1 : 0.65;
+    hipsPos = [0, hipsBindY, 0];
+    qSpine = qEulerXYZ(-0.04, 0, 0);
+    qChest = qEulerXYZ(-0.05, -0.1, 0);
+    qHead = qEulerXYZ(-0.28, 0.06, 0);
+    qArmR = qEulerXYZ(-2.48 - 0.12 * follow, 0.08, -0.06);
+    qForeR = qEulerXYZ(-0.22 + 0.14 * follow, 0, 0);
+    qArmL = qEulerXYZ(-1.62 + 0.25 * follow, -0.24, 0.22);
+    qForeL = qEulerXYZ(-0.48, 0, 0);
+    qLegL = qEulerXYZ(-0.1, 0, 0.04);
+    qCalfL = qEulerXYZ(0.18, 0, 0);
+    qShoeL = qEulerXYZ(0.16, 0, 0);
+    qLegR = qEulerXYZ(-0.06, 0, -0.04);
+    qCalfR = qEulerXYZ(0.14, 0, 0);
+    qShoeR = qEulerXYZ(0.18, 0, 0);
+  } else if (input.clip === "Contest") {
+    // Vertical shot-block contest: right arm fully extended skyward, left arm guarding chest
+    hipsPos = [0, hipsBindY, 0];
+    qSpine = qEulerXYZ(-0.06, 0, 0);
+    qChest = qEulerXYZ(-0.08, 0.12, 0);
+    qHead = qEulerXYZ(-0.32, -0.08, 0);
+    qArmR = qEulerXYZ(-2.82, 0.06, -0.08);
+    qForeR = qEulerXYZ(-0.1, 0, 0);
+    qArmL = qEulerXYZ(-0.72, -0.18, 0.3);
+    qForeL = qEulerXYZ(-0.85, 0, 0);
+    qLegL = qEulerXYZ(-0.22, 0, 0.07);
+    qCalfL = qEulerXYZ(0.42, 0, 0);
+    qShoeL = qEulerXYZ(0.24, 0, 0);
+    qLegR = qEulerXYZ(-0.14, 0, -0.07);
+    qCalfR = qEulerXYZ(0.32, 0, 0);
+    qShoeR = qEulerXYZ(0.24, 0, 0);
+  } else if (input.clip === "Punch_Jab" || input.clip === "Attack") {
+    // Quick perimeter steal swipe / poke check
+    hipsPos = [0, hipsBindY - 0.14 * hs, 0.06 * hs];
+    qSpine = qEulerXYZ(0.24, -0.18, 0);
+    qChest = qEulerXYZ(0.18, -0.24, 0);
+    qHead = qEulerXYZ(-0.28, 0.32, 0);
+    qArmR = qEulerXYZ(-1.38, 0.22, -0.14);
+    qForeR = qEulerXYZ(-0.24, 0, 0);
+    qArmL = qEulerXYZ(-0.42, -0.12, 0.34);
+    qForeL = qEulerXYZ(-0.78, 0, 0);
+    qLegL = qEulerXYZ(-0.54, 0, 0.1);
+    qCalfL = qEulerXYZ(0.92, 0, 0);
+    qShoeL = qEulerXYZ(-0.38, 0, 0);
+    qLegR = qEulerXYZ(-0.28, 0, -0.1);
+    qCalfR = qEulerXYZ(0.64, 0, 0);
+    qShoeR = qEulerXYZ(-0.32, 0, 0);
+  } else if (input.stumble > 0) {
+    // Ankle-breaker crossover stumble wobble
+    const wob = Math.sin(input.time * 16) * Math.min(1, input.stumble * 1.8);
+    hipsPos = [wob * 0.06, hipsBindY - 0.18 * hs, -0.04 * hs];
+    qHips = qEulerXYZ(0.08, wob * 0.18, wob * 0.12);
+    qSpine = qEulerXYZ(0.22, -wob * 0.15, -wob * 0.18);
+    qChest = qEulerXYZ(0.16, 0, -wob * 0.14);
+    qHead = qEulerXYZ(-0.2, 0, wob * 0.1);
+    qArmL = qEulerXYZ(-0.45, 0, 0.58 + wob * 0.25);
+    qForeL = qEulerXYZ(-0.55, 0, 0);
+    qArmR = qEulerXYZ(-0.45, 0, -0.58 + wob * 0.25);
+    qForeR = qEulerXYZ(-0.55, 0, 0);
+    qLegL = qEulerXYZ(-0.58, 0, 0.14);
+    qCalfL = qEulerXYZ(1.06, 0, 0);
+    qShoeL = qEulerXYZ(-0.48, 0, 0);
+    qLegR = qEulerXYZ(-0.52, 0, -0.14);
+    qCalfR = qEulerXYZ(0.98, 0, 0);
+    qShoeR = qEulerXYZ(-0.46, 0, 0);
+  } else if (input.stanceNow) {
+    // Stationary athletic triple-threat / defensive ready / live pound dribble stance
+    // First compute approximate shoulder height so pound-dribble crouch matches bounce effort
+    const approxShoulderY = input.y + 1.39 * hs;
+    const cyc0 = dribbleEval(input.dribbleCycleT, approxShoulderY, false);
+    const crouch = input.dribbleNow && !input.checkHold ? cyc0.effort * 0.62 : 0.12;
+    const breathe = Math.sin(input.time * 2.6 + (athleteSeedFromId(input.id) % 11)) * 0.012;
+    hipsPos = [0, hipsBindY - 0.30 * crouch * hs + breathe, 0];
+    qLegL = qEulerXYZ(-(0.208 + 0.78 * crouch), 0, 0.06);
+    qCalfL = qEulerXYZ(0.276 + 1.44 * crouch, 0, 0);
+    qShoeL = qEulerXYZ(-(0.07 + 0.66 * crouch), 0, 0);
+    qLegR = qEulerXYZ(-(0.208 + 0.78 * crouch), 0, -0.06);
+    qCalfR = qEulerXYZ(0.276 + 1.44 * crouch, 0, 0);
+    qShoeR = qEulerXYZ(-(0.07 + 0.66 * crouch), 0, 0);
+
+    if (input.dribbleNow) {
+      const effort = input.checkHold ? 0 : cyc0.effort;
+      const spineLean = input.checkHold ? 0.16 : 0.18 + 0.24 * effort;
+      const chestLean = input.checkHold ? 0.10 : 0.14 + 0.20 * effort;
+      qSpine = qEulerXYZ(spineLean, 0, 0);
+      qChest = qEulerXYZ(chestLean, 0, 0);
+      qHead = qEulerXYZ(-(spineLean + chestLean) * 0.58, 0, 0);
+    } else {
+      qSpine = qEulerXYZ(0.105, 0, 0);
+      qChest = qEulerXYZ(0.07 + breathe * 0.8, 0, 0);
+      qHead = qEulerXYZ(-0.122, 0, 0);
+    }
+  } else {
+    // Locomotion gait (Walk_Loop / Run / Sprint_Loop), with optional driving carry dribble overlay
+    const sprinting = input.clip === "Sprint_Loop" || input.speed > 5.4;
+    const running = sprinting || input.clip === "Run" || input.speed > 2.2;
+    const freq = sprinting ? 3.35 : running ? 2.65 : 1.75;
+    const phase = input.time * freq * Math.PI * 2 + (athleteSeedFromId(input.id) % 7) * 0.45;
+    const s = Math.sin(phase);
+    const c = Math.cos(phase);
+    const strideAmp = sprinting ? 0.76 : running ? 0.58 : 0.34;
+    const liftAmp = sprinting ? 0.048 : running ? 0.036 : 0.018;
+    const fwdLean = sprinting ? 0.22 : running ? 0.15 : 0.07;
+
+    hipsPos = [0, hipsBindY - (running ? 0.045 : 0.015) * hs + Math.abs(c) * liftAmp * hs, 0];
+    qHips = qEulerXYZ(0.04, -s * 0.09, c * 0.03);
+
+    const kneeL = Math.max(0, -c) * (sprinting ? 1.22 : running ? 0.96 : 0.54) + 0.16;
+    const kneeR = Math.max(0, c) * (sprinting ? 1.22 : running ? 0.96 : 0.54) + 0.16;
+    qLegL = qEulerXYZ(s * strideAmp - 0.12, 0, 0.03);
+    qCalfL = qEulerXYZ(kneeL, 0, 0);
+    qShoeL = qEulerXYZ(-s * 0.24 - kneeL * 0.25, 0, 0);
+    qLegR = qEulerXYZ(-s * strideAmp - 0.12, 0, -0.03);
+    qCalfR = qEulerXYZ(kneeR, 0, 0);
+    qShoeR = qEulerXYZ(s * 0.24 - kneeR * 0.25, 0, 0);
+
+    if (input.carryNow) {
+      const approxShoulderY = input.y + 1.36 * hs;
+      const cycCarry = dribbleEval(input.dribbleCycleT, approxShoulderY, true);
+      const leanScale = input.qaLean ?? 1;
+      const spLean = (0.20 + 0.22 * cycCarry.effort) * leanScale;
+      const chLean = (0.15 + 0.18 * cycCarry.effort) * leanScale;
+      qSpine = qEulerXYZ(spLean, s * 0.07, 0);
+      qChest = qEulerXYZ(chLean, s * 0.08, 0);
+      qHead = qEulerXYZ(-(spLean + chLean) * 0.62, 0, 0);
+    } else {
+      qSpine = qEulerXYZ(fwdLean * 0.55, s * 0.1, 0);
+      qChest = qEulerXYZ(fwdLean * 0.45, s * 0.12, 0);
+      qHead = qEulerXYZ(-fwdLean * 0.75, -s * 0.08, 0);
+      const armSwing = sprinting ? 0.78 : running ? 0.58 : 0.32;
+      const elbowBend = sprinting ? -1.42 : running ? -1.16 : -0.52;
+      qArmL = qEulerXYZ(-s * armSwing - 0.08, 0, 0.09);
+      qForeL = qEulerXYZ(elbowBend - Math.max(0, s) * 0.25, 0, 0);
+      qArmR = qEulerXYZ(s * armSwing - 0.08, 0, -0.09);
+      qForeR = qEulerXYZ(elbowBend - Math.max(0, -s) * 0.25, 0, 0);
+    }
+  }
+
+  // Forward kinematics up to Chest & Shoulders in actor-local space (actor origin at floor y = 0)
+  const rHips = qHips;
+  const pSpine = addV3(hipsPos, gripQRot(rHips, spineOff));
+  const rSpine = gripQMul(rHips, qSpine);
+  const pChest = addV3(pSpine, gripQRot(rSpine, chestOff));
+  const rChest = gripQMul(rSpine, qChest);
+  const pHead = addV3(pChest, gripQRot(rChest, headOff));
+  const pShoulderL = addV3(pChest, gripQRot(rChest, shoulderOffL));
+  const pShoulderR = addV3(pChest, gripQRot(rChest, shoulderOffR));
+  const shoulderY = input.y + pShoulderR[1];
+
+  let elbowRActor: [number, number, number];
+  let palmRActor: [number, number, number];
+  let palmLActor: [number, number, number];
+  let checkAimPalmActor: [number, number, number];
+
+  // Two-bone IK for stationary stance (idle relaxed arms, check hold, live pound dribble) and driving carry dribble
+  if (input.stanceNow || input.carryNow) {
+    const cyc = dribbleEval(input.dribbleCycleT, shoulderY, input.carryNow);
+    const flare = input.dribbleNow || input.carryNow ? 0.22 : 0.06;
+    const idleDropScaled = input.idleHandDrop * hs;
+    const targetPalmR: [number, number, number] = input.checkHold
+      ? [pShoulderR[0] - 0.06, pShoulderR[1] - 0.46 * hs, pShoulderR[2] + 0.20 * hs]
+      : input.dribbleNow
+        ? [pShoulderR[0] - 0.06, cyc.palmY - input.y, pShoulderR[2] + 0.14 * hs]
+        : input.carryNow
+          ? [pShoulderR[0] - 0.06, cyc.palmY - input.y, pShoulderR[2] + 0.12 * hs]
+          : [pShoulderR[0] - 0.03, pShoulderR[1] - idleDropScaled, pShoulderR[2] + 0.03 * hs];
+    const targetPalmL: [number, number, number] = input.checkHold
+      ? [pShoulderL[0] - 0.04, pShoulderL[1] - 0.42 * hs, pShoulderL[2] + 0.10 * hs]
+      : input.dribbleNow
+        ? [pShoulderL[0] - 0.04, pShoulderL[1] - 0.34 * hs, pShoulderL[2] + 0.16 * hs]
+        : input.carryNow
+          ? [pShoulderL[0] + 0.04, pShoulderL[1] - 0.30 * hs, pShoulderL[2] + 0.22 * hs]
+          : [pShoulderL[0] + 0.03, pShoulderL[1] - idleDropScaled, pShoulderL[2] + 0.03 * hs];
+
+    const solvedR = solveTwoBoneArmQuats(
+      rChest,
+      pShoulderR,
+      targetPalmR,
+      upperLen,
+      foreLen,
+      forePalmLocal,
+      [-flare, -1, input.dribbleNow || input.carryNow ? 0.06 : 0]
+    );
+    const solvedL = solveTwoBoneArmQuats(
+      rChest,
+      pShoulderL,
+      targetPalmL,
+      upperLen,
+      foreLen,
+      forePalmLocal,
+      [input.carryNow ? 0.18 : flare, -1, 0]
+    );
+    qArmR = solvedR.upperLocal;
+    qForeR = solvedR.foreLocal;
+    qArmL = solvedL.upperLocal;
+    qForeL = solvedL.foreLocal;
+    elbowRActor = solvedR.elbowActor;
+    palmRActor = solvedR.palmActor;
+    palmLActor = solvedL.palmActor;
+    checkAimPalmActor = input.checkHold
+      ? [targetPalmR[0] - 0.05, targetPalmR[1] + 0.04, targetPalmR[2] + 0.02]
+      : palmRActor;
+  } else {
+    const rUpperR = gripQMul(rChest, qArmR);
+    elbowRActor = addV3(pShoulderR, gripQRot(rUpperR, [0, -upperLen, 0]));
+    const rForeR = gripQMul(rUpperR, qForeR);
+    palmRActor = addV3(elbowRActor, gripQRot(rForeR, forePalmLocal));
+
+    const rUpperL = gripQMul(rChest, qArmL);
+    const elbowLActor = addV3(pShoulderL, gripQRot(rUpperL, [0, -upperLen, 0]));
+    const rForeL = gripQMul(rUpperL, qForeL);
+    palmLActor = addV3(elbowLActor, gripQRot(rForeL, forePalmLocal));
+    checkAimPalmActor = palmRActor;
+  }
+
+  if (input.headLookLocalQuat) {
+    qHead = input.headLookLocalQuat;
+  }
+
+  // Foot forward kinematics in actor-local space (planted feet at y = 0)
+  const pHipL = addV3(hipsPos, gripQRot(rHips, hipOffL));
+  const rLegL = gripQMul(rHips, qLegL);
+  const pKneeL = addV3(pHipL, gripQRot(rLegL, [0, -thighLen, 0]));
+  const rCalfL = gripQMul(rLegL, qCalfL);
+  const pAnkleL = addV3(pKneeL, gripQRot(rCalfL, [0, -shinLen, 0]));
+  const rShoeL = gripQMul(rCalfL, qShoeL);
+  const footLActor = addV3(pAnkleL, gripQRot(rShoeL, [0, -0.06 * hs, 0.04 * hs]));
+
+  const pHipR = addV3(hipsPos, gripQRot(rHips, hipOffR));
+  const rLegR = gripQMul(rHips, qLegR);
+  const pKneeR = addV3(pHipR, gripQRot(rLegR, [0, -thighLen, 0]));
+  const rCalfR = gripQMul(rLegR, qCalfR);
+  const pAnkleR = addV3(pKneeR, gripQRot(rCalfR, [0, -shinLen, 0]));
+  const rShoeR = gripQMul(rCalfR, qShoeR);
+  const footRActor = addV3(pAnkleR, gripQRot(rShoeR, [0, -0.06 * hs, 0.04 * hs]));
+
+  const cy = Math.cos(input.yaw);
+  const sn = Math.sin(input.yaw);
+  const toWorld = (p: readonly [number, number, number]): [number, number, number] => [
+    input.x + cy * p[0] + sn * p[2],
+    input.y + p[1],
+    input.z - sn * p[0] + cy * p[2]
+  ];
+
+  const rotations: Record<HoopsAthleteJointSuffix, [number, number, number]> = {
+    hips: gripQToEulerZYX(qHips),
+    spine: gripQToEulerZYX(qSpine),
+    chest: gripQToEulerZYX(qChest),
+    head: gripQToEulerZYX(qHead),
+    "arm-l": gripQToEulerZYX(qArmL),
+    "forearm-l": gripQToEulerZYX(qForeL),
+    "arm-r": gripQToEulerZYX(qArmR),
+    "forearm-r": gripQToEulerZYX(qForeR),
+    "leg-l": gripQToEulerZYX(qLegL),
+    "calf-l": gripQToEulerZYX(qCalfL),
+    "shoe-l": gripQToEulerZYX(qShoeL),
+    "leg-r": gripQToEulerZYX(qLegR),
+    "calf-r": gripQToEulerZYX(qCalfR),
+    "shoe-r": gripQToEulerZYX(qShoeR)
+  };
+
+  return {
+    hipsPos,
+    rotations,
+    shoulderY,
+    shoulderRWorld: toWorld(pShoulderR),
+    palmRWorld: toWorld(palmRActor),
+    palmLWorld: toWorld(palmLActor),
+    checkAimPalmWorld: toWorld(checkAimPalmActor),
+    elbowRWorld: toWorld(elbowRActor),
+    hipsWorld: toWorld(hipsPos),
+    footLActor,
+    footRActor,
+    footLWorld: toWorld(footLActor),
+    footRWorld: toWorld(footRActor),
+    headLookSocketPos: [pHead[0], pHead[1] - 0.96, pHead[2]],
+    chestActorQuat: rChest
+  };
+}
+
+/**
+ * Statelessly applies `"ZYX"` Euler joint rotations and hip height to a mounted Hoops Athlete rig,
+ * returning exact forward-kinematics palm, shoulder, head, and foot coordinates for dribble & head-look.
+ */
+export function poseArticulatedHoopsAthlete(
+  lookup: (nodeId: string) => RuntimePoseNodeLike | undefined,
+  input: HoopsAthletePoseInput
+): HoopsAthletePoseResult {
+  const solved = computeHoopsAthleteJointPose(input);
+  const hipsHandle = lookup(`${input.id}-hips`);
+  hipsHandle?.setPosition?.(solved.hipsPos[0], solved.hipsPos[1], solved.hipsPos[2]);
+  for (const suffix of HOOPS_ATHLETE_JOINT_SUFFIXES) {
+    const handle = suffix === "hips" ? hipsHandle : lookup(`${input.id}-${suffix}`);
+    const [rx, ry, rz] = solved.rotations[suffix];
+    handle?.setRotation?.(rx, ry, rz);
+  }
+  return solved;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Seated Animated Courtside Fans (`crowd-live-0` .. `crowd-live-5`)          */
+/* -------------------------------------------------------------------------- */
+
+const SEATED_FAN_TOPS: readonly AuraColor[] = [
+  "#e85d1a",
+  "#1f7ab8",
+  "#eab308",
+  "#d63649",
+  "#1f9d6b",
+  "#6d4aff"
+];
+const SEATED_FAN_PANTS: readonly AuraColor[] = [
+  "#1e293b",
+  "#27272a",
+  "#334155",
+  "#1f2937",
+  "#3b302a",
+  "#1e3a5f"
+];
+const SEATED_FAN_CAPS: readonly AuraColor[] = [
+  "#18181b",
+  "#b91c1c",
+  "#1d4ed8",
+  "#d97706",
+  "#0f766e",
+  "#4338ca"
+];
+
+export interface SeatedFanBuildOptions {
+  readonly id: string;
+  readonly index: number;
+  readonly variant: 0 | 1 | 2;
+  readonly position: AuraVec3;
+  readonly rotation: AuraVec3;
+  readonly scale?: number;
+  readonly runtimeFactory?: (nodeId: string) => unknown;
+}
+
+/**
+ * Builds an articulated, multi-material seated front-row streetball spectator (`crowd-live-0..5`),
+ * seated cleanly on the row-0 bleacher plank with knees bent over the front edge and sneakers on the floor.
+ */
+export function buildArticulatedSeatedFanNode(
+  options: SeatedFanBuildOptions
+): AuraNodeBuilder<AuraSceneNode> {
+  const { id, index, variant, position, rotation, scale = 1.0, runtimeFactory } = options;
+  const topColor = SEATED_FAN_TOPS[index % SEATED_FAN_TOPS.length]!;
+  const pantsColor = SEATED_FAN_PANTS[index % SEATED_FAN_PANTS.length]!;
+  const capColor = SEATED_FAN_CAPS[index % SEATED_FAN_CAPS.length]!;
+  const skinColor = HOOPS_SKIN_PALETTE[(index + variant) % HOOPS_SKIN_PALETTE.length]!;
+
+  const hoodieMat = material.fabric({ color: topColor, roughness: 0.72, sheen: 0.22, sheenColor: topColor });
+  const denimMat = material.fabric({ color: pantsColor, roughness: 0.82, sheen: 0.1 });
+  const capMat = material.fabric({ color: capColor, roughness: 0.7, sheen: 0.18 });
+  const skinMat = material.physical({ color: skinColor, roughness: 0.55, clearcoat: 0.06 });
+  const shoeMat = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.82 });
+  const soleMat = material.blackRubber({ color: "#111827", roughness: 0.9 });
+
+  // Seat underside sits at y = 0.43 m in fan-local space so when placed at y = 0.03 m, hips rest on the 0.45 m riser!
+  const seatY = 0.44;
+  const pelvAndLegs = combineRaw([
+    // Pelvis + both horizontal seated thighs extending forward (+z) + bent knees + vertical shins to y = 0.04
+    place(
+      loftSuper(
+        [
+          { y: seatY - 0.04, rx: 0.16, rz: 0.13, roundness: 0.65 },
+          { y: seatY + 0.07, rx: 0.15, rz: 0.11, roundness: 0.7 }
+        ],
+        12,
+        true
+      ),
+      [0, 0, 0]
+    ),
+    ...([-0.095, 0.095] as const).map((lx) =>
+      combineRaw([
+        tube([[lx, seatY + 0.01, 0.02], [lx * 1.05, seatY - 0.01, 0.38]], 0.064, 10),
+        tube([[lx * 1.05, seatY - 0.01, 0.38], [lx * 1.06, 0.05, 0.42]], 0.05, 10)
+      ])
+    )
+  ]);
+  const shoesUpper = combineRaw(
+    ([-0.1, 0.1] as const).map((lx) =>
+      place(box(0.092, 0.062, 0.21, 0.018), [lx, 0.042, 0.47])
+    )
+  );
+  const shoesSole = combineRaw(
+    ([-0.1, 0.1] as const).map((lx) =>
+      place(box(0.096, 0.018, 0.22, 0.006), [lx, 0.009, 0.47])
+    )
+  );
+  const lowerBodyNode = multiNode(
+    `${id}-lower-mesh`,
+    [
+      { mesh: pelvAndLegs, material: denimMat },
+      { mesh: shoesUpper, material: shoeMat },
+      { mesh: shoesSole, material: soleMat }
+    ],
+    { castShadow: false, receiveShadow: true }
+  );
+
+  const torsoMesh = combineRaw([
+    loftSuper(
+      [
+        { y: -0.02, rx: 0.145, rz: 0.105, roundness: 0.68 },
+        { y: 0.22, rx: 0.175, rz: 0.118, roundness: 0.6 },
+        { y: 0.38, rx: 0.155, rz: 0.102, roundness: 0.66 }
+      ],
+      14,
+      true
+    ),
+    // Streetwear hoodie collar roll
+    place(
+      latheMesh([[0.065, 0], [0.105, 0.015], [0.098, 0.055], [0.065, 0.05]], 12),
+      [0, 0.365, -0.01]
+    )
+  ]);
+  const chestMeshNode = singleMeshNode(`${id}-chest-mesh`, [torsoMesh], hoodieMat, { castShadow: false, receiveShadow: true });
+
+  const headSkin = combineRaw([
+    loftSuper(
+      [
+        { y: -0.02, rx: 0.048, rz: 0.05, roundness: 0.8 },
+        { y: 0.045, rx: 0.046, rz: 0.048, roundness: 0.8 }
+      ],
+      10,
+      true
+    ),
+    place(icosphereFacetMesh(0.084, 2, 0, 14 + index), [0, 0.118, 0.006], [0, 0, 0], [0.92, 1.06, 1.0])
+  ]);
+  const headCap = combineRaw([
+    place(
+      loftSuper(
+        [
+          { y: 0.132, rx: 0.086, rz: 0.092, roundness: 0.76 },
+          { y: 0.195, rx: 0.072, rz: 0.078, roundness: 0.82 }
+        ],
+        12,
+        true
+      ),
+      [0, 0, 0.004]
+    ),
+    ...(variant !== 2
+      ? [place(box(0.13, 0.012, 0.075, 0.005), [0, 0.138, 0.095], [0.12, 0, 0])]
+      : [])
+  ]);
+  const headNode = multiNode(
+    `${id}-head-mesh`,
+    [
+      { mesh: headSkin, material: skinMat },
+      { mesh: headCap, material: capMat }
+    ],
+    { castShadow: false, receiveShadow: true }
+  );
+
+  const buildFanArm = (side: "l" | "r") => {
+    const sleeve = tube([[0, 0.01, 0], [0, -0.23, 0]], 0.044, 9);
+    const forearm = tube([[0, 0.01, 0], [0, -0.19, 0.015]], 0.035, 8);
+    const hand = place(icosphereFacetMesh(0.036, 1, 0, 20 + index), [0, -0.22, 0.02], [0, 0, 0], [0.9, 1.15, 0.68]);
+    const foreGroup = attachRt(
+      group(
+        `${id}-forearm-${side}`,
+        [
+          multiNode(
+            `${id}-forearm-${side}-mesh`,
+            [
+              { mesh: forearm, material: hoodieMat },
+              { mesh: hand, material: skinMat }
+            ],
+            { castShadow: false, receiveShadow: true }
+          )
+        ],
+        { position: [0, -0.23, 0] }
+      ),
+      `${id}-forearm-${side}`,
+      runtimeFactory
+    );
+    return attachRt(
+      group(
+        `${id}-arm-${side}`,
+        [singleMeshNode(`${id}-upper-${side}-mesh`, [sleeve], hoodieMat, { castShadow: false, receiveShadow: true }), foreGroup],
+        { position: [side === "l" ? 0.18 : -0.18, 0.32, 0] }
+      ),
+      `${id}-arm-${side}`,
+      runtimeFactory
+    );
+  };
+
+  const fanHeadGroup = attachRt(group(`${id}-head`, [headNode], { position: [0, 0.39, 0] }), `${id}-head`, runtimeFactory);
+  const fanChestGroup = attachRt(
+    group(`${id}-chest`, [chestMeshNode, fanHeadGroup, buildFanArm("l"), buildFanArm("r")], { position: [0, seatY + 0.05, 0] }),
+    `${id}-chest`,
+    runtimeFactory
+  );
+
+  return attachRt(
+    group(id, [lowerBodyNode, fanChestGroup], { position, rotation, scale }),
+    id,
+    runtimeFactory
+  );
+}
+
+/**
+ * Statelessly animates a seated courtside fan (`sitClap`, `sitCheer`, `sitPump`) using `"ZYX"` Euler angles.
+ */
+export function poseArticulatedSeatedFan(
+  lookup: (nodeId: string) => RuntimePoseNodeLike | undefined,
+  id: string,
+  index: number,
+  clip: "sitClap" | "sitCheer" | "sitPump",
+  time: number,
+  speed = 1.0
+): void {
+  const t = time * speed + index * 1.17;
+  let chestRot: [number, number, number];
+  let headRot: [number, number, number];
+  let armLRot: [number, number, number];
+  let foreLRot: [number, number, number];
+  let armRRot: [number, number, number];
+  let foreRRot: [number, number, number];
+
+  if (clip === "sitPump") {
+    const pump = Math.sin(t * 7.2);
+    chestRot = gripQToEulerZYX(qEulerXYZ(0.12 - Math.max(0, pump) * 0.08, Math.sin(t * 3.6) * 0.08, 0));
+    headRot = gripQToEulerZYX(qEulerXYZ(-0.18 + pump * 0.08, Math.sin(t * 3.6) * 0.1, 0));
+    armLRot = gripQToEulerZYX(qEulerXYZ(-2.35 - pump * 0.38, -0.14, 0.18));
+    foreLRot = gripQToEulerZYX(qEulerXYZ(-0.45 + pump * 0.25, 0, 0));
+    armRRot = gripQToEulerZYX(qEulerXYZ(-2.35 + pump * 0.38, 0.14, -0.18));
+    foreRRot = gripQToEulerZYX(qEulerXYZ(-0.45 - pump * 0.25, 0, 0));
+  } else if (clip === "sitCheer") {
+    const wave = Math.sin(t * 4.4);
+    chestRot = gripQToEulerZYX(qEulerXYZ(0.10 + Math.sin(t * 2.2) * 0.05, wave * 0.07, 0));
+    headRot = gripQToEulerZYX(qEulerXYZ(-0.12, -wave * 0.12, 0));
+    armLRot = gripQToEulerZYX(qEulerXYZ(-1.75 - wave * 0.28, -0.18, 0.24 + wave * 0.12));
+    foreLRot = gripQToEulerZYX(qEulerXYZ(-0.55, 0, 0));
+    armRRot = gripQToEulerZYX(qEulerXYZ(-1.75 + wave * 0.28, 0.18, -0.24 + wave * 0.12));
+    foreRRot = gripQToEulerZYX(qEulerXYZ(-0.55, 0, 0));
+  } else {
+    // sitClap: rhythmic clapping in front of chest
+    const clap = Math.abs(Math.sin(t * 5.6));
+    chestRot = gripQToEulerZYX(qEulerXYZ(0.14 + clap * 0.03, 0, 0));
+    headRot = gripQToEulerZYX(qEulerXYZ(-0.1 + clap * 0.06, Math.sin(t * 1.8) * 0.08, 0));
+    armLRot = gripQToEulerZYX(qEulerXYZ(-0.92, -0.32 - (1 - clap) * 0.26, 0.12));
+    foreLRot = gripQToEulerZYX(qEulerXYZ(-0.88, 0, -0.22));
+    armRRot = gripQToEulerZYX(qEulerXYZ(-0.92, 0.32 + (1 - clap) * 0.26, -0.12));
+    foreRRot = gripQToEulerZYX(qEulerXYZ(-0.88, 0, 0.22));
+  }
+
+  lookup(`${id}-chest`)?.setRotation?.(...chestRot);
+  lookup(`${id}-head`)?.setRotation?.(...headRot);
+  lookup(`${id}-arm-l`)?.setRotation?.(...armLRot);
+  lookup(`${id}-forearm-l`)?.setRotation?.(...foreLRot);
+  lookup(`${id}-arm-r`)?.setRotation?.(...armRRot);
+  lookup(`${id}-forearm-r`)?.setRotation?.(...foreRRot);
+}
+

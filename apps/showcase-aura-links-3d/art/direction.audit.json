@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "16f15ea3dbee62f837cab9b25c7e7f66dd3bd52c854cb9619103338582d1af4d",
+  "sourceSha256": "7cebb010665ea26d42ecc408d33fcb3b029d8b1c108ac4c07d5d84fdb9c00c5a",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -38,29 +38,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "links_golfer_player",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksGolferAthleteMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "links_golfer_player",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [],
     "drawCalls": 0
   },
@@ -126,36 +104,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "links_golfer_player",
-        "maxTriangles": 20000,
-        "minTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "idle",
-            "wave",
-            "cheer"
-          ]
-        }
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksGolferAthleteMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "animated": {
-          "clips": [
-            "Ready",
-            "Idle_Loop"
-          ]
-        }
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "tee-strike",

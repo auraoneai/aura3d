@@ -22,63 +22,7 @@
     "nativeWebGPU": false,
     "productionRuntimeClaimed": true
   },
-  "primaryAssets": [
-    {
-      "typedRef": "assets.pipsPip",
-      "role": "primaryCharacter",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-40f519aa21f0c",
-      "provenance": "meshy-generated (artifacts/meshy/pips-pip, animated.glb)"
-    },
-    {
-      "typedRef": "assets.pipsBrambleback",
-      "role": "primaryBoss",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-eb18aa7ff3e40",
-      "provenance": "meshy-generated (artifacts/meshy/pips-brambleback, animated.glb)"
-    },
-    {
-      "typedRef": "assets.pipsSunseed",
-      "role": "collectible",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-b9b503245011b",
-      "provenance": "meshy-generated (artifacts/meshy/pips-sunseed, model.glb)"
-    },
-    {
-      "typedRef": "assets.pipsGoldenAcorn",
-      "role": "collectible",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-16eae286bf078",
-      "provenance": "meshy-generated (artifacts/meshy/pips-golden-acorn, model.glb)"
-    },
-    {
-      "typedRef": "assets.pipsCheckpointFlag",
-      "role": "checkpointProp",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-cc2162ee9ecdc",
-      "provenance": "meshy-generated (artifacts/meshy/pips-checkpoint-flag, model.glb)"
-    },
-    {
-      "typedRef": "assets.pipsSungate",
-      "role": "gateProp",
-      "status": "typed-primary-asset",
-      "quality": "candidate",
-      "hash": "sha256-8b44ee223ed35",
-      "provenance": "meshy-generated (artifacts/meshy/pips-sungate, model.glb)"
-    },
-    {
-      "typedRef": "assets.showcaseSidekickRunner",
-      "role": "setDressing",
-      "status": "typed-secondary-asset",
-      "quality": "candidate",
-      "hash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616"
-    }
-  ],
+  "primaryAssets": [],
   "claimStatus": {
     "status": "public-showcase",
     "label": "verified-showcase-port",

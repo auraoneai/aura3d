@@ -1,41 +1,75 @@
-import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { listCandidateFiles } from "../../../tools/remote-acr/source5-files.mjs";
+import { assets } from "../../../apps/showcase-bunker-zero/src/aura-assets";
+import { assets as localAssets } from "../../../apps/showcase-bunker-zero/src/aura-assets.local";
+import { VIEWMODEL_ASSET } from "../../../apps/showcase-bunker-zero/src/weapons-view";
 
 const APP = path.resolve("apps/showcase-bunker-zero");
 const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "utf8"));
-const entries: Array<{ id: string; outputPath: string; url: string; hash: string; sizeBytes: number; provenance?: { license?: string; evidence?: string[] } }> = manifest.assets ?? manifest;
 
-describe("bunker zero local assets", () => {
-  it("ships the 4 rigged enemy GLBs and the 4 owned CC0 Poly Haven props (WP-11 procedural overhaul)", () => {
-    const ids = entries.map((e) => e.id).sort();
-    expect(ids).toEqual(["bzBulkheadLamp", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzMachete", "bzMedicalBox", "bzShutterDoor", "bzWardenMeshy"]);
+function findGlbFiles(dir: string): string[] {
+  const found: string[] = [];
+  if (!existsSync(dir)) return found;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...findGlbFiles(full));
+    } else if (entry.name.toLowerCase().endsWith(".glb")) {
+      found.push(path.relative(APP, full));
+    }
+  }
+  return found;
+}
+
+describe("bunker zero zero-GLB procedural asset contract", () => {
+  it("ships zero .glb files and zero model entries in aura.assets.json", () => {
+    expect(manifest.schema).toBe("aura3d.assets/1.0");
+    expect(manifest.assets).toEqual([]);
+    expect(Object.keys(localAssets)).toEqual([]);
+    expect(findGlbFiles(APP)).toEqual([]);
   });
 
-  for (const entry of entries) {
-    it(`${entry.id}: hash, size, url and provenance match the shipped file`, () => {
-      const buf = readFileSync(path.join(APP, entry.outputPath));
-      expect(entry.hash).toBe(`sha256-${createHash("sha256").update(buf).digest("hex")}`);
-      expect(entry.sizeBytes).toBe(buf.length);
-      expect(entry.url).toBe(`/aura-assets/${path.basename(entry.outputPath)}`);
-      expect(entry.provenance?.license).toBeTruthy();
-      for (const evidence of entry.provenance?.evidence ?? []) expect(existsSync(path.join(APP, evidence)), evidence).toBe(true);
-      // `*.png` and `*.jpg` are gitignored: a file that exists on disk but is untracked is missing on every fresh clone.
-      // `git ls-files`, or without `.git` (ACR source pass) the staged candidate manifest, which holds only
-      // tracked and un-ignored files (tools/remote-acr/source5-files.mjs).
-      for (const rel of [entry.outputPath, ...(entry.provenance?.evidence ?? [])]) {
-        const repoPath = path.posix.join("apps/showcase-bunker-zero", rel);
-        expect(listCandidateFiles(process.cwd(), [repoPath]), `${rel} must be tracked in git`).toContain(repoPath);
-      }
-    });
-  }
-
-  it("the lifted models are brighter than their near-black originals (derivation is recorded)", () => {
-    for (const id of ["bzGunnerMeshy", "bzGuardMeshy", "bzHoundMeshy", "bzWardenMeshy"]) {
-      const rec = JSON.parse(readFileSync(path.join(APP, "aura-evidence/lift", `${id}.lift.json`), "utf8"));
-      expect(rec.tool).toBe("tools/bunker-zero-lift/lift.mjs");
+  it("types all 4 first-person weapon viewmodels as procedural descriptors", () => {
+    const expectedKeys = [
+      "bzProceduralCombatMachete",
+      "bzProceduralPulseCarbine",
+      "bzProceduralRocketLauncher",
+      "bzProceduralServicePistol"
+    ];
+    expect(Object.keys(assets).sort()).toEqual(expectedKeys);
+    expect(Object.values(VIEWMODEL_ASSET).sort()).toEqual(expectedKeys);
+    for (const key of expectedKeys) {
+      const entry = assets[key as keyof typeof assets];
+      expect(entry).toEqual({ id: key, type: "procedural" });
     }
+  });
+
+  it("preserves PBR surface textures, decals and per-floor LUT assets untouched", () => {
+    const texDir = path.join(APP, "public/aura-assets/textures");
+    const decalDir = path.join(APP, "public/aura-assets/decals");
+    const lutDir = path.join(APP, "public/aura-assets/luts");
+
+    const textures = readdirSync(texDir).filter((f) => f.endsWith(".jpg"));
+    const decals = readdirSync(decalDir).filter((f) => f.endsWith(".png")).sort();
+    const luts = readdirSync(lutDir).filter((f) => f.endsWith(".cube")).sort();
+
+    expect(textures.length).toBe(18);
+    expect(existsSync(path.join(texDir, "ATTRIBUTION.md"))).toBe(true);
+    expect(decals).toEqual([
+      "bz-bullet-hole.png",
+      "bz-crack.png",
+      "bz-hazard-stripe.png",
+      "bz-scorch.png"
+    ]);
+    expect(luts).toEqual([
+      "bz-f1-tungsten.cube",
+      "bz-f2-cellar.cube",
+      "bz-f3-forge.cube",
+      "bz-f4-brass.cube",
+      "bz-f5-fluorescent.cube",
+      "bz-f6-alarm.cube"
+    ]);
   });
 });

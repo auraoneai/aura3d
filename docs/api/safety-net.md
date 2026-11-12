@@ -57,9 +57,11 @@ page at lower quality:
   counted from the moment the app became ready, as frames the app actually drew (not wall-clock time), so a slow CPU
   renderer waits longer.
 - **Black, not dark.** The canvas is copied to a 48x32 grid with nearest-neighbour sampling (one texel per block, so thin
-  bright features are not averaged away, and any HiDPI size reads the same). A frame is black only if at most 0.2 percent of
-  the samples have a colour channel above 4. A dim but valid scene, or a frame with a real HUD drawn into the canvas, is not
-  black. Minimap and HUD canvases are skipped when the world canvas is chosen.
+  bright features are not averaged away, and any HiDPI size reads the same). Scratch 2D probe contexts are cleared before each
+  `drawImage`, and samples whose texels all report `alpha === 0` (for example a WebGPU swapchain read outside its presentation
+  window) are ignored as unreadable rather than counted as black frames. A frame is black only if at least one texel has
+  non-zero alpha and at most 0.2 percent of the samples have a colour channel above 4. A dim but valid scene, or a frame with a
+  real HUD drawn into the canvas, is not black. Minimap and HUD canvases are skipped when the world canvas is chosen.
 - **Persistent.** Black must repeat for 12 consecutive samples (every 4th frame after 30 ready frames) and last for at least
   `max(4 s, 40 x the measured median frame time)`, so a 2-second-per-frame renderer waits 80 seconds. Pass `getDrawCalls` to also
   require the engine to report draw calls greater than zero.

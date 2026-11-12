@@ -52,7 +52,7 @@ Without them the original race logic does not resolve.
 
 | Area | Original | Port |
 | --- | --- | --- |
-| Assets | Remote GLB models (riders, planet, gates, opal platforms, meteors, cave minerals) and `impasto.png` | Moon rocks are Poly Haven "Moon Rock 01" (`poly-haven:moon_rock_01`, CC0-1.0), packed to `assets/models/craterline_moon_rock.glb` (LOD0 only, 1.5 MB, 10k triangles) under the game's own key `craterlineMoonRock`, admitted with `sha256` + provenance (`assets/provenance/craterline_moon_rock.*.json`). Riders are composed from primitives (slim frame, torus tyres, capsule limbs, glowing hubs/visor/nozzles); planet is a banded shader sphere with a Fresnel atmosphere shell; islands are slabs; procedural brush texture in the track shader |
+| Assets | Remote 3D models (riders, planet, gates, opal platforms, meteors, cave minerals) and `impasto.png` | 100% procedural `@aura3d/engine` multi-material Lunar GP racing motorcycles (`buildHoverBikeChassisNode`, `buildBikeWheelNode`, `buildThrusterPodNode`, `buildSpacesuitRiderNode`), start/finish lattice gantry, Apollo lander, observatory, colony props, and chondrite moon rocks (`art/proceduralModels.ts`); planet is a banded shader sphere with a Fresnel atmosphere shell; islands are slabs; procedural brush texture in the track shader |
 | Lighting | three hemisphere + 2 directional lights, PCF shadows, ACES, exposure 1.2 | Same light model evaluated inline in each custom shader (custom materials are unlit) plus rim/specular sheen, distance haze toward the nebula blue, ACES tone mapping, bloom (0.5 / threshold 0.78), colour grade and vignette in the app output; the catalog rocks use the scene lights; **no shadow maps** |
 | Sky | Dark star field with a distant ringed course | Nebula dome (`NEBULA_*`: object-space fbm clouds, galactic band, dust lanes), two star layers (one bright additive layer), planet atmosphere shell |
 | Track look | Terracotta ring with teal mineral strata | Track shader adds teal veining, terracotta grade, glowing edge lines and a screen-space impasto bump (`TRACK_FRAGMENT`) |
@@ -61,7 +61,7 @@ Without them the original race logic does not resolve.
 | Input | Keyboard | Keyboard plus touch (`touch.ts`): hold the left side to ride, drag to steer, Boost/Rise/Brake/Gravity buttons; HUD pause and sound buttons; mute saved in `localStorage` |
 | Particles | three `Points` + sprites | `geometry.dynamic({ topology: "points" })` with `size`/`tint`/`fade` attributes |
 | Decorative rings, minerals in the cave, fractured opal escarpment, ghost rider, trail ribbons | Present | Not ported (cosmetic) |
-| Skate/bike kinematic poses | Rigged GLB animation | Rigid parts positioned per frame; no walk/pedal animation |
+| Skate/bike kinematic poses | Rigged character animation | Rigid multi-part assembly (`chassis`, `fairing`, `wheelF`, `wheelR`, `nozzleL/R`, `torso`, `visor`) transformed coherently through the full pitched/rolled basis per frame with forward wheel spin |
 | Career, championship, garage, suits, settings, ghosts persisted in `localStorage`, gamepad, touch controls | Present | Not ported. Keyboard with the original default bindings only. Time-trial ghost *recording* works (`recording`), playback and persistence do not |
 | Audio | Original music and sfx | Own synthesis (Web Audio via `@aura3d/audio` `AudioContextManager`): speed-driven engine hum and wind, boost whoosh, cues for dust/gate/jump/land/hit/lost/launch/lap/finish; catalog ambient loop. Press M to mute. No original audio is used |
 | Menu | Animated observatory scene, Explorer/Racer/Expert picker | Overlay over the live scene (camera frames the riders at s = 35) with the original's title, tagline, bike/skate and difficulty selectors (difficulty reloads with `?difficulty=`). Garage/Settings are not ported |
@@ -130,37 +130,21 @@ None blocked the port. Three things worth fixing in the engine:
 Also: `instances.mesh` and `lines.*` are unused because their flags are still `dev` (R-17),
 and custom materials are unlit, so shadows would need a dedicated shadow pass.
 
-## Meshy art pass (2026-10-23)
+## Procedural Lunar GP Vehicles & Scenery (`art/proceduralModels.ts`)
 
-The primitive riders, bikes and gate pillars were replaced with Meshy-generated models (text prompts written for this port, in our own words; no image-to-3D, no reference to the original's characters or assets). Generated through Kiro Prism with the shared helper (`/tmp/meshy/meshy.mjs`, ledger tag `strange-orbit`). Rights: the account's Meshy plan terms at generation time (see `assets/provenance/*.rights.json`); not CC0.
+All vehicles, riders, gates, rim boulders/spires, lander, observatories, and colony outposts are 100% native `@aura3d/engine` multi-material procedural assemblies (`art/proceduralModels.ts`, zero external 3D model binaries):
 
-| Role | File | Prompt gist | Refine / remesh task | Triangles (verts) | Size |
-| --- | --- | --- | --- | --- | --- |
-| Player bike + rider (rivals 2, 4 tinted) | `assets/models/bike_rider.glb` | sleek pearl-white and teal hoverbike, crouched astronaut rider, cyan thrusters | `01a169cf-79f4-7069-9035-8d104a1c81af` | 44k verts | 2.3 MB |
-| Rival bike + rider (rivals 1, 3, 5) | `assets/models/rival_bike.glb` | angular indigo and gold wedge racer, rider lying low, amber thruster | `01a169e9-f81c-77fd-ab45-de0ef2c90599` | 45k verts | 2.4 MB |
-| Skate mode skater | `assets/models/skate_rider.glb` | astronaut on a glowing teal skateboard | `01a169cd-4617-733b-a9e9-80aa4edf1e44` | 30k verts | 1.8 MB |
-| Gate pylons (10) | `assets/models/pylon.glb` | tapered terracotta stone column, teal cap, cyan band | `01a169d7-9225-7465-84c7-daf05756300c` | 16k verts | 1.1 MB |
-| Rim boulders | `assets/models/boulder_a.glb` | weathered terracotta boulder with teal veins (remeshed to 8k) | refine `01a169cd-a0e4-74a5-a214-0656f611408e`, remesh `01a169d2-ecd1-7261-a858-3702a23a12db` | 8k verts | 1.0 MB |
-| Rim spires | `assets/models/boulder_b.glb` | tall angular basalt spire, chalk streaks | `01a169d3-fb24-74c3-8289-ab2ef49341f5` | 28k verts | 1.2 MB |
-| Horizon lander | `assets/models/lander.glb` | retro four-legged lander, gold foil | `01a169d2-71c7-755b-8bba-c23ba266d313` | 38k verts | 1.6 MB |
-| Horizon observatory (2) | `assets/models/observatory.glb` | white dome, tower, radio dish | `01a169d5-3fee-769b-8e68-ecf096abfa00` | 43k verts | 1.8 MB |
-
-Credits: eight models at 30 (20 preview + 10 refine) plus one remesh at 5 = 245 credits. (The shared ledger records 175 for this game because rate-limited polls marked finished tasks as failed; the task ids above are the real spend.) Optimised with `/tmp/meshy/optimize.mjs` (dedup, weld, simplify, 1024 px textures for riders/pylon, 512 px for the props, meshopt), admitted with `aura3d assets import-meshy` + `assets validate --require-license` in an isolated temp project (`failures: []`), and wired in `models.ts` as same-origin pathname + `sha256` (the production bridge draws nothing for http(s) URLs).
-
-Wiring notes:
-
-- `model()` grounds a model: its origin is the bottom centre of the bounds, so a rider part sits at the rig origin (ground contact) and the node is scaled by `targetMaxDimension` (bike 2.5 m, skater 1.7 m) times the race scale.
-- Meshy models face -X, so the rider rig yaws them by pi (bike) or pi/2 (skater) so forward is the rig's +X.
-- A rider is now one node (was 19 primitives); the wheel spin, pedal and arm motion of the primitive rig are gone, the rider pose is rigid.
-- `?meshy=0` restores the primitive riders and the plain pillars (bisecting a render problem).
-- Set dressing: 14 boulders and spires along the rim (deterministic Lehmer seed 48271), a lander at s = 330 and two observatories at s = 790 and 1260.
-- Meshy rigging/animation was not used: the riders are single combined meshes (a rider fused to a bike cannot be rigged as a humanoid).
+- `buildHoverBikeChassisNode`: sculpted Cobalt/Crimson/Carbon MotoGP nose cowl, fuel tank with knee recesses, upswept wasp-tail cowl, dark carbon belly pan, exposed gunmetal twin-spar frame & twin-sided rear swingarm, and anodized gold-titanium telescopic front forks.
+- `buildBikeWheelNode`: wide dark racing slick tires (`#171a20`, `roughness: 0.78`) with 5-spoke turbine alloy rims and glowing caliper accents.
+- `buildThrusterPodNode`: compact twin anodized-titanium exhaust/ion nozzles tucked cleanly under the tail cowl.
+- `buildSpacesuitRiderNode`: MotoGP-tucked rider (~41 deg forward lean) with sculpted aerodynamic speed-hump, articulated arms gripping clip-on handlebars, and full-face racing helmet with dark-gold visor.
+- Set dressing: 14 boulders and spires along the rim (deterministic Lehmer seed 48271), a lander at s = 330, two observatories at s = 790 and 1260, and 10 lunar colony stations.
 
 ## Solid scenery in zero-G flight (rework)
 
 The original only collided the rider with the drivable strips (`findReentry`) and the moon rocks; the gate pillars and lintels, rim boulders and spires, lander and observatories were visual only, and a rider flying up under a strip passed through it. The port now treats them as solid in drift flight:
 
-- `obstacles.ts` holds the placement of the rim dressing (`dressingPlan()`, used by `world.ts` for the meshes) and the capsule colliders built from the same frames and the GLB bounds (`staticColliders()`); `impactColliders()` feeds the library `createImpactWorld` as sphere chains.
+- `obstacles.ts` holds the placement of the rim dressing (`dressingPlan()`, used by `world.ts` for the meshes) and the capsule colliders built from the same frames and procedural collision bounds (`staticColliders()`); `impactColliders()` feeds the library `createImpactWorld` as sphere chains.
 - The drift step moves through that world (restitution 0.4, friction 0.18). A contact above 3 m/s is one impact: it counts in `impacts`, applies the moon-rock penalty once per 1 s cooldown (energy -10, combo reset) and raises a `hit` event with the surface, point, normal and approach speed, which drives the library hit-stop, camera shake and the hit cue. Slower grazes bounce silently.
 - `findUndersideBlock` (`reentry.ts`) stops a rider flying up through a strip from below.
 - On-track riders and rivals are unchanged (the lane clamp keeps them away from these pieces), so the reference replay and the 7-lap autopilot pin are unchanged. Numbers: `evidence/strange-orbit-port/rework/README.md`.

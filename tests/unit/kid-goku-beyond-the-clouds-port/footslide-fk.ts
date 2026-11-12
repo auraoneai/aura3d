@@ -1,17 +1,12 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { createFootSlideMeter, type FootSlideReport } from "../../../packages/game/src/motion/footSlide";
-import { LEG_CLIPS } from "../../../examples/kid-goku-beyond-the-clouds-port/legcycle";
+import { HERO_RIG, LEG_CLIPS } from "../../../examples/kid-goku-beyond-the-clouds-port/legcycle";
 import { advanceGaitPhase, gaitTouchdowns, gaitWeight, plantedGaitPose, type GaitPose } from "../../../examples/kid-goku-beyond-the-clouds-port/gait";
 
 type V3 = [number, number, number];
 type Q = [number, number, number, number];
-const glb = readFileSync(resolve(process.cwd(), "examples/kid-goku-beyond-the-clouds-port/assets/meshy/hero.glb"));
-const json = JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()) as { nodes: Array<{ name?: string; translation?: number[]; scale?: number[] }>; accessors: Array<{ min?: number[]; max?: number[] }>; meshes: Array<{ primitives: Array<{ attributes: { POSITION: number } }> }> };
-const node = (name: string) => json.nodes.find((n) => n.name === name)!;
-const acc = json.accessors[json.meshes[0]!.primitives[0]!.attributes.POSITION]!;
-export const UNIT = node("Armature").scale![0]! * (1.5 / (acc.max![1]! - acc.min![1]!));
-const T = (name: string): V3 => node(name).translation!.map((x) => x * UNIT) as V3;
+type RigBoneName = keyof typeof HERO_RIG.nodes;
+export const UNIT = HERO_RIG.armatureScale * (1.5 / HERO_RIG.meshHeight);
+const T = (name: RigBoneName): V3 => HERO_RIG.nodes[name].t.map((x) => x * UNIT) as V3;
 
 const rot = (q: Q, v: V3): V3 => {
   const [x, y, z, w] = q;
@@ -26,7 +21,7 @@ const mul = (a: Q, b: Q): Q => [
 ];
 const q = (r: { x: number; y: number; z: number; w: number }): Q => [r.x, r.y, r.z, r.w];
 
-/** Independent forward kinematics straight from the GLB's rest translations: hips, knee and ankle positions (m) in the hero frame for a bone pose. */
+/** Independent forward kinematics from HERO_RIG rest translations: hips, knee and ankle positions (m) in the hero frame for a bone pose. */
 export function legPositions(pose: { bones: Record<string, { position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number; w: number } }> }, hipsFallback: { t: V3; r: Q }): Record<"left" | "right", { hip: V3; knee: V3; ankle: V3 }> {
   const hp = pose.bones.Hips?.position;
   const hipsPos: V3 = hp ? [hp.x * UNIT, hp.y * UNIT, hp.z * UNIT] : hipsFallback.t;

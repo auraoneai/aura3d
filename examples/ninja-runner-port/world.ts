@@ -9,7 +9,7 @@
  * (hero, soldier, brute, sage; one `cloneSkinned` call each): the hero, three shadow clones, six soldiers, two brutes and
  * the sage stand-in have independent skeletons and animation, told apart by tint, scale and attached weapons.
  */
-import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, geometry, instances, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cameras, effects, geometry, instances, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, slashSpec, solidSpec, sparksSpec, threatRingSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
@@ -23,7 +23,8 @@ import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import type { ImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
+import { EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
+import { buildProceduralActorNodes, createProceduralActorAssets, syncProceduralActorSceneNodes } from "./art/proceduralActors";
 import { eveningSetPieces, shrineCentre } from "./setpieces";
 import {
   buildBarrierHazardNodes,
@@ -246,46 +247,9 @@ export interface ActorAssets {
   dispose(): void;
 }
 
-/** One `cloneSkinned` call per distinct character model: hero (+ shadow clones), foot soldiers, brutes and the sage. */
-export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: number, total: number, id: CharacterId) => void, mode: LookMode = "original"): Promise<ActorAssets> {
-  // GU47 meshy07: the evening look also loads the robed caster and the scout; `?look=original` loads the 4.6.2 four.
-  const slotModels = mode === "evening" ? EVENING_SLOT_MODEL : SLOT_MODEL;
-  const slotsOf = (id: CharacterId): number[] => slotModels.flatMap((m, slot) => (m === id ? [slot] : []));
-  const order: CharacterId[] = mode === "evening" ? ["hero", "soldier", "brute", "sage", "caster", "scout"] : ["hero", "soldier", "brute", "sage"];
-  const actors: TypedGLBActor[] = new Array(slotModels.length);
-  const batches: Awaited<ReturnType<typeof cloneSkinned>>[] = [];
-  for (const id of order) {
-    const slots = slotsOf(id);
-    const asset = { url: CHARACTER_URLS[id], type: "model" as const, format: "glb" };
-    onProgress?.(batches.length, order.length, id);
-    const batch = await cloneSkinned(asset, slots.length, { width: canvas.width, height: canvas.height, idPrefix: `ninja-${id}` });
-    batches.push(batch);
-    onProgress?.(batches.length, order.length, id);
-    slots.forEach((slot, i) => { actors[slot] = batch.actors[i]!; });
-  }
-  const slotClips = actors.map((a) => a.evidence.clips);
-  const slotDurations = actors.map((a, i) => {
-    const infos = a.animation.resolvedClipInfos();
-    const d: Record<string, number> = {};
-    for (const c of slotClips[i]!) { const info = infos.find((x) => x.name === c); d[c] = info && info.duration > 0 ? info.duration : 1; }
-    return d;
-  });
-  const first = actors[HERO]!;
-  const clips = first.evidence.clips;
-  const clip = clips.includes(CLIPS.run) ? CLIPS.run : clips[0];
-  if (!clip) throw new Error("ninja-runner-port: the character rig exposes no animation clips");
-  return {
-    actors,
-    clip,
-    clipDuration: slotDurations[HERO]![clip] ?? 1,
-    slotDurations,
-    slotClips,
-    slotModels,
-    sharedTextureEntries: batches.reduce((n, b) => n + b.sharedTextures.size, 0),
-    sharedTextureRefs: batches.reduce((n, b) => n + b.sharedTextures.refCount, 0),
-    clips,
-    dispose: () => { for (const b of batches) b.dispose(); }
-  };
+/** Procedural multi-material Sengoku character rigs (`art/proceduralActors.ts`) for hero, clones, soldiers, brutes, sage, casters & scouts. */
+export async function loadActors(_canvas: HTMLCanvasElement, onProgress?: (done: number, total: number, id: CharacterId) => void, mode: LookMode = "original"): Promise<ActorAssets> {
+  return createProceduralActorAssets(onProgress, mode);
 }
 
 export interface WorldOptions {
@@ -377,8 +341,9 @@ export function buildWorld(options: WorldOptions): World {
     color: evening ? village.fog.color : "#b5c8c4",
     near: EVENING_FOG_NEAR,
     far: EVENING_FOG_FAR,
-    maxOpacity: evening ? 0.72 : 0.82,
-    density: evening ? village.fog.density : 0.0016
+    maxOpacity: 0.28,
+    density: evening ? village.fog.density : 0.0008,
+    affectsBackground: false
   }));
   // WP-23: Screen-space AO + contact shadows + rain-wet roof SSR + AgX cinematicBloom + clean radial godRays on High.
   if (high) builder.add(effects.ambientOcclusion({ name: "ao", intensity: 0.68, radius: 0.78 }));
@@ -395,7 +360,7 @@ export function buildWorld(options: WorldOptions): World {
     if (options.ink !== false) builder.add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
     // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
     if (high && options.grain !== false) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
-    if (high && options.godRays !== false) builder.add(effects.godRays({ name: "god rays", source: "sun", intensity: 0.32, decay: 0.94, samples: 48, color: "#ffd8a8" }));
+    if (high && options.godRays !== false) builder.add(effects.godRays({ name: "god rays", source: "sun", intensity: 0.06, decay: 0.94, samples: 48, color: "#ffd8a8" }));
     builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
     builder
@@ -537,7 +502,12 @@ export function buildWorld(options: WorldOptions): World {
   // Threat marker: calligraphy vermilion + sumi-ink targeting ring under the next rival in the hero's lane (`crosshairTarget`).
   const threat = evening ? threatRingSpec() : solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
   for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
-  for (let i = 0; i < options.actors.actors.length; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
+  for (let i = 0; i < options.actors.actors.length; i++) {
+    builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
+    for (const partNode of buildProceduralActorNodes(i, options.actors.slotModels[i] ?? "soldier", SUN_SHADOW)) {
+      builder.add(partNode);
+    }
+  }
 
   // WP-23: Batched katana crescent slash arcs in runner-corridor space (`CORRIDOR_BOUNDS`, paired GLSL+WGSL `slashSpec`).
   const slashBatch = new Batch(unitCrescentArc(20), SLASH_POOL, null, CORRIDOR_BOUNDS);
@@ -768,7 +738,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         color: linearToHex(look.fogColor),
         near: EVENING_FOG_NEAR,
         far: EVENING_FOG_FAR,
-        maxOpacity: 0.72,
+        maxOpacity: 0.28,
+        affectsBackground: false,
         density: look.fogDensity
       }, { transitionSeconds: 0.5 });
     }
@@ -850,7 +821,10 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     const actor = actors[slot]!;
     visible[slot] = show;
     node(`blob-${slot}`).setVisible(show);
-    if (!show) return;
+    if (!show) {
+      syncProceduralActorSceneNodes(node, slot, actor, false);
+      return;
+    }
     const f = groundFrame(entity.s, entity.x, entity.y);
     const clip = has(anim.clip, slot);
     const length = clipLength(clip, slot);
@@ -865,7 +839,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
       actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
     }
-    modelMatrixInto(mm[slot]!, f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
+    const yaw = Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra;
+    modelMatrixInto(mm[slot]!, f.x, f.y, f.z, yaw, scale);
+    syncProceduralActorSceneNodes(node, slot, actor, true, f.x, f.y, f.z, yaw, scale);
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
     const lift = Math.max(0, entity.y);
@@ -1054,7 +1030,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       enemySlots.forEach((slot, w) => {
         const id = slotEntity.get(slot);
         const e = id === undefined ? undefined : inWindow.get(id);
-        if (!e) { visible[slot] = false; node(`blob-${slot}`).setVisible(false); hideWeapons(w); return; }
+        if (!e) { visible[slot] = false; node(`blob-${slot}`).setVisible(false); syncProceduralActorSceneNodes(node, slot, actors[slot]!, false); hideWeapons(w); return; }
         const kind = e.type as EnemyKind;
         const dead = !e.alive;
         const pop = dead ? Math.max(0, 1 - (state.time - e.defeatedAt) / 0.45) : 1;

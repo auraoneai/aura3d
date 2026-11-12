@@ -153,9 +153,31 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(monolith.positions.length / 3).toBeGreaterThan(100);
 
     const bot = skaterBotMeshes();
-    for (const part of [bot.torso, bot.head, bot.visor, bot.headband, bot.earCups, bot.arm, bot.skate, bot.skateBlade]) {
+    for (const part of [
+      bot.torso,
+      bot.pelvis,
+      bot.pelvisBelt,
+      bot.head,
+      bot.visor,
+      bot.headband,
+      bot.earCups,
+      bot.arm,
+      bot.leg,
+      bot.kneePad,
+      bot.skate,
+      bot.skateBlade
+    ]) {
       expect(part.positions.length / 3).toBeGreaterThan(24);
       expect(part.indices.length).toBeGreaterThan(36);
     }
+
+    // Verify seamless vertical continuity from torso -> pelvis -> leg -> skate with zero air gap
+    const [torsoMinY] = extent(bot.torso, 1);
+    const [pelvisMinY, pelvisMaxY] = extent(bot.pelvis, 1);
+    const [legMinY, legMaxY] = extent(bot.leg, 1);
+    const [, skateMaxY] = extent(bot.skate, 1);
+    expect(0.43 + pelvisMaxY).toBeGreaterThan(0.62 + torsoMinY);
+    expect(0.405 + legMaxY).toBeGreaterThan(0.43 + pelvisMinY);
+    expect(0.405 + legMinY).toBeLessThan(skateMaxY);
   });
 });

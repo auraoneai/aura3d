@@ -332,6 +332,9 @@ function apexLookNode(): AuraSceneNode {
     if (child.kind === "effect" && child.name === "look bloom") {
       return { ...child, intensity: 0.36, threshold: 0.96, scatter: 0.38, radius: 0.32, antiBlowout: true, maxIntensity: 0.68 } as AuraSceneNode;
     }
+    if (child.kind === "effect" && child.name === "look fog") {
+      return { ...child, mode: "linear", near: Math.max(150, APEX_SCENE_FOG_PRESET.near * 1.6), far: Math.max(520, APEX_SCENE_FOG_PRESET.far), maxOpacity: 0.26, affectsBackground: false } as AuraSceneNode;
+    }
     return child;
   });
   return { ...look, children } as AuraSceneNode;
@@ -381,14 +384,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
     .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 8 }))
-    .add(effects.volumetricFog({ density: 0.0018, color: APEX_LOOK[0].dome.sun, intensity: 0.24, godRayDensity: APEX_GOD_RAY_DENSITY }));
+    .add(effects.volumetricFog({ density: 0.0004, color: APEX_LOOK[0].dome.sun, intensity: 0.05, godRayDensity: APEX_GOD_RAY_DENSITY }));
   // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
   if (!REDUCED_MOTION) {
     s.add(
       lights.lensFlare({
         name: SUN_FLARE_ID,
         position: sunWorldPosition(0),
-        intensity: 0.24,
+        intensity: 0.04,
         edgeFade: 0.2,
         elements: [
           { size: 210, distance: 0, color: APEX_PALETTE.tangerine },
@@ -1105,7 +1108,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
     // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default)
     auraApp.atmosphere?.setFog?.(
-      { color: frame.fog.color, near: APEX_SCENE_FOG_RANGE.near, far: APEX_SCENE_FOG_RANGE.far, maxOpacity: 0.72 },
+      { color: frame.fog.color, near: APEX_SCENE_FOG_RANGE.near, far: APEX_SCENE_FOG_RANGE.far, maxOpacity: 0.26, affectsBackground: false },
       { ...blend, overrideSceneFog: true }
     );
     if (sunFlare) {

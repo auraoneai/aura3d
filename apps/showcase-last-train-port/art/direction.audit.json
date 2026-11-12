@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-last-train-port/art/direction.ts",
-  "sourceSha256": "4ecac343c46f0f38b04cc4f88313a111cd06539041126d581e38885cec36f2ad",
+  "sourceSha256": "383d308a151119b5cef431e31cabd858a03547529c9c1cfaf187325da5c8dc55",
   "id": "showcase-last-train-port",
   "genre": "racing",
   "signatureEffect": "Earned sky lanterns: every clean arrival releases paper lanterns that stay aloft, so the dusk sky fills with the lights the driver earned.",
@@ -64,50 +64,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "lamplightKeep",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamplightKeep",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamplightTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamplightTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamplightTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamplightKeep",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "sky",
@@ -408,7 +365,8 @@
       },
       {
         "node": "town-static-38",
-        "practical": false
+        "emissiveIntensity": 2.394,
+        "practical": true
       },
       {
         "node": "town-static-39",
@@ -428,6 +386,30 @@
       },
       {
         "node": "town-static-43",
+        "practical": false
+      },
+      {
+        "node": "town-static-44",
+        "practical": false
+      },
+      {
+        "node": "town-static-45",
+        "practical": false
+      },
+      {
+        "node": "town-static-46",
+        "practical": false
+      },
+      {
+        "node": "town-static-47",
+        "practical": false
+      },
+      {
+        "node": "town-static-48",
+        "practical": false
+      },
+      {
+        "node": "town-static-49",
         "practical": false
       },
       {
@@ -613,11 +595,15 @@
       },
       {
         "node": "tram-body material 10",
-        "emissiveIntensity": 2.7,
+        "emissiveIntensity": 2.7600000000000002,
         "practical": true
       },
       {
         "node": "tram-body material 11",
+        "practical": false
+      },
+      {
+        "node": "tram-body material 12",
         "practical": false
       },
       {
@@ -2053,22 +2039,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "backdrop",
-        "assetKey": "lamplightKeep",
-        "maxTriangles": 40000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "lamplightTower",
-        "maxTriangles": 40000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "clean-arrival",

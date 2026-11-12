@@ -63,8 +63,8 @@ export interface ChapterLook {
   readonly pcss: boolean;
   /** DG-S1: dome colours (sRGB hex), sun or moon disc, inked cirrus bands, horizon dust band, storm cover. */
   readonly sky: { readonly top: string; readonly horizon: string; readonly discSize: number; readonly glow: number; readonly cirrus: number; readonly dust: number; readonly storm: number; readonly stars: number };
-  /** DG-S3: height-fog ground haze (A3D_QR_VFX_FOG, default-on). */
-  readonly fog: { readonly color: string; readonly density: number; readonly heightFalloff: number; readonly heightReference: number; readonly maxOpacity: number };
+  /** DG-S3: crisp linear distant desert haze (`near >= 240, far >= 1400, maxOpacity <= 0.36`, zero milky wash). */
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly density: number; readonly heightFalloff: number; readonly heightReference: number; readonly maxOpacity: number };
   /** DG-P2: ACES output exposure plus the grade. */
   readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number };
   /** DG-P3: bloom only on HDR emissives (threshold 1.0). */
@@ -109,11 +109,11 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.62 },
     hdri: "belfast_sunset_puresky", environmentIntensity: 0.98, environmentRotationDeg: 250, practicals: 0, pcss: true,
     sky: { top: "#4f72a8", horizon: "#f7b862", discSize: 0.036, glow: 0.96, cirrus: 0.78, dust: 0.16, storm: 0, stars: 0 },
-    fog: { color: "#f0be74", density: 0.00014, heightFalloff: 0.068, heightReference: 0, maxOpacity: 0.16 },
+    fog: { color: "#e8af64", near: 280, far: 1560, density: 0.00012, heightFalloff: 0.068, heightReference: 0, maxOpacity: 0.24 },
     grade: { exposure: 1.05, contrast: 1.18, saturation: 1.18, temperature: 0.05 },
     bloom: { intensity: 0.42, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eebc7a", rate: 145 }, motes: { kind: "sand", color: "#f4c98e" },
-    ground: "sand", ridge: "#d99254", rain: false, godRays: true, lensFlare: true
+    ground: "sand", ridge: "#d99254", rain: false, godRays: true, lensFlare: false
   },
   {
     chapter: 1, hour: "white-hot noon (12:40)", night: false,
@@ -122,7 +122,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     hdri: "outdoor-midday", environmentIntensity: 1.0, environmentRotationDeg: 160, practicals: 0, pcss: false,
     // phase 6: clear sunlit sky over vibrant oasis meadow with warm golden-ochre distant horizon haze
     sky: { top: "#3b84cf", horizon: "#f2e4bd", discSize: 0.028, glow: 0.5, cirrus: 0.42, dust: 0.08, storm: 0, stars: 0 },
-    fog: { color: "#f0dc9e", density: 0.00011, heightFalloff: 0.055, heightReference: 0, maxOpacity: 0.13 },
+    fog: { color: "#e8cb84", near: 300, far: 1620, density: 0.0001, heightFalloff: 0.055, heightReference: 0, maxOpacity: 0.2 },
     grade: { exposure: 1.0, contrast: 1.18, saturation: 1.18, temperature: 0.03 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "pollen", color: "#f2e8a8" },
@@ -134,7 +134,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.35 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
     sky: { top: "#0b1131", horizon: "#2a3470", discSize: 0.02, glow: 0.5, cirrus: 0.3, dust: 0.08, storm: 0, stars: 1 },
-    fog: { color: "#26305e", density: 0.00038, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
+    fog: { color: "#26305e", near: 260, far: 1480, density: 0.00024, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
     grade: { exposure: 1.3, contrast: 1.06, saturation: 1.02, temperature: -0.18 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#8ea6d8", rate: 110 }, motes: { kind: "fireflies", color: "#d9f06a" },
@@ -146,7 +146,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
     hdri: "industrial_sunset_puresky", environmentIntensity: 0.86, environmentRotationDeg: 290, practicals: 0, pcss: true,
     sky: { top: "#1f5368", horizon: "#f0a864", discSize: 0.032, glow: 0.82, cirrus: 0.58, dust: 0.14, storm: 0, stars: 0.2 },
-    fog: { color: "#ebb972", density: 0.00016, heightFalloff: 0.064, heightReference: 0, maxOpacity: 0.18 },
+    fog: { color: "#e6af68", near: 280, far: 1540, density: 0.00014, heightFalloff: 0.064, heightReference: 0, maxOpacity: 0.24 },
     grade: { exposure: 1.16, contrast: 1.12, saturation: 1.15, temperature: 0.02 },
     bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "wick-glow", color: "#ffbf6a" },
@@ -160,7 +160,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
     hdri: "kloppenheim_02", environmentIntensity: 0.78, environmentRotationDeg: 200, practicals: 0, pcss: false,
     sky: { top: "#2c3a56", horizon: "#dfd6c4", discSize: 0.022, glow: 0.48, cirrus: 0.2, dust: 0.09, storm: 1, stars: 0 },
-    fog: { color: "#cbbba0", density: 0.00018, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.18 },
+    fog: { color: "#cbb48d", near: 260, far: 1480, density: 0.00015, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.25 },
     grade: { exposure: 1.18, contrast: 1.2, saturation: 1.2, temperature: 0.03 },
     bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#b8b39a", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
@@ -173,7 +173,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.3 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
     sky: { top: "#191233", horizon: "#4c3b70", discSize: 0.024, glow: 0.55, cirrus: 0.35, dust: 0.07, storm: 0, stars: 1 },
-    fog: { color: "#3e3360", density: 0.00036, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
+    fog: { color: "#3e3360", near: 260, far: 1480, density: 0.00024, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
     grade: { exposure: 1.3, contrast: 1.05, saturation: 1.06, temperature: -0.1 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#a79ad0", rate: 110 }, motes: { kind: "embers", color: "#ff9c5a" },
@@ -186,11 +186,11 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     hdri: "spruit_sunrise", environmentIntensity: 0.88, environmentRotationDeg: 80, practicals: 0, pcss: true,
     // phase 6: a gold dawn under a blue zenith with crisp desert clarity and golden-ochre horizon haze
     sky: { top: "#5676b8", horizon: "#f6c27e", discSize: 0.034, glow: 0.5, cirrus: 0.66, dust: 0.1, storm: 0, stars: 0 },
-    fog: { color: "#efc480", density: 0.00012, heightFalloff: 0.058, heightReference: 0, maxOpacity: 0.14 },
+    fog: { color: "#ebb972", near: 280, far: 1560, density: 0.00011, heightFalloff: 0.058, heightReference: 0, maxOpacity: 0.22 },
     grade: { exposure: 0.96, contrast: 1.2, saturation: 1.14, temperature: 0.04 },
     bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
-    ground: "sand", ridge: "#d89c62", rain: false, godRays: false, lensFlare: true
+    ground: "sand", ridge: "#d89c62", rain: false, godRays: false, lensFlare: false
   }
 ];
 

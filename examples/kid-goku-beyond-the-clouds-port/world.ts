@@ -1,11 +1,11 @@
 /**
  * Rendering for Cumulus Dash: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
  * ridges, lofted ground (textured PBR track and grass, banded sandstone cliffs), merged foliage, mesas and cloud banks,
- * a rigged GLB runner with skeletal animation, the sky cloud, sky pearls, creatures, boulders, warning decals, pooled
- * particles and post (cinematic bloom, SSR, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
- * original (procedural meshes, CC0 catalog model and textures).
+ * an articulated multi-material procedural Sky Kid Cloud-Surfer Hero, the golden sky cloud, sky pearls, creatures, boulders,
+ * warning decals, pooled particles and post (cinematic bloom, SSR, grade and vignette on top of the outdoor-day look, with
+ * crisp linear distance fog and zero DOF/film blur). Everything goes through the public `@aura3d/engine` surface.
  */
-import { camera, cameras, defineAuraAssets, defineModelAssets, effects, geometry, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, effects, geometry, lights, looks, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
@@ -16,6 +16,7 @@ import { ACTIVE, cloudSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySp
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import {
   COIN_POOL_CAP,
+  applySkyKidHeroPose,
   buildCarvedBoulderNode,
   buildGoldenSkyCloudNode,
   buildHoneyRoastPickupNode,
@@ -30,20 +31,22 @@ import {
   buildSanctuaryToriiNode,
   buildSkyCoinNode,
   buildSkyHermitCottageNode,
+  buildSkyKidHeroNode,
   buildSkyPterosaurNode,
   buildSkyStaffNode,
   buildStarSphereNode,
-  buildStormTyrantNode
+  buildStormTyrantNode,
+  computeSkyKidHeroPose
 } from "./art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
-import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
+import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusPostPlan, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, createSkyFlipbookAtlas, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { Mesh, box, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
-import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
+import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight } from "./gait";
 import { buildBridges, buildCloudBankPlacements, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, buildSanctuaryToriiPlacements, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
@@ -53,10 +56,6 @@ import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
 const LICENSE_ACG = "CC0 1.0, ambientCG";
-const LICENSE_HERO = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
-const HERO_MODEL = defineModelAssets({
-  hero: { url: new URL("./assets/meshy/hero.glb", import.meta.url).pathname, sha256: "sha256-ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d" }
-}, { license: LICENSE_HERO, queryParam: null }).refs.hero;
 /* same-origin pathnames, not absolute URLs: the production bridge treats http(s) model URLs as unsafe and refuses the scene */
 export const ASSETS = defineAuraAssets({
   pathColor: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-color.jpg", import.meta.url).pathname, hash: "sha256-5b083a420d259ad70ec62babb666554b6dcb82a7b06e8dfec8d3f6ba0bb0c7e6", metadata: { license: LICENSE_ACG } },
@@ -216,10 +215,10 @@ export const SUN_FLARE_ID = "sun-flare";
 export function lookNodes(row: CumulusLookRow): unknown[] {
   const out: unknown[] = [];
   if (row.authoredSunPos) {
-    out.push(looks.preset(row.preset, { sun: sunAnglesOf(row.authoredSunPos as V3), fogDensityScale: row.fog.lookScale }));
+    out.push(looks.preset(row.preset, { sun: sunAnglesOf(row.authoredSunPos as V3), fogDensityScale: 0 }));
     out.push(lights.directional({ name: "sun", position: row.authoredSunPos as V3, target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, blend: 0.14 } }));
     if (row.hemisphere) out.push(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
-    out.push(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, near: 96, far: 380 }));
+    out.push(effects.fog({ name: "haze", mode: row.fog.mode, color: row.fog.color, near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity }));
     out.push(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
     out.push(effects.colorGrade({ name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation }));
     // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
@@ -227,7 +226,6 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
     return out;
   }
-  const gorge = row.fog.gorgeHeight;
   out.push(looks.preset(row.preset, {
     sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg },
     ...(row.hdri ? { hdri: row.hdri } : {}),
@@ -236,9 +234,16 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     background: row.fog.color,
     key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14, ...SHADOW_DEV } },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
-    fogDensityScale: row.fog.lookScale,
-    fog: { color: row.fog.color, near: 96, far: 380, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
+    fogDensityScale: 0,
     post: { bloom: false }
+  }));
+  out.push(effects.fog({
+    name: "look fog",
+    mode: row.fog.mode,
+    color: row.fog.color,
+    near: row.fog.near,
+    far: row.fog.far,
+    maxOpacity: row.fog.maxOpacity
   }));
   out.push(effects.cinematicBloom({
     name: "look bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold,
@@ -255,10 +260,8 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
   out.push(effects.contactShadows({ length: 0.34, thickness: 0.065, intensity: 0.92 }));
   out.push(effects.screenSpaceReflections({ name: "puddle-ssr", intensity: 0.48, roughness: 0.22, maxDistance: 22, thickness: 0.25 }));
   // CD-09: crepuscular god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
-  // world.ts keeps on the sun direction from the camera every frame
-  out.push(effects.volumetricFog({ name: "god-rays", density: 0.00055, color: row.sun.color, intensity: 0.28, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
-  // CD-11: title/finale depth of field and glider motion blur; both start disabled at bind and art/post.ts switches them
-  out.push(effects.depthOfField({ name: "title-dof", ...CUMULUS_DOF }));
+  // world.ts keeps on the sun direction from the camera every frame; zero DOF or film blur.
+  out.push(effects.volumetricFog({ name: "god-rays", density: 0.0002, color: row.sun.color, intensity: 0.16, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
   out.push(effects.motionBlur({ name: "glider-blur", ...CUMULUS_MOTION_BLUR }));
   out.push(lights.lensFlare({ name: SUN_FLARE_ID, position: sunPosition(row.scenery.sunDir, 2000) as V3, intensity: 0.28, edgeFade: 0.2, elements: CUMULUS_FLARE_ELEMENTS.map((e) => ({ ...e })), runtime: { id: SUN_FLARE_ID } }));
   return out;
@@ -275,9 +278,7 @@ const HERO_CONTACT_STORM = 0.85;
 const GROUND_SHADOW_ALPHA = 0.42;
 /* the shades sit this far above the draped ground (m) */
 const GROUND_SHADOW_LIFT = 0.06;
-/* clips that play once and hold their last pose (end time in seconds) or a fixed pose (at) */
-const HERO_HOLD: Readonly<Record<string, { end: number; at?: number }>> = { jump: { end: 2.0 }, hit: { end: 1.5 }, dead: { end: 2.95 }, sit: { end: 8.3, at: 7.6 } };
-/* Meshy models face +Z in their own space; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
+/* procedural creature local +Z faces toward the runner; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
 const REX_FACING = 1;
 /** The one sun (CD-01): the look key, its cascaded shadow, the scenery shader light and the sky disc all point along this. */
 export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOOK.scenery.sunDir, 100)) as V3;
@@ -430,9 +431,9 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   });
 
   /* characters and set pieces */
-  /* CD-03: a cool PBR rim on the hero on rows that set one (E-D materialOverrides rim; maps untouched) */
-  const heroRim = ACTIVE_LOOK.heroRim;
-  b.add(model(HERO_MODEL, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false, ...(heroRim ? { materialOverrides: [{ rim: { color: heroRim.color, power: heroRim.power, intensity: heroRim.intensity } }] } : {}) }).runtime({ id: "hero" }));
+  /* CD-03: articulated multi-material Sky Kid Cloud-Surfer Hero with cool PBR rim sheen on rows that set one */
+  b.add(buildSkyKidHeroNode(ACTIVE_LOOK.heroRim));
+  drawNodes += 13;
   // storm-washed has no ambient fill and a low side sun, so the ride log's camera-facing side crushed to near black in the
   // title orbit (p5 17); a 2.4x hemisphere fill on the log alone brings back the bark (GU47 phase 2)
   if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
@@ -513,11 +514,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let sparkAnchor: V3 = [0, -1000, 0];
   const fallsLip = waterfallLip(ch);
   let sprayT = 0;
-  /* CD-09 / CD-11: god rays, DOF and glider motion blur on High/Ultra only, never on a phone; the plan is re-evaluated every
-     frame (moment, riding, tier, reduced motion) and only changed states are written */
+  /* CD-09 / CD-11: god rays and glider motion blur on High/Ultra only, never on a phone (zero DOF blur); the plan is
+     re-evaluated every frame (moment, riding, tier, reduced motion) and only changed states are written */
   const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
   let postStates: Readonly<Record<string, boolean>> = {};
-  let dofFocus: number | null = null;
   const quality = app.quality; // B2: typed AuraApp.quality (no partial cast)
   if (cinematic) postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse }));
   const cullShown = new Map<string, boolean>();
@@ -546,8 +546,6 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     if (clip !== animClip) { animClip = clip; animT = 0; }
     const before = animT;
     animT += dt * rate;
-    const hold = HERO_HOLD[clip];
-    hero.play(clip, { loop: hold === undefined, captureTime: hold === undefined ? animT : hold.at ?? Math.min(animT, hold.end), crossFade: 0.1 });
     gait.clip = clip; gait.groundSpeed = groundSpeed; gait.rate = rate;
     if (clip === "run") {
       const dur = LEG_CLIPS.run.duration;
@@ -556,18 +554,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       const gBefore = gaitPhase;
       if (w <= 0) gaitPhase = animT / dur - CLIP_TOUCHDOWN_LEFT;
       else {
-        // legs, hips and arms share one phase: the clip is locked to the gait so the arm swing matches the stride
+        // legs, hips and arms share one phase: the stride cycle is locked to the gait so arm swing matches footfalls
         gaitPhase = advanceGaitPhase(gaitPhase, groundSpeed, dt);
         animT = (gaitPhase + CLIP_TOUCHDOWN_LEFT) * dur;
-        hero.play(clip, { loop: true, captureTime: animT, crossFade: 0.1 });
       }
       gait.weight = w; gait.cadence = gp.cadence; gait.stance = gp.stance; gait.lean = gp.lean * w; gait.overspeed = false;
       gait.phase = gaitPhase;
-      hero.setAnimationPose(plantedGaitPose(groundSpeed, gaitPhase, w));
       const td = w > 0 ? gaitTouchdowns(gBefore, gaitPhase) : touchdowns("run", before / dur, animT / dur);
       if (stepFx) { for (let i = 0; i < td.left; i++) stepFx("left"); for (let i = 0; i < td.right; i++) stepFx("right"); }
     } else {
-      hero.setAnimationPose(undefined);
       gait.weight = 0; gait.cadence = 0; gait.stance = 0; gait.lean = 0; gait.phase = 0; gait.overspeed = false;
     }
   };
@@ -705,6 +700,18 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         fx.dust(base, f.up, 1, "#e5cf9f", 0.55, 0.7);
       };
       play(clip, rate, phase === "paused" ? 0 : dt, groundSpeed, stepDust);
+      applySkyKidHeroPose(node, computeSkyKidHeroPose({
+        clip,
+        clock,
+        animT,
+        gaitPhase: gait.phase,
+        groundSpeed,
+        lean: gait.lean,
+        boostTimer: s.boostTimer,
+        jumpVelocity: s.jumpVelocity,
+        laneVelocity: s.laneVelocity,
+        onPole: !!s.pole
+      }));
 
       if (ch.log) {
         const lg = node("ride-log");
@@ -998,10 +1005,6 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const moment: CumulusMoment = fly ? "title" : phase === "finale" ? "finale" : "play";
         const plan = cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse, moment, riding, reducedMotion: g.reducedMotion });
         postStates = applyCumulusPostPlan(app.post, plan, postStates);
-        if (plan.dof) {
-          const focus = cumulusFocusDistance(shook, look);
-          if (needsRefocus(dofFocus, focus)) { dofFocus = focus; try { app.post?.setEffect("depthOfField", { focusDistance: focus }); } catch { /* not patchable on this chain */ } }
-        } else dofFocus = null;
       }
 
       /* distance culling of the small merged scenery (frustum culling alone keeps every chunk ahead on the winding course) */

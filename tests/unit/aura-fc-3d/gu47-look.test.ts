@@ -219,12 +219,28 @@ describe("aura-fc-3d GU47 rim (FC47-L3)", () => {
   });
 });
 
-describe("aura-fc-3d GU47 kit fabric (FC47-M2 interim)", () => {
-  it("shirt and shorts overrides carry the 0.45 fabric rim; skin and socks do not", async () => {
+describe("aura-fc-3d GU47 kit fabric & crisp stadium fog (FC47-M2)", () => {
+  it("shirt and shorts materials carry fabric sheen + 0.45 KIT_FABRIC_RIM; skin and boots do not", async () => {
     const { athleteNodes, KIT_FABRIC_RIM } = await import("../../../apps/showcase-aura-fc-3d/src/game/rig");
-    const body = athleteNodes("h-fw")[0].toJSON() as { materialOverrides?: { target: RegExp; rim?: unknown }[] };
-    const o = body.materialOverrides!;
-    expect(o.filter((m) => m.rim === KIT_FABRIC_RIM).map((m) => String(m.target))).toEqual(["/-kit$/", "/-shorts$/"]);
+    const bodyJson = JSON.parse(JSON.stringify(athleteNodes("h-fw")[0])) as Node & { material?: { name?: string; rim?: unknown; sheen?: number } };
+    const mats = flat([bodyJson])
+      .map((n: any) => n.material)
+      .filter((m): m is { name?: string; rim?: { intensity?: number }; sheen?: number } => Boolean(m?.name));
+    const rimMats = new Set(mats.filter((m) => m.rim?.intensity === 0.45).map((m) => m.name));
+    expect([...rimMats].sort()).toEqual(["h-fw-kit", "h-fw-shorts"]);
+    expect(mats.find((m) => m.name === "h-fw-skin")?.rim).toBeUndefined();
+    expect(mats.find((m) => m.name === "h-fw-boot")?.rim).toBeUndefined();
     expect(KIT_FABRIC_RIM.intensity).toBe(0.45);
+  });
+
+  it("every venue pushes fog near >= 180, fog scale <= 0.18, and strips depth-of-field blur from gameplay", () => {
+    for (const v of VENUE_ORDER) {
+      expect(VENUE_LOOKS[v].fogRange.near).toBeGreaterThanOrEqual(180);
+      expect(VENUE_LOOKS[v].fog).toBeLessThanOrEqual(0.18);
+      for (const mode of ["gu47", "hybrid", "original"] as const) {
+        const nodes = flat((buildFcScene(v, { lookMode: mode }).toJSON() as unknown as { nodes: Node[] }).nodes);
+        expect(nodes.filter((n) => n.effect === "depth-of-field")).toEqual([]);
+      }
+    }
   });
 });

@@ -17,7 +17,7 @@
   "evidence": "Worst deltas 0, 0, 9e-13 and 2e-13 over 160 trace points, in Node and in a real browser.",
   "limits": [
     "One chapter (Cumulus Ridge, 1,960 m): gaps, staff gorges, a cliff run, a river, rolling boulders, three diving pteranodons, a tyrant lizard with bites and tail swipes, a home finale and Web Audio sound and music.",
-    "Meshy-generated hero, creatures, trees, boulders, mesas and cloud; procedural terrain, foliage, sky and particles. An independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Procedural multi-material sculpted hero, creatures, trees, boulders, mesas, cottage, and golden cloud steed; procedural terrain, foliage, sky and particles. An independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "The replay check covers the pure simulation (sim.ts) only; the encounter layer, finale and audio are covered by unit tests, not by the recorded trace.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],

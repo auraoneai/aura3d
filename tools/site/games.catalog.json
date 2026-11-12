@@ -156,7 +156,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "strange-orbit-port",
-   "text": "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with audio and a difficulty selector; bikes, riders and rim props are generated models (riders are single rigid meshes); no career or garage."
+   "text": "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with multi-material procedural bikes, riders and rim props, audio and a difficulty selector; single cup race (no career or garage)."
   },
   {
    "appFolder": "showcase-splat-rush-port",
@@ -166,7 +166,7 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "splat-rush-port",
-   "text": "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Audio, effects and keyboard play added; backdrop islands and pickups are generated models; platform SDKs are not included."
+   "text": "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native multi-material procedural backdrop islands and pickups, procedural audio, effects and touch/keyboard play."
   },
   {
    "appFolder": "showcase-serpentine-sky-run-port",
@@ -176,7 +176,7 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "saiyan-snake-way-port",
-   "text": "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no hell run or road home); title, pause, results and audio included; the runner, gate and hazards are generated models."
+   "text": "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Multi-material procedural runner, gate and hazards with title, pause, results and audio; outbound course only."
   },
   {
    "appFolder": "showcase-drift-and-deliver-port",
@@ -186,7 +186,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "drift-and-deliver-port",
-   "text": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera; all four recorded scenarios reproduce exactly. Headlight beam renders; the player car, traffic and street furniture are generated models (pedestrians are static); collision response untested."
+   "text": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce exactly with multi-material procedural vehicles, city blocks and street props."
   },
   {
    "appFolder": "showcase-heatsink-port",
@@ -196,7 +196,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "heatsink-port",
-   "text": "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. the drone, pylons and scenery are generated models and the art is still visibly different from the reference (a blind model judge picked the reference in 35 of 48 trials and rated 40 of 48 pairs as the same game design); Time Trial only, no AI or audio."
+   "text": "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. Native multi-material procedural craft, pylons and canyon scenery; solo Time Trial course."
   },
   {
    "appFolder": "showcase-ninja-runner-port",
@@ -206,7 +206,7 @@
    "genre": "action",
    "verification": "replay-verified",
    "evidenceFolder": "ninja-runner-port",
-   "text": "Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. four generated rigged characters plus building and prop models; enemies share two bodies; sun shadows are off."
+   "text": "Lane-running combat with up to twelve clones, form changes and a full course win; the recorded 106-second run replays event for event with articulated multi-material procedural warriors, dojo rooftops and course props."
   },
   {
    "appFolder": "showcase-last-train-port",
@@ -216,7 +216,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "last-train-port",
-   "text": "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. No garage or level select; the tram, townhouses, landmarks and passengers are generated models (passengers stand rather than sit)."
+   "text": "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. Multi-material procedural tram, townhouses, landmarks and passengers on a continuous route (no garage or level select)."
   },
   {
    "appFolder": "showcase-roadster-hours-port",
@@ -226,7 +226,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "roadster-hours-port",
-   "text": "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 vehicles per route, one batched mesh per vehicle model, with sun shadows; a recorded 6,124-step run replays to the original's final state."
+   "text": "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 multi-material procedural vehicles per route, batched per vehicle class with sun shadows; a recorded 6,124-step run replays to the reference final state."
   },
   {
    "appFolder": "showcase-where-the-wind-wanders-port",
@@ -236,7 +236,7 @@
    "genre": "arcade",
    "verification": "replay-verified",
    "evidenceFolder": "where-the-wind-wanders-port",
-   "text": "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Includes the boat epilogue, journal and audio; the traveller, cottages and trees are generated models."
+   "text": "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Multi-material procedural traveller, cottages and trees with the boat epilogue, journal and audio."
   },
   {
    "appFolder": "showcase-silt-and-signal-port",
@@ -246,7 +246,7 @@
    "genre": "arcade",
    "verification": "replay-verified",
    "evidenceFolder": "silt-and-signal-port",
-   "text": "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap."
+   "text": "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Multi-material procedural glider, ring beacons and ruins with Chapter 0 terrain colliders and procedural dune chapters beyond (free-flight exploration, no NPCs or minimap)."
   },
   {
    "appFolder": "showcase-cloud-runner-port",
@@ -256,7 +256,7 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "kid-goku-beyond-the-clouds-port",
-   "text": "Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Includes creatures, boulders, the duel and finale, with audio; the hero, creatures and scenery are generated models."
+   "text": "Obstacle runner on a cloud: the first chapter's run simulation matches a recorded reference run to 1e-12. Multi-material procedural hero, creatures, boulders and sky scenery across the run, duel and finale with audio."
   },
   {
    "appFolder": "showcase-shape-shift-sprint",

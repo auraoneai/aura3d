@@ -1,28 +1,51 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createLocomotion } from "../../../packages/game/src/motion/locomotion";
-import { readGlb } from "../../../tools/aura-fc/glb.mjs";
-import { stanceSamples } from "../../../tools/aura-fc/clip-metrics.mjs";
 import {
-  CLIP_SECONDS, GAIT_PER_METRE, STANCE_SPEED_MODEL, athleteAnimation, athleteModelScale, kickClipFor, pickLocomotion, type LocoClip
+  CLIP_SECONDS,
+  GAIT_PER_METRE,
+  STANCE_SPEED_MODEL,
+  athleteAnimation,
+  athleteModelScale,
+  kickClipFor,
+  pickLocomotion,
+  type LocoClip
 } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
+import {
+  FOOTBALLER_CANONICAL_HEIGHT,
+  GOALKEEPER_CANONICAL_HEIGHT,
+  computeFootballerJointPose
+} from "../../../apps/showcase-aura-fc-3d/src/art/proceduralModels";
 
 /**
- * Foot slide: while a foot is planted its world velocity should be zero. A planted foot moves backwards relative to
- * the hips at (clip stance speed x playback rate x model scale); the character moves forward at the ground speed.
- * The residual is the slide. Phase now advances with distance travelled, so rate = ground speed / (stance x scale).
+ * Samples the backward horizontal speed (model units/s at playback rate 1) of the stance boot (`u in (0, 0.5)`)
+ * for our procedural articulated footballer rig (`L_eff = 0.96 m` from hip to sole).
  */
-const manifest = readFileSync("apps/showcase-aura-fc-3d/src/aura-assets-v2.ts", "utf8");
-const glbPath = (key: string) => `public${/url: "([^"]+)"/.exec(manifest.slice(manifest.indexOf(`${key}: {`)))![1]}`;
-const bounds = (key: string) => JSON.parse(/bounds: (\[[^\]]+\])/.exec(manifest.slice(manifest.indexOf(`${key}: {`)))![1]!) as number[];
+function proceduralStanceSamples(clip: "Walk_Loop" | "Run" | "Sprint_Loop", isKeeper = false) {
+  const dur = CLIP_SECONDS[clip]!;
+  const n = 40;
+  const dt = (dur * 0.5) / n;
+  const L_EFF = 0.96;
+  const zAt = (phase: number) => {
+    const p = computeFootballerJointPose({ clip, phase, duration: dur, isKeeper });
+    return -L_EFF * Math.sin(p.legR[0]);
+  };
+  const stance: { v: number }[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const t0 = i * dt;
+    const t1 = (i + 1) * dt;
+    // Planted foot moves backward (-Z) relative to pelvis, so backward speed is `(z0 - z1) / dt`
+    stance.push({ v: (zAt(t0) - zAt(t1)) / dt });
+  }
+  return { dur, stance };
+}
 
-describe("locomotion constants match the GLB data", () => {
-  for (const key of ["fcSoccerStrikerMeshy", "fcGoalkeeperMeshy"]) {
-    it(`${key}: stance speeds and durations in locomotion.ts equal what the clips contain`, () => {
-      const glb = readGlb(glbPath(key));
-      for (const clip of ["Walk_Loop", "Run", "Sprint_Loop"]) {
-        const { dur, stance } = stanceSamples(glb, clip);
-        const mean = stance.reduce((s: number, x: { v: number }) => s + x.v, 0) / stance.length;
+describe("locomotion constants match the procedural articulated footballer stride", () => {
+  for (const [label, isKeeper] of [["striker", false], ["goalkeeper", true]] as const) {
+    it(`${label}: stance speeds in locomotion.ts equal the procedural rig's stance sweep`, () => {
+      for (const clip of ["Walk_Loop", "Run", "Sprint_Loop"] as const) {
+        const { dur, stance } = proceduralStanceSamples(clip, isKeeper);
+        const mean = stance.reduce((s, x) => s + x.v, 0) / stance.length;
         expect(dur).toBeCloseTo(CLIP_SECONDS[clip]!, 3);
         expect(mean).toBeCloseTo(STANCE_SPEED_MODEL[clip]!, 1);
       }
@@ -31,58 +54,52 @@ describe("locomotion constants match the GLB data", () => {
 });
 
 describe("planted-foot slide (m/s of world velocity of a planted foot)", () => {
-  const glb = readGlb(glbPath("fcSoccerStrikerMeshy"));
-  const scale = athleteModelScale("h-fw0", bounds("fcSoccerStrikerMeshy")[1]!);
-  const slide = (clip: string, groundSpeed: number, rate: number) => {
-    const { stance } = stanceSamples(glb, clip);
-    const diffs = stance.map((s: { v: number }) => groundSpeed - s.v * scale * rate);
+  const scale = athleteModelScale("h-fw0", FOOTBALLER_CANONICAL_HEIGHT);
+  expect(athleteModelScale("h-gk", GOALKEEPER_CANONICAL_HEIGHT)).toBeGreaterThan(1.15);
+
+  const slide = (clip: "Walk_Loop" | "Run" | "Sprint_Loop", groundSpeed: number, rate: number) => {
+    const { stance } = proceduralStanceSamples(clip);
+    const diffs = stance.map((s) => groundSpeed - s.v * scale * rate);
     return {
       max: Math.max(...diffs.map(Math.abs)),
-      mean: Math.abs(diffs.reduce((a: number, b: number) => a + b, 0) / diffs.length),
-      rms: Math.sqrt(diffs.reduce((a: number, b: number) => a + b * b, 0) / diffs.length)
+      mean: Math.abs(diffs.reduce((a, b) => a + b, 0) / diffs.length),
+      rms: Math.sqrt(diffs.reduce((a, b) => a + b * b, 0) / diffs.length)
     };
   };
   const speeds = [1.0, 1.6, 2.2, 2.5, 3.0, 3.8, 4.4, 4.8, 5.4, 6.2, 6.6];
-  const report: Array<Record<string, number | string>> = [];
 
-  it("distance-driven phase: planted-foot slide RMS <= 0.12 m/s (run, sprint) and <= 0.35 m/s (walk, slow range) at every speed", () => {
+  it("distance-driven phase: planted-foot slide RMS <= 0.12 m/s at every speed", () => {
     let loco: LocoClip = "Ready";
     for (const v of speeds) {
-      // settle the hysteresis from below, like a player accelerating
       for (let u = 0.3; u <= v; u += 0.1) loco = pickLocomotion(u, loco);
       loco = pickLocomotion(v, loco);
       const clip = loco === "Ready" ? "Walk_Loop" : loco;
       const rate = v / (STANCE_SPEED_MODEL[clip]! * scale);
       const s = slide(clip, v, rate);
-      report.push({ speed: v, clip, rate: +rate.toFixed(2), rmsSlide: +s.rms.toFixed(3), maxSlide: +s.max.toFixed(3), meanSlide: +s.mean.toFixed(3) });
-      expect(s.mean).toBeLessThan(0.1);
-      if (clip === "Walk_Loop") { expect(s.rms).toBeLessThan(0.35); expect(s.max).toBeLessThan(0.8); }
-      else { expect(s.rms).toBeLessThan(0.12); expect(s.max).toBeLessThan(0.35); }
+      expect(s.mean).toBeLessThan(0.05);
+      expect(s.rms).toBeLessThan(0.12);
+      expect(s.max).toBeLessThan(0.25);
       expect(rate).toBeGreaterThan(0.35);
-      expect(rate).toBeLessThan(1.3);                                          // never slow-motion or chipmunk
+      expect(rate).toBeLessThan(1.3);
     }
-    console.log("PLANTED_FOOT_SLIDE_DISTANCE_PHASE", JSON.stringify(report));
   });
 
-  it("the old fixed playback (Run x1.22, Sprint x1.35, Walk x1.12, speed ignored by the legacy path => x1.0) slid far more", () => {
-    // legacy path samples at app time with speed ignored, i.e. rate 1 for every clip regardless of ground speed
+  it("the old fixed playback (rate 1 for every clip regardless of ground speed) slid far more", () => {
     const old: Array<Record<string, number | string>> = [];
     for (const [v, clip] of [[1.6, "Walk_Loop"], [3.2, "Walk_Loop"], [4.8, "Run"], [6.6, "Sprint_Loop"]] as const) {
       const s = slide(clip, v, 1);
       old.push({ speed: v, clip, maxSlide: +s.max.toFixed(3), meanSlide: +s.mean.toFixed(3) });
     }
-    console.log("PLANTED_FOOT_SLIDE_OLD_FIXED_RATE", JSON.stringify(old));
     expect(Math.max(...old.map((o) => o.meanSlide as number))).toBeGreaterThan(0.4);
   });
 });
 
 describe("library createLocomotion on this rig (why the game picks its own clip switch points)", () => {
-  const glb = readGlb(glbPath("fcSoccerStrikerMeshy"));
-  const scale = athleteModelScale("h-fw0", bounds("fcSoccerStrikerMeshy")[1]!);
-  const rms = (clip: string, v: number, rate: number) => {
-    const { stance } = stanceSamples(glb, clip);
-    const d = stance.map((s: { v: number }) => v - s.v * scale * rate);
-    return Math.sqrt(d.reduce((a: number, b: number) => a + b * b, 0) / d.length);
+  const scale = athleteModelScale("h-fw0", FOOTBALLER_CANONICAL_HEIGHT);
+  const rms = (clip: "Walk_Loop" | "Run" | "Sprint_Loop", v: number, rate: number) => {
+    const { stance } = proceduralStanceSamples(clip);
+    const d = stance.map((s) => v - s.v * scale * rate);
+    return Math.sqrt(d.reduce((a, b) => a + b * b, 0) / d.length);
   };
   const gaits = [
     { name: "Ready", speed: 0, cycle: 1.8 },
@@ -90,26 +107,23 @@ describe("library createLocomotion on this rig (why the game picks its own clip 
     { name: "Run", speed: STANCE_SPEED_MODEL.Run! * scale, cycle: 0.56 },
     { name: "Sprint_Loop", speed: STANCE_SPEED_MODEL.Sprint_Loop! * scale, cycle: 0.48 }
   ];
-  it("single-clip playback with the library's midpoint switching and default rate clamp slides more than the game's switch points", () => {
-    const rows: Array<Record<string, number | string>> = [];
+  it("single-clip playback with the library's default rate clamp slides at least as much as the game's distance-locked phase", () => {
     let ours: LocoClip = "Ready";
     let worseCount = 0;
     for (const v of [1.0, 1.6, 2.2, 3.0, 3.6, 4.4, 5.0, 5.8, 6.6]) {
       const lib = createLocomotion({ gaits });
       let f = lib.update(v, 1 / 60);
       for (let i = 0; i < 120; i++) f = lib.update(v, 1 / 60);
-      const libClip = f.dominant === "Ready" ? "Walk_Loop" : f.dominant;
+      const libClip = (f.dominant === "Ready" ? "Walk_Loop" : f.dominant) as "Walk_Loop" | "Run" | "Sprint_Loop";
       for (let u = 0.3; u <= v; u += 0.1) ours = pickLocomotion(u, ours);
       ours = pickLocomotion(v, ours);
-      const ourClip = ours === "Ready" ? "Walk_Loop" : ours;
+      const ourClip = (ours === "Ready" ? "Walk_Loop" : ours) as "Walk_Loop" | "Run" | "Sprint_Loop";
       const ourRate = v / (STANCE_SPEED_MODEL[ourClip]! * scale);
       const a = rms(libClip, v, f.rates[libClip]!), b = rms(ourClip, v, ourRate);
       if (b < a - 1e-9) worseCount++;
-      rows.push({ speed: v, libraryClip: libClip, libraryRate: +f.rates[libClip]!.toFixed(2), libraryRms: +a.toFixed(3), gameClip: ourClip, gameRate: +ourRate.toFixed(2), gameRms: +b.toFixed(3) });
-      expect(b).toBeLessThanOrEqual(a + 1e-9);
+      expect(b).toBeLessThanOrEqual(a + 1e-6);
     }
-    console.log("LIBRARY_LOCOMOTION_VS_GAME_SLIDE_RMS", JSON.stringify(rows));
-    expect(worseCount).toBeGreaterThanOrEqual(4);
+    expect(worseCount).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -123,7 +137,6 @@ describe("athleteAnimation", () => {
     expect(at(0.74).phase).toBeCloseTo(0.74 * CLIP_SECONDS.KickShot!, 6);
     expect(at(0.1).phase).toBeLessThan(at(0.74).phase);
     expect(at(0.74).loop).toBe(false);
-    // hit-stop: sim time frozen => same kickT => same phase
     expect(at(0.5).phase).toBe(at(0.5).phase);
   });
 

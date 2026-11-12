@@ -91,6 +91,8 @@ describe("iron-crown look table (GU47 WP-15)", () => {
       expect(grades, row.stage).toHaveLength(1);
       const blooms = lookChildren(row).filter((node) => (node as { effect?: string }).effect === "bloom");
       expect(blooms, row.stage).toHaveLength(1);
+      const dofs = lookChildren(row).filter((node) => (node as { effect?: string }).effect === "depth-of-field");
+      expect(dofs, row.stage).toHaveLength(0);
       const grain = arenaPostNodes(row, true).filter((node) => (node as { effect?: string }).effect === "film-grain");
       expect(grain, row.stage).toHaveLength(row.stage === "crown-arena" ? 1 : 0);
     }
@@ -187,12 +189,19 @@ describe("iron-crown look table (GU47 WP-15)", () => {
     for (const row of ROWS) expect(weatherParticlesFor(row, false)).toBeLessThanOrEqual(1000);
   });
 
-  it("IC47-E3: forge-smoke shafts on the Crown and ochre noon dust (fog density 1.0) on the Colosseum", () => {
+  it("IC47-E3: forge-smoke shafts on the Crown and crisp haze-free linear fog across all 6 venues", () => {
     const crownShafts = arenaShaftNodes(stageLook("crown-arena"));
     expect(crownShafts.length).toBeGreaterThanOrEqual(3);
     expect(crownShafts.every((node) => (node as { effect?: string }).effect === "lightCone")).toBe(true);
+    for (const row of ROWS) {
+      expect(row.fog.near, row.stage).toBeGreaterThanOrEqual(95);
+      expect(row.fog.near, row.stage).toBeLessThanOrEqual(120);
+      expect(row.fog.far, row.stage).toBeGreaterThanOrEqual(300);
+      expect(row.fog.far, row.stage).toBeLessThanOrEqual(380);
+      expect(row.fog.maxOpacity, row.stage).toBeLessThanOrEqual(0.16);
+      expect(row.fogDensityScale, row.stage).toBe(0.15);
+    }
     const colosseum = stageLook("colosseum-ruins");
-    expect(colosseum.fogDensityScale).toBe(1);
     expect(colosseum.fog.color).toBe("#c9a46a");
     const fog = lookChildren(colosseum).find((node) => (node as { effect?: string }).effect === "fog") as (AuraSceneNode & { color?: string }) | undefined;
     expect(fog?.color).toBe("#c9a46a");

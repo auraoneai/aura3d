@@ -21,12 +21,12 @@ export interface OriginalLook {
 
 /** The 4.6.2 look of every venue (stages.ts at v4.6.2, `makeStage` look id and overrides). */
 export const ORIGINAL_LOOKS: Readonly<Record<StageId, OriginalLook>> = {
-  "neo-tokyo-rooftop": { lookId: "night-city", overrides: { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.45 } },
-  "bangkok-dock": { lookId: "golden-hour", overrides: { accent: "#ffab4d", exposureEv: 0.08, fogDensityScale: 0.35 } },
-  "colosseum-ruins": { lookId: "outdoor-day", overrides: { accent: "#e8c98a", exposureEv: 0.1, fogDensityScale: 0.25 } },
-  "desert-airbase": { lookId: "overcast", overrides: { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.3 } },
-  "himalayan-monastery": { lookId: "alpine-snow", overrides: { accent: "#7dd7ff", exposureEv: 0.06, fogDensityScale: 0.4 } },
-  "crown-arena": { lookId: "arena-fight", overrides: { accent: "#ffd76a", exposureEv: 0.02, fogDensityScale: 0.25 } }
+  "neo-tokyo-rooftop": { lookId: "night-city", overrides: { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.15 } },
+  "bangkok-dock": { lookId: "golden-hour", overrides: { accent: "#ffab4d", exposureEv: 0.08, fogDensityScale: 0.15 } },
+  "colosseum-ruins": { lookId: "outdoor-day", overrides: { accent: "#e8c98a", exposureEv: 0.1, fogDensityScale: 0.15 } },
+  "desert-airbase": { lookId: "overcast", overrides: { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.15 } },
+  "himalayan-monastery": { lookId: "alpine-snow", overrides: { accent: "#7dd7ff", exposureEv: 0.06, fogDensityScale: 0.15 } },
+  "crown-arena": { lookId: "arena-fight", overrides: { accent: "#ffd76a", exposureEv: 0.02, fogDensityScale: 0.15 } }
 };
 
 /**

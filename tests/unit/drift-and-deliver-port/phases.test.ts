@@ -1,4 +1,7 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { FOG, TILT } from "../../../examples/drift-and-deliver-port/look";
 import { HDRI_ID, HDRI_SUN_AZIMUTH_DEG, HDRI_URL, ORIGINAL, PHASES, environmentRotationFor, godRayStrength, hexToRgb, lightDir, mixHex, parseAt, parseLook, phaseAt, phaseIdAt, todSeconds } from "../../../examples/drift-and-deliver-port/phases";
 
 const hue = (hex: string): { h: number; s: number } => {
@@ -93,6 +96,33 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(ORIGINAL.grade.saturation).toBe(1.38);
     expect(mixHex("#000000", "#ffffff", 0.5)).toBe("#bcbcbc");
     expect(mixHex("#123456", "#abcdef", 0)).toBe("#123456");
+  });
+
+  it("enforces crisp linear distance fog (near >= 150, far >= 480, maxOpacity <= 0.28) across every shift with zero height wash", () => {
+    for (const row of [ORIGINAL, ...PHASES]) {
+      expect(row.fog.near, row.id).toBeGreaterThanOrEqual(150);
+      expect(row.fog.far, row.id).toBeGreaterThanOrEqual(480);
+      expect(row.fog.maxOpacity, row.id).toBeLessThanOrEqual(0.28);
+      expect("height" in row.fog, row.id).toBe(false);
+    }
+    for (let t = 0; t <= 180; t += 10) {
+      const cur = phaseAt(t);
+      expect(cur.fog.near).toBeGreaterThanOrEqual(150);
+      expect(cur.fog.far).toBeGreaterThanOrEqual(480);
+      expect(cur.fog.maxOpacity).toBeLessThanOrEqual(0.28);
+    }
+    expect(FOG.mode).toBe("linear");
+    expect(FOG.near).toBeGreaterThanOrEqual(150);
+    expect(FOG.far).toBeGreaterThanOrEqual(480);
+    expect(FOG.maxOpacity).toBeLessThanOrEqual(0.28);
+    expect(TILT.maxBlur).toBe(0);
+
+    const portDir = resolve(__dirname, "../../../examples/drift-and-deliver-port");
+    for (const file of ["look.ts", "cinema.ts", "world.ts", "shiftRuntime.ts"]) {
+      const src = readFileSync(resolve(portDir, file), "utf8");
+      expect(src, `${file} depthOfField`).not.toMatch(/\bdepthOfField\b/);
+      expect(src, `${file} cinematic-film`).not.toMatch(/cinematic-film/);
+    }
   });
 });
 

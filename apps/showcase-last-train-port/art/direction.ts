@@ -53,10 +53,8 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [52, 64], mobile: "both" },
   assets: [
-    // GU47 phase 9 (D2): CC0 Kenney Pirate Kit distant keep/tower landmarks; streetcar, riders, houses, clock towers,
-    // lighthouses, crates, swan-neck lamps, coastal flora, and stratified basalt undercrofts are procedural multi-material (WP-25)
-    { role: "backdrop", assetKey: "lamplightKeep", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "lamplightTower", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 }
+    // 100% procedural @aura3d/engine multi-material meshes (zero external or Meshy GLBs): classic enclosed electric interurban
+    // railcar, riders, houses, clock towers, lighthouses, crates, swan-neck lamps, coastal keeps/watchtowers, flora, and basalt undercrofts
   ],
   vfx: [
     { event: "clean-arrival", kind: "sky-lanterns" },

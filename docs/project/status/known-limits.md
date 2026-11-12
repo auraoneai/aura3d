@@ -9,7 +9,7 @@ guide or README must include the narrower wording.
 
 ## Release limits
 
-Aura3D 5.5.3 is the current release. Capability claims remain limited to the named public
+Aura3D 5.5.4 is the current release. Capability claims remain limited to the named public
 API, packages, routes, and retained evidence. The project does not claim a
 universal replacement for Three.js, Unity, or Unreal, and route-specific visual
 approval does not transfer automatically to other examples.
@@ -97,8 +97,8 @@ candidate. Final release claims require regeneration and source-bound receipts.
 
 ## WebGPU Limits
 
-- Showcase defaults: WebGPU is the default in all 30 games since the 5.5.1 site update (28 in 5.5.0). Pip's Big Leap and Lamplight Line were switched on a small load-clean sample (1.01x on 1 pair, 0.97x median on 3 pairs, same frame, 0 errors); the 10-pair sample is still to be repeated on a quiet machine. In 5.5.3, native WebGPU adds 1×/4× SSR, full-frame WGSL outline, WGSL SMAA 1×, Display-P3 post stages, and WGSL twins for built-in visual/toon materials. WebGL2 stays available with `?backend=webgl2`.
-- Rapid-turn background flash (F1, reported 2026-11-10 on Lamplight Line and Duneglide): 5.5.3 addresses the synchronous shader-warmup flag (`warmGeneratedProgramsSync`), WebGPU `[0, 1]` Reversed-Z far-plane frustum culling, `setScene()` swapchain handoff, and collinear/180° camera guards (`docs/project/future-engine-work.md`).
+- Showcase defaults: WebGPU is the default in all 30 games since the 5.5.1 site update (28 in 5.5.0). Pip's Big Leap and Lamplight Line were switched on a small load-clean sample (1.01x on 1 pair, 0.97x median on 3 pairs, same frame, 0 errors); the 10-pair sample is still to be repeated on a quiet machine. In 5.5.4, native WebGPU adds 1×/4× SSR, full-frame WGSL outline, WGSL SMAA 1×, Display-P3 post stages, and WGSL twins for built-in visual/toon materials. WebGL2 stays available with `?backend=webgl2`.
+- Rapid-turn background flash (F1, reported 2026-11-10 on Lamplight Line and Duneglide): 5.5.4 addresses the synchronous shader-warmup flag (`warmGeneratedProgramsSync`), WebGPU `[0, 1]` Reversed-Z far-plane frustum culling, `setScene()` swapchain handoff, and collinear/180° camera guards (`docs/project/future-engine-work.md`).
 - Worker rendering is opt-in in all 30 games; worker fps is reported from 5.5.1 (worker-presented frames) and was not measurable in 5.5.0.
 - WebGPU behavior depends on browser and hardware support.
 - Native WebGPU claims require adapter/backend state, dispatch/render evidence,

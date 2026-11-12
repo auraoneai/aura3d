@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { basisMatrix, basisToEulerZYX, eulerZYXToMatrix, matrixToEulerZYX, multiplyMat3, axisRotation } from "../../../examples/strange-orbit-port/orient";
+import { applyMat3, basisMatrix, basisToEulerZYX, eulerZYXToMatrix, matrixToEulerZYX, multiplyMat3, axisRotation } from "../../../examples/strange-orbit-port/orient";
 import { PALETTE_STOPS, hexLinear, paintOriginalAt, pigmentsAt } from "../../../examples/strange-orbit-port/palette";
 import { Vec3 } from "../../../examples/strange-orbit-port/vec3";
 import { routeFrame } from "../../../examples/strange-orbit-port/track";
+import { computeRiderPartWorldOffset, riderRig } from "../../../examples/strange-orbit-port/world";
+import {
+  buildBikeWheelNode,
+  buildHoverBikeChassisNode,
+  buildSpacesuitRiderNode,
+  buildThrusterPodNode
+} from "../../../examples/strange-orbit-port/art/proceduralModels";
 
 function rng(seed: number): () => number {
   let s = seed >>> 0 || 1;
@@ -122,5 +129,98 @@ describe("pigment palette", () => {
     expect(pigmentsAt(-100)).toEqual(pigmentsAt(1350));
     expect(paintOriginalAt(100)).toBe(1);
     expect(paintOriginalAt(400)).toBe(0);
+  });
+});
+
+describe("motorcycle rigid assembly & wheel spin kinematics", () => {
+  it("keeps every motorcycle sub-part rigidly locked together across ramps, jumps, and mid-air rolls", () => {
+    const rig = riderRig(0, "bike", "gouache");
+    const scale = 1.15;
+
+    // Reference pairwise distances at rest on flat track (extraPitch = 0, extraRoll = 0)
+    const f0 = routeFrame(105, "main");
+    const base0 = basisMatrix(f0.tangent, f0.up, f0.side);
+    const pos0 = rig.parts.map((part) => {
+      const [ox, oy, oz] = computeRiderPartWorldOffset(base0, part.offset, scale);
+      // At extraPitch = 0, extraRoll = 0, matches un-pitched track basis exactly!
+      const want = f0.tangent.clone()
+        .multiplyScalar(part.offset[0] * scale)
+        .addScaledVector(f0.up, part.offset[1] * scale)
+        .addScaledVector(f0.side, part.offset[2] * scale);
+      expectNumbersClose([ox, oy, oz], [want.x, want.y, want.z], 11);
+      return [f0.p.x + ox, f0.p.y + oy, f0.p.z + oz] as const;
+    });
+
+    const pairwiseDist = (pts: readonly (readonly [number, number, number])[], i: number, j: number): number =>
+      Math.hypot(pts[i]![0] - pts[j]![0], pts[i]![1] - pts[j]![1], pts[i]![2] - pts[j]![2]);
+
+    for (const s of [0, 105, 420, 1050, 1380]) {
+      const f = routeFrame(s, "main");
+      for (const pitch of [-0.28, -0.14, 0, 0.22, 0.34]) {
+        for (const roll of [-0.42, -0.22, 0, 0.22, 0.45]) {
+          let base = basisMatrix(f.tangent, f.up, f.side);
+          if (pitch) base = multiplyMat3(base, axisRotation("z", pitch));
+          if (roll) base = multiplyMat3(base, axisRotation("x", roll));
+          const pts = rig.parts.map((part) => {
+            const [ox, oy, oz] = computeRiderPartWorldOffset(base, part.offset, scale);
+            return [f.p.x + ox, f.p.y + oy, f.p.z + oz] as const;
+          });
+          for (let i = 0; i < pts.length; i++) {
+            for (let j = i + 1; j < pts.length; j++) {
+              expect(pairwiseDist(pts, i, j)).toBeCloseTo(pairwiseDist(pos0, i, j), 10);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("spins front and rear wheels forward around a rock-steady lateral axle without wobble", () => {
+    const rig = riderRig(0, "bike", "gouache");
+    const wheelF = rig.parts.find((p) => p.kind === "wheelF")!;
+    for (const s of [0, 260, 780, 1240]) {
+      const f = routeFrame(s, "main");
+      const base = multiplyMat3(
+        multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("z", 0.24)),
+        axisRotation("x", -0.19)
+      );
+      const expectedAxle = applyMat3(base, [0, 0, 1]);
+      for (let k = 0; k < 16; k++) {
+        const spin = (k / 16) * Math.PI * 2;
+        const local = multiplyMat3(wheelF.local, axisRotation("y", -spin));
+        const worldMat = eulerZYXToMatrix(matrixToEulerZYX(multiplyMat3(base, local)));
+        const actualAxle = applyMat3(worldMat, [0, 1, 0]);
+        expectNumbersClose(actualAxle, expectedAxle, 10);
+      }
+      // Small positive spin moves the top of the tire (wheel local -Z -> rig +Y) forward along pitched +X!
+      const smallSpinLocal = multiplyMat3(wheelF.local, axisRotation("y", -0.25));
+      const tireTopRig = applyMat3(smallSpinLocal, [0, 0, -1]);
+      expect(tireTopRig[0]).toBeGreaterThan(0.24);
+      expect(tireTopRig[1]).toBeGreaterThan(0.95);
+      expect(Math.abs(tireTopRig[2])).toBeLessThan(1e-12);
+    }
+
+    // Exported Lunar GP procedural builders construct valid nodes cleanly
+    expect(buildHoverBikeChassisNode({
+      id: "test-bike",
+      vehicle: "bike",
+      primaryColor: "#1d5fd6",
+      accentColor: "#d86a43",
+      suitColor: "#181d27",
+      isHero: true,
+      castShadow: true,
+      look: "gouache"
+    })).toBeDefined();
+    expect(buildBikeWheelNode({ id: "test-wheel", vehicle: "bike", isHero: true })).toBeDefined();
+    expect(buildThrusterPodNode({ id: "test-nozzle", isHero: true })).toBeDefined();
+    expect(buildSpacesuitRiderNode({
+      id: "test-torso",
+      part: "torso",
+      vehicle: "bike",
+      liveryColor: "#1d5fd6",
+      accentColor: "#d86a43",
+      suitColor: "#181d27",
+      isHero: true
+    })).toBeDefined();
   });
 });

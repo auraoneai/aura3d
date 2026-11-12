@@ -149,9 +149,9 @@ export const WATER_FRAGMENT_WGSL = wgslStage([POW, SURFACE_NOISE, ROAD_WGSL], /*
     let streak = smoothstep(0.62, 0.9, vnoise(vec2<f32>(vWorld.x * 0.6, vWorld.z * 0.02 + aura.u_siltTime * 0.9)));
     c = mix(c, vec3<f32>(0.86, 0.78, 0.62), vec3<f32>(streak * 0.18 + foam * 0.12));
   }
-  let fogT = smoothstep(108.0, max(420.0, aura.u_fogFar), length(vWorld - aura.u_cameraPosition));
+  let fogT = smoothstep(280.0, max(1450.0, aura.u_fogFar), length(vWorld - aura.u_cameraPosition));
   let alpha = 0.92 * (1.0 - smoothstep(aura.u_canalHalf - 1.2, aura.u_canalHalf, d));
-  return vec4<f32>(mix(c, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.72)), alpha);
+  return vec4<f32>(mix(c, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.32)), alpha);
 }`);
 
 const LIT_WORLD_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
@@ -204,8 +204,8 @@ export const DUNE_SAND_FRAGMENT_WGSL = wgslStage([POW, SURFACE_NOISE, ROAD_WGSL]
   let twinkle = 0.5 + 0.5 * sin(g1 * 62.83 + aura.u_siltTime * 2.6 + dot(vWorld.xz, V.xz) * 4.5);
   let mica = (step(0.968, g1) + step(0.982, g2) * 0.85) * twinkle * (0.35 + 1.65 * spec) * smoothstep(0.06, 0.45, ndl) * (1.0 - smoothstep(18.0, 185.0, dist));
   var c = sandBase + mix(vec3<f32>(1.0, 0.93, 0.78), aura.u_sunColor, vec3<f32>(0.45)) * mica * 1.85;
-  let fogT = smoothstep(108.0, max(420.0, aura.u_fogFar), dist);
-  c = mix(c, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.65));
+  let fogT = smoothstep(280.0, max(1450.0, aura.u_fogFar), dist);
+  c = mix(c, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.28));
   var alpha = 1.0;
   if (aura.u_duneVeil > 0.5) {
     let rx = roadX(vWorld.z);
@@ -245,6 +245,6 @@ export const STRATA_CLIFF_FRAGMENT_WGSL = wgslStage([POW, SURFACE_NOISE], /* wgs
   let hemi = 0.36 + 0.28 * (0.5 * N.y + 0.5);
   let rim = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0) * 0.18;
   let lit = albedo * (aura.u_skyAmbient * hemi + aura.u_sunColor * (ndl * 0.96)) + aura.u_sunColor * rim;
-  let fogT = smoothstep(108.0, max(420.0, aura.u_fogFar), length(aura.u_cameraPosition - vWorld));
-  return vec4<f32>(mix(lit, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.68)), 1.0);
+  let fogT = smoothstep(280.0, max(1450.0, aura.u_fogFar), length(aura.u_cameraPosition - vWorld));
+  return vec4<f32>(mix(lit, aura.u_fogColor, vec3<f32>(fogT * fogT * 0.32)), 1.0);
 }`);

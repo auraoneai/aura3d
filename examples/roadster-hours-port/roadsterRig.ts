@@ -600,24 +600,27 @@ export function getRoadsterRigGeometries(): RoadsterRigGeometries {
   return cachedRig;
 }
 
-/* ---- Exact Quaternion / Euler composition for independent spinning + steering wheels ---- */
+/* ---- Exact "ZYX" Quaternion / Euler composition matching Aura3D `node.setRotation([rx, ry, rz])` (`R = Rz * Ry * Rx`) ---- */
 
-type Quat = readonly [number, number, number, number]; // [x, y, z, w]
+export type Quat = readonly [number, number, number, number]; // [x, y, z, w]
 
-/** Aura3D default Euler order `"XYZ"`: `R = Rx(rx) * Ry(ry) * Rz(rz)`. */
-function quatFromEulerXYZ(rx: number, ry: number, rz: number): Quat {
+/**
+ * Exact intrinsic `"ZYX"` quaternion composition (`R = Rz(rz) * Ry(ry) * Rx(rx)`, `q = qz * qy * qx`),
+ * matching `@aura3d/scene` `node.setRotation([rx, ry, rz])`.
+ */
+export function quaternionFromEulerZYX(rx: number, ry: number, rz: number): Quat {
   const cx = Math.cos(rx * 0.5), sx = Math.sin(rx * 0.5);
   const cy = Math.cos(ry * 0.5), sy = Math.sin(ry * 0.5);
   const cz = Math.cos(rz * 0.5), sz = Math.sin(rz * 0.5);
   return [
-    sx * cy * cz + cx * sy * sz,
-    cx * sy * cz - sx * cy * sz,
-    cx * cy * sz + sx * sy * cz,
-    cx * cy * cz - sx * sy * sz
+    sx * cy * cz - cx * sy * sz,
+    cx * sy * cz + sx * cy * sz,
+    cx * cy * sz - sx * sy *cz,
+    cx * cy * cz + sx * sy * sz
   ];
 }
 
-function quatMul(a: Quat, b: Quat): Quat {
+export function quatMul(a: Quat, b: Quat): Quat {
   return [
     a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
     a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
@@ -626,7 +629,7 @@ function quatMul(a: Quat, b: Quat): Quat {
   ];
 }
 
-function quatRotateVec(q: Quat, v: V3): [number, number, number] {
+export function quatRotateVec(q: Quat, v: V3): [number, number, number] {
   const qx = q[0], qy = q[1], qz = q[2], qw = q[3];
   const tx = 2 * (qy * v[2] - qz * v[1]);
   const ty = 2 * (qz * v[0] - qx * v[2]);
@@ -638,38 +641,79 @@ function quatRotateVec(q: Quat, v: V3): [number, number, number] {
   ];
 }
 
-function eulerXYZFromQuat(q: Quat): [number, number, number] {
+/**
+ * Exact intrinsic `"ZYX"` Euler extraction (`R = Rz(rz) * Ry(ry) * Rx(rx)`) from unit quaternion `q = [x, y, z, w]`:
+ * `m20 = -sin(ry)`, `cy = hypot(m00, m10) = cos(ry)`, `ry = atan2(-m20, cy)`,
+ * `rx = atan2(m21, m22)`, `rz = atan2(m10, m00)` with gimbal-lock fallback when `cy <= 1e-7`.
+ */
+export function quaternionToEulerZYX(q: Quat): [number, number, number] {
   const [x, y, z, w] = q;
-  const r02 = 2 * (x * z + w * y);
-  const ry = Math.asin(Math.max(-1, Math.min(1, r02)));
-  if (Math.abs(r02) < 0.999999) {
-    const rx = Math.atan2(-2 * (y * z - w * x), 1 - 2 * (x * x + y * y));
-    const rz = Math.atan2(-2 * (x * y - w * z), 1 - 2 * (y * y + z * z));
-    return [rx, ry, rz];
+  const m00 = 1 - 2 * (y * y + z * z);
+  const m01 = 2 * (x * y - z * w);
+  const m10 = 2 * (x * y + z * w);
+  const m11 = 1 - 2 * (x * x + z * z);
+  const m20 = 2 * (x * z - y * w);
+  const m21 = 2 * (y * z + x * w);
+  const m22 = 1 - 2 * (x * x + y * y);
+  const cy = Math.hypot(m00, m10);
+  const ry = Math.atan2(-m20, cy);
+  if (cy > 1e-7) {
+    return [Math.atan2(m21, m22), ry, Math.atan2(m10, m00)];
   }
-  const rx = Math.atan2(2 * (y * z + w * x), 1 - 2 * (x * x + z * z));
-  return [rx, ry, 0];
+  return [0, ry, Math.atan2(-m01, m11)];
 }
 
 /**
- * Computes world position and XYZ Euler rotation for one wheel given chassis world pose `(carPos, pitch, yaw, roll)`,
- * wheel local offset `localOffset`, steering yaw `steerYaw` (around chassis +Y) and rolling pitch `spinAngle` (around knuckle +X).
+ * Composeschassis local pitch & bank inside world heading yaw (`R_world = Ry(yaw) * Rz(roll) * Rx(pitch)`)
+ * and returns `"ZYX"` Euler angles `[rx, ry, rz]` for `node.setRotation`.
+ */
+export function composeChassisEuler(pitch: number, yaw: number, roll: number): [number, number, number] {
+  const qYaw = quaternionFromEulerZYX(0, yaw, 0);
+  const qBankPitch = quatMul(quaternionFromEulerZYX(0, 0, roll), quaternionFromEulerZYX(pitch, 0, 0));
+  return quaternionToEulerZYX(quatMul(qYaw, qBankPitch));
+}
+
+/**
+ * Composes `"ZYX"` Euler angles `[rx, ry, rz]` for a wheel with world heading `yaw`, axle spin `roll` (around hub `+X`),
+ * steering `steer` (around `+Y`), and `camber` (around `+Z`): `R_world = Ry(yaw) * Ry(steer) * Rz(camber) * Rx(roll)`.
+ */
+export function composeWheelEuler(yaw: number, roll: number, steer = 0, camber = 0): [number, number, number] {
+  const qYawSteer = quaternionFromEulerZYX(0, yaw + steer, 0);
+  const qCamberSpin = quatMul(quaternionFromEulerZYX(0, 0, camber), quaternionFromEulerZYX(roll, 0, 0));
+  return quaternionToEulerZYX(quatMul(qYawSteer, qCamberSpin));
+}
+
+/**
+ * Computes world position, spinning wheel `"ZYX"` Euler rotation, and non-spinning knuckle `"ZYX"` Euler rotation
+ * given chassis pose `[pitch, yaw, roll]`, wheel local offset, steering yaw (around chassis +Y), rolling spin
+ * (forward `-Z` travel -> `-spinAngle` around hub axle `+X`), and optional camber (around knuckle `+Z`).
  */
 export function computeWheelWorldPose(
   carPos: V3,
   chassisEuler: V3,
   localOffset: V3,
   steerYaw: number,
-  spinAngle: number
-): { readonly position: [number, number, number]; readonly rotation: [number, number, number] } {
-  const qChassis = quatFromEulerXYZ(chassisEuler[0], chassisEuler[1], chassisEuler[2]);
+  spinAngle: number,
+  camber = 0
+): {
+  readonly position: [number, number, number];
+  readonly rotation: [number, number, number];
+  readonly knuckleRotation: [number, number, number];
+} {
+  const qChassis = quatMul(
+    quaternionFromEulerZYX(0, chassisEuler[1], 0),
+    quatMul(quaternionFromEulerZYX(0, 0, chassisEuler[2]), quaternionFromEulerZYX(chassisEuler[0], 0, 0))
+  );
   const off = quatRotateVec(qChassis, localOffset);
-  // First steer around local Y, then spin around axle X (`forward = -Z`, so forward roll rotates around -X -> `-spinAngle`)
-  const qSteer = quatFromEulerXYZ(0, steerYaw, 0);
-  const qSpin = quatFromEulerXYZ(-spinAngle, 0, 0);
-  const qWorld = quatMul(qChassis, quatMul(qSteer, qSpin));
+  const qKnuckle = quatMul(
+    qChassis,
+    quatMul(quaternionFromEulerZYX(0, steerYaw, 0), quaternionFromEulerZYX(0, 0, camber))
+  );
+  const qSpin = quaternionFromEulerZYX(-spinAngle, 0, 0);
+  const qWorld = quatMul(qKnuckle, qSpin);
   return {
     position: [carPos[0] + off[0], carPos[1] + off[1], carPos[2] + off[2]],
-    rotation: eulerXYZFromQuat(qWorld)
+    rotation: quaternionToEulerZYX(qWorld),
+    knuckleRotation: quaternionToEulerZYX(qKnuckle)
   };
 }

@@ -18,6 +18,7 @@ export const BUNKER_ZERO_ROOT_KEYS = [];
 
 /** Procedural first-person viewmodel keys referenced in `VIEWMODEL_ASSET` (`weapons-view.ts`). */
 export const BUNKER_ZERO_PROCEDURAL_KEYS = [
+  "bzProceduralCombatMachete",
   "bzProceduralPulseCarbine",
   "bzProceduralRocketLauncher",
   "bzProceduralServicePistol"
@@ -66,7 +67,9 @@ const manifest = JSON.parse(readFileSync(localManifestFile, "utf8"));
 const localEntries = manifest.assets ?? [];
 const localLines = [
   `import { defineAuraAssets } from "@aura3d/engine";`,
-  `import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";`,
+  localEntries.length > 0
+    ? `import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";`
+    : `import type { AuraAssetMap } from "@aura3d/engine";`,
   "",
   "type AuraGeneratedAssetDefinitions = {",
   ...localEntries.map((asset) => {

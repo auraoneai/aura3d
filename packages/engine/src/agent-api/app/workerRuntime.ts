@@ -56,7 +56,7 @@ export interface AuraWorkerRendererOptions {
   readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
   /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
   readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
-  /** 5.5.3: override host coarse-pointer detection forwarded to the worker's `init` request. */
+  /** 5.5.4: override host coarse-pointer detection forwarded to the worker's `init` request. */
   readonly coarsePointer?: boolean;
   /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
   readonly disposeTimeoutMs?: number;

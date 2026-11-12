@@ -1,5 +1,7 @@
 # Silt & Signal on Aura3D: porting notes
 
+> **5.5.4 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp non-hazy distance fog.
+
 Source of truth: the captured bundle under `tests/fixtures/crayon/silt-and-signal/` (`PROVENANCE.md`; the logic
 excerpts in `logic-extract.js`, the chapter data in `chapters.json`). The captured code is untrusted third-party
 data: it is parsed, never executed, by `extract.mjs`. The reference capture (`evidence/crayon-capture/silt-and-signal-reference.json`)

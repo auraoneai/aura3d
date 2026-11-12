@@ -2,11 +2,6 @@
 // Fantasy: a wind-scoured maritime road trip, three hours of one day on an Atlantic coast highway.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
-const vehicle = (assetKey: string, maxTriangles = 8000) =>
-  ({ role: "vehicle" as const, assetKey, maxTriangles, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const });
-const prop = (assetKey: string, maxTriangles = 8000) =>
-  ({ role: "set-dressing" as const, assetKey, maxTriangles, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const });
-
 export default defineArtDirection({
   id: "roadster-hours-port",
   genre: "racing",
@@ -46,16 +41,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.08, 0.2], fovDeg: [56, 74], mobile: "both" },
-  assets: [
-    { role: "hero", assetKey: "roadster", maxTriangles: 60000, minTriangles: 20000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
-    vehicle("sedan"), vehicle("hatch"), vehicle("suv"), vehicle("pickup"), vehicle("bus"), vehicle("boxtruck"),
-    vehicle("semi", 12000), vehicle("tanker", 12000),
-    { role: "world", assetKey: "lighthouse", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    prop("townhouse"), prop("villa"), prop("pine"), prop("palm"), prop("boulders"),
-    prop("seastack", 6000), prop("hoodoo", 5000), prop("arch", 8000), prop("arcology", 8000),
-    { role: "vehicle", assetKey: "sportsCar", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "baked-cc0-cars", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 }
-  ],
+  assets: [],
   vfx: [
     { event: "crosswind", kind: "spray-sheet" },
     { event: "launch", kind: "burst" },

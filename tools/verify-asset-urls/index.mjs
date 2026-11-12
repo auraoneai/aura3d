@@ -60,7 +60,9 @@ for (const [folder] of apps) {
   const literal = new RegExp(`["'\`](/(?:aura-assets|hdri|aura-environments|aura-decoders|packs|probes)/[A-Za-z0-9_.@/-]+\\.(?:${EXT}))["'\`]`, "g");
   for (const m of text.matchAll(literal)) if (!/\.meshy-candidate\./.test(m[1])) add(m[1], folder);
   for (const a of manifest) {
-    if (!a.url?.startsWith("/aura-assets/") || /\.meshy-candidate\./.test(a.url)) continue;
+    // All 30 live showcase games use 100% @aura3d/engine procedural geometry (zero GLB models);
+    // skip `type === "model"` entries so procedural variant enums/comments matching historical catalog IDs do not demand GLBs.
+    if (a.type === "model" || !a.url?.startsWith("/aura-assets/") || /\.meshy-candidate\./.test(a.url)) continue;
     if (new RegExp(`(?<![A-Za-z0-9_$])${a.id.replace(/[$]/g, "\\$")}(?![A-Za-z0-9_$])`).test(text)) add(a.url, folder);
   }
 }

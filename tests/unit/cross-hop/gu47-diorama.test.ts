@@ -30,10 +30,19 @@ describe("look table (CH47-01, 03, 04, 06)", () => {
     for (const l of THEME_LOOKS) if (l.sky.clouds) expect(l.sky.clouds.coverage).toBeLessThanOrEqual(0.2);
   });
 
-  it("fog runs from dawn #b9cfe0 0.012 to night 0.016, none in the studio, colours >= dE 10 apart", () => {
-    expect(THEME_LOOKS[0]!.fog).toMatchObject({ color: "#b9cfe0", density: 0.012 });
-    expect(THEME_LOOKS[4]!.fog!.density).toBe(0.016);
+  it("fog uses crisp linear distance haze (near >= 145, far >= 420, maxOpacity <= 0.24), none in studio, colours >= dE 10 apart, zero DoF blur", () => {
+    expect(THEME_LOOKS[0]!.fog).toMatchObject({ mode: "linear", color: "#b9cfe0" });
     expect(THEME_LOOKS[5]!.fog).toBeNull();
+    for (const l of THEME_LOOKS) {
+      expect(l.tiltShift.maxBlur).toBe(0);
+      if (l.fog) {
+        expect(l.fog.mode).toBe("linear");
+        expect(l.fog.near).toBeGreaterThanOrEqual(145);
+        expect(l.fog.far).toBeGreaterThanOrEqual(420);
+        expect(l.fog.maxOpacity).toBeLessThanOrEqual(0.24);
+        expect(l.fog.heightFalloff).toBe(0);
+      }
+    }
     const fogs = THEME_LOOKS.flatMap((l) => (l.fog ? [l.fog.color] : []));
     for (let i = 0; i < fogs.length; i++) for (let j = i + 1; j < fogs.length; j++) {
       expect(deltaE2000(rgb(fogs[i]!), rgb(fogs[j]!))).toBeGreaterThanOrEqual(10);

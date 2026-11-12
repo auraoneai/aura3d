@@ -288,8 +288,20 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
   const s = o.stage;
   const look = ORIGINAL_LOOKS[s.id];
   const accent = s.palette.aura;
+  const origGroup = looks.preset(look.lookId, {
+    ...look.overrides,
+    fog: {
+      near: 105,
+      far: 340,
+      height: { mode: "linear", near: 105, far: 340, maxOpacity: 0.16, affectsBackground: false }
+    }
+  }).toJSON();
+  const origLookClean: AuraSceneNode = {
+    ...origGroup,
+    children: origGroup.children.filter((child) => (child as { effect?: string }).effect !== "depth-of-field")
+  };
   return scene()
-    .add(looks.preset(look.lookId, look.overrides))
+    .add(origLookClean)
     .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0]))
     .addMany(s.originalDressing)
     .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, false))
@@ -310,8 +322,14 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
 /** The refined look group; under a follow-spot the look's sun is dropped (the spot is the one shadowed key). */
 function refinedLookNode(look: RefinedVenueLook, dropSun: boolean): AuraSceneNode {
   const group = looks.preset(look.lookId, refinedLookOverrides(look)).toJSON();
-  if (!dropSun) return group;
-  return { ...group, children: group.children.filter((child) => !(child.kind === "light" && child.name === "look key light")) };
+  return {
+    ...group,
+    children: group.children.filter((child) => {
+      if ((child as { effect?: string }).effect === "depth-of-field") return false;
+      if (dropSun && child.kind === "light" && child.name === "look key light") return false;
+      return true;
+    })
+  };
 }
 
 /**

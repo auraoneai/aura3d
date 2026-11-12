@@ -6,12 +6,15 @@
  * Built strictly from `showcase-port-shared/proceduralKernel` + `@aura3d/engine` with zero `three` imports.
  */
 import {
+  game,
   geometry,
+  group,
   instances,
   material,
   type AuraColor,
   type AuraCustomGeometrySpec,
   type AuraMaterialSpec,
+  type AuraRuntimeNodeHandle,
   type AuraSceneNode,
   type AuraTransformSpec
 } from "@aura3d/engine";
@@ -1773,4 +1776,1041 @@ export function desertMesaSpec(): AuraCustomGeometrySpec {
 
 export function alpineRidgeSpec(seed = 97): AuraCustomGeometrySpec {
   return mergeRawMeshes([stratifiedCliffMesh({ radiusX: 0.5, radiusZ: 0.5, height: 1, terraces: 6, seed })]);
+}
+
+// ---------------------------------------------------------------------------
+// 8. Articulated Armored Gladiators & Knights (`WP-05` / `WP-09` Fighter Rigs)
+// ---------------------------------------------------------------------------
+
+export type GladiatorArchetypeId = "kenji" | "volt" | "boulder" | "seraph" | "jinx" | "sovereign";
+
+export type GladiatorPoseClip =
+  | "idle"
+  | "walk"
+  | "jump"
+  | "dash"
+  | "crouch"
+  | "guard"
+  | "light"
+  | "heavy"
+  | "special"
+  | "throw"
+  | "hitstun"
+  | "ko"
+  | "win";
+
+export const GLADIATOR_JOINT_SUFFIXES = [
+  "hips",
+  "torso",
+  "head",
+  "shoulder-l",
+  "elbow-l",
+  "shoulder-r",
+  "elbow-r",
+  "weapon",
+  "shield",
+  "hip-l",
+  "knee-l",
+  "ankle-l",
+  "hip-r",
+  "knee-r",
+  "ankle-r"
+] as const;
+
+export type GladiatorJointSuffix = (typeof GLADIATOR_JOINT_SUFFIXES)[number];
+
+export interface GladiatorRigOptions {
+  readonly nodeId: string;
+  readonly label: string;
+  readonly fighterId: GladiatorArchetypeId;
+  readonly side: "p1" | "cpu";
+  readonly position: V3;
+  readonly yaw: number;
+  readonly scale: number;
+  readonly primaryColor: string;
+  readonly accentEmissive: string;
+  readonly roughness: number;
+  readonly metallic: number;
+  readonly lacquer?: boolean;
+  readonly surfaceExtras?: boolean;
+  readonly runtimeTags?: readonly string[];
+}
+
+export interface GladiatorPoseState {
+  readonly clip: GladiatorPoseClip;
+  /** Monotonic animation clock in seconds. */
+  readonly time: number;
+  /** 0..1 normalized progress through non-looping attack/hitstun/ko clip. */
+  readonly clipProgress?: number;
+  /** Signed locomotion direction relative to facing (+1 advance, -1 retreat, 0 stationary). */
+  readonly moveDir?: number;
+  /** Upper-body layered attack kind when walking/dashing during an attack. */
+  readonly layerAttack?: "light" | "heavy" | "special" | "throw" | null;
+  /** 0..1 normalized progress through the upper-body layered attack. */
+  readonly layerProgress?: number;
+}
+
+interface ArchetypeBuild {
+  readonly chestWidth: number;
+  readonly chestDepth: number;
+  readonly waistWidth: number;
+  readonly pauldronScale: number;
+  readonly helmStyle: "kabuto" | "vanguard" | "colossus" | "sallet" | "horned" | "crown";
+  readonly weaponStyle: "katana" | "cestusBlade" | "warhammer" | "halberd" | "saber" | "greatsword";
+  readonly shieldStyle: "heater" | "buckler" | "scutum" | "rondel";
+  readonly trimHex: string;
+}
+
+const ARCHETYPE_BUILDS: Readonly<Record<GladiatorArchetypeId, ArchetypeBuild>> = {
+  kenji: {
+    chestWidth: 0.205,
+    chestDepth: 0.145,
+    waistWidth: 0.148,
+    pauldronScale: 1.02,
+    helmStyle: "kabuto",
+    weaponStyle: "katana",
+    shieldStyle: "heater",
+    trimHex: "#d8a848"
+  },
+  volt: {
+    chestWidth: 0.19,
+    chestDepth: 0.138,
+    waistWidth: 0.138,
+    pauldronScale: 0.96,
+    helmStyle: "vanguard",
+    weaponStyle: "cestusBlade",
+    shieldStyle: "buckler",
+    trimHex: "#ff9b42"
+  },
+  boulder: {
+    chestWidth: 0.255,
+    chestDepth: 0.182,
+    waistWidth: 0.188,
+    pauldronScale: 1.26,
+    helmStyle: "colossus",
+    weaponStyle: "warhammer",
+    shieldStyle: "scutum",
+    trimHex: "#c68b46"
+  },
+  seraph: {
+    chestWidth: 0.194,
+    chestDepth: 0.136,
+    waistWidth: 0.136,
+    pauldronScale: 0.98,
+    helmStyle: "sallet",
+    weaponStyle: "halberd",
+    shieldStyle: "rondel",
+    trimHex: "#dce8f2"
+  },
+  jinx: {
+    chestWidth: 0.184,
+    chestDepth: 0.132,
+    waistWidth: 0.132,
+    pauldronScale: 0.94,
+    helmStyle: "horned",
+    weaponStyle: "saber",
+    shieldStyle: "buckler",
+    trimHex: "#c998ff"
+  },
+  sovereign: {
+    chestWidth: 0.228,
+    chestDepth: 0.162,
+    waistWidth: 0.162,
+    pauldronScale: 1.18,
+    helmStyle: "crown",
+    weaponStyle: "greatsword",
+    shieldStyle: "heater",
+    trimHex: "#e5b244"
+  }
+};
+
+function makeOctRing(y: number, wx: number, dz: number, zBias = 0): V3[] {
+  return [
+    [0, y, dz + zBias],
+    [wx * 0.74, y, dz * 0.72 + zBias],
+    [wx, y, zBias],
+    [wx * 0.72, y, -dz * 0.74 + zBias],
+    [0, y, -dz + zBias],
+    [-wx * 0.72, y, -dz * 0.74 + zBias],
+    [-wx, y, zBias],
+    [-wx * 0.74, y, dz * 0.72 + zBias]
+  ];
+}
+
+function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMaterialSpec[] {
+  const rimSpec = opts.surfaceExtras !== false
+    ? { rim: { color: opts.accentEmissive, power: 2.6, intensity: 0.62 } }
+    : {};
+  // Distinct P1 vs P2 heraldry: Royal Azure & Gold for Player 1, Imperial Crimson & Ember for Player 2
+  const heraldicHex = opts.side === "p1" ? "#1e5bd8" : "#b81d2a";
+  const heraldicSheen = opts.side === "p1" ? "#6eb2ff" : "#ff7a6b";
+
+  // 0: Primary sculpted armor plate (`carPaint` / `lacquer` / `brushedMetal`)
+  const plateMat = opts.lacquer
+    ? material.lacquer({
+        name: `${opts.nodeId}-plate-lacquer`,
+        color: opts.primaryColor,
+        roughness: Math.min(0.32, opts.roughness),
+        clearcoat: 0.62,
+        clearcoatRoughness: 0.18,
+        ...rimSpec
+      } as any)
+    : opts.metallic >= 0.35
+      ? material.brushedMetal({
+          name: `${opts.nodeId}-plate-forged`,
+          color: opts.primaryColor,
+          roughness: Math.max(0.22, Math.min(0.38, opts.roughness)),
+          anisotropy: 0.32,
+          ...rimSpec
+        } as any)
+      : material.clearcoatPaint({
+          name: `${opts.nodeId}-plate-enamel`,
+          color: opts.primaryColor,
+          roughness: Math.max(0.26, Math.min(0.46, opts.roughness)),
+          clearcoat: 0.38,
+          clearcoatRoughness: 0.22,
+          ...rimSpec
+        } as any);
+
+  // 1: Gilded / sterling heraldic filigree & edge trim (`studioMetal`)
+  const build = ARCHETYPE_BUILDS[opts.fighterId];
+  const trimMat = material.studioMetal({
+    name: `${opts.nodeId}-heraldic-trim`,
+    color: opts.side === "p1" ? build.trimHex : "#e09b3d",
+    roughness: 0.24
+  });
+
+  // 2: Articulated dark chainmaille & undersuit joints (`brushedMetal`)
+  const mailleMat = material.brushedMetal({
+    name: `${opts.nodeId}-maille-joint`,
+    color: "#1a1922",
+    roughness: 0.44,
+    anisotropy: 0.24
+  });
+
+  // 3: Heraldic P1/P2 tabard, crest plume & sash (`fabric` velvet sheen)
+  const heraldryMat = material.fabric({
+    name: `${opts.nodeId}-heraldic-cloth`,
+    color: heraldicHex,
+    roughness: 0.78,
+    sheen: 0.55,
+    sheenColor: heraldicSheen,
+    sheenRoughness: 0.68
+  });
+
+  // 4: Honed Damascus / high-carbon weapon steel (`studioMetal`)
+  const bladeMat = material.studioMetal({
+    name: `${opts.nodeId}-weapon-steel`,
+    color: "#dde6f2",
+    roughness: 0.16
+  });
+
+  // 5: Grip leather & oiled ash shaft (`pbr`)
+  const leatherMat = material.pbr({
+    name: `${opts.nodeId}-grip-leather`,
+    color: "#362115",
+    roughness: 0.72,
+    metallic: 0.04
+  });
+
+  // 6: Visor eye-slit & crest gem practical accent (`pbr` practical <= 0.8)
+  const visorGlowMat = material.pbr({
+    name: `${opts.nodeId}-visor-glow`,
+    color: opts.accentEmissive,
+    emissive: opts.accentEmissive,
+    emissiveIntensity: 0.74,
+    roughness: 0.24,
+    metallic: 0.15,
+    practical: true
+  });
+
+  return [plateMat, trimMat, mailleMat, heraldryMat, bladeMat, leatherMat, visorGlowMat];
+}
+
+function buildPelvisSlots(b: ArchetypeBuild): MultiMatSlot[] {
+  const w = b.waistWidth;
+  const pelvisCore = loftSectionsMesh(
+    [
+      makeOctRing(-0.08, w * 0.92, 0.115),
+      makeOctRing(0.0, w * 1.04, 0.128),
+      makeOctRing(0.085, w * 0.98, 0.122)
+    ],
+    true
+  );
+  const beltRing = latheMesh(
+    [[w * 0.96, 0.03], [w * 1.09, 0.035], [w * 1.09, 0.075], [w * 0.96, 0.08]],
+    16
+  );
+  // Front & rear heraldic tabard aprons + side articulated tasset plates
+  const tabardFront: V2[] = [[-0.078, 0.04], [0.078, 0.04], [0.094, -0.24], [0, -0.31], [-0.094, -0.24]];
+  const tabardBack: V2[] = [[-0.082, 0.04], [0.082, 0.04], [0.102, -0.27], [0, -0.33], [-0.102, -0.27]];
+  const tassetProfile: V2[] = [[-0.068, 0.02], [0.068, 0.02], [0.082, -0.17], [0, -0.21], [-0.082, -0.17]];
+
+  return [
+    { mesh: pelvisCore, materialIndex: 2 },
+    { mesh: beltRing, materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(0.075, 0.062, 0.032, 0.008), { pos: [0, 0.055, 0.132] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(tabardFront, 0.018, 0.004, true), { pos: [0, 0, 0.126], rot: [-0.08, 0, 0] }), materialIndex: 3 },
+    { mesh: transformMesh(extrudePolygonMesh(tabardBack, 0.018, 0.004, true), { pos: [0, 0, -0.124], rot: [0.08, 0, 0] }), materialIndex: 3 },
+    { mesh: transformMesh(extrudePolygonMesh(tassetProfile, 0.022, 0.005, true), { pos: [w * 0.96, 0.01, 0.02], rot: [0, Math.PI * 0.5, 0.22] }), materialIndex: 0 },
+    { mesh: transformMesh(extrudePolygonMesh(tassetProfile, 0.022, 0.005, true), { pos: [-w * 0.96, 0.01, 0.02], rot: [0, Math.PI * 0.5, -0.22] }), materialIndex: 0 }
+  ];
+}
+
+function buildTorsoSlots(b: ArchetypeBuild): MultiMatSlot[] {
+  const cw = b.chestWidth;
+  const cd = b.chestDepth;
+  const ww = b.waistWidth;
+  // Sculpted V-taper peascod cuirass from waist y=0 to gorget y=0.44
+  const cuirass = loftSectionsMesh(
+    [
+      makeOctRing(0.0, ww * 0.96, cd * 0.82),
+      makeOctRing(0.13, cw * 0.88, cd * 0.92, 0.006),
+      makeOctRing(0.27, cw * 1.04, cd * 1.06, 0.016),
+      makeOctRing(0.38, cw * 0.96, cd * 0.94, 0.008),
+      makeOctRing(0.44, cw * 0.56, cd * 0.62, 0.0)
+    ],
+    true
+  );
+  const gorget = latheMesh(
+    [[0, 0.41], [cw * 0.62, 0.41], [cw * 0.54, 0.465], [cw * 0.42, 0.49], [0, 0.49]],
+    16
+  );
+  // Central sternum crest & P1/P2 diagonal heraldic baldric sash + chest badge
+  const crestShield: V2[] = [[0, 0.34], [0.058, 0.31], [0.046, 0.21], [0, 0.17], [-0.046, 0.21], [-0.058, 0.31]];
+  const slots: MultiMatSlot[] = [
+    { mesh: cuirass, materialIndex: 0 },
+    { mesh: gorget, materialIndex: 1 },
+    { mesh: tubeSweepMesh([[0, 0.05, cd * 0.86, 0.016], [0, 0.27, cd * 1.1, 0.022], [0, 0.41, cd * 0.88, 0.015]], 6, true), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(crestShield, 0.022, 0.005, true), { pos: [0, 0, cd * 1.06] }), materialIndex: 3 },
+    { mesh: tubeSweepMesh([[-cw * 0.82, 0.39, cd * 0.55, 0.024], [0, 0.23, cd * 1.08, 0.026], [ww * 0.85, 0.04, cd * 0.62, 0.022]], 7, true), materialIndex: 3 }
+  ];
+  if (b.helmStyle === "crown") {
+    // Sovereign royal velvet cape draped cleanly behind backplate
+    const capeRing: V2[] = [[-cw * 0.88, 0.39], [cw * 0.88, 0.39], [cw * 1.12, -0.44], [0, -0.54], [-cw * 1.12, -0.44]];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(capeRing, 0.02, 0.005, true), { pos: [0, 0, -cd * 0.96], rot: [0.12, 0, 0] }),
+      materialIndex: 3
+    });
+  }
+  return slots;
+}
+
+function buildVisoredHelmSlots(b: ArchetypeBuild, side: "p1" | "cpu"): MultiMatSlot[] {
+  // Sculpted armored neck + close-helm skull + pointed bellows visor (origin = neck pivot)
+  const skull = latheMesh(
+    [
+      [0, 0.0], [0.068, 0.0], [0.064, 0.045], [0.098, 0.085],
+      [0.114, 0.155], [0.108, 0.225], [0.072, 0.272], [0, 0.286]
+    ],
+    16
+  );
+  const visorSections: V3[][] = [
+    [[-0.088, 0.075, 0.03], [0, 0.068, 0.132], [0.088, 0.075, 0.03], [0, 0.065, -0.02]],
+    [[-0.094, 0.138, 0.04], [0, 0.138, 0.158], [0.094, 0.138, 0.04], [0, 0.135, -0.02]],
+    [[-0.086, 0.192, 0.03], [0, 0.195, 0.126], [0.086, 0.192, 0.03], [0, 0.192, -0.02]]
+  ];
+  const slots: MultiMatSlot[] = [
+    { mesh: latheMesh([[0, -0.02], [0.072, -0.02], [0.066, 0.05], [0, 0.05]], 12), materialIndex: 2 },
+    { mesh: skull, materialIndex: 0 },
+    { mesh: loftSectionsMesh(visorSections, true), materialIndex: 0 },
+    // Glowing recessed ocular visor slit + gilded brow band
+    { mesh: transformMesh(bevelBoxMesh(0.135, 0.018, 0.035, 0.004), { pos: [0, 0.164, 0.132] }), materialIndex: 6 },
+    { mesh: tubeSweepMesh([[-0.095, 0.185, 0.045, 0.01], [0, 0.192, 0.138, 0.012], [0.095, 0.185, 0.045, 0.01]], 6, true), materialIndex: 1 }
+  ];
+
+  // Distinct P1 (tall swept challenger plume) vs P2 (twin-tailed champion crest) + archetype helm ornament
+  const plumePts = side === "p1"
+    ? catmullRomSpline3([[0, 0.27, 0.03], [0, 0.36, -0.04], [0, 0.33, -0.17], [0, 0.22, -0.25]], 4)
+    : catmullRomSpline3([[0, 0.27, 0.05], [0, 0.38, 0.0], [0, 0.35, -0.15], [0, 0.25, -0.23]], 4);
+  slots.push({
+    mesh: tubeSweepMesh(plumePts.map((p, i) => [p[0], p[1], p[2], 0.032 - i * 0.0018] as V4), 7, true),
+    materialIndex: 3
+  });
+
+  switch (b.helmStyle) {
+    case "kabuto": {
+      // Sweeping shikoro neck-guard + twin gilded kuwagata crescent horns
+      const shikoro = latheMesh([[0.102, 0.05], [0.145, 0.03], [0.132, 0.11], [0.098, 0.13]], 14);
+      slots.push({ mesh: shikoro, materialIndex: 0 });
+      for (const sx of [-1, 1] as const) {
+        const horn = catmullRomSpline3([[sx * 0.02, 0.2, 0.115], [sx * 0.095, 0.27, 0.12], [sx * 0.145, 0.36, 0.09]], 4)
+          .map((p, i, arr) => [p[0], p[1], p[2], 0.018 * (1 - (i / arr.length) * 0.72)] as V4);
+        slots.push({ mesh: tubeSweepMesh(horn, 6, true), materialIndex: 1 });
+      }
+      break;
+    }
+    case "vanguard": {
+      const fin: V2[] = [[0.06, 0.22], [0.12, 0.29], [-0.14, 0.33], [-0.18, 0.21]];
+      slots.push({ mesh: transformMesh(extrudePolygonMesh(fin, 0.024, 0.005, true), { rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 });
+      break;
+    }
+    case "colossus": {
+      // Transverse centurion/murmillo bronze & horsehair crest
+      const crest: V2[] = [[-0.16, 0.24], [0.16, 0.24], [0.19, 0.37], [0, 0.41], [-0.19, 0.37]];
+      slots.push({ mesh: transformMesh(extrudePolygonMesh(crest, 0.044, 0.008, true), { pos: [0, 0, -0.01] }), materialIndex: 3 });
+      break;
+    }
+    case "sallet": {
+      // Twin temple wings on Seraph's sallet helm
+      const wing: V2[] = [[0, 0.14], [0.04, 0.22], [-0.12, 0.34], [-0.16, 0.22], [-0.06, 0.13]];
+      for (const sx of [-1, 1] as const) {
+        slots.push({
+          mesh: transformMesh(extrudePolygonMesh(wing, 0.016, 0.004, true), { pos: [sx * 0.108, 0, 0], rot: [0, Math.PI * 0.5, sx * 0.18] }),
+          materialIndex: 1
+        });
+      }
+      break;
+    }
+    case "horned": {
+      for (const sx of [-1, 1] as const) {
+        const horn = catmullRomSpline3([[sx * 0.075, 0.21, 0.03], [sx * 0.15, 0.29, -0.02], [sx * 0.12, 0.39, 0.05]], 4)
+          .map((p, i, arr) => [p[0], p[1], p[2], 0.022 * (1 - (i / arr.length) * 0.8)] as V4);
+        slots.push({ mesh: tubeSweepMesh(horn, 6, true), materialIndex: 1 });
+      }
+      break;
+    }
+    case "crown": {
+      // Forged 8-spike Iron Crown circlet directly atop Sovereign's great-helm
+      slots.push({ mesh: latheMesh([[0.098, 0.21], [0.122, 0.22], [0.122, 0.255], [0.098, 0.26]], 16), materialIndex: 1 });
+      for (let i = 0; i < 8; i += 1) {
+        const a = (i / 8) * Math.PI * 2;
+        const sh = i % 2 === 0 ? 0.11 : 0.07;
+        slots.push({
+          mesh: transformMesh(latheMesh([[0, 0], [0.018, 0], [0, sh]], 6, true), {
+            pos: [Math.cos(a) * 0.108, 0.25, Math.sin(a) * 0.108]
+          }),
+          materialIndex: i % 2 === 0 ? 1 : 0
+        });
+      }
+      break;
+    }
+  }
+  return slots;
+}
+
+function buildUpperArmSlots(sideSign: 1 | -1, pauldronScale: number): MultiMatSlot[] {
+  const ps = pauldronScale;
+  const pauldronDome = transformMesh(
+    latheMesh([[0, 0], [0.105 * ps, 0.01], [0.112 * ps, 0.065 * ps], [0.075 * ps, 0.115 * ps], [0, 0.125 * ps]], 14),
+    { pos: [sideSign * 0.025, -0.03, 0], rot: [0, 0, -sideSign * 0.42] }
+  );
+  const rerebrace = latheMesh(
+    [[0, -0.27], [0.048, -0.27], [0.058, -0.14], [0.064, -0.02], [0, 0.0]],
+    12
+  );
+  return [
+    { mesh: transformMesh(icosphereFacetMesh(0.058, 1, 0, 3), { pos: [0, 0, 0] }), materialIndex: 2 },
+    { mesh: pauldronDome, materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.13 * ps, 0.022, 0.14 * ps, 0.006), { pos: [sideSign * 0.035, -0.03, 0], rot: [0, 0, -sideSign * 0.42] }), materialIndex: 1 },
+    { mesh: rerebrace, materialIndex: 0 }
+  ];
+}
+
+function buildForearmGauntletSlots(sideSign: 1 | -1): MultiMatSlot[] {
+  const vambrace = latheMesh(
+    [[0, -0.23], [0.042, -0.23], [0.052, -0.1], [0.048, 0.0], [0, 0.01]],
+    12
+  );
+  return [
+    // Couter elbow cop + fluted vambrace + articulated gauntlet fist
+    { mesh: transformMesh(icosphereFacetMesh(0.052, 1, 0, 5), { pos: [sideSign * 0.01, 0, -0.012] }), materialIndex: 1 },
+    { mesh: vambrace, materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.068, 0.078, 0.076, 0.014), { pos: [0, -0.26, 0.008] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.072, 0.022, 0.08, 0.006), { pos: [0, -0.23, 0.008] }), materialIndex: 1 }
+  ];
+}
+
+function buildWeaponSlots(style: ArchetypeBuild["weaponStyle"]): MultiMatSlot[] {
+  // Weapon origin = right gauntlet palm `[0, -0.26, 0.02]`, blade extending forward (+Z) and up (+Y)
+  switch (style) {
+    case "katana": {
+      const bladePts = catmullRomSpline3([[0, 0, 0.06], [0, 0.02, 0.42], [0, 0.065, 0.78], [0, 0.11, 1.06]], 4)
+        .map((p, i, arr) => [p[0], p[1], p[2], 0.024 * (1 - (i / arr.length) * 0.55)] as V4);
+      return [
+        { mesh: tubeSweepMesh([[0, 0, -0.18, 0.018], [0, 0, 0.05, 0.019]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(bevelBoxMesh(0.095, 0.095, 0.018, 0.005), { pos: [0, 0, 0.055] }), materialIndex: 1 },
+        { mesh: transformMesh(tubeSweepMesh(bladePts, 6, true), { scale: [0.38, 1.15, 1] }), materialIndex: 4 }
+      ];
+    }
+    case "cestusBlade": {
+      const katarRing: V2[] = [[-0.048, 0], [0.048, 0], [0.028, 0.44], [0, 0.58], [-0.028, 0.44]];
+      return [
+        { mesh: transformMesh(bevelBoxMesh(0.11, 0.11, 0.16, 0.022), { pos: [0, 0, 0.04] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.12, 0.03, 0.17, 0.008), { pos: [0, 0.045, 0.04] }), materialIndex: 6 },
+        { mesh: transformMesh(extrudePolygonMesh(katarRing, 0.018, 0.004, true), { pos: [0, 0, 0.1], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 }
+      ];
+    }
+    case "warhammer": {
+      return [
+        { mesh: tubeSweepMesh([[0, 0, -0.26, 0.022], [0, 0, 0.78, 0.024]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(bevelBoxMesh(0.12, 0.28, 0.14, 0.022), { pos: [0, 0, 0.72] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.14, 0.09, 0.16, 0.012), { pos: [0, 0.13, 0.72] }), materialIndex: 1 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.042, 0], [0.016, 0.11], [0, 0.15]], 8, true), { pos: [0, -0.13, 0.72], rot: [Math.PI, 0, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.036, 0], [0, 0.16]], 8, true), { pos: [0, 0, 0.79], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 }
+      ];
+    }
+    case "halberd": {
+      const axeBlade: V2[] = [[0, -0.06], [0.16, -0.12], [0.22, 0.05], [0.14, 0.22], [0, 0.12]];
+      return [
+        { mesh: tubeSweepMesh([[0, 0, -0.45, 0.02], [0, 0, 1.18, 0.02]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.034, 0], [0.012, 0.24], [0, 0.32]], 8, true), { pos: [0, 0, 1.18], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(extrudePolygonMesh(axeBlade, 0.016, 0.004, true), { pos: [0, 0.02, 1.04], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 4 },
+        { mesh: transformMesh(bevelBoxMesh(0.05, 0.05, 0.14, 0.01), { pos: [0, 0, 1.04] }), materialIndex: 1 },
+        { mesh: tubeSweepMesh([[0, -0.02, 0.96, 0.022], [0, -0.14, 0.88, 0.012]], 6, true), materialIndex: 3 }
+      ];
+    }
+    case "saber": {
+      const saberPts = catmullRomSpline3([[0, 0, 0.06], [0, 0.015, 0.36], [0, 0.07, 0.68], [0, 0.14, 0.92]], 4)
+        .map((p, i, arr) => [p[0], p[1], p[2], 0.026 * (1 - (i / arr.length) * 0.6)] as V4);
+      return [
+        { mesh: tubeSweepMesh([[0, 0, -0.14, 0.018], [0, 0, 0.06, 0.019]], 8, true), materialIndex: 5 },
+        { mesh: tubeSweepMesh([[0, 0.02, 0.06, 0.012], [0, 0.075, -0.02, 0.012], [0, 0.01, -0.13, 0.011]], 6, true), materialIndex: 1 },
+        { mesh: transformMesh(tubeSweepMesh(saberPts, 6, true), { scale: [0.34, 1.2, 1] }), materialIndex: 4 }
+      ];
+    }
+    case "greatsword": {
+      const bladeRing: V2[] = [[-0.048, 0], [0.048, 0], [0.036, 0.88], [0, 1.14], [-0.036, 0.88]];
+      return [
+        { mesh: tubeSweepMesh([[0, 0, -0.26, 0.02], [0, 0, 0.06, 0.022]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(icosphereFacetMesh(0.038, 1, 0, 7), { pos: [0, 0, -0.28] }), materialIndex: 1 },
+        { mesh: transformMesh(bevelBoxMesh(0.32, 0.034, 0.042, 0.008), { pos: [0, 0, 0.065] }), materialIndex: 1 },
+        { mesh: transformMesh(extrudePolygonMesh(bladeRing, 0.018, 0.004, true), { pos: [0, 0, 0.08], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+        { mesh: tubeSweepMesh([[0, 0, 0.1, 0.01], [0, 0, 0.78, 0.006]], 6, true), materialIndex: 1 }
+      ];
+    }
+  }
+}
+
+function buildShieldSlots(style: ArchetypeBuild["shieldStyle"]): MultiMatSlot[] {
+  // Strapped to outer left forearm (`+X` face)
+  switch (style) {
+    case "scutum": {
+      const shieldFace: V2[] = [[-0.21, 0.32], [0.21, 0.32], [0.22, -0.28], [0, -0.4], [-0.22, -0.28]];
+      return [
+        { mesh: transformMesh(extrudePolygonMesh(shieldFace, 0.028, 0.008, true), { pos: [0.065, -0.1, 0.03], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.022, 0.54, 0.32, 0.006), { pos: [0.082, -0.04, 0.03] }), materialIndex: 3 },
+        { mesh: transformMesh(icosphereFacetMesh(0.065, 1, 0, 9), { pos: [0.095, -0.02, 0.03] }), materialIndex: 1 }
+      ];
+    }
+    case "heater": {
+      const heater: V2[] = [[-0.17, 0.22], [0.17, 0.22], [0.16, -0.06], [0, -0.28], [-0.16, -0.06]];
+      const inner: V2[] = [[-0.12, 0.17], [0.12, 0.17], [0.11, -0.04], [0, -0.2], [-0.11, -0.04]];
+      return [
+        { mesh: transformMesh(extrudePolygonMesh(heater, 0.024, 0.006, true), { pos: [0.062, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
+        { mesh: transformMesh(extrudePolygonMesh(inner, 0.028, 0.005, true), { pos: [0.068, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 3 },
+        { mesh: transformMesh(icosphereFacetMesh(0.042, 1, 0, 11), { pos: [0.088, -0.06, 0.02] }), materialIndex: 1 }
+      ];
+    }
+    case "buckler":
+    case "rondel": {
+      const r = style === "rondel" ? 0.155 : 0.18;
+      const disk = transformMesh(
+        latheMesh([[0, 0], [r, 0], [r, 0.022], [r * 0.55, 0.042], [0, 0.068]], 16),
+        { pos: [0.058, -0.16, 0.02], rot: [0, 0, -Math.PI * 0.5] }
+      );
+      const rimRing = transformMesh(
+        latheMesh([[r * 0.82, -0.002], [r * 1.03, 0.0], [r * 1.03, 0.026], [r * 0.82, 0.028]], 16),
+        { pos: [0.058, -0.16, 0.02], rot: [0, 0, -Math.PI * 0.5] }
+      );
+      return [
+        { mesh: disk, materialIndex: 0 },
+        { mesh: rimRing, materialIndex: 1 },
+        { mesh: transformMesh(icosphereFacetMesh(0.036, 1, 0, 13), { pos: [0.125, -0.16, 0.02] }), materialIndex: 3 }
+      ];
+    }
+  }
+}
+
+function buildThighCuisseSlots(): MultiMatSlot[] {
+  const cuisse = latheMesh(
+    [[0, -0.41], [0.064, -0.41], [0.082, -0.22], [0.092, -0.05], [0.076, 0.02], [0, 0.03]],
+    14
+  );
+  return [
+    { mesh: transformMesh(icosphereFacetMesh(0.074, 1, 0, 4), { pos: [0, 0, 0] }), materialIndex: 2 },
+    { mesh: cuisse, materialIndex: 0 },
+    { mesh: tubeSweepMesh([[0, -0.38, 0.072, 0.012], [0, -0.06, 0.094, 0.014]], 6, true), materialIndex: 1 }
+  ];
+}
+
+function buildGreaveSlots(sideSign: 1 | -1): MultiMatSlot[] {
+  const greave = latheMesh(
+    [[0, -0.41], [0.052, -0.41], [0.07, -0.18], [0.064, -0.03], [0, 0.01]],
+    14
+  );
+  const wing: V2[] = [[0, -0.05], [0.06, 0.02], [0.04, 0.07], [-0.03, 0.04]];
+  return [
+    // Poleyn knee cop + side fan wing + anatomical fluted greave
+    { mesh: transformMesh(icosphereFacetMesh(0.066, 1, 0, 6), { pos: [0, 0, 0.018] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(wing, 0.014, 0.004, true), { pos: [sideSign * 0.062, 0, 0.01], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
+    { mesh: greave, materialIndex: 0 },
+    { mesh: tubeSweepMesh([[0, -0.39, 0.054, 0.01], [0, -0.06, 0.072, 0.012]], 6, true), materialIndex: 1 }
+  ];
+}
+
+function buildSabatonSlots(): MultiMatSlot[] {
+  // Ankle joint at y=0, sole grounded cleanly at y = -0.08 (0.94 - 0.04 - 0.41 - 0.41 - 0.08 = 0.00 m!)
+  const vamp = loftSectionsMesh(
+    [
+      makeOctRing(-0.072, 0.056, 0.065, -0.01),
+      makeOctRing(-0.035, 0.054, 0.115, 0.035),
+      makeOctRing(-0.005, 0.048, 0.062, 0.005)
+    ],
+    true
+  );
+  return [
+    { mesh: vamp, materialIndex: 0 },
+    // Grounded forged-iron sabaton sole + pointed toe cap (`minY = -0.08`)
+    { mesh: transformMesh(bevelBoxMesh(0.112, 0.024, 0.245, 0.006), { pos: [0, -0.068, 0.045] }), materialIndex: 2 },
+    { mesh: transformMesh(bevelBoxMesh(0.098, 0.018, 0.09, 0.005), { pos: [0, -0.052, 0.135] }), materialIndex: 1 }
+  ];
+}
+
+function partNode(
+  name: string,
+  slots: readonly MultiMatSlot[],
+  materials: readonly AuraMaterialSpec[]
+) {
+  return assembleMultiMaterialNode(name, slots, materials, {
+    castShadow: true,
+    receiveShadow: true
+  });
+}
+
+/**
+ * Build a sculpted, multi-material, anatomically articulated Armored Gladiator / Knight rig.
+ * Grounded cleanly at `y = 0` (`sabaton` soles rest flush on the arena deck) and hierarchically
+ * rigged so `poseArticulatedGladiatorRig` drives all combat states with stateless `"ZYX"` Eulers.
+ */
+export function buildArticulatedGladiatorRig(opts: GladiatorRigOptions) {
+  const b = ARCHETYPE_BUILDS[opts.fighterId];
+  const mats = buildGladiatorMaterials(opts);
+  const id = (suffix: GladiatorJointSuffix) => `${opts.nodeId}-${suffix}`;
+  const rt = (suffix: GladiatorJointSuffix) => game.runtimeNode(id(suffix));
+
+  const weaponPart = group(id("weapon"), [partNode(`${id("weapon")}-mesh`, buildWeaponSlots(b.weaponStyle), mats)])
+    .position(0, -0.26, 0.02)
+    .runtime(rt("weapon"));
+
+  const shieldPart = group(id("shield"), [partNode(`${id("shield")}-mesh`, buildShieldSlots(b.shieldStyle), mats)])
+    .position(0, 0, 0)
+    .runtime(rt("shield"));
+
+  const elbowR = group(id("elbow-r"), [
+    partNode(`${id("elbow-r")}-mesh`, buildForearmGauntletSlots(-1), mats),
+    weaponPart
+  ])
+    .position(0, -0.27, 0)
+    .runtime(rt("elbow-r"));
+
+  const shoulderR = group(id("shoulder-r"), [
+    partNode(`${id("shoulder-r")}-mesh`, buildUpperArmSlots(-1, b.pauldronScale), mats),
+    elbowR
+  ])
+    .position(-(b.chestWidth + 0.045), 0.36, 0)
+    .runtime(rt("shoulder-r"));
+
+  const elbowL = group(id("elbow-l"), [
+    partNode(`${id("elbow-l")}-mesh`, buildForearmGauntletSlots(1), mats),
+    shieldPart
+  ])
+    .position(0, -0.27, 0)
+    .runtime(rt("elbow-l"));
+
+  const shoulderL = group(id("shoulder-l"), [
+    partNode(`${id("shoulder-l")}-mesh`, buildUpperArmSlots(1, b.pauldronScale), mats),
+    elbowL
+  ])
+    .position(b.chestWidth + 0.045, 0.36, 0)
+    .runtime(rt("shoulder-l"));
+
+  const head = group(id("head"), [
+    partNode(`${id("head")}-mesh`, buildVisoredHelmSlots(b, opts.side), mats)
+  ])
+    .position(0, 0.46, 0)
+    .runtime(rt("head"));
+
+  const torso = group(id("torso"), [
+    partNode(`${id("torso")}-mesh`, buildTorsoSlots(b), mats),
+    head,
+    shoulderL,
+    shoulderR
+  ])
+    .position(0, 0.08, 0)
+    .runtime(rt("torso"));
+
+  const ankleL = group(id("ankle-l"), [
+    partNode(`${id("ankle-l")}-mesh`, buildSabatonSlots(), mats)
+  ])
+    .position(0, -0.41, 0)
+    .runtime(rt("ankle-l"));
+
+  const kneeL = group(id("knee-l"), [
+    partNode(`${id("knee-l")}-mesh`, buildGreaveSlots(1), mats),
+    ankleL
+  ])
+    .position(0, -0.41, 0)
+    .runtime(rt("knee-l"));
+
+  const hipL = group(id("hip-l"), [
+    partNode(`${id("hip-l")}-mesh`, buildThighCuisseSlots(), mats),
+    kneeL
+  ])
+    .position(0.125, -0.04, 0)
+    .runtime(rt("hip-l"));
+
+  const ankleR = group(id("ankle-r"), [
+    partNode(`${id("ankle-r")}-mesh`, buildSabatonSlots(), mats)
+  ])
+    .position(0, -0.41, 0)
+    .runtime(rt("ankle-r"));
+
+  const kneeR = group(id("knee-r"), [
+    partNode(`${id("knee-r")}-mesh`, buildGreaveSlots(-1), mats),
+    ankleR
+  ])
+    .position(0, -0.41, 0)
+    .runtime(rt("knee-r"));
+
+  const hipR = group(id("hip-r"), [
+    partNode(`${id("hip-r")}-mesh`, buildThighCuisseSlots(), mats),
+    kneeR
+  ])
+    .position(-0.125, -0.04, 0)
+    .runtime(rt("hip-r"));
+
+  const hips = group(id("hips"), [
+    partNode(`${id("hips")}-mesh`, buildPelvisSlots(b), mats),
+    torso,
+    hipL,
+    hipR
+  ])
+    .position(0, 0.94, 0)
+    .runtime(rt("hips"));
+
+  return group(opts.label, [hips])
+    .position(opts.position[0], opts.position[1], opts.position[2])
+    .rotate(0, opts.yaw, 0)
+    .scale(opts.scale)
+    .runtime(
+      game.runtimeNode(opts.nodeId, {
+        tags: opts.runtimeTags ?? ["fighter", opts.fighterId, "procedural-gladiator"]
+      })
+    );
+}
+
+interface UpperPose {
+  torso: V3;
+  head: V3;
+  shoulderL: V3;
+  elbowL: V3;
+  shoulderR: V3;
+  elbowR: V3;
+  weapon: V3;
+}
+
+function solveAttackUpperPose(kind: "light" | "heavy" | "special" | "throw", uRaw: number): UpperPose {
+  const u = Math.max(0, Math.min(1, uRaw));
+  // Smooth windup -> strike -> follow-through envelope
+  const strike = u < 0.28
+    ? -(u / 0.28) * 0.45
+    : u < 0.58
+      ? -0.45 + ((u - 0.28) / 0.3) * 1.45
+      : 1.0 * (1 - ((u - 0.58) / 0.42) * 0.78);
+
+  switch (kind) {
+    case "light":
+      return {
+        torso: [0.14 * Math.max(0, strike), 0.48 * strike, 0],
+        head: [0.05, -0.28 * strike, 0],
+        shoulderL: [-0.62, 0.45 - 0.25 * strike, 0.28],
+        elbowL: [-1.05, 0, 0.2],
+        shoulderR: [-0.95 - 0.55 * strike, 0.35 * strike, -0.24 + 0.35 * strike],
+        elbowR: [-0.85 + 0.65 * Math.max(0, strike), 0, 0],
+        weapon: [0.35 * Math.max(0, strike), 0, -0.18 * strike]
+      };
+    case "heavy":
+      return {
+        torso: [0.28 * strike, 0.72 * strike, -0.08 * strike],
+        head: [0.08 * strike, -0.35 * strike, 0],
+        shoulderL: [-0.75 + 0.2 * strike, 0.52, 0.34],
+        elbowL: [-1.12, 0, 0.22],
+        shoulderR: [-1.55 + 1.35 * Math.max(0, strike), 0.52 * strike, -0.35 + 0.48 * strike],
+        elbowR: [-1.15 + 0.85 * Math.max(0, strike), 0, 0],
+        weapon: [0.62 * Math.max(0, strike), 0, -0.25]
+      };
+    case "special": {
+      const flurry = Math.sin(u * Math.PI * 3);
+      const finish = Math.sin(u * Math.PI);
+      return {
+        torso: [0.22 * finish, 0.88 * flurry, 0.08 * flurry],
+        head: [0.06, -0.42 * flurry, 0],
+        shoulderL: [-0.88, 0.48 + 0.32 * flurry, 0.42],
+        elbowL: [-1.08, 0, 0.26],
+        shoulderR: [-1.32 - 0.35 * finish, 0.68 * flurry, -0.32 + 0.52 * flurry],
+        elbowR: [-0.55 + 0.35 * flurry, 0, 0],
+        weapon: [0.52 + 0.3 * flurry, 0.24 * flurry, 0]
+      };
+    }
+    case "throw":
+      return {
+        torso: [0.32 * strike, -0.58 * strike, 0],
+        head: [0.1, 0.24 * strike, 0],
+        shoulderL: [-1.15 - 0.35 * strike, -0.35 * strike, 0.18],
+        elbowL: [-0.65, 0, 0.15],
+        shoulderR: [-1.05 - 0.4 * strike, 0.42 * strike, -0.22],
+        elbowR: [-0.72, 0, 0],
+        weapon: [0.18, 0, 0]
+      };
+  }
+}
+
+/**
+ * Compute deterministic, 100% stateless `"ZYX"` Euler joint angles + hip offset
+ * for a Gladiator/Knight rig (`setRotation` / `setPosition` never compound).
+ */
+export function computeGladiatorJointPose(state: GladiatorPoseState): {
+  readonly hipsPos: V3;
+  readonly rotations: Readonly<Record<GladiatorJointSuffix, V3>>;
+} {
+  const t = state.time;
+  const u = Math.max(0, Math.min(1, state.clipProgress ?? 0));
+  const moveDir = state.moveDir ?? 1;
+  const breathe = Math.sin(t * 2.8);
+
+  // Default ready martial guard (stateless baseline)
+  let hipsPos: V3 = [0, 0.91 + 0.012 * breathe, 0];
+  let hipsRot: V3 = [0.04, -0.28, 0];
+  let torso: V3 = [0.08 + 0.02 * breathe, -0.14, 0];
+  let head: V3 = [-0.05, 0.38, 0];
+  let shoulderL: V3 = [-0.68 + 0.03 * breathe, 0.42, 0.24];
+  let elbowL: V3 = [-1.08, 0.12, 0.18];
+  let shoulderR: V3 = [-0.46 - 0.03 * breathe, -0.24, -0.22];
+  let elbowR: V3 = [-1.12, -0.1, 0];
+  let weapon: V3 = [-0.18, 0, 0];
+  const shield: V3 = [0, 0, 0];
+
+  // Planted athletic guard stance legs (feet flat on arena stone)
+  let hipL: V3 = [-0.24, 0.18, 0.04];
+  let kneeL: V3 = [0.42, 0, 0];
+  let ankleL: V3 = [-0.18, 0, 0];
+  let hipR: V3 = [0.18, -0.12, -0.04];
+  let kneeR: V3 = [0.28, 0, 0];
+  let ankleR: V3 = [-0.46, 0, 0];
+
+  switch (state.clip) {
+    case "idle":
+      break;
+    case "walk":
+    case "dash": {
+      const rate = state.clip === "dash" ? 13.5 : 8.2;
+      const amp = state.clip === "dash" ? 0.68 : 0.46;
+      const ph = t * rate * (moveDir < 0 ? -1 : 1);
+      const sL = Math.sin(ph);
+      const sR = Math.sin(ph + Math.PI);
+      const liftL = Math.max(0, Math.cos(ph));
+      const liftR = Math.max(0, Math.cos(ph + Math.PI));
+      const lean = state.clip === "dash" ? (moveDir < 0 ? -0.26 : 0.32) : (moveDir < 0 ? -0.08 : 0.14);
+
+      hipsPos = [0, 0.89 + 0.028 * Math.abs(sL), 0];
+      hipsRot = [lean * 0.45, -0.16 * sL, 0];
+      torso = [lean, 0.22 * sL, 0];
+      head = [-lean * 0.65, -0.08 * sL, 0];
+      shoulderL = [-0.62 + 0.28 * sR, 0.38, 0.22];
+      elbowL = [-1.05, 0.1, 0.16];
+      shoulderR = [-0.48 + 0.32 * sL, -0.2, -0.22];
+      elbowR = [-1.08, 0, 0];
+
+      hipL = [-sL * amp - 0.08, 0.06, 0.02];
+      kneeL = [0.22 + 0.58 * liftL, 0, 0];
+      ankleL = [sL * amp * 0.45 - 0.16, 0, 0];
+      hipR = [-sR * amp - 0.08, -0.06, -0.02];
+      kneeR = [0.22 + 0.58 * liftR, 0, 0];
+      ankleR = [sR * amp * 0.45 - 0.16, 0, 0];
+      break;
+    }
+    case "jump": {
+      hipsPos = [0, 0.94, 0];
+      hipsRot = [0.12, -0.18, 0];
+      torso = [0.16, -0.12, 0];
+      head = [-0.12, 0.26, 0];
+      shoulderL = [-0.95, 0.48, 0.32];
+      elbowL = [-1.22, 0.14, 0.2];
+      shoulderR = [-1.18, -0.18, -0.28];
+      elbowR = [-0.95, 0, 0];
+      weapon = [-0.25, 0, 0];
+      hipL = [-0.68, 0.1, 0.04];
+      kneeL = [1.18, 0, 0];
+      ankleL = [-0.28, 0, 0];
+      hipR = [-0.42, -0.1, -0.04];
+      kneeR = [0.96, 0, 0];
+      ankleR = [-0.24, 0, 0];
+      break;
+    }
+    case "crouch": {
+      // Deep grounded crouch: pelvis drops 0.28 m while hip/knee/ankle flex keeps sabatons planted
+      hipsPos = [0, 0.66, 0];
+      hipsRot = [0.14, -0.24, 0];
+      torso = [0.26, -0.1, 0];
+      head = [-0.28, 0.32, 0];
+      shoulderL = [-0.92, 0.64, 0.26];
+      elbowL = [-1.24, 0.2, 0.24];
+      shoulderR = [-0.62, -0.22, -0.24];
+      elbowR = [-1.28, 0, 0];
+      hipL = [-0.88, 0.16, 0.05];
+      kneeL = [1.48, 0, 0];
+      ankleL = [-0.74, 0, 0];
+      hipR = [-0.72, -0.14, -0.05];
+      kneeR = [1.42, 0, 0];
+      ankleR = [-0.84, 0, 0];
+      break;
+    }
+    case "guard": {
+      // Fortress shield block across chest & helm
+      hipsPos = [0, 0.86, -0.03];
+      hipsRot = [0.06, -0.34, 0];
+      torso = [-0.06, -0.22, 0];
+      head = [0.08, 0.48, 0];
+      shoulderL = [-1.06, 0.78, 0.18];
+      elbowL = [-1.28, 0.28, 0.32];
+      shoulderR = [-0.72, -0.32, -0.28];
+      elbowR = [-1.32, 0, 0];
+      weapon = [-0.32, 0, 0];
+      hipL = [-0.36, 0.2, 0.05];
+      kneeL = [0.58, 0, 0];
+      ankleL = [-0.28, 0, 0];
+      hipR = [0.22, -0.15, -0.05];
+      kneeR = [0.42, 0, 0];
+      ankleR = [-0.68, 0, 0];
+      break;
+    }
+    case "light":
+    case "heavy":
+    case "special":
+    case "throw": {
+      const atk = solveAttackUpperPose(state.clip, u);
+      const lunge = Math.sin(u * Math.PI);
+      hipsPos = [0, 0.88 - 0.04 * lunge, 0.08 * lunge];
+      hipsRot = [0.08 * lunge, atk.torso[1] * 0.45, 0];
+      torso = atk.torso;
+      head = atk.head;
+      shoulderL = atk.shoulderL;
+      elbowL = atk.elbowL;
+      shoulderR = atk.shoulderR;
+      elbowR = atk.elbowR;
+      weapon = atk.weapon;
+      hipL = [-0.38 - 0.18 * lunge, 0.14, 0.04];
+      kneeL = [0.56 + 0.22 * lunge, 0, 0];
+      ankleL = [-0.26, 0, 0];
+      hipR = [0.24 + 0.16 * lunge, -0.12, -0.04];
+      kneeR = [0.34, 0, 0];
+      ankleR = [-0.58 - 0.12 * lunge, 0, 0];
+      break;
+    }
+    case "hitstun": {
+      const recoil = Math.sin(Math.min(1, u * 1.4) * Math.PI);
+      hipsPos = [0, 0.89, -0.06 * recoil];
+      hipsRot = [-0.16 * recoil, -0.18, 0];
+      torso = [-0.34 * recoil, 0.22 * recoil, 0.08 * recoil];
+      head = [-0.28 * recoil, 0.18, 0];
+      shoulderL = [-0.38, 0.15, 0.52 * recoil + 0.2];
+      elbowL = [-0.62, 0, 0.12];
+      shoulderR = [-0.28, -0.18, -0.54 * recoil - 0.2];
+      elbowR = [-0.58, 0, 0];
+      break;
+    }
+    case "ko": {
+      // Smooth grounded knockdown onto the arena stone (never sinks below y=0)
+      const fall = Math.min(1, u * 1.65);
+      const e = fall * fall * (3 - 2 * fall);
+      hipsPos = [0, 0.91 * (1 - e) + 0.19 * e, -0.35 * e];
+      hipsRot = [-1.46 * e, -0.12 * (1 - e), 0.08 * e];
+      torso = [-0.12 * e, 0, 0];
+      head = [0.18 * e, 0.22 * e, 0];
+      shoulderL = [-0.22 * (1 - e), 0, 0.62 * e + 0.2];
+      elbowL = [-0.35, 0, 0.1];
+      shoulderR = [-0.22 * (1 - e), 0, -0.68 * e - 0.2];
+      elbowR = [-0.32, 0, 0];
+      hipL = [-0.14 * (1 - e), 0.12 * e, 0.06 * e];
+      kneeL = [0.22 * (1 - e) + 0.12 * e, 0, 0];
+      ankleL = [-0.12, 0, 0];
+      hipR = [0.1 * (1 - e), -0.12 * e, -0.06 * e];
+      kneeR = [0.18 * (1 - e) + 0.18 * e, 0, 0];
+      ankleR = [-0.18, 0, 0];
+      break;
+    }
+    case "win": {
+      const pump = 0.5 + 0.5 * Math.sin(t * 4.2);
+      hipsPos = [0, 0.93, 0];
+      hipsRot = [-0.04, -0.16, 0];
+      torso = [-0.08, 0.12, 0];
+      head = [-0.14, -0.08, 0];
+      shoulderL = [-0.58, 0.45, 0.28];
+      elbowL = [-0.95, 0.18, 0.2];
+      // Heroic raised sword/halberd salute toward the arena spotlight
+      shoulderR = [-2.58 - 0.18 * pump, 0.15, -0.18];
+      elbowR = [-0.28 + 0.12 * pump, 0, 0];
+      weapon = [0.24, 0, 0];
+      hipL = [-0.14, 0.14, 0.04];
+      kneeL = [0.24, 0, 0];
+      ankleL = [-0.1, 0, 0];
+      hipR = [0.1, -0.1, -0.04];
+      kneeR = [0.18, 0, 0];
+      ankleR = [-0.28, 0, 0];
+      break;
+    }
+  }
+
+  // Upper-body attack layer override while legs remain driven by locomotion
+  if (state.layerAttack && state.clip !== "ko" && state.clip !== "hitstun") {
+    const atk = solveAttackUpperPose(state.layerAttack, state.layerProgress ?? 0.5);
+    torso = atk.torso;
+    head = atk.head;
+    shoulderL = atk.shoulderL;
+    elbowL = atk.elbowL;
+    shoulderR = atk.shoulderR;
+    elbowR = atk.elbowR;
+    weapon = atk.weapon;
+  }
+
+  return {
+    hipsPos,
+    rotations: {
+      hips: hipsRot,
+      torso,
+      head,
+      "shoulder-l": shoulderL,
+      "elbow-l": elbowL,
+      "shoulder-r": shoulderR,
+      "elbow-r": elbowR,
+      weapon,
+      shield,
+      "hip-l": hipL,
+      "knee-l": kneeL,
+      "ankle-l": ankleL,
+      "hip-r": hipR,
+      "knee-r": kneeR,
+      "ankle-r": ankleR
+    }
+  };
+}
+
+/**
+ * Apply stateless `"ZYX"` Euler joint poses to a mounted Gladiator/Knight rig.
+ */
+export function poseArticulatedGladiatorRig(
+  getNode: (id: string) => AuraRuntimeNodeHandle | undefined,
+  nodeId: string,
+  state: GladiatorPoseState
+): void {
+  const solved = computeGladiatorJointPose(state);
+  const hipsHandle = getNode(`${nodeId}-hips`);
+  hipsHandle?.setPosition(solved.hipsPos[0], solved.hipsPos[1], solved.hipsPos[2]);
+  for (const suffix of GLADIATOR_JOINT_SUFFIXES) {
+    const handle = getNode(`${nodeId}-${suffix}`);
+    if (!handle) continue;
+    const r = solved.rotations[suffix];
+    handle.setRotation(r[0], r[1], r[2]);
+  }
 }

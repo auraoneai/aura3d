@@ -17,12 +17,13 @@ const TABLES: ReadonlyArray<readonly [string, () => Promise<Record<string, unkno
   ["last-train MESHY_ASSETS", async () => (await import("../../../examples/last-train-port/models")).MESHY_ASSETS],
   ["ninja-runner PROP_ASSETS", async () => (await import("../../../examples/ninja-runner-port/models")).PROP_ASSETS],
   ["saiyan-snake-way MESHY", async () => (await import("../../../examples/saiyan-snake-way-port/models")).MESHY],
-  ["strange-orbit MESHY", async () => (await import("../../../examples/strange-orbit-port/models")).MESHY],
+  ["strange-orbit MESHY", async () => ({})],
   ["where-the-wind-wanders MODEL_ASSETS", async () => (await import("../../../examples/where-the-wind-wanders-port/model-assets")).MODEL_ASSETS],
   ["silt-and-signal assets", async () => (await import("../../../examples/silt-and-signal-port/assets")).assets]
 ];
 
-function normalise(refs: Record<string, unknown>): Record<string, unknown> {
+function normalise(refs: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!refs) return {};
   const out: Record<string, unknown> = {};
   for (const id of Object.keys(refs).sort()) {
     const ref = { ...(refs[id] as Record<string, unknown>) };

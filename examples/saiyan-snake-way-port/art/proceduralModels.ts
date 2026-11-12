@@ -1087,3 +1087,196 @@ export function toriiChochinLanternSpec(halfSpan = 7.4): AuraCustomGeometrySpec 
     transformMesh(lantern, { pos: [halfSpan + 1.35, 11.88, 0] })
   ]);
 }
+
+/**
+ * Sculpted martial-arts sky-runner body part geometry (`HERO_PARTS`), replacing raw boxes/cones/spheres
+ * with organic lathed gi folds, curved flame-hair spikes, wrapped shin-guard boots, and forearm bracers.
+ */
+export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
+  if (id === "torso") {
+    const body = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.56],
+          [0.36, -0.52],
+          [0.39, -0.22],
+          [0.46, 0.14],
+          [0.50, 0.38],
+          [0.34, 0.54],
+          [0, 0.58]
+        ],
+        18
+      )
+    );
+    const bodyScaled = transformMesh(body, { scale: [1.0, 1.0, 0.72] });
+    const lapelL = transformMesh(bevelBoxMesh(0.11, 0.62, 0.08, 0.025), { pos: [-0.11, 0.14, -0.31], rot: [0, 0, -0.24] });
+    const lapelR = transformMesh(bevelBoxMesh(0.11, 0.62, 0.08, 0.025), { pos: [0.11, 0.14, -0.31], rot: [0, 0, 0.24] });
+    return mergeRawMeshes([bodyScaled, lapelL, lapelR]);
+  }
+  if (id === "pelvis") {
+    const skirt = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.36],
+          [0.44, -0.32],
+          [0.46, -0.06],
+          [0.40, 0.22],
+          [0.36, 0.34],
+          [0, 0.36]
+        ],
+        16
+      )
+    );
+    return mergeRawMeshes([transformMesh(skirt, { scale: [1.0, 1.0, 0.74] })]);
+  }
+  if (id === "belt") {
+    const obi = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.09],
+          [0.45, -0.09],
+          [0.47, 0],
+          [0.45, 0.09],
+          [0, 0.09]
+        ],
+        16
+      )
+    );
+    const knot = transformMesh(bevelBoxMesh(0.18, 0.16, 0.12, 0.035), { pos: [0, -0.01, -0.34] });
+    return mergeRawMeshes([transformMesh(obi, { scale: [1.0, 1.0, 0.74] }), knot]);
+  }
+  if (id === "neck") {
+    return mergeRawMeshes([smoothWeldedNormals(latheMesh([[0, -0.12], [0.13, -0.11], [0.12, 0.11], [0, 0.12]], 12))]);
+  }
+  if (id === "head") {
+    const skull = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.40],
+          [0.22, -0.34],
+          [0.36, -0.14],
+          [0.41, 0.08],
+          [0.38, 0.28],
+          [0.24, 0.39],
+          [0, 0.42]
+        ],
+        18
+      )
+    );
+    return mergeRawMeshes([transformMesh(skull, { scale: [0.96, 1.0, 0.98] })]);
+  }
+  if (id === "hairCap") {
+    const cap = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.16],
+          [0.43, -0.08],
+          [0.45, 0.10],
+          [0.34, 0.24],
+          [0, 0.29]
+        ],
+        16
+      )
+    );
+    return mergeRawMeshes([cap]);
+  }
+  if (id.startsWith("spike")) {
+    const pts = catmullRomSpline3(
+      [
+        [0, -0.34, 0],
+        [0.02, -0.08, 0.03],
+        [0.05, 0.16, 0.08],
+        [0.09, 0.36, 0.14]
+      ],
+      4
+    ).map((p, k, a): V4 => {
+      const t = k / Math.max(1, a.length - 1);
+      return [p[0], p[1], p[2], Math.max(0.014, 0.175 * (1 - t * t * 0.92))];
+    });
+    return mergeRawMeshes([smoothWeldedNormals(tubeSweepMesh(pts, 10, true))]);
+  }
+  if (id.startsWith("thigh")) {
+    const trouser = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.48],
+          [0.16, -0.44],
+          [0.23, -0.18],
+          [0.22, 0.18],
+          [0.19, 0.44],
+          [0, 0.48]
+        ],
+        14
+      )
+    );
+    return mergeRawMeshes([trouser]);
+  }
+  if (id.startsWith("shin")) {
+    const shin = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.48],
+          [0.13, -0.44],
+          [0.15, -0.18],
+          [0.175, 0.12],
+          [0.155, 0.44],
+          [0, 0.48]
+        ],
+        14
+      )
+    );
+    return mergeRawMeshes([shin]);
+  }
+  if (id.startsWith("boot")) {
+    const upper = transformMesh(bevelBoxMesh(0.32, 0.22, 0.44, 0.065), { pos: [0, 0.02, 0.04] });
+    const toe = transformMesh(
+      smoothWeldedNormals(latheMesh([[0, -0.10], [0.15, -0.08], [0.16, 0.02], [0.11, 0.09], [0, 0.10]], 12)),
+      { pos: [0, -0.02, -0.18], scale: [1.0, 0.85, 1.35] }
+    );
+    const cuff = transformMesh(
+      smoothWeldedNormals(latheMesh([[0, -0.06], [0.15, -0.06], [0.16, 0.06], [0, 0.06]], 12)),
+      { pos: [0, 0.12, 0.08] }
+    );
+    return mergeRawMeshes([upper, toe, cuff]);
+  }
+  if (id.startsWith("upper")) {
+    const arm = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.40],
+          [0.12, -0.35],
+          [0.145, -0.04],
+          [0.155, 0.22],
+          [0.13, 0.38],
+          [0, 0.41]
+        ],
+        12
+      )
+    );
+    return mergeRawMeshes([arm]);
+  }
+  if (id.startsWith("fore")) {
+    const fore = smoothWeldedNormals(
+      latheMesh(
+        [
+          [0, -0.39],
+          [0.115, -0.34],
+          [0.13, -0.16],
+          [0.115, -0.10],
+          [0.125, 0.18],
+          [0.11, 0.36],
+          [0, 0.39]
+        ],
+        12
+      )
+    );
+    return mergeRawMeshes([fore]);
+  }
+  if (id.startsWith("hand")) {
+    return mergeRawMeshes([bevelBoxMesh(0.22, 0.22, 0.24, 0.065)]);
+  }
+  // Streaming silk sash segments
+  const idx = Number(id.replace("sash", "")) || 0;
+  const w = Math.max(0.14, 0.34 - idx * 0.045);
+  return mergeRawMeshes([bevelBoxMesh(w, 0.042, 0.48, 0.015)]);
+}

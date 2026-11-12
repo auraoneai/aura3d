@@ -184,8 +184,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#0c090e", near: 18, far: 56, maxOpacity: 0.22 },
-    fogDensityScale: 0.35,
+    fog: { color: "#0c090e", near: 95, far: 300, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0,
     grade: { contrast: 1.24, saturation: 1.08, temperature: 0.06, tint: 0.01 },
     bloom: { intensity: 0.24, threshold: 1.24, knee: 0.5, scatter: 0.62 },
@@ -214,8 +214,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
       { name: "neo-tokyo magenta panel", color: "#ff3fa4", position: [-4.7, 2.6, -1.9], target: [-1.2, 1.1, 0], width: 1.1, height: 2.6, intensity: 7 },
       { name: "neo-tokyo cyan panel", color: "#3fe0ff", position: [4.7, 2.4, -1.9], target: [1.2, 1.1, 0], width: 1.1, height: 2.4, intensity: 6 }
     ],
-    fog: { color: "#0b1020", near: 18, far: 74, maxOpacity: 0.34 },
-    fogDensityScale: 0.65,
+    fog: { color: "#0b1020", near: 100, far: 320, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0.25,
     grade: { contrast: 1.16, saturation: 1.15, temperature: -0.12, tint: 0.06 },
     bloom: { intensity: 0.32, threshold: 1.2, knee: 0.5, scatter: 0.62 },
@@ -240,8 +240,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ff9a52", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#c47a4e", near: 26, far: 130, maxOpacity: 0.28 },
-    fogDensityScale: 0.65,
+    fog: { color: "#c47a4e", near: 110, far: 360, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0.04,
     grade: { contrast: 1.14, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
     bloom: { intensity: 0.3, threshold: 1.24, knee: 0.5, scatter: 0.64 },
@@ -264,8 +264,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 9 },
     panels: [],
-    fog: { color: "#c9a46a", near: 28, far: 130, maxOpacity: 0.16 },
-    fogDensityScale: 1,
+    fog: { color: "#c9a46a", near: 120, far: 380, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0,
     grade: { contrast: 1.2, saturation: 1.02, temperature: 0.06, tint: 0, lut: assets.ironcrownLutColosseumOchre },
     bloom: { intensity: 0.18, threshold: 1.4, knee: 0.45, scatter: 0.6 },
@@ -287,8 +287,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#b8724a", near: 24, far: 125, maxOpacity: 0.28 },
-    fogDensityScale: 0.65,
+    fog: { color: "#b8724a", near: 115, far: 360, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0,
     grade: { contrast: 1.16, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
     bloom: { intensity: 0.28, threshold: 1.28, knee: 0.5, scatter: 0.64 },
@@ -310,8 +310,8 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 6 },
     panels: [],
-    fog: { color: "#b9c8d8", near: 22, far: 110, maxOpacity: 0.28 },
-    fogDensityScale: 0.65,
+    fog: { color: "#b9c8d8", near: 105, far: 340, maxOpacity: 0.16 },
+    fogDensityScale: 0.15,
     exposureEv: 0,
     grade: { contrast: 1.08, saturation: 0.94, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
     bloom: { intensity: 0.14, threshold: 1.6, knee: 0.4, scatter: 0.55 },
@@ -372,8 +372,15 @@ export function stageLookOverrides(row: StageLookRow): AuraLookOverrides {
  */
 export function stageLookNode(row: StageLookRow): AuraSceneNode {
   const group = looks.preset(row.look, stageLookOverrides(row)).toJSON();
-  if (row.key.kind === "sun") return group;
-  return { ...group, children: group.children.filter((child) => !(child.kind === "light" && child.name === "look key light")) };
+  const dropKey = row.key.kind !== "sun";
+  return {
+    ...group,
+    children: group.children.filter((child) => {
+      if ((child as { effect?: string }).effect === "depth-of-field") return false;
+      if (dropKey && child.kind === "light" && child.name === "look key light") return false;
+      return true;
+    })
+  };
 }
 
 /** Runtime ids of the presentation lights main.ts moves every frame (E-B `setLight`). */

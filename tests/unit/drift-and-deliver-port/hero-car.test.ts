@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -11,7 +10,8 @@ import {
   buildHeroCourierRigNode,
   buildHeroCourierWheelNode,
   buildHeroCourierWheelSlots,
-  buildProceduralTrafficFleet
+  buildProceduralTrafficFleet,
+  trafficFleetMaterials
 } from "../../../examples/drift-and-deliver-port/vehicles";
 import {
   buildDropoffParcelKioskNode,
@@ -21,8 +21,9 @@ import {
 } from "../../../examples/drift-and-deliver-port/art/proceduralModels";
 
 const portDir = resolve(__dirname, "../../../examples/drift-and-deliver-port");
+const showcaseDir = resolve(__dirname, "../../../apps/showcase-drift-and-deliver-port");
 
-describe("gridlock courier procedural multi-material hero car & fleet (WP-22)", () => {
+describe("harbor drift procedural multi-material hero car & 7-class harbor fleet", () => {
   it("builds a smooth-normal multi-material widebody kei-van / hot-hatch aligned to +Z forward and grounded on 4 wheels", () => {
     const slots = buildHeroCourierBodySlots();
     const materials = heroCourierMaterials();
@@ -88,13 +89,16 @@ describe("gridlock courier procedural multi-material hero car & fleet (WP-22)", 
     expect(tris).toBeLessThanOrEqual(40_000);
   });
 
-  it("mounts WebGPU-safe physical glazing with castShadow: false and YXZ wheel & body rotation order", () => {
+  it("mounts WebGPU-safe physical glazing with castShadow: false and ZYX default / YXZ shift rotation order", () => {
     const glazingMat = courierGlazingMaterial();
     expect(glazingMat.opacity).toBeCloseTo(0.42, 2);
     expect(glazingMat.roughness).toBeCloseTo(0.04, 2);
     expect(glazingMat.clearcoat).toBe(1);
     expect(glazingMat.ior).toBeCloseTo(1.5, 2);
     expect(buildHeroCourierGlazingSpec().positions.length).toBeGreaterThan(60);
+
+    const origRigJson = buildHeroCourierRigNode("car-rig-orig", false).toJSON();
+    expect(origRigJson.rotationOrder).toBe("ZYX");
 
     const rigJson = buildHeroCourierRigNode("car-rig", true, "YXZ").toJSON();
     expect(rigJson.rotationOrder).toBe("YXZ");
@@ -107,15 +111,30 @@ describe("gridlock courier procedural multi-material hero car & fleet (WP-22)", 
     expect(wheelJson.children.length).toBe(4);
   });
 
-  it("builds 6 multi-material traffic fleet classes with clearcoat: 0, sheen: 0 and a sidewalk parcel kiosk", () => {
-    expect(TRAFFIC_FLEET_KINDS).toEqual(["sedan", "hatch", "van", "taxi", "bus", "cruiser"]);
-    const sampleTraffic = Array.from({ length: 18 }, (_, i) => ({ x: i * 10, z: 0, yaw: 0 }));
+  it("builds 7 multi-material harbor fleet classes (including truck) with clearcoat paint, dark cabin glass, rubber tires, alloy rims, headlamps & tail-lamps", () => {
+    expect(TRAFFIC_FLEET_KINDS).toEqual(["sedan", "hatch", "van", "truck", "taxi", "bus", "cruiser"]);
+    const fleetMats = trafficFleetMaterials();
+    expect(fleetMats.body.clearcoat ?? 0).toBeGreaterThan(0.8);
+    expect(fleetMats.glass.clearcoat).toBe(1);
+    expect(fleetMats.glass.opacity ?? 1).toBeLessThan(0.9);
+    expect(fleetMats.trim.metallic ?? 0).toBeGreaterThan(0.8);
+    expect(fleetMats.rubber.roughness ?? 0).toBeGreaterThan(0.7);
+    expect(fleetMats.head.emissiveIntensity ?? 0).toBeGreaterThan(1.5);
+    expect(fleetMats.tail.emissiveIntensity ?? 0).toBeGreaterThan(1.5);
+
+    const sampleTraffic = Array.from({ length: 28 }, (_, i) => ({ x: i * 10, z: 0, yaw: 0 }));
     const fleet = buildProceduralTrafficFleet(sampleTraffic, true);
-    expect(fleet.groups.length).toBe(6);
-    for (const node of fleet.nodes) {
-      const json = node.toJSON();
-      expect(json.material?.clearcoat ?? 0).toBe(0);
-      expect(json.material?.sheen ?? 0).toBe(0);
+    expect(fleet.groups.length).toBe(7);
+    expect(fleet.nodes.length).toBe(42);
+    for (const g of fleet.groups) {
+      expect(g.layerIds).toEqual([
+        `traffic-${g.kind}-body`,
+        `traffic-${g.kind}-glass`,
+        `traffic-${g.kind}-rubber`,
+        `traffic-${g.kind}-trim`,
+        `traffic-${g.kind}-head`,
+        `traffic-${g.kind}-tail`
+      ]);
     }
 
     const kiosk = buildDropoffParcelKioskNode("dropoff-kiosk").toJSON();
@@ -124,18 +143,16 @@ describe("gridlock courier procedural multi-material hero car & fleet (WP-22)", 
     expect(dropoffKioskPose({ x: 30, z: 120 }).x).toBeCloseTo(38.6, 2);
   });
 
-  it("mounts zero static Meshy GLBs in look.ts, props.ts, and main.ts while keeping legacy disk files intact", () => {
-    for (const file of ["look.ts", "props.ts", "main.ts"]) {
+  it("mounts zero Meshy GLBs across look.ts, props.ts, main.ts, models.ts, and aura-assets.ts", () => {
+    for (const file of ["look.ts", "props.ts", "main.ts", "models.ts"]) {
       const src = readFileSync(resolve(portDir, file), "utf8");
       expect(src).not.toMatch(/\binstances\.model\s*\(/);
-      expect(src).not.toMatch(/\bcarModel\s*\(/);
-      expect(src).not.toMatch(/\btrafficInstances\s*\(/);
       expect(src).not.toMatch(/\bstudioGlass\s*\(/);
+      expect(src).not.toMatch(/\.glb\b/i);
     }
-    const glbFile = resolve(portDir, "assets/models/courier.glb");
-    const hash = createHash("sha256").update(readFileSync(glbFile)).digest("hex");
-    const models = readFileSync(resolve(portDir, "models.ts"), "utf8");
-    expect(models).toContain(`glb("courier.glb", "${hash}")`);
+    const auraAssets = readFileSync(resolve(showcaseDir, "src/aura-assets.ts"), "utf8");
+    expect(auraAssets).not.toMatch(/\.glb\b/i);
+    expect(existsSync(resolve(portDir, "assets/models/courier.glb"))).toBe(false);
     expect(existsSync(resolve(portDir, "assets/models/hypercar.glb"))).toBe(false);
   });
 });

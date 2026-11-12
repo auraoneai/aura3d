@@ -1,41 +1,16 @@
 /**
- * Aura Links 3D — rigged golfer driver (linksGolferAthleteMeshy GLB).
+ * Aura Links 3D — 100% Procedural Articulated Pro Golfer Driver.
  *
- * The default golfer is the Meshy `links_golfer_player` (24-joint humanoid, clips idle/wave/cheer); `?golfer=old` (or
- * `?look=original`) keeps the original athlete, a skinned character of 15 joints (Root Hips Spine Chest Head
- * L/R UpperLeg LowerLeg Foot L/R UpperArm Forearm; 23 clips). The swing is solved on the athlete's virtual skeleton and
- * retargeted onto the Meshy bones (golferRetarget.ts). This module
- * makes it perform an actual golf swing using the engine's PRD-06 animation
- * APIs:
- *
- *   - `animation.attach` sockets the three club parts to the RIGHT forearm
- *     bone (calibrated palm offset in bone space; no hand bones on this rig),
- *     so the club is rigidly gripped and follows every arm rotation.
- *   - `setAnimationPose({ mode: "overlay" })` writes the swing solve's bone
- *     rotations on top of the playing "Ready" clip (legs keep the clip), so
- *     takeaway → backswing → downswing → impact → follow-through all come
- *     from the skeleton instead of tilting the whole model.
- *   - The left arm is IK'd onto the shaft a hand-span above the right palm,
- *     so BOTH hands stay on the grip through the whole motion.
- *
- * The swing itself is authored in `swingMath.ts` (pure, offline-traceable):
- * a grip trajectory + shaft direction per key, with the impact key derived
- * from the ball so the clubhead strikes the ball exactly at the bottom of
- * the arc. `poseGolfer` evaluates that trajectory each frame and publishes
- * telemetry (`golferTelemetry`) for the impact event + evidence capture.
- *
- * LOCAL FRAME ("shot frame", metres):
- *   origin = the ball / address spot (`at`)
- *   +Z     = intended shot direction (faceYaw = 0 → world +Z)
- *   +X     = the golfer's stance side (~0.52 m left of the ball-line)
- *   +Y     = up
- * The golfer faces -X toward the ball: lead (left) arm/foot sit on the +Z
- * (target) side, trail (right) side toward -Z — a right-handed stance.
+ * Drives the 14-joint `@aura3d/engine` procedural golfer (`buildArticulatedGolferNode`)
+ * through an anatomic championship golf swing (`swingMath.ts` + `meshyProfile()`):
+ * takeaway -> full backswing -> accelerating downswing -> impact -> high finish,
+ * keeping both hands locked on the golf club grip and both tour golf shoes planted
+ * on the turf with zero external or Meshy `.glb` files.
  */
-import { game, material, model, primitives } from "@aura3d/engine";
+import { game, material, primitives } from "@aura3d/engine";
 import { gripQToEulerZYX } from "@aura3d/engine/game";
-import { assets } from "../aura-assets";
 import {
+  buildArticulatedGolferNode,
   buildClubGripNode,
   buildClubHeadNode,
   buildClubShaftNode,
@@ -50,9 +25,9 @@ import {
   CLUB_PARTS,
   clubAttachOffsets,
   clubPartPose,
-  SKELETON_ATHLETE,
   evaluateSwing,
   makeRoot,
+  qMul,
   solveSwing,
   useSkeleton,
   vDist,
@@ -77,33 +52,24 @@ export type GolferPhase =
 
 const golfKit = game.racketSports("aura-links-golfer");
 
-/** which golfer the scene mounts: the Meshy player (default) or the original athlete (`?golfer=old`, `?look=original`) */
 export type GolferVariant = "meshy" | "athlete";
 let golferVariant: GolferVariant = "meshy";
 let appliedVariant: GolferVariant | null = null;
 
 interface VariantSpec {
-  /** model asset of the player */
-  readonly asset: () => any;
-  /** clip under the swing overlay (address, idle, swing) */
   readonly ready: string;
   readonly readySpeed: number;
-  /** clip while the player turns the aim, no swing solve */
   readonly walk: { clip: string; speed: number } | null;
-  /** clip for the hole-out celebration */
   readonly celebrate: { clip: string; speed: number };
 }
 const VARIANTS: Record<GolferVariant, VariantSpec> = {
   meshy: {
-    asset: () => assets.links_golfer_player,
     ready: "idle",
     readySpeed: 1,
-    // no walk clip on the Meshy rig: turning the aim keeps the address pose (club in hand) instead of popping to a club-less idle
     walk: null,
     celebrate: { clip: "cheer", speed: 1 }
   },
   athlete: {
-    asset: () => assets.linksGolferAthleteMeshy,
     ready: "Ready",
     readySpeed: 1,
     walk: { clip: "Walk_Loop", speed: 1.1 },
@@ -111,7 +77,6 @@ const VARIANTS: Record<GolferVariant, VariantSpec> = {
   }
 };
 
-/** pick the golfer before the scene is built (main.ts reads the URL); the swing solve follows the matching skeleton */
 export function setGolferVariant(variant: GolferVariant): void {
   golferVariant = variant;
   appliedVariant = null;
@@ -124,16 +89,14 @@ export const golferVariantFromSearch = (search: string): GolferVariant => {
 };
 const ensureSkeleton = (): void => {
   if (appliedVariant === golferVariant) return;
-  useSkeleton(golferVariant === "meshy" ? meshyProfile() : SKELETON_ATHLETE);
+  useSkeleton(meshyProfile());
   appliedVariant = golferVariant;
 };
 
 const HIDDEN = 0.0001;
-const GOLFER_BONES = ["Root", "Hips", "Spine", "Chest", "Head", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "RightUpperLeg", "RightLowerLeg", "RightFoot", "LeftUpperArm", "LeftForearm", "RightUpperArm", "RightForearm"] as const;
 const UNI: [number, number, number] = [1, 1, 1];
 const STANCE_MID: [number, number, number] = [0.52, 0.012, -0.02];
 
-/** phases driven by the swing solve (overlay pose + gripped club) */
 const SWING_PHASES = new Set<string>([
   "address", "idle", "backswing", "top", "downswing", "follow",
   "putt", "putt-address", "putt-back", "putt-through"
@@ -141,9 +104,22 @@ const SWING_PHASES = new Set<string>([
 const posePhase = (phase: GolferPhase): SwingPosePhase =>
   phase === "putt" ? "putt-address" : (phase as SwingPosePhase);
 
-/* ------------------------------------------------------------------ *
- *  Rig handles + builders                                             *
- * ------------------------------------------------------------------ */
+export interface GolferJointHandles {
+  readonly hips?: any;
+  readonly spine?: any;
+  readonly chest?: any;
+  readonly head?: any;
+  readonly armL?: any;
+  readonly forearmL?: any;
+  readonly armR?: any;
+  readonly forearmR?: any;
+  readonly thighL?: any;
+  readonly shinL?: any;
+  readonly footL?: any;
+  readonly thighR?: any;
+  readonly shinR?: any;
+  readonly footR?: any;
+}
 
 export interface GolferRig {
   readonly shadow: any;
@@ -157,13 +133,14 @@ export interface GolferRig {
   readonly clubShaft: any;
   readonly clubHead: any;
   readonly clubGrip: any;
+  readonly joints?: GolferJointHandles;
 }
 
 export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
   const rt = (name: string) => game.runtimeNode(name);
+  const v = VARIANTS[golferVariant];
 
   return [
-    // Blob shadow + "at address" marker ring (hidden until address/idle/putt)
     primitives
       .cylinder({
         name: "golfer-shadow",
@@ -179,29 +156,15 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       })
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
-    // Rigged Meshy-6 Pro Golfer + sculpted `articulatedFolkSlots` Tour Caddie + Tour Bag & Golf Cart (zero shoulder orbs).
-    // model() has no `animation` option (it was dropped silently); .animate() sets the clip.
-    model(VARIANTS[golferVariant].asset(), {
-      name: "golfer-body",
-      targetHeight: 1.84,
-      role: "primaryCharacter",
-      scaleMode: "fit"
-    })
-      .animate({ clip: VARIANTS[golferVariant].ready, loop: true, speed: VARIANTS[golferVariant].readySpeed })
-      .runtime(rt("golfer-body")),
+    buildArticulatedGolferNode(fit, refined, v.ready, v.readySpeed),
     buildGolfCaddieNode(fit, refined),
     buildTourBagNode(fit, refined),
     buildGolfCartNode(refined),
-    // Club — corded tour-velvet lathed grip, stepped chrome shaft, forged 460cc carbon-crown + milled titanium head.
     buildClubGripNode(fit.cap),
     buildClubShaftNode(),
     buildClubHeadNode()
   ];
 }
-
-/* ------------------------------------------------------------------ *
- *  Attach calibration + telemetry state                               *
- * ------------------------------------------------------------------ */
 
 let attachDisposers: (() => void)[] = [];
 let lastOffsets: readonly { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[]; readonly quat: Quat }[] = [];
@@ -227,12 +190,18 @@ let telemetry: {
 
 export function resolveGolferRig(app: any): GolferRig {
   const req = (n: string) => app.nodes.require(n);
+  const opt = (n: string) => {
+    try {
+      return app.nodes.get ? app.nodes.get(n) : app.nodes.require(n);
+    } catch {
+      return undefined;
+    }
+  };
   const golferBody = req("golfer-body");
   const caddyBody = req("caddy-body");
   const variant = VARIANTS[golferVariant];
   golferBody?.setAnimation?.({ clip: variant.ready, loop: true, speed: variant.readySpeed });
   lastGolferAnimKey = `${variant.ready}:${variant.readySpeed}`;
-  // scene rebuild — drop stale bone attachments; poseGolfer recalibrates
   for (const dispose of attachDisposers) dispose();
   attachDisposers = [];
   calibGroundDy = null;
@@ -248,45 +217,40 @@ export function resolveGolferRig(app: any): GolferRig {
     cart: req("golfer-cart"),
     clubShaft: req("golfer-club-shaft"),
     clubHead: req("golfer-club-head"),
-    clubGrip: req("golfer-club-grip")
+    clubGrip: req("golfer-club-grip"),
+    joints: {
+      hips: opt("golfer-hips"),
+      spine: opt("golfer-spine"),
+      chest: opt("golfer-chest"),
+      head: opt("golfer-head"),
+      armL: opt("golfer-arm-l"),
+      forearmL: opt("golfer-forearm-l"),
+      armR: opt("golfer-arm-r"),
+      forearmR: opt("golfer-forearm-r"),
+      thighL: opt("golfer-thigh-l"),
+      shinL: opt("golfer-shin-l"),
+      footL: opt("golfer-foot-l"),
+      thighR: opt("golfer-thigh-r"),
+      shinR: opt("golfer-shin-r"),
+      footR: opt("golfer-foot-r")
+    }
   };
 }
 
-/** Latest swing state for the evidence capture (world space). */
 export function golferTelemetry() {
   return telemetry;
 }
 
-/**
- * Socket the club parts onto the right forearm. Offsets are calibrated from
- * the address frame so the clubhead rests on the ball at address; they only
- * depend on the skeleton, so one calibration per scene holds (re-run when the
- * stance/ball ground delta changes, i.e. per lie).
- */
-function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void {
+function calibrateClub(_rig: GolferRig, root: RootFrame, groundDy: number): void {
   for (const dispose of attachDisposers) dispose();
   attachDisposers = [];
   const addr = solveSwing(evaluateSwing("address", 0), root);
   const offsets = clubAttachOffsets(addr.rightForearmWorld, addr.rightElbowModel, addr.grip, addr.shaftDir, root);
-  const parts: Record<string, any> = {
-    "golfer-club-grip": rig.clubGrip,
-    "golfer-club-shaft": rig.clubShaft,
-    "golfer-club-head": rig.clubHead
-  };
-  // The club follows the swing solve every frame (poseGolfer re-places all three parts), not the engine bone attachment: the
-  // attachment lagged the overlay pose and a bone-space XYZ rotation drew the shaft and head turned away from the grip.
   lastOffsets = offsets;
   calibGroundDy = groundDy;
   telemetry = { ...telemetry, attached: offsets.length > 0 };
 }
 
-/**
- * Fallback/manual placement of one club part from the solved swing frame —
- * the same transform the engine's bone attachment derives (elbow +
- * foreWorld·offset for position, foreWorld ∘ offset for rotation), so the
- * club stays glued even while the attachment registry is unavailable, and
- * doubles as the initial placement at calibration time.
- */
 function placeClubPart(
   handle: any,
   root: RootFrame,
@@ -297,25 +261,22 @@ function placeClubPart(
 ): void {
   const { centreShot, worldQuat } = clubPartPose(solved, part, root, faceYaw);
   const centreW = toWorld(centreShot);
-  // route nodes rotate in the engine's default ZYX order (setRotation), not XYZ
   const worldEuler = gripQToEulerZYX([worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w]);
   handle?.setPosition?.(centreW[0], centreW[1], centreW[2]);
   handle?.setRotation?.(worldEuler[0], worldEuler[1], worldEuler[2]);
 }
 
-/* ------------------------------------------------------------------ *
- *  Player Studio fit — updates address ring and club grip accents      *
- * ------------------------------------------------------------------ */
+function applyQuatEuler(handle: any, q: Quat | undefined): void {
+  if (!handle || !q) return;
+  const e = gripQToEulerZYX([q.x, q.y, q.z, q.w]);
+  handle.setRotation?.(e[0], e[1], e[2]);
+}
 
 export function applyGolferFit(rig: GolferRig, fit: GolferFit): void {
   const accent = fit.polo || "#ffd76a";
   rig.ring?.setMaterial?.(material.emissive({ color: accent, emissive: accent, emissiveIntensity: 0.9 }));
   rig.clubGrip?.setMaterial?.(material.blackRubber({ color: fit.cap || "#1a1c22", roughness: 0.84 }));
 }
-
-/* ------------------------------------------------------------------ *
- *  poseGolfer — per-frame swing driver                                *
- * ------------------------------------------------------------------ */
 
 const clipFor = (phase: GolferPhase): { clip: string; speed: number } => {
   const v = VARIANTS[golferVariant];
@@ -324,7 +285,6 @@ const clipFor = (phase: GolferPhase): { clip: string; speed: number } => {
   return { clip: v.ready, speed: v.readySpeed };
 };
 
-/** the Meshy rig has no walk clip: a turning player stays in the address pose */
 const effectivePhase = (phase: GolferPhase): GolferPhase =>
   phase === "walk" && !VARIANTS[golferVariant].walk ? "address" : phase;
 
@@ -344,19 +304,16 @@ export function poseGolfer(
   const groundDy = stanceGround - at[1];
   const root = makeRoot(groundDy);
 
-  // --- hero: place the model, upright — the swing comes from the bones ----
   rig.hero
     ?.setPosition(stanceW[0], stanceGround, stanceW[2])
     .setRotation(0, faceYaw - Math.PI / 2, 0)
     .setVisible(true);
 
-  // --- club attach calibration (once per lie) -----------------------------
   const swingPhase = SWING_PHASES.has(phase);
   if (swingPhase && (calibGroundDy === null || Math.abs(groundDy - calibGroundDy) > 0.03)) {
     calibrateClub(rig, root, groundDy);
   }
 
-  // --- animation clip + overlay pose --------------------------------------
   const heroAnim = clipFor(phase);
   const heroKey = `${heroAnim.clip}:${heroAnim.speed}`;
   if (heroKey !== lastGolferAnimKey) {
@@ -364,30 +321,38 @@ export function poseGolfer(
     rig.golferBody?.setAnimation?.({ clip: heroAnim.clip, loop: true, speed: heroAnim.speed });
   }
 
+  const j = rig.joints;
+
   if (swingPhase) {
     const breathe = phase === "address" || phase === "idle" || phase === "putt-address" || phase === "putt"
       ? Math.sin(performance.now() / 1400) * 0.012
       : 0;
     const key = evaluateSwing(posePhase(phase), t);
     const solved = solveSwing(key, root, breathe);
-    // Build the overlay pose. Hips and Root also carry POSITION so the clip's
-    // own hips translation cannot desync the rendered skeleton from the club
-    // solve (the bone attachment reads the same skeleton).
-    let bones: Record<string, { position?: { x: number; y: number; z: number }; rotation: Quat }> = {};
-    if (golferVariant === "meshy") {
-      // the Meshy bones carry other bind rotations and proportions: retarget the solved world deltas (golferRetarget.ts);
-      // the Hips position is in centimetres (the Armature node scales its children by 0.01)
-      bones = retargetSolved(solved);
-    } else {
-      for (const [bone, q] of Object.entries(solved.bones)) {
-        bones[bone] = { rotation: { x: q.x, y: q.y, z: q.z, w: q.w } };
-      }
-      bones.Root = { rotation: { ...bones.Root!.rotation }, position: { x: 0, y: 0, z: 0 } };
-      bones.Hips = { rotation: bones.Hips!.rotation, position: { x: solved.hipsPos[0], y: solved.hipsPos[1], z: solved.hipsPos[2] } };
-    }
+    const bones = retargetSolved(solved);
     rig.golferBody?.setAnimationPose?.({ bones, mode: "overlay" } as any);
 
-    // Drive the club parts from the same solve as the arms, every frame.
+    if (j) {
+      j.hips?.setPosition?.(solved.hipsPos[0], solved.hipsPos[1], solved.hipsPos[2]);
+      applyQuatEuler(j.hips, solved.bones.Hips);
+      applyQuatEuler(j.spine, solved.bones.Spine);
+      applyQuatEuler(j.chest, solved.bones.Chest);
+      applyQuatEuler(j.head, solved.bones.Head);
+      applyQuatEuler(j.armL, solved.bones.LeftUpperArm);
+      applyQuatEuler(j.forearmL, solved.bones.LeftForearm);
+      applyQuatEuler(j.armR, solved.bones.RightUpperArm);
+      applyQuatEuler(j.forearmR, solved.bones.RightForearm);
+      applyQuatEuler(j.thighL, solved.bones.LeftUpperLeg);
+      applyQuatEuler(j.shinL, solved.bones.LeftLowerLeg);
+      applyQuatEuler(j.footL, solved.bones.LeftFoot);
+      applyQuatEuler(j.thighR, solved.bones.RightUpperLeg);
+      applyQuatEuler(j.shinR, solved.bones.RightLowerLeg);
+      const footRQ = solved.deltas.footR && solved.bones.RightFoot
+        ? qMul(solved.bones.RightFoot, solved.deltas.footR)
+        : solved.bones.RightFoot;
+      applyQuatEuler(j.footR, footRQ);
+    }
+
     for (const handle of [rig.clubGrip, rig.clubShaft, rig.clubHead]) handle?.setVisible?.(true);
     if (lastOffsets.length > 0) {
       const parts: Record<string, any> = {
@@ -400,7 +365,6 @@ export function poseGolfer(
       }
     }
 
-    // telemetry (world space) — the impact predicate reads clubHeadWorld
     const headW = W(solved.clubHead);
     const gripW = W(solved.grip);
     const ballW = W(BALL_SHOT);
@@ -414,13 +378,30 @@ export function poseGolfer(
       attached: telemetry.attached
     };
   } else {
-    // walk / celebrate: the clip owns the body and no solve places the club, so it is put away rather than left hanging in the air
     rig.golferBody?.setAnimationPose?.(undefined);
+    if (j) {
+      const prof = meshyProfile();
+      const pump = phase === "celebrate" ? Math.sin(t * Math.PI * 3) : 0;
+      j.hips?.setPosition?.(prof.rig.hipsBind[0], prof.rig.hipsBind[1], prof.rig.hipsBind[2]);
+      j.hips?.setRotation?.(0, 0, 0);
+      j.spine?.setRotation?.(0, 0, 0);
+      j.chest?.setRotation?.(phase === "celebrate" ? -0.1 : 0, 0, 0);
+      j.head?.setRotation?.(phase === "celebrate" ? -0.14 : 0, 0, 0);
+      j.armL?.setRotation?.(0, 0, phase === "celebrate" ? -0.45 : 0.12);
+      j.forearmL?.setRotation?.(-0.35, 0, 0);
+      j.armR?.setRotation?.(phase === "celebrate" ? -1.45 - Math.abs(pump) * 0.25 : 0, 0, phase === "celebrate" ? 0.35 : -0.12);
+      j.forearmR?.setRotation?.(phase === "celebrate" ? -0.55 : -0.25, 0, 0);
+      j.thighL?.setRotation?.(0, 0, 0);
+      j.shinL?.setRotation?.(0, 0, 0);
+      j.footL?.setRotation?.(0, 0, 0);
+      j.thighR?.setRotation?.(0, 0, 0);
+      j.shinR?.setRotation?.(0, 0, 0);
+      j.footR?.setRotation?.(0, 0, 0);
+    }
     for (const handle of [rig.clubGrip, rig.clubShaft, rig.clubHead]) handle?.setVisible?.(false);
     telemetry = { ...telemetry, phase, t };
   }
 
-  // --- Caddy + bag + cart (set dressing, out of the camera lane) ----------
   const caddyW = W([3.1, 0, 2.2]);
   const caddyGroundY = heightFn ? heightFn(caddyW[0], caddyW[2]) : at[1];
   const caddyPump = phase === "celebrate" ? Math.abs(Math.sin(t * Math.PI * 2)) * 0.14 : 0;
@@ -443,11 +424,8 @@ export function poseGolfer(
     .setRotation(0, faceYaw - 0.25, 0)
     .setVisible(true);
 
-  // Blob shadow under the stance + address marker ring on the ball spot.
   const shadowW = W(STANCE_MID);
   rig.shadow
-    // GU47 phase 3: +0.07 m clears the tee deck (+0.03..0.032) and the green disc (+0.065); at +0.015 the blob sat inside
-    // the tee box and the golfer had no contact shadow on the tee (rubric: "characters float on the tee box")
     .setPosition(shadowW[0], stanceGround + 0.07, shadowW[2])
     .setScale([0.72, 1, 0.6])
     .setVisible(true);
@@ -459,5 +437,4 @@ export function poseGolfer(
     .setVisible(atAddress);
 }
 
-/** club part ids owned by the bone attachment (for diagnostics) */
 export const CLUB_PART_IDS: readonly string[] = CLUB_PARTS.map((p) => p.id);

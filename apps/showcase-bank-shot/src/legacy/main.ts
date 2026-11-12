@@ -384,9 +384,13 @@ function buildScene(): ReturnType<typeof scene> {
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({
         name: "hall haze",
-        density: 0.006,
+        mode: "linear",
+        near: 28,
+        far: 120,
+        maxOpacity: 0.14,
         color: "#141e33",
-        intensity: 0.1
+        intensity: 0.06,
+        affectsBackground: false
       }),
       lights.ambient({ name: "slate ambient", color: "#586d8c", intensity: 0.48 * KEY_LIGHT_GAIN }),
       lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 2.35 * KEY_LIGHT_GAIN }).position(-0.95, 2.05, 0.65),

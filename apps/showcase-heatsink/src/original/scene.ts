@@ -9,9 +9,10 @@
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
  * C4: a light fog hides the far end of the scenery window.
  */
-import { camera, effects, instances, lights, looks, material, model, primitives, scene, game, type AuraAssetRef } from "@aura3d/engine";
-import { assets } from "../aura-assets";
+import { camera, effects, instances, lights, looks, material, primitives, scene, game } from "@aura3d/engine";
+import { buildCombatDroneNode, buildProximityMineNode, buildSingleSceneryNode } from "../art/proceduralModels";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "../data";
+import { UNSHADOWED_ANCHOR_ASSETS } from "../scene";
 import { LASER_BOLTS } from "../sim";
 
 export const ROAD_TILE_COUNT = 16;
@@ -61,12 +62,6 @@ export const INSTANCE_COUNTS = {
   bolts: LASER_BOLTS
 } as const;
 
-const asset = (key: string): AuraAssetRef<"model"> => {
-  const ref = (assets as unknown as Record<string, AuraAssetRef<"model">>)[key];
-  if (!ref) throw new Error(`thermal-drift: asset ${key} is not in apps/showcase-heatsink/src/aura-assets.ts`);
-  return ref;
-};
-
 /** Initial transforms spread along the road, so every instanced node starts with honest bounds. */
 const along = (count: number, x: number, y: number, spacing: number) =>
   Array.from({ length: count }, (_, i) => ({ position: [x, y, 8 - i * spacing] as [number, number, number] }));
@@ -98,7 +93,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       lights.point({ color: "#ff7a1f", intensity: 1.8, position: [0, 6, -10], distance: 75 }),
       lights.point({ color: "#35d6ff", intensity: 1.5, position: [0, 8, -32], distance: 85 }),
       effects.vignette({ intensity: 0.22, smoothness: 0.65 }),
-      effects.fog({ color: FOG_COLOR, density: 0.0038, near: 65, far: 300, maxOpacity: 0.4, intensity: 0.3 })
+      effects.fog({ mode: "linear", color: FOG_COLOR, density: 0.0018, near: 140, far: 460, maxOpacity: 0.32, intensity: 0.2, affectsBackground: false })
     ]);
 
   // Sky: a backdrop wall in the circuit's sky colour with two emissive horizon bands in front of it.
@@ -148,29 +143,18 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.incoming))
   ]);
 
-  // 1-7: the drones (one is the player, six stand in for the drawn rivals).
+  // 1-7: sculpted multi-material playable & rival hover-drones (zero GLBs).
   for (const id of DRONE_ORDER) {
-    const spec = DRONE_SPECS[id];
-    s.add(
-      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim })
-        .position(0, 1.45, id === "orion" ? -0.4 : -24)
-        .runtime(game.runtimeNode(spec.nodeId, id === "orion" ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
-    );
+    s.add(buildCombatDroneNode(id, DRONE_SPECS[id]));
   }
-  // 8: the dropped proximity mine (hidden until deployed).
-  s.add(
-    model(assets.heatsinkWeaponMine, { name: IDS.mine, role: "setDressing", scaleMode: "fit", targetMaxDimension: 1.45 })
-      .position(0, 0.35, -28).runtime(game.runtimeNode(IDS.mine))
-  );
-  // 9-30: track-side anchors, the shockwave pylon included.
+  // 8: sculpted multi-material dropped proximity mine.
+  s.add(buildProximityMineNode(IDS.mine));
+  // 9-30: sculpted multi-material track-side anchors, the shockwave pylon included.
   for (const anchor of SCENERY_ANCHORS) {
-    s.add(
-      model(asset(anchor.assetKey), { name: anchor.id, role: "setDressing", scaleMode: "fit", targetMaxDimension: anchor.maxDim })
-        .position(anchor.lateralX, anchor.baseY, -anchor.s).rotate(0, anchor.yaw, 0).runtime(game.runtimeNode(anchor.id))
-    );
+    s.add(buildSingleSceneryNode(anchor, !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey)));
   }
   return s;
 }
 
-/** Model nodes in the scene (route-health budget: 32). */
-export const MODEL_NODE_COUNT = DRONE_ORDER.length + 1 + SCENERY_ANCHORS.length;
+/** Static GLB model nodes in the scene (`0`: 100% procedural multi-material meshes). */
+export const MODEL_NODE_COUNT = 0;

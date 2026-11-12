@@ -52,7 +52,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     overrides: {
       accent: "#e8c98a",
       exposureEv: -0.02,
-      fogDensityScale: 0.08,
+      fogDensityScale: 0.15,
+      fog: {
+        color: "#c9a46a",
+        near: 120,
+        far: 380,
+        height: { mode: "linear", near: 120, far: 380, maxOpacity: 0.16, affectsBackground: false }
+      },
       environmentIntensity: 0.32,
       environmentRotationDeg: 330,
       sun: { elevationDeg: 34, azimuthDeg: -62 },
@@ -75,12 +81,12 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     overrides: {
       accent: "#ffd76a",
       exposureEv: 0.02,
-      fogDensityScale: 0.18,
+      fogDensityScale: 0.15,
       fog: {
         color: "#0d0b11",
-        near: 18,
-        far: 58,
-        height: { mode: "linear", near: 18, far: 58, maxOpacity: 0.2, affectsBackground: false }
+        near: 95,
+        far: 300,
+        height: { mode: "linear", near: 95, far: 300, maxOpacity: 0.16, affectsBackground: false }
       },
       environmentIntensity: 0.52,
       grade: { contrast: 1.22, saturation: 1.08, temperature: -0.02, tint: 0 }
@@ -103,6 +109,12 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#ffb03c",
       exposureEv: 0,
       fogDensityScale: 0.15,
+      fog: {
+        color: "#b8724a",
+        near: 115,
+        far: 360,
+        height: { mode: "linear", near: 115, far: 360, maxOpacity: 0.16, affectsBackground: false }
+      },
       environmentIntensity: 0.62,
       environmentRotationDeg: 200,
       sun: { elevationDeg: 26, azimuthDeg: -64 },
@@ -124,7 +136,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     overrides: {
       accent: "#7dd7ff",
       exposureEv: 0.02,
-      fogDensityScale: 0.18,
+      fogDensityScale: 0.15,
+      fog: {
+        color: "#b9c8d8",
+        near: 105,
+        far: 340,
+        height: { mode: "linear", near: 105, far: 340, maxOpacity: 0.16, affectsBackground: false }
+      },
       environmentIntensity: 0.6,
       environmentRotationDeg: 300,
       sun: { elevationDeg: 28, azimuthDeg: 58 },

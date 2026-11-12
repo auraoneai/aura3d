@@ -1080,9 +1080,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
     activeSong?.controls.setPaused(true);
   };
 
-  const resumeByGrownUp = (): void => releasePause(["user", "hidden", "device"]);
-
   // ---- audio unlock
+  const needsAudioUnlock = (): boolean =>
+    flags.audio &&
+    mixer.manager !== null &&
+    (!mixer.isUnlocked() || (mixer.manager.state !== "running" && mixer.manager.state !== "closed"));
+
   const markAudioUnavailable = (): void => {
     if (disposed) return;
     audioFailed = true;
@@ -1091,7 +1094,14 @@ export function createApp(options: WonderAppOptions): WonderApp {
     active?.runner.audioUnavailable();
   };
 
-  /** The start button's handler calls this synchronously inside the tap (the one place audio unlocks). */
+  const markAudioAvailable = (): void => {
+    if (disposed || !audioFailed) return;
+    audioFailed = false;
+    active?.captions.setAudioUnavailable(false);
+    activeSong?.captions.setAudioUnavailable(false);
+  };
+
+  /** The start/menu/replay/resume button handlers call this synchronously inside the tap (also re-arms gestures if AirPlay/OS blocks initial unlock). */
   const unlockFromStartTap = (): void => {
     if (!flags.audio || mixer.manager === null) {
       markAudioUnavailable();
@@ -1099,22 +1109,32 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
     void mixer.unlock().then((ok) => {
       if (disposed) return;
-      if (ok) disarmGesture?.();
-      else markAudioUnavailable();
+      if (ok) {
+        markAudioAvailable();
+        if (!needsAudioUnlock()) disarmGesture?.();
+      } else if (!mixer.isUnlocked()) {
+        markAudioUnavailable();
+        armGestureUnlock();
+      }
     });
   };
 
-  /** No start screen (`?autostart=1`, QA begin/startStory): the first real tap or key press unlocks audio. */
+  /** No start screen (`?autostart=1`, QA begin/startStory) or after OS/AirPlay interruption: next real tap unlocks audio. */
   const armGestureUnlock = (): void => {
-    if (disarmGesture || !view || !flags.audio || mixer.manager === null || mixer.isUnlocked()) return;
-    const types = ["pointerup", "touchend", "click", "keydown"] as const;
+    if (disarmGesture || !view || !needsAudioUnlock()) return;
+    const types = ["touchend", "click", "keydown", "pointerup"] as const;
     const onGesture = (): void => {
-      if (disposed || mixer.isUnlocked()) {
+      if (disposed || !needsAudioUnlock()) {
+        if (mixer.isUnlocked()) markAudioAvailable();
         disarm();
         return;
       }
       void mixer.unlock().then((ok) => {
-        if (ok) disarm();
+        if (disposed) return;
+        if (ok) {
+          markAudioAvailable();
+          if (!needsAudioUnlock()) disarm();
+        }
       });
     };
     const disarm = (): void => {
@@ -1124,6 +1144,35 @@ export function createApp(options: WonderAppOptions): WonderApp {
     for (const type of types) view.addEventListener(type, onGesture, true);
     disarmGesture = disarm;
   };
+
+  const resumeByGrownUp = (): void => {
+    if (!disposed && needsAudioUnlock()) {
+      void mixer.unlock().then((ok) => {
+        if (disposed) return;
+        if (ok) {
+          markAudioAvailable();
+          if (!needsAudioUnlock()) disarmGesture?.();
+        } else {
+          armGestureUnlock();
+        }
+      });
+    }
+    releasePause(["user", "hidden", "device"]);
+  };
+
+  if (flags.audio && mixer.manager) {
+    unsubscribers.push(
+      mixer.manager.onStateChange((state) => {
+        if (disposed) return;
+        if (state === "running" && mixer.isUnlocked()) {
+          markAudioAvailable();
+          disarmGesture?.();
+        } else if (state !== "running" && state !== "closed" && started) {
+          armGestureUnlock();
+        }
+      })
+    );
+  }
 
   // ---- settings
   let manualMode: "play-together" | "watch-sing" = settings.mode === "watch-sing" ? "watch-sing" : "play-together";
@@ -1252,6 +1301,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       locale,
       MENU_ITEMS,
       (id) => {
+        unlockFromStartTap();
         const story = findStory(id);
         if (story) void openStory(story, settings.mode);
       },
@@ -1263,9 +1313,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
         windDown: windDownNow(),
         onToggleWindDown: toggleWindDown,
         onSelectSong: (songId) => {
+          unlockFromStartTap();
           void openSongQueue([songId], 0);
         },
         onPlayAllLullabies: () => {
+          unlockFromStartTap();
           void openSongQueue(SLEEP_SONG_IDS, 0);
         },
         stageUnavailable: stageFailed,
@@ -1593,11 +1645,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
       onPause: () => addPause("user"),
       onResume: () => resumeByGrownUp(),
       onReplayWord: () => {
+        if (needsAudioUnlock()) unlockFromStartTap();
         narration.replay();
       },
       onAllDone: () => allDone(),
       onParent: () => void openParentFlow(),
       onConfirmTurn: () => {
+        if (needsAudioUnlock()) unlockFromStartTap();
         active?.runner.confirm(clock.now());
       },
       initialAuto: settings.mode === "auto",

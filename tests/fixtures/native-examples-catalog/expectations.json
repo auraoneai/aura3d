@@ -7,17 +7,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the admitted model's skin-tone and blue-gray texture regions and the authored normalized subject and camera; no reference capture. Rendered color, framing and asset loading remain unverified.",
       "subject": "Textured barbarian model with skin-tone and blue-gray armor",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        }
       ],
       "regions": [
         {
@@ -28,8 +46,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -40,17 +90,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the admitted model's skin-tone and blue-gray texture regions and the authored normalized subject and camera; no reference capture. The separate generated harness validates the subject bounds hit. Rendered color, framing and asset loading remain unverified.",
       "subject": "Textured barbarian model targeted by the bounds query",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        }
       ],
       "regions": [
         {
@@ -61,8 +129,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -73,17 +173,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the admitted barbarian's skin and armor texture atlas, the authored normalized subject, perspective camera, and color grade; no reference capture. Rendered color, framing, and grade response remain unverified.",
       "subject": "Textured barbarian model under the authored contrast 1.12 and saturation 0.8 grade",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        }
       ],
       "regions": [
         {
@@ -94,8 +212,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -106,17 +256,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the admitted skinned barbarian's skin and armor atlas, inspected Idle clip, normalized subject and perspective camera; no reference capture. Rendered pose, color, framing and playback remain unverified.",
       "subject": "Skinned barbarian model playing the admitted Idle clip",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        }
       ],
       "regions": [
         {
@@ -127,8 +295,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -139,21 +339,51 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the admitted barbarian's skin and armor atlas, the authored normalized subject and the source-derived orbit rig pose; no reference capture. Rendered color, framing and response to orbit input remain unverified.",
       "subject": "Textured barbarian model named as the orbit interaction target",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" },
-        { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "92d19e8d42fcb0830fe2c677b5fb71d476fe587eeb4206e88f5b47d258584cdc" },
-        { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
-        { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts",
+          "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d"
+        },
+        {
+          "path": "packages/engine/src/public/index.ts",
+          "sha256": "92d19e8d42fcb0830fe2c677b5fb71d476fe587eeb4206e88f5b47d258584cdc"
+        },
+        {
+          "path": "packages/input/src/index.ts",
+          "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9"
+        },
+        {
+          "path": "packages/input/src/PointerLeases.ts",
+          "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5"
+        }
       ],
       "regions": [
         {
@@ -164,8 +394,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -176,15 +438,27 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored north rim rail, emissive color and top-down perspective camera in the identified template source; no reference capture. Rendered color, framing and transient occlusion remain unverified.",
       "subject": "Light-blue emissive north rim rail above the arena",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/arena-shooter/src/main.ts",
         "sha256": "ef5f05cdf7da8cd354751d094409a359db797bdddb126acf8c3ca574fb8e9e06"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
-        { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
-        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939" }
+        {
+          "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts",
+          "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c"
+        },
+        {
+          "path": "packages/create-aura3d/templates/arena-shooter/index.html",
+          "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "b8b507f12680aa2431370f68f985b56f9c26e3d943cc9c8c7a952055318b8939"
+        }
       ],
       "regions": [
         {
@@ -195,7 +469,23 @@
           "height": 55,
           "minContrast": 8,
           "colors": [
-            { "name": "light-blue emissive north rim", "red": [140, 255], "green": [150, 255], "blue": [200, 255], "minFraction": 0.08, "maxFraction": 0.6 }
+            {
+              "name": "light-blue emissive north rim",
+              "red": [
+                140,
+                255
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                200,
+                255
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.6
+            }
           ]
         }
       ]
@@ -206,14 +496,23 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored instance-color gradient, base color and grid in the identified starter source; no reference capture. Rendered colors, auto-framing and the animated instance transforms remain unverified.",
       "subject": "Warm and cool portions of the dense instanced-cube gradient",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "apps/instancing-performance/src/main.ts",
         "sha256": "7108c31974deb387baab7f9710807558d7f58a3ad04c28b3b9f6d546dc00b56c"
       },
       "sourceDependencies": [
-        { "path": "apps/instancing-performance/index.html", "sha256": "9c962ca117e323a7d7241c9fc430f547de316e637a2e7e20e1507afbb4694b09" },
-        { "path": "apps/wow-common/src/showcase.css", "sha256": "8ac09e16ad235920a62e636e5def806ce7f659314ef75c04e6d0c590e414a7ce" }
+        {
+          "path": "apps/instancing-performance/index.html",
+          "sha256": "9c962ca117e323a7d7241c9fc430f547de316e637a2e7e20e1507afbb4694b09"
+        },
+        {
+          "path": "apps/wow-common/src/showcase.css",
+          "sha256": "8ac09e16ad235920a62e636e5def806ce7f659314ef75c04e6d0c590e414a7ce"
+        }
       ],
       "regions": [
         {
@@ -224,8 +523,40 @@
           "height": 520,
           "minContrast": 8,
           "colors": [
-            { "name": "warm instance gradient", "red": [145, 245], "green": [130, 240], "blue": [95, 195], "minFraction": 0.04, "maxFraction": 0.6 },
-            { "name": "cool instance gradient", "red": [85, 185], "green": [130, 240], "blue": [140, 245], "minFraction": 0.04, "maxFraction": 0.6 }
+            {
+              "name": "warm instance gradient",
+              "red": [
+                145,
+                245
+              ],
+              "green": [
+                130,
+                240
+              ],
+              "blue": [
+                95,
+                195
+              ],
+              "minFraction": 0.04,
+              "maxFraction": 0.6
+            },
+            {
+              "name": "cool instance gradient",
+              "red": [
+                85,
+                185
+              ],
+              "green": [
+                130,
+                240
+              ],
+              "blue": [
+                140,
+                245
+              ],
+              "minFraction": 0.04,
+              "maxFraction": 0.6
+            }
           ]
         }
       ]
@@ -236,16 +567,31 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored primitive-fallback character colors, bounded stage positions and perspective camera in the identified template source; no reference capture. Rendered colors, framing and playback motion remain unverified.",
       "subject": "Cyan Miko and gold Luma primitive-fallback character bodies",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/prompt-animation-channel/src/main.ts",
         "sha256": "d07bdad8922758b0452817e0a58add9f3ea65229f48d28c00e7ee57a8e5a9353"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/prompt-animation-channel/src/aura-assets.ts", "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9" },
-        { "path": "packages/create-aura3d/templates/prompt-animation-channel/src/episode.ts", "sha256": "a0472b416db31ffb4450bec51469ced29640fa57fa5bc966275bd2c13f4b157a" },
-        { "path": "packages/create-aura3d/templates/prompt-animation-channel/index.html", "sha256": "73e681dbc78277bc8b3e024b37b4455bc8ad6d7e7d3133d551e654e0aca7941f" },
-        { "path": "packages/engine/src/agent-api/ShotTimeline.ts", "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8" }
+        {
+          "path": "packages/create-aura3d/templates/prompt-animation-channel/src/aura-assets.ts",
+          "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9"
+        },
+        {
+          "path": "packages/create-aura3d/templates/prompt-animation-channel/src/episode.ts",
+          "sha256": "a0472b416db31ffb4450bec51469ced29640fa57fa5bc966275bd2c13f4b157a"
+        },
+        {
+          "path": "packages/create-aura3d/templates/prompt-animation-channel/index.html",
+          "sha256": "73e681dbc78277bc8b3e024b37b4455bc8ad6d7e7d3133d551e654e0aca7941f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/ShotTimeline.ts",
+          "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8"
+        }
       ],
       "regions": [
         {
@@ -256,8 +602,40 @@
           "height": 170,
           "minContrast": 8,
           "colors": [
-            { "name": "cyan Miko fallback body", "red": [40, 168], "green": [140, 255], "blue": [170, 255], "minFraction": 0.015, "maxFraction": 0.5 },
-            { "name": "gold Luma fallback body", "red": [170, 255], "green": [140, 255], "blue": [50, 178], "minFraction": 0.015, "maxFraction": 0.5 }
+            {
+              "name": "cyan Miko fallback body",
+              "red": [
+                40,
+                168
+              ],
+              "green": [
+                140,
+                255
+              ],
+              "blue": [
+                170,
+                255
+              ],
+              "minFraction": 0.015,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "gold Luma fallback body",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                140,
+                255
+              ],
+              "blue": [
+                50,
+                178
+              ],
+              "minFraction": 0.015,
+              "maxFraction": 0.5
+            }
           ]
         }
       ]
@@ -268,17 +646,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored primitive-fallback character colors, bounded stage positions and perspective camera in the identified template source; no reference capture. Rendered colors, framing, playback motion and panel occlusion remain unverified.",
       "subject": "Cyan Miko and gold Luma primitive-fallback character bodies beside the builder panel",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/episode-builder/src/main.ts",
         "sha256": "d4d7e5e8b86c7e8e6919b05ff90a627ece26feb35d6c14e4d18c7feb359b664d"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/episode-builder/src/aura-assets.ts", "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9" },
-        { "path": "packages/create-aura3d/templates/episode-builder/src/episode.ts", "sha256": "750e58d533b3a032475b1f4e8d2b572ee031440b6b1e50f36329924179277045" },
-        { "path": "packages/create-aura3d/templates/episode-builder/src/builder.ts", "sha256": "0d8d9f88f3f2802d7d9ba07b3b9778893c830ac515e1d2b06d4d738dd19a4d8c" },
-        { "path": "packages/create-aura3d/templates/episode-builder/index.html", "sha256": "f0ddebcd25b32080568f7d941ca72f45502245cbb744b3e569e5e8dc3323b111" },
-        { "path": "packages/engine/src/agent-api/ShotTimeline.ts", "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8" }
+        {
+          "path": "packages/create-aura3d/templates/episode-builder/src/aura-assets.ts",
+          "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9"
+        },
+        {
+          "path": "packages/create-aura3d/templates/episode-builder/src/episode.ts",
+          "sha256": "750e58d533b3a032475b1f4e8d2b572ee031440b6b1e50f36329924179277045"
+        },
+        {
+          "path": "packages/create-aura3d/templates/episode-builder/src/builder.ts",
+          "sha256": "0d8d9f88f3f2802d7d9ba07b3b9778893c830ac515e1d2b06d4d738dd19a4d8c"
+        },
+        {
+          "path": "packages/create-aura3d/templates/episode-builder/index.html",
+          "sha256": "f0ddebcd25b32080568f7d941ca72f45502245cbb744b3e569e5e8dc3323b111"
+        },
+        {
+          "path": "packages/engine/src/agent-api/ShotTimeline.ts",
+          "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8"
+        }
       ],
       "regions": [
         {
@@ -289,8 +685,40 @@
           "height": 170,
           "minContrast": 8,
           "colors": [
-            { "name": "cyan Miko fallback body", "red": [40, 168], "green": [140, 255], "blue": [170, 255], "minFraction": 0.015, "maxFraction": 0.5 },
-            { "name": "gold Luma fallback body", "red": [170, 255], "green": [140, 255], "blue": [50, 178], "minFraction": 0.015, "maxFraction": 0.5 }
+            {
+              "name": "cyan Miko fallback body",
+              "red": [
+                40,
+                168
+              ],
+              "green": [
+                140,
+                255
+              ],
+              "blue": [
+                170,
+                255
+              ],
+              "minFraction": 0.015,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "gold Luma fallback body",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                140,
+                255
+              ],
+              "blue": [
+                50,
+                178
+              ],
+              "minFraction": 0.015,
+              "maxFraction": 0.5
+            }
           ]
         }
       ]
@@ -301,7 +729,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the framed cabinet geometry, satin-cabinet base-color factor and embedded one-pixel base-color texture in the identified local GLB; no reference capture. Rendered color, lighting, texture decoding and framing remain unverified.",
       "subject": "Warm satin cabinet of the typed studio product",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/product-viewer/src/main.ts",
         "sha256": "69aeb1458f5af872714b7d153dc5f4ff88ee90708a7ae533071188ef9a12afb7"
@@ -335,9 +766,18 @@
           "colors": [
             {
               "name": "warm satin cabinet",
-              "red": [85, 210],
-              "green": [50, 175],
-              "blue": [0, 110],
+              "red": [
+                85,
+                210
+              ],
+              "green": [
+                50,
+                175
+              ],
+              "blue": [
+                0,
+                110
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.6
             }
@@ -351,7 +791,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the seeded practice board's yellow settled cells, cyan active cells and orthographic camera in the identified template source; no reference capture. Rendered colors, instanced tint and framing remain unverified.",
       "subject": "Yellow settled O cells and cyan active I cells near the bottom of the practice board",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts",
         "sha256": "3a795289c2bcd335d7a36b0198a0de363bab167707a34b38b40928a88a898fad"
@@ -381,17 +824,35 @@
           "colors": [
             {
               "name": "yellow settled O cells",
-              "red": [190, 255],
-              "green": [140, 235],
-              "blue": [40, 160],
+              "red": [
+                190,
+                255
+              ],
+              "green": [
+                140,
+                235
+              ],
+              "blue": [
+                40,
+                160
+              ],
               "minFraction": 0.08,
               "maxFraction": 0.45
             },
             {
               "name": "cyan active I cells",
-              "red": [30, 170],
-              "green": [190, 255],
-              "blue": [210, 255],
+              "red": [
+                30,
+                170
+              ],
+              "green": [
+                190,
+                255
+              ],
+              "blue": [
+                210,
+                255
+              ],
               "minFraction": 0.04,
               "maxFraction": 0.3
             }
@@ -405,7 +866,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored PBR swatch, camera and layout in the identified template source; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Warm red PBR swatch at the left of the material-authoring grid",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/material-authoring/src/main.ts",
         "sha256": "dc7d0447a13ae7c8f14dc50f0bcee88fa477cb9fa8e8a4d121d94962103d0311"
@@ -421,9 +885,18 @@
           "colors": [
             {
               "name": "warm red PBR swatch",
-              "red": [125, 255],
-              "green": [40, 190],
-              "blue": [0, 115],
+              "red": [
+                125,
+                255
+              ],
+              "green": [
+                40,
+                190
+              ],
+              "blue": [
+                0,
+                115
+              ],
               "minFraction": 0.08,
               "maxFraction": 0.7
             }
@@ -437,7 +910,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored indexed triangle, PBR base color and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Orange indexed triangle to the right of the admitted model",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -453,9 +929,18 @@
           "colors": [
             {
               "name": "orange indexed triangle",
-              "red": [130, 255],
-              "green": [45, 210],
-              "blue": [0, 115],
+              "red": [
+                130,
+                255
+              ],
+              "green": [
+                45,
+                210
+              ],
+              "blue": [
+                0,
+                115
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.6
             }
@@ -469,7 +954,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored blue-gray metal sphere, directional light and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Blue-gray metallic material sample to the right of the admitted model",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -485,9 +973,18 @@
           "colors": [
             {
               "name": "blue-gray material sample",
-              "red": [100, 185],
-              "green": [140, 225],
-              "blue": [190, 255],
+              "red": [
+                100,
+                185
+              ],
+              "green": [
+                140,
+                225
+              ],
+              "blue": [
+                190,
+                255
+              ],
               "minFraction": 0.12,
               "maxFraction": 0.6
             }
@@ -501,7 +998,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored constant teal fragment, unit sphere and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Teal custom-shader sphere to the right of the admitted model",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -517,9 +1017,18 @@
           "colors": [
             {
               "name": "teal custom-shader sphere",
-              "red": [15, 120],
-              "green": [105, 225],
-              "blue": [135, 245],
+              "red": [
+                15,
+                120
+              ],
+              "green": [
+                105,
+                225
+              ],
+              "blue": [
+                135,
+                245
+              ],
               "minFraction": 0.12,
               "maxFraction": 0.6
             }
@@ -533,7 +1042,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored gold AURA3D mesh text, glyph geometry and perspective camera in the identified sources; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Gold extruded AURA3D text alongside the admitted model",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -555,9 +1067,18 @@
           "colors": [
             {
               "name": "gold text glyphs",
-              "red": [140, 255],
-              "green": [100, 235],
-              "blue": [0, 140],
+              "red": [
+                140,
+                255
+              ],
+              "green": [
+                100,
+                235
+              ],
+              "blue": [
+                0,
+                140
+              ],
               "minFraction": 0.015,
               "maxFraction": 0.4
             }
@@ -571,7 +1092,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored orange sphere, initial position, floor and perspective camera in the identified scenario source; no reference capture. Rendered colors, framing and motion remain unverified.",
       "subject": "Orange sphere over the sample physics floor; this still-image expectation does not prove motion or contact",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -587,9 +1111,18 @@
           "colors": [
             {
               "name": "orange physics sphere",
-              "red": [130, 255],
-              "green": [45, 210],
-              "blue": [0, 115],
+              "red": [
+                130,
+                255
+              ],
+              "green": [
+                45,
+                210
+              ],
+              "blue": [
+                0,
+                115
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.3
             }
@@ -603,17 +1136,35 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the typed-model case: the worker-render scenario authors the same normalized subject, look and camera, so the same subject region and texture-color ranges apply; no reference capture. Worker execution, rendered color, framing and asset loading remain unverified.",
       "subject": "Textured barbarian model rendered by the dedicated render worker",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
-        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
-        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
-        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224" }
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/aura.assets.json",
+          "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "tools/agent-examples/index.ts",
+          "sha256": "fa85057ae19015c0e2095d05750c99c9d00ed6f8469d6ae7e05bcef8ad05e224"
+        }
       ],
       "regions": [
         {
@@ -624,8 +1175,40 @@
           "height": 235,
           "minContrast": 6,
           "colors": [
-            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
-            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+            {
+              "name": "skin-tone model texture",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                110,
+                230
+              ],
+              "blue": [
+                70,
+                200
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue-gray armor texture",
+              "red": [
+                45,
+                160
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                85,
+                220
+              ],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            }
           ]
         }
       ]
@@ -636,7 +1219,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the custom-geometry case: the interchange-export scenario places the same authored triangle, material and camera and also exports it to binary glTF; no reference capture. Rendered color, framing, asset loading and the browser export remain unverified.",
       "subject": "Authored orange triangle beside the textured barbarian model, also exported to GLB",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "examples/native-capabilities/index.ts",
         "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
@@ -652,9 +1238,18 @@
           "colors": [
             {
               "name": "orange indexed triangle",
-              "red": [130, 255],
-              "green": [45, 210],
-              "blue": [0, 115],
+              "red": [
+                130,
+                255
+              ],
+              "green": [
+                45,
+                210
+              ],
+              "blue": [
+                0,
+                115
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.6
             }
@@ -668,7 +1263,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored camera and robot transform plus the Main material in the existing hashed robot GLB; no reference capture. Rendered colors, asset visibility and framing remain unverified.",
       "subject": "Warm-colored torso and head of the typed GLB robot, excluding the separate cyan and amber accent lights",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "apps/hello-world-typed-asset/src/main.ts",
         "sha256": "440b855baffa6872b986fd115bd3fea5da664ffdb541c444c752d46c39a0582f"
@@ -698,9 +1296,18 @@
           "colors": [
             {
               "name": "warm robot body",
-              "red": [115, 235],
-              "green": [55, 195],
-              "blue": [0, 115],
+              "red": [
+                115,
+                235
+              ],
+              "green": [
+                55,
+                195
+              ],
+              "blue": [
+                0,
+                115
+              ],
               "minFraction": 0.03,
               "maxFraction": 0.6
             }
@@ -714,7 +1321,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored magenta and cyan emissive spheres and perspective camera in the starter source; no reference capture. Rendered colors and framing remain unverified.",
       "subject": "Magenta and cyan material sample spheres on the studio plinth",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "apps/material-lighting/src/main.ts",
         "sha256": "1a0a47170f28a26064a37da89db762a168d44f3a9c1b398abe31acbd598befe1"
@@ -736,17 +1346,35 @@
           "colors": [
             {
               "name": "magenta emissive material sample",
-              "red": [150, 255],
-              "green": [0, 120],
-              "blue": [100, 255],
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                0,
+                120
+              ],
+              "blue": [
+                100,
+                255
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.65
             },
             {
               "name": "cyan emissive material sample",
-              "red": [0, 115],
-              "green": [110, 255],
-              "blue": [140, 255],
+              "red": [
+                0,
+                115
+              ],
+              "green": [
+                110,
+                255
+              ],
+              "blue": [
+                140,
+                255
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.65
             }
@@ -760,7 +1388,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored brass camera faceplate, blue lens and both endpoints of the dolly camera in the starter source; no reference capture. Rendered colors, framing and camera motion remain unverified.",
       "subject": "Brass camera body and blue lens along the authored camera path",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "apps/camera-path/src/main.ts",
         "sha256": "3887f2d974e57cd6aa1e1fbd1ffe12c915e59a3e458b9b54c9521b83a55e11d7"
@@ -782,17 +1413,35 @@
           "colors": [
             {
               "name": "brass camera faceplate",
-              "red": [100, 220],
-              "green": [65, 190],
-              "blue": [0, 120],
+              "red": [
+                100,
+                220
+              ],
+              "green": [
+                65,
+                190
+              ],
+              "blue": [
+                0,
+                120
+              ],
               "minFraction": 0.015,
               "maxFraction": 0.65
             },
             {
               "name": "blue camera lens",
-              "red": [0, 140],
-              "green": [110, 255],
-              "blue": [145, 255],
+              "red": [
+                0,
+                140
+              ],
+              "green": [
+                110,
+                255
+              ],
+              "blue": [
+                145,
+                255
+              ],
               "minFraction": 0.015,
               "maxFraction": 0.65
             }
@@ -806,7 +1455,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the cinematic plan's compiled, tilted cyan neon sign and initial dolly camera, with the plan, recipe, look and typed hero asset bound by source hashes; no reference capture. Framing, emissive output, asset loading and the candidate's rendered frame remain unverified.",
       "subject": "Tilted cyan neon sign in the compiled cinematic alley; not a test of the hero helmet",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
         "sha256": "0bf830f3099a33d4aef2585869f73b887c3c5c94df31195c85b3122929e9c655"
@@ -860,9 +1512,18 @@
           "colors": [
             {
               "name": "tilted cyan neon sign",
-              "red": [0, 200],
-              "green": [150, 255],
-              "blue": [160, 255],
+              "red": [
+                0,
+                200
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                160,
+                255
+              ],
               "minFraction": 0.01,
               "maxFraction": 0.45
             }
@@ -876,7 +1537,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the authored orbit camera, Miko's transform, and body and skin texels sampled at its mesh UVs in the typed GLB; no reference capture. Lighting, bloom, framing and actual rendered colors remain unverified.",
       "subject": "Blue body and skin-tone regions of the typed Miko model in the postprocess scene",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/postprocess-scene/src/main.ts",
         "sha256": "3e0940802f9c19042f36eae4370d63dfc21f392cf6b3068595cb36c12b7ba262"
@@ -922,17 +1586,35 @@
           "colors": [
             {
               "name": "blue Miko body texture",
-              "red": [40, 145],
-              "green": [95, 225],
-              "blue": [130, 255],
+              "red": [
+                40,
+                145
+              ],
+              "green": [
+                95,
+                225
+              ],
+              "blue": [
+                130,
+                255
+              ],
               "minFraction": 0.01,
               "maxFraction": 0.65
             },
             {
               "name": "skin-tone Miko texture",
-              "red": [170, 255],
-              "green": [105, 220],
-              "blue": [70, 190],
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                105,
+                220
+              ],
+              "blue": [
+                70,
+                190
+              ],
               "minFraction": 0.005,
               "maxFraction": 0.65
             }
@@ -946,7 +1628,10 @@
       "author": "Aura3D native catalog fixture authors",
       "provenance": "Independently estimated from the no-input starting route state, default-on chase rig after settling, and the orange body and emissive red lamp triangles of the typed car GLB; rechecked against the runtime-owned frame-input matrices and material factors with offline GLB bytes, no reference capture. Early camera transients, occlusion, lighting, postprocessing and actual rendered colors remain unverified.",
       "subject": "Orange body and red rear lamp of the typed racing sports car, not the checkpoint marker or circuit",
-      "surface": { "kind": "canvas", "selector": "canvas" },
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
       "source": {
         "path": "packages/create-aura3d/templates/racing-starter/src/main.ts",
         "sha256": "da457757741987e078ab13396a57934de18064a675d7d9ec920e1520dd1bd195"
@@ -1120,17 +1805,35 @@
           "colors": [
             {
               "name": "orange sports-car body material",
-              "red": [150, 255],
-              "green": [100, 225],
-              "blue": [0, 80],
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                100,
+                225
+              ],
+              "blue": [
+                0,
+                80
+              ],
               "minFraction": 0.005,
               "maxFraction": 0.55
             },
             {
               "name": "red sports-car rear lamp",
-              "red": [150, 255],
-              "green": [0, 85],
-              "blue": [0, 85],
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                0,
+                85
+              ],
+              "blue": [
+                0,
+                85
+              ],
               "minFraction": 0.001,
               "maxFraction": 0.1
             }
@@ -1189,17 +1892,35 @@
           "colors": [
             {
               "name": "blue-grey stone",
-              "red": [90, 200],
-              "green": [90, 200],
-              "blue": [130, 230],
+              "red": [
+                90,
+                200
+              ],
+              "green": [
+                90,
+                200
+              ],
+              "blue": [
+                130,
+                230
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.9
             },
             {
               "name": "brown wood",
-              "red": [140, 230],
-              "green": [80, 160],
-              "blue": [40, 125],
+              "red": [
+                140,
+                230
+              ],
+              "green": [
+                80,
+                160
+              ],
+              "blue": [
+                40,
+                125
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.6
             }
@@ -1258,17 +1979,35 @@
           "colors": [
             {
               "name": "tan hull",
-              "red": [170, 255],
-              "green": [100, 190],
-              "blue": [60, 150],
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                100,
+                190
+              ],
+              "blue": [
+                60,
+                150
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.9
             },
             {
               "name": "white sails",
-              "red": [180, 255],
-              "green": [180, 255],
-              "blue": [190, 255],
+              "red": [
+                180,
+                255
+              ],
+              "green": [
+                180,
+                255
+              ],
+              "blue": [
+                190,
+                255
+              ],
               "minFraction": 0.01,
               "maxFraction": 0.5
             }
@@ -1327,17 +2066,35 @@
           "colors": [
             {
               "name": "blue-grey body panels",
-              "red": [60, 150],
-              "green": [60, 150],
-              "blue": [80, 170],
+              "red": [
+                60,
+                150
+              ],
+              "green": [
+                60,
+                150
+              ],
+              "blue": [
+                80,
+                170
+              ],
               "minFraction": 0.03,
               "maxFraction": 0.85
             },
             {
               "name": "orange trim",
-              "red": [180, 255],
-              "green": [60, 150],
-              "blue": [30, 110],
+              "red": [
+                180,
+                255
+              ],
+              "green": [
+                60,
+                150
+              ],
+              "blue": [
+                30,
+                110
+              ],
               "minFraction": 0.01,
               "maxFraction": 0.5
             }
@@ -1396,17 +2153,35 @@
           "colors": [
             {
               "name": "brown leather",
-              "red": [110, 215],
-              "green": [60, 130],
-              "blue": [35, 105],
+              "red": [
+                110,
+                215
+              ],
+              "green": [
+                60,
+                130
+              ],
+              "blue": [
+                35,
+                105
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.7
             },
             {
               "name": "green hood and tunic",
-              "red": [60, 160],
-              "green": [140, 230],
-              "blue": [100, 175],
+              "red": [
+                60,
+                160
+              ],
+              "green": [
+                140,
+                230
+              ],
+              "blue": [
+                100,
+                175
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.7
             }
@@ -1461,9 +2236,18 @@
           "colors": [
             {
               "name": "tree canopy green",
-              "red": [50, 175],
-              "green": [130, 235],
-              "blue": [95, 180],
+              "red": [
+                50,
+                175
+              ],
+              "green": [
+                130,
+                235
+              ],
+              "blue": [
+                95,
+                180
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.9
             }
@@ -1580,17 +2364,35 @@
           "colors": [
             {
               "name": "green car body",
-              "red": [0, 80],
-              "green": [70, 175],
-              "blue": [0, 100],
+              "red": [
+                0,
+                80
+              ],
+              "green": [
+                70,
+                175
+              ],
+              "blue": [
+                0,
+                100
+              ],
               "minFraction": 0.05,
               "maxFraction": 0.8
             },
             {
               "name": "brown wood trim",
-              "red": [95, 190],
-              "green": [10, 90],
-              "blue": [0, 70],
+              "red": [
+                95,
+                190
+              ],
+              "green": [
+                10,
+                90
+              ],
+              "blue": [
+                0,
+                70
+              ],
               "minFraction": 0.005,
               "maxFraction": 0.3
             }
@@ -1645,17 +2447,35 @@
           "colors": [
             {
               "name": "skin",
-              "red": [190, 255],
-              "green": [140, 230],
-              "blue": [100, 195],
+              "red": [
+                190,
+                255
+              ],
+              "green": [
+                140,
+                230
+              ],
+              "blue": [
+                100,
+                195
+              ],
               "minFraction": 0.01,
               "maxFraction": 0.6
             },
             {
               "name": "red-brown clothing",
-              "red": [70, 170],
-              "green": [30, 110],
-              "blue": [30, 110],
+              "red": [
+                70,
+                170
+              ],
+              "green": [
+                30,
+                110
+              ],
+              "blue": [
+                30,
+                110
+              ],
               "minFraction": 0.02,
               "maxFraction": 0.8
             }
@@ -1714,17 +2534,35 @@
           "colors": [
             {
               "name": "leather brown",
-              "red": [85, 160],
-              "green": [45, 95],
-              "blue": [10, 65],
+              "red": [
+                85,
+                160
+              ],
+              "green": [
+                45,
+                95
+              ],
+              "blue": [
+                10,
+                65
+              ],
               "minFraction": 0.005,
               "maxFraction": 0.5
             },
             {
               "name": "light trim",
-              "red": [170, 255],
-              "green": [180, 255],
-              "blue": [185, 255],
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                180,
+                255
+              ],
+              "blue": [
+                185,
+                255
+              ],
               "minFraction": 0.005,
               "maxFraction": 0.5
             }
@@ -1791,17 +2629,35 @@
           "colors": [
             {
               "name": "player leather brown",
-              "red": [85, 160],
-              "green": [45, 95],
-              "blue": [10, 65],
+              "red": [
+                85,
+                160
+              ],
+              "green": [
+                45,
+                95
+              ],
+              "blue": [
+                10,
+                65
+              ],
               "minFraction": 0.002,
               "maxFraction": 0.5
             },
             {
               "name": "rival dark maroon",
-              "red": [35, 110],
-              "green": [0, 45],
-              "blue": [0, 45],
+              "red": [
+                35,
+                110
+              ],
+              "green": [
+                0,
+                45
+              ],
+              "blue": [
+                0,
+                45
+              ],
               "minFraction": 0.002,
               "maxFraction": 0.6
             }
@@ -1856,9 +2712,18 @@
           "colors": [
             {
               "name": "cyan portal glow",
-              "red": [50, 215],
-              "green": [150, 255],
-              "blue": [170, 255],
+              "red": [
+                50,
+                215
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                170,
+                255
+              ],
               "minFraction": 0.15,
               "maxFraction": 0.95
             }
@@ -1913,9 +2778,18 @@
           "colors": [
             {
               "name": "self-lit stage mark",
-              "red": [125, 250],
-              "green": [125, 250],
-              "blue": [130, 252],
+              "red": [
+                125,
+                250
+              ],
+              "green": [
+                125,
+                250
+              ],
+              "blue": [
+                130,
+                252
+              ],
               "minFraction": 0.15,
               "maxFraction": 0.9
             }
@@ -2001,12 +2875,12 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "95523b08ab41f0af51c0713cfcae816534d8578718d7e5ec28c781932b6a6497"
+        "sha256": "913517dde3b59c34a897f28fc9b4cd05ddbbeaf51eb1dc882106fd7db88e255c"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-fc-3d/index.html",
-          "sha256": "b596cb5e0e06cacae4590d34e26ec19f5a82b9f1934061e34e75b2237831c965"
+          "sha256": "268f0fce6cf4d78ece2e5517a1969e995cb083ecc71568ab77e686bf43729487"
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/game/camera.ts",
@@ -2018,11 +2892,11 @@
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/game/rig.ts",
-          "sha256": "5780b1f29a90d8e390bd92e07c4c0c1acb445fe6a300467513548d383b741a23"
+          "sha256": "e06a8b4d64112f487b93c984d746ea6324150984ff00483d109b7fd2681b3193"
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/game/look.ts",
-          "sha256": "d47f0285867b3f2217a87f4de13c53a600b75e5d3b71db1c970ea71a0d4ef041"
+          "sha256": "521bb2643baf15d85413563abadc9f84761d6a4b6864f4f3814ec86b0fbbf868"
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/game/hud.ts",
@@ -2030,7 +2904,7 @@
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
-          "sha256": "b1db0d9f321f7a5233d26d2ecca3d54efc6824d3c1a9c80868cb9c3e6f6d2575"
+          "sha256": "f3762207b6cef7e54248fbe9251c8aea09b570f94ef3cb724ec76e9c7e223052"
         },
         {
           "path": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
@@ -2087,12 +2961,12 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "210f2f8e289cf9588184d08ee3b76b2a525227c69e21a6a04c2c9ce3469bdffe"
+        "sha256": "1c679b7d0a2c1c668a3e3c14e2f8a0311e0ee583c83e6cf90e59b947adcd46cb"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-hoops-3d/index.html",
-          "sha256": "b90c15cd92c8094feaf3cf8aecdf6af213f6292e3357cd7aecd85bd5c538d487"
+          "sha256": "4ae6d870aaef7367de78ba058744e4143d51635a852bb913fd953286b8edf9cb"
         },
         {
           "path": "apps/showcase-aura-hoops-3d/src/broadcast.ts",
@@ -2104,11 +2978,7 @@
         },
         {
           "path": "apps/showcase-aura-hoops-3d/src/aura-assets.route.ts",
-          "sha256": "042fdcce8411cf5ffaa76d718526fe674e840365c31fb3df369a8b36e2804a99"
-        },
-        {
-          "path": "apps/showcase-aura-hoops-3d/public/aura-assets/hoopsAthleteGuardKit.5c0f9a76.glb",
-          "sha256": "5d65be49a6a751306d9602b8439b7d41fb047be10cca31dc58c668e690e0796c"
+          "sha256": "31a81bcd99efdddabaa3587b2ef4503fdcec45d81e74c5b54ce02673e6701925"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -2236,7 +3106,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-cross-hop/src/game/core.ts",
-          "sha256": "619d7ed3e0272bf14fbd60272fbc43bacfcfaef5a64348dc3f43b628050ccb28"
+          "sha256": "3c0455697e676868f5d0c4b103cc560def2836e7f9666c1ed110f1bf5fe137b0"
         },
         {
           "path": "apps/showcase-cross-hop/src/game/world.ts",
@@ -2252,7 +3122,7 @@
         },
         {
           "path": "apps/showcase-cross-hop/src/game/look.ts",
-          "sha256": "3146ebe405af1fb574ac4bd8ef14ed1432dda5cac9caae49586a657566a549d7"
+          "sha256": "5ed681ca98a98c0996002ca2184de9ce5444a9ee10a09f31565e59e94318873e"
         },
         {
           "path": "apps/showcase-cross-hop/src/styles.css",
@@ -2260,15 +3130,11 @@
         },
         {
           "path": "apps/showcase-cross-hop/index.html",
-          "sha256": "485c005440603a58a9220ead7124da0f1d21e376e0145af2cdf92b3bf48bd8de"
+          "sha256": "f72b212769a1182651908176a2444e47a63967fe2e1338e259ac997f3f7457db"
         },
         {
           "path": "apps/showcase-cross-hop/src/aura-assets.ts",
-          "sha256": "a9e41194870a46741ed1639f4494338d71b690c2358dd76625ffeff50ccf8a4b"
-        },
-        {
-          "path": "apps/showcase-cross-hop/public/aura-assets/hop.67ed3f67.glb",
-          "sha256": "67ed3f67944f6d140afea18902d0f1aab7801e2c780d85567cb9b8658fedca0b"
+          "sha256": "46b851143dcaa0a18b66166c93a34a57ec5a5701fda92a02abd61afe74bf69fe"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -2403,12 +3269,12 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "23a04571599c8f34314e238fc35b32c4cfd0e3883bf185f6736f6b2562d3374d"
+        "sha256": "b0d57691b012cd6c4754747c10ba71f625e1322393bcc90a22dc26e6db3f2f99"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-pips-big-leap/index.html",
-          "sha256": "391d334c899e98dadc270dd82f220bbf99b6e8afd9bbd83d69ff110d970140be"
+          "sha256": "464ab2ddd761af63650d2e1df95c8c1ca43d87bc41685d5562f0277c0de84e2e"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/styles.css",
@@ -2416,15 +3282,11 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/aura-assets.ts",
-          "sha256": "11432a69b3c1538d5325b5dc1d036430eab3a1ba698581c5792b173d352689e6"
+          "sha256": "8166103964ff2b898b037c157bd370a9f561842bcc6d26a0f675dc51259099d9"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/aura-catalog.ts",
-          "sha256": "3a3d77e833383973cdfe78496eb82e41259090c4fb8fe56a8cdb23960cdd0436"
-        },
-        {
-          "path": "apps/showcase-pips-big-leap/public/aura-assets/pipsPip.fcd4256f.glb",
-          "sha256": "fcd4256f0224f438f30bc72957bedca97de7b4728535118bb3b8b344b8860bfd"
+          "sha256": "19bdd026693f153343f6176e1e910e95f62b71b852254aa3cf1eca39d5ee0604"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/worlds.ts",
@@ -2436,11 +3298,11 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/looks.ts",
-          "sha256": "353ef825af6b7a76babfc04179d667b9b28e86ba26f240abbbbc89dc7bbe809c"
+          "sha256": "c849eb5c5344574c0c590e221d98580311b0a9ab71c82b1ddb6465ef504833ad"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "b0bea02630ad8839869c30b0d955d2d441b504d03791873d1c0a827f7d739e70"
+          "sha256": "3e352e5eb42b71abe5d2814895a8c831c27762e949ee1dfef3c1e40800d5a9c9"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
@@ -2518,12 +3380,12 @@
       },
       "source": {
         "path": "apps/showcase-slingshot-siege/src/main.ts",
-        "sha256": "e4890a598f83f9803f0cffd9feee786e3c6a4fa5e5853733d0094e59057faa64"
+        "sha256": "62fa644442226e0005c3f9fea9ec5f1fcf6024af438bda3459f6db309804385b"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-slingshot-siege/index.html",
-          "sha256": "7e79a8fab20a28f6ae8891ae50e262e005926fa53a7786c09a35800c88c383b5"
+          "sha256": "7b68a2b3f6c6f46205d957b021a49b9f029287d8b54369c829740af10e4b865f"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/styles.css",
@@ -2539,11 +3401,11 @@
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/stage.ts",
-          "sha256": "c7382a30447a5f7ac15a5737d718309893c24c7007c20ff9f9a2ed7563056699"
+          "sha256": "96a0c66fb50c7bb3c675a4ff87b32a2a0e63418f4bf6c7709ec9431bf7903a12"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/look.ts",
-          "sha256": "2c0b3ae25e72010ea0b29e3d1ab69be6304f9439bce593179aa3b1564fe4de5c"
+          "sha256": "ee41a9ab91a8b9d3fd0a899b30a1677dab30cf976ade91ac4bf676c8b79568a3"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/sim.ts",
@@ -2556,10 +3418,6 @@
         {
           "path": "apps/showcase-slingshot-siege/src/art/staticSets.placements.json",
           "sha256": "b26dd7dfb6a0b8797047b41e2b67e8df019d2eabe67175f5bbd27c602839963e"
-        },
-        {
-          "path": "apps/showcase-slingshot-siege/src/assets/models/sling_rocksA.glb",
-          "sha256": "cc22f8e4a553d39fb5eb083e0366180779faaf4900b3fff030ed00579859b5df"
         },
         {
           "path": "packages/engine/src/agent-api/camera/CameraController.ts",
@@ -3853,7 +4711,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-dot-dash-3d/src/game/world.ts",
-          "sha256": "7ee3897d7b340efe9f8258dee4be892ea03220e4d1f57efc2a1ac8b0ef439780"
+          "sha256": "7768905ab75a87f562fde142a60546c3eebecf7174e5009ad1b91a56ff18f3c5"
         },
         {
           "path": "apps/showcase-dot-dash-3d/src/game/camera.ts",
@@ -3861,7 +4719,7 @@
         },
         {
           "path": "apps/showcase-dot-dash-3d/src/game/look.ts",
-          "sha256": "366a04a2e47a7b59aca67a8a20846595d68b6ee4986ec85c275affda05c2830a"
+          "sha256": "82babe5fb3e3b541c125fce19688f936d128a13d582169c95940eb3cbf0034a5"
         },
         {
           "path": "apps/showcase-dot-dash-3d/src/game/mazes.ts",
@@ -3889,7 +4747,7 @@
         },
         {
           "path": "apps/showcase-dot-dash-3d/index.html",
-          "sha256": "845269a7fe7aa813e3f40824dd1f537f8d769ca3c08d2faa98f2dadd8cc20458"
+          "sha256": "eb97721ce062913c21576ad0f7c91c93f519fd093fcaffef73b6243f12b46eca"
         },
         {
           "path": "apps/showcase-port-shared/quickbar.css",
@@ -3947,16 +4805,16 @@
       },
       "source": {
         "path": "apps/showcase-bunker-zero/src/main.ts",
-        "sha256": "4921152eb2d25cb36a24459b4c7cd815f649a1947af6e1699a54ec982a4c168e"
+        "sha256": "87f6610a44cfd231441aab053f0b4ae511cd4f3a17867ab77a91a243193c999a"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-bunker-zero/src/weapons-view.ts",
-          "sha256": "65034b1120baf484ceb6105036fc66c4b614c46d439b3e17ecd9085767607f0c"
+          "sha256": "b40eafeef45d8067d2e6c47c84a1702321fc528d832f0982a5aeb66d5e498a12"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/look.ts",
-          "sha256": "dada0c5fa21f296610fed11c2d4391a41665159180dc9a1182a566c70dfcd1c3"
+          "sha256": "a30942951851255897f33018371b705ffc6a9394e52260841f5d2d8166a8e707"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/motion.ts",
@@ -3968,15 +4826,11 @@
         },
         {
           "path": "apps/showcase-bunker-zero/src/aura-assets.local.ts",
-          "sha256": "10b001e3e0b1b4a5532ef77c4854ead7df2036431c9514902f43647ba98e370d"
-        },
-        {
-          "path": "apps/showcase-bunker-zero/public/aura-assets/bzPistol.ee15a8b3.glb",
-          "sha256": "ee15a8b3f4c0bc953f9e39b2b456095559f86145d965af4ad3cd7db938115ab5"
+          "sha256": "39e865686f8d96ebe474b55eb710f549c6ad7f6de694a65b7969d49818e0352a"
         },
         {
           "path": "apps/showcase-bunker-zero/index.html",
-          "sha256": "d45d484da629576eddf6119f0e053a2791a8f18bc9818741f469db8a8274095c"
+          "sha256": "f2f37ea21882806053a60003caccd7b5bdcf795a1ca9b60dc94cf60ef93a34a8"
         },
         {
           "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
@@ -4051,7 +4905,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-links-3d/src/main.ts",
-        "sha256": "f7c3ac6f902058c63f83467129c750f55d748f26d228c434d108958c1b11bebe"
+        "sha256": "9b0f17619fc68c89c680e97ae0b3062e6fef1b46536b0bf7541ff5b6019c54b1"
       },
       "sourceDependencies": [
         {
@@ -4060,7 +4914,7 @@
         },
         {
           "path": "apps/showcase-aura-links-3d/src/game/rig.ts",
-          "sha256": "68372b3b3b088941d0c9b265f470e4f1a17be0d089365b5aca05e14d2c328679"
+          "sha256": "0d933c3412a2f1d34c5c3e45360b54774a2ee6a6ca70dd4e00acbf132c0c9a5a"
         },
         {
           "path": "apps/showcase-aura-links-3d/src/game/flow.ts",
@@ -4072,11 +4926,11 @@
         },
         {
           "path": "apps/showcase-aura-links-3d/src/aura-assets.ts",
-          "sha256": "4c3faa243769bba29001103f39a189d579d5759fcf6719adec3e10d8c32f5b3f"
+          "sha256": "3ec7bd3051e1d1bc45e2023e69853f6114bcfd343702ec1fe8d467a644c1b04c"
         },
         {
           "path": "apps/showcase-aura-links-3d/index.html",
-          "sha256": "17e7d0131507d57ec2f59d4183f038d93975b8406d19f896d05a9f9dad402b33"
+          "sha256": "896597c40f2d54d843ab8dc7c84a2e7e3d3693af197cbef7a92a7c85b98691f0"
         },
         {
           "path": "public/aura-assets/linksGolferAthleteClean.b56529b1.glb",
@@ -4159,7 +5013,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-top-tennis/index.html",
-          "sha256": "92c56102c8c09c2331cfe0ed99eca775c785408e51ac4af1037fd6ced66ad6fd"
+          "sha256": "eb9120fa69611846580e680ba881f8a03a6671819efa2ed53efe56dc64197697"
         },
         {
           "path": "examples/aura-slam/main.ts",
@@ -4195,7 +5049,7 @@
         },
         {
           "path": "examples/aura-slam/view/renderer.ts",
-          "sha256": "22851887d4e55f907226673e4310193099cb1072f72a97175babc16183d3e264"
+          "sha256": "ea9f707cc4ecefe7f0028b78e19489c87d7829837f641247b12b9f97806e89d2"
         },
         {
           "path": "examples/aura-slam/ui/lookMode.ts",
@@ -4285,12 +5139,12 @@
       },
       "source": {
         "path": "apps/showcase-iron-crown/src/main.ts",
-        "sha256": "7acd9c9c771faebc3228d4313fa58cc9474eb94ea97da10cc30739cd40078a4a"
+        "sha256": "f34667450b03e12d5e1b41642a3fba4c38f01dfcf562301faebc067948282652"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-iron-crown/index.html",
-          "sha256": "cc53dacb294f09b66a28246c2c10a82a3364a876ca5446193430b9c018fd9277"
+          "sha256": "5532e6a450de30d51f4ffbae689eb763355d101ef5b0e64489e0402c20705aa5"
         },
         {
           "path": "apps/showcase-iron-crown/src/styles.css",
@@ -4302,15 +5156,15 @@
         },
         {
           "path": "apps/showcase-iron-crown/src/game/look.ts",
-          "sha256": "38a225b5c9a66ff75d6a834d7a481ad8b44667c22e080692a97f69045f18cb4b"
+          "sha256": "586fb6c8c48e3ce0425e5766f99fa25af74ce9bc23ccf48a768e4621fd1b20e7"
         },
         {
           "path": "apps/showcase-iron-crown/src/game/arena.ts",
-          "sha256": "4a1e347a8771d5338867415c52d198c3d3be5d6c6ef6dd62c57be4ca8f0a5f11"
+          "sha256": "c9ea89fe644f6172da77bc4299478f76ad7d95017977e0997a0da0efa4895319"
         },
         {
           "path": "apps/showcase-iron-crown/src/game/originalLook.ts",
-          "sha256": "023d44143fb3a69745c25763dc5b6c78a6282768df407cdb4c9cdb553b7fa18b"
+          "sha256": "b2eab50678405b34c1462e9c36f006577c8fc3d6f1e9f9dbb35fc7a420a27d6a"
         },
         {
           "path": "apps/showcase-iron-crown/src/game/cinematics.ts",
@@ -4318,7 +5172,7 @@
         },
         {
           "path": "apps/showcase-iron-crown/src/game/fighters.ts",
-          "sha256": "7897f439bab905f8ff38b2c4c1f41cd4a401ed084bd7f90ff6bd6260bb0cfe9c"
+          "sha256": "739c8c522914199c28e61fb42a57a769c76e10d08bb2c9136de12dc3266ede08"
         },
         {
           "path": "packages/engine/src/agent-api/camera/rigs/fighting.ts",
@@ -4384,12 +5238,12 @@
       },
       "source": {
         "path": "apps/showcase-roadster-rush/src/main.ts",
-        "sha256": "8a32d8d00f3a6433447cc4a6dc408531fce9af846a01f4802de767046910a3f8"
+        "sha256": "46c3af8d4ee707e319f98e31fbce86ceb9c14f3fbe24666061c0879958a78dec"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-roadster-rush/index.html",
-          "sha256": "378c88eb9c55cdba65cb2c40c54405e03c677858efd7a9e55a8c8487894f1968"
+          "sha256": "f7172720d4c0e5dd349a91bda5408fc2aea34b4c4b7070d57b9b65ba3061524f"
         },
         {
           "path": "apps/showcase-roadster-rush/src/native/hud.css",
@@ -4408,16 +5262,8 @@
           "sha256": "6b3402fe4d370b233615a5919414b60db0f251ffed0ea953d4a10fe6623bc589"
         },
         {
-          "path": "apps/showcase-roadster-rush/src/meshy-vehicles.ts",
-          "sha256": "3fd24bf1e637b979ea7e29e1e09c0cbb8ee13588c247159524de4df5d494709a"
-        },
-        {
           "path": "apps/showcase-roadster-rush/src/art/paint.ts",
           "sha256": "1ed2b2b8bdede8089a1dea0d79fab4df3b850fd3d92345220911c5620db53549"
-        },
-        {
-          "path": "apps/showcase-roadster-rush/src/assets/meshy/hero-cobalt.glb",
-          "sha256": "eed3261b9b77a65a1f9a762ae9113240e10e58b45ecfabf28961e860d3c0e651"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4471,12 +5317,12 @@
       },
       "source": {
         "path": "apps/showcase-teleoperator/src/main.ts",
-        "sha256": "186eb451403d2ea83237b1aa493ec85b4666da892edc002f0e1e1526aa46144d"
+        "sha256": "87e2a36b3226c951ec4f9bde11ae40e9bfd9947316d2fbe4d5de2e0d13e25b98"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-teleoperator/index.html",
-          "sha256": "180207915f89d0e23ffaad7ab0bfde31e6e043f186c26222fef579f5a7d8f689"
+          "sha256": "c5112e7714f3e4c2787d39848c05d2ddcec0a5c2bb6481474654f01e1e5f8d7e"
         },
         {
           "path": "apps/showcase-teleoperator/src/intro.ts",
@@ -4488,7 +5334,7 @@
         },
         {
           "path": "apps/showcase-teleoperator/src/scene.ts",
-          "sha256": "2d840935da153dc7af843fe22bd1ab3b640252efaa92f86ca326dacbfa2049d6"
+          "sha256": "f1a6653e632fae5a03eedf9654a02b0a0340bfa55d685d2dc7e0c2ce0d1d4018"
         },
         {
           "path": "apps/showcase-teleoperator/src/sim.ts",
@@ -4500,11 +5346,7 @@
         },
         {
           "path": "apps/showcase-teleoperator/src/aura-assets.ts",
-          "sha256": "29badad15de292831c3f0cde77bce156420a7f9b269e3b7390813db52c88773f"
-        },
-        {
-          "path": "apps/showcase-teleoperator/public/aura-assets/meshy/models/teleoperator_dispatchPodPearl.glb",
-          "sha256": "99d368966e04d8160574d10eee242202d3c6134713e0fa7b573c665bff300ad9"
+          "sha256": "eff230757f87fe2712b9bf2c2e780618af406d0abe26ffbb944021b1a7096fe5"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4711,11 +5553,11 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "8cc4ad7da2cc8cde804be6065c05cb0d8e7db5874f2ec5955ec4f6f05af46be0"
+          "sha256": "a6e148c0fad8e856b6d0cf4383f5af0729221daac84e2a8d1c266d7f5650921d"
         },
         {
           "path": "examples/heatsink-port/models.ts",
-          "sha256": "84837cf6873e06b3dfde91b10dea2085edd7c76d31623640848f597b2227433d"
+          "sha256": "640ff8b10544cf90a40dc36a47ca017b2a65c037f08c244587808e37598c4b39"
         },
         {
           "path": "examples/heatsink-port/orient.ts",
@@ -4743,11 +5585,7 @@
         },
         {
           "path": "examples/heatsink-port/art/look.ts",
-          "sha256": "608f7bd8c15d1254c3daf6d5814a9b8f71d8de29d17a0453ced1fd5c6d27f6e0"
-        },
-        {
-          "path": "examples/heatsink-port/assets/models/drone2.glb",
-          "sha256": "52931d5e54b29b4ca8a26e8ec9a8bc41cbef11c61d149c58d02aec1850af8c41"
+          "sha256": "b3f763a689917663cc8753f30c61732eba5e228bf769dbf05eff46ac60b709ab"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4810,7 +5648,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-heatsink-port/index.html",
-          "sha256": "d09567de95c348bc604ba2cb6639f911a49bffd0f7eeb809e466f7fb92c524c4"
+          "sha256": "ddeb8b58ef279c5d30805b83f3c8805206f620ee2bee271192b700b869bb915b"
         },
         {
           "path": "examples/heatsink-port/main.ts",
@@ -4818,11 +5656,11 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "8cc4ad7da2cc8cde804be6065c05cb0d8e7db5874f2ec5955ec4f6f05af46be0"
+          "sha256": "a6e148c0fad8e856b6d0cf4383f5af0729221daac84e2a8d1c266d7f5650921d"
         },
         {
           "path": "examples/heatsink-port/models.ts",
-          "sha256": "84837cf6873e06b3dfde91b10dea2085edd7c76d31623640848f597b2227433d"
+          "sha256": "640ff8b10544cf90a40dc36a47ca017b2a65c037f08c244587808e37598c4b39"
         },
         {
           "path": "examples/heatsink-port/orient.ts",
@@ -4850,11 +5688,7 @@
         },
         {
           "path": "examples/heatsink-port/art/look.ts",
-          "sha256": "608f7bd8c15d1254c3daf6d5814a9b8f71d8de29d17a0453ced1fd5c6d27f6e0"
-        },
-        {
-          "path": "examples/heatsink-port/assets/models/drone2.glb",
-          "sha256": "52931d5e54b29b4ca8a26e8ec9a8bc41cbef11c61d149c58d02aec1850af8c41"
+          "sha256": "b3f763a689917663cc8753f30c61732eba5e228bf769dbf05eff46ac60b709ab"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4913,7 +5747,7 @@
       },
       "source": {
         "path": "examples/drift-and-deliver-port/main.ts",
-        "sha256": "71cdff367a1d51d929c9ca8164c3b22e38a171082d6d7a1a96f253bbb672b041"
+        "sha256": "f4fb05f2554c4b890fcafaf5540e6ef1c9cae188c3f3948b34eeb8214267e94e"
       },
       "sourceDependencies": [
         {
@@ -4930,11 +5764,11 @@
         },
         {
           "path": "examples/drift-and-deliver-port/models.ts",
-          "sha256": "c6e45961281affe51f6eacd72913548aaf1b03046f3aed4a9526bd815f107b9a"
+          "sha256": "25c7821aed5409cd1568bd807f84f2fbef3b315ccdcc087dd0dab7cbec234bdc"
         },
         {
           "path": "examples/drift-and-deliver-port/phases.ts",
-          "sha256": "b186523da076559b0dd1a70653649f07186b241bc02c32a08dd186f74b084e16"
+          "sha256": "3339e63263e2db3f341510f4ed1caa1564584ededbf768ae2d7e981a8ae03895"
         },
         {
           "path": "examples/drift-and-deliver-port/cinema.ts",
@@ -4943,10 +5777,6 @@
         {
           "path": "examples/drift-and-deliver-port/world.ts",
           "sha256": "0a797b9ea42d1a2f136d010a36bdaeb404a994ab596078c924d0408e78ff4bff"
-        },
-        {
-          "path": "examples/drift-and-deliver-port/assets/models/courier.glb",
-          "sha256": "5bad4129b1109d866de42b3666bc482073a9a08ed03c7d901f543add48f2cbba"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/chaseCamera.ts",
@@ -5014,11 +5844,11 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-drift-and-deliver-port/index.html",
-          "sha256": "c47c12a89608c2ac0b09391cb2dcf7e9effe8fc8692c534786d04b08c6001049"
+          "sha256": "9abd43ddcb3694eb0096b68daf888ae2955b10602daed9e92c09a12ba1d67c49"
         },
         {
           "path": "examples/drift-and-deliver-port/main.ts",
-          "sha256": "71cdff367a1d51d929c9ca8164c3b22e38a171082d6d7a1a96f253bbb672b041"
+          "sha256": "f4fb05f2554c4b890fcafaf5540e6ef1c9cae188c3f3948b34eeb8214267e94e"
         },
         {
           "path": "examples/drift-and-deliver-port/chase.ts",
@@ -5030,11 +5860,11 @@
         },
         {
           "path": "examples/drift-and-deliver-port/models.ts",
-          "sha256": "c6e45961281affe51f6eacd72913548aaf1b03046f3aed4a9526bd815f107b9a"
+          "sha256": "25c7821aed5409cd1568bd807f84f2fbef3b315ccdcc087dd0dab7cbec234bdc"
         },
         {
           "path": "examples/drift-and-deliver-port/phases.ts",
-          "sha256": "b186523da076559b0dd1a70653649f07186b241bc02c32a08dd186f74b084e16"
+          "sha256": "3339e63263e2db3f341510f4ed1caa1564584ededbf768ae2d7e981a8ae03895"
         },
         {
           "path": "examples/drift-and-deliver-port/cinema.ts",
@@ -5043,10 +5873,6 @@
         {
           "path": "examples/drift-and-deliver-port/world.ts",
           "sha256": "0a797b9ea42d1a2f136d010a36bdaeb404a994ab596078c924d0408e78ff4bff"
-        },
-        {
-          "path": "examples/drift-and-deliver-port/assets/models/courier.glb",
-          "sha256": "5bad4129b1109d866de42b3666bc482073a9a08ed03c7d901f543add48f2cbba"
         },
         {
           "path": "packages/engine/src/agent-api/nodes/chaseCamera.ts",
@@ -5118,7 +5944,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "d7d75dc5775611a1a5e6dd4c774173c75b9efe9fb2da6b0e0cacd62b3384fbe6"
+          "sha256": "a724eaf4f9ccff6ad2dd051d42808f0c30f7c872a5f5fac991f31cfb937b5a18"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5126,7 +5952,7 @@
         },
         {
           "path": "examples/last-train-port/models.ts",
-          "sha256": "678d492d9191ab592daadec010ed7b1da57778e06a35203056cd8c16a92b9cc7"
+          "sha256": "0c72c00195a2c33f708c8f2f7f34db91bfe8d14326e47692df04adc5dd27c82d"
         },
         {
           "path": "examples/last-train-port/orient.ts",
@@ -5145,12 +5971,8 @@
           "sha256": "dd2b9d7a56355af1d15b40a4db0f32e93fcee557bfac4566272d9d95f14e8f88"
         },
         {
-          "path": "examples/last-train-port/assets/meshy/tram-enamel.glb",
-          "sha256": "05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33"
-        },
-        {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "d460ed573deb64ba53f56734f0b788c1e3e89a61e0e49c53b496f9ade5e14a07"
+          "sha256": "7bc513b128109eeef3f48e028d23e7589ad932921159a5cc9269bb9fd721be60"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5214,7 +6036,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-last-train-port/index.html",
-          "sha256": "b24e4a1f67c984f982fcb8e3c0506a83c6da6099db169d93255ac9c983f267f6"
+          "sha256": "8dfe7d760119070e23eaf08a989e28fb87f0b5317995f28a5aa7e2521d2f36d5"
         },
         {
           "path": "examples/last-train-port/main.ts",
@@ -5222,7 +6044,7 @@
         },
         {
           "path": "examples/last-train-port/world.ts",
-          "sha256": "d7d75dc5775611a1a5e6dd4c774173c75b9efe9fb2da6b0e0cacd62b3384fbe6"
+          "sha256": "a724eaf4f9ccff6ad2dd051d42808f0c30f7c872a5f5fac991f31cfb937b5a18"
         },
         {
           "path": "examples/last-train-port/sim.ts",
@@ -5230,7 +6052,7 @@
         },
         {
           "path": "examples/last-train-port/models.ts",
-          "sha256": "678d492d9191ab592daadec010ed7b1da57778e06a35203056cd8c16a92b9cc7"
+          "sha256": "0c72c00195a2c33f708c8f2f7f34db91bfe8d14326e47692df04adc5dd27c82d"
         },
         {
           "path": "examples/last-train-port/orient.ts",
@@ -5249,12 +6071,8 @@
           "sha256": "dd2b9d7a56355af1d15b40a4db0f32e93fcee557bfac4566272d9d95f14e8f88"
         },
         {
-          "path": "examples/last-train-port/assets/meshy/tram-enamel.glb",
-          "sha256": "05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33"
-        },
-        {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "d460ed573deb64ba53f56734f0b788c1e3e89a61e0e49c53b496f9ade5e14a07"
+          "sha256": "7bc513b128109eeef3f48e028d23e7589ad932921159a5cc9269bb9fd721be60"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5322,7 +6140,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "e9030f9dea7663dd424222c7c14a1e105010042b1b8de5b6ff98bc65c034d3de"
+          "sha256": "ab25c26e4dc6dd0a9acf5618d9e060b6863683caadc5be0550183d11979dcaab"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5346,15 +6164,11 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/models.ts",
-          "sha256": "4535c3f4a01a08f8017c361231e55249dd8abda586c1664fa9be09ef2566f178"
+          "sha256": "6e3bf6f149accab3713533af1df669e6654f1fd5f396ec2b203cbde5f78ed325"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/ui.ts",
           "sha256": "b0ae209a0d4d6bb59cffaf1bfb27f1a6e72d89d79f3a81fb4d96a15ad0a5b19f"
-        },
-        {
-          "path": "examples/kid-goku-beyond-the-clouds-port/assets/meshy/hero.glb",
-          "sha256": "ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5435,7 +6249,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-cloud-runner-port/index.html",
-          "sha256": "a49cd281dcaa85f82385a1e1afa2f60f3a2a7cd4404f5854b349b31131ec5ef8"
+          "sha256": "262577faa308b445a2a6d6bdb78e2bbe0ef128862c81cd482d3872d0f682e99e"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
@@ -5443,7 +6257,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "e9030f9dea7663dd424222c7c14a1e105010042b1b8de5b6ff98bc65c034d3de"
+          "sha256": "ab25c26e4dc6dd0a9acf5618d9e060b6863683caadc5be0550183d11979dcaab"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -5467,15 +6281,11 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/models.ts",
-          "sha256": "4535c3f4a01a08f8017c361231e55249dd8abda586c1664fa9be09ef2566f178"
+          "sha256": "6e3bf6f149accab3713533af1df669e6654f1fd5f396ec2b203cbde5f78ed325"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/ui.ts",
           "sha256": "b0ae209a0d4d6bb59cffaf1bfb27f1a6e72d89d79f3a81fb4d96a15ad0a5b19f"
-        },
-        {
-          "path": "examples/kid-goku-beyond-the-clouds-port/assets/meshy/hero.glb",
-          "sha256": "ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5555,7 +6365,7 @@
       "sourceDependencies": [
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "c3c51ca84f5888cfa49019fd3fa6c901056c54e4a06642f745fa96842d8f0bc8"
+          "sha256": "e955fd6bd4f327270c9c0527c84126f4d4442604652e9bf01bde28a499a7e627"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
@@ -5571,7 +6381,7 @@
         },
         {
           "path": "examples/ninja-runner-port/models.ts",
-          "sha256": "f050a38c221e0cebcb01961b8e93ca3807c5c856b5ed7334e0c8777433374ef4"
+          "sha256": "60f6026cc8647ba98797a13a5b196b57683a8812c9f756ba39978bbcf4220a17"
         },
         {
           "path": "examples/ninja-runner-port/cinematics.ts",
@@ -5579,7 +6389,7 @@
         },
         {
           "path": "examples/ninja-runner-port/districtLook.ts",
-          "sha256": "5c4ec811c07ee4e6705f041c47e7fa4d6e848be83988e416eb39c0a913449475"
+          "sha256": "73191d6e4bf5f619a93c32e58b5278c52ed4e1622a46d9a390ae889894c2d0fc"
         },
         {
           "path": "examples/ninja-runner-port/palette.ts",
@@ -5588,10 +6398,6 @@
         {
           "path": "examples/ninja-runner-port/index.html",
           "sha256": "a2d3a35eb8ddf097ebc178010db9e57568f7ca60d841028950a3262623e33822"
-        },
-        {
-          "path": "examples/ninja-runner-port/assets/meshy/hero.glb",
-          "sha256": "d370e19b94afb13809921e770656f5d875149486db57bf90ed3cfd51dc69461f"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5675,7 +6481,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-ninja-runner-port/index.html",
-          "sha256": "ccccb91358919450736a7dbee882eaffb616e9247d6d14ab31b779e1e2a40c9e"
+          "sha256": "742616b3c2f366eb0acf9055950bf2c15ecb41236389d8bd902da6b642cf3fc3"
         },
         {
           "path": "examples/ninja-runner-port/main.ts",
@@ -5687,7 +6493,7 @@
         },
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "c3c51ca84f5888cfa49019fd3fa6c901056c54e4a06642f745fa96842d8f0bc8"
+          "sha256": "e955fd6bd4f327270c9c0527c84126f4d4442604652e9bf01bde28a499a7e627"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
@@ -5703,7 +6509,7 @@
         },
         {
           "path": "examples/ninja-runner-port/models.ts",
-          "sha256": "f050a38c221e0cebcb01961b8e93ca3807c5c856b5ed7334e0c8777433374ef4"
+          "sha256": "60f6026cc8647ba98797a13a5b196b57683a8812c9f756ba39978bbcf4220a17"
         },
         {
           "path": "examples/ninja-runner-port/cinematics.ts",
@@ -5711,7 +6517,7 @@
         },
         {
           "path": "examples/ninja-runner-port/districtLook.ts",
-          "sha256": "5c4ec811c07ee4e6705f041c47e7fa4d6e848be83988e416eb39c0a913449475"
+          "sha256": "73191d6e4bf5f619a93c32e58b5278c52ed4e1622a46d9a390ae889894c2d0fc"
         },
         {
           "path": "examples/ninja-runner-port/palette.ts",
@@ -5720,10 +6526,6 @@
         {
           "path": "examples/ninja-runner-port/index.html",
           "sha256": "a2d3a35eb8ddf097ebc178010db9e57568f7ca60d841028950a3262623e33822"
-        },
-        {
-          "path": "examples/ninja-runner-port/assets/meshy/hero.glb",
-          "sha256": "d370e19b94afb13809921e770656f5d875149486db57bf90ed3cfd51dc69461f"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5802,12 +6604,12 @@
       },
       "source": {
         "path": "examples/roadster-hours-port/main.ts",
-        "sha256": "7a5b3db54a8e987b35a35a5a08d78cdd8211921569bb9e9a2f4ab4b55090f473"
+        "sha256": "0effbb4bfc94ff4f4bf8ca4850985c260d9c89c042e28ed45ef99edd64e9cb52"
       },
       "sourceDependencies": [
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "2da20b5b9994794fff86c27231bce9342a9f02c13ff1ee7ff0f64e48ca2c251c"
+          "sha256": "c2f92a70888782595cd98a4b870c233dca2ffc0ab2f353f681f18cb4f92b479b"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -5826,32 +6628,16 @@
           "sha256": "38476d257dd906c98b16625ee1f85ff2ca4d8cde1b0e5e5534ac585769ec338d"
         },
         {
-          "path": "examples/roadster-hours-port/meshy.ts",
-          "sha256": "894b492e1147701394305e780a03aca25076becd0889918d8321d3dd595dfec4"
-        },
-        {
-          "path": "examples/roadster-hours-port/meshy.baked.ts",
-          "sha256": "384e6c74f6159d438776933df29f8077c1bd165ed7926aa797653bb37f484fbd"
-        },
-        {
           "path": "examples/roadster-hours-port/art/shots.ts",
           "sha256": "a8419ce14e549afce4182d5b815b6606010f657ed4fc1d0d9aae2eef63729e7c"
         },
         {
           "path": "examples/roadster-hours-port/art/look.ts",
-          "sha256": "3b8e45b9ddfed127f98544c5107b22cebe8913f9618ffa9e8eaa1fd60c18323a"
+          "sha256": "58f88373b8646b16e664b2ceaf446b69f984f1486ede91ef69967722c385c202"
         },
         {
           "path": "examples/roadster-hours-port/index.html",
           "sha256": "ec610e70fde5a0ed293bc5928aec6e8648957ea2ba942cb31342c19fcebe8569"
-        },
-        {
-          "path": "examples/roadster-hours-port/assets/meshy/roadster.bin",
-          "sha256": "6478efd21c62e2b39c5995ad70b03b2df7d002a59c725c2d9af51626e02a7da5"
-        },
-        {
-          "path": "examples/roadster-hours-port/assets/meshy/roadster.jpg",
-          "sha256": "ef5e19a397be41e33798935f512bc5ce2e21b1c0966ab6310cdce50d93e9d04d"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5935,11 +6721,11 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-roadster-hours-port/index.html",
-          "sha256": "c9903e68b3cff9a81825de658a994092ddf952ec7d548c2e39c64bfeb83a8b4d"
+          "sha256": "8fe9014871670a04d3c2822b20828bc5eabf95f737f8f594eb61f99d74e2395d"
         },
         {
           "path": "examples/roadster-hours-port/main.ts",
-          "sha256": "7a5b3db54a8e987b35a35a5a08d78cdd8211921569bb9e9a2f4ab4b55090f473"
+          "sha256": "0effbb4bfc94ff4f4bf8ca4850985c260d9c89c042e28ed45ef99edd64e9cb52"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -5947,7 +6733,7 @@
         },
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "2da20b5b9994794fff86c27231bce9342a9f02c13ff1ee7ff0f64e48ca2c251c"
+          "sha256": "c2f92a70888782595cd98a4b870c233dca2ffc0ab2f353f681f18cb4f92b479b"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -5966,32 +6752,16 @@
           "sha256": "38476d257dd906c98b16625ee1f85ff2ca4d8cde1b0e5e5534ac585769ec338d"
         },
         {
-          "path": "examples/roadster-hours-port/meshy.ts",
-          "sha256": "894b492e1147701394305e780a03aca25076becd0889918d8321d3dd595dfec4"
-        },
-        {
-          "path": "examples/roadster-hours-port/meshy.baked.ts",
-          "sha256": "384e6c74f6159d438776933df29f8077c1bd165ed7926aa797653bb37f484fbd"
-        },
-        {
           "path": "examples/roadster-hours-port/art/shots.ts",
           "sha256": "a8419ce14e549afce4182d5b815b6606010f657ed4fc1d0d9aae2eef63729e7c"
         },
         {
           "path": "examples/roadster-hours-port/art/look.ts",
-          "sha256": "3b8e45b9ddfed127f98544c5107b22cebe8913f9618ffa9e8eaa1fd60c18323a"
+          "sha256": "58f88373b8646b16e664b2ceaf446b69f984f1486ede91ef69967722c385c202"
         },
         {
           "path": "examples/roadster-hours-port/index.html",
           "sha256": "ec610e70fde5a0ed293bc5928aec6e8648957ea2ba942cb31342c19fcebe8569"
-        },
-        {
-          "path": "examples/roadster-hours-port/assets/meshy/roadster.bin",
-          "sha256": "6478efd21c62e2b39c5995ad70b03b2df7d002a59c725c2d9af51626e02a7da5"
-        },
-        {
-          "path": "examples/roadster-hours-port/assets/meshy/roadster.jpg",
-          "sha256": "ef5e19a397be41e33798935f512bc5ce2e21b1c0966ab6310cdce50d93e9d04d"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6075,7 +6845,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "8f546cd03bea57bd1b96838f777d0c0cdc4eb3d23e19083416101198d6035bec"
+          "sha256": "d321290d6910300b1d47e2c1f58cdba282b14f4a8a07933189253ba5740380ae"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6091,23 +6861,15 @@
         },
         {
           "path": "examples/silt-and-signal-port/assets.ts",
-          "sha256": "85cd3fffef116eb08e12743ed516805982260e1f68ced769700a61965ec6774c"
+          "sha256": "f0cea63ae80953b56b09c94ea0acbaa00d9414caa977f82f8dfb6be30334bf8b"
         },
         {
           "path": "examples/silt-and-signal-port/art/look.ts",
-          "sha256": "589b1d08d5dc29c950530539da022b52283f823e793032fe4f20f541b2f48dd6"
+          "sha256": "5b903a947538c904cb85beb0b9a86f4bf2a9551cf56415a7b14650dcda042de3"
         },
         {
           "path": "examples/silt-and-signal-port/index.html",
           "sha256": "547ab08b5084b23f20d2b94f95b7839650b7cc7066de3c0cb7cbdd4b4f0b749d"
-        },
-        {
-          "path": "examples/silt-and-signal-port/assets/models/hoverboard.glb",
-          "sha256": "4efacc1c0f985e061a89345e7ca5b991579ced89efc1d34ce1aa2d34e5655488"
-        },
-        {
-          "path": "examples/silt-and-signal-port/assets/models/courier.glb",
-          "sha256": "6ff58fb9e3b9b715a8e9c1234619308ed58f4a5ec29e47166a05e5d412447edd"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6170,7 +6932,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-silt-and-signal-port/index.html",
-          "sha256": "941c6f612fb0a22622ffcdbe2ed59dc0b10d36d7da39fe6aa7f794255f8ba674"
+          "sha256": "3b68ccafcb9a5f52f27e9c42c834d01461e737977f4621566395665ae9a0f007"
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
@@ -6182,7 +6944,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "8f546cd03bea57bd1b96838f777d0c0cdc4eb3d23e19083416101198d6035bec"
+          "sha256": "d321290d6910300b1d47e2c1f58cdba282b14f4a8a07933189253ba5740380ae"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6198,23 +6960,15 @@
         },
         {
           "path": "examples/silt-and-signal-port/assets.ts",
-          "sha256": "85cd3fffef116eb08e12743ed516805982260e1f68ced769700a61965ec6774c"
+          "sha256": "f0cea63ae80953b56b09c94ea0acbaa00d9414caa977f82f8dfb6be30334bf8b"
         },
         {
           "path": "examples/silt-and-signal-port/art/look.ts",
-          "sha256": "589b1d08d5dc29c950530539da022b52283f823e793032fe4f20f541b2f48dd6"
+          "sha256": "5b903a947538c904cb85beb0b9a86f4bf2a9551cf56415a7b14650dcda042de3"
         },
         {
           "path": "examples/silt-and-signal-port/index.html",
           "sha256": "547ab08b5084b23f20d2b94f95b7839650b7cc7066de3c0cb7cbdd4b4f0b749d"
-        },
-        {
-          "path": "examples/silt-and-signal-port/assets/models/hoverboard.glb",
-          "sha256": "4efacc1c0f985e061a89345e7ca5b991579ced89efc1d34ce1aa2d34e5655488"
-        },
-        {
-          "path": "examples/silt-and-signal-port/assets/models/courier.glb",
-          "sha256": "6ff58fb9e3b9b715a8e9c1234619308ed58f4a5ec29e47166a05e5d412447edd"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6283,7 +7037,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-serpentine-sky-run-port/index.html",
-          "sha256": "ed6b1e89183a023b5704899aa0c2265dffc3e8fa77ebb62d1dc1a5e84f6ee776"
+          "sha256": "873bbcf28f08e87410d92982b539d4ff37612670712d7544ad472f497502d62f"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -6295,7 +7049,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "0ed4ee7e8204ad76fda7605f51355371522739488dfc5213f670d42060edc6d4"
+          "sha256": "60ee4aeefd44228b685c416c109f4c9298b005f67642bef296c95fef540b8d8e"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -6311,7 +7065,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/models.ts",
-          "sha256": "e1a9ca92957881d93a79617a932546fa6903f4a1fe249f8a56e97e0c4be09ae9"
+          "sha256": "1b994a3f25a07249091f3ae5840ad72dee887fa56519c8233d022fc932c75510"
         },
         {
           "path": "examples/saiyan-snake-way-port/art/shots.ts",
@@ -6320,10 +7074,6 @@
         {
           "path": "examples/saiyan-snake-way-port/art/colorScript.ts",
           "sha256": "671478bb0da90b82dd152eb58c55197b0d140df37f75e80e43c829f6ae130557"
-        },
-        {
-          "path": "examples/saiyan-snake-way-port/assets/runner-script.glb",
-          "sha256": "7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6509,7 +7259,7 @@
         },
         {
           "path": "apps/showcase-splat-rush-port/index.html",
-          "sha256": "63202972551f16409139dee03a7e43620f04b5ea8f4d520d6cadcb0c87b49c50"
+          "sha256": "9f768bf5111543f5b8b7e0ac392331bff9525b90da7fcd7014b88e3243096417"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6572,7 +7322,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "c09395f18d24220ffb55bd37ba3c369fa6037bf91c908c8884fe99896db9cf7a"
+          "sha256": "aa7bd86db5f35cc0ad73ae1e1af4bb8d1808b166546c25eaa3ebd104036df1c7"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6588,7 +7338,7 @@
         },
         {
           "path": "examples/strange-orbit-port/shaders.ts",
-          "sha256": "30167c1b29e8e0ef0fddc8022b169298c52daf91a391f56f0b21ae570855d06c"
+          "sha256": "f9dd09f84ab0c15bafbaec23f743ae789196f4bceaccd2af02590b55b20ed69c"
         },
         {
           "path": "examples/strange-orbit-port/art/director.ts",
@@ -6596,7 +7346,7 @@
         },
         {
           "path": "examples/strange-orbit-port/art/look.ts",
-          "sha256": "786b0a03cbd3cd47b08c61010d25e86ed882fa78a96be119ccd51b6b8dbf6300"
+          "sha256": "f265b4130cab2fce08ecdcc8c22c901ee3d8919f5e01b44805794ab1c562ffcc"
         },
         {
           "path": "examples/strange-orbit-port/index.html",
@@ -6663,7 +7413,7 @@
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "c09395f18d24220ffb55bd37ba3c369fa6037bf91c908c8884fe99896db9cf7a"
+          "sha256": "aa7bd86db5f35cc0ad73ae1e1af4bb8d1808b166546c25eaa3ebd104036df1c7"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -6679,7 +7429,7 @@
         },
         {
           "path": "examples/strange-orbit-port/shaders.ts",
-          "sha256": "30167c1b29e8e0ef0fddc8022b169298c52daf91a391f56f0b21ae570855d06c"
+          "sha256": "f9dd09f84ab0c15bafbaec23f743ae789196f4bceaccd2af02590b55b20ed69c"
         },
         {
           "path": "examples/strange-orbit-port/art/director.ts",
@@ -6687,11 +7437,11 @@
         },
         {
           "path": "examples/strange-orbit-port/art/look.ts",
-          "sha256": "786b0a03cbd3cd47b08c61010d25e86ed882fa78a96be119ccd51b6b8dbf6300"
+          "sha256": "f265b4130cab2fce08ecdcc8c22c901ee3d8919f5e01b44805794ab1c562ffcc"
         },
         {
           "path": "apps/showcase-strange-orbit-port/index.html",
-          "sha256": "9fc25666baedfeb679f722f10639470b192a8ca251e45d9d559a83806caeb70c"
+          "sha256": "eb28fd3516433a2062d19b568e2775377a9aaddf4f3e5fc5683866bee9279ea4"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6744,7 +7494,7 @@
       },
       "source": {
         "path": "examples/where-the-wind-wanders-port/main.ts",
-        "sha256": "893b2e8647560b5039f374f8073f9575f9fcd665590d24eea95d03df3b8c26b5"
+        "sha256": "dec51b04e1fc6c830154ae19777218eec036de46ee8f2f518839e4659f03acfb"
       },
       "sourceDependencies": [
         {
@@ -6753,15 +7503,15 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "e6acef346f8da866655eac7a5410d1532c24188bf305470ae1ea409b59d6dd50"
+          "sha256": "37beb127cb4bf7af8da6c2f816f5638023939f0b88371c1fe0cc82df403da2fe"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
-          "sha256": "379731d9769acae36491945a11c7f4a4397616d0bd1d9c257c7b3c96d8fe53b5"
+          "sha256": "c171a7367cba95caa7c68770bb51655c692bc0049c3e9db5eac99faac817ee40"
         },
         {
           "path": "examples/where-the-wind-wanders-port/model-assets.ts",
-          "sha256": "bcb530aa5799fef89dd62652985f75e40b56cda28fc7925e4f837de5c7fa2a66"
+          "sha256": "6648fa8853c63cc4d3cbf8a6c856d9e9fe9d0958c87ac49923b003c25df91296"
         },
         {
           "path": "examples/where-the-wind-wanders-port/terrain.ts",
@@ -6769,15 +7519,11 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/daylight.ts",
-          "sha256": "03e44bec320244cd87e096fb9077060d5aaf83f3d79513304fdde20f63521824"
+          "sha256": "c87cda69396037aafe0aa8a680e64236700f340604f898e3a1653507aa24139d"
         },
         {
           "path": "examples/where-the-wind-wanders-port/ui.ts",
           "sha256": "5f3a59776760f01f6a4083c571b705cbd3ce4bb1660d6b80de67bfd38d5f730e"
-        },
-        {
-          "path": "examples/where-the-wind-wanders-port/assets/models/hero.glb",
-          "sha256": "c10cbf7d835d6b7f1c53f2ebb13fa65fb34ec6550ac74aa619012145c5a3a230"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6785,7 +7531,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/index.html",
-          "sha256": "8b4ca602f3cb65d72b316a1ec0884710963878b4c574a62a67156f0298d44931"
+          "sha256": "10e16a61369f5ded4cd59fd4804d00ba653973302a08a5252737c0c070ce1d2a"
         }
       ],
       "regions": [
@@ -6839,7 +7585,7 @@
       "sourceDependencies": [
         {
           "path": "examples/where-the-wind-wanders-port/main.ts",
-          "sha256": "893b2e8647560b5039f374f8073f9575f9fcd665590d24eea95d03df3b8c26b5"
+          "sha256": "dec51b04e1fc6c830154ae19777218eec036de46ee8f2f518839e4659f03acfb"
         },
         {
           "path": "examples/where-the-wind-wanders-port/sim.ts",
@@ -6847,15 +7593,15 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "e6acef346f8da866655eac7a5410d1532c24188bf305470ae1ea409b59d6dd50"
+          "sha256": "37beb127cb4bf7af8da6c2f816f5638023939f0b88371c1fe0cc82df403da2fe"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
-          "sha256": "379731d9769acae36491945a11c7f4a4397616d0bd1d9c257c7b3c96d8fe53b5"
+          "sha256": "c171a7367cba95caa7c68770bb51655c692bc0049c3e9db5eac99faac817ee40"
         },
         {
           "path": "examples/where-the-wind-wanders-port/model-assets.ts",
-          "sha256": "bcb530aa5799fef89dd62652985f75e40b56cda28fc7925e4f837de5c7fa2a66"
+          "sha256": "6648fa8853c63cc4d3cbf8a6c856d9e9fe9d0958c87ac49923b003c25df91296"
         },
         {
           "path": "examples/where-the-wind-wanders-port/terrain.ts",
@@ -6863,15 +7609,11 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/daylight.ts",
-          "sha256": "03e44bec320244cd87e096fb9077060d5aaf83f3d79513304fdde20f63521824"
+          "sha256": "c87cda69396037aafe0aa8a680e64236700f340604f898e3a1653507aa24139d"
         },
         {
           "path": "examples/where-the-wind-wanders-port/ui.ts",
           "sha256": "5f3a59776760f01f6a4083c571b705cbd3ce4bb1660d6b80de67bfd38d5f730e"
-        },
-        {
-          "path": "examples/where-the-wind-wanders-port/assets/models/hero.glb",
-          "sha256": "c10cbf7d835d6b7f1c53f2ebb13fa65fb34ec6550ac74aa619012145c5a3a230"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6879,7 +7621,7 @@
         },
         {
           "path": "apps/showcase-where-the-wind-wanders-port/index.html",
-          "sha256": "7b9b73a39d4024c2bcc0b7718f3a1e8cf3d7be7f9f8b2ff0c34518d3949bb33f"
+          "sha256": "38da27b5b10206a1040880f489d3c1908ecf4ebd0d90e641f8a03fe24c46c840"
         }
       ],
       "regions": [
@@ -7997,7 +8739,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/postBridge.ts",
-          "sha256": "cbd03dec062e1789ae951c183fa6fbc7698a67d180789f717df8cefacc3061dd"
+          "sha256": "ffa05f6721d7f77e8bee3cb3a2972ad47c97f8aa7399c8f522a4635553e21413"
         }
       ],
       "regions": [
@@ -8293,7 +9035,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "0ed4ee7e8204ad76fda7605f51355371522739488dfc5213f670d42060edc6d4"
+          "sha256": "60ee4aeefd44228b685c416c109f4c9298b005f67642bef296c95fef540b8d8e"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -8309,7 +9051,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/models.ts",
-          "sha256": "e1a9ca92957881d93a79617a932546fa6903f4a1fe249f8a56e97e0c4be09ae9"
+          "sha256": "1b994a3f25a07249091f3ae5840ad72dee887fa56519c8233d022fc932c75510"
         },
         {
           "path": "examples/saiyan-snake-way-port/art/shots.ts",
@@ -8318,10 +9060,6 @@
         {
           "path": "examples/saiyan-snake-way-port/art/colorScript.ts",
           "sha256": "671478bb0da90b82dd152eb58c55197b0d140df37f75e80e43c829f6ae130557"
-        },
-        {
-          "path": "examples/saiyan-snake-way-port/assets/runner-script.glb",
-          "sha256": "7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -8415,7 +9153,7 @@
         },
         {
           "path": "examples/aura-slam/view/renderer.ts",
-          "sha256": "22851887d4e55f907226673e4310193099cb1072f72a97175babc16183d3e264"
+          "sha256": "ea9f707cc4ecefe7f0028b78e19489c87d7829837f641247b12b9f97806e89d2"
         },
         {
           "path": "examples/aura-slam/ui/lookMode.ts",
@@ -8506,7 +9244,7 @@
       },
       "source": {
         "path": "apps/showcase-heatsink/src/main.ts",
-        "sha256": "1ed9345a7806c95141119525e83317e2348212e35c0b553e6dcbad9f44117342"
+        "sha256": "9be40ea96c3b19375fd2ee93047a3caa8b827032a4ed91deeabb1b12e791a576"
       },
       "sourceDependencies": [
         {
@@ -8531,7 +9269,7 @@
         },
         {
           "path": "apps/showcase-heatsink/src/scene.ts",
-          "sha256": "264981303b5c164c53d5973760ff54273c47df5a7d611e1e6c4e2161eb11fe7c"
+          "sha256": "46d9fd3708fde1a0f1f49e43886a1a3be786078919db27b2411192c757d0be5b"
         },
         {
           "path": "apps/showcase-heatsink/src/shaders.ts",
@@ -8539,15 +9277,15 @@
         },
         {
           "path": "apps/showcase-heatsink/src/look.ts",
-          "sha256": "f3d925eb40e0071572939f7687252bc47e3195ce40272b232ce6ecf45bae71db"
+          "sha256": "ebc5e338ba89af4f1e24a08e71562d38cad5bb482cc0a62f747b72e6067f8f39"
         },
         {
           "path": "apps/showcase-heatsink/src/aura-assets.ts",
-          "sha256": "82480d0077da5d3360bc0a256102bb0caa8b2195477abd3dcf235a88ce2f1769"
+          "sha256": "2527f9bf52500b870a9e51e4b65c967727b0f169836dfa02cf9dd2291ed69052"
         },
         {
           "path": "apps/showcase-heatsink/index.html",
-          "sha256": "f86c36e7579ae92f0388c4452dfa92fbbe48ebf646958c12dd637a42a25ad7d4"
+          "sha256": "95d2dd893609ba5b2ad86c499bbcfddcb51ad9214287e5e4be1f009c047a9654"
         },
         {
           "path": "public/aura-assets/heatsinkDroneOrion.988f172d.glb",
@@ -8605,12 +9343,12 @@
       },
       "source": {
         "path": "apps/showcase-aura-diamond-3d/src/main.ts",
-        "sha256": "fe9d4bbd515ed64087629f109c347cbea7fc63976caf710f344facb7e7ac87cf"
+        "sha256": "894cd3173173d3bed15fbdca5a2a83a33d8c349a053a7ca91f113740602996fc"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-diamond-3d/src/scene.ts",
-          "sha256": "21af1f5ba38e9d6e74a6e6d95b77608dfa5f421d9ce9ff2092d83841e40597d1"
+          "sha256": "e52fe1d1a27dea53b16b7ac6a2b64c5ba34986b601e20956255efd9b5f2d7328"
         },
         {
           "path": "apps/showcase-aura-diamond-3d/src/rules.ts",
@@ -8630,7 +9368,7 @@
         },
         {
           "path": "apps/showcase-aura-diamond-3d/index.html",
-          "sha256": "c892dd4e78272b91d60156a3e13c264c01999283410a3a01c8c09d8e26d64459"
+          "sha256": "d5640387175d71f10936512332c437216473c59ad9488b167c591c298f3cd1a7"
         }
       ],
       "regions": [
@@ -9330,7 +10068,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-shape-shift-sprint/index.html",
-          "sha256": "bb648a7b6d5fdf19c9d0199e46163aacbb3cce6dfe443566f176fd07325b2a40"
+          "sha256": "6bada611f265a1fdb1c71fffbc2e112f2448ff03564cda666c7dae427c141b92"
         },
         {
           "path": "apps/showcase-shape-shift-sprint/src/world.ts",
@@ -9413,7 +10151,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-number-surge/index.html",
-          "sha256": "374682b89f0a72c72634cc84b1799ba88d7bc9bf194e0741a54a79db3317908f"
+          "sha256": "a3065249da968c6c5873d7fff489c2b9cf668de8ca023210a1bff3505c5ccd7b"
         },
         {
           "path": "apps/showcase-number-surge/src/world.ts",
@@ -9496,7 +10234,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-splat-turf/index.html",
-          "sha256": "3b5fe513df2ba06ea8a22d04cbe33509463938d2a1b91fa5ba4499ed0ee039a6"
+          "sha256": "5d15723eafd67ae89f1645f2b272ee2d50b19a706d173566b773bba19b31ce19"
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
@@ -9574,12 +10312,12 @@
       },
       "source": {
         "path": "apps/showcase-polarity-orbs/src/main.ts",
-        "sha256": "4b7282272e28e0fa359ebaf56fc76d340c6695ce506400dd75cd7a6b995a034f"
+        "sha256": "d9e7c2475980678ffda120bc7a39b3681d50945a9ef0ff64ce24fe46d5cdb699"
       },
       "sourceDependencies": [
         {
           "path": "apps/showcase-polarity-orbs/index.html",
-          "sha256": "8d8979154dcfef7bedd93800e0d1efc3515bccb9ac7b81811f6382dd83d04b09"
+          "sha256": "14788c25b24ebb77f0d61ad96505b0e763e8643c33f32dfd7ee7f91211480091"
         },
         {
           "path": "apps/showcase-polarity-orbs/src/world.ts",
@@ -9679,11 +10417,11 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-beat-hopper/index.html",
-          "sha256": "d79d09aca210d1516c142fe9d8e4ecd620ba96c6772645704f7e4edb6d31a457"
+          "sha256": "bd6e1a0c663bf64b86414bc21d85650713ca7d5cd97bbb81c9f34b52c17b5e5a"
         },
         {
           "path": "apps/showcase-beat-hopper/src/world.ts",
-          "sha256": "518135691302d6caa3ab64f20d8d8ede79ce1622be4dfc997f932d0a6104c113"
+          "sha256": "12ef64c63d39ae4e7cb01c2491347ed3e2b3727a87da3f49223e7158b1474d39"
         },
         {
           "path": "apps/showcase-beat-hopper/src/look.ts",

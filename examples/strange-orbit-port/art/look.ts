@@ -36,7 +36,7 @@ export interface LookRow {
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
   /** Environment: the captured nebula/planet probe (SO47-E1) or the neutral room. */
   readonly environment: { readonly kind: "capture" | "neutral"; readonly intensity: number };
-  /** Scene fog the custom shaders read through `u_a3dFogColor` / `u_a3dFogDensity` (exp2) and the GLBs get from the engine. */
+  /** Scene fog the custom shaders read through `u_a3dFogColor` / `u_a3dFogDensity` (exp2) and procedural nodes get from the engine. */
   readonly fog: { readonly color: string; readonly density: number; readonly maxOpacity: number; readonly heightMist: number } | null;
   readonly post: {
     readonly bloom: { readonly intensity: number; readonly threshold: number; readonly radius: number };
@@ -103,7 +103,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     planetshine: null,
     hemisphere: { sky: "#f8d4a0", ground: "#2f3957", intensity: 1.1 },
     environment: { kind: "neutral", intensity: 0.9 },
-    fog: { color: "#59617f", density: 0.00043, maxOpacity: 0.82, heightMist: 0 },
+    fog: { color: "#090d1a", density: 0.00024, maxOpacity: 0.28, heightMist: 0 },
     post: {
       bloom: { intensity: 0.5, threshold: 0.78, radius: 0.55 },
       grade: { contrast: 1.06, saturation: 1.14 },

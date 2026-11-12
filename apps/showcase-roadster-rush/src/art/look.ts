@@ -52,9 +52,9 @@ export const APEX_KEY = { elevationDeg: 21, azimuthDeg: 168 } as const;
 export const APEX_FOG_DENSITY_SCALE = 0.7;
 /** golden-hour fog range 30/180 divided by the 0.7 density scale (AO-E3: near 43, far 257). */
 export const APEX_FOG_RANGE = { near: 30 / APEX_FOG_DENSITY_SCALE, far: 180 / APEX_FOG_DENSITY_SCALE } as const;
-/** Crisp live skyway fog range (`near: 95, far: 490` via `38 / 0.4` and `196 / 0.4`) so skyline, bay ridges & highway read cleanly. */
+/** Crisp live skyway fog range (`near: 160, far: 600` via `64 / 0.4` and `240 / 0.4`) so skyline, bay ridges & highway read cleanly. */
 export const APEX_SCENE_FOG_DENSITY_SCALE = 0.4;
-export const APEX_SCENE_FOG_PRESET = { near: 38, far: 196 } as const;
+export const APEX_SCENE_FOG_PRESET = { near: 64, far: 240 } as const;
 export const APEX_SCENE_FOG_RANGE = {
   near: APEX_SCENE_FOG_PRESET.near / APEX_SCENE_FOG_DENSITY_SCALE,
   far: APEX_SCENE_FOG_PRESET.far / APEX_SCENE_FOG_DENSITY_SCALE

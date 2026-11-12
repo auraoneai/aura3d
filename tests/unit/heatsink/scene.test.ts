@@ -180,24 +180,9 @@ describe("heatsink scene", () => {
 });
 
 describe("heatsink asset manifest (RH-06)", () => {
-  it("lists exactly the 26 heatsink models plus the WP-36 Meshy admissions, with full sha256 hashes", () => {
-    // GU47 WP-36: Meshy admissions (`heatsink_<key>`) are isolated imports: their rights and metadata rows live in
-    // aura-evidence/meshy/, not in the shared root catalog.
-    const wp36 = HEATSINK_ASSET_KEYS.filter((k) => k.startsWith("heatsink_"));
-    expect(wp36).toEqual(["heatsink_thermalArchIron", "heatsink_thermalTowerLIron", "heatsink_thermalTowerTIron", "heatsink_thermalReactorRing", "heatsink_thermalLadleCrane", "heatsink_thermalCoolingTower", "heatsink_thermalSmokestacks", "heatsink_thermalWaterTower"]);
-    expect(HEATSINK_ASSET_KEYS).toHaveLength(26 + wp36.length);
-    for (const key of wp36) {
-      const def = (assets as unknown as Record<string, { url: string; hash: string }>)[key]!;
-      expect(def.hash, key).toMatch(/^sha256-[0-9a-f]{64}$/);
-      expect(readdirSync("aura-evidence/meshy").some((f) => f.startsWith(`${key}.rights.`)), key).toBe(true);
-    }
-    const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")).assets as { key?: string; id?: string; url: string; hash?: string; sha256?: string }[];
-    for (const key of HEATSINK_ASSET_KEYS.filter((k) => !k.startsWith("heatsink_"))) {
-      const def = (assets as unknown as Record<string, { url: string; hash?: string }>)[key]!;
-      expect(def.url, key).toMatch(/^\/aura-assets\/heatsink/);
-      const row = manifest.find((a) => a.url === def.url);
-      expect(row, key).toBeDefined();
-    }
+  it("lists zero GLB models (100% @aura3d/engine procedural geometry)", () => {
+    expect(HEATSINK_ASSET_KEYS).toEqual([]);
+    expect(Object.keys(assets)).toEqual([]);
   });
   it("the app no longer imports the shared root catalog", () => {
     for (const file of ["main.ts", "scene.ts", "view.ts"]) {

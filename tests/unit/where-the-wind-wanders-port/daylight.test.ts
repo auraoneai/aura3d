@@ -109,13 +109,18 @@ describe("resolveLook (GU47 phase 3: per-view default from the blind panel)", ()
 });
 
 describe("GU47 phase 3 daylight", () => {
-  it("the daytime skies are clear blues (no grey or beige overcast) and the dusk keys keep their palette", () => {
+  it("the daytime skies are clear blues (no grey or beige overcast), fog stays crisp without milky wash, and the dusk keys keep their palette", () => {
     for (const id of ["found0", "found1", "found2", "found3"]) {
       const k = DAYLIGHT_KEYS.find((d) => d.id === id)!;
       const mid = srgbToLinear(k.skyMid), zen = srgbToLinear(k.skyZenith);
       expect(mid[2]).toBeGreaterThan(mid[0] * 1.6);
       expect(zen[2]).toBeGreaterThan(zen[0] * 3);
-      expect(k.fogDensity).toBeLessThanOrEqual(0.003);
+      expect(k.fogDensity).toBeLessThanOrEqual(0.0015);
+      expect(k.fogHeight).toBeLessThanOrEqual(0.1);
+    }
+    for (const k of DAYLIGHT_KEYS) {
+      expect(k.fogDensity).toBeLessThanOrEqual(0.0022);
+      expect(k.fogHeight).toBeLessThanOrEqual(0.25);
     }
   });
 

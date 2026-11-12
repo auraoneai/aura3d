@@ -56,26 +56,18 @@ CPU-vs-CPU attract bout behind the title card.
 
 ### Roster
 
-All six fighters mount their own **bespoke Meshy-generated rig** — imported
-into the app-local catalog (`aura.assets.json` → `public/aura-assets/`,
-rights evidence under `aura-evidence/meshy/`, quality `candidate`). Every
-GLB ships the identical 14-clip fight set (`Idle`, `Walk_Fight_Forward`,
-`Walk_Fight_Back`, `Left_Jab_from_Guard`, `Right_Uppercut_from_Guard`,
-`Triple_Combo_Attack`, `Block1`, `Hit_Reaction`, `Dead`, `Regular_Jump`, and
-the IC-12 clips `Combat_Stance`, `CrouchLookAroundBow`, `Over_Shoulder_Throw`,
-`Victory_Fist_Pump`), so a single shared clip map resolves every logical state:
+All six fighters mount **100% native `@aura3d/engine` multi-material procedural rigs** (`src/art/proceduralModels.ts` — `geometry.define`, `geometry.multiMaterial`, `group`, `material.*`) with zero external `.glb` files. Each fighter exposes an articulated procedural joint hierarchy (`hips`, `torso`, `head`, `arm-l/r`, `forearm-l/r`, `leg-l/r`, `shin-l/r`) driven through all 13 logical fight states (`idle`, `walk-forward`, `walk-back`, `crouch`, `jump`, `light`, `heavy`, `special`, `throw`, `guard`, `hit`, `ko`, `win`):
 
-| Fighter | Asset | Archetype | Special |
-| --- | --- | --- | --- |
-| KENJI ARASHI | `assets.ironcrownKenji` | Balanced all-rounder | Raijin Straight |
-| MARA VOLT | `assets.ironcrownVolt` | Rushdown boxer | Volt Combination |
-| BOULDER KANE | `assets.ironcrownBoulder` | Heavy grappler | Colossus Drop |
-| SERAPH LIN | `assets.ironcrownSeraph` | Zoning staff | Avalanche Lance |
-| JINX OKO | `assets.ironcrownJinx` | Slippery trickster | Phantom Parade |
-| SOVEREIGN | `assets.ironcrownSovereign` | Final boss | Crown Decree |
+| Fighter | Archetype | Special |
+| --- | --- | --- |
+| KENJI ARASHI | Balanced all-rounder | Raijin Straight |
+| MARA VOLT | Rushdown boxer | Volt Combination |
+| BOULDER KANE | Heavy grappler | Colossus Drop |
+| SERAPH LIN | Zoning staff | Avalanche Lance |
+| JINX OKO | Slippery trickster | Phantom Parade |
+| SOVEREIGN | Final boss | Crown Decree |
 
-The Crown Arena throne mounts the bespoke `assets.ironcrownCrown` prop
-(crown on a velvet cushion, Meshy-generated).
+The Crown Arena throne mounts a sculpted multi-material procedural velvet-cushion crown centerpiece (`buildProceduralCrownThrone()`).
 
 ### Venues
 

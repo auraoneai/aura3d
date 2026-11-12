@@ -28,8 +28,15 @@ export interface ThemeLook {
     readonly stars?: { readonly count: number; readonly brightness: number };
     readonly clouds?: { readonly coverage: number; readonly speed: number; readonly color: string };
   };
-  /** Height fog (CH47-04); null = none (studio). */
-  readonly fog: { readonly color: string; readonly density: number; readonly heightFalloff: number } | null;
+  /** Crisp linear distance haze (CH47-04, zero milky height-fog wash); null = none (studio). */
+  readonly fog: {
+    readonly mode: "linear";
+    readonly color: string;
+    readonly near: number;
+    readonly far: number;
+    readonly maxOpacity: number;
+    readonly heightFalloff: 0;
+  } | null;
   readonly post: CrossHopPostPreset;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
@@ -68,12 +75,12 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 18, azimuthDeg: 220, color: "#ffd2a1", intensity: 2.6 },
     hemi: { sky: "#cfe2f2", ground: "#7d8f5a", intensity: 0.35 },
     sky: { zenith: "#7fa6cf", horizon: "#f3d2b4", ground: "#a7b98a", horizonGlow: 0.55, clouds: { coverage: 0.12, speed: 0.4, color: "#fbe9db" } },
-    fog: { color: "#b9cfe0", density: 0.012, heightFalloff: 0.35 },
+    fog: { mode: "linear", color: "#b9cfe0", near: 165, far: 460, maxOpacity: 0.18, heightFalloff: 0 },
     post: "daylight-outdoor",
     grade: { contrast: 1.1, saturation: 1.16, temperature: 0.05 },
     bloom: { intensity: 0.1, threshold: 1.4 },
     exposureEv: 0,
-    tiltShift: { bandWidth: 0.34, maxBlur: 4 },
+    tiltShift: { bandWidth: 0.34, maxBlur: 0 },
     sweep: { azimuthDeg: 14, elevationDeg: 6 },
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "pollen",
@@ -88,12 +95,12 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 55, azimuthDeg: 30, color: "#f4f1ea", intensity: 2.2 },
     hemi: { sky: "#dde3ea", ground: "#8a8a80", intensity: 0.45 },
     sky: { zenith: "#9fb0c2", horizon: "#dfe3e6", ground: "#9aa08c", horizonGlow: 0.25, clouds: { coverage: 0.2, speed: 0.3, color: "#eef0f2" } },
-    fog: { color: "#d8d4c6", density: 0.013, heightFalloff: 0.3 },
+    fog: { mode: "linear", color: "#d8d4c6", near: 175, far: 480, maxOpacity: 0.16, heightFalloff: 0 },
     post: "daylight-outdoor",
     grade: { contrast: 1.08, saturation: 1.06, temperature: -0.04 },
     bloom: { intensity: 0.06, threshold: 1.6 },
     exposureEv: 0,
-    tiltShift: { bandWidth: 0.36, maxBlur: 3.5 },
+    tiltShift: { bandWidth: 0.36, maxBlur: 0 },
     sweep: { azimuthDeg: 10, elevationDeg: -4 },
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "none",
@@ -108,12 +115,12 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 10, azimuthDeg: 250, color: "#ffb064", intensity: 2.8 },
     hemi: { sky: "#f3c99a", ground: "#6f6a3e", intensity: 0.3 },
     sky: { zenith: "#5d78a6", horizon: "#ffb977", ground: "#8f8a54", horizonGlow: 0.85, clouds: { coverage: 0.1, speed: 0.35, color: "#ffd2a8" } },
-    fog: { color: "#e8b98a", density: 0.013, heightFalloff: 0.35 },
+    fog: { mode: "linear", color: "#e8b98a", near: 165, far: 455, maxOpacity: 0.20, heightFalloff: 0 },
     post: "cinematic-film",
     grade: { contrast: 1.1, saturation: 1.14, temperature: 0.18 },
     bloom: { intensity: 0.14, threshold: 1.2 },
     exposureEv: 0,
-    tiltShift: { bandWidth: 0.32, maxBlur: 4.5 },
+    tiltShift: { bandWidth: 0.32, maxBlur: 0 },
     sweep: { azimuthDeg: 8, elevationDeg: -6 },
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "fireflies",
@@ -128,12 +135,12 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 6, azimuthDeg: 280, color: "#ff7a4a", intensity: 1.8 },
     hemi: { sky: "#7a4a52", ground: "#3a2a24", intensity: 0.3 },
     sky: { zenith: "#2c2240", horizon: "#d2553a", ground: "#3a2620", horizonGlow: 1.0 },
-    fog: { color: "#6b3a34", density: 0.014, heightFalloff: 0.4 },
+    fog: { mode: "linear", color: "#6b3a34", near: 155, far: 440, maxOpacity: 0.22, heightFalloff: 0 },
     post: "arena-fight",
     grade: { contrast: 1.12, saturation: 1.12, temperature: 0.2 },
     bloom: { intensity: 0.5, threshold: 0.75 },
     exposureEv: 0.1,
-    tiltShift: { bandWidth: 0.32, maxBlur: 4 },
+    tiltShift: { bandWidth: 0.32, maxBlur: 0 },
     sweep: { azimuthDeg: 6, elevationDeg: -4 },
     lamps: { count: 12, colors: ["#ff6a2a", "#ff8a3d"], power: 260, distance: 7 },
     ambient: "embers",
@@ -148,12 +155,12 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 35, azimuthDeg: 340, color: "#9fb4ff", intensity: 0.35 },
     hemi: { sky: "#26304f", ground: "#141824", intensity: 0.25 },
     sky: { zenith: "#070b1a", horizon: "#1c2a4a", ground: "#10131c", horizonGlow: 0.35, stars: { count: 1400, brightness: 1.1 } },
-    fog: { color: "#1a2440", density: 0.016, heightFalloff: 0.45 },
+    fog: { mode: "linear", color: "#1a2440", near: 150, far: 430, maxOpacity: 0.24, heightFalloff: 0 },
     post: "neon-night",
     grade: { contrast: 1.12, saturation: 1.15, temperature: -0.2 },
     bloom: { intensity: 0.45, threshold: 0.9 },
     exposureEv: 0.15,
-    tiltShift: { bandWidth: 0.3, maxBlur: 4 },
+    tiltShift: { bandWidth: 0.3, maxBlur: 0 },
     sweep: { azimuthDeg: 6, elevationDeg: 2 },
     lamps: { count: 12, colors: ["#ffb347", "#37f5ff"], power: 320, distance: 8 },
     ambient: "rain",
@@ -173,7 +180,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     grade: { contrast: 1.06, saturation: 1.16, temperature: 0 },
     bloom: { intensity: 0.08, threshold: 1.5 },
     exposureEv: 0,
-    tiltShift: { bandWidth: 0.36, maxBlur: 3.5 },
+    tiltShift: { bandWidth: 0.36, maxBlur: 0 },
     sweep: { azimuthDeg: 12, elevationDeg: 0 },
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "confetti",
@@ -262,7 +269,14 @@ export interface VividLook {
     readonly stars?: { readonly count: number; readonly brightness: number };
     readonly clouds?: { readonly coverage: number; readonly speed: number; readonly color: string };
   };
-  readonly fog: { readonly color: string; readonly density: number };
+  readonly fog: {
+    readonly mode: "linear";
+    readonly color: string;
+    readonly density: number;
+    readonly near: number;
+    readonly far: number;
+    readonly maxOpacity: number;
+  };
   /** The flat world floor beyond the lane strip (laid flat, so no sky band shows under the course). */
   readonly floor: string;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
@@ -276,7 +290,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#cfe4ff", ground: "#5f8a45", intensity: 0.45 },
     environmentIntensity: 0.5,
     sky: { zenith: "#2a64b8", horizon: "#78b0e4", ground: "#9fc4a0", horizonGlow: 0.25, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 0.6, discSize: 0 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
-    fog: { color: "#a8cbe8", density: 0 },
+    fog: { mode: "linear", color: "#a8cbe8", density: 0, near: 175, far: 480, maxOpacity: 0.16 },
     floor: "#3f8a46",
     grade: { contrast: 1.16, saturation: 1.18, temperature: 0.02 },
     bloom: { intensity: 0.12, threshold: 0.95 },
@@ -287,7 +301,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#e4e9ef", ground: "#727866", intensity: 0.55 },
     environmentIntensity: 0.55,
     sky: { zenith: "#3a6cb4", horizon: "#8cb4e2", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
-    fog: { color: "#b8cadc", density: 0 },
+    fog: { mode: "linear", color: "#b8cadc", density: 0, near: 180, far: 490, maxOpacity: 0.15 },
     floor: "#5f8a46",
     grade: { contrast: 1.16, saturation: 1.16, temperature: -0.02 },
     bloom: { intensity: 0.1, threshold: 1.0 },
@@ -298,7 +312,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#ffd9b0", ground: "#5f6a36", intensity: 0.45 },
     environmentIntensity: 0.45,
     sky: { zenith: "#3f62a6", horizon: "#ffa860", ground: "#b0a070", horizonGlow: 0.55, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
-    fog: { color: "#f2b884", density: 0 },
+    fog: { mode: "linear", color: "#f2b884", density: 0, near: 170, far: 470, maxOpacity: 0.17 },
     floor: "#5e8f3e",
     grade: { contrast: 1.16, saturation: 1.16, temperature: 0.06 },
     bloom: { intensity: 0.16, threshold: 0.9 },
@@ -309,7 +323,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#b07a90", ground: "#4a3a30", intensity: 0.9 },
     environmentIntensity: 0.55,
     sky: { zenith: "#2c2850", horizon: "#ff8a52", ground: "#4a3028", horizonGlow: 1.0, glow: { elevationDeg: 2, azimuthDeg: 200, color: "#ff7a3c", intensity: 1.5, discSize: 0.07 } },
-    fog: { color: "#a85a44", density: 0.006 },
+    fog: { mode: "linear", color: "#a85a44", density: 0.006, near: 155, far: 440, maxOpacity: 0.22 },
     floor: "#4e5548",
     grade: { contrast: 1.12, saturation: 1.12, temperature: 0.1 },
     bloom: { intensity: 0.32, threshold: 0.8 },
@@ -320,7 +334,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#5a6ab0", ground: "#22263c", intensity: 0.85 },
     environmentIntensity: 0.5,
     sky: { zenith: "#0a1236", horizon: "#4a3f96", ground: "#1c1a34", horizonGlow: 0.6, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ff5ad2", intensity: 0.9, discSize: 0 }, stars: { count: 1200, brightness: 1.1 } },
-    fog: { color: "#2e2c6e", density: 0.005 },
+    fog: { mode: "linear", color: "#2e2c6e", density: 0.005, near: 150, far: 435, maxOpacity: 0.22 },
     floor: "#3f5a52",
     grade: { contrast: 1.12, saturation: 1.18, temperature: -0.08 },
     bloom: { intensity: 0.4, threshold: 0.82 },
@@ -331,7 +345,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     hemi: { sky: "#e0b8e4", ground: "#8a6aa8", intensity: 0.55 },
     environmentIntensity: 0.5,
     sky: { zenith: "#4b3a86", horizon: "#f2a07e", ground: "#c890a8", horizonGlow: 0.7, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb48a", intensity: 0.9, discSize: 0 }, clouds: { coverage: 0.25, speed: 0.3, color: "#ffc8b4" } },
-    fog: { color: "#e8a08c", density: 0 },
+    fog: { mode: "linear", color: "#e8a08c", density: 0, near: 170, far: 470, maxOpacity: 0.16 },
     floor: "#5e9a5a",
     grade: { contrast: 1.16, saturation: 1.15, temperature: 0.06 },
     bloom: { intensity: 0.2, threshold: 0.88 },

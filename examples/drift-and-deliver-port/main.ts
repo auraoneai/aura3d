@@ -217,7 +217,7 @@ function buildScene() {
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
-    s.add(buildHeroCourierRigNode("car-rig", true, look.shift ? "YXZ" : undefined));
+    s.add(buildHeroCourierRigNode("car-rig", true, look.shift ? "YXZ" : "ZYX"));
     for (const w of HERO_COURIER_WHEEL_POSES) {
       s.add(buildHeroCourierWheelNode(w.id, w.side, look.shift));
     }

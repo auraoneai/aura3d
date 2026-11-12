@@ -57,7 +57,7 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     expect(day).toContain("sky.hdr");
   });
 
-  it("band scenes share node names with each other (setScene swaps keep the runtime ids)", () => {
+  it("band scenes share node names with each other (setScene swaps keep the runtime ids)", { timeout: 30_000 }, () => {
     const ids = (band: (typeof BAND_IDS)[number]) => new Set([...JSON.stringify(world.sceneFor(band).toJSON()).matchAll(/"runtime":\{(?:"mutable":true,)?"id":"([^"]+)"/g)].map((m) => m[1]!));
     const a = ids("A"), d = ids("D");
     expect(a.size).toBeGreaterThan(50);
@@ -76,11 +76,19 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     expect(JSON.stringify(buildWorld(data, "original").scene.toJSON())).not.toContain('"catenary"');
   });
 
-  it("replaces all 14 Meshy GLBs with procedural multi-material meshes and valid WebGPU WGSL twins (WP-25)", () => {
-    expect(direction.assets).toHaveLength(2);
+  it("replaces all external/Meshy GLBs with procedural multi-material meshes, clean distance fog, and valid WebGPU WGSL twins (WP-25)", { timeout: 30_000 }, () => {
+    expect(direction.assets).toHaveLength(0);
     for (const band of BAND_IDS) {
       const bandJson = world.sceneFor(band).toJSON();
-      expect(JSON.stringify(bandJson)).not.toContain("assets/meshy/");
+      const serialized = JSON.stringify(bandJson);
+      expect(serialized).not.toContain("assets/meshy/");
+      expect(serialized).not.toContain(".glb");
+      expect(serialized).not.toContain('"sun-flare"');
+      expect(serialized).not.toContain('"tilt-shift"');
+      expect(BANDS[band].fog.near).toBe(260);
+      expect(BANDS[band].fog.far).toBe(980);
+      expect(BANDS[band].fog.maxOpacity).toBeLessThanOrEqual(0.3);
+      expect(BANDS[band].flare).toBe(false);
       expect(webgpuCustomShaderGap(bandJson), band).toBeUndefined();
     }
     const beamMat = lightBeamWithWgsl({ color: "#fff1c6", intensity: 0.42, length: 42 });

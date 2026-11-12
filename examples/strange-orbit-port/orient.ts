@@ -26,6 +26,15 @@ export function multiplyMat3(a: Mat3, b: Mat3): Mat3 {
   return out as unknown as Mat3;
 }
 
+/** Transforms a local `[x, y, z]` offset by row-major 3×3 basis/rotation matrix `m`. */
+export function applyMat3(m: Mat3, [vx, vy, vz]: readonly [number, number, number]): [number, number, number] {
+  return [
+    m[0] * vx + m[1] * vy + m[2] * vz,
+    m[3] * vx + m[4] * vy + m[5] * vz,
+    m[6] * vx + m[7] * vy + m[8] * vz
+  ];
+}
+
 /** Rotation by `angle` about the local X, Y or Z axis. */
 export function axisRotation(axis: "x" | "y" | "z", angle: number): Mat3 {
   const c = Math.cos(angle), s = Math.sin(angle);

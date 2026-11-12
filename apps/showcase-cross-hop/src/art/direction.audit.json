@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-cross-hop/src/art/direction.ts",
-  "sourceSha256": "7f976df1ce99a984d13084c0106139672109197b573bef9d8ccfbc91b6ed8ab5",
+  "sourceSha256": "18b229f8a4f3042b138d24cbca79676674730e1933021a05db5fb12d4e68ca77",
   "id": "cross-hop",
   "genre": "platformer",
   "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
@@ -38,15 +38,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "hop",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "cross-hop backdrop 0",
@@ -180,6 +172,41 @@
         "practical": false
       },
       {
+        "name": "lacquer",
+        "node": "player material 0",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "player material 1",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "player material 2",
+        "practical": false
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "player material 3",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "player material 4",
+        "practical": false
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "player material 5",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "player material 6",
+        "practical": false
+      },
+      {
         "name": "matte clay",
         "node": "hawk material 0",
         "practical": false
@@ -198,6 +225,16 @@
         "node": "hawk material 3",
         "emissiveIntensity": 1.32,
         "practical": true
+      },
+      {
+        "name": "lacquer",
+        "node": "hawk material 4",
+        "practical": false
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "hawk material 5",
+        "practical": false
       },
       {
         "name": "lacquer",
@@ -305,176 +342,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "hop",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "chick",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "turtle",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "bun",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "axolotl",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "ducky",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "roboFrog",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "toastCat",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "mushroomKid",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "knightToad",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "astroFrog",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "goldenHop",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Regular_Jump"
-          ]
-        }
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "hop-land",

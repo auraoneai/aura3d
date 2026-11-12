@@ -50,12 +50,7 @@ export default defineArtDirection({
     exposureEV: boot.exposureEv
   },
   framing: { rig: "static", subjectHeightFraction: [0.18, 0.45], fovDeg: [40, 48], mobile: "both" },
-  assets: [
-    // Triangle counts from the GLB index buffers (route-health.json): athlete 31,758, crowd athlete 3,809.
-    // WP-08: all 26 static ballpark, equipment, spectator, and venue-horizon assets are sculpted procedurally.
-    { role: "character", assetKey: "diamondAthlete", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["Idle_Loop", "Crouch_Idle_Loop", "Ready"] } },
-    { role: "set-dressing", assetKey: "diamondCrowdAthlete", maxTriangles: 4000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle_Loop"] } }
-  ],
+  assets: [],
   vfx: [
     { event: "bat-contact", kind: "diamond-bat-crack", flipbook: "debris-chips" },
     { event: "ball-landing", kind: "diamond-clay-puff", flipbook: "smoke-a" },

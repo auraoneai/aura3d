@@ -1,5 +1,5 @@
-import { camera, defineAuraAssets, effects, environments, game, geometry, instances, lights, material, model, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
-import { assets, type GridAssetKey } from "./aura-assets";
+import { camera, defineAuraAssets, effects, environments, game, geometry, instances, lights, material, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
+import type { GridAssetKey } from "./aura-assets";
 import {
   beaconDiscGeometrySpec,
   beaconRingGeometrySpec,
@@ -13,10 +13,10 @@ import {
   buildSuspensionBridgeSpanNode,
   buildSuspensionBridgeTowerNode,
   buildTransamericaSpireNode,
+  buildUrbanCommuterNode,
   curbBollardGeometrySpec,
   INSTANCED_STREET_MATERIALS,
   parkedVehicleGeometrySpec,
-  passengerMaterialOverrides,
   podSensorHousingGeometrySpec,
   podSensorLaserGeometrySpec,
   podTurretMaterial,
@@ -184,28 +184,20 @@ export function skyNode(look: SkyLook) {
 }
 
 /**
- * GD-05: the row's height fog (A3D_QR_VFX_FOG): slate-teal distance haze that keeps the near street clear and greys the
- * bay and the skyline; it also fogs the sky (`affectsBackground`). The marine deck aloft is drawn by the sensor pass
- * (`scanPulse.ts`), see `SkyLook.fog`.
+ * GD-05: crisp linear distance fog (`near >= 150, far >= 520, maxOpacity <= 0.28`, A3D_QR_VFX_FOG) with zero
+ * uniform height-fog wash over the foreground or midground street. The marine deck aloft is drawn separately by
+ * the sensor pass (`scanPulse.ts`).
  */
 export function marineHaze(look: SkyLook) {
   const f = look.fog;
-  // C-21 fog fields ride through `effects.fog` as data; `near >= 70` & `far >= 280` keep near street facades crystal clear.
   const spec: Record<string, unknown> = {
     name: "grid marine haze",
-    mode: "height",
+    mode: "linear",
     color: f.color,
     near: f.near,
     far: f.far,
-    density: f.density,
-    heightDensity: f.heightDensity,
-    heightFalloff: f.heightFalloff,
-    heightReference: f.heightReference,
-    start: f.start,
     maxOpacity: f.maxOpacity,
-    sunInscatter: f.sunInscatter,
-    anisotropy: 0.6,
-    affectsBackground: true
+    affectsBackground: false
   };
   return effects.fog(spec as Parameters<typeof effects.fog>[0]);
 }
@@ -647,18 +639,12 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     primitives.plane({ name: "taxi-beacon-ripple", size: [3.6, 3.6], material: beaconRippleMaterial("pickup"), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.048, -38).rotate(-Math.PI * 0.5, 0, 0).runtime(game.runtimeNode("taxi-beacon-ripple")),
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
-    // meshy07 (GD-16): preserved rigged hooded commuter hailing with its `wave` loop, upgraded with physical sheen fabric overrides.
-    model(assets.gridPassenger, {
-      name: PASSENGER_NODE,
-      role: "setDressing",
-      scaleMode: "fit",
-      targetHeight: PASSENGER_HEIGHT,
-      materialOverrides: passengerMaterialOverrides()
+    // GD-16: sculpted multi-material procedural Urban Commuter Rig grounded on the sidewalk (`y = 0.18`), waving & boarding cleanly.
+    buildUrbanCommuterNode({
+      id: PASSENGER_NODE,
+      position: [11.35, 0.18, -38],
+      rotation: [0, PASSENGER_YAW, 0]
     })
-      .position(11.35, 0, -38)
-      .rotation(0, PASSENGER_YAW, 0)
-      .animate({ clip: PASSENGER_CLIP, loop: true, speed: opts.motionOk === false ? 0 : 1 })
-      .runtime(game.runtimeNode(PASSENGER_NODE))
   ]);
 
   // 7. Five sculpted playable AV fleet cars + WebGPU-safe spinning 10 Hz roof LiDAR crown + conformal rear LED lightbars.

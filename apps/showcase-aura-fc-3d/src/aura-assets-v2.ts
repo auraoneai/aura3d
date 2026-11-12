@@ -1,7 +1,7 @@
 /**
- * Aura FC 3D — route-local typed-asset manifest.
+ * Aura FC 3D — route-local typed-asset manifest (100% zero-GLB procedural + CC0 textures/LUTs/SFX).
  *
- * Registers the Meshy GLBs and WAV SFX used by Aura FC 3D through the engine's
+ * Registers the CC0 HDRI/textures, display LUTs, and WAV SFX used by Aura FC 3D through the engine's
  * `defineAuraAssets`, with unquoted keys so `tools/remote-capture.sh` copies
  * every referenced payload from `public/aura-assets/` into the capture serve tree.
  */
@@ -102,127 +102,8 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/fcLutGlacier.cube",
     hash: "sha256-7461ff4da1f127bb1aec083b15402d517e07c15d5953785eb587465aa5debab6"
   },
-  fcFloodlightPylonMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb",
-    hash: "sha256-b3934b632eaf01fd38ebaf76e9c1aef4f813d05947c95c5fa574671ec8850364",
-    bounds: [0.631, 1.903, 0.239]
-  },
-  fcGlacierDomeMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcGlacierDomeMeshy.32b82759.glb",
-    hash: "sha256-7afa457a17061fe25970c2576b9a61355f9c912158d4efcadd6c4c21587a954e",
-    bounds: [1.818, 1.209, 1.903]
-  },
-  fcHeroTrophyMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcHeroTrophyMeshy.b101d73c.glb",
-    hash: "sha256-194ea9dacaffc30dae8c681bb0a583e6c553b6b77cc03d028a86848270197eb7",
-    bounds: [1.024, 1.902, 0.613]
-  },
-  fcMatchBallMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcMatchBallMeshy.b97f043f.glb",
-    hash: "sha256-421d358ea396c6f287a302e21e70625c74e4b710d06a96b995fff9517a038d7c",
-    bounds: [1.902, 1.902, 1.901]
-  },
-  fcScoreboardGantryMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcScoreboardGantryMeshy.0c6d8221.glb",
-    hash: "sha256-3cd931cca24b1337c9a1c6051e157172dcc3cccafc1cba5e34d38580ae5a7bc3",
-    bounds: [1.902, 1.284, 0.246]
-  },
-  fcSoccerStrikerMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
-    hash: "sha256-1b37df23525f254dc5bb8483a512d850db21a1f4e67cb056aec68a143633d686",
-    bounds: [0.671, 1.891, 0.481]
-  },
-  fcGoalkeeperMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcGoalkeeperMeshyAthlete.b9fe367e.glb",
-    hash: "sha256-b9fe367eb7cc0fa9806d1a39ea85de8d21d38e7e68632fbdff9e5f9015fdd1e7",
-    bounds: [0.688, 1.899, 0.508]
-  },
-  fcSoccerGoalNetMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcSoccerGoalNetMeshy.9750a4a6.glb",
-    hash: "sha256-9750a4a66bf380706700241c3aaf53b6dbf53397cae756562633cb538cd40f7f",
-    bounds: [1.897, 1.282, 0.8]
-  },
-  // GU47 phase 9 (D2: no borrowed keys): the game's own CC0 set dressing, replacing the borrowed baseball dugout and basketball ball cart.
-  fcTeamBench: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcTeamBench.f7d250b0.glb",
-    hash: "sha256-f7d250b00e73e43feb1921279798eda55d7a0a922b612b9fc5f71f8783319a34",
-    bounds: [1.165, 0.889, 0.497],
-    sizeBytes: 189180,
-    metadata: { license: "CC0-1.0 (Poly Haven)", author: "Kirill Sannikov", provenance: { sourceUrl: "https://polyhaven.com/a/painted_wooden_bench", downloadUrl: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf", sourceId: "poly-haven:painted_wooden_bench", retrievedAt: "2026-11-01T16:45:00Z" }, sourcePath: "Poly Haven 1k glTF packed to GLB, maps downsized to 512 px JPEG q70 (sips); admitted with aura3d assets add" }
-  },
-  fcBallCrate: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcBallCrate.691a2e7b.glb",
-    hash: "sha256-691a2e7bccf270982efb7624c25eb6ab82765c99ea6fe999e02f497b777bfb78",
-    bounds: [0.506, 0.254, 0.406],
-    sizeBytes: 397516,
-    metadata: { license: "CC0-1.0 (Poly Haven)", author: "Fabi_G", provenance: { sourceUrl: "https://polyhaven.com/a/plastic_crate_02", downloadUrl: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/plastic_crate_02/plastic_crate_02_1k.gltf", sourceId: "poly-haven:plastic_crate_02", retrievedAt: "2026-11-01T16:45:00Z" }, sourcePath: "Poly Haven 1k glTF packed to GLB, maps downsized to 512 px JPEG q70 (sips); admitted with aura3d assets add" }
-  },
-  // GU47 WP-36 (FC47-A1): the football stand module (plan key pitchStandModule, Meshy text-to-3d refine, task
-  // 01a18c0a-997e-7103-9690-bfdbd94aebc1), welded and simplified to 45.6k triangles with 1024 px maps. Rights and
-  // metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcStandModuleMeshy.{rights,metadata}.json.
-  fcStandModuleMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcStandModuleMeshy.b34d0da4.glb",
-    hash: "sha256-b34d0da4051e4273db0ec44d748ec07026b6c243056e7c5d824c0c66d8c51220",
-    bounds: [1.903, 0.832, 0.543]
-  },
-  // GU47 wave 2 (FC47-A1): the players' tunnel (plan key pitchPlayerTunnel, Meshy text-to-3d refine, task
-  // 01a1a4e0-6342-7568-8045-6f6e61a3e896), optimized then simplified to 12,968 triangles with 1024 px maps. Rights and
-  // metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcPlayerTunnelMeshy.{rights,metadata}.json.
-  fcPlayerTunnelMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcPlayerTunnelMeshy.a5d607e8.glb",
-    hash: "sha256-a5d607e86c4c2fa7391e21af3fe453b35b542c0291d2393689a922cea9b4fe22",
-    bounds: [1.674, 0.795, 1.901]
-  },
-  // Meshy-07 (FC47-AN1): three rigged front-row fans (plan keys pitchFanAAnim, pitchFanBAnimM07, pitchFanCAnim; Meshy
-  // animate, clips idle / cheer / pump on a 24-joint skin), welded and simplified to 5k triangles with 512 px maps.
-  // Rights and metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcPitchFan{A,B,C}Meshy.{rights,metadata}.json.
-  fcPitchFanAMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcPitchFanAMeshy.b0a352c1.glb",
-    hash: "sha256-b0a352c1917c3267b362fc3db6cce3aa5a498d642972aa4b25fadaba1965e1d3",
-    bounds: [1.504, 1.799, 0.385]
-  },
-  fcPitchFanBMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcPitchFanBMeshy.b8377118.glb",
-    hash: "sha256-b8377118a26dbc54c978c0f3f5d7cc64cc85af12b5f8c3d2cff2d298463a3a92",
-    bounds: [1.578, 1.8, 0.32]
-  },
-  fcPitchFanCMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/fcPitchFanCMeshy.c47efdd8.glb",
-    hash: "sha256-c47efdd8d68447246643fd8f79d9785396fe7100b5b1cc623a664056023c82b1",
-    bounds: [1.448, 1.759, 0.349]
-  },
   // GU47 phase 9 (D2): referee whistle, keeper save, crowd bed and goal swell, synthesised by tools/aura-fc/synth-sfx.mjs
-  // (original, CC0-1.0), replacing the cues borrowed from the bank-shot, basketball and baseball games.
+  // (original, CC0-1.0).
   fcWhistleSfx: {
     type: "audio",
     format: "wav",

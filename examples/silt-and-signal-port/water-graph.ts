@@ -144,9 +144,9 @@ export function buildWaterGraph(params: WaterGraphParams): ShaderGraphDocument {
   }
 
   const fogColor = uniform("fogColor", "vec3"), fogFar = uniform("fogFar", "f32");
-  const fogT = smoothstep(f(108), max(f(420), fogFar), length(sub(world, cam)));
+  const fogT = smoothstep(f(280), max(f(1450), fogFar), length(sub(world, cam)));
   const alpha = mul(f(0.92), sub(f(1), smoothstep(sub(canalHalf, f(1.2)), canalHalf, d)));
-  const color = mix(col, fogColor, mul(mul(fogT, fogT), f(0.72)));
+  const color = mix(col, fogColor, mul(mul(fogT, fogT), f(0.32)));
 
   return {
     version: 1,

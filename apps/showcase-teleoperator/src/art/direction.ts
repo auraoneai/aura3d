@@ -44,9 +44,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [56, 62], mobile: "both" },
-  assets: [
-    { role: "character", assetKey: "gridPassenger", maxTriangles: 15000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
-  ],
+  assets: [],
   vfx: [
     { event: "collision", kind: "grid-impact" },
     { event: "pickup", kind: "grid-objective-ring" },

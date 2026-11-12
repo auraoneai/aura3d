@@ -15,7 +15,7 @@ const DIRECTION_FILE = "apps/showcase-aura-diamond-3d/art/direction.ts";
  * Triangle counts measured from the rigged GLB index buffers (`apps/showcase-aura-diamond-3d/route-health.json`).
  * WP-08 replaced all 26 static Meshy ballpark, equipment, spectator, and horizon GLBs with procedural multi-material geometry.
  */
-const KNOWN_TRIANGLES = { assets: { diamondAthlete: { triangles: 31758 }, diamondCrowdAthlete: { triangles: 3809 } } };
+const KNOWN_TRIANGLES = { assets: {} };
 
 /** Audit snapshot of one park's real GU47 scene (lights, environment, models and materials as `buildParkScene` emits them). */
 function parkSnapshot(park: ParkId): ArtDirectionSnapshot {

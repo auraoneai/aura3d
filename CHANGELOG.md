@@ -1,8 +1,16 @@
 # Changelog
 
-Version: 5.5.3
+Version: 5.5.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.5.4 (2026-11-12)
+
+### WebGPU Safety Net, Display-P3 v2 Negotiation & 100% Native Procedural 30-Game Showcase (`@aura3d/debug`, `@aura3d/engine`)
+
+- **WebGPU post-present swapchain guard in `@aura3d/debug`.** `createBlackFrameWatch` (`installSafetyNet` / `installBlackFrameGuard`) clears its 48×32 scratch 2D probe context before `drawImage` and returns `undefined` when every sampled texel has `alpha === 0`, preventing post-present WebGPU swapchain reads (`[0, 0, 0, 0]`) from being misclassified as rendered black frames (`[0, 0, 0, 255]`) and triggering false `?aa=0&post=0&tm=aces...` downgrade reloads.
+- **Display-P3 v2 tone-mapping negotiation in `@aura3d/engine`.** `compilePostprocess` omits the legacy default `options.toneMapping.outputColorSpace = "srgb"` when `pipeline.outputColorSpace === "display-p3"` on the `v2` post chain (with `postBridge` exposure inspection reading back the pipeline's `outputColorSpace`), so WebGPU `toneMappingDefaults` negotiates Display-P3 or falls back cleanly to sRGB without throwing `WEBGPU_OUTPUT_COLOR_SPACE_UNSUPPORTED`.
+- **100% native `@aura3d/engine` procedural 30-game showcase & crisp atmosphere pass.** All 30 showcase games now build every character, vehicle, prop, landmark, and pickup procedurally in TypeScript on `@aura3d/engine` (`geometry.define`, `geometry.multiMaterial`, `group`, `material.*`) with zero Meshy or external `.glb` game assets. Includes Display-P3 lab-flag gating in *Aura Slam 3D*, `"ZYX"` wheel Euler invariance in *Saltwind Highway*, stateless desert surfer rig in *Duneglide*, rigid pitched/rolled jump frame and sculpted lunar superbike in *Craterline GP*, enclosed glazed coastal railcar and rear-chase track-ahead camera in *Lamplight Line*, default-hidden glide cape in *Pip's Big Leap*, connected pelvis/leg/ankle rig in *Beat Hopper*, gameplay DoF removal in *Polarity Orbs*, and crisp linear distance fog (`affectsBackground: false`, zero milky white wash or sun-flare haze) across all 30 routes.
 
 ## 5.5.3 (2026-11-12)
 

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-hoops-3d/art/direction.ts",
-  "sourceSha256": "371ef4dee1a7c5ea28ee757065eff7ea80148bea57450c8ec6049cab60de979a",
+  "sourceSha256": "c613fe1bbae7773d2797da89929f79d12fcfc5776f64cd489f272f03ad1cd075",
   "id": "showcase-aura-hoops-3d",
   "genre": "basketball",
   "signatureEffect": "Spray-tag decal stencilled on the blacktop under the rim after a Jam dunk, fading over 20 s, at most 8 live, on every tier.",
@@ -52,43 +52,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "aura_hoops_3d_blacktopFanAPoses",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopFanCPoses",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopFanDPoses",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsAthleteBigKit",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsAthleteGuardKit",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "rucker-flood-heads",
@@ -159,65 +123,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "character",
-        "assetKey": "hoopsAthleteGuardKit",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Crouch_Idle_Loop",
-            "Run",
-            "Sprint_Loop",
-            "Shoot",
-            "Jump_Loop",
-            "Contest"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "hoopsAthleteBigKit",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Crouch_Idle_Loop",
-            "Run",
-            "Sprint_Loop",
-            "Shoot",
-            "Jump_Loop",
-            "Contest"
-          ]
-        }
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopFanAPoses",
-        "maxTriangles": 5000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopFanCPoses",
-        "maxTriangles": 5000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopFanDPoses",
-        "maxTriangles": 5000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "swish",

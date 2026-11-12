@@ -1,5 +1,7 @@
 # Last Train to the Sea on Aura3D: porting notes
 
+> **5.5.4 Update (2026-11-12):** All external CC0 and Meshy `.glb` models (`assets/meshy/*` and landmark `.glb`s) documented below were deleted and replaced with 100% native `@aura3d/engine` procedural geometry (`0` `.glb` files), including an enclosed glazed coastal electric interurban railcar, rear-chase track-ahead camera, and crisp coastal fog without DoF or sun-flare wash.
+
 Aura3D port of the Crayon game "Last Train to the Sea" (PRD §7.2 Phase D, task R-20).
 Source: the captured game module (`tests/fixtures/crayon/last-train/PROVENANCE.md`; untrusted data, read as text only,
 never executed outside the capture browser). Only the simulation-core regions the port was written from are stored

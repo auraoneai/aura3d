@@ -28,7 +28,7 @@ export interface Dress {
   readonly tilt: number;
 }
 
-/** Half extents (x, z), height and largest dimension of each Meshy model's bounds (read from the GLBs). */
+/** Half extents (x, z), height and largest dimension of each procedural prop's collision bounds. */
 const BOUNDS: Record<DressKind, { readonly x: number; readonly z: number; readonly h: number; readonly max: number; readonly label: string }> = {
   boulder: { x: 0.95, z: 0.94, h: 1.48, max: 1.9, label: "moon boulder" },
   spire: { x: 0.43, z: 0.41, h: 1.9, max: 1.9, label: "rock spire" },
@@ -71,7 +71,7 @@ export interface Collider {
   readonly approach: Vec3;
 }
 
-/** Gate pillars are the 13 m Meshy pylon (1.9 tall, 0.34 wide model scaled to 13 m); lintel is the 0.9 x 0.7 x 23.2 box. */
+/** Gate pillars are the 13 m procedural lattice pylon (1.9 tall, 0.34 wide unit scaled to 13 m); lintel is the 0.9 x 0.7 x 23.2 span. */
 const PILLAR = { lateral: 11.1, height: 13, radius: 1.1 };
 const LINTEL = { height: 13.1, halfLength: 11.6, radius: 0.55 };
 

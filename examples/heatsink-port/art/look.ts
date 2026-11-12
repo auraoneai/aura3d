@@ -130,12 +130,12 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     /* GU47 phase 4 + WP-23: deep cosmic dark-indigo #0b0d1c fog (near >= 90, far >= 340) with minimal sun/district washout so deep-space sky, basalt canyon ridges and glowing energy gates have crisp sci-fi contrast */
     shade: { sunGain: 1.55, ambientGain: 0.72, glassShadow: 0.3, hazeSun: [0.024, 0.012, 0.028], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
     assets: { sentryModel: true, heavyModel: true },
-    fog: { color: linearOf("#0b0d1c"), hex: "#0b0d1c", near: 115, far: 390, districtMix: 0.025, districtMetres: 120 },
+    fog: { color: linearOf("#0b0d1c"), hex: "#0b0d1c", near: 165, far: 540, districtMix: 0.025, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.55, seams: 0.6 },
     bloom: { intensity: 0.34, threshold: 1.18 },
     /* IC-09 split tone: teal shadows, amber highlights, cyber-neon contrast so the warm band stays the primary warm field */
     grade: { exposure: 1.05, contrast: 1.1, saturation: 1.12, temperature: -0.04, tint: 0.03, shadows: [0.91, 1.03, 1.08], highlights: [1.07, 1.0, 0.9] },
-    post: { ao: true, contactShadows: true, ssr: 0.68, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.022, vignette: 0.28, godRays: 0.32, lensFlare: 0.55 },
+    post: { ao: true, contactShadows: true, ssr: 0.68, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.022, vignette: 0.28, godRays: 0.06, lensFlare: 0.06 },
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true, menuHero: true },
     glow: { pools: 1, points: 2 },

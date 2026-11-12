@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-teleoperator/src/art/direction.ts",
-  "sourceSha256": "bcc159d55baf9d0245a7c298ef5aec32674d35667575889f20af02ab8209793a",
+  "sourceSha256": "f89cfe6d368f5c8419ba92848d53324d71444547d3bad79d9ce2a6f38d44403f",
   "id": "showcase-teleoperator",
   "genre": "racing",
   "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
@@ -58,15 +58,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "gridPassenger",
-        "triangles": 14313,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "sf-peninsula-ground",
@@ -610,6 +602,147 @@
         "node": "taxi-beacon-core",
         "emissiveIntensity": 2.4,
         "practical": true
+      },
+      {
+        "name": "commuter-coat",
+        "node": "commuter-pelvis-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "commuter-trousers",
+        "node": "commuter-pelvis-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "commuter-leather",
+        "node": "commuter-pelvis-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "commuter-brass",
+        "node": "commuter-pelvis-mesh material 8",
+        "practical": false
+      },
+      {
+        "name": "commuter-coat",
+        "node": "commuter-torso-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "commuter-sweater",
+        "node": "commuter-torso-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "commuter-leather",
+        "node": "commuter-torso-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "commuter-brass",
+        "node": "commuter-torso-mesh material 8",
+        "practical": false
+      },
+      {
+        "name": "commuter-leather",
+        "node": "commuter-bag-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "commuter-brass",
+        "node": "commuter-bag-mesh material 8",
+        "practical": false
+      },
+      {
+        "name": "commuter-skin",
+        "node": "commuter-head-mesh material 6",
+        "practical": false
+      },
+      {
+        "name": "commuter-hair",
+        "node": "commuter-head-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "commuter-coat",
+        "node": "commuter-arm-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "commuter-boot-upper",
+        "node": "commuter-arm-l-mesh material 4",
+        "practical": false
+      },
+      {
+        "name": "commuter-skin",
+        "node": "commuter-arm-l-mesh material 6",
+        "practical": false
+      },
+      {
+        "name": "commuter-phone-screen",
+        "node": "commuter-arm-l-mesh material 9",
+        "emissiveIntensity": 1.95,
+        "practical": true
+      },
+      {
+        "name": "commuter-coat",
+        "node": "commuter-arm-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "commuter-coat",
+        "node": "commuter-forearm-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "commuter-sweater",
+        "node": "commuter-forearm-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "commuter-skin",
+        "node": "commuter-forearm-r-mesh material 6",
+        "practical": false
+      },
+      {
+        "name": "commuter-trousers",
+        "node": "commuter-thigh-l material 2",
+        "practical": false
+      },
+      {
+        "name": "commuter-trousers",
+        "node": "commuter-shin-l material 2",
+        "practical": false
+      },
+      {
+        "name": "commuter-boot-upper",
+        "node": "commuter-shin-l material 4",
+        "practical": false
+      },
+      {
+        "name": "commuter-boot-sole",
+        "node": "commuter-shin-l material 5",
+        "practical": false
+      },
+      {
+        "name": "commuter-trousers",
+        "node": "commuter-thigh-r material 2",
+        "practical": false
+      },
+      {
+        "name": "commuter-trousers",
+        "node": "commuter-shin-r material 2",
+        "practical": false
+      },
+      {
+        "name": "commuter-boot-upper",
+        "node": "commuter-shin-r material 4",
+        "practical": false
+      },
+      {
+        "name": "commuter-boot-sole",
+        "node": "commuter-shin-r material 5",
+        "practical": false
       },
       {
         "name": "av-cruiser-pearl-white",
@@ -1649,16 +1782,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "character",
-        "assetKey": "gridPassenger",
-        "maxTriangles": 15000,
-        "minTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "collision",

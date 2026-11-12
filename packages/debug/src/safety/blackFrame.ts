@@ -241,8 +241,20 @@ function defaultProbe(): (canvas: HTMLCanvasElement) => ArrayLike<number> | unde
       if (ctx) ctx.imageSmoothingEnabled = false;
     }
     if (!ctx) return undefined;
+    ctx.clearRect?.(0, 0, PROBE_WIDTH, PROBE_HEIGHT);
     ctx.drawImage(canvas, 0, 0, PROBE_WIDTH, PROBE_HEIGHT);
-    return ctx.getImageData(0, 0, PROBE_WIDTH, PROBE_HEIGHT).data;
+    const data = ctx.getImageData(0, 0, PROBE_WIDTH, PROBE_HEIGHT).data;
+    // A WebGPU swapchain texture (or non-preserved WebGL drawing buffer) read outside the presentation
+    // task copies transparent zeros (alpha = 0 across every texel), whereas a real rendered black frame
+    // clears to opaque alpha = 255. Treat all-zero alpha as an unreadable post-present buffer, not black.
+    let hasOpaqueSample = false;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i]! > 0) {
+        hasOpaqueSample = true;
+        break;
+      }
+    }
+    return hasOpaqueSample ? data : undefined;
   };
 }
 

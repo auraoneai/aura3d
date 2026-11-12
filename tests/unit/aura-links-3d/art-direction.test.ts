@@ -55,11 +55,11 @@ describe("Aura Links art direction (GU47 WP-20, PRD §3.2)", () => {
     expect(direction.palette.primary.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("mounts ONLY the two rigged golfer GLBs and names every Links VFX preset (all static props procedural)", () => {
+  it("mounts zero external GLB models and names every Links VFX preset (all golfers and props 100% procedural)", () => {
     const mounted = mountedModelKeys();
-    expect(mounted).toEqual(["linksGolferAthleteMeshy", "links_golfer_player"]);
+    expect(mounted).toEqual([]);
     const contracted = direction.assets.map((a) => a.assetKey).sort();
-    expect(contracted).toEqual(["linksGolferAthleteMeshy", "links_golfer_player"]);
+    expect(contracted).toEqual([]);
     const kinds = new Set(direction.vfx.map((v) => v.kind));
     for (const id of LINKS_VFX_IDS) expect(kinds.has(id), id).toBe(true);
   });

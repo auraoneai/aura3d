@@ -1,9 +1,9 @@
 /**
- * Planted-foot run gait for the hero. The Meshy run clip plants a foot at about 3.3 m/s but the sim moves the kid at 14.5 m/s
- * (up to ~19 m/s boosted), so no clip speed-up can stop the slide. This module drives both legs by two-bone IK instead: each
+ * Planted-foot run gait for the hero. The base run cycle plants a foot at about 3.3 m/s but the sim moves the kid at 14.5 m/s
+ * (up to ~19 m/s boosted), so no clip speed-up can stop the slide. This module computes planted two-bone IK stride cadence: each
  * stance foot is pinned to a ground point while the hips travel over it, cadence follows ground speed, the swing foot returns on an
- * arc and the hips lean and dip. Output is a bone overlay (hips position+rotation, both legs) for `setAnimationPose`.
- * Pure TypeScript, no engine imports; the geometry comes from the hero skeleton (`legcycle.ts`, generated from the GLB).
+ * arc and the hips lean and dip.
+ * Pure TypeScript, no engine imports; rest chain dimensions come from `HERO_RIG` (`legcycle.ts`).
  */
 import { HERO_RIG, LEG_CLIPS, LEG_SAMPLES, type Q4 } from "./legcycle";
 import { CONTACT_PHASE } from "./locomotion";

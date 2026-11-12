@@ -12,8 +12,8 @@
     "test:browser": "playwright test tests/playable.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "5.5.3",
-    "@aura3d/assets": "5.5.3"
+    "@aura3d/engine": "5.5.4",
+    "@aura3d/assets": "5.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",

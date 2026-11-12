@@ -1,41 +1,99 @@
-import { existsSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { accessor, forward, nodeIndex, readGlb } from "../../../tools/aura-fc/glb.mjs";
+import {
+  buildArticulatedEnemyNode,
+  computeEnemyRigPose,
+  ENEMY_RIG_PARTS,
+  makeEnemyRigIds,
+  measureProceduralBounds,
+  type BunkerEnemyKind
+} from "../../../apps/showcase-bunker-zero/src/art/proceduralModels";
 import { ENEMY_FORWARD, ENEMY_TURN_RATE, enemyFacingError, nextEnemyYaw, simHeading } from "../../../apps/showcase-bunker-zero/src/enemy-facing";
 
-const ASSETS = resolve("apps/showcase-bunker-zero/public/aura-assets");
-const FILES: Record<string, string> = { guard: "bzGuardMeshy", gunner: "bzGunnerMeshy", boss: "bzWardenMeshy" };
-
-function glbPath(stem: string): string | null {
-  const f = readdirSync(ASSETS).find((n) => n.startsWith(`${stem}.`) && n.endsWith(".glb"));
-  return f ? resolve(ASSETS, f) : null;
+interface JsonSceneNode {
+  readonly kind?: string;
+  readonly runtime?: { readonly id?: string };
+  readonly material?: unknown;
+  readonly geometry?: { readonly positions?: ArrayLike<number> };
+  readonly children?: readonly JsonSceneNode[];
 }
 
-/** +1 when the toes point toward +Z of the model, -1 toward -Z (lowest vertices against the foot bones of the rest pose). */
-function toeDirection(path: string): number {
-  const glb = readGlb(path);
-  const names: string[] = nodeIndex(glb).names;
-  const rest = glb.json.nodes.map((n: any) => ({ t: n.translation ?? [0, 0, 0], r: n.rotation ?? [0, 0, 0, 1] }));
-  const fk = forward(glb, rest);
-  const footZ = (fk.pos[names.indexOf("LeftFoot")][2] + fk.pos[names.indexOf("RightFoot")][2]) / 2;
-  const pos = accessor(glb, glb.json.meshes[0].primitives[0].attributes.POSITION);
-  let ymin = Infinity, ymax = -Infinity;
-  for (let i = 0; i < pos.count; i++) { ymin = Math.min(ymin, pos.data[i * 3 + 1]); ymax = Math.max(ymax, pos.data[i * 3 + 1]); }
-  let sum = 0, n = 0;
-  for (let i = 0; i < pos.count; i++) if (pos.data[i * 3 + 1] < ymin + 0.06 * (ymax - ymin)) { sum += pos.data[i * 3 + 2]; n++; }
-  return Math.sign(sum / n - footZ);
+function collectRuntimeIds(node: JsonSceneNode, out = new Set<string>()): Set<string> {
+  if (node.runtime?.id) out.add(node.runtime.id);
+  for (const child of node.children ?? []) collectRuntimeIds(child, out);
+  return out;
 }
 
-describe("Bunker Zero enemy facing", () => {
-  for (const [kind, stem] of Object.entries(FILES)) {
-    it(`${kind}: the configured forward axis matches the shipped GLB's toes`, () => {
-      const p = glbPath(stem);
-      if (!p || !existsSync(p)) return; // GLB not staged (slim context)
-      const dir = toeDirection(p);
-      expect(ENEMY_FORWARD[kind as keyof typeof ENEMY_FORWARD]).toBe(dir > 0 ? "+z" : "-z");
+function countMeshParts(node: JsonSceneNode): number {
+  let count = node.geometry?.positions && node.material ? 1 : 0;
+  for (const child of node.children ?? []) count += countMeshParts(child);
+  return count;
+}
+
+const EXPECTED_HEIGHT_RANGE: Record<BunkerEnemyKind, readonly [number, number]> = {
+  guard: [1.8, 2.05],
+  dog: [0.85, 1.15],
+  gunner: [1.95, 2.22],
+  boss: [2.9, 3.25]
+};
+
+describe("Bunker Zero articulated enemy rigs & facing", () => {
+  for (const kind of ["guard", "dog", "gunner", "boss"] as const) {
+    it(`${kind}: grounded at minY = 0, faces +Z, and exposes all 9 hierarchical group pivots`, () => {
+      const stem = `test-${kind}`;
+      const expectedIds = makeEnemyRigIds(stem);
+      const builder = buildArticulatedEnemyNode(kind, stem, undefined, stem, false);
+      const json = builder.toJSON() as unknown as JsonSceneNode;
+      const bounds = measureProceduralBounds(builder);
+
+      expect(ENEMY_FORWARD[kind]).toBe("+z");
+      // Grounded cleanly on boot soles / mechanical paws at y = 0
+      expect(Math.abs(bounds.minY)).toBeLessThan(0.005);
+      const [minH, maxH] = EXPECTED_HEIGHT_RANGE[kind];
+      const height = bounds.maxY - bounds.minY;
+      expect(height).toBeGreaterThanOrEqual(minH);
+      expect(height).toBeLessThanOrEqual(maxH);
+      // Forward muzzles, visors and jaws extend farther toward +Z than the dorsal pack extends toward -Z
+      expect(bounds.maxZ).toBeGreaterThan(Math.abs(bounds.minZ));
+
+      const runtimeIds = collectRuntimeIds(json);
+      for (const part of ENEMY_RIG_PARTS) {
+        expect(runtimeIds.has(expectedIds[part]), `${kind} missing ${part}`).toBe(true);
+      }
+      expect(countMeshParts(json)).toBeGreaterThanOrEqual(12);
     });
   }
+
+  it("computes deterministic, zero-drift ZYX joint poses across patrol, chase, attack, pain and death", () => {
+    for (const kind of ["guard", "dog", "gunner", "boss"] as const) {
+      const patrolA = computeEnemyRigPose({
+        kind, state: "patrol", time: 1.35, stateT: 0.8, painT: 0, deathT: 0, phaseSeed: 2.1
+      });
+      const patrolB = computeEnemyRigPose({
+        kind, state: "patrol", time: 1.35, stateT: 0.8, painT: 0, deathT: 0, phaseSeed: 2.1
+      });
+      expect(patrolA).toEqual(patrolB);
+      // Opposite stride phases on left/right legs during patrol
+      expect(Math.sign(patrolA.legLRot[0])).toBe(-Math.sign(patrolA.legRRot[0]));
+
+      const deadPose = computeEnemyRigPose({
+        kind, state: "dead", time: 4.0, stateT: 1.2, painT: 0, deathT: 0.6, phaseSeed: 2.1
+      });
+      // Collapsed onto the floor without sinking below y = 0
+      expect(deadPose.rigPos[1]).toBeGreaterThanOrEqual(0.12);
+      expect(deadPose.rigPos[1]).toBeLessThan(patrolA.rigPos[1]);
+    }
+
+    // Heavy Gunner spins rotary barrels around +Z during attack
+    const gunnerAtk1 = computeEnemyRigPose({ kind: "gunner", state: "attack", time: 1.0, stateT: 0.2, painT: 0, deathT: 0 });
+    const gunnerAtk2 = computeEnemyRigPose({ kind: "gunner", state: "attack", time: 1.2, stateT: 0.4, painT: 0, deathT: 0 });
+    expect(gunnerAtk2.specRot[2]).toBeGreaterThan(gunnerAtk1.specRot[2]);
+
+    // Robo-Hound lunges forward (+Z) and opens articulated jaw during attack
+    const houndIdle = computeEnemyRigPose({ kind: "dog", state: "idle", time: 1.0, stateT: 0.2, painT: 0, deathT: 0 });
+    const houndLunge = computeEnemyRigPose({ kind: "dog", state: "attack", time: 1.0, stateT: 0.22, painT: 0, deathT: 0 });
+    expect(houndLunge.rigPos[2]).toBeGreaterThan(0.15);
+    expect(houndLunge.specRot[0]).toBeGreaterThan(houndIdle.specRot[0] + 0.3);
+  });
 
   it("a drawn enemy faces the player for every compass bearing", () => {
     for (const kind of Object.keys(ENEMY_FORWARD) as Array<keyof typeof ENEMY_FORWARD>) {

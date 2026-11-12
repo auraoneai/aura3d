@@ -119,7 +119,7 @@ export const ROOM = {
 /** Phase 3 (4.7.1): the board sits a little smaller in frame so the bench and the room show around it. */
 export const FRAME_PULL_BACK = 1.06;
 
-export const MACRO_DOF = { fStop: 8, focalLength: 50, maxBlur: 0.8 } as const;
+export const MACRO_DOF = { fStop: 16, focalLength: 50, maxBlur: 0 } as const;
 /** Camera-to-board-centre distance of the base rig ([0, 17.2, 13.8] -> origin), before the aspect pull-back. */
 export const BASE_FOCUS_DISTANCE = Math.hypot(17.2, 13.8);
 
@@ -160,8 +160,8 @@ export interface BoardLookRow {
   /** Desk lamp: colour, intensity (candela-like, inverse square) and the colour temperature it stands for. */
   readonly lamp: { readonly color: string; readonly intensity: number; readonly temperatureK: number };
   readonly hdri: { readonly id: typeof LOOK_HDRI.id; readonly intensity: number; readonly rotationDeg: number };
-  /** Far-field arcade depth cue (`near >= 60, far >= 220`, zero milky haze over the maze) and deep dark clear colour. */
-  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly density: number };
+  /** Far-field arcade depth cue (`near >= 140, far >= 420, maxOpacity <= 0.28`, zero milky haze over the maze) and deep dark clear colour. */
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly maxOpacity: number; readonly density: number };
   readonly background: string;
   /** Per-board grade over the lens stack (DD47-P3); `lut` is the board's .cube (served path). */
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number; readonly lut: string };
@@ -184,7 +184,7 @@ const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> 
     ...rest,
     timeOfDay: "late night",
     hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.38, rotationDeg: 205 },
-    fog: { color: ROOM_FOG, near: 72, far: 240, density: fogDensity ?? 0.0012 },
+    fog: { color: ROOM_FOG, near: 160, far: 480, maxOpacity: 0.24, density: fogDensity ?? 0.0006 },
     background: ROOM_FOG
   };
 };

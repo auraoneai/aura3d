@@ -393,12 +393,13 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
     effects.fog({
       name: "td fog",
+      mode: "linear",
       color: look.fog.color,
       density: look.fog.density,
-      near: 68,
-      far: 340,
-      maxOpacity: 0.38,
-      intensity: 0.3,
+      near: 140,
+      far: 460,
+      maxOpacity: 0.32,
+      intensity: 0.22,
       affectsBackground: false
     }),
     effects.colorGrade({

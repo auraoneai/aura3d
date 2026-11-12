@@ -20,7 +20,7 @@ import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel.js";
-import { assets, BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
+import { BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
 import { heroCapeMaterial } from "./game/diorama.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";
 import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
@@ -319,6 +319,8 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
   const previousWorld = mountedWorld;
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
   resetCameraRig();
+  pipStridePhase = 0;
+  pipSpinTimer = 0;
   impactRig.reset();
   simLoop.resetAccumulator();
   inputLatch.clear();
@@ -463,7 +465,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
   const fx = (): void => presentation.event(e, built, [run.player.x, run.player.y, run.player.z]);
   switch (e.kind) {
     case "jump": cue("whoosh"); juice("jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.08, fovKickDeg: 1.2 }); fx(); break;
-    case "double-jump": cue("whoosh"); juice("double-jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.1, fovKickDeg: 1.6 }); fx(); break;
+    case "double-jump": pipSpinTimer = 0.42; cue("whoosh"); juice("double-jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.1, fovKickDeg: 1.6 }); fx(); break;
     case "land": juice("land"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.14, fovKickDeg: -0.9 }); fx(); break;
     case "glide-start": cue("whoosh"); break;
     case "dive": cue("whoosh"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.12, fovKickDeg: 2.0 }); break;
@@ -478,7 +480,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       impactRig.trigger({ freezeSeconds: 0.038, trauma: 0.42, fovKickDeg: -1.8 });
       cue("bumper");
       if (e.kind === "boss-contact" && run.boss && run.boss.phase !== "down") {
-        node(nodeName.boss)?.setAnimation({ clip: BOSS_CLIPS.attack, loop: false });
+        node(nodeName.boss)?.setAnimation?.({ clip: BOSS_CLIPS.attack, loop: false });
         run.bossClip = "attack";
         run.bossFxT = 0.9;
       }
@@ -562,7 +564,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       run.bossHp = run.boss.hp;
       hud.setBoss(run.bossHp, 3, true);
       if (run.boss.hp > 0) {
-        node(nodeName.boss)?.setAnimation({ clip: BOSS_CLIPS.hurt, loop: false });
+        node(nodeName.boss)?.setAnimation?.({ clip: BOSS_CLIPS.hurt, loop: false });
         run.bossClip = "hurt";
         run.bossFxT = 0.7;
       }
@@ -906,6 +908,190 @@ function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: 
   return best;
 }
 
+let pipStridePhase = 0;
+let pipSpinTimer = 0;
+
+function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: number): void {
+  const torso = node(`${nodeName.hero}:torso`);
+  const head = node(`${nodeName.hero}:head`);
+  const earL = node(`${nodeName.hero}:ear-l`);
+  const earR = node(`${nodeName.hero}:ear-r`);
+  const armL = node(`${nodeName.hero}:arm-l`);
+  const armR = node(`${nodeName.hero}:arm-r`);
+  const footL = node(`${nodeName.hero}:foot-l`);
+  const footR = node(`${nodeName.hero}:foot-r`);
+  const tail = node(`${nodeName.hero}:tail`);
+  if (!torso) return;
+
+  const t = run.worldClock;
+  if (dt > 0) {
+    pipSpinTimer = Math.max(0, pipSpinTimer - dt);
+    const cadence = key === "run" ? 3.2 + planar * 2.1 : key === "walk" || key === "swim" ? 2.4 + planar * 1.6 : 0;
+    pipStridePhase = cadence > 0 ? (pipStridePhase + dt * cadence) % (Math.PI * 2) : pipStridePhase * Math.exp(-8 * dt);
+  }
+
+  const s = Math.sin(pipStridePhase);
+  const c = Math.cos(pipStridePhase * 2);
+  const idleBreath = Math.sin(t * 2.8);
+  const earFlutter = Math.sin(t * (key === "glide" ? 14 : 4.2));
+  const spinProgress = pipSpinTimer > 0 ? 1 - pipSpinTimer / 0.42 : 0;
+  const spinYaw = spinProgress > 0 ? spinProgress * Math.PI * 2 : 0;
+
+  if (spinYaw !== 0) {
+    node(nodeName.hero)?.setRotation(0, p.yaw + spinYaw, 0);
+  }
+
+  let bobY = 0;
+  let leanX = 0;
+  let rollZ = 0;
+  let armPitchL = 0;
+  let armPitchR = 0;
+  let armSplay = 0.14;
+  let legPitchL = 0;
+  let legPitchR = 0;
+  let earDrop = 0;
+  let tailPitch = 0;
+  let tailWag = Math.sin(t * 4.6) * 0.18;
+
+  switch (key) {
+    case "run":
+      bobY = Math.max(0, -c) * 0.055;
+      leanX = Math.min(0.24, 0.08 + planar * 0.025);
+      rollZ = -s * 0.06;
+      armPitchL = s * 0.85;
+      armPitchR = -s * 0.85;
+      legPitchL = -s * 0.78;
+      legPitchR = s * 0.78;
+      earDrop = -0.18 + Math.sin(pipStridePhase * 2) * 0.08;
+      tailPitch = -0.22 + Math.cos(pipStridePhase * 2) * 0.1;
+      tailWag = Math.sin(pipStridePhase) * 0.34;
+      break;
+    case "walk":
+      bobY = Math.max(0, -c) * 0.032;
+      leanX = 0.06;
+      rollZ = -s * 0.035;
+      armPitchL = s * 0.52;
+      armPitchR = -s * 0.52;
+      legPitchL = -s * 0.48;
+      legPitchR = s * 0.48;
+      earDrop = -0.06 + Math.sin(pipStridePhase * 2) * 0.05;
+      tailWag = Math.sin(pipStridePhase) * 0.24;
+      break;
+    case "swim":
+      bobY = Math.sin(t * 4.5) * 0.04 - 0.08;
+      leanX = 0.32;
+      armPitchL = Math.sin(t * 6.5) * 0.95 - 0.35;
+      armPitchR = -Math.sin(t * 6.5) * 0.95 - 0.35;
+      armSplay = 0.38;
+      legPitchL = -Math.sin(t * 6.5) * 0.45 + 0.25;
+      legPitchR = Math.sin(t * 6.5) * 0.45 + 0.25;
+      tailWag = Math.sin(t * 7.5) * 0.42;
+      break;
+    case "jump":
+    case "air": {
+      const rising = Math.max(-1, Math.min(1, p.vy * 0.16));
+      bobY = rising * 0.04;
+      leanX = -rising * 0.14 + Math.min(0.18, planar * 0.02);
+      armPitchL = -0.65 - rising * 0.55;
+      armPitchR = -0.65 - rising * 0.55;
+      armSplay = 0.42;
+      legPitchL = rising > 0 ? 0.36 : -0.24;
+      legPitchR = rising > 0 ? -0.22 : 0.28;
+      earDrop = -0.26 + rising * 0.18 + earFlutter * 0.05;
+      tailPitch = -0.32 * (1 - rising);
+      break;
+    }
+    case "glide":
+      bobY = Math.sin(t * 5.2) * 0.025;
+      leanX = 0.36;
+      armPitchL = -0.18;
+      armPitchR = -0.18;
+      armSplay = 1.18 + Math.sin(t * 9) * 0.08;
+      legPitchL = 0.34;
+      legPitchR = 0.34;
+      earDrop = -0.38 + earFlutter * 0.1;
+      tailPitch = -0.28;
+      tailWag = Math.sin(t * 11) * 0.28;
+      break;
+    case "dive":
+      leanX = 0.58;
+      armPitchL = -1.15;
+      armPitchR = -1.15;
+      armSplay = 0.24;
+      legPitchL = 0.52;
+      legPitchR = 0.52;
+      earDrop = -0.45;
+      tailPitch = -0.38;
+      break;
+    case "pound":
+      bobY = -0.07;
+      leanX = 0.22;
+      armPitchL = 0.48;
+      armPitchR = 0.48;
+      armSplay = 0.55;
+      legPitchL = -0.58;
+      legPitchR = -0.58;
+      earDrop = -0.22;
+      break;
+    case "hurt":
+      bobY = 0.03;
+      leanX = -0.28;
+      rollZ = Math.sin(t * 24) * 0.12;
+      armPitchL = -0.85;
+      armPitchR = -0.85;
+      armSplay = 0.65;
+      earDrop = -0.34;
+      break;
+    case "dead":
+      bobY = -0.18;
+      leanX = 0.65;
+      armSplay = 0.75;
+      legPitchL = 0.4;
+      legPitchR = 0.4;
+      earDrop = -0.52;
+      tailWag = 0;
+      break;
+    case "celebrate": {
+      const hop = Math.abs(Math.sin(t * 6.4));
+      bobY = hop * 0.14;
+      rollZ = Math.sin(t * 6.4) * 0.1;
+      armPitchL = -2.25 + Math.sin(t * 12.8) * 0.22;
+      armPitchR = -2.25 - Math.sin(t * 12.8) * 0.22;
+      armSplay = 0.45;
+      legPitchL = hop * 0.35;
+      legPitchR = -hop * 0.25;
+      earDrop = 0.12 * hop;
+      tailWag = Math.sin(t * 10) * 0.48;
+      break;
+    }
+    default:
+      bobY = idleBreath * 0.014;
+      armPitchL = idleBreath * 0.06;
+      armPitchR = -idleBreath * 0.06;
+      earDrop = earFlutter * 0.04;
+      break;
+  }
+
+  torso.setPosition(0, 0.44 + bobY, 0);
+  torso.setRotation(leanX, 0, rollZ);
+  head?.setPosition(0, 0.76 + bobY + Math.max(0, idleBreath) * 0.008, leanX * 0.22);
+  head?.setRotation(leanX * 0.55, tailWag * 0.18, -rollZ * 0.6);
+  earL?.setPosition(-0.155, 0.99 + bobY, -0.02 + leanX * 0.24);
+  earL?.setRotation(earDrop, 0, 0.08 + earFlutter * 0.05);
+  earR?.setPosition(0.155, 0.99 + bobY, -0.02 + leanX * 0.24);
+  earR?.setRotation(earDrop, 0, -0.08 - earFlutter * 0.05);
+  armL?.setPosition(-0.215, 0.65 + bobY, leanX * 0.14);
+  armL?.setRotation(armPitchL, 0, armSplay);
+  armR?.setPosition(0.215, 0.65 + bobY, leanX * 0.14);
+  armR?.setRotation(armPitchR, 0, -armSplay);
+  footL?.setPosition(-0.105, 0.30 + bobY * 0.35, 0);
+  footL?.setRotation(legPitchL, 0, 0);
+  footR?.setPosition(0.105, 0.30 + bobY * 0.35, 0);
+  footR?.setRotation(legPitchR, 0, 0);
+  tail?.setPosition(0, 0.35 + bobY * 0.7, -0.16 - leanX * 0.08);
+  tail?.setRotation(tailPitch, tailWag, 0);
+}
+
 function driveAnimation(p: PlayerState, dt: number): void {
   const hero = node(nodeName.hero);
   if (!hero) return;
@@ -923,29 +1109,27 @@ function driveAnimation(p: PlayerState, dt: number): void {
       : key === "walk" ? { clip: PIP_CLIPS.walk, speed: 1.35 }
       : key === "run" ? { clip: PIP_CLIPS.run, speed: 1.35 }
       : CLIP_FOR[key] ?? { clip: PIP_CLIPS.idle, speed: 1.15 };
-    hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
+    hero.setAnimation?.({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
+  animateProceduralPip(p, key, planar, dt);
 
-  // Studio cape tracks the 1.25 m hero: shoulder-pinned wool-felt mantle in diorama
-  // mode (flaring into a wing canopy while gliding), legacy back panel in original mode.
+  // Studio cape is strictly opt-in (`save.studio.capeEnabled`, false by default) so
+  // nothing sticks out of Pip during normal play. When enabled in Studio, it drapes
+  // cleanly behind Pip's back (`-Z` in local space) using yaw-only world rotation.
   const built = ensureWorld(run.world).built;
   const worldDiorama = built.presentation.mode === "diorama";
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
-  const moving = Math.hypot(p.vx, p.vz) > 0.4 || !p.grounded;
-  cape?.setVisible(p.state === "glide" || (moving && p.state !== "dead"));
+  cape?.setVisible(Boolean(save.studio.capeEnabled) && p.state !== "dead");
   const gliding = p.state === "glide";
   if (worldDiorama) {
-    const collarBack = gliding ? 0.08 : 0.06;
-    const collarY = p.y + (gliding ? 0.96 : 0.78);
-    const dynamicPitch = gliding
-      ? 1.18
-      : Math.max(0.14, Math.min(0.95, 0.24 + planar * 0.085 - p.vy * 0.048));
+    const collarBack = gliding ? 0.14 : 0.12;
+    const collarY = p.y + (gliding ? 0.76 : 0.71);
     cape?.setPosition(p.x - fwdX * collarBack, collarY, p.z - fwdZ * collarBack);
-    cape?.setRotation(dynamicPitch, p.yaw, 0);
+    cape?.setRotation(0, p.yaw, 0);
   } else {
-    cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.96 : 0.42), p.z - fwdZ * (gliding ? 0.22 : 0.2));
-    cape?.setRotation(gliding ? 1.1 : 0.2, p.yaw, 0);
+    cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.68 : 0.52), p.z - fwdZ * (gliding ? 0.22 : 0.2));
+    cape?.setRotation(0, p.yaw, 0);
   }
 
   // Smooth third-person follow camera behind Pip looking down the platformer
@@ -1031,10 +1215,11 @@ function showAtlas(show: boolean): void {
 
 function showStudio(show: boolean): void {
   const render = (): void => {
-    hud.renderStudio(run.save, (which, color) => {
-      save = saves.commit({ ...save, studio: { ...save.studio, [which]: color } });
+    hud.renderStudio(run.save, (which, color, enabled = true) => {
+      save = saves.commit({ ...save, studio: { ...save.studio, [which]: color, capeEnabled: enabled } });
       run.save = save;
       applyStudioColors();
+      driveAnimation(drawnPlayer, 0);
       render();
     });
   };
@@ -1236,12 +1421,43 @@ function simStep(seconds: number): void {
       bossNode.setRotation(0, run.boss.yaw, 0);
       const squash = run.boss.phase === "vulnerable" ? 0.55 : run.boss.phase === "windup" ? 1.12 : 1;
       bossNode.setScale([1, squash, 1]);
-      // Drive the rigged clips: phase map unless a transient attack/hit is playing.
+      // Drive procedural Brambleback limbs across dormant/roll/windup/vulnerable/down + transient attack/hurt.
       run.bossFxT = Math.max(0, run.bossFxT - seconds);
       if (run.bossFxT <= 0 && run.boss.phase !== run.bossClip) {
         run.bossClip = run.boss.phase;
         const clipSpec = BOSS_CLIP_FOR[run.boss.phase];
-        bossNode.setAnimation({ clip: clipSpec.clip, loop: clipSpec.loop ?? true });
+        bossNode.setAnimation?.({ clip: clipSpec.clip, loop: clipSpec.loop ?? true });
+      }
+      const bBody = node(`${nodeName.boss}:body`);
+      const bArmL = node(`${nodeName.boss}:arm-l`);
+      const bArmR = node(`${nodeName.boss}:arm-r`);
+      const bLegL = node(`${nodeName.boss}:leg-l`);
+      const bLegR = node(`${nodeName.boss}:leg-r`);
+      const bt = run.worldClock;
+      const activeMode = run.bossFxT > 0 ? run.bossClip : run.boss.phase;
+      if (bBody) {
+        const stomp = Math.sin(bt * (activeMode === "roll" ? 11 : 4.2));
+        const bodyPitch =
+          activeMode === "roll" ? 0.38 + Math.sin(bt * 22) * 0.08
+          : activeMode === "windup" ? -0.28 + Math.sin(bt * 16) * 0.06
+          : activeMode === "attack" ? 0.45
+          : activeMode === "hurt" || activeMode === "vulnerable" ? -0.18
+          : activeMode === "down" ? 0.55
+          : Math.sin(bt * 2.1) * 0.04;
+        const bodyRoll = activeMode === "hurt" ? Math.sin(bt * 28) * 0.16 : activeMode === "roll" ? stomp * 0.08 : 0;
+        bBody.setPosition(0, 1.08 + Math.abs(stomp) * (activeMode === "roll" ? 0.08 : 0.025), 0);
+        bBody.setRotation(bodyPitch, 0, bodyRoll);
+        const armSwing =
+          activeMode === "windup" ? -1.45 + Math.sin(bt * 18) * 0.18
+          : activeMode === "attack" ? 0.95
+          : activeMode === "roll" ? stomp * 0.85
+          : activeMode === "vulnerable" || activeMode === "down" ? 0.52
+          : Math.sin(bt * 2.1) * 0.12;
+        bArmL?.setRotation(armSwing, 0, 0.22);
+        bArmR?.setRotation(activeMode === "roll" ? -armSwing : armSwing, 0, -0.22);
+        const legStride = activeMode === "roll" ? stomp * 0.68 : activeMode === "windup" ? Math.sin(bt * 12) * 0.24 : 0;
+        bLegL?.setRotation(-legStride, 0, 0);
+        bLegR?.setRotation(legStride, 0, 0);
       }
     }
     const spikesOut = run.boss.phase === "roll" || run.boss.phase === "windup" || run.boss.phase === "dormant";
@@ -1437,8 +1653,8 @@ function publishEvidence(force = false): void {
       notes: cert.notes
     },
     save: { demo: saves.demo, worldsDone: Object.keys(save.completed).length, academyDone: save.academyDone, doubleJump: save.doubleJump, studio: save.studio },
-    hero: { assetId: "pipsPip", hash: assets.pip.hash, clips: Object.values(PIP_CLIPS) },
-    bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null,
+    hero: { assetId: "procedural-pip", procedural: true, clips: Object.values(PIP_CLIPS) },
+    bossAsset: run.boss ? { assetId: "procedural-brambleback", procedural: true, clips: Object.values(BOSS_CLIPS) } : null,
     // GU47 WP-16: look mode, per-world look facts and the runtime presentation counters.
     diorama: {
       look: built.presentation.mode,

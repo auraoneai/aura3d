@@ -371,10 +371,24 @@ export function createProductionRuntimePostprocess(
     });
     const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution, attach?.canvas, runtimeQuality?.renderScale);
     fieldDiagnostics.push(...pipelineResult.diagnostics);
+    // On the v2 route, `pipeline.outputColorSpace` owns canvas color-space
+    // negotiation (`webgpuOutputDefaults` / `executePostGraphWebGL2`). Leaving
+    // `outputColorSpace: "srgb"` on `options.toneMapping` when `display-p3` is
+    // requested contradicts `toneMappingDefaults.outputColorSpace` on WebGPU
+    // (`WEBGPU_OUTPUT_COLOR_SPACE_UNSUPPORTED`).
+    const omitLegacyToneSpace = pipelineResult.options.outputColorSpace === "display-p3"
+      && options.toneMapping !== undefined && options.toneMapping !== false;
+    const v2ToneMapping = omitLegacyToneSpace
+      ? (() => {
+        const { outputColorSpace: _legacySpace, ...rest } = options.toneMapping as Exclude<typeof options.toneMapping, false | undefined>;
+        return rest;
+      })()
+      : options.toneMapping;
     // The fields are readonly, so the v2 additions come in as a rebuilt
     // object — flag-off keeps the legacy bag untouched (byte-equal).
     options = {
       ...options,
+      ...(omitLegacyToneSpace ? { toneMapping: v2ToneMapping } : {}),
       ...(!tierResolution.ssr.enabled ? { ssr: undefined } : {}),
       ...(!tierResolution.dof.enabled ? { depthOfField: undefined } : {}),
       ...(!tierResolution.motionBlur.enabled ? { motionBlur: undefined } : {}),

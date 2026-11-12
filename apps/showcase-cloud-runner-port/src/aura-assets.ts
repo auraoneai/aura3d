@@ -1,7 +1,6 @@
-// Cumulus Dash route-local typed assets (WP-29): static generated set-piece GLBs (storm towers and cottage)
-// have been replaced with sculpted multi-material procedural assemblies in
-// examples/kid-goku-beyond-the-clouds-port/art/proceduralModels.ts.
-// Only the rigged runner character (MESHY.hero, skins=1) remains mounted.
+// Cumulus Dash route-local typed assets: all hero, creature, prop, landmark, cottage, and cloud-tower models
+// are 100% sculpted multi-material @aura3d/engine procedural assemblies in
+// examples/kid-goku-beyond-the-clouds-port/art/proceduralModels.ts (zero external GLB assets).
 import { defineAuraAssets, type AuraAssetDefinition } from "@aura3d/engine";
 
 const definitions = {} satisfies Record<string, AuraAssetDefinition>;

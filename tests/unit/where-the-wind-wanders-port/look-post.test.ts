@@ -1,46 +1,91 @@
 import { describe, expect, it } from "vitest";
-import { buildWorld, bellLightIntensity } from "../../../examples/where-the-wind-wanders-port/world";
+import { buildWorld, bellLightIntensity, paintSpec, propSpec, shaftPatch, SHAFT_INTENSITY } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAPER_GLSL, paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass";
-import { paintSpec, propSpec, shaftPatch, SHAFT_INTENSITY } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAINT_FRAGMENT, PROP_FRAGMENT } from "../../../examples/where-the-wind-wanders-port/shaders";
 import { DAYLIGHT_KEYS } from "../../../examples/where-the-wind-wanders-port/daylight";
+import { BELLKEEPER_JOINT_IDS } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
 
-interface Node { readonly kind?: string; readonly effect?: string; readonly saturation?: number; readonly contrast?: number; readonly intensity?: number; readonly postAuthored?: readonly string[]; readonly children?: readonly Node[] }
+interface Node {
+  readonly kind?: string;
+  readonly name?: string;
+  readonly effect?: string;
+  readonly mode?: string;
+  readonly near?: number;
+  readonly far?: number;
+  readonly maxOpacity?: number;
+  readonly saturation?: number;
+  readonly contrast?: number;
+  readonly intensity?: number;
+  readonly rotationOrder?: string;
+  readonly postAuthored?: readonly string[];
+  readonly material?: { metallic?: number; sheen?: number };
+  readonly materials?: readonly { metallic?: number; sheen?: number }[];
+  readonly children?: readonly Node[];
+}
+
+const sceneNodesCache = new Map<string, readonly Node[]>();
+const sceneNodesOf = (options: Parameters<typeof buildWorld>[0] = {}): readonly Node[] => {
+  const key = JSON.stringify({
+    density: options.density ?? 0.15,
+    look: options.look ?? "gu47",
+    daylightKey: options.daylightKey ?? null,
+    quality: options.quality ?? "high",
+    title: Boolean(options.titleVisible?.())
+  });
+  let cached = sceneNodesCache.get(key);
+  if (!cached) {
+    cached = (buildWorld({ density: 0.15, ...options }).scene.toJSON() as unknown as { nodes: readonly Node[] }).nodes;
+    sceneNodesCache.set(key, cached);
+  }
+  return cached;
+};
+
 const effectsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
   const out: Node[] = [];
   const walk = (n: Node): void => { if (n.kind === "effect") out.push(n); (n.children ?? []).forEach(walk); };
-  (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly Node[] }).nodes.forEach(walk);
+  sceneNodesOf(options).forEach(walk);
   return out;
 };
 
-const modelsOf = (options: Parameters<typeof buildWorld>[0]): { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number; sheen?: number }[] }[] => {
-  const out: { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number; sheen?: number }[] }[] = [];
-  const walk = (n: Node & { name?: string }): void => { if (n.kind === "model") out.push(n as never); (n.children ?? []).forEach(walk); };
-  (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly Node[] }).nodes.forEach(walk);
+const modelsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
+  const out: Node[] = [];
+  const walk = (n: Node): void => { if (n.kind === "model") out.push(n); (n.children ?? []).forEach(walk); };
+  sceneNodesOf(options).forEach(walk);
   return out;
 };
 
-const findNamedNode = (options: Parameters<typeof buildWorld>[0], targetName: string): (Node & { name?: string; material?: { metallic?: number } }) | undefined => {
-  let hit: (Node & { name?: string; material?: { metallic?: number } }) | undefined;
-  const walk = (n: Node & { name?: string; material?: { metallic?: number } }): void => {
+const findNamedNode = (options: Parameters<typeof buildWorld>[0], targetName: string): Node | undefined => {
+  let hit: Node | undefined;
+  const walk = (n: Node): void => {
     if (n.name === targetName) hit = n;
     (n.children ?? []).forEach(walk);
   };
-  (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly (Node & { name?: string })[] }).nodes.forEach(walk);
+  sceneNodesOf(options).forEach(walk);
   return hit;
 };
 
-describe("where-the-wind-wanders-port procedural bronze bell & rigged hero sheen (WW47-M1 / WP-27)", () => {
-  it("keeps only the rigged hero GLB with wool-sheen overrides (no texture replacement) and sculpts a metallic bronze bell", () => {
-    const models = modelsOf({});
-    expect(models.map((m) => m.name)).toEqual(["hero"]);
-    expect(models[0]?.materialOverrides?.[0]?.sheen).toBeGreaterThan(0.4);
-    for (const m of models) for (const o of m.materialOverrides ?? []) expect(o.replaceTextures).not.toBe(true);
-    expect(modelsOf({ look: "original" }).every((m) => m.materialOverrides === undefined)).toBe(true);
+describe("where-the-wind-wanders-port zero-GLB procedural Bellkeeper & sanctuary bell (WW47-M1)", () => {
+  it("mounts zero external GLB models in both GU47 and original looks and sculpts the articulated multi-material Bellkeeper and bronze bell", () => {
+    expect(modelsOf({})).toEqual([]);
+    expect(modelsOf({ look: "original" })).toEqual([]);
+
+    const heroGroup = findNamedNode({}, "hero");
+    expect(heroGroup?.kind).toBe("group");
+    for (const jointName of BELLKEEPER_JOINT_IDS) {
+      const joint = findNamedNode({}, jointName);
+      expect(joint?.kind).toBe("group");
+    }
+    const torsoMesh = findNamedNode({}, "hero-torso-mesh");
+    const torsoSheens = (torsoMesh?.children ?? []).map((c) => c.material?.sheen ?? 0);
+    expect(Math.max(...torsoSheens)).toBeGreaterThan(0.6);
+
+    const chimeMesh = findNamedNode({}, "hero-staff-chime-mesh");
+    const chimeMetals = (chimeMesh?.children ?? []).map((c) => c.material?.metallic ?? 0);
+    expect(Math.max(...chimeMetals)).toBeGreaterThanOrEqual(0.9);
 
     const bellGroup = findNamedNode({}, "belltower-bell");
     expect(bellGroup?.kind).toBe("group");
-    const bellChildMetals = (bellGroup?.children ?? []).map((c) => (c as { material?: { metallic?: number } }).material?.metallic ?? 0);
+    const bellChildMetals = (bellGroup?.children ?? []).map((c) => c.material?.metallic ?? 0);
     expect(Math.max(...bellChildMetals)).toBeGreaterThanOrEqual(0.9);
   });
 });
@@ -67,20 +112,31 @@ describe("where-the-wind-wanders-port golden shafts per key (WW47-P2)", () => {
   });
 });
 
-describe("where-the-wind-wanders-port post (WW47-P1..P3)", () => {
-  it("GU47 grade: the gouache palette at dusk and night, the clean daylight post by day; bloom authors no radius", () => {
+describe("where-the-wind-wanders-port crisp distance fog & zero blur (WW47-P1..P3)", () => {
+  it("uses crisp linear distance fog (near >= 155, far >= 480, maxOpacity <= 0.24) and keeps depthOfField, motion-blur, and cinematic-film disabled", () => {
     const dusk = effectsOf({ daylightKey: 4 });
     const grade = dusk.find((e) => e.effect === "color-grade")!;
     expect(grade.saturation).toBe(1.14);
     expect(grade.contrast).toBe(1.1);
     expect(dusk.find((e) => e.effect === "vignette")!.intensity).toBe(0.16);
+
     const fx = effectsOf({});
+    const fog = fx.find((e) => e.effect === "fog")!;
+    expect(fog.mode).toBe("linear");
+    expect(fog.near).toBeGreaterThanOrEqual(155);
+    expect(fog.far).toBeGreaterThanOrEqual(480);
+    expect(fog.maxOpacity).toBeLessThanOrEqual(0.24);
+
     expect(fx.find((e) => e.effect === "color-grade")!.saturation).toBe(1.22);
     expect(fx.find((e) => e.effect === "vignette")!.intensity).toBe(0.12);
     expect(fx.find((e) => e.effect === "bloom")!.postAuthored).not.toContain("radius");
-    expect(fx.some((e) => e.effect === "volumetric-fog")).toBe(false); // phase 2: the stage turned the GLBs cream
-    expect(fx.some((e) => e.effect === "depth-of-field" || e.effect === "motion-blur")).toBe(false);
+    expect(fx.some((e) => e.effect === "volumetric-fog")).toBe(false);
     expect(fx.some((e) => e.effect === "film-grain")).toBe(true);
+
+    for (const opts of [{}, { daylightKey: 4 }, { daylightKey: 5 }, { titleVisible: () => true }, { quality: "low" as const }, { look: "original" as const }]) {
+      const list = effectsOf(opts);
+      expect(list.some((e) => e.effect === "depth-of-field" || e.effect === "motion-blur" || e.effect === "cinematic-film")).toBe(false);
+    }
   });
 
   it("Low drops god rays and grain; ?look=original keeps the 4.6 post", () => {

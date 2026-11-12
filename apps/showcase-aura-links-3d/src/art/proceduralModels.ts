@@ -1,10 +1,10 @@
 /**
  * Aura Links 3D (`WP-10`) — Multi-Material Procedural Architecture, Botanicals & Golf Gear.
  *
- * Replaces all static Meshy/placeholder course prop GLBs with sculpted multi-material
+ * Replaces all static course prop and character rigs with 100% native sculpted multi-material
  * `@aura3d/engine` procedural geometry built on `apps/showcase-port-shared/proceduralKernel.ts`,
- * preserving ONLY the rigged humanoid golfer/gallery athletes (`links_golfer_player` and
- * `linksGolferAthleteMeshy`) while keeping zero `three` imports and 100% WebGPU compatibility.
+ * including the 14-joint articulated procedural golfer/caddy/gallery rigs, with zero `.glb` files,
+ * zero `three` imports, and 100% WebGPU compatibility.
  */
 import {
   game,
@@ -46,6 +46,7 @@ import {
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
 import type { CourseSpec, GolferFit, HoleSpec, HoleTerrain, Vec2, Vec3 } from "../game/types";
+import { GOLFER_TARGET_HEIGHT, MESHY_GLB_HEIGHT, meshyProfile } from "../game/golferRetarget";
 
 const specCache = new Map<string, AuraCustomGeometrySpec>();
 
@@ -989,6 +990,362 @@ export function buildSculptedGolferFigureNode(fit: GolferFit, refined = true, na
     material.physical({ color: "#222933", roughness: 0.46 })
   ];
   return assembleMultiMaterialNode(name, slots, mats);
+}
+
+/**
+ * Articulated 14-joint procedural Pro Golfer (`golfer-body`, scaled to `1.84 m`, grounded `minY = 0`)
+ * built on `meshyProfile()`'s exact joint positions so `solveSwing` drives both palms onto the golf club
+ * grip and keeps both tour golf shoes planted on the turf with zero `.glb` files.
+ */
+export function buildArticulatedGolferNode(
+  fit: GolferFit,
+  refined = true,
+  clip = "idle",
+  clipSpeed = 1
+): any {
+  const prof = meshyProfile();
+  const { rig, leg } = prof;
+  const rt = (id: string) => game.runtimeNode(id);
+
+  const poloHex = fit.polo || "#24639a";
+  const skinHex = fit.skin || "#c98d60";
+  const capHex = fit.cap || "#162b22";
+  const poloMat = refined
+    ? material.fabric({ color: poloHex, roughness: 0.7, sheen: 0.36, sheenColor: "#ffffff" })
+    : material.pbr({ color: poloHex, roughness: 0.74 });
+  const ivoryMat = material.fabric({ color: "#f6f3ea", roughness: 0.74, sheen: 0.28, sheenColor: "#ffffff" });
+  const skinMat = material.physical({ color: skinHex, roughness: 0.58 });
+  const capMat = material.fabric({ color: capHex, roughness: 0.68, sheen: 0.26, sheenColor: "#dce8e2" });
+  const chinoMat = material.fabric({ color: "#dcd4c4", roughness: 0.78, sheen: 0.2, sheenColor: "#f3ede0" });
+  const beltLeatherMat = material.physical({ color: "#4e331e", roughness: 0.46 });
+  const brassMat = material.studioMetal({ color: "#dfba62", roughness: 0.22, metalness: 0.92 });
+  const shoeWhiteMat = material.physical({ color: "#f8f6f0", roughness: 0.36, clearcoat: 0.42 });
+  const shoeSaddleMat = material.physical({ color: "#222b36", roughness: 0.44 });
+  const gloveMat = material.physical({ color: "#fbfaf6", roughness: 0.5, sheen: 0.25, sheenColor: "#ffffff" });
+  const hairMat = material.fabric({ color: "#2b211a", roughness: 0.84 });
+
+  const golferMats: AuraMaterialSpec[] = [
+    poloMat,        // 0
+    ivoryMat,       // 1
+    skinMat,        // 2
+    capMat,         // 3
+    chinoMat,       // 4
+    beltLeatherMat, // 5
+    brassMat,       // 6
+    shoeWhiteMat,   // 7
+    shoeSaddleMat,  // 8
+    gloveMat,       // 9
+    hairMat         // 10
+  ];
+
+  // 1. Head + neck + curved-brim championship golf cap (`golfer-head` at `rig.tHead` relative to `golfer-chest`)
+  const headSlots: MultiMatSlot[] = [
+    { mesh: tubeSweepMesh([[0, -0.055, -0.008, 0.054], [0, 0.025, 0, 0.048]], 10), materialIndex: 2 },
+    { mesh: transformMesh(icosphereSmoothMesh(0.104, 2, 0.012, 17), { pos: [0, 0.115, 0.008], scale: [0.92, 1.06, 0.98] }), materialIndex: 2 },
+    { mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0.01, 21), { pos: [-0.094, 0.112, 0.004], scale: [0.55, 0.95, 0.75] }), materialIndex: 2 },
+    { mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0.01, 22), { pos: [0.094, 0.112, 0.004], scale: [0.55, 0.95, 0.75] }), materialIndex: 2 },
+    { mesh: transformMesh(icosphereSmoothMesh(0.098, 1, 0.02, 29), { pos: [0, 0.125, -0.018], scale: [0.96, 0.88, 0.96] }), materialIndex: 10 },
+    { mesh: transformMesh(icosphereSmoothMesh(0.11, 2, 0.014, 33), { pos: [0, 0.168, 0.006], scale: [0.96, 0.76, 1.04] }), materialIndex: 3 },
+    {
+      mesh: loftSectionsMesh(
+        [
+          [[-0.084, 0.162, 0.078], [0, 0.178, 0.086], [0.084, 0.162, 0.078], [0, 0.17, 0.076]],
+          [[-0.076, 0.146, 0.186], [0, 0.162, 0.204], [0.076, 0.146, 0.186], [0, 0.155, 0.194]]
+        ],
+        true,
+        false
+      ),
+      materialIndex: 3
+    },
+    { mesh: transformMesh(bevelBoxMesh(0.036, 0.02, 0.008, 0.002), { pos: [0, 0.182, 0.106], rot: [-0.15, 0, 0] }), materialIndex: 1 }
+  ];
+  const headNode = group("golfer-head", [assembleMultiMaterialNode("golfer-head-mesh", headSlots, golferMats)])
+    .position(rig.tHead[0], rig.tHead[1], rig.tHead[2])
+    .runtime(rt("golfer-head"));
+
+  // 2. Arms (`golfer-arm-l/r` -> `golfer-forearm-l/r`)
+  const buildArmBranch = (side: "l" | "r") => {
+    const isLeft = side === "l";
+    const tShoulder = isLeft ? rig.tShoulderL : rig.tShoulderR;
+    const tFore = isLeft ? rig.tForearmL : rig.tForearmR;
+    const palm = isLeft ? rig.palmL : rig.palmR;
+    const sleeveEnd: V3 = [tFore[0] * 0.48, tFore[1] * 0.48, tFore[2] * 0.48];
+    const wristPt: V3 = [palm[0] * 0.74, palm[1] * 0.74, palm[2] * 0.74];
+
+    const upperSlots: MultiMatSlot[] = [
+      { mesh: transformMesh(icosphereSmoothMesh(0.068, 1, 0.01, isLeft ? 41 : 42), { pos: [0, 0.006, 0] }), materialIndex: 0 },
+      { mesh: tubeSweepMesh([[0, 0, 0, 0.064], [sleeveEnd[0], sleeveEnd[1], sleeveEnd[2], 0.056]], 10), materialIndex: 0 },
+      {
+        mesh: tubeSweepMesh(
+          [
+            [sleeveEnd[0] * 0.92, sleeveEnd[1] * 0.92, sleeveEnd[2] * 0.92, 0.058],
+            [sleeveEnd[0], sleeveEnd[1], sleeveEnd[2], 0.058]
+          ],
+          10
+        ),
+        materialIndex: 1
+      },
+      { mesh: tubeSweepMesh([[sleeveEnd[0] * 0.88, sleeveEnd[1] * 0.88, sleeveEnd[2] * 0.88, 0.048], [tFore[0], tFore[1], tFore[2], 0.043]], 10), materialIndex: 2 },
+      { mesh: transformMesh(icosphereSmoothMesh(0.044, 1, 0.008, isLeft ? 43 : 44), { pos: [tFore[0], tFore[1], tFore[2]] }), materialIndex: 2 }
+    ];
+
+    const handMat = isLeft ? 9 : 2; // Tour white cabretta golf glove on lead (left) hand
+    const foreSlots: MultiMatSlot[] = [
+      { mesh: tubeSweepMesh([[0, 0, 0, 0.043], [wristPt[0], wristPt[1], wristPt[2], 0.034]], 10), materialIndex: 2 },
+      ...(isLeft
+        ? [
+            {
+              mesh: tubeSweepMesh(
+                [
+                  [wristPt[0] * 0.9, wristPt[1] * 0.9, wristPt[2] * 0.9, 0.037],
+                  [wristPt[0] * 1.04, wristPt[1] * 1.04, wristPt[2] * 1.04, 0.038]
+                ],
+                10
+              ),
+              materialIndex: 9
+            }
+          ]
+        : []),
+      {
+        mesh: tubeSweepMesh(
+          [
+            [wristPt[0], wristPt[1], wristPt[2], 0.036],
+            [palm[0], palm[1], palm[2], 0.042]
+          ],
+          10
+        ),
+        materialIndex: handMat
+      },
+      {
+        mesh: transformMesh(icosphereSmoothMesh(0.044, 1, 0.01, isLeft ? 45 : 46), {
+          pos: [palm[0], palm[1], palm[2]],
+          scale: [0.92, 0.86, 1.08]
+        }),
+        materialIndex: handMat
+      }
+    ];
+
+    const forearmNode = group(`golfer-forearm-${side}`, [
+      assembleMultiMaterialNode(`golfer-forearm-mesh-${side}`, foreSlots, golferMats)
+    ])
+      .position(tFore[0], tFore[1], tFore[2])
+      .runtime(rt(`golfer-forearm-${side}`));
+
+    return group(`golfer-arm-${side}`, [
+      assembleMultiMaterialNode(`golfer-arm-mesh-${side}`, upperSlots, golferMats),
+      forearmNode
+    ])
+      .position(tShoulder[0], tShoulder[1], tShoulder[2])
+      .runtime(rt(`golfer-arm-${side}`));
+  };
+
+  // 3. Chest (`golfer-chest` at `rig.tChest` relative to `golfer-spine`) & Spine (`golfer-spine` at `rig.tSpine` relative to `golfer-hips`)
+  const chestRing = (y: number, rx: number, rz: number, zOff: number): V3[] => {
+    const pts: V3[] = [];
+    for (let i = 0; i < 14; i += 1) {
+      const a = (i / 14) * Math.PI * 2;
+      pts.push([Math.cos(a) * rx, y, Math.sin(a) * rz + zOff]);
+    }
+    return pts;
+  };
+  const chestSlots: MultiMatSlot[] = [
+    {
+      mesh: loftSectionsMesh(
+        [
+          chestRing(-0.14, 0.162, 0.114, 0.008),
+          chestRing(-0.02, 0.184, 0.126, 0.012),
+          chestRing(0.075, 0.198, 0.128, 0.008),
+          chestRing(0.135, 0.152, 0.102, 0.002)
+        ],
+        true,
+        true
+      ),
+      materialIndex: 0
+    },
+    // Crisp folded tour polo collar + 3-button placket
+    {
+      mesh: transformMesh(latheMesh([[0.058, 0.118], [0.078, 0.128], [0.082, 0.162], [0.062, 0.166]], 14), {
+        pos: [0, 0, 0.004]
+      }),
+      materialIndex: 1
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.044, 0.15, 0.022, 0.005), { pos: [0, 0.048, 0.126], rot: [-0.08, 0, 0] }),
+      materialIndex: 1
+    }
+  ];
+  const chestNode = group("golfer-chest", [
+    assembleMultiMaterialNode("golfer-chest-mesh", chestSlots, golferMats),
+    headNode,
+    buildArmBranch("l"),
+    buildArmBranch("r")
+  ])
+    .position(rig.tChest[0], rig.tChest[1], rig.tChest[2])
+    .runtime(rt("golfer-chest"));
+
+  const spineSlots: MultiMatSlot[] = [
+    {
+      mesh: loftSectionsMesh(
+        [
+          chestRing(-0.08, 0.154, 0.11, 0.006),
+          chestRing(0.04, 0.158, 0.112, 0.008),
+          chestRing(0.15, 0.164, 0.116, 0.008)
+        ],
+        true,
+        true
+      ),
+      materialIndex: 0
+    }
+  ];
+  const spineNode = group("golfer-spine", [
+    assembleMultiMaterialNode("golfer-spine-mesh", spineSlots, golferMats),
+    chestNode
+  ])
+    .position(rig.tSpine[0], rig.tSpine[1], rig.tSpine[2])
+    .runtime(rt("golfer-spine"));
+
+  // 4. Legs (`golfer-thigh-l/r` -> `golfer-shin-l/r` -> `golfer-foot-l/r`)
+  const buildLegBranch = (side: "l" | "r") => {
+    const isLeft = side === "l";
+    const hipJ = isLeft ? leg.hipJointL : leg.hipJointR;
+    const thighLen = isLeft ? leg.thighL : leg.thighR;
+    const shinLen = isLeft ? leg.shinL : leg.shinR;
+    const thighDir = isLeft ? leg.thighBindL : leg.thighBindR;
+    const shinDir = isLeft ? leg.shinBindL : leg.shinBindR;
+    const ankleY = isLeft ? leg.ankleL[1] : leg.ankleR[1];
+    const kneeOff: V3 = [thighDir[0] * thighLen, thighDir[1] * thighLen, thighDir[2] * thighLen];
+    const ankleOff: V3 = [shinDir[0] * shinLen, shinDir[1] * shinLen, shinDir[2] * shinLen];
+
+    const thighSlots: MultiMatSlot[] = [
+      { mesh: transformMesh(icosphereSmoothMesh(0.086, 1, 0.008, isLeft ? 51 : 52), { pos: [0, 0, 0] }), materialIndex: 4 },
+      {
+        mesh: tubeSweepMesh(
+          [
+            [0, 0, 0, 0.086],
+            [kneeOff[0] * 0.5, kneeOff[1] * 0.5, kneeOff[2] * 0.5, 0.076],
+            [kneeOff[0], kneeOff[1], kneeOff[2], 0.064]
+          ],
+          12
+        ),
+        materialIndex: 4
+      },
+      { mesh: transformMesh(icosphereSmoothMesh(0.064, 1, 0.008, isLeft ? 53 : 54), { pos: kneeOff }), materialIndex: 4 }
+    ];
+
+    const shinSlots: MultiMatSlot[] = [
+      {
+        mesh: tubeSweepMesh(
+          [
+            [0, 0, 0, 0.063],
+            [ankleOff[0] * 0.45, ankleOff[1] * 0.45, ankleOff[2] * 0.45, 0.058],
+            [ankleOff[0] * 0.92, ankleOff[1] * 0.92, ankleOff[2] * 0.92, 0.048]
+          ],
+          12
+        ),
+        materialIndex: 4
+      },
+      // Trouser hem cuff
+      {
+        mesh: tubeSweepMesh(
+          [
+            [ankleOff[0] * 0.86, ankleOff[1] * 0.86, ankleOff[2] * 0.86, 0.052],
+            [ankleOff[0] * 0.96, ankleOff[1] * 0.96, ankleOff[2] * 0.96, 0.053]
+          ],
+          12
+        ),
+        materialIndex: 4
+      }
+    ];
+
+    // Two-tone tour saddle golf shoe grounded cleanly at `y = -ankleY` (`minY = 0` in model space)
+    const soleY = -ankleY;
+    const footSlots: MultiMatSlot[] = [
+      { mesh: tubeSweepMesh([[0, 0.02, 0, 0.044], [0, soleY + 0.058, 0.012, 0.046]], 10), materialIndex: 1 },
+      {
+        mesh: transformMesh(bevelBoxMesh(0.104, 0.024, 0.246, 0.007), { pos: [0, soleY + 0.012, 0.052] }),
+        materialIndex: 8
+      },
+      {
+        mesh: loftSectionsMesh(
+          [
+            [[-0.048, soleY + 0.024, -0.062], [0.048, soleY + 0.024, -0.062], [0.044, soleY + 0.088, -0.054], [-0.044, soleY + 0.088, -0.054]],
+            [[-0.052, soleY + 0.024, 0.045], [0.052, soleY + 0.024, 0.045], [0.048, soleY + 0.082, 0.038], [-0.048, soleY + 0.082, 0.038]],
+            [[-0.042, soleY + 0.024, 0.165], [0.042, soleY + 0.024, 0.165], [0.034, soleY + 0.058, 0.158], [-0.034, soleY + 0.058, 0.158]]
+          ],
+          true,
+          true
+        ),
+        materialIndex: 7
+      },
+      {
+        mesh: transformMesh(bevelBoxMesh(0.106, 0.056, 0.092, 0.012), { pos: [0, soleY + 0.052, 0.038] }),
+        materialIndex: 8
+      }
+    ];
+
+    const footNode = group(`golfer-foot-${side}`, [
+      assembleMultiMaterialNode(`golfer-foot-mesh-${side}`, footSlots, golferMats)
+    ])
+      .position(ankleOff[0], ankleOff[1], ankleOff[2])
+      .runtime(rt(`golfer-foot-${side}`));
+
+    const shinNode = group(`golfer-shin-${side}`, [
+      assembleMultiMaterialNode(`golfer-shin-mesh-${side}`, shinSlots, golferMats),
+      footNode
+    ])
+      .position(kneeOff[0], kneeOff[1], kneeOff[2])
+      .runtime(rt(`golfer-shin-${side}`));
+
+    return group(`golfer-thigh-${side}`, [
+      assembleMultiMaterialNode(`golfer-thigh-mesh-${side}`, thighSlots, golferMats),
+      shinNode
+    ])
+      .position(hipJ[0], hipJ[1], hipJ[2])
+      .runtime(rt(`golfer-thigh-${side}`));
+  };
+
+  // 5. Pelvis + belt + buckle (`golfer-hips` at `rig.hipsBind`)
+  const hipsSlots: MultiMatSlot[] = [
+    {
+      mesh: loftSectionsMesh(
+        [
+          chestRing(-0.135, 0.154, 0.112, 0.002),
+          chestRing(-0.04, 0.164, 0.118, 0.004),
+          chestRing(0.045, 0.156, 0.112, 0.006)
+        ],
+        true,
+        true
+      ),
+      materialIndex: 4
+    },
+    {
+      mesh: loftSectionsMesh(
+        [
+          chestRing(0.02, 0.162, 0.118, 0.006),
+          chestRing(0.055, 0.162, 0.118, 0.006)
+        ],
+        true,
+        false
+      ),
+      materialIndex: 5
+    },
+    { mesh: transformMesh(bevelBoxMesh(0.052, 0.038, 0.02, 0.004), { pos: [0, 0.038, 0.122] }), materialIndex: 6 }
+  ];
+
+  const hipsNode = group("golfer-hips", [
+    assembleMultiMaterialNode("golfer-hips-mesh", hipsSlots, golferMats),
+    spineNode,
+    buildLegBranch("l"),
+    buildLegBranch("r")
+  ])
+    .position(rig.hipsBind[0], rig.hipsBind[1], rig.hipsBind[2])
+    .runtime(rt("golfer-hips"));
+
+  const fitScale = GOLFER_TARGET_HEIGHT / MESHY_GLB_HEIGHT;
+  return group("golfer-body", [hipsNode])
+    .scale(fitScale)
+    .animate({ clip, loop: true, speed: clipSpeed })
+    .runtime(rt("golfer-body"));
 }
 
 /**

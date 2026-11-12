@@ -1,14 +1,6 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { MESHY_MODELS } from "../../../examples/roadster-hours-port/meshy.baked";
-import { registerMeshyForTest } from "../../../examples/roadster-hours-port/meshy";
 import { buildWorld, matrixFor } from "../../../examples/roadster-hours-port/world";
 
-const bin = (key: string): ArrayBuffer => {
-  const b = readFileSync(resolve("examples/roadster-hours-port/assets/meshy", `${key}.bin`));
-  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
-};
 function nodeNames(scene: { toJSON(): unknown }): string[] {
   const names: string[] = [];
   const walk = (v: unknown): void => {
@@ -22,21 +14,20 @@ function nodeNames(scene: { toJSON(): unknown }): string[] {
   walk(scene.toJSON());
   return names;
 }
-const landmarks = (names: string[]): string[] => names.filter((n) => /^lighthouse|^town/.test(n)).sort();
+const landmarks = (names: string[]): string[] => names.filter((n) => /^lighthouse|^town/.test(n) && !n.endsWith("-far")).sort();
 
 describe("Saltwind Highway landmarks are built once (audit C3)", () => {
-  it("without the generated models, the procedural lighthouse and town stand in", () => {
-    expect(landmarks(nodeNames(buildWorld(0).scene))).toEqual([
+  it("with richScenery off (?look=original), the legacy lighthouse and town stand in", () => {
+    expect(landmarks(nodeNames(buildWorld(0, "original").scene))).toEqual([
       "lighthouse-band-a", "lighthouse-band-b", "lighthouse-base", "lighthouse-cap", "lighthouse-gallery", "lighthouse-lantern", "lighthouse-rock", "lighthouse-shaft", "town"
     ]);
   });
-  it("with the generated models, only the models (and the rock island under them) are built", () => {
-    for (const key of Object.keys(MESHY_MODELS)) registerMeshyForTest(key, bin(key));
-    expect(landmarks(nodeNames(buildWorld(0).scene))).toEqual(["lighthouse-model", "lighthouse-rock", "town-townhouses", "town-villas"]);
+  it("with sculpted procedural scenery (GU47), only the sculpted models (and the rock island under them) are built", () => {
+    expect(landmarks(nodeNames(buildWorld(0, "gu47").scene))).toEqual(["lighthouse-model", "lighthouse-rock", "town-townhouses", "town-villas"]);
   });
   it("other routes have no coastal landmarks", () => {
-    expect(landmarks(nodeNames(buildWorld(1).scene))).toEqual([]);
-    expect(landmarks(nodeNames(buildWorld(2).scene))).toEqual([]);
+    expect(landmarks(nodeNames(buildWorld(1, "gu47").scene))).toEqual([]);
+    expect(landmarks(nodeNames(buildWorld(2, "gu47").scene))).toEqual([]);
   });
 });
 

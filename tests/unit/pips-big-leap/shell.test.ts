@@ -33,10 +33,13 @@ describe("pips-big-leap shell", () => {
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
   });
 
-  it("C7: no cap row (Pip's GLB has one baked material); the cape shows whenever Pip moves", () => {
+  it("C7: no cap row; the Studio cape is opt-in (hidden by default during gameplay)", () => {
     expect(html).not.toContain("pbl-cap-swatches");
     expect(Object.keys(nodeName)).not.toContain("heroCap");
-    expect(main).toContain('cape?.setVisible(p.state === "glide" || (moving && p.state !== "dead"))');
+    expect(main).toContain('cape?.setVisible(Boolean(save.studio.capeEnabled) && p.state !== "dead")');
+    const nodes = (buildWorld(worldSpec("w1")).scene.toJSON() as unknown as { nodes: { name?: string; visible?: boolean }[] }).nodes;
+    const cape = nodes.find((n) => n.name === nodeName.heroCape);
+    expect(cape?.visible).toBe(false);
   });
 
   it("C10: a failed world swap restores the previous run and tells the player", () => {

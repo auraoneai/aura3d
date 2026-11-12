@@ -23,11 +23,12 @@ describe("CD-09 post plan", () => {
     expect(() => applyCumulusPostPlan({ setEffectEnabled: () => { throw new Error("x"); } }, { ...plan, godRays: false })).not.toThrow();
     expect(applyCumulusPostPlan(undefined, { ...plan, godRays: false }).volumetricFog).toBe(false);
   });
-  it("CD-11: DOF in the title and finale only, glider motion blur only while riding; High/Ultra, no phone, no blur on reduced motion", () => {
+  it("CD-11: zero DOF blur across play, title and finale; glider motion blur only while riding on High/Ultra, no phone, no blur on reduced motion", () => {
     const ctx = { tier: "high", coarsePointer: false } as const;
     expect(cumulusPostPlan({ ...ctx, moment: "play" }).dof).toBe(false);
-    expect(cumulusPostPlan({ ...ctx, moment: "title" }).dof).toBe(true);
-    expect(cumulusPostPlan({ ...ctx, moment: "finale" }).dof).toBe(true);
+    expect(cumulusPostPlan({ ...ctx, moment: "title" }).dof).toBe(false);
+    expect(cumulusPostPlan({ ...ctx, moment: "finale" }).dof).toBe(false);
+    expect(cumulusPostPlan({ tier: "ultra", coarsePointer: false, moment: "title" }).dof).toBe(false);
     expect(cumulusPostPlan({ tier: "medium", coarsePointer: false, moment: "finale" }).dof).toBe(false);
     expect(cumulusPostPlan({ tier: "ultra", coarsePointer: true, moment: "finale" }).dof).toBe(false);
     expect(cumulusPostPlan({ ...ctx, moment: "play", riding: true }).motionBlur).toBe(true);
@@ -40,15 +41,15 @@ describe("CD-09 post plan", () => {
     expect(needsRefocus(10, 10.5)).toBe(false);
     expect(needsRefocus(10, 11)).toBe(true);
   });
-  it("the storm row authors the god-ray node and the sun flare; the original row neither", () => {
+  it("the storm row authors the god-ray node and the sun flare with zero DOF or cinematic-film blur; the original row neither", () => {
     const json = (rows: unknown[]) => rows.map((n) => (n as { toJSON?: () => Record<string, unknown> }).toJSON?.() ?? (n as Record<string, unknown>));
     const storm = json(lookNodes(CUMULUS_LOOK[0]));
     expect(storm.some((n) => n.effect === "volumetric-fog" && typeof n.godRayDensity === "number")).toBe(true);
     expect(storm.some((n) => n.kind === "lensflare" && n.name === SUN_FLARE_ID)).toBe(true);
     const original = json(lookNodes(CUMULUS_LOOK[1]));
-    expect(storm.some((n) => n.effect === "depth-of-field" && n.focusDistance === 14)).toBe(true);
+    expect(storm.some((n) => n.effect === "depth-of-field" || n.effect === "cinematic-film")).toBe(false);
     expect(storm.some((n) => n.effect === "motion-blur" && n.shutter === 0.35)).toBe(true);
-    expect(original.some((n) => n.kind === "lensflare" || n.effect === "volumetric-fog" || n.effect === "depth-of-field" || n.effect === "motion-blur")).toBe(false);
+    expect(original.some((n) => n.kind === "lensflare" || n.effect === "volumetric-fog" || n.effect === "depth-of-field" || n.effect === "cinematic-film" || n.effect === "motion-blur")).toBe(false);
     expect(CUMULUS_FLARE_ELEMENTS[0].color).toBe("#ffe2b8");
   });
 });

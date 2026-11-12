@@ -185,7 +185,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const presentationParams = new URLSearchParams(window.location.search);
 /** `?look=original` mounts the 4.6.2 light, atmosphere and post rig (PRD §8 reversibility); default: the GU47 course look */
 const lookMode: "gu47" | "original" = presentationParams.get("look") === "original" ? "original" : "gu47";
-/** the player is the Meshy golfer (links_golfer_player); `?golfer=old` or `?look=original` keeps the original athlete */
+/** the player uses the 24-joint GU47 golfer profile; `?golfer=old` or `?look=original` selects the classic athlete profile */
 setGolferVariant(golferVariantFromSearch(window.location.search));
 /**
  * Presentation tier (PRD §6.4): `?aura3d-quality=low` (the engine's own tier override) or `?tier=low` builds the Low
@@ -832,7 +832,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // LINKS-12: the broadcast depth of field, High only (the engine drops DOF below High); toggled at run time so it is on
   // only in the flyover and the cup cam (setBroadcastDof)
   if (presentationTier === "high") {
-    nodes.push(effects.depthOfField({ name: "broadcast depth of field", focusDistance: 70, fStop: 4, maxBlur: 3 }));
+    nodes.push(effects.depthOfField({ name: "broadcast depth of field", focusDistance: 70, fStop: 11, maxBlur: 0 }));
   }
   return scene()
     .addMany(rig.before)
@@ -2926,11 +2926,8 @@ function setupFxAndTouch(): void {
  *  Evidence                                                           *
  * ------------------------------------------------------------------ */
 
-/** typed catalog keys the game shows in its evidence (hoisted: the evidence is built every 500 ms, not every frame, audit C13) */
-const CATALOG_ASSETS: readonly string[] = [
-  "links_golfer_player",
-  "linksGolferAthleteMeshy"
-];
+/** typed catalog keys the game shows in its evidence (100% native @aura3d/engine procedural geometry, zero GLB models) */
+const CATALOG_ASSETS: readonly string[] = [];
 
 function publishEvidence(): void {
   const r = state.round;

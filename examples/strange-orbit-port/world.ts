@@ -22,7 +22,7 @@ import {
   type Vehicle
 } from "./course";
 import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
-import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
+import { applyMat3, axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
 import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
@@ -156,12 +156,24 @@ const beaconLampMaterial = (glow: number) => material.glowingEmissive({ color: "
 export const BEACON_SPACING = 40;
 
 /**
- * The hero model is one mesh with one pearl-white, light-grey-suit material, so the pick of Sol, Ciel or Ember shows as a
- * base-colour multiply over the whole model: the rider's own colour, lifted a little towards white (a straight multiply by
- * the saturated suit colour would black out the teal fairing).
+ * Rich high-contrast Lunar GP factory racing liveries for Sol (Cobalt), Ciel (Teal-Cyan), and Ember (Crimson).
+ * Avoids chalky white blowout under the low grazing rim key while keeping pairwise RGB distance >= 66.
  */
+const HERO_RACING_LIVERIES: readonly string[] = ["#1d5fd6", "#178ca6", "#cc2936"];
+
 export function riderSuitTint(rider: number): string {
-  return mixHex(RIDERS[Math.max(0, Math.min(RIDERS.length - 1, rider))]!.color, "#ffffff", 0.22);
+  const clamped = Math.max(0, Math.min(RIDERS.length - 1, rider));
+  return HERO_RACING_LIVERIES[clamped] ?? mixHex(RIDERS[clamped]!.color, "#1d5fd6", 0.65);
+}
+
+/** Transforms a rider sub-part's local `[dx, dy, dz]` offset through the full pitched/rolled `base` basis. */
+export function computeRiderPartWorldOffset(
+  base: Mat3,
+  [dx, dy, dz]: readonly [number, number, number],
+  scale: number | readonly [number, number, number]
+): [number, number, number] {
+  const [sx, sy, sz] = typeof scale === "number" ? [scale, scale, scale] : scale;
+  return applyMat3(base, [dx * sx, dy * sy, dz * sz]);
 }
 
 export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62cc", "#e2d6bb", "#2f7464"];
@@ -184,10 +196,13 @@ interface Riderrig {
 /** Local yaw that turns each procedural lunar rider vehicle (`-Z` nose -> `+X` rig forward, `+Z` rear bells -> `-X` aft). */
 const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", -Math.PI / 2), skate: axisRotation("y", -Math.PI / 2) };
 
-function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
+export function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
   const root = `rider-${index}`;
   const wheel = multiplyMat3(IDENTITY, axisRotation("x", Math.PI / 2));
-  const lean = axisRotation("z", -0.45);
+  const bikeLean = axisRotation("z", -0.72); // ~41.3 deg true MotoGP tuck over the sculpted fuel tank
+  const bikeHelmetPitch = axisRotation("z", -0.22); // forward-tilted racing gaze down the track
+  const skateLean = axisRotation("z", -0.22);
+  const skateHelmetPitch = axisRotation("z", -0.10);
   const alongForward = axisRotation("z", Math.PI / 2); // cylinder/cone axis +Y -> -X (aft exhaust)
   const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, kind, offset, local });
   if (look !== "gouache") {
@@ -205,8 +220,8 @@ function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
         part("nozzleR", [-0.43, 0.16, -0.11], alongForward),
         part("coneL", [-0.62, 0.16, 0.11], alongForward),
         part("coneR", [-0.62, 0.16, -0.11], alongForward),
-        part("torso", [0.02, 1.08, 0]),
-        part("visor", [0.13, 1.38, 0])
+        part("torso", [0.02, 1.04, 0], skateLean),
+        part("visor", [0.14, 1.29, 0], skateHelmetPitch)
       ]
     };
   }
@@ -214,15 +229,15 @@ function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
     root,
     parts: [
       part("model", [0, 0, 0], MODEL_YAW.bike),
-      part("fairing", [0.14, 0.38, 0]),
-      part("wheelF", [0.72, 0.34, 0], wheel),
-      part("wheelR", [-0.72, 0.34, 0], wheel),
-      part("nozzleL", [-0.94, 0.5, 0.13], alongForward),
-      part("nozzleR", [-0.94, 0.5, -0.13], alongForward),
-      part("coneL", [-1.18, 0.5, 0.13], alongForward),
-      part("coneR", [-1.18, 0.5, -0.13], alongForward),
-      part("torso", [0.04, 1.06, 0], lean),
-      part("visor", [0.24, 1.35, 0])
+      part("fairing", [0.56, 0.80, 0]),
+      part("wheelF", [0.74, 0.33, 0], wheel),
+      part("wheelR", [-0.72, 0.33, 0], wheel),
+      part("nozzleL", [-0.66, 0.69, 0.095], alongForward),
+      part("nozzleR", [-0.66, 0.69, -0.095], alongForward),
+      part("coneL", [-0.84, 0.69, 0.095], alongForward),
+      part("coneR", [-0.84, 0.69, -0.095], alongForward),
+      part("torso", [0.0, 0.90, 0], bikeLean),
+      part("visor", [0.24, 1.07, 0], bikeHelmetPitch)
     ]
   };
 }
@@ -306,8 +321,8 @@ export function buildWorld(options: WorldOptions): World {
       : environments.neutral({ name: "fill-environment", intensity: environmentIntensity(look === "original" ? ENVIRONMENT_INTENSITY : row.environment.intensity), background: false }));
   }
   // Scene fog (SO47-E3): the custom shaders read its colour and density (u_a3dFogColor / u_a3dFogDensity) and add the
-  // height mist; the engine fogs the GLBs with the same values, so a rider and the island behind it match.
-  if (row.fog && !off.has("fog")) builder.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, intensity: (row.fog.maxOpacity - 0.25) / 0.55 }).runtime({ id: "haze" }));
+  // height mist; the engine fogs procedural nodes with the same values, so a rider and the island behind it match.
+  if (row.fog && !off.has("fog")) builder.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, intensity: Math.max(0, (row.fog.maxOpacity - 0.25) / 0.55) }).runtime({ id: "haze" }));
   if (!off.has("bloom")) {
     builder.add(look === "gouache"
       ? effects.cinematicBloom({ name: "bloom", ...row.post.bloom, color: "#fff1de" })
@@ -629,7 +644,7 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stardust", material: spriteMaterial(true) }).runtime({ id: "stardust" }));
 
-  /* ---- low-G regolith dust flipbook plume & procedural vfx-pack dust wake ---- */
+  /* ---- low-G regolith dust flipbook plume ---- */
   const dustPlumeEnabled = look === "gouache" && !off.has("dustplume");
   if (dustPlumeEnabled) {
     const regolithDustAtlas = createFlipbookAtlas("dust", [219, 156, 114]);
@@ -642,25 +657,9 @@ export function buildWorld(options: WorldOptions): World {
       size: 1.55,
       color: "#dba078",
       blend: "alpha",
+      visible: false,
       position: [0, -500, 0]
     }).runtime({ id: "regolith-dust-plume" }));
-    builder.add(primitives.plane({
-      name: "regolith-dust-wake",
-      size: [1.5, 1.5],
-      position: [0, -500, 0],
-      castShadow: false,
-      receiveShadow: false,
-      material: material.pbr({
-        color: "#e6b48e",
-        texture: regolithDustAtlas.texture,
-        roughness: 0.94,
-        metallic: 0,
-        opacity: 0.68,
-        blend: "alpha",
-        depthWrite: false,
-        side: "double"
-      })
-    }).runtime({ id: "regolith-dust-wake" }));
   }
 
   /* ---- exhaust ---- */
@@ -677,14 +676,14 @@ export function buildWorld(options: WorldOptions): World {
     }), { name: "exhaust", material: spriteMaterial(true) }).runtime({ id: "exhaust" }));
   }
 
-  /* ---- riders: multi-material procedural hoverbikes/skates + articulated EVA suit sub-parts ---- */
+  /* ---- riders: multi-material procedural Lunar GP motorcycles/skates + tucked racing rider sub-parts ---- */
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle, look));
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
     const primaryColor = look === "gouache"
       ? (i === 0 ? riderSuitTint(rider) : GOUACHE_LIVERIES[i - 1]!)
       : bodyHex;
-    const suitColor = mixHex(primaryColor, "#ebe6dc", 0.65);
+    const suitColor = mixHex(primaryColor, "#181d27", 0.72);
     builder.add(createLunarRiderVehicleNode({
       id: rig.parts[0]!.id,
       vehicle,
@@ -903,46 +902,45 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     riderFwd[index]!.copy(pose.forward);
     riderUp[index]!.copy(up);
     if (!input.reducedMotion && motion.dt > 0 && motion.speed > 0.05) {
-      const wheelRadius = input.vehicle === "skate" ? 0.14 : 0.34;
+      const wheelRadius = input.vehicle === "skate" ? 0.14 : 0.33;
       wheelSpin[index] = (wheelSpin[index]! + (motion.speed * motion.dt) / wheelRadius) % (Math.PI * 2);
     }
     const spin = wheelSpin[index]!;
     const rigDef = input.riders[index]!;
+    const basePartScale: number | [number, number, number] = index === 0 && squash > 0.001
+      ? [scale * (1 + squash * 0.5), scale * (1 - squash), scale * (1 + squash * 0.5)]
+      : scale;
     for (const part of rigDef.parts) {
       let [dx, dy, dz] = part.offset;
       let local = part.local;
-      let partScale: number | [number, number, number] = index === 0 && squash > 0.001
-        ? [scale * (1 + squash * 0.5), scale * (1 - squash), scale * (1 + squash * 0.5)]
-        : scale;
+      let partScale: number | [number, number, number] = basePartScale;
       const h = node(part.id);
 
       if (part.kind === "wheelF" || part.kind === "wheelR") {
-        local = multiplyMat3(local, axisRotation("y", spin));
+        // `wheel` maps local +Y -> +Z (right lateral axle); `-spin` rolls the top of the tire forward (+X) cleanly!
+        local = multiplyMat3(local, axisRotation("y", -spin));
       } else if (part.kind === "torso") {
-        dz += motion.lean * 0.18;
-        if (motion.boosting && !motion.menu) { dx += 0.08; dy -= 0.05; }
-        local = multiplyMat3(local, multiplyMat3(axisRotation("x", -motion.lean * 0.55), axisRotation("z", motion.boosting && !motion.menu ? -0.22 : 0)));
+        dz += motion.lean * 0.06;
+        if (motion.boosting && !motion.menu) { dx += 0.04; dy -= 0.03; }
+        local = multiplyMat3(local, multiplyMat3(axisRotation("x", -motion.lean * 0.24), axisRotation("z", motion.boosting && !motion.menu ? -0.10 : 0)));
       } else if (part.kind === "visor" || part.kind === "head") {
-        dz += motion.lean * 0.22;
-        if (motion.boosting && !motion.menu) { dx += 0.11; dy -= 0.06; }
-        local = multiplyMat3(local, multiplyMat3(axisRotation("x", motion.lean * 0.65), axisRotation("y", -motion.lean * 0.75)));
+        dz += motion.lean * 0.085;
+        if (motion.boosting && !motion.menu) { dx += 0.06; dy -= 0.04; }
+        local = multiplyMat3(local, multiplyMat3(axisRotation("x", motion.lean * 0.22), axisRotation("y", -motion.lean * 0.38)));
       } else if (part.kind === "coneL" || part.kind === "coneR") {
         const coneVisible = riderShown[index]! && !motion.menu && (motion.speed > 1.5 || motion.boosting);
         h.setVisible(coneVisible);
         if (!coneVisible) continue;
-        const flutter = input.reducedMotion ? 0 : 0.16 * Math.sin(motion.time * 46 + (part.kind === "coneL" ? 0 : 1.9));
+        const flutter = input.reducedMotion ? 0 : 0.14 * Math.sin(motion.time * 46 + (part.kind === "coneL" ? 0 : 1.9));
         const lenScale = Math.max(0.26, Math.min(1, motion.speed / 32) * 0.62 + (motion.boosting ? 0.92 + flutter : 0));
-        const radScale = motion.boosting ? 1.26 : 0.86;
-        dx -= (lenScale - 1) * 0.24;
+        const radScale = motion.boosting ? 1.22 : 0.84;
+        dx -= (lenScale - 1) * 0.18;
         partScale = [scale * radScale, scale * lenScale, scale * radScale];
       }
 
-      const p = pose.position.clone()
-        .addScaledVector(pose.forward, dx * scale)
-        .addScaledVector(up, dy * scale)
-        .addScaledVector(side, dz * scale);
+      const [ox, oy, oz] = computeRiderPartWorldOffset(base, [dx, dy, dz], basePartScale);
       const e = euler(multiplyMat3(base, local));
-      h.setPosition(p.x, p.y, p.z);
+      h.setPosition(pose.position.x + ox, pose.position.y + oy, pose.position.z + oz);
       h.setRotation(e[0], e[1], e[2]);
       h.setScale(partScale);
     }
@@ -1092,29 +1090,18 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       riderGrounded[i + 1] = menu || !rival.air;
     }
 
-    /* low-G regolith dust plume & wake behind player rear wheel during hard cornering / crater landings */
+    /* low-G regolith dust plume behind player rear wheel during hard cornering / crater landings */
     dustPlumeTimer = Math.max(0, dustPlumeTimer - Math.max(0, dt));
     if (input.dustPlume) {
       const plume = node("regolith-dust-plume");
-      const wake = node("regolith-dust-wake");
       const plumeActive = !menu && riderGrounded[0]! && state.phase === "racing" && ((Math.abs(state.lean) >= 0.16 && state.speed > 5) || dustPlumeTimer > 0);
       if (plumeActive) {
         const rear = playerPose.position.clone().addScaledVector(playerPose.forward, -0.88 * scale).addScaledVector(playerPose.up, 0.28 * scale);
         plume.setPosition(rear.x, rear.y, rear.z);
         plume.setVisible(true);
-        const wakeScale = 0.55 + Math.min(0.65, Math.abs(state.lean) * 1.8 + dustPlumeTimer);
-        const groundWake = playerPose.position.clone().addScaledVector(playerPose.forward, -1.15 * scale).addScaledVector(playerPose.up, 0.05);
-        const across = new Vec3().crossVectors(playerPose.forward, playerPose.up).normalize();
-        const wakeEuler = euler(multiplyMat3(basisMatrix(playerPose.forward, playerPose.up, across), axisRotation("x", -Math.PI / 2)));
-        wake.setPosition(groundWake.x, groundWake.y, groundWake.z);
-        wake.setRotation(wakeEuler[0], wakeEuler[1], wakeEuler[2]);
-        wake.setScale([wakeScale, wakeScale, wakeScale]);
-        wake.setVisible(true);
       } else {
         plume.setPosition(0, -500, 0);
         plume.setVisible(false);
-        wake.setPosition(0, -500, 0);
-        wake.setVisible(false);
       }
     }
 

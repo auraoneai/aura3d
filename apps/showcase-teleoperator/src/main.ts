@@ -51,7 +51,6 @@ import {
   GRID_DISPATCH_RENDERER,
   HIDDEN_POS,
   HIDDEN_SCALE,
-  PASSENGER_CLIP,
   PASSENGER_NODE,
   PASSENGER_YAW,
   INTERSECTION_COUNT,
@@ -79,6 +78,7 @@ import {
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, TRAFFIC_SPECS, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
+import { PASSENGER_RIG_IDS, computeUrbanCommuterPose } from "./art/proceduralModels";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
@@ -207,6 +207,19 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     beaconBeam: req("taxi-beacon-beam"),
     beaconCore: req("taxi-beacon-core"),
     passenger: req(PASSENGER_NODE),
+    passengerJoints: {
+      pelvis: req(PASSENGER_RIG_IDS.pelvis),
+      torso: req(PASSENGER_RIG_IDS.torso),
+      head: req(PASSENGER_RIG_IDS.head),
+      bag: req(PASSENGER_RIG_IDS.bag),
+      armL: req(PASSENGER_RIG_IDS.armL),
+      armR: req(PASSENGER_RIG_IDS.armR),
+      forearmR: req(PASSENGER_RIG_IDS.forearmR),
+      legL: req(PASSENGER_RIG_IDS.legL),
+      shinL: req(PASSENGER_RIG_IDS.shinL),
+      legR: req(PASSENGER_RIG_IDS.legR),
+      shinR: req(PASSENGER_RIG_IDS.shinR)
+    },
     users: [...Array.from({ length: TRAFFIC_COUNT }, (_, i) => req(`traffic-${i}`)), ...RIVALS.map((_, k) => req(`rival-car-${k}`))]
   };
   return nodes;
@@ -250,8 +263,6 @@ async function bootGridDispatch(): Promise<void> {
   bootProgress(38);
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
-  // GD-16: the passenger clip speed the mounted scene was built with (1, or 0 under reduced motion); remounts reset it.
-  let passengerWaveSpeed = motionOk() ? 1 : 0;
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
   const sensor = installSensorPass(auraApp, SKY_LOOKS[weather]);
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
@@ -536,7 +547,6 @@ async function bootGridDispatch(): Promise<void> {
     auraApp.setScene(buildGridDispatchScene(next, { motionOk: motionOk() }));
     applySkyOutput();
     N = bindNodes(auraApp, next);
-    passengerWaveSpeed = motionOk() ? 1 : 0;
     appliedCar = null;
     lastSignalPhase = -1;
     signalShown = "";
@@ -865,18 +875,32 @@ async function bootGridDispatch(): Promise<void> {
     N.beaconCore.setPosition(bx, ry(18), bz).setVisible(beaconOn);
     const showPassenger = r.state === "offer" || r.state === "boarding" || r.state === "alighting";
     if (showPassenger) {
-      const walk = r.state === "boarding" ? clamp(r.timer / 1.5, 0, 1) : 0;
-      const pvX = rx(lerp(11.35, CURB_BEACON_X + 0.85, walk));
-      // GD-16: the rigged passenger loops its `wave` clip (hailing); reduced motion holds the clip still.
-      N.passenger.setPosition(pvX, ry(0), bz).setRotation(0, PASSENGER_YAW, 0).setScale([1, 1, 1]).setVisible(true);
-      const waveSpeed = motionOk() ? 1 : 0;
-      if (waveSpeed !== passengerWaveSpeed) {
-        passengerWaveSpeed = waveSpeed;
-        N.passenger.setAnimation?.({ clip: PASSENGER_CLIP, loop: true, speed: waveSpeed });
-      }
+      const mode = r.state === "boarding" ? "board" : r.state === "alighting" ? "alight" : "hail";
+      const walk = mode === "board" ? clamp(r.timer / 1.5, 0, 1) : mode === "alight" ? clamp(1 - r.timer / 1.2, 0, 1) : 0;
+      const worldX = lerp(11.35, CURB_BEACON_X + 0.85, walk);
+      // Smooth sidewalk-to-curb grounding (`0.18 m` sidewalk top -> `0.00 m` road asphalt).
+      const groundY = worldX >= 10.85 ? 0.18 : worldX <= 10.45 ? 0 : 0.18 * ((worldX - 10.45) / 0.4);
+      const rigPose = computeUrbanCommuterPose({ time: presentClock, mode, walkProgress: walk, motionOk: motionOk() });
+      const s = rigPose.rootScale;
+      N.passenger
+        .setPosition(rx(worldX), ry(groundY), bz)
+        .setRotation(0, PASSENGER_YAW + rigPose.yawOffset, 0)
+        .setScale([s, s, s])
+        .setVisible(true);
+      const j = N.passengerJoints;
+      j.pelvis.setPosition(rigPose.pelvisPos[0], rigPose.pelvisPos[1], rigPose.pelvisPos[2]).setRotation(rigPose.pelvisRot[0], rigPose.pelvisRot[1], rigPose.pelvisRot[2]);
+      j.torso.setRotation(rigPose.torsoRot[0], rigPose.torsoRot[1], rigPose.torsoRot[2]);
+      j.head.setRotation(rigPose.headRot[0], rigPose.headRot[1], rigPose.headRot[2]);
+      j.bag.setRotation(rigPose.bagRot[0], rigPose.bagRot[1], rigPose.bagRot[2]);
+      j.armL.setRotation(rigPose.armLRot[0], rigPose.armLRot[1], rigPose.armLRot[2]);
+      j.armR.setRotation(rigPose.armRRot[0], rigPose.armRRot[1], rigPose.armRRot[2]);
+      j.forearmR.setRotation(rigPose.forearmRRot[0], rigPose.forearmRRot[1], rigPose.forearmRRot[2]);
+      j.legL.setRotation(rigPose.legLRot[0], rigPose.legLRot[1], rigPose.legLRot[2]);
+      j.shinL.setRotation(rigPose.shinLRot[0], rigPose.shinLRot[1], rigPose.shinLRot[2]);
+      j.legR.setRotation(rigPose.legRRot[0], rigPose.legRRot[1], rigPose.legRRot[2]);
+      j.shinR.setRotation(rigPose.shinRRot[0], rigPose.shinRRot[1], rigPose.shinRRot[2]);
     } else {
-      // Skinned model: parked at HIDDEN_SCALE and kept visible (a hidden skinned mesh may never draw again once shown).
-      N.passenger.setScale(HIDDEN_SCALE);
+      N.passenger.setScale(HIDDEN_SCALE).setVisible(false);
     }
     const dzBeacon = pose.pz - r.beaconZ;
     const targetX = r.state === "ride" || r.state === "offer" ? (dzBeacon < 58 ? KERB_STOP_X : S.player.holdLane) : S.player.holdLane;

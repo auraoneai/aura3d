@@ -6,7 +6,7 @@
 // venue's post nodes. applyVenue still re-tints and toggles the dressing handles (null-safe) after a rebuild.
 
 import {
-  camera, decals, effects, game, geometry, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
+  camera, decals, effects, game, geometry, instances, lights, looks, material, primitives, scene, sky, surfaces as engineSurfaces,
   type AuraAssetRef, type AuraLookOverrides
 } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
@@ -22,6 +22,9 @@ import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMod
 import { scoreboardTextNodes } from "./scoreboard3d";
 import {
   FC_MAT,
+  FOOTBALLER_CANONICAL_HEIGHT,
+  buildArticulatedFootballerNode,
+  buildArticulatedPitchFanNode,
   buildBallTrolleyNode,
   buildBroadcastCranesBatchedNode,
   buildChampionshipTrophyNode,
@@ -43,7 +46,9 @@ import {
   buildTechnicalDugoutsBatchedNode,
   buildTrophyPlinthCollarNode,
   buildVenueBackdropNodes,
-  buildWaverSupporterGeometry
+  buildWaverSupporterGeometry,
+  poseArticulatedFootballer,
+  poseArticulatedPitchFan
 } from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { createFlipbookAtlas } from "../../../showcase-port-shared/vfx-pack";
@@ -154,7 +159,12 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
     background: drawSky ? "look" : vl.background,
     exposureEv: vl.exposureEv,
     fogDensityScale: vl.fog,
-    fog: { color: vl.fogColor, near: vl.fogRange.near, far: vl.fogRange.far },
+    fog: {
+      color: vl.fogColor,
+      near: vl.fogRange.near,
+      far: vl.fogRange.far,
+      height: { mode: "linear", near: vl.fogRange.near, far: vl.fogRange.far, maxOpacity: 0.16, affectsBackground: false }
+    } as any,
     sun: { elevationDeg: vl.sun.elevationDeg, azimuthDeg: vl.sun.azimuthDeg },
     key: {
       color: vl.key.color,
@@ -174,7 +184,7 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
   };
 }
 
-/** Hybrid look overrides: far-pushed stadium fog (`near >= 95, far >= 380`), exposure, night sky colour, grade & rim. */
+/** Hybrid look overrides: crisp far-pushed stadium fog (`near >= 180, maxOpacity <= 0.16`), exposure, night sky colour, grade & rim. */
 export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const ol = ORIGINAL_LOOKS[venue];
   const hl = HYBRID_LAYERS[venue];
@@ -182,7 +192,12 @@ export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEng
   const k = hl.key;
   return {
     fogDensityScale: hl.fogScale ?? ol.fog,
-    fog: { color: vl.fogColor, near: hl.fogRange.near, far: hl.fogRange.far },
+    fog: {
+      color: vl.fogColor,
+      near: hl.fogRange.near,
+      far: hl.fogRange.far,
+      height: { mode: "linear", near: hl.fogRange.near, far: hl.fogRange.far, maxOpacity: 0.16, affectsBackground: false }
+    } as any,
     exposureEv: hl.exposureEv,
     ...(hl.background !== undefined ? { background: hl.background } : {}),
     grade: { ...hl.grade, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venue] } : {}) },
@@ -201,9 +216,16 @@ export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEng
 /** Phase 4: half-size (m) of the hybrid key's fitted shadow box: the pitch, the goals and the first stand rows. */
 export const HYBRID_SHADOW_EXTENT = 34;
 
+function stripLookDof(lookGroup: any): any {
+  return {
+    ...lookGroup,
+    children: (lookGroup.children ?? []).filter((n: any) => n?.effect !== "depth-of-field")
+  };
+}
+
 export function venueLookNode(venue: VenueId, gates: FcEngineGates = fcEngineGates()): any {
   const vl = VENUE_LOOKS[venue];
-  const group = looks.preset(vl.look, venueLookOverrides(vl, gates)).toJSON() as any;
+  const group = stripLookDof(looks.preset(vl.look, venueLookOverrides(vl, gates)).toJSON() as any);
   if (vl.key.shadowed) return group;
   // The look key always requests a shadow; on night venues it is the unshadowed front fill (FC47-L2).
   return {
@@ -838,14 +860,11 @@ export const PITCH_FANS: readonly { readonly x: number; readonly yaw: number; re
 export const PITCH_FAN_Z = -(PITCH_HZ + 3.0);
 /** Fitted fan height: between the capsule crowd and the 2.22 m athletes, so the row reads as people at the rail. */
 export const PITCH_FAN_HEIGHT = 2.0;
-const PITCH_FAN_ASSETS = [assets.fcPitchFanAMeshy, assets.fcPitchFanBMeshy, assets.fcPitchFanCMeshy] as const;
 export function pitchFanNodes(): any[] {
   return PITCH_FANS.map((f, i) =>
-    model(PITCH_FAN_ASSETS[f.model], { name: `fc-fan-${i}`, targetHeight: PITCH_FAN_HEIGHT, castShadow: false } as any)
+    buildArticulatedPitchFanNode(i, f.model, PITCH_FAN_HEIGHT, gameRuntime)
       .position(f.x, 0, PITCH_FAN_Z)
       .rotate(0, f.yaw, 0)
-      .animate({ clip: "idle", loop: true })
-      .runtime(gameRuntime(`fc-fan-${i}`))
   );
 }
 /** The clip fan `i` plays: idle, or cheer / fist pump alternating along the row while the crowd cheers. */
@@ -1079,22 +1098,21 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       buildStadiumBowlUpperNode(v.standCount, v.accent).runtime(gameRuntime("fc-stadium-bowl"))
     ] : []),
     buildPlayerTunnelNode([PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)], v.accent),
-    model(assets.fcSoccerStrikerMeshy, {
-      name: "fc-referee",
-      targetHeight: REFEREE_TARGET_HEIGHT,
-      materialOverrides: [
-        { target: /-kit$/, color: "#e6d02e", colorMode: "replace", replaceTextures: true, roughness: 0.54, metallic: 0.02, sheen: 0.44, sheenRoughness: 0.64, sheenColor: "#fff8dc", rim: KIT_FABRIC_RIM },
-        { target: /-shorts$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.58, metallic: 0.02, sheen: 0.38, sheenRoughness: 0.68, sheenColor: "#eef4fc", rim: KIT_FABRIC_RIM },
-        { target: /-socks$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.68, metallic: 0, sheen: 0.32, sheenRoughness: 0.72, sheenColor: "#e4ecf6" },
-        { target: /-skin$/, color: "#b98462", colorMode: "replace", replaceTextures: true, roughness: 0.56, metallic: 0 },
-        { target: /-dark$/, color: "#161920", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.08, clearcoat: 0.4, clearcoatRoughness: 0.26 },
-        { target: /-eyes$/, color: "#151820", colorMode: "replace", replaceTextures: true, roughness: 0.2, metallic: 0 }
-      ]
-    } as any)
-      .position(0, 0, -(PITCH_HZ + 1.1))
-      // model() has no `animation` option; the walk is declared here and phase-locked to the patrol in tickWorld.
-      .animate({ clip: "Walk_Loop", loop: true })
-      .runtime(gameRuntime("fc-referee")),
+    buildArticulatedFootballerNode(
+      "fc-referee",
+      {
+        shirt: "#e6d02e",
+        shorts: "#15171c",
+        socks: "#15171c",
+        skin: "#b98462",
+        trim: "#15171c",
+        boots: "#161920",
+        targetHeight: REFEREE_TARGET_HEIGHT,
+        isReferee: true,
+        fabricRim: KIT_FABRIC_RIM
+      },
+      { rawRootName: true, runtimeFactory: gameRuntime }
+    ).position(0, 0, -(PITCH_HZ + 1.1)),
     // FC-19: ceremonial trophy plinth + stepped granite/brass collar + sculpted silver championship cup (minY = 0 -> y = 0.9)
     primitives.box({ name: "fc-trophy-plinth", size: [1.3, 0.9, 1.3], material: material.pbr({ color: "#1c232b", roughness: 0.45, metalness: 0.32 }) })
       .position(-PITCH_HX - 4.5, 0.45, -(PITCH_HZ + 3.5))
@@ -1192,9 +1210,18 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     // Hybrid: the 4.6.2 preset with the night sky colour, venue grade and rim layered on (look.ts HYBRID_LAYERS).
     .background(original ? ol.background : hybrid ? (hl.background ?? ol.background) : vl.background)
     .add(original
-      ? looks.preset(ol.look, { fogDensityScale: ol.fog, fog: { color: vl.fogColor, near: ol.fogRange.near, far: ol.fogRange.far }, exposureEv: ol.exposureEv })
+      ? stripLookDof(looks.preset(ol.look, {
+          fogDensityScale: ol.fog,
+          fog: {
+            color: vl.fogColor,
+            near: ol.fogRange.near,
+            far: ol.fogRange.far,
+            height: { mode: "linear", near: ol.fogRange.near, far: ol.fogRange.far, maxOpacity: 0.16, affectsBackground: false }
+          } as any,
+          exposureEv: ol.exposureEv
+        }).toJSON() as any)
       : hybrid
-        ? looks.preset(ol.look, hybridLookOverrides(venue, fcEngineGates(undefined, opts.engineGates)))
+        ? stripLookDof(looks.preset(ol.look, hybridLookOverrides(venue, fcEngineGates(undefined, opts.engineGates))).toJSON() as any)
         : venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
     .addMany(pitchNodes(v, mode))
     .addMany(goalNodes(-1, hybrid, v.accent))
@@ -1270,9 +1297,10 @@ export interface WorldHandles {
   nets: any[];
   dome: any;
   referee: any;
-  /** Meshy-07 rigged front-row fans (empty on venues without a bowl) and the clip each one is playing. */
+  /** Articulated front-row fans (empty on venues without a bowl) and the clip each one is playing. */
   fans: any[];
   fanClips: string[];
+  lookup?: (id: string) => any;
   auroras: any[];
   wavers: any;
   confetti: any;
@@ -1289,6 +1317,9 @@ const tryReq = (app: any, id: string) => { try { return app.nodes.require(id); }
 
 export function resolveWorld(app: any): WorldHandles {
   const req = (id: string) => app.nodes.require(id);
+  const lookup = (id: string) => {
+    try { return app.nodes?.get?.(id) ?? app.nodes?.require?.(id) ?? null; } catch { return null; }
+  };
   return {
     ground: req("fc-ground"), apron: req("fc-apron"), pitch: req("fc-pitch"),
     stripes: tryReq(app, "fc-stripes"),
@@ -1308,6 +1339,7 @@ export function resolveWorld(app: any): WorldHandles {
     referee: tryReq(app, "fc-referee"),
     fans: PITCH_FANS.map((_, i) => tryReq(app, `fc-fan-${i}`)).filter((n) => n !== null),
     fanClips: [],
+    lookup,
     auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-ribbon-${i}`)),
     wavers: tryReq(app, "fc-wavers"),
     confetti: tryReq(app, "fc-confetti"),
@@ -1399,14 +1431,16 @@ export function tickWorld(
   const cheer = opts.cheering;
   // Touchline referee patrols along the north touchline
   // at walking pace, Walk_Loop phase driven by distance walked so the feet do not slide.
-  const ref = refereePatrol(t, REFEREE_TARGET_HEIGHT / assets.fcSoccerStrikerMeshy.bounds[1]);
+  const ref = refereePatrol(t, REFEREE_TARGET_HEIGHT / FOOTBALLER_CANONICAL_HEIGHT);
   h.referee?.setPosition(ref.x, 0, -(PITCH_HZ + 1.1)).setRotation(0, ref.yaw, 0).setScale([1, 1, 1]);
   h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
+  poseArticulatedFootballer(h.lookup, "fc-referee", { clip: ref.clip, phase: ref.phase, duration: ref.duration });
 
   h.wavers?.setInstances?.(waverTransforms(t, cheer));
-  // Meshy-07 (FC47-AN1): fans switch clip only on a change (staggered start so the row never moves in lockstep)
+  // Front-row articulated fans switch clip only on a change and pose their joints statelessly every frame
   for (let i = 0; i < (h.fans?.length ?? 0); i++) {
     const clip = pitchFanClip(i, cheer);
+    poseArticulatedPitchFan(h.lookup, i, clip, t);
     if (h.fanClips[i] === clip) continue;
     h.fanClips[i] = clip;
     h.fans[i]?.setAnimation?.({ clip, loop: true, startTime: t - i * 0.41, crossFade: 0.25 });

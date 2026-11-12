@@ -1,11 +1,9 @@
 import {
-  game,
-  model,
+  group,
   primitives,
   material,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { assets, assets as rootAssets } from "../../../../src/aura-assets";
 import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "../gameplay/table";
 
 /**
@@ -22,11 +20,6 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
   const pBox = primitives.box;
   const pCyl = primitives.cylinder;
   const pSphere = primitives.sphere;
-
-  const clubChairAsset =
-    (rootAssets as any).billiardsClubChairMeshy ?? rootAssets.galleryMarbleBustExhibitMeshy;
-  const trophyCabinetAsset =
-    (rootAssets as any).billiardsTrophyCabinetMeshy ?? rootAssets.galleryMarbleBustExhibitMeshy;
 
   // 1. Materials
   const floorWoodMat = material.pbr({
@@ -263,15 +256,60 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     pBox({ name: "poster-art-2", material: posterMat2 }).position(1.6, 2.05, -2.61).scale([0.94, 0.84, 0.02]).toJSON()
   );
 
-  // 4. Overhead Tiffany Billiards Chandelier + 3D Lounge Club Chairs & Championship Trophy Cabinets
+  // 4. Procedural @aura3d/engine Tiffany Billiards Chandelier + Lounge Club Chairs & Championship Trophy Cabinets (zero Meshy GLBs)
   if (!options.portrait) {
+    const emeraldGlassMat = material.physical({
+      name: "tiffany-emerald-glass",
+      color: "#0f5b42",
+      emissive: "#073626",
+      emissiveIntensity: 0.42,
+      roughness: 0.22,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.14
+    });
+    const leatherChairMat = material.physical({
+      name: "tufted-oxblood-leather",
+      color: "#4a161c",
+      emissive: "#1c070a",
+      emissiveIntensity: 0.16,
+      roughness: 0.48,
+      clearcoat: 0.24,
+      sheen: 0.35,
+      sheenColor: "#8f343d"
+    });
+    const makeTrophyPedestal = (name: string, x: number, yaw: number): AuraSceneNode =>
+      group(name, [
+        pBox({ name: `${name}:plinth`, material: wallWoodMat }).position(0, 0.44, 0).scale([0.68, 0.88, 0.46]),
+        pBox({ name: `${name}:panel`, material: wallPanelInsertMat }).position(0, 0.44, 0.235).scale([0.54, 0.72, 0.02]),
+        pBox({ name: `${name}:crown`, material: brassMat }).position(0, 0.90, 0).scale([0.74, 0.04, 0.52]),
+        pCyl({ name: `${name}:cup-base`, material: wallWoodMat }).position(0, 0.98, 0).scale([0.22, 0.12, 0.22]),
+        pCyl({ name: `${name}:cup-stem`, material: brassMat }).position(0, 1.14, 0).scale([0.07, 0.22, 0.07]),
+        pCyl({ name: `${name}:cup-bowl`, material: brassMat }).position(0, 1.32, 0).scale([0.26, 0.22, 0.26])
+      ])
+        .position(x, -0.88, -2.25)
+        .rotate(0, yaw, 0)
+        .toJSON();
+    const makeClubChair = (name: string, x: number, yaw: number): AuraSceneNode =>
+      group(name, [
+        pBox({ name: `${name}:seat`, material: leatherChairMat }).position(0, 0.34, 0.04).scale([0.84, 0.28, 0.78]),
+        pBox({ name: `${name}:back`, material: leatherChairMat }).position(0, 0.74, -0.28).rotate(-0.12, 0, 0).scale([0.82, 0.64, 0.22]),
+        pBox({ name: `${name}:arm-l`, material: leatherChairMat }).position(-0.38, 0.52, 0.02).scale([0.18, 0.34, 0.76]),
+        pBox({ name: `${name}:arm-r`, material: leatherChairMat }).position(0.38, 0.52, 0.02).scale([0.18, 0.34, 0.76]),
+        pBox({ name: `${name}:frame`, material: wallWoodMat }).position(0, 0.14, 0.02).scale([0.88, 0.12, 0.80])
+      ])
+        .position(x, -0.88, -1.75)
+        .rotate(0, yaw, 0)
+        .toJSON();
+
     nodes.push(
-      model(rootAssets.bankShotBilliardLampMeshy, {
-        name: "billiard-hall-pendant-lamp-3d",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 1.55
-      })
+      group("billiard-hall-pendant-lamp-3d", [
+        pBox({ name: "pendant-crossbar", material: brassMat }).position(0, 0.22, 0).scale([1.28, 0.036, 0.036]),
+        ...[-0.52, 0, 0.52].flatMap((lx, idx) => [
+          pCyl({ name: `pendant-shade-cone-${idx}`, material: emeraldGlassMat }).position(lx, 0.04, 0).scale([0.38, 0.22, 0.38]),
+          pCyl({ name: `pendant-shade-cap-${idx}`, material: brassMat }).position(lx, 0.16, 0).scale([0.12, 0.06, 0.12]),
+          pBox({ name: `pendant-shade-rim-${idx}`, material: brassMat }).position(lx, -0.07, 0).scale([0.40, 0.022, 0.40])
+        ])
+      ])
         .position(0, 1.24, -0.14)
         .toJSON(),
       pCyl({ name: "billiard-hall-pendant-rod-left", material: brassMat })
@@ -282,42 +320,10 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
         .position(0.48, 1.95, -0.14)
         .scale([0.018, 1.1, 0.018])
         .toJSON(),
-      model(trophyCabinetAsset, {
-        name: "billiard-hall-trophy-pedestal-left",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 1.6
-      })
-        .position(-1.55, -0.1, -2.25)
-        .rotate(0, 0.18, 0)
-        .toJSON(),
-      model(trophyCabinetAsset, {
-        name: "billiard-hall-trophy-pedestal-right",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 1.6
-      })
-        .position(1.55, -0.1, -2.25)
-        .rotate(0, -0.18, 0)
-        .toJSON(),
-      model(clubChairAsset, {
-        name: "billiard-hall-club-chair-left",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 1.25
-      })
-        .position(-2.55, -0.28, -1.75)
-        .rotate(0, 0.58, 0)
-        .toJSON(),
-      model(clubChairAsset, {
-        name: "billiard-hall-club-chair-right",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 1.25
-      })
-        .position(2.55, -0.28, -1.75)
-        .rotate(0, -0.58, 0)
-        .toJSON()
+      makeTrophyPedestal("billiard-hall-trophy-pedestal-left", -1.55, 0.18),
+      makeTrophyPedestal("billiard-hall-trophy-pedestal-right", 1.55, -0.18),
+      makeClubChair("billiard-hall-club-chair-left", -2.55, 0.58),
+      makeClubChair("billiard-hall-club-chair-right", 2.55, -0.58)
     );
     [-0.52, 0, 0.52].forEach((lx, idx) => {
       nodes.push(

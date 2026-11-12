@@ -1,78 +1,86 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { clipDuration, forward, localPose, nodeIndex, qrot, readGlb } from "../../../tools/aura-fc/glb.mjs";
-import { BALL_MODEL, BALL_RADIUS_MODEL, CONTACT_FRAC, TOE_POINT } from "../../../tools/aura-fc/bake-kick.mjs";
+import { CLIP_SECONDS } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
+import { computeFootballerJointPose, type FootballerJointPose } from "../../../apps/showcase-aura-fc-3d/src/art/proceduralModels";
 
-/**
- * The baked KickTap / KickPass / KickShot clips, measured from the animation data inside the shipped GLBs (not from
- * the baker's own report): the boot meets the ball at the sim's launch fraction, the swing runs along the kick
- * line, the standing foot stays planted, and nothing goes through the floor.
- */
-const manifest = readFileSync("apps/showcase-aura-fc-3d/src/aura-assets-v2.ts", "utf8");
-const glbPath = (key: string) => `public${/url: "([^"]+)"/.exec(manifest.slice(manifest.indexOf(`${key}: {`)))![1]}`;
 const KICKS = ["KickTap", "KickPass", "KickShot"] as const;
-// sim.ts launch angles (deg) at the kick powers each clip covers: pass 20 + 8p (p .12..0.75), shot/driven 10..16
-const LAUNCH_ELEVATION: Record<(typeof KICKS)[number], [number, number]> = { KickTap: [20.9, 22], KickPass: [22, 26], KickShot: [12, 16.5] };
 
-function sample(glbFile: string, clipName: string) {
-  const glb = readGlb(glbFile);
-  const anim = glb.json.animations.find((a: { name: string }) => a.name === clipName);
-  expect(anim, `${glbFile} has ${clipName}`).toBeTruthy();
-  const dur = clipDuration(glb, anim);
-  const n = Math.round(dur * 60);
-  const frames = Array.from({ length: n + 1 }, (_, k) => forward(glb, localPose(glb, anim, (dur * k) / n)));
-  return { glb, dur, n, frames, id: nodeIndex(glb).id };
+/** Forward kinematics for the footballer's legs in model space (`+Y` up, `+Z` forward). */
+function sampleFootKinematics(pose: FootballerJointPose) {
+  const hipY = pose.pelvisOffsetY - 0.02;
+  const hipZ = pose.pelvisOffsetZ;
+  const fk = (hipRx: number, kneeRx: number, bootRx: number, x: number) => {
+    const a1 = hipRx;
+    const kneeY = hipY - 0.43 * Math.cos(a1);
+    const kneeZ = hipZ - 0.43 * Math.sin(a1);
+    const a2 = hipRx + kneeRx;
+    const ankleY = kneeY - 0.41 * Math.cos(a2);
+    const ankleZ = kneeZ - 0.41 * Math.sin(a2);
+    const a3 = a2 + bootRx;
+    // Toe tip at `[0, -0.075, +0.188]` in boot local space
+    const dy = -0.075 * Math.cos(a3) - 0.188 * Math.sin(a3);
+    const dz = -0.075 * Math.sin(a3) + 0.188 * Math.cos(a3);
+    return {
+      ankle: [x, ankleY, ankleZ] as [number, number, number],
+      toe: [x, ankleY + dy, ankleZ + dz] as [number, number, number]
+    };
+  };
+  return {
+    left: fk(pose.legL[0], pose.calfL[0], pose.bootL[0], 0.102),
+    right: fk(pose.legR[0], pose.calfR[0], pose.bootR[0], -0.102)
+  };
 }
-const tip = (f: any, id: (n: string) => number) => {
-  const a = f.pos[id("RightFoot")], o = qrot(f.rot[id("RightFoot")], TOE_POINT);
-  return [a[0] + o[0], a[1] + o[1], a[2] + o[2]] as [number, number, number];
-};
 
-describe.each([["striker", "fcSoccerStrikerMeshy"], ["keeper", "fcGoalkeeperMeshy"]])("%s kick clips", (_label, key) => {
-  const file = glbPath(key);
+describe.each([
+  ["striker", false],
+  ["keeper", true]
+] as const)("%s procedural kick kinematics", (_label, isKeeper) => {
   for (const clip of KICKS) {
-    it(`${clip}: boot meets the ball at the launch fraction, along the kick line`, () => {
-      const { dur, n, frames, id } = sample(file, clip);
+    it(`${clip}: whips the striking boot forward along the +Z kick line through contact and follow-through`, () => {
+      const dur = CLIP_SECONDS[clip]!;
       expect(dur).toBeCloseTo(0.6, 3);
-      const kc = Math.round(CONTACT_FRAC * n);
-      const dt = 1 / 60;
-      const p = tip(frames[kc], id);
-      const toBall = Math.hypot(p[0] - BALL_MODEL[0], p[1] - BALL_MODEL[1], p[2] - BALL_MODEL[2]);
-      expect(toBall).toBeLessThan(BALL_RADIUS_MODEL);              // boot tip is inside the ball at the strike frame
-      const a = tip(frames[kc - 1], id), b = tip(frames[kc + 1], id);
+      const n = 36;
+      const dt = dur / n;
+      const frames = Array.from({ length: n + 1 }, (_, k) =>
+        sampleFootKinematics(computeFootballerJointPose({ clip, phase: (dur * k) / n, duration: dur, isKeeper }))
+      );
+      const contactIdx = Math.round(0.56 * n);
+      const a = frames[contactIdx - 1]!.right.toe;
+      const b = frames[contactIdx + 1]!.right.toe;
       const v = [(b[0] - a[0]) / (2 * dt), (b[1] - a[1]) / (2 * dt), (b[2] - a[2]) / (2 * dt)];
-      const yaw = Math.abs(Math.atan2(v[0], v[2]) * 180 / Math.PI);
-      const elev = Math.atan2(v[1], Math.hypot(v[0], v[2])) * 180 / Math.PI;
-      expect(yaw).toBeLessThan(15);                                  // swing runs along the (model-forward) kick line
-      const [lo, hi] = LAUNCH_ELEVATION[clip];
-      expect(Math.abs(elev - (lo + hi) / 2)).toBeLessThan(15);       // and rises about like the launch it produces
-      expect(Math.hypot(...v)).toBeGreaterThan(3.5);                 // fastest point of the swing (model units/s)
-      const speeds = frames.slice(1, -1).map((_f, i) => { const q0 = tip(frames[i], id), q1 = tip(frames[i + 2], id); return Math.hypot(q1[0] - q0[0], q1[1] - q0[1], q1[2] - q0[2]) / (2 * dt); });
-      expect(speeds[kc - 1]).toBeGreaterThan(Math.max(...speeds) * 0.85);   // contact is at (or within 15% of) peak speed
+      const yawDeg = Math.abs((Math.atan2(v[0], v[2]) * 180) / Math.PI);
+      expect(yawDeg).toBeLessThan(5);
+      expect(v[2]).toBeGreaterThan(2.5);
     });
 
-    it(`${clip}: standing foot stays planted, feet never go through the floor, backswing precedes the strike`, () => {
-      const { frames, id } = sample(file, clip);
-      const left0 = frames[0].pos[id("LeftFoot")];
-      let drift = 0, minAnkle = 9;
+    it(`${clip}: standing foot stays planted, ankles stay above the turf, and backswing precedes the strike`, () => {
+      const dur = CLIP_SECONDS[clip]!;
+      const n = 36;
+      const frames = Array.from({ length: n + 1 }, (_, k) =>
+        sampleFootKinematics(computeFootballerJointPose({ clip, phase: (dur * k) / n, duration: dur, isKeeper }))
+      );
+      const left0 = frames[0]!.left.ankle;
+      let drift = 0;
+      let minAnkle = 9;
       for (const f of frames) {
-        const l = f.pos[id("LeftFoot")], r = f.pos[id("RightFoot")];
+        const l = f.left.ankle;
+        const r = f.right.ankle;
         drift = Math.max(drift, Math.hypot(l[0] - left0[0], l[1] - left0[1], l[2] - left0[2]));
         minAnkle = Math.min(minAnkle, l[1], r[1]);
       }
-      expect(drift).toBeLessThan(0.012);                              // < 1.2 cm over the whole swing
-      expect(minAnkle).toBeGreaterThan(0.14);                         // ankle joint stays above the rest height - 1 cm
-      const z = frames.map((f) => f.pos[id("RightFoot")][2]);
-      const kc = Math.round(CONTACT_FRAC * (frames.length - 1));
-      expect(Math.min(...z.slice(0, kc))).toBeLessThan(-0.2);         // boot goes back first
-      expect(z[kc]).toBeGreaterThan(Math.min(...z) + 0.2);            // then comes forward through the ball
-      expect(z.at(-1)!).toBeGreaterThan(z[kc]!);                      // and follows through
+      expect(drift).toBeLessThan(0.005);
+      expect(minAnkle).toBeGreaterThan(0.08);
+      const z = frames.map((f) => f.right.ankle[2]);
+      const kc = Math.round(0.58 * n);
+      expect(Math.min(...z.slice(0, kc))).toBeLessThan(-0.2);
+      expect(z[kc]!).toBeGreaterThan(Math.min(...z) + 0.25);
+      expect(z.at(-1)!).toBeGreaterThan(z[kc]!);
     });
   }
 
-  it("the original Shoot clip has no kick in it (why the kit boxes looked like a second set of legs)", () => {
-    const { frames, id } = sample(file, "Shoot");
-    const z = frames.map((f) => f.pos[id("RightFoot")][2]);
-    expect(Math.max(...z) - Math.min(...z)).toBeLessThan(0.35);
+  it("poses are purely stateless (identical phase produces identical joint Euler angles regardless of call order)", () => {
+    const a = computeFootballerJointPose({ clip: "KickShot", phase: 0.33, duration: 0.6, isKeeper });
+    computeFootballerJointPose({ clip: "Sprint_Loop", phase: 0.21, duration: 0.48, isKeeper });
+    const b = computeFootballerJointPose({ clip: "KickShot", phase: 0.33, duration: 0.6, isKeeper });
+    expect(b).toEqual(a);
   });
 });

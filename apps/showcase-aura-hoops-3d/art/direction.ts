@@ -50,14 +50,9 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.22, 0.5], fovDeg: [30, 44], mobile: "both" },
   assets: [
-    // WP-07: Only the 15-joint streetball athletes (guards & bigs) and 6 seated skinned fans remain GLB assets;
-    // all 22 static props, hoop stanchions, backboards, rims, basketballs, standing crowds, and 5 streetball venues
-    // are sculpted procedurally with multi-material `@aura3d/engine` presets in `src/art/proceduralModels.ts`.
-    { role: "character", assetKey: "hoopsAthleteGuardKit", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Crouch_Idle_Loop", "Run", "Sprint_Loop", "Shoot", "Jump_Loop", "Contest"] } },
-    { role: "character", assetKey: "hoopsAthleteBigKit", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Crouch_Idle_Loop", "Run", "Sprint_Loop", "Shoot", "Jump_Loop", "Contest"] } },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanAPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanCPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanDPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
+    // 100% procedural multi-material `@aura3d/engine` art: all streetball athletes (guards & bigs), seated animated
+    // courtside fans, standing instanced crowds, hoop stanchions, backboards, rims, basketballs, and 6 world venues
+    // are sculpted in `src/art/proceduralModels.ts` with zero Meshy `.glb` model assets.
   ],
   // Every juice event that draws maps to one kind of the src/fxPack.ts pack (H47-V1); the spray tag is H47-V3.
   vfx: [

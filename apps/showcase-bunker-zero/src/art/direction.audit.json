@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-bunker-zero/src/art/direction.ts",
-  "sourceSha256": "7d25602183a6cf79efb57996c9a99aa89d3e5cc2da76991cdabd24c4baa00097",
+  "sourceSha256": "df3f424708675f3d5acc5afc575d8dfa40f36f0f937565284f57c562aabf2cbc",
   "id": "showcase-bunker-zero",
   "genre": "arena-shooter",
   "signatureEffect": "Gunfire lights the room: every shot, ricochet and blast throws a warm transient light across board-formed concrete between the pools of the floor's own lamps.",
@@ -62,64 +62,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "bzBulkheadLamp",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzGuardMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzGunnerMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzHoundMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzMachete",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzMedicalBox",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzShutterDoor",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bzWardenMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [],
     "drawCalls": 0
   },
@@ -184,104 +127,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "enemy",
-        "assetKey": "bzGuardMeshy",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Walk_Loop",
-            "Run",
-            "Shoot",
-            "Contest",
-            "Idle_Loop"
-          ]
-        }
-      },
-      {
-        "role": "enemy",
-        "assetKey": "bzHoundMeshy",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Walk_Loop",
-            "Run",
-            "Shoot",
-            "Contest",
-            "Idle_Loop"
-          ]
-        }
-      },
-      {
-        "role": "enemy",
-        "assetKey": "bzGunnerMeshy",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Walk_Loop",
-            "Run",
-            "Shoot",
-            "Contest",
-            "Idle_Loop"
-          ]
-        }
-      },
-      {
-        "role": "enemy",
-        "assetKey": "bzWardenMeshy",
-        "maxTriangles": 90000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Walk_Loop",
-            "Run",
-            "Shoot",
-            "Contest",
-            "Idle_Loop"
-          ]
-        }
-      },
-      {
-        "role": "prop",
-        "assetKey": "bzMachete",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "bzMedicalBox",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "bzBulkheadLamp",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "bzShutterDoor",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "player-fire",

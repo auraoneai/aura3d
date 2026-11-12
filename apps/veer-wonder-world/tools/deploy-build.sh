@@ -26,4 +26,4 @@ for file in _headers robots.txt 404.html manifest.webmanifest icon.svg; do
 done
 node "$APP_DIR/tools/check-dist.mjs"
 cd "$APP_DIR"
-npx -y @aura3d/cli@5.5.3 check-deploy --dist dist --no-assets
+npx -y @aura3d/cli@5.5.4 check-deploy --dist dist --no-assets

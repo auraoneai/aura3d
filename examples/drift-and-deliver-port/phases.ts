@@ -110,8 +110,8 @@ export const PHASES: readonly PhaseRow[] = [
     // phase 3 round 3: key up, IBL fill down, so the buildings, poles and the courier throw shadows the eye can see
     // (rubric g18p3-r2: "no shadows despite a low sun"; the venice_sunset fill at 1.0 washed them out)
     environmentIntensity: 0.62,
-    // WP-22 crisp Mediterranean sunlight: push linear distance fog past 120..460 m so foreground streets, terracotta roofs & trees read with zero tan haze
-    fog: { color: "#efc896", density: 0.00045, near: 120, far: 460, maxOpacity: 0.42 },
+    // Crisp Mediterranean sunlight: linear distance fog pushed to 180..560 m (maxOpacity 0.24) with zero foreground haze wash
+    fog: { color: "#efc896", density: 0.00022, near: 180, far: 560, maxOpacity: 0.24 },
     sky: { horizon: "#ffd9a8", mid: "#f4b98e", top: "#d9956f", glow: "#ffd08a", clouds: 0.55, stars: 0 },
     grade: { contrast: 1.24, saturation: 1.32, temperature: 0.08 },
     bloom: { intensity: 0.42, threshold: 0.94 },
@@ -133,8 +133,8 @@ export const PHASES: readonly PhaseRow[] = [
     key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.8 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
     environmentIntensity: 0.55,
-    // WP-22 crisp sunset aerial perspective: linear distance fog starts at 100 m .. 380 m
-    fog: { color: "#d8967a", density: 0.00058, near: 100, far: 380, maxOpacity: 0.52 },
+    // Crisp sunset aerial perspective: linear distance fog 165..520 m (maxOpacity 0.26)
+    fog: { color: "#d8967a", density: 0.00026, near: 165, far: 520, maxOpacity: 0.26 },
     // phase 3: glow and horizon a step down (the panel read the sunset vanishing point as slightly blown out)
     sky: { horizon: "#f28a52", mid: "#e07a62", top: "#9c5a70", glow: "#f59a5e", clouds: 0.5, stars: 0 },
     grade: { contrast: 1.23, saturation: 1.3, temperature: 0.1 },
@@ -157,7 +157,7 @@ export const PHASES: readonly PhaseRow[] = [
     key: { azimuthDeg: SUN_AZ + 180, elevationDeg: 38, color: "#9fb4ff", intensity: 0.95 },
     hemisphere: { sky: "#4a5c8a", ground: "#1e2230", intensity: 0.32 },
     environmentIntensity: 0.35,
-    fog: { color: "#2a3550", density: 0.0011, near: 90, far: 340, maxOpacity: 0.64 },
+    fog: { color: "#2a3550", density: 0.00032, near: 160, far: 500, maxOpacity: 0.28 },
     sky: { horizon: "#6f80aa", mid: "#3d4f80", top: "#1b2852", glow: "#d98a6a", clouds: 0.35, stars: 1 },
     grade: { contrast: 1.12, saturation: 1.06, temperature: -0.1 },
     bloom: { intensity: 0.66, threshold: 0.86 },
@@ -182,7 +182,7 @@ export const ORIGINAL: PhaseRow = {
   key: { azimuthDeg: -150.4, elevationDeg: 21, color: "#ffbf80", intensity: 4.4 },
   hemisphere: { sky: "#ffe0b0", ground: "#c9a070", intensity: 0.3 },
   environmentIntensity: 1.0,
-  fog: { color: "#f0dcc0", density: 0.0005, near: 115, far: 440, maxOpacity: 0.42 },
+  fog: { color: "#f0dcc0", density: 0.00024, near: 180, far: 560, maxOpacity: 0.24 },
   sky: { horizon: "#f0dcc0", mid: "#f5d5b0", top: "#e9c08c", glow: "#ffd18c", clouds: 0, stars: 0 },
   grade: { contrast: 1.06, saturation: 1.38, temperature: 0 },
   bloom: { intensity: 0.35, threshold: 1.05 },

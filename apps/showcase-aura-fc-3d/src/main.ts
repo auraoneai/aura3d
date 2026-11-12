@@ -946,13 +946,7 @@ function boot(): void {
         touch: touchControls?.evidence?.() ?? null,
         audio: (audio as any)?.evidence ?? null,
         eventLog: eventLog.snapshot(),
-        meshyAssets: [
-          "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
-          "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
-          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy",
-          "fcStandModuleMeshy", "fcPlayerTunnelMeshy",
-          "fcPitchFanAMeshy", "fcPitchFanBMeshy", "fcPitchFanCMeshy"
-        ],
+        meshyAssets: [],
         // Meshy-07 (FC47-AN1): the clip each mounted front-row fan plays (idle; cheer / pump during a goal)
         pitchFanClips: [...(world?.fanClips ?? [])],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
@@ -1118,6 +1112,7 @@ function boot(): void {
     .catch((err) => console.warn("[fc3d] app.ready warning", err))
     .finally(() => {
       appReady = true;
+      applyPostAccessibility(app, reducedMotion);
       loading.set(0.7, "Mounted");
       // first presented frame closes the bar; any failure or missing API closes it too (never leaves it stuck)
       Promise.resolve((app as any).readiness?.({ stage: "first-frame" })).catch(() => undefined).finally(() => loading.done("Ready"));

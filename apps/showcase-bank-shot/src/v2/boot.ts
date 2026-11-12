@@ -341,8 +341,14 @@ void game.ready().then(() => {
   // C-22 camera rig (stand-in: applied when app.camera is real).
   const rig = createBankShotRig(rigState);
   game.app.camera?.use?.(rig, { blend: 0.4 });
-  // C-05 output: "cinematic-film" preset + exposureEV 0 → linear 1.
-  game.app.setOutput?.({ preset: "cinematic-film", exposure: 1 });
+  // C-05 output: crisp DoF-free AgX output + exposureEV 0 → linear 1 (preventing implicit cinematic-film DoF blur on felt/balls).
+  game.app.setOutput?.({ toneMapping: "agx", exposure: 1 });
+  try {
+    (game.app as unknown as { post?: { setEffect?: (k: string, v: Record<string, unknown>) => void } }).post?.setEffect?.("depthOfField", {
+      enabled: false,
+      maxBlur: 0
+    });
+  } catch { /* post optional */ }
 
   publishBankShotEvidence({
     game, sim, rules, cue: cueController, rigState,

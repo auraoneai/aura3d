@@ -2,7 +2,7 @@
  * Saltwind Highway world on the public `@aura3d/engine` surface: a procedural sunset sky dome, a footprint-filtered ocean,
  * stratified coastal cliffs, guardrails, the road ribbon, kickers and roofline shortcuts (`geometry.dynamic` + `material.custom`),
  * relay gates, data cells and hazards, the sculpted classic GT roadster with 4 independent wheels, and every traffic and lineup
- * vehicle in `batched.mesh`es (`meshy.ts`, `PORTING-NOTES.md`).
+ * vehicle in `batched.mesh`es (`art/proceduralModels.ts`, `PORTING-NOTES.md`).
  */
 import {
   batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D,
@@ -36,10 +36,9 @@ import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
 import { beamSpec, blobFadeFor, blobSpec, citySpec, coveWaterSpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, strataSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
-import { hasMeshy, meshyLodGeometry, meshySize } from "./meshy";
 import {
   ROADSTER_FRONT_Z, ROADSTER_HALF_H, ROADSTER_HEIGHT, ROADSTER_HALF_L, ROADSTER_HALF_W, ROADSTER_REAR_Z, ROADSTER_TRACK_X, ROADSTER_WHEEL_RADIUS,
-  computeWheelWorldPose, getRoadsterRigGeometries, type RoadsterMesh
+  composeChassisEuler, computeWheelWorldPose, getRoadsterRigGeometries, type RoadsterMesh
 } from "./roadsterRig";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
@@ -369,8 +368,8 @@ const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
 };
 
 /**
- * GU47 phase 6 (WP-32 triangle budget, PRD D7): repeated Meshy props and traffic draw their full mesh only within
- * `LOD_NEAR_M` of the camera and a baked LOD (`tools/bake-lod.mjs`, error <= 4% of the model) beyond it. Only the near set
+ * GU47 phase 6 (WP-32 triangle budget, PRD D7): repeated procedural props and traffic draw their full mesh only within
+ * `LOD_NEAR_M` of the camera and a lightweight procedural `-far` LOD (`art/proceduralModels.ts`) beyond it. Only the near set
  * casts shadows: the single sun cascade covers 75 m, so a far caster never reached the map but cost a full depth draw.
  * At 150 m a 10 m tree is about 40 px tall on 720p; the LOD error stays under 2 px there. `?lod=0` and `?look=original`
  * keep one full-mesh draw per kind.
@@ -550,15 +549,11 @@ export const gantryColours = (look: Look): { frame: Vec3; glow: Vec3; glowAmount
   return { frame: hexLinear(parseInt(g.frame.slice(1), 16)) as Vec3, glow: hexLinear(parseInt(g.glow.slice(1), 16)) as Vec3, glowAmount: g.glowAmount };
 };
 
-/** RH47-07: a small salt-toned flare (pixel sizes) instead of the 700 px default halo. */
-const SUN_FLARE = [
-  { size: 260, distance: 0, color: "#fff1d6" },
-  { size: 36, distance: 0.45, color: "#e9e4d6" },
-  { size: 64, distance: 0.7, color: "#9fd0cc" },
-  { size: 28, distance: 1.0, color: "#ffd2a8" }
-] as const;
-
-export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeof location !== "undefined" ? lookModeFrom(location.search) : "gu47"): World {
+export function buildWorld(
+  levelIndex: number,
+  mode: "gu47" | "original" = typeof location !== "undefined" ? lookModeFrom(location.search) : "gu47",
+  options: { readonly richScenery?: boolean } = {}
+): World {
   const level = LEVELS[levelIndex]!;
   const look = lookFor(level.id, mode);
   const row = look.row;
@@ -588,9 +583,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
   }
   if (enabled("fog")) {
-    const fogNear = Math.max(115, Math.min(look.fogNear, 240));
-    const fogFar = Math.max(480, Math.min(look.fogFar, 1200));
-    builder.add(effects.fog({ name: "haze", mode: "linear", near: fogNear, far: fogFar, maxOpacity: 0.68, density: look.engineFogDensity, color: look.engineFog }));
+    const fogNear = Math.max(look.fogNear, 360);
+    const fogFar = Math.max(look.fogFar, 2800);
+    builder.add(effects.fog({ name: "haze", mode: "linear", near: fogNear, far: fogFar, maxOpacity: 0.34, affectsBackground: false, color: look.engineFog }));
   }
   if (enabled("post")) {
     if (row) {
@@ -598,7 +593,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       builder
         .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.58, radius: 0.9 }))
         .add(effects.screenSpaceReflections({ name: "ssr", intensity: row.id === "halo" ? 0.72 : 0.58, maxDistance: 36, roughness: 0.22, thickness: 0.28 }))
-        .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: row.id === "halo" ? 0.16 : 0.34, decay: 0.95, samples: 48, color: row.sun.color }))
+        .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.04, density: 0.25, decay: 0.95, samples: 48, color: row.sun.color }))
         .add(effects.cinematicBloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }));
     } else {
       builder.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }));
@@ -608,7 +603,6 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));
     if (row && row.post.grain > 0) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain }));
-    if (row && row.post.flare > 0) builder.add(lights.lensFlare({ name: "sun flare", light: "sun", intensity: row.post.flare, occlusion: "frustum", elements: SUN_FLARE }));
   }
 
   const width = level.width;
@@ -640,8 +634,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
   builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
-  const inBrowser = typeof window !== "undefined";
-  const richModelReady = (key: string): boolean => inBrowser || hasMeshy(key);
+  const richSceneryOn = options.richScenery ?? (row !== null);
+  const richModelReady = (_key: string): boolean => richSceneryOn;
   const palette = createSaltwindMaterialPalette();
   const scenery = getProceduralSceneryLibrary();
 
@@ -736,7 +730,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- WP-26 sculpted multi-material coastal scenery: headland lighthouse, cliffside villas & townhouses, palms, pines, boulders ---- */
   const lodOn = row !== null && enabled("lod");
-  const farLodReady = (key: string): boolean => lodOn && (inBrowser || Boolean(meshyLodGeometry(key)));
+  const farLodReady = (_key: string): boolean => lodOn && richSceneryOn;
   const lodScatter: LodScatter[] = [];
   const lodFarNodes: Parameters<typeof builder.add>[0][] = [];
   let hasBeaconBeam = false;
@@ -1209,7 +1203,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   /* ---- Legacy fallback sports car (`?look=original` without rich player) ---- */
   const nativeSize: readonly [number, number, number] = heroSculpted
     ? [ROADSTER_HALF_W * 2, ROADSTER_HEIGHT, ROADSTER_HALF_L * 2]
-    : legacyRichPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
+    : carNativeSize("sportsCar");
   const playerHeight = heroSculpted ? ROADSTER_HEIGHT : nativeSize[1] * PLAYER_SCALE;
   if (!heroSculpted && !legacyRichPlayer) {
     const playerPaint = material.carPaint({ color: "#1b5e63", roughness: 0.18, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.04 });
@@ -1485,13 +1479,14 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           const body = lean ? lean.step(run, dt) : { roll: 0, pitch: 0 };
           const chassisPitch = pitch + body.pitch;
           const chassisRoll = rollAngle + body.roll;
-          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(chassisPitch, psi, chassisRoll); }
+          const chassisRot = composeChassisEuler(chassisPitch, psi, chassisRoll);
+          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(chassisRot[0], chassisRot[1], chassisRot[2]); }
           if (wheels.length) {
             if (!reducedMotionOn) wheelSpin = (wheelSpin + (run.v * realDt) / ROADSTER_WHEEL_RADIUS) % (Math.PI * 200);
             const targetSteer = Math.max(-1, Math.min(1, run.wheel));
             steerSmooth += (targetSteer - steerSmooth) * (1 - Math.exp(-16 * realDt));
             const frontSteerYaw = Math.max(-0.42, Math.min(0.42, -steerSmooth * 0.42));
-            // Wheels stay planted on the road (`carBaseP`, without chassis jounce dip) while spinning & steering
+            // Wheels stay planted on the road (`carBaseP`, without chassis jounce dip) while spinning & steering cleanly via ZYX
             const wheelFrameEuler: Vec3 = [pitch, psi, rollAngle];
             for (const w of wheels) {
               const wPose = computeWheelWorldPose(carBaseP, wheelFrameEuler, w.offset, w.front ? frontSteerYaw : 0, wheelSpin);
@@ -1499,17 +1494,16 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
               w.tire.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
               w.rim.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
               w.rim.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
-              const axleYaw = psi + (w.front ? frontSteerYaw : 0);
               w.rotor.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
-              w.rotor.setRotation(pitch, axleYaw, rollAngle);
+              w.rotor.setRotation(wPose.knuckleRotation[0], wPose.knuckleRotation[1], wPose.knuckleRotation[2]);
             }
           }
           if (beaconBeam) beaconBeam.setRotation(0, time * (reducedMotionOn ? 0.12 : 0.42), 0);
           const racing = run.phase === "running" || run.phase === "countdown";
           const rolling = run.phase === "running";
           const burning = rolling && (run.boosting || run.nitro > 0);
-          for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(chassisPitch, psi, chassisRoll); beam.setVisible(racing); }
-          for (const boost of boostBeams) { boost.setPosition(carP[0], carP[1], carP[2]); boost.setRotation(chassisPitch, psi, chassisRoll); boost.setVisible(burning); }
+          for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(chassisRot[0], chassisRot[1], chassisRot[2]); beam.setVisible(racing); }
+          for (const boost of boostBeams) { boost.setPosition(carP[0], carP[1], carP[2]); boost.setRotation(chassisRot[0], chassisRot[1], chassisRot[2]); boost.setVisible(burning); }
           if (rotors) {
             turbineHubs.forEach((hub, ti) => {
               for (let b = 0; b < ROTOR_BLADES; b++) rotors.setMatrixAt(rotorSlots[ti * ROTOR_BLADES + b]!, bladeMatrix(hub, rotorAngle(time, ti, reducedMotionOn) + (b * Math.PI * 2) / ROTOR_BLADES, scratch));
@@ -1524,8 +1518,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           }
           if (blob) {
             const under = roadPoint(level, run.s, run.l, 0.04);
+            const blobRot = composeChassisEuler(0, psi, prof.bank);
             blob.setPosition(under[0], under[1], under[2]);
-            blob.setRotation(0, psi, prof.bank);
+            blob.setRotation(blobRot[0], blobRot[1], blobRot[2]);
             blob.setUniform?.("blobFade", blobFadeFor(run.h));
           }
           const trailDir: Vec3 = [Math.sin(psi), 0, Math.cos(psi)];

@@ -59,12 +59,12 @@ export const BZ_POST = {
  */
 export const BZ_OUTPUT_EXPOSURE = 0.98;
 
-/** WP-11: dark slate linear fog envelope (`near >= 38, far >= 150`, zero milky grey washout in corridors). */
+/** WP-11: crisp dark-slate linear corridor fog (`near >= 140, far >= 360, maxOpacity <= 0.26`, zero milky washout). */
 export const BZ_SLATE_FOG = {
-  color: "#141922",
-  near: 42,
-  far: 165,
-  maxOpacity: 0.62
+  color: "#10151d",
+  near: 148,
+  far: 380,
+  maxOpacity: 0.22
 } as const;
 
 /**

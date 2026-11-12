@@ -565,6 +565,11 @@ function copyAuraAssets(onlyRoute) {
       ignoredTokens.add(assetId);
       continue;
     }
+    // All 30 public showcase games mount 100% @aura3d/engine procedural geometry (zero GLB models).
+    // Skip model entries so historical sourcePath / documentation mentions never copy root GLBs into marketing/dist/aura-assets/.
+    if (asset.type === "model") {
+      continue;
+    }
     copyAuraAssetFile(asset.url);
     if (asset.thumbnailUrl) copyAuraAssetFile(asset.thumbnailUrl);
     copiedAssetIds.add(assetId);
@@ -573,21 +578,6 @@ function copyAuraAssets(onlyRoute) {
   console.log(`Copied ${copiedAssetIds.size} typed Aura assets for website showcase routes.`);
   if (ignoredTokens.size > 0) {
     console.log(`Ignored non-asset documentation tokens: ${Array.from(ignoredTokens).sort().join(", ")}.`);
-  }
-
-  /*
-   * GLB-embedded companion textures (e.g. `Textures/texture-e.png` referenced
-   * by URI inside showcaseRunnerGirl) are invisible to the `assets.*` source
-   * collector above, so they would 404 in production (seen live 2026-09-22 on
-   * Gallery Shift). Mirror the whole companion directory when present.
-   */
-  const companionTextures = path.join(repoRoot, "public", "aura-assets", "Textures");
-  if (existsSync(companionTextures)) {
-    if (!onlyRoute) assertNoGitLfsPointers(companionTextures, "public/aura-assets/Textures");
-    const target = path.join(distDir, "aura-assets", "Textures");
-    mkdirSync(target, { recursive: true });
-    cpSync(companionTextures, target, { recursive: true });
-    console.log(`Mirrored GLB companion textures to aura-assets/Textures/.`);
   }
 
   for (const sharedPublicSubdir of ["aura-environments", "aura-decoders", "hdri", "packs", "probes"]) {

@@ -183,21 +183,19 @@ export const SPRINT_MATERIALS = {
     metallic: 1,
     envMapIntensity: 1.5
   }),
-  gantryBrushedMetal: material.brushedMetal({
+  gantryBrushedMetal: material.studioMetal({
     name: "sss-gantry-brushed-metal",
     color: "#d4dfec",
-    roughness: 0.26,
-    anisotropy: 0.88,
-    anisotropyRotation: 0,
-    envMapIntensity: 1.48
+    roughness: 0.22,
+    metallic: 0.94,
+    envMapIntensity: 1.38
   }),
-  slateBrushedMetal: material.brushedMetal({
+  slateBrushedMetal: material.studioMetal({
     name: "sss-slate-brushed-metal",
     color: "#435068",
-    roughness: 0.32,
-    anisotropy: 0.82,
-    anisotropyRotation: 1.5708,
-    envMapIntensity: 1.3
+    roughness: 0.28,
+    metallic: 0.9,
+    envMapIntensity: 1.25
   }),
   skyIslandStrata: material.matteClay({
     name: "sss-sky-island-strata",
@@ -710,7 +708,7 @@ export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuil
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.14, 0.94, 0.54, 0.024), { pos: [px - side * 0.17, 0.93, 0] }),
+      mesh: transformMesh(bevelBoxMesh(0.11, 0.92, 0.52, 0.024), { pos: [px - side * 0.255, 0.93, 0] }),
       materialIndex: 2
     });
     slots.push({

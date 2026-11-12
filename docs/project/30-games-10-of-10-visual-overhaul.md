@@ -1,6 +1,8 @@
-# Aura3D 5.5.1 — 30 Showcase Games 10/10 Blender Eevee-Grade Visual, VFX, Animation & UI/UX Overhaul Blueprint
+# Aura3D 5.5.4 — 30 Showcase Games 10/10 Blender Eevee-Grade Visual, VFX, Animation & UI/UX Overhaul Blueprint
 
-> **Execution Mandate (`execute docs/project/30-games-10-of-10-visual-overhaul.md`):** This blueprint is an execution-ready engineering specification covering `WP-00` (shared engine, shader, VFX, motion, and typography foundation) plus individual deep-dives `WP-01` through `WP-30` for all **30 live Aura3D showcase games**. Every API call, shader contract, asset workflow, and verification gate in this document targets **100% standalone `@aura3d/engine` `5.5.1` and `@aura3d/engine/game`**.
+> **5.5.4 Shipped Status (2026-11-12):** All 30 live Aura3D showcase games now render 100% native `@aura3d/engine` `5.5.4` multi-material procedural geometry (`0` Meshy or external `.glb` game models across all 30 routes), zero gameplay Depth-of-Field blur, zero milky white fog/flare wash, WebGPU `display-p3` v2 tone-mapping parity, and post-present transparent-alpha `blackFrameWatch` safety.
+>
+> **Execution Mandate (`execute docs/project/30-games-10-of-10-visual-overhaul.md`):** This blueprint is an execution-ready engineering specification covering `WP-00` (shared engine, shader, VFX, motion, and typography foundation) plus individual deep-dives `WP-01` through `WP-30` for all **30 live Aura3D showcase games**. Every API call, shader contract, asset workflow, and verification gate in this document targets **100% standalone `@aura3d/engine` `5.5.4` and `@aura3d/engine/game`**.
 
 ---
 

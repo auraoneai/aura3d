@@ -1,37 +1,13 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createAuraApp } from "@aura3d/engine";
 import { auditArtDirection, snapshotForAudit, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 import direction from "../../../apps/showcase-teleoperator/src/art/direction";
-import { assets } from "../../../apps/showcase-teleoperator/src/aura-assets";
 import { BOOT_SKY, SKY_LOOKS, SKY_ORDER } from "../../../apps/showcase-teleoperator/src/look";
 import { buildGridDispatchScene } from "../../../apps/showcase-teleoperator/src/scene";
 import { GRID_VFX_PRESETS } from "../../../apps/showcase-teleoperator/src/vfx";
 
-const ROOT = join(__dirname, "../../..");
-
-/** Triangle and texture counts straight from each GLB's JSON chunk (the app manifest carries neither). */
-function glbStats(url: string): { triangles: number; textures: number } {
-  // Route-local files (the WP-36 Meshy pod) ship from the app's own public tree.
-  const rootFile = join(ROOT, "public", url);
-  const bytes = readFileSync(existsSync(rootFile) ? rootFile : join(ROOT, "apps/showcase-teleoperator/public", url));
-  const json = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString("utf8")) as {
-    meshes?: { primitives: { indices?: number; attributes: { POSITION: number } }[] }[];
-    accessors: { count: number }[];
-    images?: unknown[];
-  };
-  let triangles = 0;
-  for (const mesh of json.meshes ?? []) for (const p of mesh.primitives) triangles += json.accessors[p.indices ?? p.attributes.POSITION]!.count / 3;
-  return { triangles: Math.round(triangles), textures: json.images?.length ?? 0 };
-}
-
-const manifest = {
-  assets: Object.fromEntries(
-    direction.assets.map(({ assetKey }) => [assetKey, glbStats(assets[assetKey as keyof typeof assets].url)])
-  )
-};
+const manifest = { assets: {} };
 
 function snapshotFor(sky: (typeof SKY_ORDER)[number]): ArtDirectionSnapshot {
   const app = createAuraApp(undefined, { scene: buildGridDispatchScene(sky), autoStart: false });
@@ -43,7 +19,7 @@ function snapshotFor(sky: (typeof SKY_ORDER)[number]): ArtDirectionSnapshot {
 }
 
 describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
-  it("is a valid defineArtDirection contract with the WP-14 identity and only the rigged passenger GLB mounted", () => {
+  it("is a valid defineArtDirection contract with the WP-14 identity and zero GLBs mounted (100% @aura3d/engine procedural)", () => {
     expect(direction.id).toBe("showcase-teleoperator");
     expect(direction.genre).toBe("racing");
     expect(direction.palette.primary).toEqual(["#5f7f8c", "#2b3a55", "#ffb15a", "#b3262b"]);
@@ -52,9 +28,9 @@ describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
     expect(direction.lighting.environment.background).toBe("sky");
     expect(direction.signatureEffect).toMatch(/marine-layer/i);
     expect(direction.signatureEffect).toMatch(/LiDAR scan pulse/);
-    expect(direction.assets.map((a) => a.assetKey)).toEqual(["gridPassenger"]);
+    expect(direction.assets).toEqual([]);
     const bootSnap = snapshotFor(BOOT_SKY);
-    expect(bootSnap.models.map((m) => m.assetKey)).toEqual(["gridPassenger"]);
+    expect(bootSnap.models).toEqual([]);
   });
 
   it("names a VFX entry for every registered preset of the pack", () => {

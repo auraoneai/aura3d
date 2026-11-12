@@ -1,6 +1,6 @@
 # Browser And Hardware Matrix
 
-Version: 5.5.3
+Version: 5.5.4
 
 ## Aura3D advantage
 

@@ -18,7 +18,6 @@ import { ACTIONS, ACTION_LABELS, InputState, TOUCH_BUTTONS, keyLabel, loadBindin
 import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults, speedoArc } from "./hud";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type MedalResult, type Run, type RunEvent, type RunInput } from "./sim";
 import { createRoadsterPresenter, viewOf } from "./presentation";
-import { loadMeshy } from "./meshy";
 import { buildWorld, type World, type WorldRuntime } from "./world";
 import { lookModeFrom } from "./art/look";
 import { outputFor } from "./art/output";
@@ -566,7 +565,6 @@ async function settle(): Promise<void> {
 
 async function boot(): Promise<void> {
   sizeCanvas();
-  if (new URLSearchParams(location.search).get("meshy") !== "0") await loadMeshy();
   world = buildWorld(levelIndex);
   buildMenu();
   const defaultLab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });

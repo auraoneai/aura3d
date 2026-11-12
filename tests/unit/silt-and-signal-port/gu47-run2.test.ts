@@ -136,33 +136,30 @@ describe("GU47 WP-34 DG-C2 ring-pass punch and DG-M4 bronze masts", () => {
 });
 
 describe("GU47 WP-34 DG-L6 lens flare", () => {
-  it("flare only in ch0 and ch6, inked, not on Low; halved on reduced flash; no jade element", () => {
+  it("mounts zero blinding lens-flare rings across every chapter and look", () => {
     const flares = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.kind === "lensflare");
-    for (let c = 0; c < 7; c++) expect(flares(c).length, `ch${c}`).toBe(c === 0 || c === 6 ? 1 : 0);
+    for (let c = 0; c < 7; c++) expect(flares(c).length, `ch${c}`).toBe(0);
     expect(flares(0, { low: true }).length).toBe(0);
     expect(flares(6, { look: "original" }).length).toBe(0);
-    expect(flares(0)[0]!.runtime.id).toBe("silt-flare");
-    expect(flares(0, { reducedMotion: true })[0]!.intensity).toBe(flares(0)[0]!.intensity / 2);
-    expect(flares(0)[0]!.elements.map((e: { color: string }) => e.color)).not.toContain("#2fae86");
   });
 });
 
-describe("GU47 WP-34 DG-P4 sequence DOF and boost motion blur", () => {
-  it("both nodes on High in the inked look, valid v2 fields; none on Low or in ?look=original; no blur on reduced motion", () => {
+describe("GU47 WP-34 DG-P4 crisp horizon (no DoF blur) and boost motion blur", () => {
+  it("mounts boost motion-blur only on High inked without DoF blur; none on Low, ?look=original, or reduced motion", () => {
     const of = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.effect === "depth-of-field" || n.effect === "motion-blur");
     const high = of(1);
-    expect(high.map((n) => n.effect).sort()).toEqual(["depth-of-field", "motion-blur"]);
+    expect(high.map((n) => n.effect)).toEqual(["motion-blur"]);
     for (const n of high) expect(validatePostEffectNode(n as never) ?? []).toEqual([]);
-    expect(high.find((n) => n.effect === "motion-blur")!.intensity).toBe(BOOST_BLUR);
+    expect(high[0]!.intensity).toBe(BOOST_BLUR);
     expect(of(1, { low: true })).toEqual([]);
     expect(of(1, { look: "original" })).toEqual([]);
-    expect(of(1, { reducedMotion: true }).map((n) => n.effect)).toEqual(["depth-of-field"]);
+    expect(of(1, { reducedMotion: true })).toEqual([]);
   });
 
-  it("DOF only in sequences, blur only on boost outside sequences and never on reduced motion", () => {
+  it("DoF stays permanently off; blur runs only on boost outside sequences and never on reduced motion", () => {
     expect(sequencePost({ boosting: false, sequence: false, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: false });
     expect(sequencePost({ boosting: true, sequence: false, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: true });
-    expect(sequencePost({ boosting: true, sequence: true, reducedMotion: false })).toEqual({ depthOfField: true, motionBlur: false });
+    expect(sequencePost({ boosting: true, sequence: true, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: false });
     expect(sequencePost({ boosting: true, sequence: false, reducedMotion: true }).motionBlur).toBe(false);
   });
 });

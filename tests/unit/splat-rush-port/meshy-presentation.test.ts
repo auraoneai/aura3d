@@ -83,18 +83,15 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
     expect([0, 1, 2, 3].map((k) => calls.get(pickupId("rainbow", k))?.visible)).toEqual([true, true, true, true]);
   });
 
-  it("every model asset exists, matches its sha256 and the size budget", () => {
-    let total = 0;
+  it("ships zero static Meshy GLBs on disk and keeps typed procedural descriptors", () => {
+    const publicDir = resolve("apps/showcase-splat-rush-port/public/aura-assets");
+    const exDir = resolve("examples/splat-rush-port/assets/models");
+    expect(existsSync(publicDir)).toBe(false);
+    expect(existsSync(exDir)).toBe(false);
     for (const [key, ref] of Object.entries(MODELS as unknown as Record<string, { url: string; hash: string }>)) {
-      /* Root-relative /aura-assets/ models (GU47 wave 1) live in the app's public tree; the rest next to models.ts. */
-      const dir = ref.url.startsWith("/aura-assets/") ? "apps/showcase-splat-rush-port/public/aura-assets" : "examples/splat-rush-port/assets/models";
-      const file = resolve(dir, ref.url.split("/").pop() as string);
-      expect(existsSync(file), `${key} missing`).toBe(true);
-      const hash = `sha256-${createHash("sha256").update(readFileSync(file)).digest("hex")}`;
-      expect(hash, `${key} hash`).toBe(ref.hash);
-      total += statSync(file).size;
+      expect(ref.url.startsWith("/procedural/splat-rush/"), `${key} url`).toBe(true);
+      expect(ref.hash.startsWith("sha256-"), `${key} hash`).toBe(true);
     }
-    expect(total).toBeLessThan(10 * 1024 * 1024);
   });
 
   it("mounts zero static GLB model nodes and builds normalized multi-material procedural studio backdrop and pickup groups", () => {

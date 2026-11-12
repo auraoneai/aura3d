@@ -25,15 +25,15 @@ export interface CumulusPostContext {
 
 export interface CumulusPostPlan { readonly godRays: boolean; readonly lensFlare: boolean; readonly dof: boolean; readonly motionBlur: boolean }
 
-/** God rays, DOF and motion blur are High/Ultra only and never on a coarse-pointer phone (WP-35 budget); motion blur is
- *  also off under reduced motion (PRD §6.3). */
+/** God rays and glider motion blur are High/Ultra only and never on a coarse-pointer phone (WP-35 budget); DOF blur is
+ *  always disabled (zero milky or lens blur); motion blur is also off under reduced motion (PRD §6.3). */
 export function cumulusPostPlan(ctx: CumulusPostContext): CumulusPostPlan {
   const high = (ctx.tier === "high" || ctx.tier === "ultra") && !ctx.coarsePointer;
   const moment = ctx.moment ?? "play";
   return {
     godRays: high,
     lensFlare: true,
-    dof: high && moment !== "play",
+    dof: false,
     motionBlur: high && moment === "play" && ctx.riding === true && ctx.reducedMotion !== true
   };
 }

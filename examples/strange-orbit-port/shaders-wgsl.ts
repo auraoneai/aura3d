@@ -101,7 +101,7 @@ fn haze(c: vec3<f32>, world: vec3<f32>) -> vec3<f32> {
   let below = clamp(-world.y / 28.0, 0.0, 1.0);
   f = max(f, below * 0.12 * (1.0 - exp(-d / 240.0)));
   return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.24)));` : `
-  return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.82)));`}
+  return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.28)));`}
 }
 `;
 

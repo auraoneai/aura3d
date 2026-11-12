@@ -1,5 +1,7 @@
 # Ninja Runner port - notes
 
+> **5.5.4 Update (2026-11-12):** All Meshy humanoid and scenery `.glb` models documented below were deleted and replaced with 100% native `@aura3d/engine` articulated procedural shinobi/enemy rigs and multi-material scenery (`0` `.glb` files), with crisp horizon fog.
+
 Phase C exit for the three.js parity PRD (R-20), plus the art-fidelity pass. Reference: Crayon "Ninja Runner" (three r184 bundle).
 
 ## What is exact

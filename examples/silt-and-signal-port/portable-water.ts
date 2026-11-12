@@ -72,9 +72,9 @@ export function waterGraph(): ReturnType<GraphBuilder["build"]> {
   ink = g.mix(ink, g.c(0.86, 0.78, 0.62), g.add(g.mul(streak, 0.18), g.mul(foam, 0.12)));
   c = g.select(g.greater(inkLook, 0.5), ink, c);
 
-  const fogT = g.clamp(g.div(g.length(g.sub(vW, cam)), fogFar), 0, 1);
+  const fogT = g.smoothstep(280, g.max(1450, fogFar), g.length(g.sub(vW, cam)));
   const alpha = g.mul(0.92, g.sub(1, g.smoothstep(g.sub(canalHalf, 1.2), canalHalf, d)));
-  return g.build({ color: g.vec(g.mix(c, fogColor, g.mul(fogT, fogT)), alpha) });
+  return g.build({ color: g.vec(g.mix(c, fogColor, g.mul(g.mul(fogT, fogT), 0.32)), alpha) });
 }
 
 /** The portable water material for a `waterSpec()` (same uniforms, same render state). */

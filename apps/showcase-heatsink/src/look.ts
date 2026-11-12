@@ -50,7 +50,7 @@ export interface CircuitLook {
   readonly rim: { readonly color: string; readonly intensity: number };
   /** VESPER only: unshadowed vent light from below (HS-01). */
   readonly upFill?: { readonly color: string; readonly intensity: number };
-  /** Exponential scene fog (HS-05). */
+  /** Scene fog colour and nominal density (rendered as crisp far-field linear fog in `scene.ts` / `sectors.ts`). */
   readonly fog: { readonly color: string; readonly density: number };
   /** DUSTFALL only: volumetric inscatter with god rays from the low sun (HS-05). */
   readonly volumetricFog?: { readonly color: string; readonly density: number; readonly intensity: number; readonly godRayDensity: number };
@@ -157,7 +157,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.2 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#8a5a2e", density: 0.02 },
-    volumetricFog: { color: "#1a1628", density: 0.0038, intensity: 0.18, godRayDensity: 0.28 },
+    volumetricFog: { color: "#1a1628", density: 0.0008, intensity: 0.06, godRayDensity: 0.22 },
     exposureEv: -1.05,
     grade: { contrast: 1.18, saturation: 1.04, temperature: 0.18, tint: 0.02 },
     lutIntensity: 0.42,

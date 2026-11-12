@@ -1,12 +1,10 @@
 /**
- * Cross Hop (WP-13) — Bespoke Multi-Material Procedural Fleet, River & Woodland Kit.
+ * Cross Hop (WP-13 / WP-14) — Bespoke Multi-Material Procedural Critters, Fleet, River & Woodland Kit.
  *
- * Replaces all static Meshy vehicle, train, river-log, coin, rescue-pod, and hawk GLBs
- * while keeping all 12 rigged critter hoppers intact. Sculpted exclusively through the
- * shared `@aura3d/engine` + `showcase-port-shared/proceduralKernel` smooth-normal
+ * Sculpted exclusively through `@aura3d/engine` + `showcase-port-shared/proceduralKernel` smooth-normal
  * primitives (`loftSectionsMesh`, `latheMesh`, `tubeSweepMesh`, `extrudePolygonMesh`,
  * `wheelAssemblySlots`, `icosphereSmoothMesh`, `icosphereFacetMesh`, `layeredCanopyMesh`,
- * `bevelBoxMesh`, `assembleMultiMaterialNode`).
+ * `bevelBoxMesh`, `assembleMultiMaterialNode`) — zero Meshy `.glb` dependencies.
  */
 import {
   geometry,
@@ -15,6 +13,7 @@ import {
   type AuraCustomGeometrySpec,
   type AuraMaterialSpec
 } from "@aura3d/engine";
+import type { CritterAssetId } from "../aura-assets";
 import {
   assembleMultiMaterialNode,
   bevelBoxMesh,
@@ -182,6 +181,217 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
     metalness: 0,
     clearcoat: 0,
     sheen: 0
+  }),
+  // Sculpted playable critter physical materials (clay, plush felt, lacquer, brushed metal, 24k gold & practical LEDs)
+  frogEmeraldSkin: material.lacquer({
+    color: "#39b858",
+    roughness: 0.34,
+    clearcoat: 0.68,
+    clearcoatRoughness: 0.16,
+    envMapIntensity: 1.12
+  }),
+  frogLeafSpot: material.matteClay({
+    color: "#227a3b",
+    roughness: 0.56,
+    envMapIntensity: 0.9
+  }),
+  critterCreamBelly: material.matteClay({
+    color: "#fbf3dc",
+    roughness: 0.74,
+    envMapIntensity: 0.88
+  }),
+  critterEyeSclera: material.ceramic({
+    color: "#ffffff",
+    roughness: 0.14,
+    clearcoat: 0.85,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.2
+  }),
+  critterEyePupil: material.lacquer({
+    color: "#111622",
+    roughness: 0.08,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.35
+  }),
+  critterCatchlight: material.ceramic({
+    color: "#ffffff",
+    roughness: 0.05,
+    clearcoat: 1,
+    clearcoatRoughness: 0.02,
+    envMapIntensity: 1.45
+  }),
+  critterRosyBlush: material.matteClay({
+    color: "#ff85a2",
+    roughness: 0.72,
+    envMapIntensity: 0.86
+  }),
+  duckSunnyPlumage: material.felt({
+    color: "#ffcf3d",
+    roughness: 0.72,
+    sheen: 0.38,
+    envMapIntensity: 0.92
+  }),
+  chickDownYellow: material.felt({
+    color: "#ffe159",
+    roughness: 0.78,
+    sheen: 0.44,
+    envMapIntensity: 0.92
+  }),
+  waterfowlOrangeBill: material.lacquer({
+    color: "#ff7e21",
+    roughness: 0.24,
+    clearcoat: 0.76,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 1.1
+  }),
+  bunnyCloudPlush: material.felt({
+    color: "#f7f3ee",
+    roughness: 0.82,
+    sheen: 0.45,
+    envMapIntensity: 0.88
+  }),
+  sakuraPinkSkin: material.matteClay({
+    color: "#ffa8c5",
+    roughness: 0.48,
+    envMapIntensity: 0.96
+  }),
+  axolotlCoralGill: material.matteClay({
+    color: "#ff5484",
+    roughness: 0.56,
+    envMapIntensity: 0.94
+  }),
+  turtleJadeShell: material.lacquer({
+    color: "#2f7d4f",
+    roughness: 0.28,
+    clearcoat: 0.66,
+    clearcoatRoughness: 0.14,
+    envMapIntensity: 1.08
+  }),
+  turtleScuteAmber: material.matteClay({
+    color: "#c89548",
+    roughness: 0.58,
+    envMapIntensity: 0.9
+  }),
+  turtleSageSkin: material.matteClay({
+    color: "#69ad62",
+    roughness: 0.52,
+    envMapIntensity: 0.92
+  }),
+  toastGoldenCrust: material.matteClay({
+    color: "#b86b2b",
+    roughness: 0.82,
+    envMapIntensity: 0.82
+  }),
+  toastWarmCrumb: material.matteClay({
+    color: "#f3d59b",
+    roughness: 0.86,
+    envMapIntensity: 0.84
+  }),
+  toastButterPat: material.lacquer({
+    color: "#ffe46b",
+    roughness: 0.22,
+    clearcoat: 0.75,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.08
+  }),
+  gingerCatPlush: material.felt({
+    color: "#f09b46",
+    roughness: 0.78,
+    sheen: 0.38,
+    envMapIntensity: 0.88
+  }),
+  roboTitaniumHull: material.carPaint({
+    color: "#637894",
+    roughness: 0.18,
+    metalness: 0.78,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.4
+  }),
+  roboGunmetalJoint: material.brushedMetal({
+    color: "#2b3340",
+    roughness: 0.34,
+    metalness: 0.88,
+    envMapIntensity: 1.2
+  }),
+  roboCyanVisor: material.emissive({
+    color: "#38f6ff",
+    emissive: "#1ae8ff",
+    emissiveIntensity: 1.38,
+    roughness: 0.12,
+    practical: true
+  }),
+  knightPolishedSteel: material.studioMetal({
+    color: "#d7e0ec",
+    roughness: 0.18,
+    metalness: 0.94,
+    envMapIntensity: 1.38
+  }),
+  knightCrimsonPlume: material.felt({
+    color: "#d92b3a",
+    roughness: 0.76,
+    sheen: 0.42,
+    envMapIntensity: 0.9
+  }),
+  knightHeraldicBlue: material.lacquer({
+    color: "#2756b8",
+    roughness: 0.2,
+    clearcoat: 0.88,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.22
+  }),
+  mushroomScarletCap: material.lacquer({
+    color: "#e23434",
+    roughness: 0.26,
+    clearcoat: 0.72,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 1.12
+  }),
+  woodlandBootLeather: material.matteClay({
+    color: "#7a4928",
+    roughness: 0.72,
+    envMapIntensity: 0.82
+  }),
+  astroEvaWhite: material.ceramic({
+    color: "#f4f7fb",
+    roughness: 0.2,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.25
+  }),
+  astroCollarOrange: material.lacquer({
+    color: "#f26722",
+    roughness: 0.22,
+    clearcoat: 0.82,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.15
+  }),
+  astroBubbleGlass: material.studioGlass({
+    color: "#bfe6ff",
+    tint: "#d8f1ff",
+    roughness: 0.03,
+    opacity: 0.42,
+    ior: 1.48
+  }),
+  sovereign24kGold: material.studioMetal({
+    color: "#f5c43d",
+    roughness: 0.14,
+    metalness: 0.96,
+    envMapIntensity: 1.48
+  }),
+  champagneGoldTrim: material.brushedMetal({
+    color: "#fbe08a",
+    roughness: 0.22,
+    metalness: 0.9,
+    envMapIntensity: 1.34
+  }),
+  crownRubyGem: material.lacquer({
+    color: "#e01e48",
+    roughness: 0.08,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.4
   })
 } as const satisfies Readonly<Record<string, AuraMaterialSpec>>;
 
@@ -846,6 +1056,7 @@ function buildTramParts(): ColoredRawMesh[] {
     tintRawMesh(tubeSweepMesh(panto, 8, false), COL_CHROME),
     placeTinted(chamferBox([0.58, 0.03, 0.08], 0.01), { pos: [0, 1.73, -0.14] }, COL_CHROME)
   );
+  appendWheelSet(out, [-1.36, -0.88, 0.88, 1.36], 0.34, 0.11, 0.08);
   return out;
 }
 
@@ -888,6 +1099,7 @@ function buildExpressTrainParts(): ColoredRawMesh[] {
       placeTinted(chamferBox([0.15, 0.10, 0.06], 0.02), { pos: [sgn * 0.34, 0.56, -2.43] }, COL_TAILLIGHT)
     );
   }
+  appendWheelSet(out, [-1.76, -1.16, 1.16, 1.76], 0.36, 0.115, 0.085);
   return out;
 }
 
@@ -1227,7 +1439,8 @@ export function buildRailCrossingGateNode(name = "rail-crossing-signal") {
 }
 
 /**
- * Stooping peregrine hawk (`name: "hawk"`, `~1.38 m` wingspan) assembled via `assembleMultiMaterialNode`.
+ * Stooping peregrine hawk (`name: "hawk"`, `~1.42 m` wingspan) with layered swept feathered wings,
+ * curved hooked beak, curved grasping talons, and expressive iris/pupil/catchlight raptor eyes.
  */
 export function buildStoopingHawkNode() {
   const body = superellipseLoft(
@@ -1235,70 +1448,133 @@ export function buildStoopingHawkNode() {
       { z: -0.44, rx: 0.05, ry: 0.04, y: 0.02, superellipseN: 2.2 },
       { z: -0.14, rx: 0.14, ry: 0.13, y: 0.0, superellipseN: 2.3 },
       { z: 0.18, rx: 0.16, ry: 0.15, y: 0.02, superellipseN: 2.3 },
-      { z: 0.40, rx: 0.10, ry: 0.10, y: 0.06, superellipseN: 2.1 },
-      { z: 0.50, rx: 0.03, ry: 0.03, y: 0.05, superellipseN: 2.0 }
+      { z: 0.40, rx: 0.11, ry: 0.11, y: 0.07, superellipseN: 2.1 },
+      { z: 0.51, rx: 0.045, ry: 0.045, y: 0.06, superellipseN: 2.0 }
     ],
-    18,
+    20,
     true,
     false
   );
   const breast = superellipseLoft(
     [
-      { z: -0.10, rx: 0.11, ry: 0.09, y: -0.05, superellipseN: 2.2 },
-      { z: 0.16, rx: 0.13, ry: 0.11, y: -0.04, superellipseN: 2.2 },
-      { z: 0.34, rx: 0.07, ry: 0.06, y: 0.01, superellipseN: 2.0 }
+      { z: -0.12, rx: 0.115, ry: 0.095, y: -0.05, superellipseN: 2.2 },
+      { z: 0.16, rx: 0.135, ry: 0.115, y: -0.04, superellipseN: 2.2 },
+      { z: 0.36, rx: 0.075, ry: 0.065, y: 0.015, superellipseN: 2.0 }
     ],
-    16,
+    18,
     true,
     false
   );
-  const wingRing: V2[] = [
-    [0.08, 0.22],
-    [0.44, 0.18],
-    [0.69, -0.06],
-    [0.58, -0.18],
+  // Swept primary flight-feather wing + overlapping covert plumage layer
+  const primaryWingRing: V2[] = [
+    [0.07, 0.23],
+    [0.42, 0.19],
+    [0.72, -0.04],
+    [0.66, -0.15],
+    [0.54, -0.12],
+    [0.46, -0.19],
     [0.34, -0.14],
+    [0.22, -0.17],
     [0.08, -0.12]
   ];
-  const rightWing = transformMesh(extrudePolygonMesh(wingRing, 0.036, 0.01, false), {
+  const covertWingRing: V2[] = [
+    [0.07, 0.21],
+    [0.36, 0.16],
+    [0.48, 0.02],
+    [0.32, -0.06],
+    [0.08, -0.06]
+  ];
+  const rightWing = transformMesh(extrudePolygonMesh(primaryWingRing, 0.032, 0.009, false), {
     pos: [0, 0.05, 0.04],
     rot: [-Math.PI / 2 + 0.14, 0, 0.18]
   });
-  const leftWing = transformMesh(extrudePolygonMesh(wingRing, 0.036, 0.01, false), {
+  const leftWing = transformMesh(extrudePolygonMesh(primaryWingRing, 0.032, 0.009, false), {
     pos: [0, 0.05, 0.04],
+    rot: [-Math.PI / 2 + 0.14, 0, -0.18],
+    scale: [-1, 1, 1]
+  });
+  const rightCovert = transformMesh(extrudePolygonMesh(covertWingRing, 0.028, 0.008, false), {
+    pos: [0, 0.072, 0.05],
+    rot: [-Math.PI / 2 + 0.14, 0, 0.18]
+  });
+  const leftCovert = transformMesh(extrudePolygonMesh(covertWingRing, 0.028, 0.008, false), {
+    pos: [0, 0.072, 0.05],
     rot: [-Math.PI / 2 + 0.14, 0, -0.18],
     scale: [-1, 1, 1]
   });
   const tailFan: V2[] = [
     [-0.06, 0],
     [0.06, 0],
-    [0.20, -0.34],
-    [0.0, -0.39],
-    [-0.20, -0.34]
+    [0.23, -0.34],
+    [0.11, -0.38],
+    [0.0, -0.41],
+    [-0.11, -0.38],
+    [-0.23, -0.34]
   ];
-  const beak = transformMesh(
-    latheMesh([[0, 0.13], [0.045, 0.03], [0.055, -0.03], [0, -0.03]], 12, false),
-    { pos: [0, 0.03, 0.54], rot: [Math.PI * 0.62, 0, 0] }
+  // Down-curved hooked raptor beak (`tubeSweepMesh`)
+  const hookedBeak = tubeSweepMesh(
+    [
+      [0, 0.065, 0.48, 0.048],
+      [0, 0.055, 0.56, 0.034],
+      [0, 0.018, 0.615, 0.018],
+      [0, -0.028, 0.625, 0.005]
+    ],
+    12,
+    false
   );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 0, mesh: rightWing },
+    { materialIndex: 0, mesh: leftWing },
+    { materialIndex: 0, mesh: transformMesh(extrudePolygonMesh(tailFan, 0.024, 0.006, false), { pos: [0, 0.03, -0.36], rot: [-Math.PI / 2 - 0.10, 0, 0] }) },
+    { materialIndex: 1, mesh: breast },
+    { materialIndex: 1, mesh: rightCovert },
+    { materialIndex: 1, mesh: leftCovert },
+    { materialIndex: 2, mesh: hookedBeak }
+  ];
+  // Curved grasping talons + feathered drumsticks + amber iris / dark pupil / white catchlight eyes
+  for (const sgn of [-1, 1] as const) {
+    slots.push({
+      materialIndex: 0,
+      mesh: tubeSweepMesh(
+        [
+          [sgn * 0.075, -0.04, 0.02, 0.042],
+          [sgn * 0.08, -0.13, 0.07, 0.024]
+        ],
+        10,
+        false
+      )
+    });
+    for (const toeX of [-0.022, 0, 0.022]) {
+      slots.push({
+        materialIndex: 2,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.08 + toeX, -0.13, 0.07, 0.014],
+            [sgn * 0.08 + toeX * 1.35, -0.18, 0.13, 0.010],
+            [sgn * 0.08 + toeX * 1.4, -0.22, 0.115, 0.004]
+          ],
+          8,
+          false
+        )
+      });
+    }
+    slots.push(
+      { materialIndex: 3, mesh: transformMesh(icosphereSmoothMesh(0.028, 1, 0, 3, 0), { pos: [sgn * 0.078, 0.09, 0.42] }) },
+      { materialIndex: 4, mesh: transformMesh(icosphereSmoothMesh(0.016, 1, 0, 5, 0), { pos: [sgn * 0.086, 0.09, 0.436] }) },
+      { materialIndex: 5, mesh: transformMesh(icosphereSmoothMesh(0.007, 1, 0, 7, 0), { pos: [sgn * 0.092, 0.10, 0.444] }) }
+    );
+  }
   return assembleMultiMaterialNode(
     "hawk",
-    [
-      { materialIndex: 0, mesh: body },
-      { materialIndex: 0, mesh: rightWing },
-      { materialIndex: 0, mesh: leftWing },
-      { materialIndex: 0, mesh: transformMesh(extrudePolygonMesh(tailFan, 0.024, 0.006, false), { pos: [0, 0.03, -0.36], rot: [-Math.PI / 2 - 0.10, 0, 0] }) },
-      { materialIndex: 1, mesh: breast },
-      { materialIndex: 2, mesh: beak },
-      { materialIndex: 2, mesh: transformMesh(chamferBox([0.05, 0.10, 0.08], 0.012), { pos: [-0.07, -0.15, 0.02], rot: [0.35, 0, 0] }) },
-      { materialIndex: 2, mesh: transformMesh(chamferBox([0.05, 0.10, 0.08], 0.012), { pos: [0.07, -0.15, 0.02], rot: [0.35, 0, 0] }) },
-      { materialIndex: 3, mesh: transformMesh(icosphereFacetMesh(0.024, 1, 0, 1), { pos: [-0.075, 0.085, 0.42] }) },
-      { materialIndex: 3, mesh: transformMesh(icosphereFacetMesh(0.024, 1, 0, 2), { pos: [0.075, 0.085, 0.42] }) }
-    ],
+    slots,
     [
       CROSS_HOP_PROCEDURAL_MATERIALS.raptorPlumage,
       CROSS_HOP_PROCEDURAL_MATERIALS.raptorBreast,
       CROSS_HOP_PROCEDURAL_MATERIALS.raptorBeak,
-      CROSS_HOP_PROCEDURAL_MATERIALS.rescueCoreGlow
+      CROSS_HOP_PROCEDURAL_MATERIALS.rescueCoreGlow,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
     ],
     { castShadow: true, receiveShadow: false }
   );
@@ -1664,33 +1940,1748 @@ export function buildHorizonRidgeSpec(): AuraCustomGeometrySpec {
   });
 }
 
-/** Upright star-embossed golden coin grounded on `y = 0` (`m-coins` phase-4 view). */
+/** Upright beveled golden coin with milled outer rim, recessed dish & star/frog-pad relief grounded on `y = 0`. */
 export function buildStarCoinStandingSpec(diameter: number): AuraCustomGeometrySpec {
   return cachedProp(`coin-standing:${diameter.toFixed(4)}`, () => {
     const r = diameter * 0.5;
-    const halfT = diameter * 0.13;
+    const halfT = diameter * 0.14;
+    const dishT = halfT * 0.64;
     const rim = transformMesh(
-      latheMesh([[0, -halfT], [r * 0.88, -halfT], [r, -halfT * 0.72], [r, halfT * 0.72], [r * 0.88, halfT], [0, halfT]], 24, false),
+      latheMesh(
+        [
+          [0, -dishT],
+          [r * 0.74, -dishT],
+          [r * 0.78, -halfT],
+          [r * 0.90, -halfT],
+          [r, -halfT * 0.70],
+          [r, halfT * 0.70],
+          [r * 0.90, halfT],
+          [r * 0.78, halfT],
+          [r * 0.74, dishT],
+          [0, dishT]
+        ],
+        28,
+        false
+      ),
       { pos: [0, r, 0], rot: [Math.PI / 2, 0, 0] }
     );
-    const star = extrudePolygonMesh(makeFivePointStarRing(r * 0.54, r * 0.24), halfT * 2.32, 0.008, false);
+    const star = extrudePolygonMesh(makeFivePointStarRing(r * 0.48, r * 0.21), halfT * 2.18, 0.008, false);
+    const padBead = icosphereSmoothMesh(r * 0.085, 1, 0, 13, 0);
     return mergeColoredMeshesToSpec([
-      tintRawMesh(rim, [1.0, 0.86, 0.24]),
-      placeTinted(star, { pos: [0, r, 0] }, [1.0, 0.95, 0.58])
+      tintRawMesh(rim, [1.0, 0.85, 0.22]),
+      placeTinted(star, { pos: [0, r - r * 0.04, 0] }, [1.0, 0.96, 0.62]),
+      placeTinted(padBead, { pos: [-r * 0.20, r + r * 0.48, 0], scale: [1, 1, 1.55] }, [1.0, 0.97, 0.68]),
+      placeTinted(padBead, { pos: [0, r + r * 0.55, 0], scale: [1, 1, 1.55] }, [1.0, 0.97, 0.68]),
+      placeTinted(padBead, { pos: [r * 0.20, r + r * 0.48, 0], scale: [1, 1, 1.55] }, [1.0, 0.97, 0.68])
     ]);
   });
 }
 
-/** Unit `Y`-axis star-embossed coin (`[-0.5..+0.5]^3`, rotated upright by `rz = Math.PI / 2` in diorama/original). */
+/** Unit `Y`-axis beveled golden coin (`[-0.5..+0.5]^3`, rotated upright by `rz = Math.PI / 2` in diorama/original). */
 export function buildStarCoinUnitSpec(): AuraCustomGeometrySpec {
   return cachedProp("coin-unit", () => {
-    const rim = latheMesh([[0, -0.38], [0.45, -0.38], [0.50, -0.26], [0.50, 0.26], [0.45, 0.38], [0, 0.38]], 24, false);
-    const star = transformMesh(extrudePolygonMesh(makeFivePointStarRing(0.28, 0.125), 0.96, 0.02, false), {
+    const rim = latheMesh(
+      [
+        [0, -0.26],
+        [0.37, -0.26],
+        [0.40, -0.39],
+        [0.46, -0.39],
+        [0.50, -0.26],
+        [0.50, 0.26],
+        [0.46, 0.39],
+        [0.40, 0.39],
+        [0.37, 0.26],
+        [0, 0.26]
+      ],
+      28,
+      false
+    );
+    const star = transformMesh(extrudePolygonMesh(makeFivePointStarRing(0.26, 0.115), 0.88, 0.02, false), {
       rot: [-Math.PI / 2, 0, 0]
     });
+    const padBead = icosphereSmoothMesh(0.048, 1, 0, 17, 0);
     return normalizePartsToUnitCube([
-      tintRawMesh(rim, [1.0, 0.92, 0.62]),
-      tintRawMesh(star, [1.0, 0.98, 0.82])
+      tintRawMesh(rim, [1.0, 0.91, 0.58]),
+      tintRawMesh(star, [1.0, 0.98, 0.82]),
+      placeTinted(padBead, { pos: [-0.11, 0, 0.27], scale: [1, 9.2, 1] }, [1.0, 0.98, 0.84]),
+      placeTinted(padBead, { pos: [0, 0, 0.31], scale: [1, 9.2, 1] }, [1.0, 0.98, 0.84]),
+      placeTinted(padBead, { pos: [0.11, 0, 0.27], scale: [1, 9.2, 1] }, [1.0, 0.98, 0.84])
     ]);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Sculpted Multi-Material Playable Critter Kit (All 12 Heroes — Zero GLBs)
+// ---------------------------------------------------------------------------
+
+interface VerticalContourSection {
+  readonly y: number;
+  readonly rx: number;
+  readonly rz: number;
+  readonly z?: number;
+  readonly x?: number;
+  readonly n?: number;
+}
+
+function verticalContourLoft(sections: readonly VerticalContourSection[], segs = 22): RawMesh {
+  const makeRing = (sec: VerticalContourSection, scaleR = 1): V3[] => {
+    const cx = sec.x ?? 0;
+    const cz = sec.z ?? 0;
+    const p = 2 / (sec.n ?? 2.1);
+    const ring: V3[] = [];
+    for (let i = 0; i < segs; i += 1) {
+      const a = (i / segs) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      const x = Math.sign(ca) * Math.pow(Math.abs(ca), p) * sec.rx * scaleR + cx;
+      const z = Math.sign(sa) * Math.pow(Math.abs(sa), p) * sec.rz * scaleR + cz;
+      ring.push([x, sec.y, z]);
+    }
+    return ring;
+  };
+  const first = sections[0]!;
+  const last = sections[sections.length - 1]!;
+  const rings: V3[][] = [
+    makeRing({ ...first, y: first.y - 0.004 }, 0.06),
+    ...sections.map((s) => makeRing(s, 1)),
+    makeRing({ ...last, y: last.y + 0.004 }, 0.06)
+  ];
+  return loftSectionsMesh(rings, true, false);
+}
+
+interface EyePlacementOptions {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly radius: number;
+  readonly scleraMat: number;
+  readonly pupilMat: number;
+  readonly catchlightMat: number;
+  readonly blushMat?: number;
+  readonly turretMat?: number;
+}
+
+/** Appends symmetrical big expressive eyes (ivory sclera, dark obsidian pupil, pure white catchlight & optional turrets/blush). */
+function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions): void {
+  const r = opts.radius;
+  for (const sgn of [-1, 1] as const) {
+    const ex = sgn * opts.x;
+    if (opts.turretMat !== undefined) {
+      slots.push({
+        materialIndex: opts.turretMat,
+        mesh: transformMesh(icosphereSmoothMesh(r * 1.18, 2, 0, 19, 0.25), {
+          pos: [ex, opts.y - r * 0.14, opts.z - r * 0.24],
+          scale: [1.05, 1.08, 1.04]
+        })
+      });
+    }
+    slots.push(
+      {
+        materialIndex: opts.scleraMat,
+        mesh: transformMesh(icosphereSmoothMesh(r, 2, 0, 23, 0), {
+          pos: [ex, opts.y, opts.z],
+          scale: [0.96, 1.04, 0.92]
+        })
+      },
+      {
+        materialIndex: opts.pupilMat,
+        mesh: transformMesh(icosphereSmoothMesh(r * 0.58, 2, 0, 29, 0), {
+          pos: [ex * 0.95, opts.y + r * 0.02, opts.z + r * 0.56],
+          scale: [0.92, 1.02, 0.58]
+        })
+      },
+      {
+        materialIndex: opts.catchlightMat,
+        mesh: transformMesh(icosphereSmoothMesh(r * 0.24, 1, 0, 31, 0), {
+          pos: [ex + sgn * r * 0.24, opts.y + r * 0.30, opts.z + r * 0.78],
+          scale: [1, 1, 0.65]
+        })
+      }
+    );
+    if (opts.blushMat !== undefined) {
+      slots.push({
+        materialIndex: opts.blushMat,
+        mesh: transformMesh(icosphereSmoothMesh(r * 0.55, 1, 0, 37, 0), {
+          pos: [sgn * (opts.x + r * 0.52), opts.y - r * 0.88, opts.z + r * 0.32],
+          scale: [0.95, 0.56, 0.38]
+        })
+      });
+    }
+  }
+}
+
+/** Appends sculpted folded frog haunches, 3-toed webbed hind feet (`minY = 0`), and planted forelimbs. */
+function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number, spread = 1): void {
+  for (const sgn of [-1, 1] as const) {
+    const hx = sgn * 0.26 * spread;
+    // Muscular folded thigh & lower shank
+    slots.push(
+      {
+        materialIndex: skinMat,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.17 * spread, 0.22, -0.05, 0.088],
+            [hx * 1.12, 0.25, -0.14, 0.095],
+            [hx * 1.04, 0.12, -0.04, 0.068],
+            [hx * 0.98, 0.036, 0.09, 0.052]
+          ],
+          12,
+          false
+        )
+      },
+      // Foreleg planted forward in athletic crouch
+      {
+        materialIndex: skinMat,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.17 * spread, 0.29, 0.12, 0.056],
+            [sgn * 0.21 * spread, 0.14, 0.20, 0.045],
+            [sgn * 0.19 * spread, 0.032, 0.24, 0.040]
+          ],
+          10,
+          false
+        )
+      }
+    );
+    // 3 splayed webbed hind toes + bulbous tree-frog toe pads grounded at y = 0
+    for (const [tx, tz] of [
+      [-0.065, 0.24],
+      [0.0, 0.27],
+      [0.065, 0.23]
+    ] as const) {
+      const endX = hx * 0.98 + sgn * tx;
+      slots.push(
+        {
+          materialIndex: padMat,
+          mesh: tubeSweepMesh(
+            [
+              [hx * 0.98, 0.028, 0.09, 0.030],
+              [endX, 0.020, tz, 0.021]
+            ],
+            8,
+            false
+          )
+        },
+        {
+          materialIndex: padMat,
+          mesh: transformMesh(icosphereSmoothMesh(0.026, 1, 0, 41, 0), {
+            pos: [endX, 0.020, tz + 0.016],
+            scale: [1.1, 0.76, 1.15]
+          })
+        }
+      );
+    }
+    // 2 splayed front fingers
+    for (const fx of [-0.035, 0.035] as const) {
+      slots.push({
+        materialIndex: padMat,
+        mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0, 43, 0), {
+          pos: [sgn * 0.19 * spread + fx, 0.018, 0.285],
+          scale: [1.0, 0.82, 1.35]
+        })
+      });
+    }
+  }
+}
+
+/** Appends plump crouched mammal hind haunches, cushioned paws (`minY = 0`) & tucked front paws. */
+function appendMammalLimbs(slots: MultiMatSlot[], furMat: number, padMat: number): void {
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        materialIndex: furMat,
+        mesh: transformMesh(icosphereSmoothMesh(0.115, 2, 0, 47, 0.2), {
+          pos: [sgn * 0.21, 0.16, -0.05],
+          scale: [0.88, 1.05, 1.18]
+        })
+      },
+      {
+        materialIndex: furMat,
+        mesh: transformMesh(icosphereSmoothMesh(0.078, 2, 0, 53, 0.15), {
+          pos: [sgn * 0.19, 0.042, 0.10],
+          scale: [0.92, 0.54, 1.48]
+        })
+      },
+      {
+        materialIndex: padMat,
+        mesh: transformMesh(icosphereSmoothMesh(0.028, 1, 0, 59, 0), {
+          pos: [sgn * 0.19, 0.038, 0.205],
+          scale: [1.25, 0.68, 0.85]
+        })
+      },
+      {
+        materialIndex: furMat,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.15, 0.30, 0.14, 0.052],
+            [sgn * 0.16, 0.19, 0.23, 0.046],
+            [sgn * 0.14, 0.15, 0.27, 0.042]
+          ],
+          10,
+          false
+        )
+      }
+    );
+  }
+}
+
+/** Appends sturdy rounded boots / sabatons / EVA moon-boots planted squarely on `y = 0`. */
+function appendBootedLegs(slots: MultiMatSlot[], legMat: number, bootMat: number, soleMat = bootMat): void {
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        materialIndex: legMat,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.13, 0.24, 0.0, 0.068],
+            [sgn * 0.145, 0.10, 0.02, 0.062]
+          ],
+          12,
+          false
+        )
+      },
+      {
+        materialIndex: bootMat,
+        mesh: transformMesh(icosphereSmoothMesh(0.088, 2, 0, 61, 0.15), {
+          pos: [sgn * 0.145, 0.056, 0.065],
+          scale: [0.92, 0.64, 1.38]
+        })
+      },
+      {
+        materialIndex: soleMat,
+        mesh: transformMesh(chamferBox([0.155, 0.026, 0.225], 0.008), {
+          pos: [sgn * 0.145, 0.013, 0.065]
+        })
+      }
+    );
+  }
+}
+
+interface CritterAssemblyRecipe {
+  readonly slots: readonly MultiMatSlot[];
+  readonly materials: readonly AuraMaterialSpec[];
+  readonly glassMeshes?: readonly RawMesh[];
+  readonly glassMaterial?: AuraMaterialSpec;
+}
+
+function buildFrogHeroRecipe(
+  skinMat: AuraMaterialSpec,
+  spotMat: AuraMaterialSpec,
+  bellyMat: AuraMaterialSpec,
+  withRoyalCrown: boolean
+): CritterAssemblyRecipe {
+  // 0: skin, 1: belly, 2: spot/trim, 3: sclera, 4: pupil, 5: catchlight, 6: blush/gem
+  const torso = transformMesh(
+    verticalContourLoft([
+      { y: 0.06, rx: 0.22, rz: 0.21, z: -0.02, n: 2.2 },
+      { y: 0.19, rx: 0.30, rz: 0.29, z: 0.01, n: 2.2 },
+      { y: 0.35, rx: 0.29, rz: 0.28, z: 0.04, n: 2.3 },
+      { y: 0.50, rx: 0.26, rz: 0.25, z: 0.06, n: 2.2 },
+      { y: 0.61, rx: 0.18, rz: 0.18, z: 0.05, n: 2.1 }
+    ]),
+    { rot: [0.06, 0, 0] }
+  );
+  const belly = verticalContourLoft([
+    { y: 0.09, rx: 0.15, rz: 0.08, z: 0.18, n: 2.2 },
+    { y: 0.24, rx: 0.21, rz: 0.11, z: 0.23, n: 2.2 },
+    { y: 0.40, rx: 0.19, rz: 0.10, z: 0.25, n: 2.2 },
+    { y: 0.50, rx: 0.12, rz: 0.07, z: 0.24, n: 2.1 }
+  ]);
+  const smileRidge = tubeSweepMesh(
+    [
+      [-0.14, 0.43, 0.26, 0.016],
+      [-0.07, 0.405, 0.305, 0.018],
+      [0.0, 0.398, 0.318, 0.018],
+      [0.07, 0.405, 0.305, 0.018],
+      [0.14, 0.43, 0.26, 0.016]
+    ],
+    10,
+    false
+  );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: torso },
+    { materialIndex: 1, mesh: belly },
+    { materialIndex: 2, mesh: smileRidge },
+    // Dorsal organic spots on back
+    { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.062, 1, 0, 11, 0.2), { pos: [0, 0.39, -0.21], scale: [1.1, 0.9, 0.35] }) },
+    { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.048, 1, 0, 13, 0.2), { pos: [-0.11, 0.31, -0.22], scale: [1.0, 0.9, 0.35] }) },
+    { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.048, 1, 0, 17, 0.2), { pos: [0.11, 0.31, -0.22], scale: [1.0, 0.9, 0.35] }) }
+  ];
+  appendFrogLimbs(slots, 0, 0, 1);
+  appendExpressiveEyes(slots, {
+    x: 0.135,
+    y: 0.62,
+    z: 0.14,
+    radius: 0.088,
+    turretMat: 0,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: withRoyalCrown ? undefined : 6
+  });
+  if (withRoyalCrown) {
+    // 5-point royal gold crown with cabochon ruby gems perched proudly on crown
+    const band = latheMesh(
+      [
+        [0.095, 0.62],
+        [0.125, 0.62],
+        [0.138, 0.70],
+        [0.112, 0.70],
+        [0.095, 0.62]
+      ],
+      20,
+      false
+    );
+    slots.push({ materialIndex: 1, mesh: transformMesh(band, { pos: [0, 0.02, -0.02] }) });
+    const spikeRing: V2[] = [
+      [-0.032, 0],
+      [0.032, 0],
+      [0.0, 0.088]
+    ];
+    for (let i = 0; i < 5; i += 1) {
+      const a = (i / 5) * Math.PI * 2;
+      const sx = Math.sin(a) * 0.122;
+      const sz = Math.cos(a) * 0.122 - 0.02;
+      slots.push(
+        {
+          materialIndex: 1,
+          mesh: transformMesh(extrudePolygonMesh(spikeRing, 0.022, 0.005, false), {
+            pos: [sx, 0.71, sz],
+            rot: [0, a, 0]
+          })
+        },
+        {
+          materialIndex: 6,
+          mesh: transformMesh(icosphereSmoothMesh(0.018, 1, 0, 71 + i, 0), {
+            pos: [Math.sin(a) * 0.13, 0.675, Math.cos(a) * 0.13 - 0.02]
+          })
+        }
+      );
+    }
+  }
+  return {
+    slots,
+    materials: [
+      skinMat,
+      bellyMat,
+      spotMat,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight,
+      withRoyalCrown ? CROSS_HOP_PROCEDURAL_MATERIALS.crownRubyGem : CROSS_HOP_PROCEDURAL_MATERIALS.critterRosyBlush
+    ]
+  };
+}
+
+function buildDuckyRecipe(): CritterAssemblyRecipe {
+  // 0: sunny plumage, 1: cream bib, 2: orange bill & webbed feet, 3: sclera, 4: pupil, 5: catchlight, 6: blush
+  const body = verticalContourLoft([
+    { y: 0.08, rx: 0.19, rz: 0.22, z: -0.02, n: 2.2 },
+    { y: 0.22, rx: 0.28, rz: 0.33, z: -0.02, n: 2.2 },
+    { y: 0.36, rx: 0.25, rz: 0.28, z: 0.02, n: 2.2 },
+    { y: 0.48, rx: 0.20, rz: 0.20, z: 0.08, n: 2.1 },
+    { y: 0.64, rx: 0.22, rz: 0.22, z: 0.10, n: 2.1 },
+    { y: 0.76, rx: 0.13, rz: 0.13, z: 0.09, n: 2.0 }
+  ]);
+  const bib = verticalContourLoft([
+    { y: 0.16, rx: 0.16, rz: 0.08, z: 0.23, n: 2.2 },
+    { y: 0.30, rx: 0.18, rz: 0.09, z: 0.26, n: 2.2 },
+    { y: 0.42, rx: 0.12, rz: 0.07, z: 0.24, n: 2.1 }
+  ]);
+  const upperBill = superellipseLoft(
+    [
+      { z: 0.24, rx: 0.115, ry: 0.048, y: 0.585, superellipseN: 2.4 },
+      { z: 0.36, rx: 0.125, ry: 0.038, y: 0.575, superellipseN: 2.6 },
+      { z: 0.44, rx: 0.085, ry: 0.022, y: 0.568, superellipseN: 2.2 }
+    ],
+    18,
+    true,
+    false
+  );
+  const lowerBill = superellipseLoft(
+    [
+      { z: 0.24, rx: 0.098, ry: 0.028, y: 0.548, superellipseN: 2.3 },
+      { z: 0.38, rx: 0.085, ry: 0.020, y: 0.545, superellipseN: 2.2 }
+    ],
+    16,
+    true,
+    false
+  );
+  const wingPoly: V2[] = [
+    [-0.14, 0.06],
+    [0.14, 0.09],
+    [0.16, -0.04],
+    [-0.08, -0.11],
+    [-0.20, -0.03]
+  ];
+  const tailPoly: V2[] = [
+    [-0.12, 0.0],
+    [0.12, 0.0],
+    [0.16, 0.18],
+    [0.0, 0.23],
+    [-0.16, 0.18]
+  ];
+  const webbedFootPoly: V2[] = [
+    [-0.04, -0.06],
+    [0.04, -0.06],
+    [0.10, 0.13],
+    [0.03, 0.11],
+    [0.0, 0.15],
+    [-0.03, 0.11],
+    [-0.10, 0.13]
+  ];
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 1, mesh: bib },
+    { materialIndex: 2, mesh: upperBill },
+    { materialIndex: 2, mesh: lowerBill },
+    // Head feather tuft
+    {
+      materialIndex: 0,
+      mesh: tubeSweepMesh(
+        [
+          [0, 0.74, 0.08, 0.042],
+          [0, 0.83, 0.04, 0.030],
+          [0, 0.87, -0.02, 0.012]
+        ],
+        10,
+        false
+      )
+    },
+    // Upturned tail feathers
+    {
+      materialIndex: 0,
+      mesh: transformMesh(extrudePolygonMesh(tailPoly, 0.042, 0.01, false), {
+        pos: [0, 0.28, -0.31],
+        rot: [-0.62, 0, 0]
+      })
+    }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        materialIndex: 0,
+        mesh: transformMesh(extrudePolygonMesh(wingPoly, 0.045, 0.012, false), {
+          pos: [sgn * 0.265, 0.29, -0.02],
+          rot: [0, sgn * (Math.PI / 2 - 0.14), 0]
+        })
+      },
+      {
+        materialIndex: 2,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.11, 0.13, 0.02, 0.034],
+            [sgn * 0.115, 0.022, 0.04, 0.028]
+          ],
+          10,
+          false
+        )
+      },
+      {
+        materialIndex: 2,
+        mesh: transformMesh(extrudePolygonMesh(webbedFootPoly, 0.026, 0.006, false), {
+          pos: [sgn * 0.115, 0.0, 0.07],
+          rot: [Math.PI / 2, 0, sgn * 0.08]
+        })
+      }
+    );
+  }
+  appendExpressiveEyes(slots, {
+    x: 0.145,
+    y: 0.64,
+    z: 0.23,
+    radius: 0.064,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: 6
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.duckSunnyPlumage,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.waterfowlOrangeBill,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterRosyBlush
+    ]
+  };
+}
+
+function buildChickRecipe(): CritterAssemblyRecipe {
+  // 0: fluffy lemon down, 1: cream belly, 2: orange beak & 3-toed feet, 3: sclera, 4: pupil, 5: catchlight, 6: blush
+  const body = verticalContourLoft([
+    { y: 0.11, rx: 0.20, rz: 0.20, z: 0.0, n: 2.1 },
+    { y: 0.27, rx: 0.28, rz: 0.28, z: 0.01, n: 2.1 },
+    { y: 0.44, rx: 0.25, rz: 0.25, z: 0.02, n: 2.1 },
+    { y: 0.60, rx: 0.24, rz: 0.24, z: 0.04, n: 2.1 },
+    { y: 0.74, rx: 0.15, rz: 0.15, z: 0.04, n: 2.0 }
+  ]);
+  const belly = verticalContourLoft([
+    { y: 0.17, rx: 0.15, rz: 0.07, z: 0.22, n: 2.2 },
+    { y: 0.31, rx: 0.18, rz: 0.08, z: 0.25, n: 2.2 },
+    { y: 0.44, rx: 0.12, rz: 0.06, z: 0.23, n: 2.1 }
+  ]);
+  const beak = transformMesh(
+    latheMesh([[0, 0.11], [0.052, 0.02], [0.058, -0.02], [0, -0.02]], 14, false),
+    { pos: [0, 0.56, 0.27], rot: [Math.PI / 2, 0, 0] }
+  );
+  const tinyWing: V2[] = [
+    [-0.08, 0.06],
+    [0.09, 0.07],
+    [0.12, -0.03],
+    [-0.06, -0.08]
+  ];
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 1, mesh: belly },
+    { materialIndex: 2, mesh: beak },
+    // Fluffy 3-puff chick head crest + tail puff
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.068, 1, 0, 19, 0.3), { pos: [0, 0.78, 0.05], scale: [0.85, 1.28, 0.9] }) },
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.052, 1, 0, 23, 0.3), { pos: [-0.05, 0.76, 0.02], rot: [0, 0, 0.32] }) },
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.052, 1, 0, 29, 0.3), { pos: [0.05, 0.76, 0.02], rot: [0, 0, -0.32] }) },
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.078, 1, 0, 31, 0.25), { pos: [0, 0.30, -0.26], scale: [0.85, 1.05, 1.25] }) }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        materialIndex: 0,
+        mesh: transformMesh(extrudePolygonMesh(tinyWing, 0.04, 0.012, false), {
+          pos: [sgn * 0.26, 0.36, 0.02],
+          rot: [0, sgn * (Math.PI / 2 - 0.26), sgn * 0.22]
+        })
+      },
+      {
+        materialIndex: 2,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.095, 0.15, 0.02, 0.026],
+            [sgn * 0.10, 0.018, 0.03, 0.022]
+          ],
+          8,
+          false
+        )
+      }
+    );
+    for (const [tx, tz] of [
+      [-0.045, 0.14],
+      [0.0, 0.16],
+      [0.045, 0.14],
+      [0.0, -0.05]
+    ] as const) {
+      slots.push({
+        materialIndex: 2,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.10, 0.016, 0.03, 0.018],
+            [sgn * 0.10 + tx, 0.014, tz, 0.012]
+          ],
+          8,
+          false
+        )
+      });
+    }
+  }
+  appendExpressiveEyes(slots, {
+    x: 0.135,
+    y: 0.60,
+    z: 0.22,
+    radius: 0.068,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: 6
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.chickDownYellow,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.waterfowlOrangeBill,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterRosyBlush
+    ]
+  };
+}
+
+function buildBunRecipe(): CritterAssemblyRecipe {
+  // 0: cloud plush, 1: sakura inner ear / nose / paw pads, 2: cream belly, 3: sclera, 4: pupil, 5: catchlight
+  const body = verticalContourLoft([
+    { y: 0.06, rx: 0.20, rz: 0.20, z: -0.01, n: 2.2 },
+    { y: 0.20, rx: 0.26, rz: 0.26, z: 0.0, n: 2.2 },
+    { y: 0.36, rx: 0.22, rz: 0.21, z: 0.02, n: 2.2 },
+    { y: 0.52, rx: 0.24, rz: 0.23, z: 0.05, n: 2.1 },
+    { y: 0.66, rx: 0.16, rz: 0.16, z: 0.04, n: 2.0 }
+  ]);
+  const belly = verticalContourLoft([
+    { y: 0.12, rx: 0.14, rz: 0.07, z: 0.20, n: 2.2 },
+    { y: 0.26, rx: 0.16, rz: 0.08, z: 0.23, n: 2.2 },
+    { y: 0.38, rx: 0.11, rz: 0.06, z: 0.21, n: 2.1 }
+  ]);
+  // Left ear tall & upright; right ear charmingly cocked at the tip
+  const leftEarOuter = transformMesh(
+    tubeSweepMesh(
+      [
+        [-0.095, 0.63, 0.02, 0.052],
+        [-0.115, 0.80, 0.01, 0.068],
+        [-0.12, 0.96, 0.02, 0.052],
+        [-0.115, 1.04, 0.03, 0.022]
+      ],
+      14,
+      false
+    ),
+    { scale: [1, 1, 0.58] }
+  );
+  const leftEarInner = transformMesh(
+    tubeSweepMesh(
+      [
+        [-0.095, 0.66, 0.048, 0.028],
+        [-0.115, 0.82, 0.044, 0.038],
+        [-0.118, 0.96, 0.048, 0.024]
+      ],
+      12,
+      false
+    ),
+    { scale: [1, 1, 0.42] }
+  );
+  const rightEarOuter = transformMesh(
+    tubeSweepMesh(
+      [
+        [0.095, 0.63, 0.02, 0.052],
+        [0.125, 0.79, 0.01, 0.068],
+        [0.165, 0.91, 0.05, 0.054],
+        [0.21, 0.95, 0.10, 0.024]
+      ],
+      14,
+      false
+    ),
+    { scale: [1, 1, 0.58] }
+  );
+  const rightEarInner = transformMesh(
+    tubeSweepMesh(
+      [
+        [0.095, 0.66, 0.048, 0.028],
+        [0.125, 0.80, 0.044, 0.038],
+        [0.165, 0.90, 0.075, 0.024]
+      ],
+      12,
+      false
+    ),
+    { scale: [1, 1, 0.42] }
+  );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 2, mesh: belly },
+    { materialIndex: 0, mesh: leftEarOuter },
+    { materialIndex: 1, mesh: leftEarInner },
+    { materialIndex: 0, mesh: rightEarOuter },
+    { materialIndex: 1, mesh: rightEarInner },
+    // Fluffy cottonball tail
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.092, 2, 0.02, 67, 0.35), { pos: [0, 0.18, -0.25] }) },
+    // Whisker muzzle puffs & pink button nose
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.058, 1, 0, 71, 0.2), { pos: [-0.048, 0.49, 0.245], scale: [1.1, 0.85, 0.8] }) },
+    { materialIndex: 0, mesh: transformMesh(icosphereSmoothMesh(0.058, 1, 0, 73, 0.2), { pos: [0.048, 0.49, 0.245], scale: [1.1, 0.85, 0.8] }) },
+    { materialIndex: 1, mesh: transformMesh(icosphereSmoothMesh(0.030, 1, 0, 79, 0), { pos: [0, 0.525, 0.285], scale: [1.2, 0.88, 0.85] }) }
+  ];
+  appendMammalLimbs(slots, 0, 1);
+  appendExpressiveEyes(slots, {
+    x: 0.115,
+    y: 0.56,
+    z: 0.225,
+    radius: 0.062,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: 1
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.bunnyCloudPlush,
+      CROSS_HOP_PROCEDURAL_MATERIALS.sakuraPinkSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function makeHexagonRing(r: number): V2[] {
+  const pts: V2[] = [];
+  for (let i = 0; i < 6; i += 1) {
+    const a = (i / 6) * Math.PI * 2;
+    pts.push([Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  return pts;
+}
+
+function buildTurtleRecipe(): CritterAssemblyRecipe {
+  // 0: jade carapace, 1: amber scutes & rim, 2: sage turtle skin, 3: cream plastron, 4: sclera, 5: pupil, 6: catchlight
+  const dome = verticalContourLoft([
+    { y: 0.12, rx: 0.33, rz: 0.36, z: -0.05, n: 2.3 },
+    { y: 0.23, rx: 0.32, rz: 0.35, z: -0.05, n: 2.2 },
+    { y: 0.36, rx: 0.26, rz: 0.29, z: -0.05, n: 2.1 },
+    { y: 0.45, rx: 0.14, rz: 0.16, z: -0.05, n: 2.0 }
+  ]);
+  const shellRim = transformMesh(
+    latheMesh(
+      [
+        [0.28, 0.10],
+        [0.355, 0.105],
+        [0.365, 0.155],
+        [0.31, 0.165],
+        [0.28, 0.10]
+      ],
+      24,
+      false
+    ),
+    { pos: [0, 0, -0.05], scale: [1, 1, 1.08] }
+  );
+  const plastron = verticalContourLoft([
+    { y: 0.065, rx: 0.26, rz: 0.29, z: -0.04, n: 2.4 },
+    { y: 0.115, rx: 0.30, rz: 0.33, z: -0.04, n: 2.4 }
+  ]);
+  const neckAndHead = tubeSweepMesh(
+    [
+      [0, 0.16, 0.18, 0.088],
+      [0, 0.26, 0.30, 0.084],
+      [0, 0.36, 0.37, 0.125],
+      [0, 0.39, 0.43, 0.092]
+    ],
+    16,
+    false
+  );
+  const tail = tubeSweepMesh(
+    [
+      [0, 0.13, -0.36, 0.048],
+      [0, 0.11, -0.47, 0.020]
+    ],
+    10,
+    false
+  );
+  const scuteHex = extrudePolygonMesh(makeHexagonRing(0.095), 0.026, 0.008, false);
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: dome },
+    { materialIndex: 1, mesh: shellRim },
+    { materialIndex: 3, mesh: plastron },
+    { materialIndex: 2, mesh: neckAndHead },
+    { materialIndex: 2, mesh: tail },
+    // Crown & lateral hexagonal tortoise scute pattern
+    { materialIndex: 1, mesh: transformMesh(scuteHex, { pos: [0, 0.445, -0.05], rot: [-Math.PI / 2, 0, 0] }) },
+    { materialIndex: 1, mesh: transformMesh(scuteHex, { pos: [0, 0.39, 0.12], rot: [-Math.PI / 2 + 0.46, 0, 0], scale: 0.88 }) },
+    { materialIndex: 1, mesh: transformMesh(scuteHex, { pos: [0, 0.39, -0.22], rot: [-Math.PI / 2 - 0.46, 0, 0], scale: 0.88 }) }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    slots.push({
+      materialIndex: 1,
+      mesh: transformMesh(scuteHex, { pos: [sgn * 0.17, 0.38, -0.05], rot: [-Math.PI / 2, 0, -sgn * 0.52], scale: 0.88 })
+    });
+    // Front & hind splayed tortoise legs grounded cleanly on y = 0
+    for (const [lx, lz] of [
+      [0.24, 0.17],
+      [0.23, -0.22]
+    ] as const) {
+      slots.push(
+        {
+          materialIndex: 2,
+          mesh: tubeSweepMesh(
+            [
+              [sgn * (lx - 0.05), 0.13, lz * 0.85, 0.068],
+              [sgn * lx, 0.038, lz, 0.058]
+            ],
+            12,
+            false
+          )
+        },
+        {
+          materialIndex: 2,
+          mesh: transformMesh(icosphereSmoothMesh(0.062, 1, 0, 83, 0.15), {
+            pos: [sgn * lx, 0.028, lz + 0.025],
+            scale: [1.05, 0.48, 1.25]
+          })
+        }
+      );
+    }
+  }
+  appendExpressiveEyes(slots, {
+    x: 0.088,
+    y: 0.41,
+    z: 0.45,
+    radius: 0.052,
+    scleraMat: 4,
+    pupilMat: 5,
+    catchlightMat: 6
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.turtleJadeShell,
+      CROSS_HOP_PROCEDURAL_MATERIALS.turtleScuteAmber,
+      CROSS_HOP_PROCEDURAL_MATERIALS.turtleSageSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function buildAxolotlRecipe(): CritterAssemblyRecipe {
+  // 0: pastel sakura skin, 1: coral external gills & tail fin, 2: cream belly, 3: sclera, 4: pupil, 5: catchlight
+  const body = verticalContourLoft([
+    { y: 0.07, rx: 0.18, rz: 0.22, z: -0.02, n: 2.2 },
+    { y: 0.20, rx: 0.24, rz: 0.26, z: 0.0, n: 2.2 },
+    { y: 0.36, rx: 0.23, rz: 0.24, z: 0.03, n: 2.2 },
+    { y: 0.52, rx: 0.27, rz: 0.23, z: 0.06, n: 2.1 },
+    { y: 0.64, rx: 0.18, rz: 0.15, z: 0.05, n: 2.0 }
+  ]);
+  const belly = verticalContourLoft([
+    { y: 0.12, rx: 0.14, rz: 0.08, z: 0.20, n: 2.2 },
+    { y: 0.28, rx: 0.16, rz: 0.09, z: 0.23, n: 2.2 },
+    { y: 0.42, rx: 0.12, rz: 0.07, z: 0.22, n: 2.1 }
+  ]);
+  const tailCore = tubeSweepMesh(
+    [
+      [0, 0.14, -0.18, 0.095],
+      [0, 0.13, -0.36, 0.065],
+      [0, 0.15, -0.54, 0.025]
+    ],
+    12,
+    false
+  );
+  const tailFinPoly: V2[] = [
+    [0.0, 0.06],
+    [-0.18, 0.13],
+    [-0.42, 0.11],
+    [-0.48, 0.02],
+    [-0.38, -0.05],
+    [-0.14, -0.04]
+  ];
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 2, mesh: belly },
+    { materialIndex: 0, mesh: tailCore },
+    {
+      materialIndex: 1,
+      mesh: transformMesh(extrudePolygonMesh(tailFinPoly, 0.026, 0.008, false), {
+        pos: [0, 0.14, -0.14],
+        rot: [0, Math.PI / 2, 0]
+      })
+    }
+  ];
+  // 3 feathery coral external gill stalks per side fanning out from head temples
+  for (const sgn of [-1, 1] as const) {
+    for (const [gy, dy, dx] of [
+      [0.60, 0.10, 0.15],
+      [0.54, 0.03, 0.18],
+      [0.48, -0.03, 0.15]
+    ] as const) {
+      const x0 = sgn * 0.22;
+      const x1 = sgn * (0.22 + dx);
+      slots.push(
+        {
+          materialIndex: 1,
+          mesh: tubeSweepMesh(
+            [
+              [x0, gy, 0.03, 0.028],
+              [(x0 + x1) * 0.5, gy + dy * 0.6, 0.01, 0.024],
+              [x1, gy + dy, -0.02, 0.012]
+            ],
+            10,
+            false
+          )
+        },
+        // Feathery gill filament buds along stalk
+        {
+          materialIndex: 1,
+          mesh: transformMesh(icosphereSmoothMesh(0.024, 1, 0, 89, 0.2), {
+            pos: [(x0 + x1) * 0.62, gy + dy * 0.72 + 0.022, 0.0],
+            scale: [1.1, 1.3, 0.6]
+          })
+        },
+        {
+          materialIndex: 1,
+          mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0, 97, 0.2), {
+            pos: [x1 * 0.92, gy + dy + 0.018, -0.015],
+            scale: [1.1, 1.3, 0.6]
+          })
+        }
+      );
+    }
+    // Cute salamander hind & fore feet on y = 0
+    slots.push(
+      {
+        materialIndex: 0,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.16, 0.16, -0.02, 0.058],
+            [sgn * 0.20, 0.032, 0.06, 0.048]
+          ],
+          10,
+          false
+        )
+      },
+      {
+        materialIndex: 0,
+        mesh: transformMesh(icosphereSmoothMesh(0.052, 1, 0, 101, 0.15), {
+          pos: [sgn * 0.20, 0.024, 0.10],
+          scale: [1.05, 0.46, 1.35]
+        })
+      },
+      {
+        materialIndex: 0,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.16, 0.30, 0.12, 0.044],
+            [sgn * 0.21, 0.22, 0.20, 0.036]
+          ],
+          10,
+          false
+        )
+      }
+    );
+  }
+  appendExpressiveEyes(slots, {
+    x: 0.135,
+    y: 0.55,
+    z: 0.24,
+    radius: 0.058,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: 1
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.sakuraPinkSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.axolotlCoralGill,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function makeToastSlicePoly(scale: number): V2[] {
+  const s = scale;
+  return [
+    [-0.26 * s, -0.25 * s],
+    [0.26 * s, -0.25 * s],
+    [0.28 * s, 0.06 * s],
+    [0.31 * s, 0.16 * s],
+    [0.24 * s, 0.26 * s],
+    [0.10 * s, 0.28 * s],
+    [0.0 * s, 0.24 * s],
+    [-0.10 * s, 0.28 * s],
+    [-0.24 * s, 0.26 * s],
+    [-0.31 * s, 0.16 * s],
+    [-0.28 * s, 0.06 * s]
+  ];
+}
+
+function buildToastCatRecipe(): CritterAssemblyRecipe {
+  // 0: ginger cat plush, 1: golden baked toast crust, 2: warm toasted crumb, 3: butter pat, 4: pink nose/inner-ear/pads, 5: sclera, 6: pupil, 7: catchlight
+  const body = verticalContourLoft([
+    { y: 0.06, rx: 0.19, rz: 0.21, z: -0.04, n: 2.2 },
+    { y: 0.20, rx: 0.24, rz: 0.25, z: -0.02, n: 2.2 },
+    { y: 0.35, rx: 0.20, rz: 0.20, z: 0.02, n: 2.2 },
+    { y: 0.50, rx: 0.19, rz: 0.18, z: 0.06, n: 2.1 }
+  ]);
+  const headSphere = transformMesh(icosphereSmoothMesh(0.185, 2, 0, 103, 0.15), {
+    pos: [0, 0.52, 0.10],
+    scale: [1.05, 0.96, 0.92]
+  });
+  const crustSlice = transformMesh(extrudePolygonMesh(makeToastSlicePoly(1.0), 0.11, 0.024, false), {
+    pos: [0, 0.53, 0.12]
+  });
+  const crumbSlice = transformMesh(extrudePolygonMesh(makeToastSlicePoly(0.84), 0.125, 0.014, false), {
+    pos: [0, 0.53, 0.12]
+  });
+  const butterPat = transformMesh(chamferBox([0.13, 0.036, 0.11], 0.01), {
+    pos: [0.03, 0.80, 0.12],
+    rot: [0.08, 0.32, -0.06]
+  });
+  const catTail = tubeSweepMesh(
+    [
+      [0, 0.15, -0.22, 0.045],
+      [0, 0.26, -0.35, 0.040],
+      [0.05, 0.44, -0.38, 0.036],
+      [0.09, 0.56, -0.32, 0.026]
+    ],
+    14,
+    false
+  );
+  const earOuter: V2[] = [
+    [-0.075, 0],
+    [0.075, 0],
+    [0.0, 0.145]
+  ];
+  const earInner: V2[] = [
+    [-0.042, 0.015],
+    [0.042, 0.015],
+    [0.0, 0.105]
+  ];
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: body },
+    { materialIndex: 0, mesh: headSphere },
+    { materialIndex: 1, mesh: crustSlice },
+    { materialIndex: 2, mesh: crumbSlice },
+    { materialIndex: 3, mesh: butterPat },
+    { materialIndex: 0, mesh: catTail },
+    // Whisker muzzle puffs & pink cat nose poking cleanly through the toast slice
+    { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.048, 1, 0, 107, 0.15), { pos: [-0.042, 0.47, 0.255], scale: [1.1, 0.82, 0.7] }) },
+    { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.048, 1, 0, 109, 0.15), { pos: [0.042, 0.47, 0.255], scale: [1.1, 0.82, 0.7] }) },
+    { materialIndex: 4, mesh: transformMesh(icosphereSmoothMesh(0.024, 1, 0, 113, 0), { pos: [0, 0.495, 0.285], scale: [1.2, 0.85, 0.75] }) }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        materialIndex: 0,
+        mesh: transformMesh(extrudePolygonMesh(earOuter, 0.048, 0.01, false), {
+          pos: [sgn * 0.165, 0.74, 0.10],
+          rot: [0, 0, -sgn * 0.20]
+        })
+      },
+      {
+        materialIndex: 4,
+        mesh: transformMesh(extrudePolygonMesh(earInner, 0.054, 0.006, false), {
+          pos: [sgn * 0.165, 0.74, 0.105],
+          rot: [0, 0, -sgn * 0.20]
+        })
+      }
+    );
+  }
+  appendMammalLimbs(slots, 0, 4);
+  appendExpressiveEyes(slots, {
+    x: 0.10,
+    y: 0.555,
+    z: 0.245,
+    radius: 0.055,
+    scleraMat: 5,
+    pupilMat: 6,
+    catchlightMat: 7,
+    blushMat: 4
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.gingerCatPlush,
+      CROSS_HOP_PROCEDURAL_MATERIALS.toastGoldenCrust,
+      CROSS_HOP_PROCEDURAL_MATERIALS.toastWarmCrumb,
+      CROSS_HOP_PROCEDURAL_MATERIALS.toastButterPat,
+      CROSS_HOP_PROCEDURAL_MATERIALS.sakuraPinkSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function buildRoboFrogRecipe(): CritterAssemblyRecipe {
+  // 0: titanium hull, 1: gunmetal servo joints, 2: practical cyan LED visor, 3: brushed steel belly/pistons, 4: white glint
+  const chassis = verticalContourLoft([
+    { y: 0.08, rx: 0.22, rz: 0.21, z: -0.01, n: 2.8 },
+    { y: 0.22, rx: 0.29, rz: 0.27, z: 0.01, n: 3.0 },
+    { y: 0.39, rx: 0.28, rz: 0.26, z: 0.04, n: 3.0 },
+    { y: 0.55, rx: 0.25, rz: 0.23, z: 0.06, n: 2.8 },
+    { y: 0.64, rx: 0.17, rz: 0.16, z: 0.04, n: 2.6 }
+  ]);
+  const chestPlate = transformMesh(chamferBox([0.30, 0.24, 0.08], 0.022), {
+    pos: [0, 0.27, 0.24],
+    rot: [-0.08, 0, 0]
+  });
+  const chestCore = transformMesh(icosphereSmoothMesh(0.048, 1, 0, 127, 0), {
+    pos: [0, 0.28, 0.275],
+    scale: [1.2, 0.9, 0.45]
+  });
+  // Wrap-around recessed gunmetal visor housing + glowing cyan LED visor strip
+  const visorHousing = superellipseLoft(
+    [
+      { z: 0.16, rx: 0.235, ry: 0.078, y: 0.51, superellipseN: 3.2 },
+      { z: 0.295, rx: 0.205, ry: 0.068, y: 0.51, superellipseN: 3.2 }
+    ],
+    20,
+    true,
+    false
+  );
+  const visorGlow = superellipseLoft(
+    [
+      { z: 0.22, rx: 0.19, ry: 0.048, y: 0.51, superellipseN: 3.2 },
+      { z: 0.312, rx: 0.17, ry: 0.042, y: 0.51, superellipseN: 3.2 }
+    ],
+    18,
+    true,
+    false
+  );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: chassis },
+    { materialIndex: 3, mesh: chestPlate },
+    { materialIndex: 2, mesh: chestCore },
+    { materialIndex: 1, mesh: visorHousing },
+    { materialIndex: 2, mesh: visorGlow }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    // Twin roof telemetry antennae + glowing cyan tips + specular visor glints + rear exhaust pods
+    slots.push(
+      {
+        materialIndex: 3,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.11, 0.62, 0.02, 0.022],
+            [sgn * 0.15, 0.77, -0.03, 0.012]
+          ],
+          10,
+          false
+        )
+      },
+      { materialIndex: 2, mesh: transformMesh(icosphereSmoothMesh(0.026, 1, 0, 131, 0), { pos: [sgn * 0.15, 0.78, -0.03] }) },
+      { materialIndex: 4, mesh: transformMesh(icosphereSmoothMesh(0.018, 1, 0, 137, 0), { pos: [sgn * 0.095, 0.525, 0.315] }) },
+      {
+        materialIndex: 1,
+        mesh: transformMesh(
+          latheMesh([[0.03, -0.04], [0.065, -0.04], [0.072, 0.04], [0.03, 0.04], [0.03, -0.04]], 14, false),
+          { pos: [sgn * 0.12, 0.34, -0.23], rot: [Math.PI / 2, 0, 0] }
+        )
+      }
+    );
+  }
+  appendFrogLimbs(slots, 1, 3, 1.04);
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.roboTitaniumHull,
+      CROSS_HOP_PROCEDURAL_MATERIALS.roboGunmetalJoint,
+      CROSS_HOP_PROCEDURAL_MATERIALS.roboCyanVisor,
+      CROSS_HOP_PROCEDURAL_MATERIALS.anisotropicSteel,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function buildKnightToadRecipe(): CritterAssemblyRecipe {
+  // 0: polished steel armor, 1: toad sage skin, 2: crimson plume, 3: heraldic blue shield, 4: gold trim, 5: sclera, 6: pupil, 7: catchlight
+  const cuirass = verticalContourLoft([
+    { y: 0.11, rx: 0.22, rz: 0.21, z: 0.0, n: 2.5 },
+    { y: 0.25, rx: 0.29, rz: 0.26, z: 0.01, n: 2.6 },
+    { y: 0.42, rx: 0.27, rz: 0.24, z: 0.02, n: 2.6 },
+    { y: 0.49, rx: 0.20, rz: 0.19, z: 0.02, n: 2.4 }
+  ]);
+  const toadHead = transformMesh(icosphereSmoothMesh(0.21, 2, 0, 139, 0.18), {
+    pos: [0, 0.54, 0.05],
+    scale: [1.08, 0.88, 1.04]
+  });
+  // Domed steel sallet helm with raised golden brow band
+  const steelHelm = transformMesh(
+    latheMesh(
+      [
+        [0.225, 0.55],
+        [0.238, 0.60],
+        [0.215, 0.70],
+        [0.145, 0.78],
+        [0.0, 0.81]
+      ],
+      24,
+      false
+    ),
+    { pos: [0, 0, 0.03], rot: [-0.08, 0, 0] }
+  );
+  const helmTrim = transformMesh(
+    latheMesh(
+      [
+        [0.22, 0.545],
+        [0.244, 0.555],
+        [0.244, 0.585],
+        [0.22, 0.595],
+        [0.22, 0.545]
+      ],
+      24,
+      false
+    ),
+    { pos: [0, 0, 0.03], rot: [-0.08, 0, 0] }
+  );
+  // Sweeping crimson horsehair plume crest
+  const plume = tubeSweepMesh(
+    [
+      [0, 0.79, 0.04, 0.038],
+      [0, 0.90, -0.04, 0.068],
+      [0, 0.88, -0.19, 0.064],
+      [0, 0.74, -0.31, 0.042],
+      [0, 0.60, -0.35, 0.018]
+    ],
+    14,
+    false
+  );
+  // Mini heater shield on left arm + golden shield boss
+  const shieldPoly: V2[] = [
+    [-0.13, 0.16],
+    [0.13, 0.16],
+    [0.14, 0.01],
+    [0.09, -0.12],
+    [0.0, -0.20],
+    [-0.09, -0.12],
+    [-0.14, 0.01]
+  ];
+  const shieldBody = transformMesh(extrudePolygonMesh(shieldPoly, 0.034, 0.01, false), {
+    pos: [-0.29, 0.31, 0.11],
+    rot: [0, -Math.PI / 2 + 0.35, 0.08]
+  });
+  const shieldRim = transformMesh(extrudePolygonMesh(shieldPoly, 0.022, 0.006, false), {
+    pos: [-0.285, 0.31, 0.11],
+    rot: [0, -Math.PI / 2 + 0.35, 0.08],
+    scale: [1.10, 1.08, 1]
+  });
+  const shieldBoss = transformMesh(icosphereSmoothMesh(0.045, 1, 0, 149, 0), {
+    pos: [-0.315, 0.32, 0.12],
+    scale: [0.55, 1, 1]
+  });
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: cuirass },
+    { materialIndex: 1, mesh: toadHead },
+    { materialIndex: 0, mesh: steelHelm },
+    { materialIndex: 4, mesh: helmTrim },
+    { materialIndex: 2, mesh: plume },
+    { materialIndex: 4, mesh: shieldRim },
+    { materialIndex: 3, mesh: shieldBody },
+    { materialIndex: 4, mesh: shieldBoss },
+    // Sword pommel at right hip
+    {
+      materialIndex: 4,
+      mesh: tubeSweepMesh(
+        [
+          [0.28, 0.24, -0.08, 0.022],
+          [0.31, 0.36, 0.06, 0.024]
+        ],
+        10,
+        false
+      )
+    },
+    { materialIndex: 4, mesh: transformMesh(chamferBox([0.03, 0.14, 0.03], 0.008), { pos: [0.295, 0.30, -0.01], rot: [0.65, 0, 0] }) }
+  ];
+  // Shoulder pauldrons
+  for (const sgn of [-1, 1] as const) {
+    slots.push({
+      materialIndex: 0,
+      mesh: transformMesh(icosphereSmoothMesh(0.095, 1, 0, 151, 0.15), {
+        pos: [sgn * 0.25, 0.42, 0.03],
+        scale: [1.05, 0.78, 1.1]
+      })
+    });
+  }
+  appendBootedLegs(slots, 1, 0, 0);
+  appendExpressiveEyes(slots, {
+    x: 0.115,
+    y: 0.535,
+    z: 0.235,
+    radius: 0.054,
+    scleraMat: 5,
+    pupilMat: 6,
+    catchlightMat: 7
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.knightPolishedSteel,
+      CROSS_HOP_PROCEDURAL_MATERIALS.turtleSageSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.knightCrimsonPlume,
+      CROSS_HOP_PROCEDURAL_MATERIALS.knightHeraldicBlue,
+      CROSS_HOP_PROCEDURAL_MATERIALS.sovereign24kGold,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ]
+  };
+}
+
+function buildMushroomKidRecipe(): CritterAssemblyRecipe {
+  // 0: scarlet toadstool cap, 1: cream stem body & white polka spots, 2: russet woodland boots, 3: sclera, 4: pupil, 5: catchlight, 6: blush
+  const stemBody = verticalContourLoft([
+    { y: 0.10, rx: 0.18, rz: 0.18, z: 0.0, n: 2.1 },
+    { y: 0.24, rx: 0.23, rz: 0.22, z: 0.01, n: 2.1 },
+    { y: 0.40, rx: 0.20, rz: 0.20, z: 0.02, n: 2.1 },
+    { y: 0.54, rx: 0.21, rz: 0.21, z: 0.03, n: 2.1 }
+  ]);
+  const capRed = latheMesh(
+    [
+      [0.19, 0.52],
+      [0.39, 0.50],
+      [0.42, 0.55],
+      [0.37, 0.68],
+      [0.24, 0.80],
+      [0.09, 0.86],
+      [0.0, 0.87]
+    ],
+    28,
+    false
+  );
+  const capGills = latheMesh(
+    [
+      [0.18, 0.52],
+      [0.38, 0.50],
+      [0.19, 0.48],
+      [0.18, 0.52]
+    ],
+    24,
+    false
+  );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 1, mesh: stemBody },
+    { materialIndex: 0, mesh: transformMesh(capRed, { pos: [0, 0, 0.01], rot: [-0.06, 0, 0] }) },
+    { materialIndex: 1, mesh: transformMesh(capGills, { pos: [0, 0, 0.01], rot: [-0.06, 0, 0] }) },
+    // Crown white toadstool wart spot
+    { materialIndex: 1, mesh: transformMesh(icosphereSmoothMesh(0.068, 1, 0, 157, 0.1), { pos: [0, 0.855, 0.0], scale: [1.15, 0.45, 1.15] }) }
+  ];
+  // Ring of 7 raised white polka-dot spots around the scarlet cap dome
+  for (let i = 0; i < 7; i += 1) {
+    const a = (i / 7) * Math.PI * 2 + 0.25;
+    const rad = i % 2 === 0 ? 0.28 : 0.22;
+    const ySpot = i % 2 === 0 ? 0.67 : 0.75;
+    slots.push({
+      materialIndex: 1,
+      mesh: transformMesh(icosphereSmoothMesh(0.056, 1, 0, 163 + i, 0.1), {
+        pos: [Math.cos(a) * rad, ySpot, Math.sin(a) * rad + 0.01],
+        rot: [Math.sin(a) * 0.55, 0, -Math.cos(a) * 0.55],
+        scale: [1.1, 0.42, 1.1]
+      })
+    });
+  }
+  // Cute stubby cream arms
+  for (const sgn of [-1, 1] as const) {
+    slots.push({
+      materialIndex: 1,
+      mesh: tubeSweepMesh(
+        [
+          [sgn * 0.19, 0.34, 0.02, 0.050],
+          [sgn * 0.27, 0.25, 0.08, 0.044]
+        ],
+        10,
+        false
+      )
+    });
+  }
+  appendBootedLegs(slots, 1, 2, 2);
+  appendExpressiveEyes(slots, {
+    x: 0.095,
+    y: 0.42,
+    z: 0.215,
+    radius: 0.054,
+    scleraMat: 3,
+    pupilMat: 4,
+    catchlightMat: 5,
+    blushMat: 6
+  });
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.mushroomScarletCap,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+      CROSS_HOP_PROCEDURAL_MATERIALS.woodlandBootLeather,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterRosyBlush
+    ]
+  };
+}
+
+function buildAstroFrogRecipe(): CritterAssemblyRecipe {
+  // 0: EVA white suit, 1: NASA orange collar/cuffs, 2: emerald frog head inside bubble, 3: steel pack/nozzles,
+  // 4: practical thruster glow, 5: sclera, 6: pupil, 7: catchlight + transparent glass bubble helmet
+  const evaSuit = verticalContourLoft([
+    { y: 0.11, rx: 0.21, rz: 0.20, z: 0.0, n: 2.3 },
+    { y: 0.25, rx: 0.26, rz: 0.24, z: 0.01, n: 2.4 },
+    { y: 0.42, rx: 0.24, rz: 0.22, z: 0.02, n: 2.4 },
+    { y: 0.50, rx: 0.19, rz: 0.18, z: 0.02, n: 2.2 }
+  ]);
+  const neckRing = latheMesh(
+    [
+      [0.175, 0.48],
+      [0.235, 0.49],
+      [0.235, 0.53],
+      [0.185, 0.54],
+      [0.175, 0.48]
+    ],
+    24,
+    false
+  );
+  const frogHead = transformMesh(icosphereSmoothMesh(0.165, 2, 0, 173, 0.14), {
+    pos: [0, 0.65, 0.03],
+    scale: [1.05, 0.94, 1.0]
+  });
+  const chestModule = transformMesh(chamferBox([0.19, 0.14, 0.06], 0.016), {
+    pos: [0, 0.34, 0.23]
+  });
+  const jetpack = transformMesh(chamferBox([0.28, 0.30, 0.15], 0.028), {
+    pos: [0, 0.36, -0.23]
+  });
+  const sunShield = latheMesh(
+    [
+      [0.225, 0.74],
+      [0.238, 0.76],
+      [0.18, 0.85],
+      [0.0, 0.89]
+    ],
+    22,
+    false
+  );
+  const slots: MultiMatSlot[] = [
+    { materialIndex: 0, mesh: evaSuit },
+    { materialIndex: 1, mesh: neckRing },
+    { materialIndex: 2, mesh: frogHead },
+    { materialIndex: 3, mesh: chestModule },
+    { materialIndex: 1, mesh: transformMesh(chamferBox([0.06, 0.04, 0.02], 0.006), { pos: [-0.04, 0.35, 0.262] }) },
+    { materialIndex: 4, mesh: transformMesh(chamferBox([0.05, 0.04, 0.02], 0.006), { pos: [0.045, 0.35, 0.262] }) },
+    { materialIndex: 0, mesh: jetpack },
+    { materialIndex: 0, mesh: sunShield },
+    // Helmet comms antenna + beacon tip
+    {
+      materialIndex: 3,
+      mesh: tubeSweepMesh(
+        [
+          [0.14, 0.82, -0.02, 0.016],
+          [0.18, 0.95, -0.05, 0.009]
+        ],
+        8,
+        false
+      )
+    },
+    { materialIndex: 4, mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0, 179, 0), { pos: [0.18, 0.96, -0.05] }) }
+  ];
+  for (const sgn of [-1, 1] as const) {
+    // EVA spacesuit arms + orange wrist rings + twin jetpack bell nozzles & thruster cores
+    slots.push(
+      {
+        materialIndex: 0,
+        mesh: tubeSweepMesh(
+          [
+            [sgn * 0.22, 0.40, 0.02, 0.056],
+            [sgn * 0.28, 0.29, 0.11, 0.050]
+          ],
+          10,
+          false
+        )
+      },
+      {
+        materialIndex: 1,
+        mesh: transformMesh(icosphereSmoothMesh(0.052, 1, 0, 181, 0.1), {
+          pos: [sgn * 0.285, 0.27, 0.13]
+        })
+      },
+      {
+        materialIndex: 3,
+        mesh: transformMesh(
+          latheMesh([[0.03, 0.08], [0.055, 0.08], [0.078, 0.0], [0.068, 0.0], [0.03, 0.08]], 16, false),
+          { pos: [sgn * 0.085, 0.15, -0.24] }
+        )
+      },
+      {
+        materialIndex: 4,
+        mesh: transformMesh(icosphereSmoothMesh(0.042, 1, 0, 191, 0), {
+          pos: [sgn * 0.085, 0.16, -0.24],
+          scale: [1, 0.55, 1]
+        })
+      }
+    );
+  }
+  appendBootedLegs(slots, 0, 0, 1);
+  appendExpressiveEyes(slots, {
+    x: 0.082,
+    y: 0.68,
+    z: 0.155,
+    radius: 0.048,
+    turretMat: 2,
+    scleraMat: 5,
+    pupilMat: 6,
+    catchlightMat: 7
+  });
+  const bubbleDome = latheMesh(
+    [
+      [0.215, 0.52],
+      [0.248, 0.63],
+      [0.242, 0.74],
+      [0.165, 0.84],
+      [0.0, 0.88]
+    ],
+    26,
+    false
+  );
+  return {
+    slots,
+    materials: [
+      CROSS_HOP_PROCEDURAL_MATERIALS.astroEvaWhite,
+      CROSS_HOP_PROCEDURAL_MATERIALS.astroCollarOrange,
+      CROSS_HOP_PROCEDURAL_MATERIALS.frogEmeraldSkin,
+      CROSS_HOP_PROCEDURAL_MATERIALS.anisotropicSteel,
+      CROSS_HOP_PROCEDURAL_MATERIALS.rescueCoreGlow,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
+      CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight
+    ],
+    glassMeshes: [bubbleDome],
+    glassMaterial: CROSS_HOP_PROCEDURAL_MATERIALS.astroBubbleGlass
+  };
+}
+
+function buildCritterRecipe(id: CritterAssetId): CritterAssemblyRecipe {
+  switch (id) {
+    case "hop":
+      return buildFrogHeroRecipe(
+        CROSS_HOP_PROCEDURAL_MATERIALS.frogEmeraldSkin,
+        CROSS_HOP_PROCEDURAL_MATERIALS.frogLeafSpot,
+        CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
+        false
+      );
+    case "goldenHop":
+      return buildFrogHeroRecipe(
+        CROSS_HOP_PROCEDURAL_MATERIALS.sovereign24kGold,
+        CROSS_HOP_PROCEDURAL_MATERIALS.champagneGoldTrim,
+        CROSS_HOP_PROCEDURAL_MATERIALS.champagneGoldTrim,
+        true
+      );
+    case "ducky":
+      return buildDuckyRecipe();
+    case "chick":
+      return buildChickRecipe();
+    case "bun":
+      return buildBunRecipe();
+    case "turtle":
+      return buildTurtleRecipe();
+    case "axolotl":
+      return buildAxolotlRecipe();
+    case "toastCat":
+      return buildToastCatRecipe();
+    case "roboFrog":
+      return buildRoboFrogRecipe();
+    case "knightToad":
+      return buildKnightToadRecipe();
+    case "mushroomKid":
+      return buildMushroomKidRecipe();
+    case "astroFrog":
+      return buildAstroFrogRecipe();
+  }
+}
+
+interface CachedCritterGeometry {
+  readonly bodySpec: AuraCustomGeometrySpec;
+  readonly materials: readonly AuraMaterialSpec[];
+  readonly glassSpec?: AuraCustomGeometrySpec;
+  readonly glassMaterial?: AuraMaterialSpec;
+  readonly bounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+  readonly vertexCount: number;
+  readonly materialGroupCount: number;
+}
+
+const critterGeometryCache = new Map<string, CachedCritterGeometry>();
+
+function getFittedCritterGeometry(id: CritterAssetId, targetHeight: number): CachedCritterGeometry {
+  const key = `${id}:${targetHeight.toFixed(4)}`;
+  const cached = critterGeometryCache.get(key);
+  if (cached) return cached;
+
+  const recipe = buildCritterRecipe(id);
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  const scan = (mesh: RawMesh): void => {
+    const pos = mesh.positions;
+    for (let i = 0; i < pos.length; i += 3) {
+      const x = pos[i]!, y = pos[i + 1]!, z = pos[i + 2]!;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (z < minZ) minZ = z;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      if (z > maxZ) maxZ = z;
+    }
+  };
+  for (const s of recipe.slots) scan(s.mesh);
+  if (recipe.glassMeshes) for (const g of recipe.glassMeshes) scan(g);
+
+  const spanY = Math.max(1e-4, maxY - minY);
+  const scale = targetHeight / spanY;
+  const cx = (minX + maxX) * 0.5;
+  const cz = (minZ + maxZ) * 0.5;
+  const tx = -cx * scale;
+  const ty = -minY * scale;
+  const tz = -cz * scale;
+
+  const fittedSlots: MultiMatSlot[] = recipe.slots.map((s) => ({
+    materialIndex: s.materialIndex,
+    mesh: transformMesh(s.mesh, { scale, pos: [tx, ty, tz] })
+  }));
+  const bodySpec = buildGroupedGeometrySpec(fittedSlots);
+  const glassSpec = recipe.glassMeshes && recipe.glassMeshes.length > 0
+    ? mergeRawMeshes(recipe.glassMeshes.map((g) => transformMesh(g, { scale, pos: [tx, ty, tz] })))
+    : undefined;
+
+  const entry: CachedCritterGeometry = {
+    bodySpec,
+    materials: recipe.materials,
+    glassSpec,
+    glassMaterial: recipe.glassMaterial,
+    bounds: {
+      min: [(minX - cx) * scale, 0, (minZ - cz) * scale],
+      max: [(maxX - cx) * scale, targetHeight, (maxZ - cz) * scale]
+    },
+    vertexCount: bodySpec.positions.length / 3 + (glassSpec ? glassSpec.positions.length / 3 : 0),
+    materialGroupCount: (bodySpec.groups?.length ?? 1) + (glassSpec ? 1 : 0)
+  };
+  critterGeometryCache.set(key, entry);
+  return entry;
+}
+
+export interface ProceduralCritterOptions {
+  readonly name: string;
+  readonly targetHeight?: number;
+  readonly castShadow?: boolean;
+  readonly receiveShadow?: boolean;
+}
+
+/**
+ * Inspects exact fitted bounds (`minY === 0`), vertex count, and multi-material group count
+ * for any of the 12 sculpted playable critters.
+ */
+export function inspectProceduralCritterBounds(id: CritterAssetId, targetHeight = 1.05) {
+  const g = getFittedCritterGeometry(id, targetHeight);
+  return {
+    id,
+    bounds: g.bounds,
+    vertexCount: g.vertexCount,
+    materialGroupCount: g.materialGroupCount
+  };
+}
+
+/**
+ * Builds a fresh multi-material `@aura3d/engine` scene node for any of the 12 playable Cross Hop critters,
+ * facing `+Z`, centered on `X/Z`, and grounded cleanly at `minY = 0` (`maxY = targetHeight`).
+ */
+export function buildProceduralCritterNode(id: CritterAssetId, opts: ProceduralCritterOptions) {
+  const targetHeight = opts.targetHeight ?? 1.05;
+  const castShadow = opts.castShadow ?? true;
+  const receiveShadow = opts.receiveShadow ?? true;
+  const g = getFittedCritterGeometry(id, targetHeight);
+  if (g.glassSpec && g.glassMaterial) {
+    const bodyNode = geometry.multiMaterial(g.bodySpec, [...g.materials], {
+      name: `${opts.name}-body`,
+      castShadow,
+      receiveShadow
+    });
+    const glassNode = geometry.custom(g.glassSpec, {
+      name: `${opts.name}-helmet-glass`,
+      material: g.glassMaterial,
+      castShadow: false,
+      receiveShadow: false
+    });
+    return group(opts.name, [bodyNode, glassNode]);
+  }
+  return geometry.multiMaterial(g.bodySpec, [...g.materials], {
+    name: opts.name,
+    castShadow,
+    receiveShadow
   });
 }

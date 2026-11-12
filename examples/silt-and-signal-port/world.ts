@@ -7,7 +7,7 @@
  * chapter 0 follows the original's measured object positions (see terrain.ts).
  */
 import {
-  camera, createAnimationController, effects, environments, geometry, instances, lights, material, model, prefabs, primitives, scene,
+  camera, effects, environments, geometry, instances, lights, material, prefabs, primitives, scene,
   type AuraApp, type AuraMaterialSpec, type AuraVec3
 } from "@aura3d/engine";
 import { assets } from "./assets";
@@ -45,8 +45,8 @@ import {
   createBoardSailNode,
   createBoardTrimNode,
   createCanyonResonanceGate,
-  createCourierMaterialOverrides,
   createDesertBuggyCrawlerNode,
+  createDesertSurferRigNode,
   createDesertViaduct,
   createFlutedObeliskPillar,
   createGatehouseNeri,
@@ -152,7 +152,7 @@ export const waterSpec = (chapter: number, look: SiltLookMode = "original"): Cus
       canalShift: { type: "f32", value: original ? 0 : 62 },
       canalHalf: { type: "f32", value: original ? 25 : 16 },
       fogColor: { type: "color3", value: inked ? linearOf(row.fog.color) : [...hexLinear(chapter === 0 ? 0xdcc5b1 : p.fog!)] },
-      fogFar: { type: "f32", value: 1400 },
+      fogFar: { type: "f32", value: 1560 },
       inkLook: { type: "f32", value: inked ? 1 : 0 },
       sunDir: { type: "vec3", value: keyDirection(row) },
       sunColor: { type: "color3", value: linearOf(row.key.color) },
@@ -176,7 +176,7 @@ export const waterParams = (chapter: number, look: SiltLookMode = "original") =>
     canalShift: original ? 0 : 62,
     canalHalf: original ? 25 : 16,
     fogColor: (inked ? linearOf(row.fog.color) : hexLinear(chapter === 0 ? 0xdcc5b1 : p.fog!)) as Rgb,
-    fogFar: 1400,
+    fogFar: 1560,
     inked,
     sunDir: keyDirection(row) as Rgb,
     sunColor: linearOf(row.key.color) as Rgb,
@@ -225,7 +225,7 @@ export const duneSandSpec = (chapter: number, veil = true): CustomSpec => {
       sunDir: { type: "vec3", value: keyDirection(row) },
       sunColor: { type: "color3", value: linearOf(row.key.color) },
       fogColor: { type: "color3", value: linearOf(row.fog.color) },
-      fogFar: { type: "f32", value: 1400 },
+      fogFar: { type: "f32", value: 1560 },
       canalShift: { type: "f32", value: original ? 0 : 62 },
       canalHalf: { type: "f32", value: original ? 25 : 16 },
       siltTime: { type: "f32", value: 0 },
@@ -247,7 +247,7 @@ export const strataCliffSpec = (chapter: number): CustomSpec => {
       skyAmbient: { type: "color3", value: linearOf(row.sky.horizon) },
       sandCap: { type: "color3", value: row.night ? linearOf("#6d6488") : linearOf("#e4b379") },
       fogColor: { type: "color3", value: linearOf(row.fog.color) },
-      fogFar: { type: "f32", value: 1400 }
+      fogFar: { type: "f32", value: 1560 }
     }
   };
 };
@@ -459,14 +459,11 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     builder.add(lights.point({ name: `silt practical ${i}`, position, color: PRACTICAL_COLOR, intensity: 2.4, distance: 70 }));
   }
   builder.add(effects.fog({
-    mode: "height", near: 108, far: 430, color: look.fog.color, density: look.fog.density,
-    heightFalloff: look.fog.heightFalloff, heightReference: look.fog.heightReference, maxOpacity: look.fog.maxOpacity
+    mode: "linear", near: look.fog.near, far: look.fog.far, color: look.fog.color, maxOpacity: look.fog.maxOpacity
   } as unknown as Parameters<typeof effects.fog>[0]));
-  // DG-S4: god rays from the low sun (ch0) and moon shafts through the roots (ch2) via volumetricFog, plus S4 shafts on dusk/dawn (ch3/ch6)
+  // DG-S4: subtle shafts in ch0/ch2 only, capped low so gameplay dunes never wash out in white haze
   if (look.godRays && !options.low) {
-    builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.22 : 0.26, godRayDensity: GOD_RAY_DENSITY }));
-  } else if (!options.low && (chapter === 3 || chapter === 6)) {
-    builder.add(effects.godRays({ name: "silt dusk shafts", intensity: 0.28, decay: 0.94, samples: 48, color: look.key.color, source: { direction: [-dir[0], -dir[1], -dir[2]] } }));
+    builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.1 : 0.12, godRayDensity: GOD_RAY_DENSITY }));
   }
   // DG-L5 + WP-29 grounding: contact shadows, multi-bounce SSAO and screen-space reflections (canal banks & wet storm paving)
   if (!options.low) {
@@ -485,20 +482,18 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   }
   builder.add(effects.vignette({ intensity: 0.22 }));
   if (!options.low) builder.add(effects.filmGrain({ intensity: 0.03 }));
-  // DG-P4: DOF for the intro rail and motion blur for boost, both High-only and both start off; bind toggles them with
-  // `app.post.setEffectEnabled` (no rebuild). Reduced motion never turns motion blur on (PRD §6.3).
-  if (!options.low) {
-    builder.add(effects.depthOfField({ name: "silt sequence dof", focusDistance: SEQUENCE_DOF.focusDistance, fStop: SEQUENCE_DOF.fStop, maxBlur: SEQUENCE_DOF.maxBlur }));
-    if (!options.reducedMotion) builder.add(effects.motionBlur({ name: "silt boost blur", intensity: BOOST_BLUR }));
+  // DG-P4: boost motion blur only (High tier, never on reduced motion); no DoF blur so distant dunes and rings stay crisp.
+  if (!options.low && !options.reducedMotion) {
+    builder.add(effects.motionBlur({ name: "silt boost blur", intensity: BOOST_BLUR }));
   }
 }
 
-/** DG-P4: the sequence DOF focuses on the rider at the rail's distance; boost motion blur strength (PRD 0.35). */
+/** DG-P4: legacy SEQUENCE_DOF constant retained for exports; DoF stays off so gameplay horizons remain crisp. */
 export const SEQUENCE_DOF = { focusDistance: 22, fStop: 2.8, maxBlur: 3 } as const;
 export const BOOST_BLUR = 0.35;
-/** DG-P4: which of the two toggled post effects should be on now. */
+/** DG-P4: which of the toggled post effects should be on now (DoF permanently disabled for crisp horizon clarity). */
 export function sequencePost(state: { readonly boosting: boolean; readonly sequence: boolean; readonly reducedMotion: boolean }): { readonly depthOfField: boolean; readonly motionBlur: boolean } {
-  return { depthOfField: state.sequence, motionBlur: state.boosting && !state.sequence && !state.reducedMotion };
+  return { depthOfField: false, motionBlur: state.boosting && !state.sequence && !state.reducedMotion };
 }
 
 const FAR = [0, -400, 0] as const;
@@ -512,38 +507,46 @@ const WATER_PIN: number | undefined = (() => {
   return v !== null && Number.isFinite(Number(v)) ? Number(v) : undefined;
 })();
 const NO_BEACON = typeof location !== "undefined" && new URLSearchParams(location.search).has("nobeacon");
-/** hoverboard.glb is 1.9 m long (x axis) and 0.37 m thick, origin at its centre; the rider's feet stand on its deck top */
+/** Sand skiff deck non-slip footpad sits at y = 0.192 in unscaled skiff space; surfer boots stand flush at y = 0 on it. */
 const BOARD_SCALE = 1.15;
 const BOARD_DROP = 1.25;
-const DECK_TOP = 0.18 * BOARD_SCALE;
+const DECK_TOP = 0.192 * BOARD_SCALE;
 const BOARD_YAW = Math.PI / 2;
-const RIDER_HEIGHT = 2.1;
+const SURF_STANCE_YAW = -0.78;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
 
-type QuatObj = { readonly x: number; readonly y: number; readonly z: number; readonly w: number };
-const quatAxis = (ax: number, ay: number, az: number, rad: number): QuatObj => {
-  const half = rad * 0.5;
-  const s = Math.sin(half);
-  return { x: ax * s, y: ay * s, z: az * s, w: Math.cos(half) };
+type Mat3 = readonly [number, number, number, number, number, number, number, number, number];
+const mat3RotX = (a: number): Mat3 => {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [1, 0, 0, 0, c, -s, 0, s, c];
 };
-const quatMul = (a: QuatObj, b: QuatObj): QuatObj => {
-  const x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
-  const y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
-  const z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
-  const w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
-  const len = Math.hypot(x, y, z, w) || 1;
-  return { x: x / len, y: y / len, z: z / len, w: w / len };
+const mat3RotY = (a: number): Mat3 => {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [c, 0, s, 0, 1, 0, -s, 0, c];
 };
-/** Exact bind-pose quaternions from courier.glb so overlay surf/carve deltas work even before clip evaluation. */
-const COURIER_BIND_ROT: Readonly<Record<string, QuatObj>> = {
-  Spine: { x: -0.170828, y: -0.013334, z: -0.008401, w: 0.985175 },
-  Spine01: { x: 0, y: 0, z: 0, w: 1 },
-  Head: { x: 0.170797, y: 0.040323, z: 0.028442, w: 0.98407 },
-  LeftLeg: { x: -0.020993, y: -0.04157, z: 0.045201, w: 0.997892 },
-  RightLeg: { x: -0.017162, y: 0.042045, z: -0.046242, w: 0.997897 },
-  LeftArm: { x: -0.407038, y: 0.494043, z: -0.463452, w: 0.612743 },
-  RightArm: { x: -0.382519, y: -0.491115, z: 0.495587, w: 0.605705 }
+const mat3RotZ = (a: number): Mat3 => {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [c, -s, 0, s, c, 0, 0, 0, 1];
+};
+const mat3Mul = (a: Mat3, b: Mat3): Mat3 => [
+  a[0] * b[0] + a[1] * b[3] + a[2] * b[6], a[0] * b[1] + a[1] * b[4] + a[2] * b[7], a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
+  a[3] * b[0] + a[4] * b[3] + a[5] * b[6], a[3] * b[1] + a[4] * b[4] + a[5] * b[7], a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
+  a[6] * b[0] + a[7] * b[3] + a[8] * b[6], a[6] * b[1] + a[7] * b[4] + a[8] * b[7], a[6] * b[2] + a[7] * b[5] + a[8] * b[8]
+];
+const mat3TransformVec = (m: Mat3, v: readonly [number, number, number]): [number, number, number] => [
+  m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
+  m[3] * v[0] + m[4] * v[1] + m[5] * v[2],
+  m[6] * v[0] + m[7] * v[1] + m[8] * v[2]
+];
+/** Exact `"ZYX"` Euler angles matching Aura3D `setRotation(rx, ry, rz)` (`R = Rz(rz) * Ry(ry) * Rx(rx)`), stateless per frame. */
+const mat3ToEulerZYX = (m: Mat3): [number, number, number] => {
+  const m31 = Math.max(-1, Math.min(1, m[6]));
+  const y = Math.asin(-m31);
+  if (Math.abs(m31) < 0.9999999) {
+    return [Math.atan2(m[7], m[8]), y, Math.atan2(m[3], m[0])];
+  }
+  return [Math.atan2(-m[5], m[4]), y, 0];
 };
 
 const DESERT_FLORA_TINTS = ["#54ccb0", "#3eb398", "#6ed8be", "#47bfa3"] as const;
@@ -645,17 +648,13 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         color: rig.sun,
         shadow: { mapSize: buildOptions.shadowMapSize ?? 4096, cascades: 3, maxDistance: 360, bias: -0.0004 }
       }))
-      .add(effects.fog({ mode: "linear", near: 108, far: 430, density: rig.fogDensity, color: rig.fog } as unknown as Parameters<typeof effects.fog>[0]))
+      .add(effects.fog({ mode: "linear", near: 280, far: 1560, maxOpacity: 0.3, color: rig.fog } as unknown as Parameters<typeof effects.fog>[0]))
       // threshold at HDR white (1.0) so only the emissive beacons, thrusters and lamps bloom; `radius` is a deprecated post field
       // night 0.6 (was 0.7): the renderer flags bloom intensity above 0.62 as a noise risk
       .add(effects.bloom({ intensity: rig.night ? 0.6 : 0.38, threshold: 1 }))
       .add(effects.colorGrade({ contrast: 1.06, saturation: 1.08, exposure: rig.night ? 1.05 : 1 }));
   }
 
-  // DG-L6: a low-sun lens flare in ch0 and ch6 (inked, not on Low), kept on the key vector 1800 m out from the rider in
-  // bind; frustum occlusion (the engine has no depth readback for flares). Reduced flash halves it. +4 sprite draws.
-  const flare = inked && look.lensFlare && !buildOptions.low;
-  if (flare) builder.add(lights.lensFlare({ name: "silt flare", position: [...FAR], elements: lensFlareElements(look.key.color), intensity: buildOptions.reducedMotion ? 0.3 : 0.6, runtime: { id: "silt-flare" } }));
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, ...(inked ? { castShadow: false, receiveShadow: false } : {}), material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
 
   const orchard = inked && look.ground === "orchard";
@@ -999,13 +998,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }).runtime({ id: "signal-ripple" }));
   }
   builder.add(createSandSkiffNode({ inked, scale: BOARD_SCALE }));
-  builder.add(model(assets.courier, {
-    name: "rider",
-    position: [0, 4, 0],
-    targetHeight: RIDER_HEIGHT,
-    castShadow: true,
-    ...(inked ? { materialOverrides: createCourierMaterialOverrides(inked) } : {})
-  }).runtime({ id: "rider" }));
+  builder.add(createDesertSurferRigNode({ inked }));
   // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
   // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
   const blob = inked && !buildOptions.low;
@@ -1166,20 +1159,36 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       if (!cameraController) throw new Error("silt-and-signal-port: the app exposes no camera controller");
 
       let animation: { bound: boolean; clip: string | null; error?: string } = { bound: false, clip: null };
-      let controller: ReturnType<typeof createAnimationController> | undefined;
+      let surferParts: {
+        pelvis: ReturnType<AuraApp["nodes"]["require"]>;
+        torso: ReturnType<AuraApp["nodes"]["require"]>;
+        head: ReturnType<AuraApp["nodes"]["require"]>;
+        armLead: ReturnType<AuraApp["nodes"]["require"]>;
+        armTrail: ReturnType<AuraApp["nodes"]["require"]>;
+        scarf: ReturnType<AuraApp["nodes"]["require"]>;
+        scarfTip: ReturnType<AuraApp["nodes"]["require"]>;
+      } | undefined;
       try {
         if (options.animate === false) throw new Error("animation disabled (norig=1)");
-        controller = createAnimationController({ id: "rider-animation", clipRegistry: assets.courier, requiredClips: ["idle", "walk"], suppressRootMotion: true });
-        controller.bindRuntimeNode(node("rider"), { id: "rider-binding", defaultClipId: "idle" });
+        node("rider");
+        surferParts = {
+          pelvis: node("rider-pelvis"),
+          torso: node("rider-torso"),
+          head: node("rider-head"),
+          armLead: node("rider-arm-lead"),
+          armTrail: node("rider-arm-trail"),
+          scarf: node("rider-scarf"),
+          scarfTip: node("rider-scarf-tip")
+        };
         animation = { bound: true, clip: "idle" };
       } catch (error) {
         animation = { bound: false, clip: null, error: String((error as Error)?.message ?? error) };
-        controller = undefined;
+        surferParts = undefined;
       }
       let oneShot = 0;
       const playClip = (clip: string): void => {
-        if (!controller || animation.clip === clip) return;
-        try { controller.crossFade(clip, 0.14); animation = { ...animation, clip }; } catch { /* clip missing: stay on the current one */ }
+        if (!surferParts || animation.clip === clip) return;
+        animation = { bound: true, clip };
       };
 
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
@@ -1202,13 +1211,12 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       let rippleLeft = 0;
       let rippleAt: AuraVec3 = [...FAR];
       const keyDir = keyDirection(look);
-      // DG-P4: both toggled effects start off (inked High only; the nodes are absent on Low and in the original look)
+      // DG-P4: boost motion blur starts off (inked High only; DoF is absent so distant horizon dunes stay crisp)
       const toggles = inked && !buildOptions.low;
       let sequence = false;
       let postShown = { depthOfField: false, motionBlur: false };
       const applyPost = (next: { depthOfField: boolean; motionBlur: boolean }, force = false): void => {
         if (!toggles) return;
-        if (force || next.depthOfField !== postShown.depthOfField) app.post?.setEffectEnabled?.("depthOfField", next.depthOfField);
         if (!buildOptions.reducedMotion && (force || next.motionBlur !== postShown.motionBlur)) app.post?.setEffectEnabled?.("motionBlur", next.motionBlur);
         postShown = next;
       };
@@ -1235,36 +1243,46 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           wasBoosting = flight.boosting;
           const feelStep = impactRig.step(dt);
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
-          const pitch = Math.max(-0.35, Math.min(0.35, -flight.vertical * 0.012));
+          const pitch = Math.max(-0.32, Math.min(0.32, flight.vertical * 0.012));
+          const skiffMat = mat3Mul(mat3RotY(state.yaw), mat3Mul(mat3RotX(pitch), mat3RotZ(-flight.bank)));
+          const skiffEuler = mat3ToEulerZYX(skiffMat);
+          const boardEuler = mat3ToEulerZYX(mat3Mul(skiffMat, mat3RotY(BOARD_YAW)));
+          const deckOffset = mat3TransformVec(skiffMat, [0, DECK_TOP, 0]);
+          const boardY = state.y - BOARD_DROP;
           const rider = node("rider"), board = node("board");
-          board.setPosition(state.x, state.y - BOARD_DROP, state.z);
-          board.setRotation(pitch, state.yaw + BOARD_YAW, flight.bank);
-          rider.setPosition(state.x, state.y - BOARD_DROP + DECK_TOP, state.z);
-          rider.setRotation(pitch, state.yaw + Math.PI + (inked ? 0.34 : 0), flight.bank);
+          board.setPosition(state.x, boardY, state.z);
+          board.setRotation(boardEuler[0], boardEuler[1], boardEuler[2]);
+          rider.setPosition(state.x + deckOffset[0], boardY + deckOffset[1], state.z + deckOffset[2]);
+          rider.setRotation(skiffEuler[0], skiffEuler[1], skiffEuler[2]);
           const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw);
           if (inked) {
+            const trimOffset = mat3TransformVec(skiffMat, [0, DECK_TOP * 0.52, 0]);
             const trim = node("board-trim");
-            trim.setPosition(state.x, state.y - BOARD_DROP + DECK_TOP * 0.52, state.z);
-            trim.setRotation(pitch, state.yaw, flight.bank);
+            trim.setPosition(state.x + trimOffset[0], boardY + trimOffset[1], state.z + trimOffset[2]);
+            trim.setRotation(skiffEuler[0], skiffEuler[1], skiffEuler[2]);
             const flutter = options.reducedMotion ? 0 : Math.sin(time * 10.5) * (0.04 + Math.min(0.08, Math.abs(flight.speed) * 0.0012));
+            const sailOffset = mat3TransformVec(skiffMat, [-0.14, DECK_TOP + 1.18, 0.82]);
+            const sailEuler = mat3ToEulerZYX(
+              mat3Mul(skiffMat, mat3Mul(mat3RotY(flight.bank * 0.16), mat3Mul(mat3RotX(-0.22 - Math.min(0.28, Math.abs(flight.speed) * 0.004) + flutter), mat3RotZ(-flight.bank * 0.15 + flutter * 0.8))))
+            );
             const sail = node("board-sail");
-            sail.setPosition(state.x - fx * 0.82 - 0.14 * cy, state.y - BOARD_DROP + DECK_TOP + 1.18, state.z - fz * 0.82 + 0.14 * sy);
-            sail.setRotation(pitch - 0.22 - Math.min(0.28, Math.abs(flight.speed) * 0.004) + flutter, state.yaw + flight.bank * 0.2, flight.bank * 1.15 + flutter * 0.8);
+            sail.setPosition(state.x + sailOffset[0], boardY + sailOffset[1], state.z + sailOffset[2]);
+            sail.setRotation(sailEuler[0], sailEuler[1], sailEuler[2]);
           }
           for (const [side, ox] of [["l", -0.62], ["r", 0.62]] as const) {
             const t = node(`thruster-${side}`);
             if (inked) {
               // jade strips: flush under the deck, aligned with the board, stretching a little with speed
-              t.setPosition(state.x + ox * 0.55 * cy, state.y - BOARD_DROP - 0.24, state.z - ox * 0.55 * sy);
-              t.setRotation(pitch, state.yaw, flight.bank);
+              const thrOff = mat3TransformVec(skiffMat, [ox * 0.55, -0.24, 0]);
+              t.setPosition(state.x + thrOff[0], boardY + thrOff[1], state.z + thrOff[2]);
+              t.setRotation(skiffEuler[0], skiffEuler[1], skiffEuler[2]);
               t.setScale([1, 1, 1 + Math.min(0.5, Math.abs(flight.speed) * 0.008)]);
               continue;
             }
-            t.setPosition(state.x + ox * cy + 0.2 * sy, state.y - BOARD_DROP - 0.85, state.z - ox * sy + 0.2 * cy);
+            t.setPosition(state.x + ox * cy + 0.2 * sy, boardY - 0.85, state.z - ox * sy + 0.2 * cy);
             t.setScale([1, 0.8 + (options.reducedMotion ? 0 : 0.25 * Math.sin(time * 24 + ox * 5)) + Math.min(0.8, Math.abs(flight.speed) * 0.012), 1]);
           }
           node("sky").setPosition(state.x, state.y, state.z);
-          if (flare) node("silt-flare").setPosition(state.x + keyDir[0] * FLARE_DISTANCE, state.y + keyDir[1] * FLARE_DISTANCE, state.z + keyDir[2] * FLARE_DISTANCE);
           node("canal").setUniform?.("siltTime", WATER_PIN ?? time);
           if (duneVeilOn) node("dune-mica-veil").setUniform?.("siltTime", time);
           if (duneBankOn) node("bank").setUniform?.("siltTime", time);
@@ -1339,35 +1357,70 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
               rip.setPosition(...FAR);
             }
           }
-          if (oneShot > 0) oneShot -= dt;
-          else if (sim.state.hold > 0) playClip("walk");
+          if (oneShot > 0) oneShot = Math.max(0, oneShot - dt);
+          else if (sim.state.hold > 0 || Math.abs(flight.speed) > 6) playClip("walk");
           else playClip("idle");
-          controller?.update(dt);
-          // WP-29 athletic hoverboard carve stance: knees bent into dune landings, torso banking & forward boost tuck, head sighting down-course
-          if (inked && options.animate !== false) {
-            const base = rider.animationPose?.();
-            const crouch = 0.24 + (flight.boosting ? 0.16 : 0) + Math.max(0, Math.min(0.18, -flight.vertical * 0.015));
-            const leanFwd = 0.14 + (flight.boosting ? 0.2 : 0) + Math.min(0.1, Math.abs(flight.speed) * 0.0018);
-            const carve = Math.max(-0.32, Math.min(0.32, flight.bank * 0.55));
-            const rotOf = (boneName: string): QuatObj => base?.bones?.[boneName]?.rotation ?? COURIER_BIND_ROT[boneName] ?? { x: 0, y: 0, z: 0, w: 1 };
-            const withRot = (boneName: string, delta: QuatObj) => ({
-              ...(base?.bones?.[boneName] ?? {}),
-              rotation: quatMul(rotOf(boneName), delta)
-            });
-            rider.setAnimationPose?.({
-              ...(base ?? {}),
-              mode: "overlay",
-              bones: {
-                ...(base?.bones ?? {}),
-                Spine: withRot("Spine", quatMul(quatAxis(1, 0, 0, leanFwd * 0.65), quatAxis(0, 0, 1, carve * 0.5))),
-                Spine01: withRot("Spine01", quatMul(quatAxis(1, 0, 0, leanFwd * 0.45), quatAxis(0, 1, 0, -0.18))),
-                Head: withRot("Head", quatMul(quatAxis(0, 1, 0, -0.32 - carve * 0.25), quatAxis(1, 0, 0, -leanFwd * 0.4))),
-                LeftLeg: withRot("LeftLeg", quatAxis(1, 0, 0, crouch)),
-                RightLeg: withRot("RightLeg", quatAxis(1, 0, 0, crouch * 0.92)),
-                LeftArm: withRot("LeftArm", quatAxis(0, 0, 1, 0.18 - carve * 0.35)),
-                RightArm: withRot("RightArm", quatAxis(0, 0, 1, -0.18 - carve * 0.35))
-              }
-            });
+          // Stateless per-frame procedural wind-surf articulation (`"ZYX"` Euler computed fresh from sim state & time — never compounded)
+          if (surferParts && options.animate !== false) {
+            const motion = options.reducedMotion ? 0.35 : 1;
+            const speed01 = Math.max(0, Math.min(1, Math.abs(flight.speed) / 62));
+            const air01 = Math.max(0, Math.min(1, (boardAlt - 1.2) / 9));
+            const landingCompress = Math.max(0, Math.min(1, -flight.vertical * 0.04));
+            const crouch = (flight.boosting ? 0.45 : 0.14) + landingCompress * 0.4 + speed01 * 0.12;
+            const leanFwd = 0.12 + (flight.boosting ? 0.22 : 0) + speed01 * 0.14 - pitch * 0.25;
+            const carve = Math.max(-0.65, Math.min(0.65, flight.bank));
+            const celebrate = oneShot > 0 ? Math.sin((oneShot / 0.9) * Math.PI) * motion : 0;
+            const breathe = Math.sin(time * 2.6) * 0.025 * motion;
+            const armBalanceWave = Math.sin(time * (3.2 + speed01 * 2.8)) * (0.03 + speed01 * 0.04) * motion;
+
+            surferParts.pelvis.setPosition(0.006 + carve * 0.026, 0.77 - crouch * 0.055, 0.01 - leanFwd * 0.02);
+            const pelvisEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(-carve * 0.1), mat3Mul(mat3RotX(-leanFwd * 0.14), mat3RotY(-carve * 0.12))));
+            surferParts.pelvis.setRotation(pelvisEuler[0], pelvisEuler[1], pelvisEuler[2]);
+
+            const torsoEuler = mat3ToEulerZYX(
+              mat3Mul(
+                mat3RotZ(-carve * 0.2),
+                mat3Mul(mat3RotX(-leanFwd * 0.28 + breathe), mat3RotY(SURF_STANCE_YAW - carve * 0.18 + celebrate * 0.12))
+              )
+            );
+            surferParts.torso.setRotation(torsoEuler[0], torsoEuler[1], torsoEuler[2]);
+
+            const headEuler = mat3ToEulerZYX(
+              mat3Mul(
+                mat3RotY(-SURF_STANCE_YAW * 0.92 - carve * 0.34),
+                mat3Mul(mat3RotX(leanFwd * 0.24 + air01 * 0.06 - breathe * 0.5), mat3RotZ(carve * 0.12))
+              )
+            );
+            surferParts.head.setRotation(headEuler[0], headEuler[1], headEuler[2]);
+
+            const leadArmEuler = mat3ToEulerZYX(
+              mat3Mul(
+                mat3RotZ(-0.06 - air01 * 0.22 + carve * 0.18 - celebrate * 0.28),
+                mat3RotX(-0.05 - speed01 * 0.08 + armBalanceWave)
+              )
+            );
+            surferParts.armLead.setRotation(leadArmEuler[0], leadArmEuler[1], leadArmEuler[2]);
+
+            const trailArmEuler = mat3ToEulerZYX(
+              mat3Mul(
+                mat3RotZ(0.06 + air01 * 0.2 + carve * 0.16 + celebrate * 0.2),
+                mat3RotX(0.04 + speed01 * 0.1 - armBalanceWave * 0.85)
+              )
+            );
+            surferParts.armTrail.setRotation(trailArmEuler[0], trailArmEuler[1], trailArmEuler[2]);
+
+            const scarfWave1 = Math.sin(time * (6.4 + speed01 * 7.2)) * (0.06 + speed01 * 0.11) * motion;
+            const scarfWave2 = Math.sin(time * (8.2 + speed01 * 8.8) - 1.15) * (0.1 + speed01 * 0.16) * motion;
+            const scarfFlutter = Math.cos(time * (5.3 + speed01 * 5.8) + 0.6) * (0.04 + speed01 * 0.08) * motion;
+            const scarfEuler = mat3ToEulerZYX(
+              mat3Mul(
+                mat3RotY(-SURF_STANCE_YAW + scarfWave1 - carve * 0.24),
+                mat3Mul(mat3RotX(0.1 + speed01 * 0.24 + leanFwd * 0.18 + scarfFlutter * 0.5), mat3RotZ(scarfFlutter))
+              )
+            );
+            surferParts.scarf.setRotation(scarfEuler[0], scarfEuler[1], scarfEuler[2]);
+            const scarfTipEuler = mat3ToEulerZYX(mat3Mul(mat3RotY(scarfWave2), mat3RotX(0.04 + scarfFlutter * 0.8)));
+            surferParts.scarfTip.setRotation(scarfTipEuler[0], scarfTipEuler[1], scarfTipEuler[2]);
           }
 
           const o = objectiveOf(state);

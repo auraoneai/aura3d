@@ -53,11 +53,7 @@ const direction: GameArtDirection = {
     exposureEV: -0.2
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.18, 0.25], fovDeg: [46, 68], mobile: "both" },
-  assets: [
-    { role: "hero", assetKey: "pipsPip", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "RunFast", "Regular_Jump", "Dead", "Victory_Cheer"] } },
-    { role: "enemy", assetKey: "pipsBrambleback", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "Attack", "Hit_Reaction", "Dead", "Chest_Pound_Taunt"] } },
-    { role: "character", assetKey: "leapBeetleAnim", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle"] } }
-  ],
+  assets: [],
   // One entry per gameplay event; the pack lives in src/game/vfx.ts.
   vfx: [
     { event: "land", kind: "pip-land-dust" },

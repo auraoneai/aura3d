@@ -49,7 +49,7 @@ describe("grid dispatch scene", () => {
     for (const id of ["player-lidar-dome", "player-tailbar", "player-contact-shadow", "peer-waymo-lidar-ring"]) expect(app.nodes.has(id)).toBe(false);
     app.dispose?.();
   });
-  it("mounts only the rigged passenger GLB; all vehicles, buildings, and SF landmarks are procedural multi-material with WebGPU-safe glazing", () => {
+  it("mounts zero GLB models; commuter, vehicles, buildings, and SF landmarks are 100% @aura3d/engine procedural multi-material with WebGPU-safe glazing", () => {
     const app = createAuraApp(undefined, { scene: buildGridDispatchScene("golden"), autoStart: false });
     const modelNames: string[] = [];
     const groupNames = new Set<string>();
@@ -68,8 +68,8 @@ describe("grid dispatch scene", () => {
       }
     };
     walk((app.scene as unknown as { nodes: unknown[] }).nodes);
-    expect(modelNames).toEqual(["taxi-passenger"]);
-    for (const landmark of ["sf-pyramid-tower", "sf-bridge-tower-l", "sf-bridge-tower-r", "sf-bridge-span", "sf-ferry-clocktower", "sf-coit-tower"]) {
+    expect(modelNames).toEqual([]);
+    for (const landmark of ["taxi-passenger", "taxi-passenger-pelvis", "taxi-passenger-torso", "taxi-passenger-head", "sf-pyramid-tower", "sf-bridge-tower-l", "sf-bridge-tower-r", "sf-bridge-span", "sf-ferry-clocktower", "sf-coit-tower"]) {
       expect(groupNames.has(landmark), landmark).toBe(true);
     }
     app.dispose?.();

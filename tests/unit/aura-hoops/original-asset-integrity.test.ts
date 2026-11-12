@@ -1,84 +1,85 @@
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import {
+  buildBreakawayRimNode,
+  buildHoopStanchionNode,
+  buildPebbledBasketballNode,
+  buildTemperedBackboardNode
+} from "../../../apps/showcase-aura-hoops-3d/src/art/proceduralModels";
 import { assets } from "../../../apps/showcase-aura-hoops-3d/src/aura-assets.route";
-
-vi.mock("@aura3d/engine", () => ({
-  defineAuraAssets: <T>(definitions: T) => definitions
-}));
 
 const ROOT = path.resolve(__dirname, "../../..");
 const MANIFEST = JSON.parse(readFileSync(path.join(ROOT, "aura.assets.json"), "utf8")) as {
   assets: {
     id: string;
-    source: string;
-    outputPath: string;
+    type: string;
+    format: string;
     url: string;
     hash: string;
     sizeBytes: number;
-    derived?: unknown;
   }[];
 };
 
-const ORIGINALS = [
-  {
-    id: "hoopsBall",
-    source: "artifacts/meshy/hoops-ball/model.opt.glb",
-    outputPath: "public/aura-assets/hoopsBall.2aed886a.glb",
-    url: "/aura-assets/hoopsBall.2aed886a.glb",
-    hash: "sha256-158f2bb2b516623368509d02854b0f88bb7e0ae7663bf21d659a8ce2a08b9e22",
-    sizeBytes: 933456,
-    bounds: [1.902, 1.903, 1.903]
-  },
-  {
-    id: "hoopsHoopRig",
-    source: "artifacts/meshy/hoops-hoop-rig/model.opt.glb",
-    outputPath: "public/aura-assets/hoopsHoopRig.b6d696b6.glb",
-    url: "/aura-assets/hoopsHoopRig.b6d696b6.glb",
-    hash: "sha256-f538cf590d928ffeb3dc30624917cef8cc4466c50c326e13f833be8e469a931c",
-    sizeBytes: 1030296,
-    bounds: [1.002, 1.903, 0.489]
+function countFiniteVertices(node: unknown): number {
+  const raw = (typeof (node as { toJSON?: unknown })?.toJSON === "function"
+    ? (node as { toJSON(): Record<string, unknown> }).toJSON()
+    : node) as Record<string, unknown>;
+  let verts = 0;
+  const geom = raw.geometry as { positions?: ArrayLike<number> } | undefined;
+  if (geom?.positions) {
+    for (let i = 0; i < geom.positions.length; i++) {
+      expect(Number.isFinite(geom.positions[i])).toBe(true);
+    }
+    verts += geom.positions.length / 3;
   }
-] as const;
-
-function digest(bytes: Buffer): string {
-  return `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+  for (const child of (raw.children as unknown[] | undefined) ?? []) {
+    verts += countFiniteVertices(child);
+  }
+  return verts;
 }
 
-describe("Aura Hoops original equipment asset integrity", () => {
-  for (const original of ORIGINALS) {
-    it(`${original.id} records the exact source and published output in the root manifest`, () => {
-      const matches = MANIFEST.assets.filter((asset) => asset.id === original.id);
-      expect(matches).toHaveLength(1);
-      expect(matches[0]).toMatchObject({ ...original, type: "model", format: "glb" });
-      expect(matches[0]!.derived).toBeUndefined();
-      expect(matches[0]!.outputPath).toBe(`public${matches[0]!.url}`);
-    });
+describe("Aura Hoops procedural equipment & audio route manifest integrity", () => {
+  it("contains zero .glb model entries in aura-assets.route.ts and keeps all 17 audio SFX entries synced with root aura.assets.json", () => {
+    const entries = Object.entries(assets as Record<string, { type: string; format: string; url: string; hash: string; sizeBytes: number }>);
+    expect(entries.filter(([, entry]) => entry.type === "model" || entry.format === "glb")).toEqual([]);
+    expect(entries).toHaveLength(17);
+    for (const [id, entry] of entries) {
+      expect(entry.type).toBe("audio");
+      expect(entry.format).toBe("wav");
+      const manifestMatch = MANIFEST.assets.find((item) => item.id === id);
+      expect(manifestMatch, `missing ${id} in root manifest`).toBeDefined();
+      expect(entry.hash).toBe(manifestMatch!.hash);
+      expect(entry.sizeBytes).toBe(manifestMatch!.sizeBytes);
+    }
+  });
 
-    it(`${original.id} published GLB has the original byte count and SHA-256`, () => {
-      const bytes = readFileSync(path.join(ROOT, original.outputPath));
-      expect(bytes.subarray(0, 4).toString("ascii")).toBe("glTF");
-      expect(bytes.readUInt32LE(4)).toBe(2);
-      expect(bytes.readUInt32LE(8)).toBe(bytes.length);
-      expect(bytes.length).toBe(original.sizeBytes);
-      expect(digest(bytes)).toBe(original.hash);
-    });
-
-    it(`${original.id} route metadata matches the manifest and the published GLB`, () => {
-      const manifestEntry = MANIFEST.assets.find((asset) => asset.id === original.id)!;
-      const ref = assets[original.id];
-      const bytes = readFileSync(path.join(ROOT, original.outputPath));
-      expect(ref).toMatchObject({
-        type: "model",
-        format: "glb",
-        url: original.url,
-        bounds: original.bounds
-      });
-      expect.soft(ref.hash).toBe(manifestEntry.hash);
-      expect.soft(ref.sizeBytes).toBe(manifestEntry.sizeBytes);
-      expect.soft(ref.hash).toBe(digest(bytes));
-      expect.soft(ref.sizeBytes).toBe(bytes.length);
-    });
-  }
+  it("builds sculpted multi-material procedural basketball, stanchion, tempered backboard, and breakaway rim with finite geometry", () => {
+    expect(countFiniteVertices(buildPebbledBasketballNode({ overrides: [], radius: 0.121, checkSpotZ: 6, lookOriginal: false }))).toBeGreaterThan(150);
+    expect(countFiniteVertices(buildHoopStanchionNode([], false))).toBeGreaterThan(80);
+    expect(
+      countFiniteVertices(
+        buildTemperedBackboardNode({
+          overrides: [],
+          boardZ: -0.38,
+          boardHalfW: 0.915,
+          boardY0: 2.9,
+          boardY1: 3.97,
+          rimY: 3.05,
+          lookOriginal: false
+        })
+      )
+    ).toBeGreaterThan(60);
+    expect(
+      countFiniteVertices(
+        buildBreakawayRimNode({
+          overrides: [],
+          rim: [0, 3.05, 0],
+          rimR: 0.23,
+          boardZ: -0.38,
+          lookOriginal: false
+        })
+      )
+    ).toBeGreaterThan(80);
+  });
 });

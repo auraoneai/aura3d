@@ -96,6 +96,7 @@ import { installBlackFrameGuard } from "@aura3d/debug";
 import { fightCrops, type QaCrop } from "./game/qaCrops";
 import { KO_SCORCH_ID, SCORCH_PARKED, scorchAt } from "./game/flareScorch";
 import { AIRSTRIP_HAZE_PASS, airstripHazePass } from "./game/airstripHaze";
+import { poseArticulatedGladiatorRig } from "./art/proceduralModels";
 
 installBlackFrameGuard();
 
@@ -213,6 +214,10 @@ interface FighterRuntime {
   lastTapAt: number;
   crouching: boolean;
   tint?: FighterPalette;
+  clipTime: number;
+  lastPoseClip: FighterClip;
+  layerKind: AttackKind | null;
+  layerDuration: number;
   /** Upper-body attack layer state (audit IC-15 / anim-phys-11). */
   layer: { mode: "off" | "layered" | "fallback"; active: string | null; timer: number };
 }
@@ -513,9 +518,11 @@ function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): vo
     const flash = fighterFlashTimer[id];
     if (flash.timer <= 0) continue;
     flash.timer = Math.max(0, flash.timer - realDt);
-    const handle = app.nodes.get(id) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
     const intensity = flash.timer > 0 ? flash.peak * (flash.timer / 0.12) : 0;
-    handle?.materials?.setEmissive("*", flash.color, intensity);
+    for (const flashId of [id, `${id}-torso-mesh`, `${id}-head-mesh`, `${id}-weapon-mesh`]) {
+      const handle = app.nodes.get(flashId) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
+      handle?.materials?.setEmissive?.("*", flash.color, intensity);
+    }
   }
 }
 
@@ -547,10 +554,9 @@ let postSent: { dof: string; ca: number; vignette: number } | null = null;
 function applyPostCue(cue: CinematicPost): void {
   const post = app.post;
   if (!post) return;
-  const dofKey = cue.dof ? `${cue.dof.focusDistance}/${cue.dof.fStop}` : "off";
+  const dofKey = "off";
   if (postSent?.dof !== dofKey) {
-    if (cue.dof) post.setEffect("depthOfField", { focusDistance: cue.dof.focusDistance, fStop: cue.dof.fStop });
-    post.setEffectEnabled("depthOfField", cue.dof !== null);
+    post.setEffectEnabled("depthOfField", false);
   }
   if (postSent?.ca !== cue.chromaticAberration) {
     if (cue.chromaticAberration > 0) post.setEffect("chromaticAberration", { intensity: cue.chromaticAberration });
@@ -773,6 +779,10 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
     lastTapAt: -1,
     crouching: false,
     tint,
+    clipTime: 0,
+    lastPoseClip: "idle",
+    layerKind: null,
+    layerDuration: 0,
     layer: { mode: attackLayerWanted ? "layered" : "off", active: null, timer: 0 }
   };
 }
@@ -868,7 +878,9 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   releaseAirstripHaze = undefined;
   if (sig !== mountedArenaSig) {
     mountedArenaSig = sig;
+    postSent = null;
     await fightingGame.setScene(buildArena(config).toJSON());
+    app.post?.setEffectEnabled("depthOfField", false);
   }
   // `lowTier` is `?tier=low`; `app.quality.tier` follows the engine tier once the tiers lane or a renderer quality is set.
   if (hazeRequest === airstripHazeRequest && config.stage.id === "desert-airbase" &&
@@ -1655,7 +1667,29 @@ function clipPlaybackSpec(f: FighterRuntime, clip: FighterClip): { clip: string;
   }
 }
 
+const PROCEDURAL_CLIP_HOLD: Record<FighterClip, number> = {
+  idle: 1.6,
+  walk: 0.72,
+  jump: 0.65,
+  dash: 0.34,
+  crouch: 0.9,
+  guard: 0.9,
+  light: 0.38,
+  heavy: 0.56,
+  special: 0.78,
+  throw: 0.58,
+  hitstun: 0.34,
+  ko: 0.85,
+  win: 1.2
+};
+
 function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
+  if (f.lastPoseClip !== clip) {
+    f.lastPoseClip = clip;
+    f.clipTime = 0;
+  } else if (dt > 0) {
+    f.clipTime += dt;
+  }
   if (f.attackAnim && dt > 0) {
     f.attackAnim.timer = Math.max(0, f.attackAnim.timer - dt);
     if (f.attackAnim.timer <= 0) f.attackAnim = null;
@@ -1675,7 +1709,7 @@ function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
   const spec = clipPlaybackSpec(f, clip);
   const runtimeNode = app.nodes.get(f.nodeId) as AuraRuntimeNodeHandle | undefined;
   if (runtimeNode && (f.appliedClip !== spec.clip || f.appliedLoop !== spec.loop || f.appliedSpeed !== spec.speed)) {
-    runtimeNode.setAnimation({ clip: spec.clip, loop: spec.loop, speed: spec.speed });
+    runtimeNode.setAnimation?.({ clip: spec.clip, loop: spec.loop, speed: spec.speed });
     f.appliedClip = spec.clip;
     f.appliedLoop = spec.loop;
     f.appliedSpeed = spec.speed;
@@ -1697,22 +1731,15 @@ function layerApi(f: FighterRuntime): LayerApi | undefined {
 
 function startAttackLayer(f: FighterRuntime, kind: AttackKind): void {
   if (f.layer.mode !== "layered") return;
-  const api = layerApi(f);
-  if (!api?.playLayer || !api.stopLayer) {
-    f.layer.mode = "fallback";
-    return;
-  }
   const clip = embeddedClipFor(kind).clip;
-  // A second playLayer on a live layer keeps its first clip (audit anim-phys-03), so clear the layer first.
-  api.stopLayer(ATTACK_LAYER, 0);
-  api.playLayer(ATTACK_LAYER, clip, { weight: 1, fadeIn: 0.04, mask: { humanoid: "upper-body" }, speed: ATTACK_LAYER_SPEED[kind] });
-  const live = api.animationState?.()?.activeActions?.some((a) => a.layer === ATTACK_LAYER && a.clip === clip);
-  if (live === false) {
-    // The runtime has no pose mixer for this node: fall back to the full-body attack clip.
-    f.layer.mode = "fallback";
-    f.layer.active = null;
-    return;
+  const api = layerApi(f);
+  if (api?.playLayer && api.stopLayer) {
+    // A second playLayer on a live layer keeps its first clip (audit anim-phys-03), so clear the layer first.
+    api.stopLayer(ATTACK_LAYER, 0);
+    api.playLayer(ATTACK_LAYER, clip, { weight: 1, fadeIn: 0.04, mask: { humanoid: "upper-body" }, speed: ATTACK_LAYER_SPEED[kind] });
   }
+  f.layerKind = kind;
+  f.layerDuration = ATTACK_LAYER_HOLD[kind];
   f.layer.active = clip;
   f.layer.timer = ATTACK_LAYER_HOLD[kind];
 }
@@ -1725,17 +1752,41 @@ function updateAttackLayer(f: FighterRuntime, dt: number): void {
   if (f.layer.timer <= 0 || interrupted) {
     layerApi(f)?.stopLayer?.(ATTACK_LAYER, interrupted ? 0 : 0.1);
     f.layer.active = null;
+    f.layerKind = null;
+    f.layerDuration = 0;
   }
 }
 
 function syncNodes(): void {
+  const lookup = (nodeId: string) => app.nodes.get(nodeId) as AuraRuntimeNodeHandle | undefined;
+  const timeSec = elapsedMs / 1000;
   for (const f of [P1, CPU]) {
+    const foe = f === P1 ? CPU : P1;
     const asnap = actorSnap(f.nodeId);
     const facing = asnap?.facing ?? (f === P1 ? 1 : -1);
-    const node = app.nodes.get(f.nodeId) as AuraRuntimeNodeHandle | undefined;
+    const node = lookup(f.nodeId);
     node
       ?.setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
       .setRotation(0, fighterFacingYaw(facing), 0);
+
+    const clip = desiredClip(f);
+    const vx = f.body.velocity?.[0] ?? 0;
+    const foeDir = foe ? facingTo(f, foe) : facing;
+    const moveDir: -1 | 1 = vx * foeDir < -0.12 ? -1 : 1;
+    const hold = PROCEDURAL_CLIP_HOLD[clip] ?? 0.6;
+    const clipProgress = Math.max(0, Math.min(1, f.clipTime / hold));
+    const layerActive = f.layer.active !== null && f.layerKind !== null;
+    const layerProgress =
+      layerActive && f.layerDuration > 0 ? Math.max(0, Math.min(1, 1 - f.layer.timer / f.layerDuration)) : 0;
+
+    poseArticulatedGladiatorRig(lookup, f.nodeId, {
+      clip,
+      time: timeSec,
+      clipProgress,
+      moveDir,
+      layerAttack: layerActive ? (f.layerKind ?? undefined) : undefined,
+      layerProgress
+    });
   }
 }
 
@@ -2308,6 +2359,7 @@ hud.setAutopilotButton(autoDemo);
 
 void app.ready().then(async () => {
   await fightingGame.ready();
+  app.post?.setEffectEnabled("depthOfField", false);
   loadingProgress.done("Ready");
   // A2: publish backend selection + readiness on the QA hook (diagnostic only).
   const backendHook: Record<string, unknown> = { loadEvents, lab: { backend: resolveLabBackend(labFlags, "auto") ?? null, gamut: labFlags.gamut ?? null, ies: iesLab, ignored: labFlags.ignored } };

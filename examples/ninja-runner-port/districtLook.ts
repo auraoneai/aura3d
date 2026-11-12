@@ -37,8 +37,8 @@ export interface DistrictLookRow {
 export const EVENING_HDRI = "belfast_sunset_puresky" as const;
 
 /** Crisp dusk haze bounds (`near >= 80, far >= 300`) keeping foreground sakura/rooftop sightlines 100% haze-free. */
-export const EVENING_FOG_NEAR = 96;
-export const EVENING_FOG_FAR = 340;
+export const EVENING_FOG_NEAR = 140;
+export const EVENING_FOG_FAR = 460;
 
 /** Signature palette (PRD §6.1 G20). */
 export const PALETTE = {

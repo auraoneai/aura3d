@@ -4,7 +4,9 @@ import direction from "../../../examples/kid-goku-beyond-the-clouds-port/art/dir
 import { ACTIVE_LOOK, CUMULUS_LOOK, CUMULUS_PALETTE, lookIdFrom, lookRow } from "../../../examples/kid-goku-beyond-the-clouds-port/art/look";
 import { CUMULUS_VFX_EVENTS, CUMULUS_VFX_KINDS, CUMULUS_VFX_LIVE_CAP, cumulusVfxFor, cumulusVfxPresets, registerCumulusVfx } from "../../../examples/kid-goku-beyond-the-clouds-port/art/vfx";
 import {
+  HERO_PART_IDS,
   INSTANCED_MATERIALS,
+  applySkyKidHeroPose,
   buildCarvedBoulderNode,
   buildGoldenSkyCloudNode,
   buildHoneyRoastPickupNode,
@@ -16,22 +18,24 @@ import {
   buildSanctuaryToriiNode,
   buildSkyCoinNode,
   buildSkyHermitCottageNode,
+  buildSkyKidHeroNode,
   buildSkyPterosaurNode,
   buildSkyStaffNode,
   buildStarSphereNode,
-  buildStormTyrantNode
+  buildStormTyrantNode,
+  computeHeroRestWorldBounds,
+  computeSkyKidHeroPose
 } from "../../../examples/kid-goku-beyond-the-clouds-port/art/proceduralModels";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
  * GU47 WP-35 look contract. The snapshot mirrors what world.ts mounts for the storm-washed row: the look's one shadowed key
  * and its unshadowed cool rim (no hemisphere, no ambient), the spruit_sunrise IBL behind the custom dome (background off),
- * and the GLB models. Triangle counts are 0 (not measured in phase 1; the audit skips the floor check for 0). The sky pearls
- * and orbs are the only emissive-looking materials and both are light sources by design.
+ * and zero external GLB models (100% procedural multi-material assemblies). The sky pearls and orbs are the only
+ * emissive-looking materials and both are light sources by design.
  */
 function mountedSceneMirror(): ArtDirectionSnapshot {
   const row = CUMULUS_LOOK[0];
-  const model = (assetKey: string) => ({ assetKey, triangles: 0, textures: 1, unlit: false, overridesTextures: false });
   return {
     lights: [
       { type: "directional", shadow: true, intensity: row.sun.intensity },
@@ -39,7 +43,7 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
     ],
     hasAmbient: row.hemisphere !== null,
     environment: { kind: "hdri", background: false },
-    models: ["hero"].map(model),
+    models: [],
     materials: [
       { node: "ball", emissiveIntensity: 1.6, lightSource: true },
       { node: "orbs", emissiveIntensity: 1.2, lightSource: true }
@@ -76,7 +80,11 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     expect(storm.hemisphere).toBeNull();
     expect(storm.rim).toMatchObject({ color: "#9fc8ff", intensity: 0.8 });
     expect(storm.fog.color).toBe("#9fb8cf");
-    expect(storm.fog.density).toBe(0.0032);
+    expect(storm.fog.mode).toBe("linear");
+    expect(storm.fog.near).toBeGreaterThanOrEqual(150);
+    expect(storm.fog.far).toBeGreaterThanOrEqual(520);
+    expect(storm.fog.maxOpacity).toBeLessThanOrEqual(0.28);
+    expect(storm.fog.density).toBeLessThanOrEqual(0.0006);
     expect(storm.grade.temperature).toBe(0.08);
     expect(storm.vignette.intensity).toBe(0.2);
     expect(storm.signature.rainbowDeg).toEqual([40, 42]);
@@ -132,8 +140,69 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     }
   });
 
-  it("WP-29: prunes static GLBs to hero only and preserves procedural node IDs, boulder y=0 pivot, and cottage clearance", () => {
-    expect(direction.assets.map((a) => a.assetKey)).toEqual(["hero"]);
+  it("WP-29: zero external GLBs, sculpted Sky Kid Cloud-Surfer Hero grounded at minY=0, and all procedural node IDs intact", () => {
+    expect(direction.assets).toEqual([]);
+    expect(direction.standIns).toEqual([]);
+
+    const heroJson = buildSkyKidHeroNode(CUMULUS_LOOK[0].heroRim).toJSON() as unknown as {
+      kind?: string;
+      name: string;
+      runtime?: { id?: string };
+      children?: readonly Record<string, unknown>[];
+      [k: string]: unknown;
+    };
+    expect(heroJson.kind).toBe("group");
+    expect(heroJson.name).toBe("hero");
+    expect(heroJson.runtime?.id).toBe("hero");
+    expect(Array.isArray(heroJson.children) && heroJson.children.length).toBe(1);
+
+    const seenIds = new Set<string>();
+    const collectIds = (n: unknown): void => {
+      if (!n || typeof n !== "object") return;
+      const rec = n as { runtime?: { id?: string }; children?: readonly unknown[] };
+      if (rec.runtime?.id) seenIds.add(rec.runtime.id);
+      for (const c of rec.children ?? []) collectIds(c);
+    };
+    collectIds(heroJson);
+    for (const partId of Object.values(HERO_PART_IDS)) {
+      expect(seenIds.has(partId)).toBe(true);
+    }
+
+    const heroBounds = computeHeroRestWorldBounds();
+    expect(Math.abs(heroBounds.min[1])).toBeLessThanOrEqual(1e-4);
+    expect(heroBounds.max[1]).toBeGreaterThanOrEqual(1.45);
+    expect(heroBounds.max[1]).toBeLessThanOrEqual(1.6);
+
+    for (const clip of ["idle", "run", "sit", "jump", "block", "attack", "hit", "cheer", "dead"] as const) {
+      const pose = computeSkyKidHeroPose({
+        clip,
+        clock: 10000.37,
+        animT: 0.45,
+        gaitPhase: 128.25,
+        groundSpeed: clip === "run" ? 14.5 : 0,
+        lean: 0.14,
+        boostTimer: clip === "run" ? 0.5 : 0,
+        jumpVelocity: clip === "jump" ? 6.5 : 0,
+        laneVelocity: 1.8,
+        onPole: clip === "block"
+      });
+      expect(pose.showBackPole).toBe(clip !== "block");
+      const applied = new Map<string, { pos?: [number, number, number]; rot?: [number, number, number]; vis?: boolean }>();
+      applySkyKidHeroPose(
+        (id) => ({
+          setPosition: (x, y, z) => { applied.set(id, { ...applied.get(id), pos: [x, y, z] }); },
+          setRotation: (x, y, z) => { applied.set(id, { ...applied.get(id), rot: [x, y, z] }); },
+          setVisible: (v) => { applied.set(id, { ...applied.get(id), vis: v }); }
+        }),
+        pose
+      );
+      for (const entry of applied.values()) {
+        for (const v of [...(entry.pos ?? []), ...(entry.rot ?? [])]) {
+          expect(Number.isFinite(v)).toBe(true);
+          expect(Math.abs(v)).toBeLessThan(Math.PI * 2);
+        }
+      }
+    }
 
     const cloudJson = buildGoldenSkyCloudNode().toJSON() as unknown as Record<string, unknown>;
     expect(cloudJson.name).toBe("sky-cloud");

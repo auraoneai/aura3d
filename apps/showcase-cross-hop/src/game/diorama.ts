@@ -111,12 +111,70 @@ export function hopScale(t: number, hopping: boolean, landSince: number, reduced
 /** Yaw for a hop direction; the drawn yaw turns toward it at <= `maxStep` rad per frame (70 ms turns, CH47-12). */
 export const HOP_YAW: Readonly<Record<string, number>> = { fwd: Math.PI, back: 0, left: -Math.PI / 2, right: Math.PI / 2 };
 export const TURN_SECONDS = 0.07;
-export function turnToward(current: number, goal: number, dt: number): number {
-  let delta = goal - current;
+export function shortestAngleDelta(from: number, to: number): number {
+  let delta = to - from;
   while (delta > Math.PI) delta -= Math.PI * 2;
   while (delta < -Math.PI) delta += Math.PI * 2;
+  return delta;
+}
+export function turnToward(current: number, goal: number, dt: number): number {
+  const delta = shortestAngleDelta(current, goal);
   const maxStep = Math.min(Math.PI / 4, (Math.PI / 2) * (Math.max(0, dt) / TURN_SECONDS));
-  return current + Math.max(-maxStep, Math.min(maxStep, delta));
+  if (Math.abs(delta) <= maxStep) return goal;
+  return current + Math.sign(delta) * maxStep;
+}
+
+/**
+ * Forward hop pitch arc in local `+Z`-forward critter space:
+ * negative pitch tilts nose UP during launch (`t < 0.5`), levels at apex, tilts nose DOWN into landing (`t > 0.5`),
+ * with a gentle cushion nod on landing settle and strictly `0` at rest.
+ */
+export function hopPitch(t: number, hopping: boolean, landSince: number, reducedMotion: boolean): number {
+  const k = reducedMotion ? 0.25 : 1;
+  if (hopping) {
+    const x = Math.max(0, Math.min(1, t));
+    return -0.22 * k * Math.sin(2 * Math.PI * x);
+  }
+  if (landSince >= 0 && landSince < 0.12) {
+    return 0.065 * k * Math.sin(Math.PI * (landSince / 0.12));
+  }
+  return 0;
+}
+
+/** Volume-preserving idle breathing pulse when standing on a lane or log. */
+export function idleBreathScale(time: number, hopping: boolean, landSince: number, reducedMotion: boolean): [number, number] {
+  if (hopping || (landSince >= 0 && landSince < 0.12)) return [1, 1];
+  const k = reducedMotion ? 0.25 : 1;
+  const sy = 1 + 0.024 * k * Math.sin(time * 3.4);
+  return [1 / Math.sqrt(sy), sy];
+}
+
+/**
+ * Composes extrinsic `"ZYX"` character orientation `R = Ry(yaw) * Rx(localPitch) * Rz(localBank)`
+ * (yaw in world Y, then forward pitch and turn-bank in the critter's local frame) and extracts exact
+ * `[rx, ry, rz]` Euler angles for `setRotation(rx, ry, rz)` (`Rx * Ry * Rz`) with zero cumulative drift.
+ */
+export function composeCharacterEulerXYZ(yaw: number, localPitch: number, localBank: number): [number, number, number] {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cp = Math.cos(localPitch), sp = Math.sin(localPitch);
+  const cb = Math.cos(localBank), sb = Math.sin(localBank);
+
+  // R = Ry(yaw) * Rx(localPitch) * Rz(localBank)
+  const m00 = cy * cb + sy * sp * sb;
+  const m01 = -cy * sb + sy * sp * cb;
+  const m02 = sy * cp;
+  const m11 = cp * cb;
+  const m12 = -sp;
+  const m21 = sy * sb + cy * sp * cb;
+  const m22 = cy * cp;
+
+  const ey = Math.asin(Math.max(-1, Math.min(1, m02)));
+  if (Math.abs(m02) < 0.9999999) {
+    const ex = Math.atan2(-m12, m22);
+    const ez = Math.atan2(-m01, m00);
+    return [ex, ey, ez];
+  }
+  return [Math.atan2(m21, m11), ey, 0];
 }
 
 /** Pooled lamp slots (CH47-02): `count` posts alternating sides every other row from `fromRow`, just beyond the strip edge. */

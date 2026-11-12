@@ -1,5 +1,5 @@
 /**
- * Aura Links 3D: retarget of the procedural swing onto the Meshy golfer rig (links_golfer_player, 24 joints).
+ * Aura Links 3D: retarget of the procedural swing onto the 24-joint golfer rig.
  *
  * The swing (swingMath.ts) is solved on a "virtual" skeleton: the original athlete's 15 bones, whose bind rotations are all
  * identity. The Meshy rig is a T-pose humanoid whose bones have arbitrary bind orientations and different proportions. This
@@ -142,7 +142,7 @@ export function meshyProfile(): SkeletonProfile {
   const l = legSide("LeftUpLeg", "LeftLeg", "LeftFoot");
   const r = legSide("RightUpLeg", "RightLeg", "RightFoot");
   cachedProfile = {
-    id: "links_golfer_player",
+    id: "linksGolferPlayerProcedural",
     rig: {
       hipsBind: hips,
       tSpine: vSub(P("Spine02"), hips),

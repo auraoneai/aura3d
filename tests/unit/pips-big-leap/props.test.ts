@@ -28,21 +28,28 @@ type Node = {
   readonly children?: readonly Node[];
 };
 
-const ALLOWED_RIGGED_GLBS = new Set(["pipsPip", "pipsBrambleback", "leapBeetleAnim"]);
+const PIP_LIMB_PARTS = ["torso", "head", "ear-l", "ear-r", "arm-l", "arm-r", "foot-l", "foot-r", "tail"] as const;
+const BOSS_LIMB_PARTS = ["body", "arm-l", "arm-r", "leg-l", "leg-r"] as const;
 
 const flat = (nodes: readonly Node[]): Node[] => nodes.flatMap((n) => [n, ...(n.kind === "group" ? flat(n.children ?? []) : [])]);
 const sceneOf = (id: (typeof WORLD_IDS)[number], look?: "original") =>
   flat((buildWorld(worldSpec(id), look ? { look } : {}).scene.toJSON() as unknown as { nodes: Node[] }).nodes);
 
 describe("pips-big-leap procedural multi-material props (WP-06)", () => {
-  it("mounts ONLY the 3 rigged character GLBs across all 7 diorama worlds (zero static Meshy or borrowed props)", () => {
+  it("mounts ZERO GLB models across all 7 diorama worlds and builds articulated procedural Pip & Brambleback rigs", () => {
     for (const id of WORLD_IDS) {
-      const models = sceneOf(id).filter((n) => n.kind === "model");
-      expect(models.length, id).toBeGreaterThanOrEqual(1);
-      for (const m of models) {
-        expect(ALLOWED_RIGGED_GLBS.has(m.asset?.id ?? ""), `${id} unexpected GLB ${m.asset?.id} on ${m.name}`).toBe(true);
+      const nodes = sceneOf(id);
+      const models = nodes.filter((n) => n.kind === "model");
+      expect(models, id).toEqual([]);
+      expect(nodes.filter((n) => (n.name ?? "").startsWith("pbl-props:")), id).toEqual([]);
+      for (const part of PIP_LIMB_PARTS) {
+        expect(nodes.some((n) => n.name === `${nodeName.hero}:${part}`), `${id} pip:${part}`).toBe(true);
       }
-      expect(sceneOf(id).filter((n) => (n.name ?? "").startsWith("pbl-props:")), id).toEqual([]);
+      if (worldSpec(id).boss) {
+        for (const part of BOSS_LIMB_PARTS) {
+          expect(nodes.some((n) => n.name === `${nodeName.boss}:${part}`), `${id} brambleback:${part}`).toBe(true);
+        }
+      }
     }
   });
 

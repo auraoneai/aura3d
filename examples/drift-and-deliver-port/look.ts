@@ -46,7 +46,7 @@ export const SHIFT_WALLS: Record<FacadeKind, readonly string[]> = {
   brick: ["#da684d", "#e58c64"]
 };
 
-export const FOG = { color: "#f0dcc0", density: 0.0005, near: 115, far: 440, maxOpacity: 0.42 } as const;
+export const FOG = { mode: "linear" as const, color: "#f0dcc0", density: 0.00024, near: 180, far: 560, maxOpacity: 0.24 } as const;
 
 /* ------------------------------------------------------------------ matrices */
 
@@ -309,7 +309,7 @@ export function shiftShadow(quality: "high" | "low", mobileTrim = false) {
 }
 
 /** GC-P3: the title/results tilt-shift band (normalised screen height; the courier sits just under the middle). */
-export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 6 } as const;
+export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 0 } as const;
 
 /** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
 export const GOD_RAYS = { density: 0.02, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35 } as const;

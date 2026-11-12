@@ -143,7 +143,7 @@ export function createLookDriver(app: LookAppLike, node: (id: string) => LookNod
       if (moved("hemi", look.hemiIntensity, 2e-3)) { node("sky fill")?.setLight?.({ intensity: look.hemiIntensity }); writes++; }
       if (moved("env", look.environmentIntensity, 2e-3)) { app.lighting?.setEnvironmentIntensity(look.environmentIntensity); writes++; }
       if (app.atmosphere && moved("sceneFog", [...look.fogColor, look.fogNear, look.fogFar], 0.5)) {
-        app.atmosphere.setFog({ mode: "linear", color: hex(look.fogColor), near: look.fogNear, far: look.fogFar, maxOpacity: 0.45 });
+        app.atmosphere.setFog({ mode: "linear", color: hex(look.fogColor), near: look.fogNear, far: look.fogFar, maxOpacity: 0.24 });
         writes++;
       }
 

@@ -11,32 +11,7 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const rootCatalog = resolve(appDir, "../../src/aura-assets.ts");
 const outFile = resolve(appDir, "src/aura-assets.shared.ts");
 
-export const SHARED_KEYS = [
-  "auraClashCornerBrazierPylonMeshy",
-  "blockfallReactorContainmentPylonMeshy",
-  "fpsEnergyCorePickupMeshy",
-  "galleryShiftPedestal",
-  "gullsiegeBarrelMeshy",
-  "gullsiegeCrateMeshy",
-  "gullsiegeWatchtowerMeshy",
-  "gullsiegeWindmillMeshy",
-  "heatsinkArch",
-  "heatsinkBoostPad",
-  "helperChar",
-  "neonStreetLampProp",
-  "propBoulder",
-  "propConifer",
-  "propRockB",
-  "reactorFusionTurbineMeshy",
-  "showcaseCartoonPlatformWorld",
-  "showcaseKenneyVerdantPlatformerWorld",
-  "showcasePlatformerBasicPack",
-  "showcasePlatformerWorldLevel",
-  "showcaseReadablePlatformLevel",
-  "showcaseSideScrollerPlatformLevel",
-  "showcaseSidekickRunner",
-  "skylineCrystalShardMeshy"
-];
+export const SHARED_KEYS = [];
 
 // The world backdrops are never mounted (world.ts); certify.ts reads only their
 // hash, so they are copied without their large metadata blocks.

@@ -10,8 +10,8 @@ export interface PipSave {
   completed: Record<string, true>;
   /** world id -> best time-trial seconds. */
   bestTimes: Record<string, number>;
-  /** Player Studio colours. */
-  studio: { cap: string; cape: string };
+  /** Player Studio colours (cape hidden by default unless enabled in Studio). */
+  studio: { cap: string; cape: string; capeEnabled?: boolean };
   /** Entering World 2 or any later world unlocks the double-jump for good. */
   doubleJump: boolean;
   /** Academy gauntlet finished at least once. */
@@ -20,7 +20,7 @@ export interface PipSave {
 
 const KEY = "pips-big-leap-save-v1";
 
-export const DEFAULT_STUDIO = { cap: "#c96a2b", cape: "#3f8cff" } as const;
+export const DEFAULT_STUDIO = { cap: "#c96a2b", cape: "#3f8cff", capeEnabled: false } as const;
 
 export function loadSave(): PipSave {
   const fallback: PipSave = {
@@ -42,7 +42,11 @@ export function loadSave(): PipSave {
       seeds: parsed.seeds ?? {},
       completed: parsed.completed ?? {},
       bestTimes: parsed.bestTimes ?? {},
-      studio: { ...DEFAULT_STUDIO, ...(parsed.studio ?? {}) },
+      studio: {
+        ...DEFAULT_STUDIO,
+        ...(parsed.studio ?? {}),
+        capeEnabled: parsed.studio?.capeEnabled === true
+      },
       doubleJump: parsed.doubleJump === true,
       academyDone: parsed.academyDone === true
     };

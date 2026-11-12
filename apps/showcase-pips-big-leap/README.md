@@ -15,28 +15,16 @@ Route: `/apps/showcase-pips-big-leap/` — mounts into `#app` via `createGame`.
 
 ## Assets
 
-Hero, boss, and the interactive props are **bespoke Meshy generations**
-imported into this app's own catalog (`aura.assets.json` →
-`public/aura-assets/`, generated key surface `src/aura-catalog.ts`,
-rights/metadata evidence under `aura-evidence/meshy/`):
+Hero, Brambleback boss, interactive pickups, gates, and course props are **100% native `@aura3d/engine` multi-material procedural models** (`src/art/proceduralModels.ts` — `geometry.define`, `geometry.multiMaterial`, `group`, `material.*`) with zero external `.glb` files (`src/aura-assets.ts` contains only synthesized audio cues):
 
-| Key | Asset | Notes |
+| Builder | Role | Notes |
 | --- | --- | --- |
-| `pipsPip` | hero (rigged, `animated.glb`) | clips: Idle, Quick_Walk, RunFast, Regular_Jump, happy_jump_m, Dead, Victory_Cheer |
-| `pipsBrambleback` | W5 boss (rigged, `animated.glb`) | clips: Idle, Quick_Walk, Attack, Hit_Reaction, Dead, Chest_Pound_Taunt |
-| `pipsSunseed` | sun-seed collectible | replaces the old emissive sphere pickups |
-| `pipsGoldenAcorn` | golden acorn collectible | replaces the old capsule pickups |
-| `pipsCheckpointFlag` | checkpoint flag | replaces the old pole + box flag |
-| `pipsSungate` | Sun-Gate arch | replaces the old pillar/lintel frame (emissive ring + seed-lock kept) |
-
-`src/aura-assets.ts` is the facade the game imports: it exposes the Meshy
-catalog plus the shared repo-catalog props and NPC runners it uses. Those
-shared entries come from `src/aura-assets.shared.ts`, a generated copy of just
-the 25 entries the game needs (`node apps/showcase-pips-big-leap/scripts/sync-shared-assets.mjs`;
-`tests/unit/pips-big-leap/shared-assets.test.ts` fails when it drifts from the
-root catalog). The page no longer imports the 2.6 MB root `src/aura-assets.ts`.
-The `backdrop` world kits are not mounted; `certify.ts` reads only their hash.
-Platforms, waters and the glide cape stay procedural.
+| `buildProceduralPip` | Acorn-helmeted sprout hero | Articulated limb/leaf/acorn-cap rig; optional glide cape (`save.studio.capeEnabled`, off by default) |
+| `buildProceduralBrambleback` | W5 boss | Articulated armored bramble-shell guardian driven through roll, wind-up, vulnerable, and defeat phases |
+| `buildProceduralSunseed` | Sun-seed collectible | Sculpted radiant seed crystal + golden corona |
+| `buildProceduralGoldenAcorn` | Golden acorn collectible | Multi-material metallic acorn + cap |
+| `buildProceduralCheckpointFlag` | Checkpoint flag | Carved timber post + pennant banner |
+| `buildProceduralSungate` | Sun-Gate arch | Sculpted stone-and-gold portal arch + emissive seed-lock ring |
 
 ## Play
 

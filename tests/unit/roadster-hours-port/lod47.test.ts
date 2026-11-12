@@ -1,15 +1,11 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { MESHY_MODELS } from "../../../examples/roadster-hours-port/meshy.baked";
-import { MESHY_LODS } from "../../../examples/roadster-hours-port/meshy.lod.baked";
-import { meshyLodGeometry, registerMeshyForTest, registerMeshyLodForTest } from "../../../examples/roadster-hours-port/meshy";
+import {
+  PROCEDURAL_TRAFFIC_KEYS,
+  getProceduralSceneryLibrary,
+  getProceduralTrafficVehicle
+} from "../../../examples/roadster-hours-port/art/proceduralModels";
 import { LOD_NEAR_M, buildWorld } from "../../../examples/roadster-hours-port/world";
 
-const read = (file: string): ArrayBuffer => {
-  const b = readFileSync(resolve("examples/roadster-hours-port/assets/meshy", file));
-  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
-};
 type Node = Record<string, unknown> & { readonly name?: string; readonly kind?: string };
 function nodes(scene: { toJSON(): unknown }): Node[] {
   const out: Node[] = [];
@@ -26,20 +22,26 @@ function nodes(scene: { toJSON(): unknown }): Node[] {
 }
 
 describe("Saltwind Highway far LODs (GU47 phase 6, WP-32 triangle budget)", () => {
-  for (const key of Object.keys(MESHY_MODELS)) registerMeshyForTest(key, read(`${key}.bin`));
-  for (const key of Object.keys(MESHY_LODS)) registerMeshyLodForTest(key, read(`lod/${key}.bin`));
-
-  it("every baked LOD is smaller than its model and stays inside the 4% error bound", () => {
-    for (const [key, lod] of Object.entries(MESHY_LODS)) {
-      expect(lod.fullTriangles).toBe(MESHY_MODELS[key]!.triangles);
-      expect(lod.triangles).toBeLessThan(lod.fullTriangles);
-      expect(lod.error).toBeLessThanOrEqual(0.04);
-      const g = meshyLodGeometry(key)!;
-      expect(g.indices.length).toBe(lod.triangles * 3);
-      expect(Math.max(...g.indices)).toBeLessThan(g.positions.length / 3);
+  it("every procedural far LOD has fewer triangles than its near assembly and valid indices", () => {
+    const scenery = getProceduralSceneryLibrary();
+    const sceneryPairs = [
+      [scenery.villa.stucco.indices.length + scenery.villa.roofAndArch.indices.length + scenery.villa.shutters.indices.length, scenery.villa.lod],
+      [scenery.townhouse.stucco.indices.length + scenery.townhouse.roofAndArch.indices.length + scenery.townhouse.shutters.indices.length, scenery.townhouse.lod],
+      [scenery.palm.fronds.indices.length + scenery.palm.trunk.indices.length, scenery.palm.lod],
+      [scenery.pine.needles.indices.length + scenery.pine.trunk.indices.length, scenery.pine.lod],
+      [scenery.boulder.indices.length, scenery.boulderLod]
+    ] as const;
+    for (const [nearIndices, far] of sceneryPairs) {
+      expect(far.indices.length).toBeGreaterThan(0);
+      expect(far.indices.length).toBeLessThan(nearIndices);
+      expect(Math.max(...far.indices)).toBeLessThan(far.positions.length / 3);
     }
-    const total = Object.values(MESHY_LODS).reduce((n, l) => n + l.triangles, 0), full = Object.values(MESHY_LODS).reduce((n, l) => n + l.fullTriangles, 0);
-    expect(total / full).toBeLessThan(0.35);
+    for (const key of PROCEDURAL_TRAFFIC_KEYS) {
+      const veh = getProceduralTrafficVehicle(key);
+      expect(veh.lod.indices.length).toBeGreaterThan(0);
+      expect(veh.lod.indices.length).toBeLessThan(veh.paint.indices.length);
+      expect(Math.max(...veh.lod.indices)).toBeLessThan(veh.lod.positions.length / 3);
+    }
     expect(LOD_NEAR_M).toBeGreaterThanOrEqual(120);
   });
 

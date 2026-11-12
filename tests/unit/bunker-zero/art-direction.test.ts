@@ -8,7 +8,7 @@ import { auditArtDirection, snapshotForAudit, type ArtDirectionSnapshot } from "
 import direction from "../../../apps/showcase-bunker-zero/src/art/direction";
 import {
   BZ_ENV_INTENSITY, BZ_FIXTURE_LIGHTS, BZ_FLOOR_PARAMS, BZ_HDRI, BZ_HDRI_URL, BZ_LOOK, BZ_PALETTE, BZ_POST, BZ_PRACTICALS,
-  BZ_VARIANTS, FOG_LAMP_FRACTION, cellWorld, fixtureCells, floorDefOfSlot, fogFromLamp, hueDeg, hueDistance, lookOfSlot,
+  BZ_SLATE_FOG, BZ_VARIANTS, FOG_LAMP_FRACTION, bunkerSceneFog, cellWorld, fixtureCells, floorDefOfSlot, fogFromLamp, hueDeg, hueDistance, lookOfSlot,
   parseFloorParam, scaleColor
 } from "../../../apps/showcase-bunker-zero/src/art/look";
 import {
@@ -128,11 +128,29 @@ describe("Bunker Zero look table (BZ-01, BZ-02, BZ-05, BZ-08, BZ-20)", () => {
     expect(scaleColor("#ffad5c", 0.3)).toBe("#4d341c");
   });
 
-  it("carries the BZ-08 post numbers (WP-10 AgX tone mapping, AO, contrast and vignette)", () => {
+  it("carries the BZ-08 post numbers (WP-10 AgX tone mapping, AO, contrast and vignette) with crisp linear fog and zero blur", () => {
     expect(BZ_POST).toEqual({
       ao: { intensity: 0.68, radius: 0.55 }, bloom: { threshold: 0.9, intensity: 0.3 }, grade: { contrast: 1.16, saturation: 0.86 },
       vignette: 0.36, grain: 0.03, toneMapping: "agx"
     });
+    expect("depthOfField" in BZ_POST).toBe(false);
+    expect(MAIN).not.toMatch(/depthOfField|cinematic-film/);
+    expect(BZ_SLATE_FOG.near).toBeGreaterThanOrEqual(140);
+    expect(BZ_SLATE_FOG.far).toBeGreaterThanOrEqual(360);
+    expect(BZ_SLATE_FOG.maxOpacity).toBeLessThanOrEqual(0.26);
+    for (const r of BZ_LOOK) {
+      const fog = bunkerSceneFog(r);
+      expect(fog.mode).toBe("linear");
+      expect(fog.near).toBeGreaterThanOrEqual(140);
+      expect(fog.far).toBeGreaterThanOrEqual(360);
+      expect(fog.maxOpacity).toBeLessThanOrEqual(0.26);
+      expect("heightFalloff" in fog).toBe(false);
+      // Dark bunker slate atmosphere — never milky/white wash
+      const hex = parseInt(fog.color.slice(1), 16);
+      expect((hex >> 16) & 255).toBeLessThanOrEqual(48);
+      expect((hex >> 8) & 255).toBeLessThanOrEqual(48);
+      expect(hex & 255).toBeLessThanOrEqual(56);
+    }
   });
 
   it("puts every spot and reference viewpoint over an open cell of its own floor", () => {
@@ -289,6 +307,7 @@ describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
       }
     }
     const assemblies = [
+      proc.buildCombatMacheteNode("test-knife"),
       proc.buildServicePistolNode("test-pistol"),
       proc.buildPulseCarbineNode("test-carbine"),
       proc.buildRocketLauncherNode("test-rocket"),
@@ -297,7 +316,11 @@ describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
       proc.buildTacticalWristCuffNode("test-cuff"),
       proc.buildTacticalGloveNode("right", "test-glove"),
       proc.buildBlastDoorBulkheadNode(3, false, "test-door"),
+      proc.buildShutterDoorNode(3, false, "test-shutter"),
       proc.buildSecretPushWallNode(3, false, "test-pw"),
+      proc.buildBulkheadLampNode(0.5, "test-bulkhead-lamp"),
+      proc.buildMedicalBoxNode("medkit", false, "test-medkit"),
+      proc.buildMedicalBoxNode("plate", false, "test-plate"),
       proc.buildClearanceKeycardNode(false, "test-key"),
       proc.buildBullionCaseNode("gold", false, "test-treasure"),
       proc.buildMunitionBoxNode(false, "test-ammo"),
@@ -315,6 +338,20 @@ describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
       const child = json.children[0]!;
       expect(child.material).toBeDefined();
       expect(child.geometry?.positions?.length ?? 0).toBeGreaterThanOrEqual(9);
+    }
+    const enemyRigs = [
+      proc.buildGuardEnemyNode("test-guard"),
+      proc.buildRoboHoundEnemyNode("test-hound"),
+      proc.buildHeavyGunnerEnemyNode("test-gunner"),
+      proc.buildWardenBossNode("test-warden")
+    ];
+    for (const rigBuilder of enemyRigs) {
+      const json = rigBuilder.toJSON() as unknown as { kind: string; children: readonly { kind?: string; children?: readonly unknown[] }[] };
+      expect(json.kind).toBe("group");
+      expect(json.children[0]?.kind).toBe("group");
+      expect((json.children[0]?.children ?? []).length).toBeGreaterThanOrEqual(4);
+      const bounds = proc.measureProceduralBounds(rigBuilder);
+      expect(Math.abs(bounds.minY)).toBeLessThan(0.005);
     }
     const tr = [{ position: [0, 0, 0] as [number, number, number] }];
     const pools = [

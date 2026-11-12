@@ -10,10 +10,10 @@
 import {
   camera,
   effects,
+  geometry,
   lights,
   looks,
   material,
-  model,
   primitives,
   scene,
   type AuraColor,
@@ -21,7 +21,28 @@ import {
   type AuraNodeBuilder,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../aura-assets.route";
+import {
+  CRAFT_MATS,
+  bevelBoxMesh,
+  buildArchedStoneBridgeNode,
+  buildFacetedSeaCliffMesh,
+  buildFortressFoundationNode,
+  buildGatehouseNode,
+  buildHeroSiegeBirdNode,
+  buildLaunchBastionNode,
+  buildPlankScatterNode,
+  buildProceduralBarrelSpec,
+  buildProceduralCrateSpec,
+  buildProceduralPlankSpec,
+  buildRaiderBossNode,
+  buildSiegeSlingshotRigNode,
+  buildWatchtowerNode,
+  buildWindmillNode,
+  buildWindmillSailBladeNode,
+  latheMesh,
+  mergeRawMeshes
+} from "../art/proceduralModels";
+import type { AmmoId } from "./ammo";
 import {
   POOL, PROP_IDS, SLING_IDS, barrelNodeId, bladeNodeId, blockNodeId, crateNodeId, debrisNodeId, dotNodeId, gullPartId,
   millHubNodeId, millPoleNodeId, plankNodeId, projectileNodeId, type StageNodes, type StageOptions
@@ -220,14 +241,12 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
     primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: false, receiveShadow: false }),
     primitives.sphere({ name: "foreground-pebbles", material: pbr(rockTintSmall, { roughness: 0.94 }), instances: pebbleInst, castShadow: false, receiveShadow: true }),
     primitives.sphere({ name: "distant-headlands", material: pbr("#ffffff", { roughness: 1, metallic: 0 }), instances: headlandInst, instanceColors: headlandColors, castShadow: false, receiveShadow: false }),
-    model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
-      .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
-    model(assets.gullsiegeBridgeMeshy, { name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0] })
-      .scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
+    buildLaunchBastionNode(),
+    buildFortressFoundationNode()
   );
 
-  // Stylized chapter rocks: the photoreal GLBs keep their silhouettes but get
-  // flat palette-derived materials so they read as the same art style as the fort.
+  // Sculpted procedural coastal sea-cliffs and Monterey pines (zero GLBs).
+  const cliffMeshSpec = mergeRawMeshes([buildFacetedSeaCliffMesh(11)]);
   const rockPlacements: readonly { x: number; y: number; z: number; s: number; ry: number; kind: "A" | "B" }[] = [
     { x: -13.5, y: -0.25, z: -10.5, s: 2.4, ry: 0.4, kind: "B" },
     { x: -6.2, y: -0.25, z: -12.8, s: 2.8, ry: 1.2, kind: "B" },
@@ -236,118 +255,92 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
     { x: 15.2, y: -0.25, z: -9.6, s: 2.2, ry: 1.7, kind: "B" },
     { x: -6.0, y: -0.08, z: -5.4, s: 7.2, ry: 2.5, kind: "A" },
     { x: 9.4, y: -0.08, z: -4.8, s: 7.8, ry: 0.9, kind: "A" },
-    // Kept clear of the aim sight-line: at its old spot (-5.6, 3.6) this rock sat
-    // directly between the aim camera and the slingshot at x -7.4.
     { x: -11.6, y: -0.2, z: -3.0, s: 3.4, ry: 0.6, kind: "A" },
     { x: 8.1, y: 0, z: 2.9, s: 2.8, ry: 1.9, kind: "A" }
   ];
   rockPlacements.forEach((place, i) => {
-    const asset = place.kind === "A" ? assets.propRockA : assets.propRockB;
     nodes.push(
-      model(asset, {
+      geometry.custom(cliffMeshSpec, {
         name: `hill-${i}`,
-        position: [place.x, place.y, place.z],
-        rotation: [0, place.ry, 0],
-        materialOverrides: place.kind === "A" ? boulderOverrides : rockOverrides
-      }).scale(place.s).runtime({ id: `hill-${i}`, tags: ["dressing"] })
+        material: pbr(place.kind === "A" ? rockTintSmall : rockTint, { roughness: 0.92, metallic: 0.02 }),
+        castShadow: true,
+        receiveShadow: true
+      }).position(place.x, place.y, place.z).rotate(0, place.ry, 0).scale(place.s * 0.42).runtime({ id: `hill-${i}`, tags: ["dressing"] })
     );
   });
+  const pineCanopySpec = mergeRawMeshes([latheMesh([[0, 0], [1.1, 0.2], [0.75, 1.4], [0.35, 2.5], [0, 3.1]], 10)]);
   const treePlacements: readonly [number, number, number, number][] = [
-    [-10.2, 0, -2.8, 0.24],
-    [-5.0, 0, -3.6, 0.22],
-    [3.8, 0, -3.8, 0.25],
-    [10.8, 0, -2.6, 0.26],
-    [11.6, 0, 2.2, 0.22]
+    [-10.2, 0, -2.8, 0.42],
+    [-5.0, 0, -3.6, 0.38],
+    [3.8, 0, -3.8, 0.44],
+    [10.8, 0, -2.6, 0.46],
+    [11.6, 0, 2.2, 0.38]
   ];
   treePlacements.forEach(([x, y, z, s], i) => {
-    const treeAsset = i % 2 === 0 ? assets.propPineTree : assets.propConifer;
     nodes.push(
-      model(treeAsset, { name: `cloud-${i}`, position: [x, y, z], rotation: [0, i * 1.1, 0] })
-        .scale(s).runtime({ id: `cloud-${i}`, tags: ["cloud"] })
+      geometry.custom(pineCanopySpec, { name: `cloud-${i}`, material: pbr(grassDark, { roughness: 0.86 }), castShadow: true, receiveShadow: true })
+        .position(x, y, z).rotate(0, i * 1.1, 0).scale(s).runtime({ id: `cloud-${i}`, tags: ["cloud"] })
     );
   });
 
   // ------------------------------------------------------------- slingshot --
-  // Hero typed asset — the 3D Meshy siege catapult — as the launcher on the knoll.
+  const blockSpec = mergeRawMeshes([bevelBoxMesh(1, 1, 1, 0.06)]);
+  const crateSpec = buildProceduralCrateSpec();
+  const barrelSpec = buildProceduralBarrelSpec();
+  const plankSpec = buildProceduralPlankSpec();
+  const hubSpec = mergeRawMeshes([latheMesh([[0, -0.6], [0.75, -0.5], [0.75, 0.5], [0, 0.6]], 12)]);
+
   nodes.push(
-    model(assets.gullsiegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.42, 0], rotation: [0, 0.35, 0] })
-      .scale(1.35)
-      .runtime({ id: SLING_IDS.catapult, tags: ["sling"] }),
-    // Y-fork arms.
+    buildSiegeSlingshotRigNode([-7.4, 0.42, 0], 0.35, SLING_IDS.catapult),
     primitives.cylinder({ name: "sling-fork-l", material: pbr("#8a5a2e", { roughness: 0.75 }) })
       .position(-7.62, 1.5, -0.22).rotate(0, 0, 0.42).scale([0.055, 0.85, 0.055]).runtime({ id: SLING_IDS.forkL, tags: ["sling"] }),
     primitives.cylinder({ name: "sling-fork-r", material: pbr("#8a5a2e", { roughness: 0.75 }) })
       .position(-7.62, 1.5, 0.22).rotate(0, 0, 0.42).scale([0.055, 0.85, 0.055]).runtime({ id: SLING_IDS.forkR, tags: ["sling"] }),
     primitives.cylinder({ name: "sling-trunk", material: pbr("#7a4e26", { roughness: 0.8 }) })
       .position(-7.4, 1.0, 0).scale([0.09, 0.8, 0.09]).runtime({ id: "sling-trunk", tags: ["sling"] }),
-    // Pouch + bands + loaded 3D Meshy Hero Gull + waiting Hero Gull squad on the launch knoll.
-    model(assets.gullsiegeCrateMeshy, { name: "sling-pouch", position: [-7.4, 1.6, 0] })
-      .scale([0.22, 0.08, 0.18]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
+    primitives.roundedBox({ name: "sling-pouch", params: { radius: 0.045, widthSegments: 2 }, material: pbr("#5e3419", { roughness: 0.64 }) })
+      .position(-7.4, 1.6, 0).scale([0.26, 0.12, 0.26]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
     primitives.box({ name: "sling-band-l", material: pbr("#d94f30", { roughness: 0.6 }) })
       .position(-7.5, 1.7, -0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
     primitives.box({ name: "sling-band-r", material: pbr("#d94f30", { roughness: 0.6 }) })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "sling-loaded", position: [-7.4, 1.62, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(0.46)
-      .animate({ clip: "Ready", loop: true, speed: 1.0 })
-      .runtime({ id: SLING_IDS.loaded, tags: ["sling"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-0", position: [-8.35, 0.25, 0.52], rotation: [0, Math.PI * 0.42, 0] })
-      .scale(0.52)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-      .runtime({ id: "ammo-wait-0", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-1", position: [-8.95, 0.2, -0.42], rotation: [0, Math.PI * 0.48, 0] })
-      .scale(0.48)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 1.05 })
-      .runtime({ id: "ammo-wait-1", tags: ["stage"] }),
-    model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-2", position: [-9.45, 0.16, 0.28], rotation: [0, Math.PI * 0.45, 0] })
-      .scale(0.45)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
-      .runtime({ id: "ammo-wait-2", tags: ["stage"] })
+    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.46, SLING_IDS.loaded, "sling"),
+    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.25, 0.52], Math.PI * 0.42, 0.52, "ammo-wait-0", "stage"),
+    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.2, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage"),
+    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.16, 0.28], Math.PI * 0.45, 0.45, "ammo-wait-2", "stage")
   );
 
   // ------------------------------------------------------- piece pools ------
-  // Every fortress piece is a real 3D Meshy GLB model (crates, barrels, planks, stone bridge blocks).
-  // Block pool = the stone-bridge GLB (stone, glass, ice, obsidian); wood blocks use the crate/plank pools below.
   for (let i = 0; i < POOL.blocks; i += 1) {
-    nodes.push(model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
-      .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
+    nodes.push(geometry.custom(blockSpec, { name: blockNodeId(i), material: CRAFT_MATS.limestoneAshlar, castShadow: true, receiveShadow: true })
+      .position(0, -120, 0).scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.crates; i += 1) {
-    nodes.push(model(assets.gullsiegeCrateMeshy, { name: crateNodeId(i), position: [0, -120, 0] })
-      .scale(0.38).runtime({ id: crateNodeId(i), tags: ["piece"] }));
+    nodes.push(geometry.custom(crateSpec, { name: crateNodeId(i), material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: true })
+      .position(0, -120, 0).scale(0.38).runtime({ id: crateNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.barrels; i += 1) {
-    nodes.push(model(assets.gullsiegeBarrelMeshy, { name: barrelNodeId(i), position: [0, -120, 0] })
-      .scale(0.42).runtime({ id: barrelNodeId(i), tags: ["piece"] }));
+    nodes.push(geometry.custom(barrelSpec, { name: barrelNodeId(i), material: CRAFT_MATS.seasonedOak, castShadow: true, receiveShadow: true })
+      .position(0, -120, 0).scale(0.42).runtime({ id: barrelNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.planks; i += 1) {
-    nodes.push(model(assets.gullsiegePlanksMeshy, { name: plankNodeId(i), position: [0, -120, 0] })
-      .scale([0.65, 0.6, 0.45]).runtime({ id: plankNodeId(i), tags: ["piece"] }));
+    nodes.push(geometry.custom(plankSpec, { name: plankNodeId(i), material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: true })
+      .position(0, -120, 0).scale([0.65, 0.6, 0.45]).runtime({ id: plankNodeId(i), tags: ["piece"] }));
   }
 
   // ------------------------------------------------------- gull rigs --------
-  // Bespoke 3D Meshy Raider Bosses (pirate boar kings) perched inside the fortress!
   for (let g = 0; g < POOL.gullRigs; g += 1) {
-    nodes.push(
-      model(assets.gullsiegeRaiderBossMeshy, { name: gullPartId(g, "body"), position: [0, -120, 0], rotation: [0, -Math.PI * 0.45, 0] })
-        .scale([0.54, 0.54, 0.54])
-        .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 + (g % 3) * 0.08 })
-        .runtime({ id: gullPartId(g, "body"), tags: ["gull"] })
-    );
+    nodes.push(buildRaiderBossNode(g, gullPartId(g, "body")));
   }
 
   // ------------------------------------------------- projectiles + debris ---
+  const projAmmos: readonly AmmoId[] = ["pebble", "stone", "triple", "squid", "ember"];
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    // 5.0.3: the pool is created hidden below the stage like every other pooled node (5.0.2 draws hidden-created pooled
-    // skinned models once they are shown); syncVisuals places and shows the node when a shot uses it.
-    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(1)
-      .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
-      .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
+    nodes.push(buildHeroSiegeBirdNode(projectileNodeId(i), projAmmos[i % projAmmos.length]!, [0, -120, 0], Math.PI * 0.5, 0.5, projectileNodeId(i), "projectile"));
   }
   for (let i = 0; i < POOL.debris; i += 1) {
-    nodes.push(model(assets.gullsiegePlanksMeshy, { name: debrisNodeId(i), position: [0, -120, 0] })
-      .scale(0.18).runtime({ id: debrisNodeId(i), tags: ["debris"] }));
+    nodes.push(geometry.custom(plankSpec, { name: debrisNodeId(i), material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: false })
+      .position(0, -120, 0).scale(0.18).runtime({ id: debrisNodeId(i), tags: ["debris"] }));
   }
   for (let i = 0; i < POOL.dots; i += 1) {
     nodes.push(primitives.sphere({ name: dotNodeId(i), material: glow("#fff7d8", 1.8), castShadow: false, receiveShadow: false })
@@ -357,48 +350,36 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
   // ------------------------------------------------------- windmill rigs ----
   for (let m = 0; m < POOL.windmills; m += 1) {
     nodes.push(
-      model(assets.gullsiegeWindmillMeshy, { name: millPoleNodeId(m), position: [0, -120, 0] })
-        .scale(0.9).runtime({ id: millPoleNodeId(m), tags: ["windmill"] }),
-      model(assets.gullsiegeBarrelMeshy, { name: millHubNodeId(m), position: [0, -120, 0] })
-        .scale([0.18, 0.18, 0.18]).runtime({ id: millHubNodeId(m), tags: ["windmill"] })
+      buildWindmillNode(millPoleNodeId(m), millPoleNodeId(m), ["windmill"], [0, -120, 0], 0, 0.9, false),
+      geometry.custom(hubSpec, { name: millHubNodeId(m), material: CRAFT_MATS.navalBrass, castShadow: true, receiveShadow: true })
+        .position(0, -120, 0).scale([0.18, 0.18, 0.18]).runtime({ id: millHubNodeId(m), tags: ["windmill"] })
     );
     for (let b = 0; b < POOL.windmillBlades; b += 1) {
-      nodes.push(model(assets.gullsiegePlanksMeshy, { name: bladeNodeId(m, b), position: [0, -120, 0] })
-        .scale([0.22, 0.9, 0.12]).runtime({ id: bladeNodeId(m, b), tags: ["windmill"] }));
+      nodes.push(buildWindmillSailBladeNode(bladeNodeId(m, b), bladeNodeId(m, b)));
     }
   }
 
   // -------------------------------------------------- chapter dressing ------
-  // Hero typed 3D Meshy props placed right around the slingshot and fortress so they frame every shot!
   nodes.push(
-    // Off to the far left-front so it frames the launch knoll without standing
-    // between the camera and the slingshot.
-    model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-12.4, 0, 4.2], rotation: [0, 0.5, 0] })
-      .scale(1.85).runtime({ id: PROP_IDS.watchtower, tags: ["dressing"] }),
-    model(assets.gullsiegeGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [9.8, 0, -2.4], rotation: [0, -0.45, 0] })
-      .scale(2.1).runtime({ id: PROP_IDS.gatehouse, tags: ["dressing"] }),
-    model(assets.gullsiegeWindmillMeshy, { name: PROP_IDS.windmillProp, position: [4.2, 0, -3.2], rotation: [0, 0.25, 0] })
-      .scale(2.2).runtime({ id: PROP_IDS.windmillProp, tags: ["dressing"] }),
-    model(assets.gullsiegeBridgeMeshy, { name: PROP_IDS.stoneBridge, position: [0.2, 0.05, -2.4], rotation: [0, 0.1, 0] })
-      .scale(2.0).runtime({ id: PROP_IDS.stoneBridge, tags: ["dressing"] }),
-    model(assets.gullsiegePlanksMeshy, { name: PROP_IDS.plankScatter, position: [5.2, 0.08, 2.1], rotation: [0, 0.7, 0] })
-      .scale(1.45).runtime({ id: PROP_IDS.plankScatter, tags: ["dressing"] })
+    buildWatchtowerNode(PROP_IDS.watchtower),
+    buildGatehouseNode(PROP_IDS.gatehouse),
+    buildWindmillNode(PROP_IDS.windmillProp, PROP_IDS.windmillProp, ["dressing"], [4.2, 0, -3.2], 0.25, 1.35, true),
+    buildArchedStoneBridgeNode(),
+    buildPlankScatterNode(PROP_IDS.plankScatter)
   );
 
   // -------------------------------------------------- foreground framing ----
-  // Static props at the edges of the launch knoll populate the lower third
-  // without entering the flight lane (z ≈ 0 between sling and fort).
   nodes.push(
-    model(assets.gullsiegeCrateMeshy, { name: "fg-crate-a", position: [-4.9, 0, 4.6], rotation: [0, 0.35, 0] })
-      .scale(0.6).runtime({ id: "fg-crate-a", tags: ["dressing"] }),
-    model(assets.gullsiegeCrateMeshy, { name: "fg-crate-b", position: [-4.95, 0.8, 4.55], rotation: [0, 0.9, 0] })
-      .scale(0.42).runtime({ id: "fg-crate-b", tags: ["dressing"] }),
-    model(assets.gullsiegeBarrelMeshy, { name: "fg-barrel", position: [-4.0, 0, 4.95], rotation: [0, 0.2, 0] })
-      .scale(0.5).runtime({ id: "fg-barrel", tags: ["dressing"] }),
-    model(assets.gullsiegeCrateMeshy, { name: "fg-sling-crate", position: [-10.2, 0, 3.6], rotation: [0, 0.7, 0] })
-      .scale(0.42).runtime({ id: "fg-sling-crate", tags: ["dressing"] }),
-    model(assets.gullsiegeBarrelMeshy, { name: "fg-sling-barrel", position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0] })
-      .scale(0.38).runtime({ id: "fg-sling-barrel", tags: ["dressing"] }),
+    geometry.custom(crateSpec, { name: "fg-crate-a", material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: true })
+      .position(-4.9, 0.34, 4.6).rotate(0, 0.35, 0).scale(0.44).runtime({ id: "fg-crate-a", tags: ["dressing"] }),
+    geometry.custom(crateSpec, { name: "fg-crate-b", material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: true })
+      .position(-4.95, 0.92, 4.55).rotate(0, 0.9, 0).scale(0.32).runtime({ id: "fg-crate-b", tags: ["dressing"] }),
+    geometry.custom(barrelSpec, { name: "fg-barrel", material: CRAFT_MATS.seasonedOak, castShadow: true, receiveShadow: true })
+      .position(-4.0, 0.34, 4.95).rotate(0, 0.2, 0).scale(0.44).runtime({ id: "fg-barrel", tags: ["dressing"] }),
+    geometry.custom(crateSpec, { name: "fg-sling-crate", material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: true })
+      .position(-10.2, 0.28, 3.6).rotate(0, 0.7, 0).scale(0.34).runtime({ id: "fg-sling-crate", tags: ["dressing"] }),
+    geometry.custom(barrelSpec, { name: "fg-sling-barrel", material: CRAFT_MATS.seasonedOak, castShadow: true, receiveShadow: true })
+      .position(-9.6, 0.27, 4.1).rotate(0, 0.5, 0).scale(0.36).runtime({ id: "fg-sling-barrel", tags: ["dressing"] }),
     primitives.cylinder({ name: "fg-banner-pole", material: pbr("#7a4e26", { roughness: 0.82 }), castShadow: true })
       .position(6.3, 1.35, 5.15).scale([0.06, 2.7, 0.06]),
     primitives.box({ name: "fg-banner", material: pbr(mixHex(accentColor, "#c8452e", 0.4), { roughness: 0.72 }), castShadow: false })

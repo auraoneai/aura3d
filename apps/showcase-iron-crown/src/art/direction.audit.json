@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "fe4a946bef6bbcba53dff71c30bf4c56d0d63b83c016cf6a53d766ce893400a7",
+  "sourceSha256": "816b9420b4b68c8895e301ef95849a747834b5475211768af5161db23933fa67",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -52,22 +52,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "ironcrownKenji",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownVolt",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "fighting foreground floor plane",
@@ -691,6 +676,444 @@
         "practical": false
       },
       {
+        "name": "player-plate-enamel",
+        "node": "player-hips-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-hips-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-hips-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-hips-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-torso-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-torso-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-torso-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-head-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-head-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-head-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-head-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-visor-glow",
+        "node": "player-head-mesh material 6",
+        "emissiveIntensity": 0.74,
+        "practical": true
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-shoulder-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-shoulder-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-shoulder-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-elbow-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-elbow-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-shield-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-shield-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-shoulder-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-shoulder-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-shoulder-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-elbow-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-elbow-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-weapon-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-weapon-steel",
+        "node": "player-weapon-mesh material 4",
+        "practical": false
+      },
+      {
+        "name": "player-grip-leather",
+        "node": "player-weapon-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-hip-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-hip-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-hip-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-knee-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-knee-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-ankle-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-ankle-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-ankle-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-hip-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-hip-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-hip-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-knee-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-knee-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-plate-enamel",
+        "node": "player-ankle-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
+        "node": "player-ankle-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "player-maille-joint",
+        "node": "player-ankle-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-hips-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-hips-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-hips-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-cloth",
+        "node": "rival-hips-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-torso-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-torso-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-cloth",
+        "node": "rival-torso-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-head-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-head-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-head-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-cloth",
+        "node": "rival-head-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "rival-visor-glow",
+        "node": "rival-head-mesh material 6",
+        "emissiveIntensity": 0.74,
+        "practical": true
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-shoulder-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-shoulder-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-shoulder-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-elbow-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-elbow-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-shield-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-shield-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-cloth",
+        "node": "rival-shield-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-shoulder-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-shoulder-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-shoulder-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-elbow-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-elbow-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-weapon-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-weapon-steel",
+        "node": "rival-weapon-mesh material 4",
+        "practical": false
+      },
+      {
+        "name": "rival-visor-glow",
+        "node": "rival-weapon-mesh material 6",
+        "emissiveIntensity": 0.74,
+        "practical": true
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-hip-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-hip-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-hip-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-knee-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-knee-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-ankle-l-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-ankle-l-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-ankle-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-hip-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-hip-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-hip-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-knee-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-knee-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-enamel",
+        "node": "rival-ankle-r-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "rival-heraldic-trim",
+        "node": "rival-ankle-r-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "rival-maille-joint",
+        "node": "rival-ankle-r-mesh material 2",
+        "practical": false
+      },
+      {
         "node": "ko scorch",
         "practical": false
       }
@@ -758,104 +1181,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownKenji",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownVolt",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownBoulder",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownSeraph",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownJinx",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "maxTriangles": 40000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048,
-        "assetKey": "ironcrownSovereign",
-        "animated": {
-          "clips": [
-            "Combat_Stance",
-            "Walk_Fight_Forward",
-            "Left_Jab_from_Guard",
-            "Dead"
-          ]
-        }
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "hit",

@@ -273,10 +273,8 @@ export function buildScene(): unknown {
     .add(effects.contactShadows({ ...GROUNDING.contact, lights: "shadowed" }))
     .add(effects.ambientOcclusion({ name: "chip grounding", ...GROUNDING.ao }))
     .add(ssrNode())
-    // DD47-P1 crisp sightline DOF: focused on the board centre with tight f/8 aperture so the maze is razor-sharp edge-to-edge.
-    .add(effects.depthOfField({ name: "macro dof", focusDistance: BASE_FOCUS_DISTANCE, fStop: MACRO_DOF.fStop, focalLength: MACRO_DOF.focalLength, maxBlur: MACRO_DOF.maxBlur }))
-    // WP-12 crisp forward sightline: deep dark arcade linear fog well past the board (`near >= 60, far >= 220`), zero milky volumetric haze.
-    .add(effects.fog({ mode: "linear", color: look.fog.color, near: look.fog.near, far: look.fog.far, density: look.fog.density, intensity: 0.16 }))
+    // WP-12 crisp forward sightline: gameplay DoF disabled and deep dark arcade linear fog pushed far past the board (`near >= 140, maxOpacity <= 0.28`), zero milky haze.
+    .add(effects.fog({ mode: "linear", color: look.fog.color, near: look.fog.near, far: look.fog.far, maxOpacity: look.fog.maxOpacity, density: look.fog.density, intensity: 0.14, affectsBackground: false }))
     // DD47-E1: the workshop HDRI fills and reflects at 0.38 and is never drawn (the bench is the surround); a box
     // probe over the board gives the glossy mask and the pins a parallax-correct reflection. No look preset: a look
     // always adds a shadowed directional key (a second caster next to the lamp).
@@ -784,7 +782,7 @@ function syncFocus(pose: CameraPose): void {
   const d = focusDistance(pose.position, pose.target);
   if (Math.abs(d - focusSent) < 0.05) return;
   focusSent = d;
-  try { app?.post?.setEffect("depthOfField", { focusDistance: d }); } catch { /* post optional */ }
+  try { app?.post?.setEffect("depthOfField", { enabled: false, maxBlur: 0, focusDistance: d }); } catch { /* post optional */ }
 }
 
 export interface ActorPoseSample {

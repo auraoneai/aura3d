@@ -46,9 +46,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [40, 66], mobile: "both" },
-  assets: [
-    { role: "hero", assetKey: "hero", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N", maxTextureSize: 2048 }
-  ],
+  assets: [],
   vfx: [
     { event: "skypearl", kind: "pearl-spark" },
     { event: "glider-mount", kind: "cloud-puff" },
@@ -67,10 +65,7 @@ export default defineArtDirection({
     { event: "glider-mount", cue: "cumulus-glider", variants: 1 }
   ],
   signatureEffect: "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
-  standIns: [
-    { feature: "storm towers and cloud sea drawn in the sky dome until the Meshy cumulus towers and deck tiles land", file: "shaders.ts", request: "R-14-07", removeWhen: "WP-36 cumulus towers and cloud-deck tiles admitted" },
-    { feature: "procedural staff, hut, bridges and cord posts until the Meshy set pieces land", file: "props.ts", request: "R-14-07", removeWhen: "WP-36 staff, hut, bridge, arch, waystone and cord pole admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["lighting", "environment_world", "atmospheric_effects", "shadows"],
   tiers: {
     low: { particles: 48, shadowMap: 1024, cascades: 1, textureMax: 1024 },

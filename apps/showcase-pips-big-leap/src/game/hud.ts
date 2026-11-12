@@ -39,7 +39,7 @@ export interface Hud {
   showStudio(show: boolean): void;
   showComplete(show: boolean, title?: string, sub?: string, stats?: readonly string[], nextLabel?: string): void;
   renderAtlas(save: PipSave): void;
-  renderStudio(save: PipSave, onPick: (which: "cape", color: string) => void): void;
+  renderStudio(save: PipSave, onPick: (which: "cape", color: string, enabled?: boolean) => void): void;
   setVenue(id: WorldId): void;
   setTopMode(mode: ModeId): void;
 }
@@ -194,13 +194,20 @@ export function createHud(): Hud {
       const CAPES = ["#3f8cff", "#ffd95e", "#ff6a8a", "#5fd38a", "#9a8ce0", "#ff9435", "#6fd8ff", "#f0e6d4"];
       const make = (host: HTMLElement, which: "cape", colors: readonly string[]) => {
         host.innerHTML = "";
+        const offBtn = document.createElement("button");
+        offBtn.type = "button";
+        offBtn.className = "pbl-swatch" + (!save.studio.capeEnabled ? " active" : "");
+        offBtn.textContent = "OFF";
+        offBtn.setAttribute("aria-label", `${which} off`);
+        offBtn.addEventListener("click", () => onPick(which, save.studio[which], false));
+        host.appendChild(offBtn);
         for (const c of colors) {
           const b = document.createElement("button");
           b.type = "button";
-          b.className = "pbl-swatch" + (save.studio[which] === c ? " active" : "");
+          b.className = "pbl-swatch" + (save.studio.capeEnabled && save.studio[which] === c ? " active" : "");
           b.style.background = c;
           b.setAttribute("aria-label", `${which} ${c}`);
-          b.addEventListener("click", () => onPick(which, c));
+          b.addEventListener("click", () => onPick(which, c, true));
           host.appendChild(b);
         }
       };

@@ -1,71 +1,43 @@
-// Pip's Big Leap — typed catalog refs (no raw URLs).
-//
-// Hero, boss, the villagers, the diorama bases and the collectible/checkpoint/gate props are bespoke Meshy
-// generations imported into this app's own catalog (`aura.assets.json`,
-// generated key surface in `src/aura-catalog.ts`). The world props and the
-// two NPC runners come from the shared repo catalog, through the small
-// per-app copy in `src/aura-assets.shared.ts` (RH-06: importing the root
-// `src/aura-assets.ts` shipped the whole 2.6 MB shared catalog to this page).
-import { assets as catalog } from "./aura-catalog.js";
-import { sharedAssets as shared } from "./aura-assets.shared.js";
+// Pip's Big Leap — zero mounted GLB models (Pip, Brambleback, villagers, island plinths,
+// pickups, checkpoints, springs, Sun-Gate and woodland props are 100% @aura3d/engine procedural).
+// Unmounted backdrop hash/bounds records below exist solely so certify.ts reports unmounted provenance.
 
 export const assets = {
-  pip: catalog.pipsPip,
-  boss: catalog.pipsBrambleback,
-  sunseed: catalog.pipsSunseed,
-  goldenAcorn: catalog.pipsGoldenAcorn,
-  checkpointFlag: catalog.pipsCheckpointFlag,
-  sungate: catalog.pipsSungate,
-  // GU47 wave 2 (PBL-A3): the two woodland villagers, generated text-to-3D, static pose.
-  hedgehog: catalog.leapHedgehog,
-  // GU47 wave 10 (PBL-A3): the beetle is the rigged row (idle/wave/cheer), replacing the static wave-2 model.
-  beetle: catalog.leapBeetleAnim,
-  // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course.
-  bases: {
-    garden: catalog.leapBaseGarden,
-    canopy: catalog.leapBaseCanopy,
-    millpond: catalog.leapBaseMillpond,
-    meadow: catalog.leapBaseMeadow
-  },
-  // Woodland flyer replaces the borrowed sci-fi quadcopter so forest skies stay storybook-cohesive.
-  hawk: catalog.leapBeetleAnim,
-  sidekick: shared.showcaseSidekickRunner,
-  helper: shared.helperChar,
-  // Backdrop kits are not mounted; certify.ts reads their hash only.
   backdrop: {
-    verdant: shared.showcaseKenneyVerdantPlatformerWorld,
-    cartoon: shared.showcaseCartoonPlatformWorld,
-    palace: shared.showcasePlatformerWorldLevel,
-    readable: shared.showcaseReadablePlatformLevel,
-    sidescroll: shared.showcaseSideScrollerPlatformLevel,
-    basicpack: shared.showcasePlatformerBasicPack
-  },
-  props: {
-    conifer: shared.propConifer,
-    boulder: shared.propBoulder,
-    rockB: shared.propRockB,
-    windmill: shared.gullsiegeWindmillMeshy,
-    watchtower: shared.gullsiegeWatchtowerMeshy,
-    crate: shared.gullsiegeCrateMeshy,
-    barrel: shared.gullsiegeBarrelMeshy,
-    crystalShard: shared.skylineCrystalShardMeshy,
-    energyCore: shared.fpsEnergyCorePickupMeshy,
-    brazier: shared.auraClashCornerBrazierPylonMeshy,
-    streetLamp: shared.neonStreetLampProp,
-    boostPad: shared.heatsinkBoostPad,
-    arch: shared.heatsinkArch,
-    pedestal: shared.galleryShiftPedestal,
-    turbine: shared.reactorFusionTurbineMeshy,
-    pylon: shared.blockfallReactorContainmentPylonMeshy
+    verdant: {
+      id: "showcaseKenneyVerdantPlatformerWorld",
+      hash: "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
+      bounds: [831.812, 20.246, 2.8] as const
+    },
+    cartoon: {
+      id: "showcaseCartoonPlatformWorld",
+      hash: "sha256-b8fc8e2586819a97a81839b07cce298986deb556da6842691bec14ee4dde9b7d",
+      bounds: [18.49, 20.576, 4.81] as const
+    },
+    palace: {
+      id: "showcasePlatformerWorldLevel",
+      hash: "sha256-2fc1b7837a806baf57e497da880e1415908eaa85eee2795da0faf579fff1eeec",
+      bounds: [72.346, 73.204, 12.129] as const
+    },
+    readable: {
+      id: "showcaseReadablePlatformLevel",
+      hash: "sha256-56edd8acc1a8c803bef3e5a13044a9ee4a903bafae4e80fc3a9e6e49697c0c68",
+      bounds: [1330.839, 285.819, 370.509] as const
+    },
+    sidescroll: {
+      id: "showcaseSideScrollerPlatformLevel",
+      hash: "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+      bounds: [1428.155, 386.171, 735.373] as const
+    },
+    basicpack: {
+      id: "showcasePlatformerBasicPack",
+      hash: "sha256-f28b1b1568ec532ddb45f6dbfd9417a80df293253450b68b46b70fa09331660d",
+      bounds: [6, 2.174, 7.026] as const
+    }
   }
 } as const;
 
-/**
- * Pip's clip names on the bespoke Meshy rig (`pipsPip` animated.glb).
- * Available clips: Idle, RunFast, Regular_Jump, happy_jump_m, Dead,
- * Victory_Cheer, Quick_Walk — states with no dedicated clip reuse the
- * nearest match (fall/crouch hold the jump pose; hurt uses the idle stand-in).
- */
+/** Procedural locomotion state labels for Pip (`buildPipHeroNode`). */
 export const PIP_CLIPS = {
   idle: "Idle",
   walk: "Quick_Walk",
@@ -79,7 +51,7 @@ export const PIP_CLIPS = {
   interact: "happy_jump_m"
 } as const;
 
-/** Brambleback's clip names on the bespoke Meshy rig (`pipsBrambleback`). */
+/** Procedural phase labels for Brambleback (`buildBramblebackBossNode`). */
 export const BOSS_CLIPS = {
   idle: "Idle",
   walk: "Quick_Walk",

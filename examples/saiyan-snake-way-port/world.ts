@@ -35,6 +35,7 @@ import {
   orbSculptedSpec,
   powerCrystalSculptedSpec,
   powerHaloSculptedSpec,
+  skyRunnerPartSculptedSpec,
   soulCoreSculptedSpec,
   soulTailSculptedSpec,
   toriiChochinLanternSpec,
@@ -226,21 +227,9 @@ export interface RunnerActor {
   dispose(): void;
 }
 
-/** Loads the rigged runner; resolves to null when the model cannot load so the procedural figure stays. */
-export async function loadRunner(canvas: HTMLCanvasElement, mode: LookMode = "script"): Promise<RunnerActor | null> {
-  try {
-    const batch = await cloneSkinned(runnerModelForLook(mode), 1, { width: canvas.width, height: canvas.height, idPrefix: "runner" });
-    const actor = batch.actors[0] as TypedGLBActor;
-    const clips = actor.evidence.clips;
-    if (!clips.includes(CLIP.run)) return null;
-    const infos = actor.animation.resolvedClipInfos();
-    const durations: Record<string, number> = {};
-    for (const c of clips) { const info = infos.find((i) => i.name === c); durations[c] = info && info.duration > 0 ? info.duration : 1; }
-    return { actor, clips, durations, dispose: () => batch.dispose() };
-  } catch (error) {
-    console.warn("serpentine-sky-run: rigged runner unavailable, using the procedural figure", error);
-    return null;
-  }
+/** Resolves to null so the sculpted procedural martial-arts sky-runner renders with zero GLB fetches. */
+export async function loadRunner(_canvas: HTMLCanvasElement, _mode: LookMode = "script"): Promise<RunnerActor | null> {
+  return null;
 }
 
 export interface WorldOptions {
@@ -389,7 +378,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     builder.add(lights.point({ name: "title-head-rim", position: [0, -500, 0], color: "#7fe0c4", intensity: 210, distance: 240, decay: 1.5, shadow: false }).runtime({ id: "title-head-rim" }));
     builder.add(effects.contactShadows({ length: 0.34, thickness: 0.06, intensity: 0.85, lights: "sun" }));
     // GU47 SSR-06: sun lens flare (positioned on the sun each frame; shown with the god rays: High / Ultra, low-sun stages)
-    builder.add(lights.lensFlare({ name: "sun flare", position: [0, -500, 0], intensity: 0.55, edgeFade: 0.25, elements: SUN_FLARE_ELEMENTS }).runtime({ id: "sun-flare" }));
+    builder.add(lights.lensFlare({ name: "sun flare", position: [0, -500, 0], intensity: 0, edgeFade: 0.25, elements: SUN_FLARE_ELEMENTS }).runtime({ id: "sun-flare" }));
   }
 
   /* road + sky */
@@ -470,10 +459,20 @@ export function buildWorld(options: WorldOptions = {}): World {
     builder.add(buildSanctuaryPlanetletNode("sanctuary-planetlet", "sanctuary-planetlet"));
   }
 
-  /* the runner and the aura shell */
+  /* the sculpted martial-arts sky runner and the aura shell */
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
     const c = HERO_COLORS[part.color];
-    addPart(`r-${part.id}`, part, solid(c.base, c.glow ?? [0, 0, 0], c.amount ?? 0), false);
+    const id = `r-${part.id}`;
+    const mat = material.custom(solid(c.base, c.glow ?? [0, 0, 0], c.amount ?? 0));
+    builder.add(
+      geometry
+        .custom(geometry.define(skyRunnerPartSculptedSpec(part.id)), {
+          name: id,
+          material: mat,
+          ...(script ? { castShadow: true } : {})
+        })
+        .runtime({ id })
+    );
   }
   builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
   builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
@@ -568,7 +567,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     // GU47 SSR-05/06 + WP-27 + WP-21: crisp linear distance fog (near >= 150, far >= 520), SSAO crevice grounding,
     // cinematic bloom, subtle golden sun shafts, per-stage grade, vignette 0.22, and FXAA (never depthOfField / motionBlur).
     builder
-      .add(effects.fog({ name: "sky-haze", mode: "linear", color: first.fog.color, near: 150, far: 520, maxOpacity: 0.45, density: 0.0016, intensity: 0.16 }))
+      .add(effects.fog({ name: "sky-haze", mode: "linear", color: first.fog.color, near: 220, far: 720, maxOpacity: 0.24, density: 0.0008, intensity: 0.08, affectsBackground: false }))
       .add(effects.ambientOcclusion({ name: "ao", intensity: 0.36, radius: 0.68, density: 0.56 }))
       .add(effects.cinematicBloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, color: "#fff0d8", radius: 0.48, softKnee: 0.55 }))
       .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.06, decay: 0.94, density: 0.45, samples: 32, color: first.sun.color }))
@@ -1312,11 +1311,8 @@ export function buildWorld(options: WorldOptions = {}): World {
         if (lookDriver) {
           if (!lookShown) lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
-          const flare = show("sun-flare", lookDriver.godRaysOn);
-          if (lookDriver.godRaysOn) {
-            const d = lookDriver.sunDir;
-            flare.setPosition(eye[0] + d[0] * 4000, eye[1] + d[1] * 4000, eye[2] + d[2] * 4000);
-          }
+          const flare = show("sun-flare", false);
+          void flare;
         }
         cinePost?.step({ S, dt, reducedMotion, reducedFlash });
       };

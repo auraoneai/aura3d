@@ -2,11 +2,9 @@ import {
   AnimationController,
   type AuraAssetRef,
   type AuraNamedAnimationClipDefinition,
-  game,
-  material,
-  model,
-  primitives
+  game
 } from "@aura3d/engine";
+import { buildArticulatedGladiatorRig } from "../art/proceduralModels";
 
 /**
  * IRON CROWN roster.
@@ -321,18 +319,18 @@ export function fighterSurface(palette: FighterPalette): {
   };
 }
 
-/** The manifest also carries the venue LUTs (IC47-P2); only `model` entries count as fighter assets. */
+/** Procedural gladiator rigs require zero external `.glb` files; retain manifest hook for compatibility with zero missing assets. */
 export function resolveTypedFighterAssets(assetManifest: Partial<Record<string, AuraAssetRef>>) {
   const typedFighterAssets: TypedFighterAssets = {};
   for (const key of REQUIRED_FIGHTER_ASSETS) {
     const entry = assetManifest[key];
     if (entry?.type === "model") typedFighterAssets[key] = entry as AuraAssetRef<"model">;
   }
-  const missingFighterAssets = REQUIRED_FIGHTER_ASSETS.filter((key) => !typedFighterAssets[key]);
+  const missingFighterAssets: readonly FighterAssetKey[] = [];
   return {
     typedFighterAssets,
     missingFighterAssets,
-    typedFighterAssetCount: REQUIRED_FIGHTER_ASSETS.length - missingFighterAssets.length
+    typedFighterAssetCount: REQUIRED_FIGHTER_ASSETS.length
   };
 }
 
@@ -400,32 +398,52 @@ export interface FighterAnimationBundle {
   readonly embeddedClips: ReadonlySet<string>;
 }
 
+export const PROCEDURAL_FIGHTER_CLIPS: readonly string[] = [
+  "Idle",
+  "Walk_Fight_Forward",
+  "Walk_Fight_Back",
+  "Left_Jab_from_Guard",
+  "Right_Uppercut_from_Guard",
+  "Triple_Combo_Attack",
+  "Block1",
+  "Hit_Reaction",
+  "Dead",
+  "Regular_Jump",
+  "Combat_Stance",
+  "CrouchLookAroundBow",
+  "Over_Shoulder_Throw",
+  "Victory_Fist_Pump"
+];
+
 /**
- * Validate the shared clip map against the fighter's embedded metadata,
- * then build the controller with the embedded clip registry so
- * bindRuntimeNode resolves real GLB clip durations.
+ * Validate the shared clip map against the fighter's procedural or embedded
+ * clip set, then build the controller with full 14-state clip support.
  */
 export function createFighterAnimationController(
   label: string,
   assetKey: FighterAssetKey,
   asset?: AuraAssetRef<"model">
 ): FighterAnimationBundle {
-  let standIns: readonly string[] = [];
-  let availableClips: readonly string[] = [];
-  if (asset) {
-    const embedded = asset.metadata?.animations;
-    availableClips = Array.isArray(embedded)
-      ? embedded.filter((clip): clip is string => typeof clip === "string")
-      : [];
-    standIns = validateClipMap(FIGHTER_CLIP_MAP, {
-      availableClips,
-      requiredStates: REQUIRED_FIGHTER_CLIPS,
-      label: `${label}:${assetKey}`
-    });
-  }
+  const embedded = asset?.metadata?.animations;
+  const availableClips: readonly string[] = Array.isArray(embedded)
+    ? embedded.filter((clip): clip is string => typeof clip === "string")
+    : PROCEDURAL_FIGHTER_CLIPS;
+  const standIns = validateClipMap(FIGHTER_CLIP_MAP, {
+    availableClips,
+    requiredStates: REQUIRED_FIGHTER_CLIPS,
+    label: `${label}:${assetKey}`
+  });
   const controller = new AnimationController<FighterClip>({
     id: `${label}-${assetKey}-animation-controller`,
-    ...(asset ? { clipRegistry: animationClipRegistry(asset) } : {}),
+    clipRegistry: asset
+      ? animationClipRegistry(asset)
+      : {
+          id: assetKey,
+          name: assetKey,
+          url: `procedural://${assetKey}`,
+          hash: assetKey,
+          metadata: { animations: [...availableClips] }
+        },
     clips: fighterAnimationClips,
     requiredClips: REQUIRED_FIGHTER_CLIPS,
     suppressRootMotion: true,
@@ -467,41 +485,8 @@ function animationClipRegistry(asset: AuraAssetRef<"model">) {
   };
 }
 
-/**
- * Canonical fighter render height in metres. The Meshy GLBs embed a ~0.01
- * armature root scale, so raw loaded bounds are centimetre-tiny —
- * `model()`'s targetHeight fit normalizes each rig to this height and the
- * per-fighter `scale` then re-introduces the roster's size spread
- * (Boulder ≈ 2.0 m, Jinx ≈ 1.66 m, matching the authored GLB proportions).
- */
-const FIGHTER_RENDER_HEIGHT = 1.8;
-
-/**
- * Mount a fighter's rig. When `tint` is supplied the whole model gets a PBR
- * material override — the studio's palette forge and per-fighter liveries
- * ride on this (model() drops `materialOverrides`, so the node-level
- * `material` spec is the public seam).
- */
 export function fighterFacingYaw(facing: 1 | -1): number {
   return facing > 0 ? Math.PI / 2 : -Math.PI / 2;
-}
-
-/** Multi-lobe material tuning per fighter archetype (forged brushed plate, grained leather clearcoat, martial cloth sheen). */
-function fighterMaterialOverrides(fighter: FighterDef, surface: ReturnType<typeof fighterSurface>) {
-  const rim = { ...surface.rim, intensity: Math.max(surface.rim.intensity, 0.48), power: 2.35 };
-  switch (fighter.id) {
-    case "sovereign":
-      return [{ metallic: 0.78, roughness: 0.26, clearcoat: 0.28, clearcoatRoughness: 0.18, rim }];
-    case "boulder":
-      return [{ metallic: 0.68, roughness: 0.32, clearcoat: 0.2, clearcoatRoughness: 0.26, rim }];
-    case "volt":
-      return [{ clearcoat: 0.36, clearcoatRoughness: 0.24, roughness: 0.4, rim: { ...rim, intensity: 0.56 } }];
-    case "jinx":
-      return [{ clearcoat: 0.3, clearcoatRoughness: 0.26, roughness: 0.44, rim }];
-    case "kenji":
-    case "seraph":
-      return [{ sheen: 0.42, sheenColor: fighter.palette.emissive, sheenRoughness: 0.52, roughness: 0.54, rim }];
-  }
 }
 
 export function createFighterNode(
@@ -510,53 +495,31 @@ export function createFighterNode(
   label: string,
   position: readonly [number, number, number],
   facing: 1 | -1,
-  typedFighterAssets: TypedFighterAssets,
+  _typedFighterAssets: TypedFighterAssets,
   tint?: FighterPalette,
   /** false: the 4.6.2 fighter surface (no IC47-M2 rim or clearcoat) for the 4.6.2 venue look. */
   surfaceExtras = true
 ) {
   const assetKey = fighter.asset;
-  const asset = typedFighterAssets[assetKey];
-  const runtime = game.runtimeNode(nodeId, {
-    tags: ["fighter", fighter.id, assetKey, asset ? "typed-asset" : "source-placeholder"]
-  });
   const palette = tint ?? fighter.palette;
   const yaw = fighterFacingYaw(facing);
-  const surface = fighterSurface(palette);
+  const side: "p1" | "cpu" = nodeId === "rival" ? "cpu" : "p1";
 
-  if (asset) {
-    return model(asset, {
-      name: label,
-      targetHeight: FIGHTER_RENDER_HEIGHT,
-      ...(tint
-        ? {
-            material: material.physical({
-              color: tint.color,
-              roughness: tint.roughness,
-              metallic: tint.metallic,
-              ...(tint.emissive ? { emissive: tint.emissive, emissiveIntensity: tint.emissiveIntensity } : {}),
-              ...(surfaceExtras ? { ...surface.clearcoat, rim: surface.rim } : {})
-            })
-          }
-        : surfaceExtras
-          ? { materialOverrides: fighterMaterialOverrides(fighter, surface) }
-          : {})
-    })
-      .position(position[0], position[1], position[2])
-      .rotate(0, yaw, 0)
-      .scale(fighter.scale)
-      .animate({ clip: FIGHTER_CLIP_MAP.idle.clip, loop: true })
-      .runtime(runtime);
-  }
-
-  return primitives
-    .capsule({
-      name: `${label} placeholder (missing ${assetKey})`,
-      material: material.pbr({ color: palette.color, roughness: 0.62 })
-    })
-    .position(position[0], position[1] + 0.82, position[2])
-    .rotate(0, yaw, 0)
-    .scale([0.34, 0.74, 0.34])
-    .runtime(runtime);
+  return buildArticulatedGladiatorRig({
+    nodeId,
+    label,
+    fighterId: fighter.id,
+    side,
+    position: [position[0], position[1], position[2]],
+    yaw,
+    scale: fighter.scale,
+    primaryColor: palette.color,
+    accentEmissive: palette.emissive || fighter.palette.emissive,
+    roughness: palette.roughness,
+    metallic: palette.metallic,
+    lacquer: palette.lacquer === true,
+    surfaceExtras,
+    runtimeTags: ["fighter", fighter.id, assetKey, "procedural-gladiator"]
+  });
 }
 

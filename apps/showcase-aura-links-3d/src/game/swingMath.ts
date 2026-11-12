@@ -1,7 +1,7 @@
 /**
  * Aura Links 3D — pure swing mathematics (no engine imports).
  *
- * Drives the rigged `linksGolferAthleteMeshy` GLB through a REAL golf swing:
+ * Drives the articulated procedural golfer rig through a REAL golf swing:
  * takeaway → full backswing (club above the shoulders) → accelerating
  * downswing → clubhead striking the ball at the bottom of the arc → full
  * follow-through, with BOTH hands on the grip.
@@ -208,7 +208,7 @@ const OLD_ANKLE_Y = OLD_HIPS[1] + OLD_LEG.hipJointL[1] - OLD_LEG.thigh - OLD_LEG
 const OLD_FIT_SCALE = 1.84 / 1.897;
 
 export const SKELETON_ATHLETE: SkeletonProfile = {
-  id: "linksGolferAthleteMeshy",
+  id: "linksGolferAthleteProcedural",
   rig: {
     hipsBind: OLD_HIPS,
     tSpine: [0, 0.150, 0],

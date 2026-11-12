@@ -2,13 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildFcScene, REFEREE_TARGET_HEIGHT } from "../../../apps/showcase-aura-fc-3d/src/game/scene";
 import { CLIP_SECONDS, STANCE_SPEED_MODEL, refereePatrol } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
-import { assets } from "../../../apps/showcase-aura-fc-3d/src/aura-assets-v2";
+import { FOOTBALLER_CANONICAL_HEIGHT, FOOTBALLER_JOINT_SUFFIXES } from "../../../apps/showcase-aura-fc-3d/src/art/proceduralModels";
 
-/**
- * Wave-2 handoff from e4: model() never read an `animation` option, so the athletes' `animation: { clip: "Ready" }`
- * and the referee's `animation: { clip: "Walk" }` did nothing (the referee slid along the touchline in its bind pose).
- * The keys are gone; the referee declares Walk_Loop with .animate() and tickWorld phase-locks it to the patrol.
- */
 function flat() {
   const j = JSON.parse(JSON.stringify(buildFcScene("munich")));
   const out: any[] = [];
@@ -17,19 +12,25 @@ function flat() {
   return out;
 }
 
-const scale = REFEREE_TARGET_HEIGHT / assets.fcSoccerStrikerMeshy.bounds[1];
+const scale = REFEREE_TARGET_HEIGHT / FOOTBALLER_CANONICAL_HEIGHT;
 
-describe("aura-fc-3d model() options carry no ignored animation key", () => {
-  it("rig.ts and scene.ts pass no `animation:` inside model(...) options", () => {
+describe("aura-fc-3d procedural referee rig and zero GLB model() mounts", () => {
+  it("rig.ts and scene.ts pass no model(...) mounts and no ignored animation key", () => {
     for (const file of ["apps/showcase-aura-fc-3d/src/game/rig.ts", "apps/showcase-aura-fc-3d/src/game/scene.ts"]) {
-      expect(readFileSync(file, "utf8")).not.toMatch(/^\s*animation:\s*\{/m);
+      const src = readFileSync(file, "utf8");
+      expect(src).not.toMatch(/^\s*animation:\s*\{/m);
+      expect(src).not.toMatch(/\bmodel\s*\(/);
     }
   });
 
-  it("the referee node carries a looping Walk_Loop animation spec", () => {
-    const ref = flat().find((n) => n.name === "fc-referee");
-    expect(ref?.kind).toBe("model");
-    expect(ref?.animation).toMatchObject({ clip: "Walk_Loop", loop: true });
+  it("the referee node is a sculpted multi-material articulated group with all 13 joints", () => {
+    const all = flat();
+    const ref = all.find((n) => n.name === "fc-referee");
+    expect(ref?.kind).toBe("group");
+    const names = new Set(all.map((n) => n.name));
+    for (const suffix of FOOTBALLER_JOINT_SUFFIXES) {
+      expect(names.has(`fc-referee-${suffix}`)).toBe(true);
+    }
   });
 });
 

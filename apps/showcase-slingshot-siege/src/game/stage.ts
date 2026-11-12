@@ -478,7 +478,7 @@ export function chapterWeather(row: ChapterLook, options: StageOptions): StageNo
     })];
   }
   if (row.weather === "mist") {
-    return [effects.fog({ name: "siege sea mist", density: 0.012, color: row.fog.color, height: 1.2, falloff: 0.9 })];
+    return [effects.fog({ name: "siege sea mist", mode: "linear", color: row.fog.color, near: 260, far: 1100, maxOpacity: 0.20, affectsBackground: false })];
   }
   return [];
 }

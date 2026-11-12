@@ -1116,11 +1116,15 @@ function ovalRingXZ(rx: number, rz: number, y: number, zOff = 0, segs = 12): V3[
 
 export function sculptSkaterBotMeshes(): {
   readonly torso: MeshData;
+  readonly pelvis: MeshData;
+  readonly pelvisBelt: MeshData;
   readonly head: MeshData;
   readonly visor: MeshData;
   readonly headband: MeshData;
   readonly earCups: MeshData;
   readonly arm: MeshData;
+  readonly leg: MeshData;
+  readonly kneePad: MeshData;
   readonly skate: MeshData;
   readonly skateBlade: MeshData;
 } {
@@ -1146,6 +1150,40 @@ export function sculptSkaterBotMeshes(): {
     transformMesh(bevelBoxMesh(0.26 - idx * 0.02, 0.032, 0.05, 0.008), { pos: [0, ry, -0.175] })
   );
   const torso = rawToMeshData(mergeRawList([cuirass, jetPack, jetNozzle, ...pauldrons, ...chestEqRibs]));
+
+  // Contoured cyber-skater hip/pelvis shell (`y = -0.095..+0.115`) + lateral hip sockets overlapping torso bottom (`y ~ 0.40m`)
+  const pelvicHull = loftSectionsMesh([
+    ovalRingXZ(0.105, 0.095, -0.095, 0.005, 14),
+    ovalRingXZ(0.175, 0.138, -0.035, 0.005, 14),
+    ovalRingXZ(0.186, 0.146, 0.025, 0.0, 14),
+    ovalRingXZ(0.178, 0.138, 0.078, 0.0, 14),
+    ovalRingXZ(0.164, 0.126, 0.115, 0.0, 14)
+  ], true, true);
+  const hipSocketCup = latheMesh([
+    [0, -0.055],
+    [0.068, -0.048],
+    [0.078, -0.012],
+    [0.074, 0.032],
+    [0.048, 0.055],
+    [0, 0.058]
+  ], 12);
+  const pelvis = rawToMeshData(
+    mergeRawList([
+      pelvicHull,
+      transformMesh(hipSocketCup, { pos: [-0.112, -0.025, 0], rot: [0, 0, Math.PI * 0.5] }),
+      transformMesh(hipSocketCup, { pos: [0.112, -0.025, 0], rot: [0, 0, -Math.PI * 0.5] })
+    ])
+  );
+
+  // Beveled synth-skater waist belt collar + front EQ buckle & dorsal bumper
+  const beltRing = loftSectionsMesh([
+    ovalRingXZ(0.194, 0.152, 0.015, 0.0, 14),
+    ovalRingXZ(0.198, 0.156, 0.052, 0.0, 14),
+    ovalRingXZ(0.184, 0.144, 0.072, 0.0, 14)
+  ], true, true);
+  const frontBuckle = transformMesh(bevelBoxMesh(0.13, 0.058, 0.048, 0.012), { pos: [0, 0.042, -0.152] });
+  const rearBeltPod = transformMesh(bevelBoxMesh(0.15, 0.054, 0.046, 0.012), { pos: [0, 0.042, 0.148] });
+  const pelvisBelt = rawToMeshData(mergeRawList([beltRing, frontBuckle, rearBeltPod]));
 
   // Sleek contoured aero-helmet dome (`latheMesh`)
   const helmetProfile: V2[] = [
@@ -1234,6 +1272,37 @@ export function sculptSkaterBotMeshes(): {
   ];
   const arm = rawToMeshData(latheMesh(armProfile, 12));
 
+  // Articulated cyber-skater leg anchored at hip pivot `(0, 0, 0)` down to `-0.295m` (tucks cleanly inside hover-skate cuff)
+  const hipBall = latheMesh([
+    [0, -0.02],
+    [0.062, -0.005],
+    [0.068, 0.025],
+    [0.052, 0.055],
+    [0, 0.068]
+  ], 12);
+  const legLimb = loftSectionsMesh([
+    ovalRingXZ(0.054, 0.060, -0.295, 0.008, 12),
+    ovalRingXZ(0.068, 0.076, -0.255, 0.006, 12),
+    ovalRingXZ(0.074, 0.082, -0.205, -0.010, 12),
+    ovalRingXZ(0.068, 0.076, -0.145, -0.026, 12),
+    ovalRingXZ(0.082, 0.090, -0.085, -0.016, 12),
+    ovalRingXZ(0.086, 0.092, -0.025, -0.004, 12),
+    ovalRingXZ(0.072, 0.076, 0.020, 0.0, 12)
+  ], true, true);
+  const leg = rawToMeshData(mergeRawList([hipBall, legLimb]));
+
+  // Faceted cyber knee-guard & ankle cuff collar along the leg (`y = -0.138` knee, `y = -0.238` cuff)
+  const kneeShield = transformMesh(bevelBoxMesh(0.118, 0.088, 0.064, 0.018), {
+    pos: [0, -0.138, -0.068],
+    rot: [0.12, 0, 0]
+  });
+  const ankleCollar = loftSectionsMesh([
+    ovalRingXZ(0.076, 0.084, -0.252, 0.006, 12),
+    ovalRingXZ(0.082, 0.090, -0.224, 0.002, 12),
+    ovalRingXZ(0.074, 0.080, -0.206, -0.004, 12)
+  ], true, true);
+  const kneePad = rawToMeshData(mergeRawList([kneeShield, ankleCollar]));
+
   // Winged inline hover-boot (`loftSectionsMesh` shell + heel stabilizer fin) & beveled photon blade
   const bootHull = loftSectionsMesh([
     [[-0.065, 0.04, -0.25], [0.065, 0.04, -0.25], [0.075, 0.11, -0.22], [-0.075, 0.11, -0.22]],
@@ -1259,7 +1328,7 @@ export function sculptSkaterBotMeshes(): {
     })
   );
 
-  return { torso, head, visor, headband, earCups, arm, skate, skateBlade };
+  return { torso, pelvis, pelvisBelt, head, visor, headband, earCups, arm, leg, kneePad, skate, skateBlade };
 }
 
 

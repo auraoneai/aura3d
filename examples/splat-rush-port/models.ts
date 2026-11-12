@@ -1,30 +1,21 @@
 /**
- * Meshy-generated toy-style models (text prompts, Kiro Prism) used only as presentation: the floating-island
- * backdrop and the four power-up pickups. Same-origin pathnames + sha256 hashes: the production bridge refuses
- * http(s) model URLs and would draw nothing. Prompts and task ids: PORTING-NOTES.md and assets/provenance/.
- * Textures are 512 px (backdrop) and 256 px (pickups) since the C11 audit fix: the models sit 19-40 units off the road or
- * are at most 2.1 units tall, and the 1024 px maps cost 111 MB of texture memory. Geometry is byte-identical.
+ * Procedural model asset descriptors for Chroma Roll (`art/proceduralModels.ts` builds all floating-island
+ * backdrop pieces and power-up pickups as multi-material `@aura3d/engine` geometry with zero `.glb` files).
  */
 import { defineModelAssets } from "@aura3d/engine";
 
-const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
-const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}`, import.meta.url).pathname, sha256 });
+const LICENSE = "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)";
+const proc = (key: string, sha256: string) => ({ url: `/procedural/splat-rush/${key}`, sha256 });
 
 export const MODELS = defineModelAssets({
-  islandTree: glb("island-tree.glb", "sha256-8857f4dcb39bd2f3d8c24adaa53dc5512e3d7e41729169a12e8b6f6243eb3723"),
-  islandTower: glb("island-tower.glb", "sha256-a38933a2a9a471772dbe35c2c0db0f0fdf4788f7e3c62643b00e2bc0b7060f0d"),
-  balloon: glb("balloon.glb", "sha256-905a8cb98fd76f3e95466e65aa819924a8605d9a0f55ababd27d636c94d0d89a"),
-  /* GU47 WP-36 CR-A1 (key chromaPaintPotIsland, P1): tipped paint-pot island with paint drips, carnival look only (backdrop.ts) */
-  paintPotIsland: glb("paint-pot-island.glb", "sha256-e942c632cb7046cb72fb2c57bea8ffb58c5d7bbb1cdc2c4db65743e6671e7bd4"),
-  /* GU47 wave 1 CR-A1 (key chromaPaletteIsland, typed splat_rush_port_chromaPaletteIsland): palette island with a brush
-   * tower, carnival look only (backdrop.ts). Served from the app's public/aura-assets as a ROOT-RELATIVE url (never an
-   * absolute import.meta.url: the engine refuses it as unsafe-url and the scene would not mount). */
-  paletteIsland: { url: "/aura-assets/chroma-palette-island.glb", sha256: "sha256-bbbbb4084e86aa32998e0e805563fcfd6af6af6a00efffc483866a05084ce452" },
-  /* GU47 wave 2 CR-A1 (key chromaEaselIsland, typed splat_rush_port_chromaEaselIsland): floating island with an easel and a
-   * blank canvas plus two small satellite islets, carnival look only (backdrop.ts). Same root-relative rule as above. */
-  easelIsland: { url: "/aura-assets/chroma-easel-island.glb", sha256: "sha256-6f6d5f35f6a8ae63b9f37eb0be69dbe43395c944b57aac1e61518d3d2f101287" },
-  gemRainbow: glb("gem-rainbow.glb", "sha256-5533b1776bca95726dc68ace33b8b93bec11abc9bdff0c09cb73a42d596c6d35"),
-  gemShield: glb("gem-shield.glb", "sha256-f1d1c0078ebacfd434d3bd2e89543b5cc4e60f5ed73d6acbab5e73111d2b5a26"),
-  gemDouble: glb("gem-double.glb", "sha256-4234b67b834fffef6af45cae16ea3adc9a8517b2cc18ea87d02ba5528c6af333"),
-  gemSwitch: glb("gem-switch.glb", "sha256-5a761f9dd3ce48a3175f7afc7e6eccca50da25d12b2ccf77d956cd2ef94e7eba")
+  islandTree: proc("island-tree", "sha256-8857f4dcb39bd2f3d8c24adaa53dc5512e3d7e41729169a12e8b6f6243eb3723"),
+  islandTower: proc("island-tower", "sha256-a38933a2a9a471772dbe35c2c0db0f0fdf4788f7e3c62643b00e2bc0b7060f0d"),
+  balloon: proc("balloon", "sha256-905a8cb98fd76f3e95466e65aa819924a8605d9a0f55ababd27d636c94d0d89a"),
+  paintPotIsland: proc("paint-pot-island", "sha256-e942c632cb7046cb72fb2c57bea8ffb58c5d7bbb1cdc2c4db65743e6671e7bd4"),
+  paletteIsland: proc("chroma-palette-island", "sha256-bbbbb4084e86aa32998e0e805563fcfd6af6af6a00efffc483866a05084ce452"),
+  easelIsland: proc("chroma-easel-island", "sha256-6f6d5f35f6a8ae63b9f37eb0be69dbe43395c944b57aac1e61518d3d2f101287"),
+  gemRainbow: proc("gem-rainbow", "sha256-5533b1776bca95726dc68ace33b8b93bec11abc9bdff0c09cb73a42d596c6d35"),
+  gemShield: proc("gem-shield", "sha256-f1d1c0078ebacfd434d3bd2e89543b5cc4e60f5ed73d6acbab5e73111d2b5a26"),
+  gemDouble: proc("gem-double", "sha256-4234b67b834fffef6af45cae16ea3adc9a8517b2cc18ea87d02ba5528c6af333"),
+  gemSwitch: proc("gem-switch", "sha256-5a761f9dd3ce48a3175f7afc7e6eccca50da25d12b2ccf77d956cd2ef94e7eba")
 }, { license: LICENSE, queryParam: null }).refs;

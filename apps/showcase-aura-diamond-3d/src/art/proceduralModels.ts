@@ -17,6 +17,16 @@ import {
   type AuraMaterialSpec,
   type AuraTransformSpec
 } from "@aura3d/engine";
+import {
+  gripQAxis,
+  gripQConj,
+  gripQFromTo,
+  gripQMul,
+  gripQRot,
+  gripQToEulerZYX,
+  gripUnit,
+  type GripQuat
+} from "@aura3d/engine/game";
 
 type AuraInstanceTransform = AuraTransformSpec;
 import {
@@ -2028,4 +2038,1300 @@ export function createRegolithMoundSingleNode(name: string, pos: V3, scale: V3) 
     })
     .position(pos[0], pos[1], pos[2])
     .scale(scale);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 11. Articulated Multi-Material Baseball Player Rig & Front-Row Waver Rig   */
+/* -------------------------------------------------------------------------- */
+
+export const BASEBALL_ACTOR_FIT = 1.88 / 1.903;
+export const BASEBALL_FIT_GROUND_N: V3 = [0, 0.952, 0];
+
+export const BASEBALL_PLAYER_BONES = [
+  "Hips",
+  "Spine",
+  "Chest",
+  "Head",
+  "LeftUpperArm",
+  "LeftForearm",
+  "RightUpperArm",
+  "RightForearm",
+  "LeftUpperLeg",
+  "LeftLowerLeg",
+  "LeftFoot",
+  "RightUpperLeg",
+  "RightLowerLeg",
+  "RightFoot"
+] as const;
+
+export type BaseballBoneName = (typeof BASEBALL_PLAYER_BONES)[number];
+export type BaseballActorRole = "batter" | "pitcher" | "catcher" | "infielder" | "outfielder" | "runner" | "coach";
+
+const UA_BIND_SCALE = 0.2555 / Math.hypot(-0.05, -0.25, 0.01);
+
+/**
+ * Exact bind-pose local bone translations matching `batter-pose.ts` (`RIG`, `THIGH`, `SHIN`, `HIP_JOINT_L/R`, `HIPS_ACTOR_Y`)
+ * so `solveBatterPose` + `worldFromActor` align to 0.000 mm across stance, load, stride, contact, follow-through, and recovery.
+ */
+export const BASEBALL_BIND_T: Readonly<Record<BaseballBoneName | "Root", V3>> = {
+  Root: [0, -0.9520683796, 0],
+  Hips: [0, 0.93706, 0],
+  Spine: [0, 0.1499303198, 0],
+  Chest: [0, 0.2623780598, 0],
+  Head: [0, 0.2249, 0.015],
+  LeftUpperArm: [0.2, 0.1465, 0],
+  LeftForearm: [0.05 * UA_BIND_SCALE, -0.25 * UA_BIND_SCALE, 0.01 * UA_BIND_SCALE],
+  RightUpperArm: [-0.2, 0.1465, 0],
+  RightForearm: [-0.05 * UA_BIND_SCALE, -0.25 * UA_BIND_SCALE, 0.01 * UA_BIND_SCALE],
+  LeftUpperLeg: [0.1143178073, -0.0374825799, 0],
+  LeftLowerLeg: [0, -0.4123083794, 0],
+  LeftFoot: [0, -0.3373432195, 0],
+  RightUpperLeg: [-0.162449437, -0.0374825799, 0],
+  RightLowerLeg: [0, -0.4123083794, 0],
+  RightFoot: [0, -0.3373432195, 0]
+};
+
+export const BASEBALL_BIND_PARENT: Readonly<Record<BaseballBoneName | "Root", BaseballBoneName | "Root" | null>> = {
+  Root: null,
+  Hips: "Root",
+  Spine: "Hips",
+  Chest: "Spine",
+  Head: "Chest",
+  LeftUpperArm: "Chest",
+  LeftForearm: "LeftUpperArm",
+  RightUpperArm: "Chest",
+  RightForearm: "RightUpperArm",
+  LeftUpperLeg: "Hips",
+  LeftLowerLeg: "LeftUpperLeg",
+  LeftFoot: "LeftLowerLeg",
+  RightUpperLeg: "Hips",
+  RightLowerLeg: "RightUpperLeg",
+  RightFoot: "RightLowerLeg"
+};
+
+const BIND_DIR_UA_R = gripUnit([-0.05, -0.25, 0.01]);
+const BIND_DIR_FA_R = gripUnit([-0.158, -0.296, 0.06]);
+const BIND_DIR_UA_L = gripUnit([0.05, -0.25, 0.01]);
+const BIND_DIR_FA_L = gripUnit([0.158, -0.296, 0.06]);
+const BIND_DOWN: V3 = [0, -1, 0];
+
+// Strictly avoids reserved `#f5f1e4` (ball only) and sibling-sport backdrop palette hexes.
+const ATHLETE_SKIN_HEXES = ["#d6a17c", "#be8660", "#8e5c3e", "#ecc19f", "#6b442d"] as const;
+const ATHLETE_HAIR_HEXES = ["#231b16", "#3c2b1f", "#171412", "#5b412a"] as const;
+
+const PLAYER_SHARED_MATS = {
+  homeJersey: material.fabric({ color: "#ebe6d8", roughness: 0.72, sheen: 0.44, sheenColor: "#f2ede2", sheenRoughness: 0.56 }),
+  roadJersey: material.fabric({ color: "#cfd5de", roughness: 0.7, sheen: 0.38, sheenColor: "#e2e7ee", sheenRoughness: 0.58 }),
+  defaultAccent: material.fabric({ color: "#1b2a41", roughness: 0.62, sheen: 0.5, sheenColor: "#4b6a96", sheenRoughness: 0.48 }),
+  pipingDark: material.fabric({ color: "#232833", roughness: 0.66, sheen: 0.32 }),
+  cleatUpper: material.sneakerMesh({ color: "#1b2029", roughness: 0.46 }),
+  cleatStripe: material.clearcoatPaint({ color: "#ece8dc", roughness: 0.28, clearcoat: 0.72 }),
+  cleatSole: material.sneakerRubber({ color: "#12151b", roughness: 0.86 }),
+  cleatStuds: material.studioMetal({ color: "#b9c2ce", roughness: 0.28 }),
+  battingGloveBody: material.fabric({ color: "#222730", roughness: 0.54, sheen: 0.36, sheenColor: "#485264" }),
+  battingGloveCuff: material.clearcoatPaint({ color: "#ece8dc", roughness: 0.3, clearcoat: 0.7 }),
+  catcherArmor: material.carPaint({ color: "#1e2c42", roughness: 0.3, clearcoat: 0.76 }),
+  catcherPadTrim: material.fabric({ color: "#344156", roughness: 0.74, sheen: 0.3 }),
+  eyeDark: material.lacquer({ color: "#16181f", roughness: 0.18, clearcoat: 0.9 })
+} as const;
+
+const skinMatsCache = ATHLETE_SKIN_HEXES.map((color) => material.matteClay({ color, roughness: 0.68 }));
+const hairMatsCache = ATHLETE_HAIR_HEXES.map((color) => material.pbr({ color, roughness: 0.84, metalness: 0.02 }));
+
+function hashActorId(id: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+export function roleForBaseballActorId(id: string): BaseballActorRole {
+  if (id === "batter") return "batter";
+  if (id === "pitcher") return "pitcher";
+  if (id === "f-c") return "catcher";
+  if (id === "f-lf" || id === "f-cf" || id === "f-rf") return "outfielder";
+  if (id.startsWith("f-")) return "infielder";
+  if (id.startsWith("runner-")) return "runner";
+  return "coach";
+}
+
+interface CachedBaseballPartSpecs {
+  readonly hipsUniform: AuraCustomGeometrySpec;
+  readonly hipsCatcherPad: AuraCustomGeometrySpec | null;
+  readonly spineCore: AuraCustomGeometrySpec;
+  readonly chestJersey: AuraCustomGeometrySpec;
+  readonly chestTrim: AuraCustomGeometrySpec;
+  readonly chestCatcherArmor: AuraCustomGeometrySpec | null;
+  readonly chestCatcherHardware: AuraCustomGeometrySpec | null;
+  readonly headSkin: AuraCustomGeometrySpec;
+  readonly headHair: AuraCustomGeometrySpec;
+  readonly headEyes: AuraCustomGeometrySpec;
+  readonly headCatcherCage: AuraCustomGeometrySpec | null;
+  readonly upperArmL: AuraCustomGeometrySpec;
+  readonly upperArmR: AuraCustomGeometrySpec;
+  readonly forearmSkinL: AuraCustomGeometrySpec;
+  readonly forearmSkinR: AuraCustomGeometrySpec;
+  readonly forearmGloveL: AuraCustomGeometrySpec | null;
+  readonly forearmGloveR: AuraCustomGeometrySpec | null;
+  readonly forearmCuffL: AuraCustomGeometrySpec;
+  readonly forearmCuffR: AuraCustomGeometrySpec;
+  readonly thighPant: AuraCustomGeometrySpec;
+  readonly thighStripe: AuraCustomGeometrySpec;
+  readonly shinPant: AuraCustomGeometrySpec;
+  readonly shinStirrup: AuraCustomGeometrySpec;
+  readonly shinCatcherGuard: AuraCustomGeometrySpec | null;
+  readonly footUpper: AuraCustomGeometrySpec;
+  readonly footStripe: AuraCustomGeometrySpec;
+  readonly footSole: AuraCustomGeometrySpec;
+  readonly footStuds: AuraCustomGeometrySpec;
+}
+
+const partSpecsCache = new Map<string, CachedBaseballPartSpecs>();
+
+function ellipseRing(cx: number, y: number, cz: number, rx: number, rz: number, n = 14): V3[] {
+  const pts: V3[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    pts.push([cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz]);
+  }
+  return pts;
+}
+
+function buildForearmMeshes(side: "L" | "R", wearBattingGlove: boolean): {
+  readonly skin: RawMesh;
+  readonly glove: RawMesh | null;
+  readonly cuff: RawMesh;
+} {
+  const sx = side === "L" ? 1 : -1;
+  const palm: V3 = [sx * 0.158, -0.296, 0.06];
+  const elbowCap = icosphereFacetMesh(0.044, 2, 0.0, 3);
+  const wrist: V3 = [palm[0] * 0.74, palm[1] * 0.74, palm[2] * 0.74];
+  const mid: V3 = [palm[0] * 0.37, palm[1] * 0.37, palm[2] * 0.37];
+  const armTube = kernelTubeSweepMesh(
+    [
+      [0, 0, 0, 0.045],
+      [mid[0], mid[1], mid[2], 0.041],
+      [wrist[0], wrist[1], wrist[2], 0.031]
+    ],
+    12,
+    true
+  );
+  const wristCuff = kernelTubeSweepMesh(
+    [
+      [palm[0] * 0.68, palm[1] * 0.68, palm[2] * 0.68, 0.034],
+      [palm[0] * 0.77, palm[1] * 0.77, palm[2] * 0.77, 0.033]
+    ],
+    12,
+    true
+  );
+
+  // Sculpted hand / batting-glove centered symmetrically on `palm` (`RIG.palmL` / `RIG.palmR`) at `r > 0.285 m` from elbow `[0,0,0]`.
+  const handParts: RawMesh[] = [
+    place(box(0.068, 0.074, 0.038, 0.014), palm, [0.22, sx * -0.24, sx * 0.38])
+  ];
+  for (let f = -1.5; f <= 1.5; f += 1) {
+    const offX = f * 0.013;
+    handParts.push(
+      place(
+        box(0.013, 0.046, 0.028, 0.005),
+        [palm[0] + offX * 0.65, palm[1] - 0.018, palm[2] + 0.016],
+        [0.65, 0, sx * 0.25]
+      )
+    );
+  }
+  // Opposable thumb wrapping the handle
+  handParts.push(
+    place(
+      box(0.018, 0.042, 0.022, 0.006),
+      [palm[0] - sx * 0.026, palm[1] + 0.016, palm[2] + 0.018],
+      [0.35, sx * 0.4, sx * -0.45]
+    )
+  );
+  const handRaw = combineRaw(handParts);
+
+  if (wearBattingGlove) {
+    return {
+      skin: combineRaw([elbowCap, armTube]),
+      glove: handRaw,
+      cuff: wristCuff
+    };
+  }
+  return {
+    skin: combineRaw([elbowCap, armTube, handRaw]),
+    glove: null,
+    cuff: wristCuff
+  };
+}
+
+function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder"): CachedBaseballPartSpecs {
+  const hit = partSpecsCache.get(kind);
+  if (hit) return hit;
+
+  const isBatter = kind === "batter";
+  const isCatcher = kind === "catcher";
+
+  // 1. Connected Pelvis + Hip Sockets (`Hips`)
+  const pelvisLoft = loftSectionsMesh(
+    [
+      ellipseRing(-0.018, -0.105, 0.0, 0.168, 0.108, 14),
+      ellipseRing(-0.014, -0.042, 0.004, 0.184, 0.122, 14),
+      ellipseRing(-0.006, 0.025, 0.005, 0.172, 0.116, 14),
+      ellipseRing(0.0, 0.082, 0.002, 0.156, 0.106, 14)
+    ],
+    true
+  );
+  const hipCapL = place(icosphereFacetMesh(0.078, 2, 0, 5), BASEBALL_BIND_T.LeftUpperLeg);
+  const hipCapR = place(icosphereFacetMesh(0.078, 2, 0, 7), BASEBALL_BIND_T.RightUpperLeg);
+  const hipsUniform = rawToSpec(combineRaw([pelvisLoft, hipCapL, hipCapR]));
+  const hipsCatcherPad = isCatcher
+    ? rawToSpec(place(box(0.16, 0.15, 0.055, 0.018), [-0.01, -0.055, 0.118], [-0.12, 0, 0]))
+    : null;
+
+  // 2. Lower Torso / Waist Core (`Spine`)
+  const spineLoft = loftSectionsMesh(
+    [
+      ellipseRing(0, -0.055, 0.0, 0.154, 0.104, 14),
+      ellipseRing(0, 0.095, 0.006, 0.166, 0.114, 14),
+      ellipseRing(0, 0.245, 0.008, 0.178, 0.122, 14)
+    ],
+    true
+  );
+  const spineCore = rawToSpec(spineLoft);
+
+  // 3. Athletic V-Taper Chest, Raglan Shoulders, Button Placket & Collar (`Chest`)
+  const chestLoft = loftSectionsMesh(
+    [
+      ellipseRing(0, -0.045, 0.006, 0.174, 0.118, 16),
+      ellipseRing(0, 0.055, 0.012, 0.198, 0.132, 16),
+      ellipseRing(0, 0.145, 0.008, 0.222, 0.136, 16),
+      ellipseRing(0, 0.205, 0.004, 0.162, 0.104, 16),
+      ellipseRing(0, 0.232, 0.006, 0.078, 0.072, 16)
+    ],
+    true
+  );
+  const shoulderCapL = place(icosphereFacetMesh(0.068, 2, 0, 11), BASEBALL_BIND_T.LeftUpperArm);
+  const shoulderCapR = place(icosphereFacetMesh(0.068, 2, 0, 13), BASEBALL_BIND_T.RightUpperArm);
+  const chestJersey = rawToSpec(combineRaw([chestLoft, shoulderCapL, shoulderCapR]));
+
+  const collarRing = place(ringBand(0.068, 0.088, 0.028, 16), [0, 0.222, 0.012], [0.16, 0, 0]);
+  const placket = place(box(0.024, 0.25, 0.014, 0.004), [0, 0.085, 0.132], [-0.04, 0, 0]);
+  const backNumber = place(box(0.11, 0.12, 0.012, 0.003), [0, 0.095, -0.13], [0.05, 0, 0]);
+  const chestTrim = rawToSpec(combineRaw([collarRing, placket, backNumber]));
+
+  let chestCatcherArmor: AuraCustomGeometrySpec | null = null;
+  let chestCatcherHardware: AuraCustomGeometrySpec | null = null;
+  if (isCatcher) {
+    const ribs: RawMesh[] = [
+      place(box(0.31, 0.34, 0.045, 0.016), [0, 0.055, 0.136], [-0.04, 0, 0]),
+      place(box(0.11, 0.065, 0.12, 0.018), [-0.155, 0.195, 0.035], [0, 0, 0.22]),
+      place(box(0.11, 0.065, 0.12, 0.018), [0.155, 0.195, 0.035], [0, 0, -0.22])
+    ];
+    for (let r = 0; r < 4; r++) {
+      ribs.push(place(box(0.27, 0.046, 0.022, 0.008), [0, -0.055 + r * 0.072, 0.158], [-0.04, 0, 0]));
+    }
+    chestCatcherArmor = rawToSpec(combineRaw(ribs));
+    chestCatcherHardware = rawToSpec(
+      combineRaw([
+        place(cyl(0.012, 0.012, 0.014, 8), [-0.11, 0.17, 0.155], [Math.PI * 0.5, 0, 0]),
+        place(cyl(0.012, 0.012, 0.014, 8), [0.11, 0.17, 0.155], [Math.PI * 0.5, 0, 0])
+      ])
+    );
+  }
+
+  // 4. Sculpted Neck, Jaw, Skull, Nose, Ears & Catcher Mask (`Head`)
+  const neckAndSkullProfile: V2[] = [
+    [0.058, -0.035],
+    [0.054, 0.028],
+    [0.076, 0.058],
+    [0.096, 0.105],
+    [0.101, 0.155],
+    [0.094, 0.205],
+    [0.068, 0.238],
+    [0.0, 0.252]
+  ];
+  const skull = latheMesh(neckAndSkullProfile, 18);
+  const jawChin = place(box(0.105, 0.068, 0.095, 0.024), [0, 0.078, 0.036]);
+  const nose = place(box(0.026, 0.042, 0.034, 0.009), [0, 0.128, 0.098], [-0.18, 0, 0]);
+  const earL = place(box(0.018, 0.044, 0.028, 0.007), [0.098, 0.128, -0.004]);
+  const earR = place(box(0.018, 0.044, 0.028, 0.007), [-0.098, 0.128, -0.004]);
+  const headSkin = rawToSpec(combineRaw([skull, jawChin, nose, earL, earR]));
+
+  const hairBack = place(icosphereFacetMesh(0.103, 2, 0.003, 17), [0, 0.162, -0.014], undefined, [1.01, 0.94, 1.03]);
+  const brows = combineRaw([
+    place(box(0.032, 0.009, 0.014, 0.003), [-0.034, 0.154, 0.092], [0, 0, 0.08]),
+    place(box(0.032, 0.009, 0.014, 0.003), [0.034, 0.154, 0.092], [0, 0, -0.08])
+  ]);
+  const headHair = rawToSpec(combineRaw([hairBack, brows]));
+  const headEyes = rawToSpec(
+    combineRaw([
+      place(icosphereFacetMesh(0.012, 1, 0, 2), [-0.033, 0.138, 0.092]),
+      place(icosphereFacetMesh(0.012, 1, 0, 2), [0.033, 0.138, 0.092])
+    ])
+  );
+
+  let headCatcherCage: AuraCustomGeometrySpec | null = null;
+  if (isCatcher) {
+    const bars: RawMesh[] = [];
+    for (const by of [0.072, 0.108, 0.144, 0.178]) {
+      bars.push(
+        tubeSweepMesh(
+          catmullRomSpline3([[-0.095, by, 0.042], [-0.055, by, 0.118], [0, by, 0.132], [0.055, by, 0.118], [0.095, by, 0.042]], 10),
+          0.0055,
+          6
+        )
+      );
+    }
+    bars.push(tubeSweepMesh(catmullRomSpline3([[-0.042, 0.062, 0.11], [-0.042, 0.188, 0.11]], 6), 0.005, 6));
+    bars.push(tubeSweepMesh(catmullRomSpline3([[0.042, 0.062, 0.11], [0.042, 0.188, 0.11]], 6), 0.005, 6));
+    headCatcherCage = rawToSpec(combineRaw(bars));
+  }
+
+  // 5. Upper Arms (`LeftUpperArm` & `RightUpperArm`) — 3/4 baseball undersleeves from `[0,0,0]` to `LeftForearm`/`RightForearm`
+  const buildUpperArm = (elbow: V3): AuraCustomGeometrySpec => {
+    const cap = icosphereFacetMesh(0.058, 2, 0, 5);
+    const sleeve = kernelTubeSweepMesh(
+      [
+        [0, 0, 0, 0.06],
+        [elbow[0] * 0.52, elbow[1] * 0.52, elbow[2] * 0.52, 0.053],
+        [elbow[0], elbow[1], elbow[2], 0.046]
+      ],
+      12,
+      true
+    );
+    return rawToSpec(combineRaw([cap, sleeve]));
+  };
+  const upperArmL = buildUpperArm(BASEBALL_BIND_T.LeftForearm);
+  const upperArmR = buildUpperArm(BASEBALL_BIND_T.RightForearm);
+
+  // 6. Forearms & Hands / Batting Gloves (`LeftForearm` & `RightForearm`)
+  const faL = buildForearmMeshes("L", isBatter);
+  const faR = buildForearmMeshes("R", isBatter);
+
+  // 7. Tapered Baseball Pant Thighs + Knee Caps (`LeftUpperLeg` & `RightUpperLeg`, length `0.4123 m` down `-Y`)
+  const thighProfile: V2[] = [
+    [0.0, -0.415],
+    [0.064, -0.412],
+    [0.072, -0.28],
+    [0.088, -0.14],
+    [0.098, -0.02],
+    [0.082, 0.03],
+    [0.0, 0.035]
+  ];
+  const kneeCap = place(icosphereFacetMesh(0.064, 2, 0, 9), [0, -0.4123, 0.008]);
+  const thighPant = rawToSpec(combineRaw([latheMesh(thighProfile, 16), kneeCap]));
+  const thighStripe = rawToSpec(place(box(0.016, 0.39, 0.022, 0.004), [0, -0.205, 0.0], undefined, [1, 1, 1]));
+
+  // 8. Tapered Lower-Leg Pant Cuffs + High Ribbed Team Stirrup Socks (`LeftLowerLeg` & `RightLowerLeg`, length `0.3373 m` down `-Y`)
+  const shinPantProfile: V2[] = [
+    [0.0, -0.175],
+    [0.056, -0.172],
+    [0.066, -0.085],
+    [0.064, 0.01],
+    [0.0, 0.015]
+  ];
+  const shinStirrupProfile: V2[] = [
+    [0.0, -0.342],
+    [0.043, -0.337],
+    [0.048, -0.255],
+    [0.055, -0.168],
+    [0.0, -0.165]
+  ];
+  const shinPant = rawToSpec(latheMesh(shinPantProfile, 14));
+  const shinStirrup = rawToSpec(latheMesh(shinStirrupProfile, 14));
+  const shinCatcherGuard = isCatcher
+    ? rawToSpec(
+        combineRaw([
+          place(icosphereFacetMesh(0.072, 2, 0, 4), [0, 0.01, 0.042], undefined, [0.95, 1.05, 0.72]),
+          place(box(0.115, 0.31, 0.048, 0.018), [0, -0.165, 0.052], [0.04, 0, 0])
+        ])
+      )
+    : null;
+
+  // 9. Molded Low-Cut Baseball Cleats (`LeftFoot` & `RightFoot`, grounded so stud tips touch `y = -0.14986 m` -> world `y = 0.000 m`)
+  const ankleBall = place(icosphereFacetMesh(0.045, 2, 0, 6), [0, -0.018, -0.005]);
+  const shoeUpper = loftSectionsMesh(
+    [
+      ellipseRing(0, -0.052, -0.018, 0.048, 0.058, 12),
+      ellipseRing(0, -0.095, 0.028, 0.054, 0.112, 12),
+      ellipseRing(0, -0.126, 0.042, 0.056, 0.128, 12)
+    ],
+    true
+  );
+  const footUpper = rawToSpec(combineRaw([ankleBall, shoeUpper]));
+  const footStripe = rawToSpec(
+    combineRaw([
+      place(box(0.114, 0.022, 0.095, 0.005), [0, -0.098, 0.018], [0.16, 0, 0]),
+      place(box(0.044, 0.018, 0.068, 0.005), [0, -0.078, 0.058], [0.42, 0, 0])
+    ])
+  );
+  const footSole = rawToSpec(place(box(0.108, 0.02, 0.258, 0.008), [0, -0.134, 0.042]));
+  const studs: RawMesh[] = [];
+  for (const [sx, sz] of [
+    [-0.032, 0.132],
+    [0.032, 0.132],
+    [0.0, 0.152],
+    [-0.034, 0.068],
+    [0.034, 0.068],
+    [-0.028, -0.048],
+    [0.028, -0.048]
+  ] as const) {
+    studs.push(place(cyl(0.005, 0.008, 0.012, 6), [sx, -0.144, sz]));
+  }
+  const footStuds = rawToSpec(combineRaw(studs));
+
+  const built: CachedBaseballPartSpecs = {
+    hipsUniform,
+    hipsCatcherPad,
+    spineCore,
+    chestJersey,
+    chestTrim,
+    chestCatcherArmor,
+    chestCatcherHardware,
+    headSkin,
+    headHair,
+    headEyes,
+    headCatcherCage,
+    upperArmL,
+    upperArmR,
+    forearmSkinL: rawToSpec(faL.skin),
+    forearmSkinR: rawToSpec(faR.skin),
+    forearmGloveL: faL.glove ? rawToSpec(faL.glove) : null,
+    forearmGloveR: faR.glove ? rawToSpec(faR.glove) : null,
+    forearmCuffL: rawToSpec(faL.cuff),
+    forearmCuffR: rawToSpec(faR.cuff),
+    thighPant,
+    thighStripe,
+    shinPant,
+    shinStirrup,
+    shinCatcherGuard,
+    footUpper,
+    footStripe,
+    footSole,
+    footStuds
+  };
+  partSpecsCache.set(kind, built);
+  return built;
+}
+
+export const BASEBALL_ACCENT_PART_SUFFIXES = ["trim", "sleeve-l", "sleeve-r", "sock-l", "sock-r"] as const;
+
+/**
+ * Builds a 100% procedural, multi-material, anatomically connected `1.88 m` baseball athlete
+ * with hierarchical runtime bone groups `${id}-${BoneName}` matching `batter-pose.ts` `RIG`.
+ */
+export function buildArticulatedBaseballPlayerNode(
+  id: string,
+  options: { readonly roadKit?: boolean; readonly position?: V3; readonly yaw?: number } = {}
+) {
+  const role = roleForBaseballActorId(id);
+  const specKind = role === "batter" || role === "runner" ? "batter" : role === "catcher" ? "catcher" : "fielder";
+  const parts = getBaseballPartSpecs(specKind);
+  const h = hashActorId(id);
+  const skinMat = skinMatsCache[h % skinMatsCache.length]!;
+  const hairMat = hairMatsCache[(h >>> 3) % hairMatsCache.length]!;
+  const uniformMat = options.roadKit ? PLAYER_SHARED_MATS.roadJersey : PLAYER_SHARED_MATS.homeJersey;
+  const accentMat = PLAYER_SHARED_MATS.defaultAccent;
+
+  const customMesh = (name: string, spec: AuraCustomGeometrySpec, mat: AuraMaterialSpec, runtimeId?: string) => {
+    const n = geometry.custom(spec, { name, material: mat, castShadow: true });
+    return runtimeId ? n.runtime(game.runtimeNode(runtimeId)) : n;
+  };
+
+  const leftFoot = groups
+    .create(
+      `${id}-LeftFoot`,
+      [
+        customMesh(`${id}-lfoot-upper`, parts.footUpper, PLAYER_SHARED_MATS.cleatUpper),
+        customMesh(`${id}-lfoot-stripe`, parts.footStripe, PLAYER_SHARED_MATS.cleatStripe),
+        customMesh(`${id}-lfoot-sole`, parts.footSole, PLAYER_SHARED_MATS.cleatSole),
+        customMesh(`${id}-lfoot-studs`, parts.footStuds, PLAYER_SHARED_MATS.cleatStuds)
+      ],
+      { position: BASEBALL_BIND_T.LeftFoot }
+    )
+    .runtime(game.runtimeNode(`${id}-LeftFoot`));
+
+  const rightFoot = groups
+    .create(
+      `${id}-RightFoot`,
+      [
+        customMesh(`${id}-rfoot-upper`, parts.footUpper, PLAYER_SHARED_MATS.cleatUpper),
+        customMesh(`${id}-rfoot-stripe`, parts.footStripe, PLAYER_SHARED_MATS.cleatStripe),
+        customMesh(`${id}-rfoot-sole`, parts.footSole, PLAYER_SHARED_MATS.cleatSole),
+        customMesh(`${id}-rfoot-studs`, parts.footStuds, PLAYER_SHARED_MATS.cleatStuds)
+      ],
+      { position: BASEBALL_BIND_T.RightFoot }
+    )
+    .runtime(game.runtimeNode(`${id}-RightFoot`));
+
+  const leftLowerLeg = groups
+    .create(
+      `${id}-LeftLowerLeg`,
+      [
+        customMesh(`${id}-lshin-pant`, parts.shinPant, uniformMat),
+        customMesh(`${id}-sock-l`, parts.shinStirrup, accentMat, `${id}-sock-l`),
+        ...(parts.shinCatcherGuard ? [customMesh(`${id}-lshin-guard`, parts.shinCatcherGuard, PLAYER_SHARED_MATS.catcherArmor)] : []),
+        leftFoot
+      ],
+      { position: BASEBALL_BIND_T.LeftLowerLeg }
+    )
+    .runtime(game.runtimeNode(`${id}-LeftLowerLeg`));
+
+  const rightLowerLeg = groups
+    .create(
+      `${id}-RightLowerLeg`,
+      [
+        customMesh(`${id}-rshin-pant`, parts.shinPant, uniformMat),
+        customMesh(`${id}-sock-r`, parts.shinStirrup, accentMat, `${id}-sock-r`),
+        ...(parts.shinCatcherGuard ? [customMesh(`${id}-rshin-guard`, parts.shinCatcherGuard, PLAYER_SHARED_MATS.catcherArmor)] : []),
+        rightFoot
+      ],
+      { position: BASEBALL_BIND_T.RightLowerLeg }
+    )
+    .runtime(game.runtimeNode(`${id}-RightLowerLeg`));
+
+  const leftUpperLeg = groups
+    .create(
+      `${id}-LeftUpperLeg`,
+      [
+        customMesh(`${id}-lthigh-pant`, parts.thighPant, uniformMat),
+        customMesh(`${id}-lthigh-stripe`, parts.thighStripe, PLAYER_SHARED_MATS.pipingDark).position(0.088, 0, 0),
+        leftLowerLeg
+      ],
+      { position: BASEBALL_BIND_T.LeftUpperLeg }
+    )
+    .runtime(game.runtimeNode(`${id}-LeftUpperLeg`));
+
+  const rightUpperLeg = groups
+    .create(
+      `${id}-RightUpperLeg`,
+      [
+        customMesh(`${id}-rthigh-pant`, parts.thighPant, uniformMat),
+        customMesh(`${id}-rthigh-stripe`, parts.thighStripe, PLAYER_SHARED_MATS.pipingDark).position(-0.088, 0, 0),
+        rightLowerLeg
+      ],
+      { position: BASEBALL_BIND_T.RightUpperLeg }
+    )
+    .runtime(game.runtimeNode(`${id}-RightUpperLeg`));
+
+  const leftForearm = groups
+    .create(
+      `${id}-LeftForearm`,
+      [
+        customMesh(`${id}-lforearm-skin`, parts.forearmSkinL, skinMat),
+        customMesh(`${id}-lforearm-cuff`, parts.forearmCuffL, PLAYER_SHARED_MATS.battingGloveCuff),
+        ...(parts.forearmGloveL ? [customMesh(`${id}-lforearm-glove`, parts.forearmGloveL, PLAYER_SHARED_MATS.battingGloveBody)] : [])
+      ],
+      { position: BASEBALL_BIND_T.LeftForearm }
+    )
+    .runtime(game.runtimeNode(`${id}-LeftForearm`));
+
+  const rightForearm = groups
+    .create(
+      `${id}-RightForearm`,
+      [
+        customMesh(`${id}-rforearm-skin`, parts.forearmSkinR, skinMat),
+        customMesh(`${id}-rforearm-cuff`, parts.forearmCuffR, PLAYER_SHARED_MATS.battingGloveCuff),
+        ...(parts.forearmGloveR ? [customMesh(`${id}-rforearm-glove`, parts.forearmGloveR, PLAYER_SHARED_MATS.battingGloveBody)] : [])
+      ],
+      { position: BASEBALL_BIND_T.RightForearm }
+    )
+    .runtime(game.runtimeNode(`${id}-RightForearm`));
+
+  const leftUpperArm = groups
+    .create(
+      `${id}-LeftUpperArm`,
+      [customMesh(`${id}-sleeve-l`, parts.upperArmL, accentMat, `${id}-sleeve-l`), leftForearm],
+      { position: BASEBALL_BIND_T.LeftUpperArm }
+    )
+    .runtime(game.runtimeNode(`${id}-LeftUpperArm`));
+
+  const rightUpperArm = groups
+    .create(
+      `${id}-RightUpperArm`,
+      [customMesh(`${id}-sleeve-r`, parts.upperArmR, accentMat, `${id}-sleeve-r`), rightForearm],
+      { position: BASEBALL_BIND_T.RightUpperArm }
+    )
+    .runtime(game.runtimeNode(`${id}-RightUpperArm`));
+
+  const head = groups
+    .create(
+      `${id}-Head`,
+      [
+        customMesh(`${id}-head-skin`, parts.headSkin, skinMat),
+        customMesh(`${id}-head-hair`, parts.headHair, hairMat),
+        customMesh(`${id}-head-eyes`, parts.headEyes, PLAYER_SHARED_MATS.eyeDark),
+        ...(parts.headCatcherCage ? [customMesh(`${id}-head-cage`, parts.headCatcherCage, DIAMOND_MATS.galvanizedSteel)] : [])
+      ],
+      { position: BASEBALL_BIND_T.Head }
+    )
+    .runtime(game.runtimeNode(`${id}-Head`));
+
+  const chest = groups
+    .create(
+      `${id}-Chest`,
+      [
+        customMesh(`${id}-chest-jersey`, parts.chestJersey, uniformMat),
+        customMesh(`${id}-trim`, parts.chestTrim, accentMat, `${id}-trim`),
+        ...(parts.chestCatcherArmor ? [customMesh(`${id}-chest-armor`, parts.chestCatcherArmor, PLAYER_SHARED_MATS.catcherArmor)] : []),
+        ...(parts.chestCatcherHardware ? [customMesh(`${id}-chest-hw`, parts.chestCatcherHardware, DIAMOND_MATS.brassHardware)] : []),
+        head,
+        leftUpperArm,
+        rightUpperArm
+      ],
+      { position: BASEBALL_BIND_T.Chest }
+    )
+    .runtime(game.runtimeNode(`${id}-Chest`));
+
+  const spine = groups
+    .create(
+      `${id}-Spine`,
+      [customMesh(`${id}-spine-core`, parts.spineCore, uniformMat), chest],
+      { position: BASEBALL_BIND_T.Spine }
+    )
+    .runtime(game.runtimeNode(`${id}-Spine`));
+
+  const hips = groups
+    .create(
+      `${id}-Hips`,
+      [
+        customMesh(`${id}-hips-uniform`, parts.hipsUniform, uniformMat),
+        ...(parts.hipsCatcherPad ? [customMesh(`${id}-hips-pad`, parts.hipsCatcherPad, PLAYER_SHARED_MATS.catcherPadTrim)] : []),
+        spine,
+        leftUpperLeg,
+        rightUpperLeg
+      ],
+      { position: BASEBALL_BIND_T.Hips }
+    )
+    .runtime(game.runtimeNode(`${id}-Hips`));
+
+  const rootPos: V3 = [
+    (BASEBALL_BIND_T.Root[0] + BASEBALL_FIT_GROUND_N[0]) * BASEBALL_ACTOR_FIT,
+    (BASEBALL_BIND_T.Root[1] + BASEBALL_FIT_GROUND_N[1]) * BASEBALL_ACTOR_FIT,
+    (BASEBALL_BIND_T.Root[2] + BASEBALL_FIT_GROUND_N[2]) * BASEBALL_ACTOR_FIT
+  ];
+  const rootGroup = groups.create(`${id}-Root`, [hips], {
+    position: rootPos,
+    scale: [BASEBALL_ACTOR_FIT, BASEBALL_ACTOR_FIT, BASEBALL_ACTOR_FIT]
+  });
+
+  const pos = options.position ?? [0, -80, 0];
+  const yaw = options.yaw ?? 0;
+  return groups
+    .create(id, [rootGroup], { position: pos, rotation: [0, yaw, 0] })
+    .runtime(game.runtimeNode(id));
+}
+
+export type BaseballPoseBonesInput = Partial<
+  Record<BaseballBoneName, { readonly position?: readonly [number, number, number]; readonly rotation?: GripQuat }>
+>;
+
+const ID_QUAT: GripQuat = [0, 0, 0, 1];
+
+/**
+ * Stateless `"ZYX"` Euler joint driver — resets every bone from bind every frame so rotations NEVER compound.
+ */
+export function applyBaseballPoseStateless(
+  jointHandles: Readonly<Partial<Record<BaseballBoneName, { setRotation(x: number, y: number, z: number): unknown; setPosition(x: number, y: number, z: number): unknown } | null>>>,
+  bones?: BaseballPoseBonesInput
+): void {
+  for (const name of BASEBALL_PLAYER_BONES) {
+    const h = jointHandles[name];
+    if (!h) continue;
+    const entry = bones?.[name];
+    const q = entry?.rotation ?? ID_QUAT;
+    const [rx, ry, rz] = gripQToEulerZYX(q);
+    h.setRotation(rx, ry, rz);
+    if (name === "Hips") {
+      const p = entry?.position ?? BASEBALL_BIND_T.Hips;
+      h.setPosition(p[0], p[1], p[2]);
+    }
+  }
+}
+
+function mat4Identity(): number[] {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
+function mat4Mul(a: readonly number[], b: readonly number[]): number[] {
+  const o = new Array<number>(16).fill(0);
+  for (let c = 0; c < 4; c++) {
+    for (let r = 0; r < 4; r++) {
+      let s = 0;
+      for (let k = 0; k < 4; k++) s += a[k * 4 + r]! * b[c * 4 + k]!;
+      o[c * 4 + r] = s;
+    }
+  }
+  return o;
+}
+
+function mat4FromTQ(t: V3, q: GripQuat): number[] {
+  const [x, y, z, w] = q;
+  const m = mat4Identity();
+  m[0] = 1 - 2 * (y * y + z * z);
+  m[1] = 2 * (x * y + z * w);
+  m[2] = 2 * (x * z - y * w);
+  m[4] = 2 * (x * y - z * w);
+  m[5] = 1 - 2 * (x * x + z * z);
+  m[6] = 2 * (y * z + x * w);
+  m[8] = 2 * (x * z + y * w);
+  m[9] = 2 * (y * z - x * w);
+  m[10] = 1 - 2 * (x * x + y * y);
+  m[12] = t[0];
+  m[13] = t[1];
+  m[14] = t[2];
+  return m;
+}
+
+function quatFromMat4(m: readonly number[]): GripQuat {
+  const m00 = m[0]!, m11 = m[5]!, m22 = m[10]!;
+  const tr = m00 + m11 + m22;
+  let x = 0, y = 0, z = 0, w = 1;
+  if (tr > 0) {
+    const s = Math.sqrt(tr + 1.0) * 2;
+    w = 0.25 * s;
+    x = (m[6]! - m[9]!) / s;
+    y = (m[8]! - m[2]!) / s;
+    z = (m[1]! - m[4]!) / s;
+  } else if (m00 > m11 && m00 > m22) {
+    const s = Math.sqrt(1.0 + m00 - m11 - m22) * 2;
+    w = (m[6]! - m[9]!) / s;
+    x = 0.25 * s;
+    y = (m[4]! + m[1]!) / s;
+    z = (m[8]! + m[2]!) / s;
+  } else if (m11 > m22) {
+    const s = Math.sqrt(1.0 + m11 - m00 - m22) * 2;
+    w = (m[8]! - m[2]!) / s;
+    x = (m[4]! + m[1]!) / s;
+    y = 0.25 * s;
+    z = (m[9]! + m[6]!) / s;
+  } else {
+    const s = Math.sqrt(1.0 + m22 - m00 - m11) * 2;
+    w = (m[1]! - m[4]!) / s;
+    x = (m[8]! + m[2]!) / s;
+    y = (m[9]! + m[6]!) / s;
+    z = 0.25 * s;
+  }
+  const l = Math.hypot(x, y, z, w) || 1;
+  return [x / l, y / l, z / l, w / l];
+}
+
+/**
+ * Computes exact column-major 4x4 skeleton-frame matrices (`Root` + all 14 `BASEBALL_PLAYER_BONES`).
+ */
+export function computeBaseballBoneMatrices(bones?: BaseballPoseBonesInput): Record<BaseballBoneName | "Root", number[]> {
+  const out = {} as Record<BaseballBoneName | "Root", number[]>;
+  const get = (n: BaseballBoneName | "Root"): number[] => {
+    if (out[n]) return out[n]!;
+    const p = BASEBALL_BIND_PARENT[n];
+    const entry = n === "Root" ? undefined : bones?.[n];
+    const pos = (entry?.position ?? BASEBALL_BIND_T[n]) as V3;
+    const rot = entry?.rotation ?? ID_QUAT;
+    const local = mat4FromTQ(pos, rot);
+    out[n] = p ? mat4Mul(get(p), local) : local;
+    return out[n]!;
+  };
+  get("Root");
+  for (const n of BASEBALL_PLAYER_BONES) get(n);
+  return out;
+}
+
+/**
+ * Exact world-space socket position & `"ZYX"` Euler rotation for equipment riding `Head`, `Hips`, or `LeftForearm`.
+ */
+export function computeBaseballSocketWorldTRS(
+  boneMats: Readonly<Record<BaseballBoneName | "Root", readonly number[]>>,
+  bone: BaseballBoneName,
+  actorPos: V3,
+  actorYaw: number,
+  localPos: V3,
+  localRotZYX?: V3
+): { readonly position: V3; readonly rotation: V3 } {
+  const m = boneMats[bone];
+  const ax = m[0]! * localPos[0] + m[4]! * localPos[1] + m[8]! * localPos[2] + m[12]!;
+  const ay = m[1]! * localPos[0] + m[5]! * localPos[1] + m[9]! * localPos[2] + m[13]!;
+  const az = m[2]! * localPos[0] + m[6]! * localPos[1] + m[10]! * localPos[2] + m[14]!;
+  const sx = (ax + BASEBALL_FIT_GROUND_N[0]) * BASEBALL_ACTOR_FIT;
+  const sy = (ay + BASEBALL_FIT_GROUND_N[1]) * BASEBALL_ACTOR_FIT;
+  const sz = (az + BASEBALL_FIT_GROUND_N[2]) * BASEBALL_ACTOR_FIT;
+  const cy = Math.cos(actorYaw);
+  const siny = Math.sin(actorYaw);
+  const position: V3 = [
+    actorPos[0] + sx * cy + sz * siny,
+    actorPos[1] + sy,
+    actorPos[2] - sx * siny + sz * cy
+  ];
+  const qBone = quatFromMat4(m);
+  const qYaw = gripQAxis([0, 1, 0], actorYaw);
+  let qWorld = gripQMul(qYaw, qBone);
+  if (localRotZYX) {
+    const qLoc = gripQMul(
+      gripQAxis([0, 0, 1], localRotZYX[2]),
+      gripQMul(gripQAxis([0, 1, 0], localRotZYX[1]), gripQAxis([1, 0, 0], localRotZYX[0]))
+    );
+    qWorld = gripQMul(qWorld, qLoc);
+  }
+  return { position, rotation: gripQToEulerZYX(qWorld) };
+}
+
+function aimTwoSegmentChain(
+  qParentWorld: GripQuat,
+  bindDirU: V3,
+  dirUWorld: V3,
+  bindDirL: V3,
+  dirLWorld: V3
+): { readonly qU: GripQuat; readonly qL: GripQuat } {
+  const qUw = gripQFromTo(bindDirU, gripUnit(dirUWorld));
+  const qLw = gripQFromTo(bindDirL, gripUnit(dirLWorld));
+  return {
+    qU: gripQMul(gripQConj(qParentWorld), qUw),
+    qL: gripQMul(gripQConj(qUw), qLw)
+  };
+}
+
+/**
+ * Computes stateless anatomical baseball role poses (`pitcher`, `catcher`, `infielder`, `outfielder`, `runner`, `coach`,
+ * plus sprinting `batter`) across `Crouch_Idle_Loop`, `Idle_Loop`, `Walk_Loop`, `Sprint_Loop`, `Telegraph`, `Release`, and `Contest`.
+ */
+export function computeBaseballRolePose(
+  role: BaseballActorRole,
+  clip: string,
+  timeSec: number,
+  seedPhase = 0,
+  speed = 1.0
+): BaseballPoseBonesInput {
+  const t = timeSec * speed + seedPhase;
+
+  if (clip === "Sprint_Loop" || clip === "Walk_Loop") {
+    const isSprint = clip === "Sprint_Loop";
+    const freq = isSprint ? 8.6 : 4.4;
+    const ph = t * freq;
+    const s = Math.sin(ph);
+    const c = Math.cos(ph);
+    const lean = isSprint ? 0.3 : 0.08;
+    const bounce = isSprint ? Math.abs(c) * 0.045 - 0.035 : Math.abs(c) * 0.015;
+    const twist = s * (isSprint ? 0.18 : 0.07);
+
+    const qHips = gripQAxis([0, 1, 0], -twist * 0.5);
+    const qSpine = gripQAxis([1, 0, 0], lean * 0.45);
+    const qChestLocal = gripQMul(gripQAxis([0, 1, 0], twist), gripQAxis([1, 0, 0], lean * 0.55));
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const swingAmp = isSprint ? 0.72 : 0.28;
+    const legL = aimTwoSegmentChain(
+      qHips,
+      BIND_DOWN,
+      [0.03, -Math.cos(s * swingAmp), Math.sin(s * swingAmp)],
+      BIND_DOWN,
+      [0.03, -0.92, Math.sin(s * swingAmp) - (isSprint ? Math.max(0, -c) * 0.78 : Math.max(0, -c) * 0.28)]
+    );
+    const legR = aimTwoSegmentChain(
+      qHips,
+      BIND_DOWN,
+      [-0.03, -Math.cos(-s * swingAmp), Math.sin(-s * swingAmp)],
+      BIND_DOWN,
+      [-0.03, -0.92, Math.sin(-s * swingAmp) - (isSprint ? Math.max(0, c) * 0.78 : Math.max(0, c) * 0.28)]
+    );
+
+    const armPump = isSprint ? 0.65 : 0.24;
+    const armL = aimTwoSegmentChain(
+      qChestWorld,
+      BIND_DIR_UA_L,
+      [0.24, -0.82, -s * armPump],
+      BIND_DIR_FA_L,
+      [0.08, isSprint ? -0.18 + Math.max(0, -s) * 0.35 : -0.65, isSprint ? 0.85 : 0.45 - s * 0.25]
+    );
+    const armR = aimTwoSegmentChain(
+      qChestWorld,
+      BIND_DIR_UA_R,
+      [-0.24, -0.82, s * armPump],
+      BIND_DIR_FA_R,
+      [-0.08, isSprint ? -0.18 + Math.max(0, s) * 0.35 : -0.65, isSprint ? 0.85 : 0.45 + s * 0.25]
+    );
+
+    return {
+      Hips: { position: [0, BASEBALL_BIND_T.Hips[1] + bounce, 0], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQAxis([1, 0, 0], -lean * 0.72) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: gripQAxis([1, 0, 0], isSprint ? 0.18 : 0.05) },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: gripQAxis([1, 0, 0], isSprint ? 0.18 : 0.05) }
+    };
+  }
+
+  // Deep Catcher Squat (`f-c`)
+  if (role === "catcher" && clip !== "Release") {
+    const sway = Math.sin(t * 2.1) * 0.014;
+    const qHips = gripQAxis([0, 1, 0], sway * 0.8);
+    const qSpine = gripQAxis([1, 0, 0], 0.24);
+    const qChestLocal = gripQAxis([1, 0, 0], 0.14);
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const legL = aimTwoSegmentChain(qHips, BIND_DOWN, [0.36, -0.44, 0.82], BIND_DOWN, [0.18, -0.95, -0.22]);
+    const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.36, -0.44, 0.82], BIND_DOWN, [-0.18, -0.95, -0.22]);
+    // Left arm holds catcher's mitt out as strike-zone target; right hand protected beside right hip
+    const armL = aimTwoSegmentChain(
+      qChestWorld,
+      BIND_DIR_UA_L,
+      [0.14, -0.36, 0.92],
+      BIND_DIR_FA_L,
+      [-0.12, 0.06 + sway, 0.98]
+    );
+    const armR = aimTwoSegmentChain(
+      qChestWorld,
+      BIND_DIR_UA_R,
+      [-0.36, -0.86, 0.12],
+      BIND_DIR_FA_R,
+      [-0.18, -0.45, 0.62]
+    );
+
+    return {
+      Hips: { position: [sway, BASEBALL_BIND_T.Hips[1] - 0.36, -0.06], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQAxis([1, 0, 0], -0.34) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: gripQAxis([1, 0, 0], -0.18) },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: gripQAxis([1, 0, 0], -0.18) }
+    };
+  }
+
+  // Pitcher Windup (`Telegraph`) — high front leg kick & coiled throwing arm
+  if (clip === "Telegraph") {
+    const kick = 0.5 + 0.5 * Math.sin(t * 4.2);
+    const qHips = gripQAxis([0, 1, 0], -0.78);
+    const qSpine = gripQAxis([1, 0, 0], -0.06);
+    const qChestLocal = gripQAxis([0, 1, 0], -0.24);
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const legL = aimTwoSegmentChain(
+      qHips,
+      BIND_DOWN,
+      [0.18, 0.25 + kick * 0.35, 0.85],
+      BIND_DOWN,
+      [0.08, -0.96, -0.18]
+    );
+    const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.08, -0.96, 0.14], BIND_DOWN, [-0.04, -0.98, -0.08]);
+    const armL = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_L, [0.35, -0.18, 0.92], BIND_DIR_FA_L, [0.1, 0.18, 0.98]);
+    const armR = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_R, [-0.72, 0.42, -0.55], BIND_DIR_FA_R, [-0.32, 0.88, -0.28]);
+
+    return {
+      Hips: { position: [0, BASEBALL_BIND_T.Hips[1] - 0.04, -0.04], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQAxis([0, 1, 0], 0.95) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: gripQAxis([1, 0, 0], 0.25) },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: ID_QUAT }
+    };
+  }
+
+  // Overhand Throw / Pitch Follow-Through (`Release`)
+  if (clip === "Release") {
+    const qHips = gripQAxis([0, 1, 0], 0.42);
+    const qSpine = gripQAxis([1, 0, 0], 0.34);
+    const qChestLocal = gripQMul(gripQAxis([0, 1, 0], 0.32), gripQAxis([1, 0, 0], 0.22));
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const legL = aimTwoSegmentChain(qHips, BIND_DOWN, [0.1, -0.82, 0.56], BIND_DOWN, [0.06, -0.96, 0.12]);
+    const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.14, -0.58, -0.8], BIND_DOWN, [-0.1, -0.25, -0.96]);
+    const armL = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_L, [0.55, -0.62, -0.45], BIND_DIR_FA_L, [0.32, -0.2, 0.88]);
+    const armR = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_R, [0.18, -0.28, 0.94], BIND_DIR_FA_R, [0.46, -0.42, 0.78]);
+
+    return {
+      Hips: { position: [0, BASEBALL_BIND_T.Hips[1] - 0.11, 0.16], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQMul(gripQAxis([0, 1, 0], -0.55), gripQAxis([1, 0, 0], -0.42)) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: ID_QUAT },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: gripQAxis([1, 0, 0], 0.45) }
+    };
+  }
+
+  // Web-Gem Fly-Ball Reach (`Contest`)
+  if (clip === "Contest") {
+    const qHips = gripQAxis([0, 1, 0], -0.22);
+    const qSpine = gripQAxis([1, 0, 0], -0.1);
+    const qChestLocal = gripQAxis([0, 1, 0], -0.18);
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const legL = aimTwoSegmentChain(qHips, BIND_DOWN, [0.16, -0.92, 0.26], BIND_DOWN, [0.12, -0.96, -0.18]);
+    const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.16, -0.92, -0.22], BIND_DOWN, [-0.12, -0.96, -0.28]);
+    const armL = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_L, [0.28, 0.86, 0.42], BIND_DIR_FA_L, [0.12, 0.94, 0.32]);
+    const armR = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_R, [-0.46, -0.55, 0.68], BIND_DIR_FA_R, [-0.22, -0.15, 0.96]);
+
+    return {
+      Hips: { position: [0, BASEBALL_BIND_T.Hips[1] + 0.04, 0], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQAxis([1, 0, 0], -0.32) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: ID_QUAT },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: ID_QUAT }
+    };
+  }
+
+  // Pitcher Set Stance on Mound (`pitcher` in `Crouch_Idle_Loop` / `Idle_Loop`)
+  if (role === "pitcher") {
+    const breath = Math.sin(t * 2.2) * 0.012;
+    const qHips = gripQAxis([0, 1, 0], -0.45);
+    const qSpine = gripQAxis([1, 0, 0], 0.08);
+    const qChestLocal = gripQAxis([0, 1, 0], -0.12);
+    const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+    const legL = aimTwoSegmentChain(qHips, BIND_DOWN, [0.16, -0.95, 0.24], BIND_DOWN, [0.12, -0.98, -0.12]);
+    const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.16, -0.95, -0.18], BIND_DOWN, [-0.12, -0.98, -0.22]);
+    // Both hands together in the leather glove at chest letters
+    const armL = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_L, [0.22, -0.78, 0.58], BIND_DIR_FA_L, [-0.42, 0.28 + breath, 0.86]);
+    const armR = aimTwoSegmentChain(qChestWorld, BIND_DIR_UA_R, [-0.22, -0.78, 0.58], BIND_DIR_FA_R, [0.42, 0.28 + breath, 0.86]);
+
+    return {
+      Hips: { position: [0, BASEBALL_BIND_T.Hips[1] - 0.045 + breath * 0.5, 0], rotation: qHips },
+      Spine: { rotation: qSpine },
+      Chest: { rotation: qChestLocal },
+      Head: { rotation: gripQAxis([0, 1, 0], 0.56) },
+      LeftUpperArm: { rotation: armL.qU },
+      LeftForearm: { rotation: armL.qL },
+      RightUpperArm: { rotation: armR.qU },
+      RightForearm: { rotation: armR.qL },
+      LeftUpperLeg: { rotation: legL.qU },
+      LeftLowerLeg: { rotation: legL.qL },
+      LeftFoot: { rotation: ID_QUAT },
+      RightUpperLeg: { rotation: legR.qU },
+      RightLowerLeg: { rotation: legR.qL },
+      RightFoot: { rotation: ID_QUAT }
+    };
+  }
+
+  // Default Athletic Ready Crouch (`infielder`, `outfielder`, `runner`, `coach`)
+  const sway = Math.sin(t * 2.4) * 0.018;
+  const bob = Math.cos(t * 4.8) * 0.008;
+  const drop = role === "infielder" || role === "runner" ? -0.105 : role === "outfielder" ? -0.075 : -0.045;
+  const fwdLean = role === "coach" ? 0.08 : 0.22;
+
+  const qHips = gripQAxis([0, 1, 0], sway * 0.6);
+  const qSpine = gripQAxis([1, 0, 0], fwdLean * 0.55);
+  const qChestLocal = gripQAxis([1, 0, 0], fwdLean * 0.45);
+  const qChestWorld = gripQMul(qHips, gripQMul(qSpine, qChestLocal));
+
+  const legL = aimTwoSegmentChain(qHips, BIND_DOWN, [0.22, -0.88, 0.42], BIND_DOWN, [0.16, -0.96, -0.22]);
+  const legR = aimTwoSegmentChain(qHips, BIND_DOWN, [-0.22, -0.88, 0.42], BIND_DOWN, [-0.16, -0.96, -0.22]);
+  const armL = aimTwoSegmentChain(
+    qChestWorld,
+    BIND_DIR_UA_L,
+    [0.28, -0.78, 0.55],
+    BIND_DIR_FA_L,
+    [-0.18, -0.18, 0.96]
+  );
+  const armR = aimTwoSegmentChain(
+    qChestWorld,
+    BIND_DIR_UA_R,
+    [-0.28, -0.78, 0.55],
+    BIND_DIR_FA_R,
+    [0.18, -0.18, 0.96]
+  );
+
+  return {
+    Hips: { position: [sway, BASEBALL_BIND_T.Hips[1] + drop + bob, 0], rotation: qHips },
+    Spine: { rotation: qSpine },
+    Chest: { rotation: qChestLocal },
+    Head: { rotation: gripQAxis([1, 0, 0], -fwdLean * 0.85) },
+    LeftUpperArm: { rotation: armL.qU },
+    LeftForearm: { rotation: armL.qL },
+    RightUpperArm: { rotation: armR.qU },
+    RightForearm: { rotation: armR.qL },
+    LeftUpperLeg: { rotation: legL.qU },
+    LeftLowerLeg: { rotation: legL.qL },
+    LeftFoot: { rotation: ID_QUAT },
+    RightUpperLeg: { rotation: legR.qU },
+    RightLowerLeg: { rotation: legR.qL },
+    RightFoot: { rotation: ID_QUAT }
+  };
+}
+
+/* ---------- Articulated Front-Row Ballpark Wavers (`waver-0..17`) ---------- */
+
+const WAVER_JERSEY_HEXES = ["#c8553d", "#3b7ea1", "#2f6b5e", "#d9883f", "#4d5d8c", "#7d4e8f"] as const;
+const WAVER_PANTS_HEXES = ["#263246", "#3a352f", "#1f2733"] as const;
+const waverJerseyMats = WAVER_JERSEY_HEXES.map((color) => material.fabric({ color, roughness: 0.74, sheen: 0.4 }));
+const waverCapMats = WAVER_JERSEY_HEXES.map((color) => material.clearcoatPaint({ color, roughness: 0.28, clearcoat: 0.72 }));
+const waverPantsMats = WAVER_PANTS_HEXES.map((color) => material.fabric({ color, roughness: 0.82, sheen: 0.22 }));
+
+let cachedWaverSpecs:
+  | {
+      readonly legsShoes: AuraCustomGeometrySpec;
+      readonly torso: AuraCustomGeometrySpec;
+      readonly headSkin: AuraCustomGeometrySpec;
+      readonly cap: AuraCustomGeometrySpec;
+      readonly armL: AuraCustomGeometrySpec;
+      readonly armR: AuraCustomGeometrySpec;
+    }
+  | undefined;
+
+function getWaverPartSpecs() {
+  if (cachedWaverSpecs) return cachedWaverSpecs;
+  const legL = place(cyl(0.062, 0.082, 0.84, 10), [0.11, 0.5, 0]);
+  const legR = place(cyl(0.062, 0.082, 0.84, 10), [-0.11, 0.5, 0]);
+  const shoeL = place(box(0.11, 0.09, 0.25, 0.02), [0.11, 0.045, 0.04]);
+  const shoeR = place(box(0.11, 0.09, 0.25, 0.02), [-0.11, 0.045, 0.04]);
+  const pelvis = loftSectionsMesh(
+    [
+      ellipseRing(0, 0.86, 0, 0.165, 0.11, 12),
+      ellipseRing(0, 0.98, 0, 0.16, 0.108, 12)
+    ],
+    true
+  );
+  const legsShoes = rawToSpec(combineRaw([legL, legR, shoeL, shoeR, pelvis]));
+
+  const torsoLoft = loftSectionsMesh(
+    [
+      ellipseRing(0, 0.97, 0, 0.162, 0.112, 14),
+      ellipseRing(0, 1.24, 0.01, 0.195, 0.128, 14),
+      ellipseRing(0, 1.46, 0, 0.21, 0.125, 14),
+      ellipseRing(0, 1.54, 0, 0.08, 0.075, 14)
+    ],
+    true
+  );
+  const torso = rawToSpec(torsoLoft);
+
+  const neckHead = combineRaw([
+    place(cyl(0.055, 0.052, 0.1, 10), [0, 1.57, 0]),
+    place(icosphereFacetMesh(0.105, 2, 0.002, 7), [0, 1.69, 0.01], undefined, [0.94, 1.06, 0.98])
+  ]);
+  const headSkin = rawToSpec(neckHead);
+  const cap = rawToSpec(
+    combineRaw([
+      place(latheMesh([[0.106, 0], [0.108, 0.04], [0.085, 0.082], [0, 0.095]], 14), [0, 1.71, 0.008]),
+      place(box(0.15, 0.012, 0.11, 0.004), [0, 1.72, 0.11], [0.14, 0, 0])
+    ])
+  );
+
+  const buildArm = (sx: number) =>
+    rawToSpec(
+      combineRaw([
+        icosphereFacetMesh(0.054, 1, 0, 3),
+        kernelTubeSweepMesh(
+          [
+            [0, 0, 0, 0.052],
+            [sx * 0.05, -0.24, 0.04, 0.044],
+            [sx * 0.03, -0.44, 0.18, 0.035]
+          ],
+          10,
+          true
+        ),
+        place(icosphereFacetMesh(0.04, 1, 0, 5), [sx * 0.03, -0.47, 0.2])
+      ])
+    );
+
+  cachedWaverSpecs = {
+    legsShoes,
+    torso,
+    headSkin,
+    cap,
+    armL: buildArm(1),
+    armR: buildArm(-1)
+  };
+  return cachedWaverSpecs;
+}
+
+export function buildArticulatedBallparkWaverNode(index: number, pos: V3, yaw: number) {
+  const specs = getWaverPartSpecs();
+  const jerseyMat = waverJerseyMats[index % waverJerseyMats.length]!;
+  const capMat = waverCapMats[(index + 2) % waverCapMats.length]!;
+  const pantsMat = waverPantsMats[index % waverPantsMats.length]!;
+  const skinMat = skinMatsCache[index % skinMatsCache.length]!;
+
+  const armL = groups
+    .create(
+      `waver-${index}-arm-l`,
+      [geometry.custom(specs.armL, { name: `waver-${index}-arm-l-mesh`, material: jerseyMat, castShadow: true })],
+      { position: [0.21, 1.44, 0] }
+    )
+    .runtime(game.runtimeNode(`waver-${index}-arm-l`));
+
+  const armR = groups
+    .create(
+      `waver-${index}-arm-r`,
+      [geometry.custom(specs.armR, { name: `waver-${index}-arm-r-mesh`, material: jerseyMat, castShadow: true })],
+      { position: [-0.21, 1.44, 0] }
+    )
+    .runtime(game.runtimeNode(`waver-${index}-arm-r`));
+
+  return groups
+    .create(
+      `waver-${index}`,
+      [
+        geometry.custom(specs.legsShoes, { name: `waver-${index}-legs`, material: pantsMat, castShadow: true }),
+        geometry.custom(specs.torso, { name: `waver-${index}-torso`, material: jerseyMat, castShadow: true }),
+        geometry.custom(specs.headSkin, { name: `waver-${index}-head`, material: skinMat, castShadow: true }),
+        geometry.custom(specs.cap, { name: `waver-${index}-cap`, material: capMat, castShadow: false }),
+        armL,
+        armR
+      ],
+      { position: pos, rotation: [0, yaw, 0] }
+    )
+    .runtime(game.runtimeNode(`waver-${index}`));
+}
+
+export function poseArticulatedBallparkWaver(
+  armLHandle: { setRotation(x: number, y: number, z: number): unknown } | null | undefined,
+  armRHandle: { setRotation(x: number, y: number, z: number): unknown } | null | undefined,
+  index: number,
+  timeSec: number,
+  hopHeight: number,
+  reducedMotion = false
+): void {
+  if (reducedMotion) {
+    armLHandle?.setRotation(-0.35, 0, 0.14);
+    armRHandle?.setRotation(-0.42, 0, -0.14);
+    return;
+  }
+  const cheering = hopHeight > 0.005;
+  const phase = timeSec * (cheering ? 7.5 : 2.1) + index * 1.37;
+  if (cheering) {
+    armLHandle?.setRotation(-2.45 + Math.sin(phase) * 0.28, 0, 0.25 + Math.cos(phase) * 0.16);
+    armRHandle?.setRotation(-2.5 + Math.cos(phase) * 0.28, 0, -0.25 - Math.sin(phase) * 0.16);
+  } else {
+    const idleRaise = index % 3 === 0 ? -0.78 : -0.36;
+    armLHandle?.setRotation(-0.34 + Math.sin(phase) * 0.08, 0, 0.14);
+    armRHandle?.setRotation(idleRaise + Math.cos(phase * 1.15) * 0.14, 0, -0.16);
+  }
 }

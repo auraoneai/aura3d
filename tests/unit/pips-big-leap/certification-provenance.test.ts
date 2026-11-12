@@ -29,7 +29,7 @@ describe("pips-big-leap certification provenance", () => {
       claimStatus: { allowed: string[]; notAllowed: string[] };
     };
     expect(health.primaryAssets.some((asset) => asset.role === "primaryWorld")).toBe(false);
-    expect(health.primaryAssets.find((asset) => asset.typedRef === `assets.${assets.sidekick.id}`)?.hash).toBe(assets.sidekick.hash);
+    expect(health.primaryAssets).toEqual([]);
     expect(health.claimStatus.allowed.join(" ")).not.toMatch(/certified surface/i);
     expect(health.claimStatus.notAllowed.join(" ")).toMatch(/certified asset-bound world surfaces/i);
   });
@@ -41,9 +41,9 @@ describe("pips-big-leap certification provenance", () => {
       for (const look of ["diorama", "original"] as const) {
         const built = buildWorld(spec, { look });
         const scene = JSON.stringify(built.scene.toJSON());
-        expect(scene, `${id} ${look} hero`).toContain(assets.pip.url);
-        // invariant: source must not reintroduce `<backdrop url>` in the built world — Pips keeps the uncertified backdrop unmounted so route health never claims it
-        expect(scene, `${id} ${look} backdrop`).not.toContain(backdrop.url);
+        expect(scene, `${id} ${look} hero`).toContain('"name":"pip:torso"');
+        // invariant: source must not reintroduce `<backdrop id>` in the built world — Pips keeps the uncertified backdrop unmounted so route health never claims it
+        expect(scene, `${id} ${look} backdrop`).not.toContain(backdrop.id);
 
         const cert = certifyWorld(spec, built.motion);
         expect(cert.ok, `${id} ${look}`).toBe(false);

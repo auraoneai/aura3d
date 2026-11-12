@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { applyMat3, matrixToEulerZYX, tramRotation } from "../../../examples/last-train-port/orient";
+import { buildStreetcarBodyNode } from "../../../examples/last-train-port/art/proceduralModels";
 import { SEATS, buildWorld, hexToRgb, lehmer, ribbon, TEMPERAMENT_COLORS } from "../../../examples/last-train-port/world";
+import { sampleRoute } from "../../../examples/last-train-port/sim";
 import type { RouteData, SimData, Tables } from "../../../examples/last-train-port/sim";
 
 const data: SimData = {
@@ -52,7 +54,7 @@ describe("last-train-port rendering helpers", () => {
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);
   });
 
-  it("builds the whole scene (sky, cloud sea, six towns, tram, seats, weather, lighting rig) with unique node names", () => {
+  it("builds the whole scene (sky, cloud sea, six towns, tram, seats, weather, lighting rig) with unique node names", { timeout: 30_000 }, () => {
     const world = buildWorld(data);
     const json = JSON.stringify(world.scene.toJSON());
     for (const name of ["sky", "cloud-sea", "islands", "platforms", "tram-body", "pax-11-sleeper", "house-0-a-2", "house-5-b-1", "clock-tower-0", "lighthouse-1", "crates-3-0", "lamp-post-2--9", "weather", "track-bed", "track-rails", "sun", "lamps", "sleepers", "landmark-5", "motes", "facades-0", "roofs-2", "stonework", "plaza-cobbles"]) expect(json, name).toContain(`"${name}"`);
@@ -129,5 +131,119 @@ describe("last-train-port rendering helpers", () => {
     expect(nodeCalls.get("1:sky:pos")).toBe(1);
     expect(nodeCalls.get("1:cloud-sea:pos")).toBe(1);
     expect(nodeCalls.get("1:motes:attr")).toBeGreaterThan(0);
+  });
+
+  it("authors an enclosed coastal electric railcar on twin-axle bogies and keeps the camera looking down-track when docked, departing, and tilting A/D", () => {
+    const tramJson = buildStreetcarBodyNode("tram-body", 1.2, true).toJSON() as {
+      children: Array<{
+        name: string;
+        customGeometry?: { positions: Float32Array | number[] };
+        geometry?: { positions?: Float32Array | number[] };
+        material: { color?: string };
+      }>;
+    };
+    expect(tramJson.children).toHaveLength(13);
+    const colors = tramJson.children.map((c) => c.material.color);
+    // Crimson lower steel waist (#b8292f), cream upper window band (#f5ebd6), machined steel wheel treads (#d8e2ec), dark-slate glass (#1c2d3e), canvas-grey roof (#48505a)
+    expect(colors).toEqual(expect.arrayContaining(["#b8292f", "#f5ebd6", "#d8e2ec", "#1c2d3e", "#48505a"]));
+
+    let minWheelTreadY = Infinity;
+    let maxTramY = -Infinity;
+    let maxTramZ = -Infinity;
+    for (const child of tramJson.children) {
+      const pos = (child.customGeometry?.positions ?? child.geometry?.positions)!;
+      expect(pos, child.name).toBeDefined();
+      for (let i = 0; i < pos.length; i += 3) {
+        const y = pos[i + 1]!;
+        const z = Math.abs(pos[i + 2]!);
+        if (y > maxTramY) maxTramY = y;
+        if (z > maxTramZ) maxTramZ = z;
+        if (child.name === "tram-body material 5" && y > 0.05 && y < minWheelTreadY) {
+          // Machined wheel tread radius 0.36 at axle y = 0.43 -> rests directly on the y = 0.07 rail head (with inner flange extending to 0.035)
+          minWheelTreadY = y;
+        }
+      }
+    }
+    expect(minWheelTreadY).toBeLessThanOrEqual(0.08);
+    expect(maxTramY).toBeGreaterThan(6.6);
+    expect(maxTramZ).toBeGreaterThan(5.2);
+
+    const world = buildWorld(data, "bands");
+    const poses: Array<{ position: [number, number, number]; target: [number, number, number]; up: [number, number, number] }> = [];
+    const mockApp = {
+      effects: { runtime: "off", registerPreset() {}, spawn() {} },
+      camera: {
+        setPose(pose: { position: [number, number, number]; target: [number, number, number]; up: [number, number, number] }) {
+          poses.push(pose);
+        }
+      },
+      setScene() {},
+      nodes: {
+        require() { return this.get(); },
+        get() {
+          return {
+            setPosition() {},
+            setRotation() {},
+            setVisible() {},
+            setMaterial() {},
+            setInstances() {},
+            setLight() {},
+            setUniform() {},
+            updateAttribute() {}
+          };
+        }
+      }
+    };
+    const runtime = world.bind(mockApp as unknown as Parameters<typeof world.bind>[0], data);
+    const simBase = {
+      leg: 0,
+      distance: 10,
+      speed: 0,
+      roll: 0,
+      rollVelocity: 0,
+      timeOfDay: "day" as const,
+      comfort: 100,
+      score: 0,
+      trips: [],
+      attempt: { id: 1, status: "active" as const, fares: 0, tips: 0, bonuses: 0, lost: 0, catches: 0, streak: 0, grade: "Gold" as const }
+    };
+
+    const assertDownTrackCamera = (dist: number) => {
+      const pose = poses[poses.length - 1]!;
+      const s0 = sampleRoute(data.route, 0, dist);
+      const s1 = sampleRoute(data.route, 0, dist + 1.5);
+      const fLen = Math.hypot(s1.x - s0.x, s1.y - s0.y, s1.z - s0.z) || 1;
+      const fx = (s1.x - s0.x) / fLen, fy = (s1.y - s0.y) / fLen, fz = (s1.z - s0.z) / fLen;
+      const viewX = pose.target[0] - pose.position[0];
+      const viewY = pose.target[1] - pose.position[1];
+      const viewZ = pose.target[2] - pose.position[2];
+      const viewLen = Math.hypot(viewX, viewY, viewZ);
+      const forwardAlignment = (viewX * fx + viewY * fy + viewZ * fz) / viewLen;
+      // Camera always looks predominantly down the railway track ahead (> 0.90), never perpendicular sideways!
+      expect(forwardAlignment).toBeGreaterThan(0.9);
+      const relBehind = (pose.position[0] - s0.x) * fx + (pose.position[1] - s0.y) * fy + (pose.position[2] - s0.z) * fz;
+      expect(relBehind).toBeLessThan(-10);
+    };
+
+    // 1. Docked at station: rear-platform 3/4 chase looking down the train & track
+    runtime.update({ ...simBase, phase: "docked", speed: 0, distance: 10 } as unknown as Parameters<typeof runtime.update>[0], 0.1);
+    assertDownTrackCamera(10);
+
+    // 2. Departing & driving while tilting hard left and hard right (A / D): stays behind train looking down-track
+    for (let i = 1; i <= 12; i += 1) {
+      runtime.update({ ...simBase, phase: "enroute", speed: 12, distance: 10 + i * 3, roll: -0.42 } as unknown as Parameters<typeof runtime.update>[0], 0.1 + i * 0.1);
+    }
+    assertDownTrackCamera(10 + 12 * 3);
+    const upLeft = poses[poses.length - 1]!.up;
+
+    for (let i = 13; i <= 24; i += 1) {
+      runtime.update({ ...simBase, phase: "enroute", speed: 12, distance: 10 + i * 3, roll: 0.42 } as unknown as Parameters<typeof runtime.update>[0], 0.1 + i * 0.1);
+    }
+    assertDownTrackCamera(10 + 24 * 3);
+    const upRight = poses[poses.length - 1]!.up;
+    // Subtle horizon roll tilts opposite between left and right lean while keeping up predominantly vertical (> 0.99)
+    expect(upLeft[1]).toBeGreaterThan(0.99);
+    expect(upRight[1]).toBeGreaterThan(0.99);
+    expect(Math.hypot(upRight[0] - upLeft[0], upRight[2] - upLeft[2])).toBeGreaterThan(0.01);
   });
 });

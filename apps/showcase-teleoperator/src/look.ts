@@ -58,12 +58,12 @@ export interface SkyLook {
   readonly key: { readonly color: string; readonly intensity: number };
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
   /**
-   * Engine height fog (GD-05): distance haze that keeps the near street clear (the fog sky stays under 0.3 at 40 m).
-   * `heightFalloff` is 0 on purpose: the forward fog (legacy approximation, `packLegacy`) only thins fog above
-   * `heightReference`, i.e. a ground fog, so it cannot put the marine layer aloft. The deck aloft is the `marine` row,
-   * drawn by the sensor pass; `heightReference` records the deck base (handoff to E-B: an aloft layer in the engine fog).
+   * Engine linear distance fog (GD-05): crisp distance haze (`near >= 150, far >= 520, maxOpacity <= 0.28`)
+   * with zero `heightDensity` wash so the foreground and midground avenue stay 100% clear.
+   * The aloft marine layer eating skyscraper tops above `marine.base` is drawn separately by `scanPulse.ts`.
    */
   readonly fog: {
+    readonly mode: "linear";
     readonly color: string;
     readonly near: number;
     readonly far: number;
@@ -120,8 +120,8 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 9, azimuthDeg: 145, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
     key: { color: "#ffb070", intensity: 5.5 },
     hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.22 },
-    // Far-pushed distance fog (`near >= 70, far >= 280`) keeps Victorian & commercial street facades crystal clear.
-    fog: { color: MARINE_FOG, near: 76, far: 300, density: 0.0033, heightDensity: 0.0022, heightFalloff: 0, heightReference: 28, start: 76, maxOpacity: 0.74, sunInscatter: 0.05 },
+    // Crisp linear distance fog (`near: 150, far: 520, maxOpacity <= 0.28`) eliminates uniform 0m height-fog wash.
+    fog: { mode: "linear", color: MARINE_FOG, near: 150, far: 520, density: 0, heightDensity: 0, heightFalloff: 0, heightReference: 28, start: 150, maxOpacity: 0.24, sunInscatter: 0.03 },
     marine: { base: 30, top: 48, color: "#4d6672", opacity: 0.84, reach: 260 },
     output: { toneMapping: "agx", fallback: "aces", exposure: 1.24 },
     bloom: { intensity: 0.28, threshold: 0.84, radius: 0.45 },
@@ -141,7 +141,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 62, azimuthDeg: 215, color: "#fff4e2", intensity: 1, discSize: 0.03 },
     key: { color: "#fff4e2", intensity: 7.5 },
     hemisphere: { sky: "#9cc8ec", ground: "#3a3f46", intensity: 0.22 },
-    fog: { color: "#7ca2c4", near: 96, far: 360, density: 0.0005, heightDensity: 0.0003, heightFalloff: 0, heightReference: 72, start: 96, maxOpacity: 0.28, sunInscatter: 0.03 },
+    fog: { mode: "linear", color: "#7ca2c4", near: 175, far: 560, density: 0, heightDensity: 0, heightFalloff: 0, heightReference: 72, start: 175, maxOpacity: 0.14, sunInscatter: 0.02 },
     marine: { base: 72, top: 112, color: "#9ebcd2", opacity: 0.22, reach: 340 },
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.14 },
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
@@ -162,7 +162,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
-    fog: { color: "#8fa2ae", near: 72, far: 285, density: 0.0074, heightDensity: 0.0026, heightFalloff: 0, heightReference: 12, start: 72, maxOpacity: 0.88, sunInscatter: 0.04 },
+    fog: { mode: "linear", color: "#8fa2ae", near: 150, far: 520, density: 0, heightDensity: 0, heightFalloff: 0, heightReference: 12, start: 150, maxOpacity: 0.28, sunInscatter: 0.03 },
     marine: { base: 12, top: 26, color: "#6c8794", opacity: 0.94, reach: 200 },
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.08 },
     bloom: { intensity: 0.1, threshold: 0.9, radius: 0.4 },
@@ -186,7 +186,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 40, azimuthDeg: 210, color: "#9db4e0", intensity: 0.4, discSize: 0.02 },
     key: { color: "#9db4e0", intensity: 0.25 },
     hemisphere: { sky: "#22324a", ground: "#3a2a1c", intensity: 0.3 },
-    fog: { color: "#283440", near: 84, far: 330, density: 0.0013, heightDensity: 0.0008, heightFalloff: 0, heightReference: 36, start: 84, maxOpacity: 0.48, sunInscatter: 0 },
+    fog: { mode: "linear", color: "#283440", near: 160, far: 540, density: 0, heightDensity: 0, heightFalloff: 0, heightReference: 36, start: 160, maxOpacity: 0.2, sunInscatter: 0 },
     marine: { base: 36, top: 60, color: "#3d3833", opacity: 0.55, reach: 240 },
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.16 },
     bloom: { intensity: 0.55, threshold: 0.72, radius: 0.55 },
@@ -220,12 +220,13 @@ export function keyLightPosition(look: SkyLook, distance = 140): [number, number
 }
 
 /**
- * CPU mirror of the engine fog this row asks for (`HeightFog.ts` `heightFogTau` with b = 0): the opacity of the haze
- * between the camera and a point `distance` metres away. Used by the tests for "clear lane lines at 40 m".
+ * CPU mirror of the engine linear distance fog (`look.fog.mode === "linear"`): haze opacity between the camera and a
+ * point `distance` metres away (`0` inside `near`, linearly ramping to `maxOpacity` at `far`).
  */
 export function hazeAt(look: SkyLook, distance: number): number {
-  const d = Math.max(0, distance - look.fog.start);
-  return Math.min(look.fog.maxOpacity, 1 - Math.exp(-(look.fog.density + look.fog.heightDensity) * d));
+  const span = Math.max(1, look.fog.far - look.fog.near);
+  const t = Math.max(0, Math.min(1, (distance - look.fog.near) / span));
+  return t * look.fog.maxOpacity;
 }
 
 /** GD-01: one shadowed key on every sky, 2048 map, 3 cascades, PCSS. */

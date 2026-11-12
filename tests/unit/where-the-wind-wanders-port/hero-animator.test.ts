@@ -1,11 +1,11 @@
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { AuraApp } from "@aura3d/engine";
 import { createFootSlideMeter } from "@aura3d/engine/game";
 import { createHeroAnimator } from "../../../examples/where-the-wind-wanders-port/models";
+import { BELLKEEPER_JOINT_IDS } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
 import { CLIP_SECONDS, STRIDE_SPEED } from "../../../examples/where-the-wind-wanders-port/locomotion";
 import { WALK_SPEED } from "../../../examples/where-the-wind-wanders-port/sim";
-import { glbStride } from "./glb-stride";
+import { proceduralHeroStride } from "./glb-stride";
 
 interface Call { clip: string; loop?: boolean; speed?: number; captureTime?: number; metadata?: { playbackId?: string } }
 function fakeApp(calls: Call[]): AuraApp {
@@ -47,7 +47,6 @@ describe("hero animator on the library locomotion", () => {
     expect(b.captureTime).toBeCloseTo(a.captureTime!, 6);
   });
   it("loops the clip on the controller and starts a new playback (crossfade) only on a gait change", () => {
-    // the engine controller publishes the clip time as captureTime; a new playbackId is a crossFade
     const { calls } = walk(120, false);
     const played = calls.filter((c) => c.metadata?.playbackId !== undefined);
     expect(played.every((c) => c.loop === true)).toBe(true);
@@ -66,14 +65,44 @@ describe("hero animator on the library locomotion", () => {
     for (let i = 1; i <= 80; i++) anim.update({ x: 50, z: 50, airborne: false, onBoat: true, time: 2 + i * STEP });
     expect(anim.gait).toBe("Idle");
   });
+  it("drives all articulated Bellkeeper child joints with non-cumulative rotations including bell-ring gesture", () => {
+    const joints = new Map<string, { pos: [number, number, number]; rot: [number, number, number] }>();
+    for (const id of BELLKEEPER_JOINT_IDS) {
+      joints.set(id, { pos: [0, 0, 0], rot: [0, 0, 0] });
+    }
+    const app = {
+      nodes: {
+        require: () => ({}),
+        get: (id: string) => {
+          const j = joints.get(id);
+          if (!j) return undefined;
+          return {
+            setPosition(x: number, y: number, z: number) { j.pos = [x, y, z]; return this; },
+            setRotation(x: number, y: number, z: number) { j.rot = [x, y, z]; return this; }
+          };
+        }
+      }
+    } as unknown as AuraApp;
+    const anim = createHeroAnimator(app);
+    anim.reset(0, 0, 0);
+    let z = 0, t = 0;
+    for (let i = 0; i < 60; i++) {
+      z += WALK_SPEED * STEP;
+      t += STEP;
+      anim.update({ x: 0, z, airborne: false, onBoat: false, time: t, gust: 1.4, windTime: t });
+    }
+    expect(joints.get("hero-leg-l")!.rot[0]).not.toBeCloseTo(joints.get("hero-leg-r")!.rot[0], 2);
+    const armWalkPitch = joints.get("hero-arm-r")!.rot[0];
+    anim.update({ x: 0, z, airborne: false, onBoat: false, time: t + STEP, bellRing: 0.5, gust: 1.4, windTime: t + STEP });
+    expect(joints.get("hero-arm-r")!.rot[0]).toBeLessThan(armWalkPitch - 0.3);
+  });
 });
 
-describe("planted-foot slide on the real rig (library foot-slide meter)", () => {
-  const rig = glbStride(resolve("examples/where-the-wind-wanders-port/assets/models/hero.glb"));
+describe("planted-foot slide on the procedural Bellkeeper rig (library foot-slide meter)", () => {
+  const rig = proceduralHeroStride();
   const scale = 2.9 / rig.meshHeight;
   const ground = Math.min(...Array.from({ length: 60 }, (_, k) => { const f = rig.footAt("Walk", (k / 60) * CLIP_SECONDS.Walk); return Math.min(f.toeLeft[1], f.toeRight[1]); })) * scale;
 
-  // the stance foot moves opposite to travel, which fixes which model axis is "forward"
   const forwardSign = (() => {
     const N = 120; const pts = Array.from({ length: N + 1 }, (_, k) => rig.footAt("Walk", (k / N) * CLIP_SECONDS.Walk).toeLeft);
     const ys = pts.map((p) => p[1]); const thr = Math.min(...ys) + 0.25 * (Math.max(...ys) - Math.min(...ys));
@@ -82,8 +111,6 @@ describe("planted-foot slide on the real rig (library foot-slide meter)", () => 
   })();
   const worldAt = (p: [number, number, number], z: number): [number, number, number] => [p[0] * scale, p[1] * scale, forwardSign * p[2] * scale + z];
 
-  // The authored Walk clip skates a little on its own (toe contact drifts about 0.2 to 0.35 u/s mean and 0.5 to 0.65 p95 even at the matched
-  // rate), so this checks what the rate sync guarantees: planted toes drift under 15% of ground speed on average and legs step.
   it("keeps both planted toes within 15% of ground speed on average across a 3 second walk, and the legs step", () => {
     const { track } = walk(180, false);
     const left = createFootSlideMeter({ plantedHeight: 0.04 }), right = createFootSlideMeter({ plantedHeight: 0.04 });

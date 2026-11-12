@@ -344,7 +344,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   }
 
   /* WP-23: deep cosmic dark-indigo #0b0d1c linear fog (near >= 90, far >= 340) on twilight; original keeps exact 3-effect stack */
-  if (look.wake.enabled) b.add(effects.fog({ name: "haze", mode: "linear", color: look.fog.hex, near: look.fog.near, far: look.fog.far, maxOpacity: 0.84 }));
+  if (look.wake.enabled) b.add(effects.fog({ name: "haze", mode: "linear", color: look.fog.hex, near: look.fog.near, far: look.fog.far, maxOpacity: 0.28, affectsBackground: false }));
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
   b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   /* IC-09: the twilight row adds the E-C split tone; the original row authors exactly today's three fields */

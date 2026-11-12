@@ -27,7 +27,7 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   ALL_FAR_PIECES, ammoGullLook, barrelNodeId, bladeNodeId, blastNodeId, blockLook, blockNodeId, buildScene,
   cliffRockMaterial, crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
-  plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SLING_IDS,
+  plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SIEGE_DOF_NODE, SLING_IDS,
   SOLID_BLOCK_MATERIALS, solidBlockMaterial
 } from "./game/stage";
 import { BlockInstancePool, PropInstancePool } from "./game/blockInstances";
@@ -99,11 +99,22 @@ const loading = createLoadingProgress({
 /** Visible bar while the stage mounts: real milestones plus an eased creep (capped below 0.9) so the bar moves during the GLB fetch. */
 loading.set(0.08, "boot");
 const loadingCreep = window.setInterval(() => { loading.set(Math.min(0.9, loading.fraction + (0.9 - loading.fraction) * 0.06)); }, 120);
+const runtimeOutputPreset = (post: ReturnType<typeof chapterLook>["post"]) =>
+  post === "cinematic-film" ? "daylight-outdoor" : post;
+
+function stripGameplayDof<T extends { toJSON?: () => unknown }>(builtScene: T): T {
+  if (typeof builtScene.toJSON !== "function") return builtScene;
+  const snap = builtScene.toJSON() as { nodes?: readonly { name?: string }[] } & Record<string, unknown>;
+  if (!Array.isArray(snap.nodes)) return builtScene;
+  const filtered = { ...snap, nodes: snap.nodes.filter((n) => n.name !== SIEGE_DOF_NODE) };
+  return filtered as unknown as T;
+}
+
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
   output: {
-    preset: chapterLook(chapter.id).post,
+    preset: runtimeOutputPreset(chapterLook(chapter.id).post),
     toneMapping: "agx",
     exposure: 1.04,
     dither: true,
@@ -125,7 +136,7 @@ const gameApp = createGameApp("#app", {
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
   scene: ORIGINAL_LOOK
     ? buildSceneOriginal(chapter.id, { reducedMotion: REDUCED, ambientOcclusion: AO })
-    : buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
+    : stripGameplayDof(buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES }))
 });
 const app = gameApp.app;
 const input = gameApp.input;
@@ -481,6 +492,14 @@ function syncChapterAtmosphere(chapterId: number): void {
     );
   } catch { /* presentation only */ }
   try {
+    app.setOutput?.({
+      preset: runtimeOutputPreset(row.post),
+      toneMapping: "agx",
+      exposure: 1.04,
+      dither: true,
+      ...(LAB.output ?? {})
+    });
+    app.post?.setEffect("depthOfField", { enabled: false, maxBlur: 0 });
     app.post?.setEffect("bloom", { threshold: row.bloom.threshold, intensity: row.bloom.intensity });
     app.post?.setEffect("vignette", { intensity: row.vignette });
     app.post?.setEffect("colorGrade", {
@@ -1307,7 +1326,7 @@ function updateMiniatureFocus(): void {
   // The 4.6.2 look has no tilt-shift node: never add one.
   if (!ORIGINAL_LOOK && bandChanged(lastBand, band)) {
     lastBand = band;
-    try { app.post?.setEffect("depthOfField", { tiltShift: [band.bandCenter, band.bandWidth, 0] }); } catch { /* post is presentation only */ }
+    try { app.post?.setEffect("depthOfField", { enabled: false, maxBlur: 0 }); } catch { /* post is presentation only */ }
   }
   const crops: QaCrop[] = [];
   const add = (c: QaCrop | null): void => { if (c) crops.push(c); };

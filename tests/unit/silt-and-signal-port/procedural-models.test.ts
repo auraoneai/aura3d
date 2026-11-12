@@ -4,6 +4,7 @@ import {
   DESERT_INST_MAT,
   DESERT_MAT,
   createCourierMaterialOverrides,
+  createDesertSurferRigNode,
   createSandSkiffNode,
   ringGateSpec,
   strataMesaMaterial
@@ -14,16 +15,29 @@ const chapterNodes = (chapter: number, look: "inked" | "original" = "inked"): Js
   (buildWorld(chapter, { look }).scene as unknown as { toJSON(): { nodes: JsonNode[] } }).toJSON().nodes;
 
 describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
-  it("mounts ONLY rigged courier.glb across all 7 chapters and zero static GLBs or instances.model nodes", { timeout: 60_000 }, () => {
+  it("mounts ZERO external GLB model or instances.model nodes across all 7 chapters and uses procedural articulated surfer rig", { timeout: 60_000 }, () => {
     for (let chapter = 0; chapter <= 6; chapter++) {
       for (const look of ["inked", "original"] as const) {
         const list = chapterNodes(chapter, look);
         const modelNodes = list.filter((n) => n.kind === "model");
-        expect(modelNodes.map((n) => n.name), `ch${chapter} ${look}`).toEqual(["rider"]);
-        expect(modelNodes[0]?.asset?.url ?? "").toMatch(/courier\.glb$/);
+        expect(modelNodes, `ch${chapter} ${look} model nodes`).toEqual([]);
         const instancedModels = list.filter((n) => n.kind === "instances" && n.instanceSource === "model");
         expect(instancedModels, `ch${chapter} ${look} instanced models`).toEqual([]);
+        const rider = list.find((n) => n.name === "rider");
+        expect(rider?.runtime?.id, `ch${chapter} ${look} rider runtime id`).toBe("rider");
       }
+    }
+    const surferJson = JSON.stringify(createDesertSurferRigNode({ inked: true }).toJSON());
+    for (const partId of [
+      "rider-pelvis",
+      "rider-torso",
+      "rider-head",
+      "rider-arm-lead",
+      "rider-arm-trail",
+      "rider-scarf",
+      "rider-scarf-tip"
+    ]) {
+      expect(surferJson).toContain(`"id":"${partId}"`);
     }
   });
 

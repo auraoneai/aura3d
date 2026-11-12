@@ -45,7 +45,7 @@ const definitions = {
   sling_seaStackIsland: {
     type: "model",
     format: "glb",
-    url: new URL("../assets/models/sling_seaStackIsland.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_seaStackIsland.glb",
     sha256: "36abc76c91d99c861f9834c84c26be8fd92df1d9f48fd50f81927e2bac2e5160",
     sizeBytes: 1469036,
     bounds: [1.903, 1.506, 1.903],
@@ -54,31 +54,31 @@ const definitions = {
   // GU47 wave 2: far set pieces (see the header).
   sling_lighthouseIslet: {
     type: "model", format: "glb",
-    url: new URL("../assets/models/sling_lighthouseIslet.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_lighthouseIslet.glb",
     sha256: "a731a66bcadc3a133fdac377d9a3597f2f404074dd3a871323bfdb08640b8107", sizeBytes: 983224, bounds: [1.9, 1.26, 1.9],
     metadata: meshyRights("slingLighthouseIslet", "01a1a4d0-b12c-70d8-aff7-44139c4218e6")
   },
   sling_quarryCrane: {
     type: "model", format: "glb",
-    url: new URL("../assets/models/sling_quarryCrane.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_quarryCrane.glb",
     sha256: "4b90d151c6be436fd09ee4b73a37f1ac375123ae814f23a6c2aa4e240e270556", sizeBytes: 1299116, bounds: [1.88, 1.52, 1.03],
     metadata: meshyRights("slingQuarryCrane", "01a1a4d0-f4db-74be-894e-44483fb264b5")
   },
   sling_greenhouseFrame: {
     type: "model", format: "glb",
-    url: new URL("../assets/models/sling_greenhouseFrame.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_greenhouseFrame.glb",
     sha256: "488865a4cbbec34720bf8b2353bc36bf41f8e99eb19ee569aaa0c7ecc76aa791", sizeBytes: 1990200, bounds: [1.64, 1.9, 1.69],
     metadata: meshyRights("slingGreenhouseFrame", "01a1a4d1-588d-76db-bc5e-e7e072bfd0d7")
   },
   sling_curtainWall: {
     type: "model", format: "glb",
-    url: new URL("../assets/models/sling_curtainWall.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_curtainWall.glb",
     sha256: "cebad157ea77ce791cd575c1bc790effc7c2d1054889e021172a062c3d232a74", sizeBytes: 1448180, bounds: [1.9, 1.39, 1.9],
     metadata: meshyRights("slingCurtainWall", "01a1a4d2-1743-733a-b410-c6a8fbbdf593")
   },
   sling_crystalCrater: {
     type: "model", format: "glb",
-    url: new URL("../assets/models/sling_crystalCrater.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_crystalCrater.glb",
     sha256: "a179006d20fb555d6cbce89d202e651afd1accd68d9281a127fd45e7c620df47", sizeBytes: 1045984, bounds: [1.9, 0.9, 1.64],
     metadata: meshyRights("slingCrystalCrater", "01a1a4d2-9c25-75f5-9c4b-745cae90eab4")
   },
@@ -87,7 +87,7 @@ const definitions = {
   sling_islandTrees: {
     type: "model",
     format: "glb",
-    url: new URL("../assets/models/sling_islandTrees.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_islandTrees.glb",
     sha256: "bd8d86f8f584d5ce351fb64ee9ca89d267556ac944ee8fd8e642e087c55eeda9",
     sizeBytes: 6928332,
     bounds: [22.17, 0.3, 6.45],
@@ -96,7 +96,7 @@ const definitions = {
   sling_rocksA: {
     type: "model",
     format: "glb",
-    url: new URL("../assets/models/sling_rocksA.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_rocksA.glb",
     sha256: "cc22f8e4a553d39fb5eb083e0366180779faaf4900b3fff030ed00579859b5df",
     sizeBytes: 9332024,
     bounds: [29.29, 6.49, 16.24],
@@ -105,7 +105,7 @@ const definitions = {
   sling_rocksB: {
     type: "model",
     format: "glb",
-    url: new URL("../assets/models/sling_rocksB.glb", import.meta.url).pathname,
+    url: "/assets/models/sling_rocksB.glb",
     sha256: "1dd9191210d3671040bebb6a7482034619d570d5044a43e18f4bf330acc94908",
     sizeBytes: 3699828,
     bounds: [32.05, 2.56, 6.49],

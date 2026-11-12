@@ -23,11 +23,9 @@ import { seededRandom } from "./rng";
 import type { Frame, Track } from "./track";
 
 type NodeB = ProceduralNodeBuilder;
-const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
-const glb = (name: string): string => new URL(`./assets/models/${name}.glb`, import.meta.url).pathname;
-const entry = (name: string, sha256: string) => ({ url: glb(name), sha256 });
-const liteGlb = (name: string): string => new URL(`./assets/models-lite/${name}.glb`, import.meta.url).pathname;
-const lite = (name: string, sha256: string) => ({ url: liteGlb(name), sha256 });
+const LICENSE = "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)";
+const entry = (name: string, sha256: string) => ({ url: `/procedural/heatsink/models/${name}`, sha256 });
+const lite = (name: string, sha256: string) => ({ url: `/procedural/heatsink/models-lite/${name}`, sha256 });
 
 export const MODELS = defineModelAssets({
   drone: entry("drone2", "sha256-52931d5e54b29b4ca8a26e8ec9a8bc41cbef11c61d149c58d02aec1850af8c41"),

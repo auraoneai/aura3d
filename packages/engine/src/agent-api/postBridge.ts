@@ -459,7 +459,7 @@ export function collectExposureSection(app: AuraApp): ExposureSectionReport {
     operator: toneMapping === false ? "off" : (toneMappingOptions?.operator ?? (submitted ? "aces" : null)),
     whitePoint: toneMappingOptions?.whitePoint ?? null,
     inputColorSpace: toneMappingOptions?.inputColorSpace ?? null,
-    outputColorSpace: toneMappingOptions?.outputColorSpace ?? null,
+    outputColorSpace: toneMappingOptions?.outputColorSpace ?? (submitted?.options.pipeline as PostPipelineOptions | undefined)?.outputColorSpace ?? null,
     authoredGradeExposure: submitted?.authored.colorGradeExposure ?? null,
     outputExposureAuthored: typeof authoredContext?.output?.exposure === "number" ? authoredContext.output.exposure : null,
     source: "agent-api/postBridge.ts"

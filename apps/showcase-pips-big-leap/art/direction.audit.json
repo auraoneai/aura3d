@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "f4577df53616541ffd3a1debadd668e6a111985d883f92cda58521c443c4a068",
+  "sourceSha256": "63e5dd9258b40e86c52b1ce19add22bc4ed824ff137af7024b186cdaa7f54dda",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -44,15 +44,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -592,6 +584,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -646,15 +758,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -1254,6 +1358,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -1308,15 +1532,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "node": "water:pond:caustics",
@@ -1868,6 +2084,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -1922,15 +2258,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -2495,6 +2823,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -2569,15 +3017,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -3160,6 +3600,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -3229,22 +3789,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsBrambleback",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -3784,7 +4329,208 @@
             "practical": true
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "brambleback:body material 0",
+            "practical": false
+          },
+          {
+            "name": "brambleback plum carapace",
+            "node": "brambleback:body material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "brambleback:body material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "brambleback:body material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "brambleback:body material 4",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "brambleback:body material 5",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "brambleback:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "brambleback:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "brambleback:arm-l material 2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "brambleback:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "brambleback:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "brambleback:arm-r material 2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "brambleback:leg-l material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "brambleback:leg-l material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "brambleback:leg-r material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "brambleback:leg-r material 1",
             "practical": false
           },
           {
@@ -3913,15 +4659,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "pipsPip",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "name": "island turf lip",
@@ -4463,6 +5201,126 @@
             "practical": false
           },
           {
+            "name": "pip moss tunic",
+            "node": "pip:torso material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:torso material 1",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:torso material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pip:torso material 3",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:head material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:head material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pip:head material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pip:head material 3",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pip:head material 4",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pip:head material 5",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:ear-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:ear-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-l material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip moss tunic",
+            "node": "pip:arm-r material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:arm-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-l material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-l material 1",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:foot-r material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "pip:foot-r material 1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland russet",
+            "node": "pip:tail material 0",
+            "practical": false
+          },
+          {
+            "name": "pip birch cream fur",
+            "node": "pip:tail material 1",
+            "practical": false
+          },
+          {
             "node": "pip:cape",
             "practical": false
           },
@@ -4557,57 +5415,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "pipsPip",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Quick_Walk",
-            "RunFast",
-            "Regular_Jump",
-            "Dead",
-            "Victory_Cheer"
-          ]
-        }
-      },
-      {
-        "role": "enemy",
-        "assetKey": "pipsBrambleback",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "Idle",
-            "Quick_Walk",
-            "Attack",
-            "Hit_Reaction",
-            "Dead",
-            "Chest_Pound_Taunt"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "leapBeetleAnim",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "idle"
-          ]
-        }
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "land",

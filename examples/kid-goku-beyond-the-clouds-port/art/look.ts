@@ -70,7 +70,7 @@ export interface CumulusLookRow {
   readonly rim: { readonly color: string; readonly intensity: number; readonly azimuthDeg: number } | null;
   /** Scenery shader light (direction toward the sun, colour, rim tint, hemisphere fill). */
   readonly scenery: { readonly sunDir: Vec3; readonly sunColor: Rgb; readonly rimColor: Rgb; readonly skyFill: Rgb; readonly groundFill: Rgb; readonly receiveShadow: boolean };
-  readonly fog: { readonly color: string; readonly haze: Rgb; readonly density: number; readonly lookScale: number; readonly gorgeHeight: { readonly heightDensity: number; readonly heightFalloff: number; readonly heightReference: number } | null };
+  readonly fog: { readonly mode: "linear"; readonly near: number; readonly far: number; readonly maxOpacity: number; readonly color: string; readonly haze: Rgb; readonly density: number; readonly lookScale: number; readonly gorgeHeight: null };
   readonly sky: CumulusSkyRow;
   readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature?: number; readonly tint?: number; readonly lift?: Rgb; readonly gain?: Rgb };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
@@ -105,7 +105,7 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     hemisphere: null,
     rim: { color: CUMULUS_PALETTE.rim, intensity: 0.8, azimuthDeg: STORM_SUN.azimuthDeg + 180 },
     scenery: { sunDir: STORM_DIR, sunColor: [1.0, 0.86, 0.68], rimColor: lin(0.62, 0.78, 1.0), skyFill: lin(0.5, 0.62, 0.8), groundFill: lin(0.5, 0.4, 0.3), receiveShadow: true },
-    fog: { color: CUMULUS_PALETTE.haze, haze: linHex(CUMULUS_PALETTE.haze), density: 0.0032, lookScale: 1, gorgeHeight: { heightDensity: 0.006, heightFalloff: 0.28, heightReference: -36 } },
+    fog: { mode: "linear", near: 185, far: 620, maxOpacity: 0.22, color: CUMULUS_PALETTE.haze, haze: linHex(CUMULUS_PALETTE.haze), density: 0.00048, lookScale: 0, gorgeHeight: null },
     sky: {
       top: linHex(CUMULUS_PALETTE.cobalt), mid: lin(0.36, 0.6, 0.86), horizon: linHex(CUMULUS_PALETTE.horizon),
       cloudLight: lin(1.0, 0.985, 0.95), cloudShade: lin(0.88, 0.89, 0.93), sunTint: [0.9, 0.62, 0.34],
@@ -133,7 +133,7 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     hemisphere: { sky: "#bcd6f2", ground: "#8a7448", intensity: 0.7 },
     rim: null,
     scenery: { sunDir: [0.46, 0.8, 0.4], sunColor: [1.0, 0.82, 0.58], rimColor: [1.0, 0.86, 0.6], skyFill: lin(0.5, 0.64, 0.84), groundFill: lin(0.5, 0.42, 0.3), receiveShadow: false },
-    fog: { color: "#a8c9e8", haze: lin(0.66, 0.79, 0.91), density: 0.0026, lookScale: 0, gorgeHeight: null },
+    fog: { mode: "linear", near: 185, far: 620, maxOpacity: 0.22, color: "#a8c9e8", haze: lin(0.66, 0.79, 0.91), density: 0.00045, lookScale: 0, gorgeHeight: null },
     sky: {
       top: lin(0.12, 0.38, 0.8), mid: lin(0.3, 0.6, 0.92), horizon: lin(0.78, 0.89, 0.96),
       cloudLight: lin(1.0, 0.98, 0.94), cloudShade: lin(0.62, 0.68, 0.84), sunTint: [0.9, 0.55, 0.22],

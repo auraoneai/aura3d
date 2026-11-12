@@ -69,11 +69,16 @@ describe("CD-03 / CD-04 / CD-07 / CD-08 / CD-10 look nodes", () => {
     expect(hdri.background).toBe(false);
     expect(hdri.rotation).toBeCloseTo((140 * Math.PI) / 180, 6);
   });
-  it("haze #9fb8cf at 0.0032 as height fog pooling in the gorges", () => {
+  it("crisp linear distance fog (#9fb8cf, near >= 150, far >= 520, maxOpacity <= 0.28) with zero milky height-fog washout", () => {
     const fog = nodes.filter((n) => n.kind === "effect" && n.effect === "fog");
     expect(fog).toHaveLength(1);
-    expect(fog[0]).toMatchObject({ name: "look fog", color: "#9fb8cf", density: 0.0032, mode: "height" });
-    expect(fog[0]!.heightDensity).toBeGreaterThan(0);
+    expect(fog[0]).toMatchObject({ name: "look fog", color: "#9fb8cf", mode: "linear" });
+    expect(Number(fog[0]!.near)).toBeGreaterThanOrEqual(150);
+    expect(Number(fog[0]!.far)).toBeGreaterThanOrEqual(520);
+    expect(Number(fog[0]!.maxOpacity)).toBeLessThanOrEqual(0.28);
+    expect(CUMULUS_LOOK[0].fog.gorgeHeight).toBeNull();
+    expect(CUMULUS_LOOK[0].fog.density).toBeLessThanOrEqual(0.0006);
+    expect(nodes.some((n) => n.effect === "depth-of-field" || n.effect === "cinematic-film")).toBe(false);
   });
   it("one grade node after the look merge: temperature +0.08, warm gain, cool lift; one bloom; vignette 0.2", () => {
     const grades = mergeLookColorGrade(nodes as never[]).filter((n: Node) => n.kind === "effect" && n.effect === "color-grade") as Node[];
@@ -91,14 +96,18 @@ describe("CD-03 / CD-04 / CD-07 / CD-08 / CD-10 look nodes", () => {
   });
 });
 
-describe("?look=original keeps today's nodes", () => {
+describe("?look=original keeps today's nodes with crisp linear fog", () => {
   const nodes = flat(CUMULUS_LOOK[1]);
-  it("authored shadow sun at [48, 78, 38], sky-fill hemisphere, look fog off, haze 0.0026, old sky fragment", () => {
+  it("authored shadow sun at [48, 78, 38], sky-fill hemisphere, look fog off, linear haze (near >= 150, far >= 520, maxOpacity <= 0.28), old sky fragment", () => {
     const sun = nodes.find((n) => n.name === "sun")!;
     expect(sun.position).toEqual([48, 78, 38]);
     expect(nodes.some((n) => n.name === "sky-fill")).toBe(true);
     expect(nodes.some((n) => n.name === "look fog")).toBe(false);
-    expect(nodes.find((n) => n.name === "haze")).toMatchObject({ density: 0.0026, color: "#a8c9e8" });
+    const haze = nodes.find((n) => n.name === "haze")!;
+    expect(haze).toMatchObject({ mode: "linear", color: "#a8c9e8" });
+    expect(Number(haze.near)).toBeGreaterThanOrEqual(150);
+    expect(Number(haze.far)).toBeGreaterThanOrEqual(520);
+    expect(Number(haze.maxOpacity)).toBeLessThanOrEqual(0.28);
     expect(nodes.find((n) => n.name === "grade")).toMatchObject({ exposure: 1.02, contrast: 1.07, saturation: 1.16 });
     expect(skySpec(CUMULUS_LOOK[1]).glsl).toMatchObject({ fragment: SKY_FRAGMENT });
     expect(skySpec(CUMULUS_LOOK[0]).glsl).toMatchObject({ fragment: STORM_SKY_FRAGMENT });

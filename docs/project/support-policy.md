@@ -1,13 +1,13 @@
 # Support policy
 
-Version: 5.5.3
+Version: 5.5.4
 
-Current release: Aura3D 5.5.3, the major release carrying the
+Current release: Aura3D 5.5.4, the major release carrying the
 native-capability work ([4.x to 5.0 migration guide](../migration/4-to-5.md)).
 
 This policy applies to the package versions and export maps in a release, not
 just to files present in a source checkout. The current source release line is
-Aura3D **5.5.3**, as recorded in the package manifests and changelog. The latest
+Aura3D **5.5.4**, as recorded in the package manifests and changelog. The latest
 published patch in the current release line is the supported maintenance
 release. Older releases are superseded; update to that patch before reporting
 an issue when practical. The immediately preceding supported release is retained

@@ -124,28 +124,42 @@ describe("grid dispatch GD-04 real sky node per sky", () => {
   });
 });
 
-describe("grid dispatch GD-05 marine haze (engine height fog)", () => {
-  type FogNode = Node & { effect?: string; mode?: string; heightReference?: number; affectsBackground?: boolean };
+describe("grid dispatch GD-05 marine haze (crisp linear distance fog, zero height-fog wash)", () => {
+  type FogNode = Node & { effect?: string; mode?: string; near?: number; far?: number; maxOpacity?: number; affectsBackground?: boolean };
   for (const sky of SKY_ORDER) {
-    it(`${sky}: one height-fog node in the row's colour that also fogs the sky`, () => {
+    it(`${sky}: one crisp linear distance-fog node (near >= 150, far >= 520, maxOpacity <= 0.28, heightDensity 0)`, () => {
       const fogs = (flatNodes(sky) as FogNode[]).filter((n) => n.kind === "effect" && n.effect === "fog");
       expect(fogs).toHaveLength(1);
-      expect(fogs[0]).toMatchObject({ mode: "height", color: SKY_LOOKS[sky].fog.color, heightReference: SKY_LOOKS[sky].fog.heightReference, affectsBackground: true });
+      expect(fogs[0]).toMatchObject({
+        mode: "linear",
+        color: SKY_LOOKS[sky].fog.color,
+        near: SKY_LOOKS[sky].fog.near,
+        far: SKY_LOOKS[sky].fog.far,
+        maxOpacity: SKY_LOOKS[sky].fog.maxOpacity,
+        affectsBackground: false
+      });
+      expect(SKY_LOOKS[sky].fog.near).toBeGreaterThanOrEqual(150);
+      expect(SKY_LOOKS[sky].fog.far).toBeGreaterThanOrEqual(520);
+      expect(SKY_LOOKS[sky].fog.maxOpacity).toBeLessThanOrEqual(0.28);
+      expect(SKY_LOOKS[sky].fog.heightDensity).toBe(0);
     });
   }
 
-  it("marine fog keeps the lane lines at 40 m clear and swallows the bay at 250 m", () => {
-    expect(hazeAt(SKY_LOOKS.fog, 40)).toBeLessThan(0.3);
-    expect(hazeAt(SKY_LOOKS.fog, 250)).toBeGreaterThan(0.8);
+  it("keeps foreground and midground street 100% clear (0 haze <= 150 m) and bounds distant haze <= 0.28", () => {
+    for (const sky of SKY_ORDER) {
+      expect(hazeAt(SKY_LOOKS[sky], 40), `${sky} @ 40m`).toBe(0);
+      expect(hazeAt(SKY_LOOKS[sky], 140), `${sky} @ 140m`).toBe(0);
+      expect(hazeAt(SKY_LOOKS[sky], 600), `${sky} @ 600m`).toBeLessThanOrEqual(0.28);
+    }
     expect(SKY_LOOKS.fog.fog.heightReference).toBe(12);
     expect(SKY_LOOKS.golden.fog.heightReference).toBe(28);
   });
 
-  it("dusk greys the skyline but not the near street; night is the thinnest haze after noon", () => {
-    expect(hazeAt(SKY_LOOKS.golden, 20)).toBeLessThan(0.06);
-    expect(hazeAt(SKY_LOOKS.golden, 250)).toBeGreaterThan(0.6);
-    expect(hazeAt(SKY_LOOKS.night, 250)).toBeLessThan(hazeAt(SKY_LOOKS.golden, 250));
-    expect(hazeAt(SKY_LOOKS.noon, 250)).toBeLessThan(hazeAt(SKY_LOOKS.night, 250));
+  it("orders distant skyline haze: marine fog > dusk > night > noon", () => {
+    expect(hazeAt(SKY_LOOKS.golden, 20)).toBe(0);
+    expect(hazeAt(SKY_LOOKS.fog, 420)).toBeGreaterThan(hazeAt(SKY_LOOKS.golden, 420));
+    expect(hazeAt(SKY_LOOKS.golden, 420)).toBeGreaterThan(hazeAt(SKY_LOOKS.night, 420));
+    expect(hazeAt(SKY_LOOKS.night, 420)).toBeGreaterThan(hazeAt(SKY_LOOKS.noon, 420));
   });
 });
 

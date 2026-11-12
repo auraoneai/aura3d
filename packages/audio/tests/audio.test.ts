@@ -1129,3 +1129,153 @@ test("AudioContextManager defers unlock until running and recovers from iOS inte
   await manager.dispose();
   assert.equal(listeners.size, 0);
 });
+
+test("AudioContextManager configures playback AudioSession, manages AirPlay keepalive bridge, and auto-resumes after interruption", async () => {
+  const prevNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  const prevDocDesc = Object.getOwnPropertyDescriptor(globalThis, "document");
+  const bridgeSymbol = Symbol.for("aura3d.airplayKeepaliveBridge");
+  const prevBridge = Reflect.get(globalThis, bridgeSymbol);
+
+  const audioSession = { type: "ambient" };
+  const attrs = new Map<string, string>();
+  let plays = 0;
+  let pauses = 0;
+  let loads = 0;
+  let appended = 0;
+  let removed = 0;
+  const fakeAudioEl = {
+    loop: false,
+    preload: "",
+    muted: true,
+    volume: 0,
+    hidden: false,
+    disableRemotePlayback: false,
+    style: { display: "" },
+    src: "",
+    setAttribute(name: string, value: string) {
+      attrs.set(name, value);
+    },
+    removeAttribute(name: string) {
+      attrs.delete(name);
+      if (name === "src") this.src = "";
+    },
+    play() {
+      plays += 1;
+      return Promise.resolve();
+    },
+    pause() {
+      pauses += 1;
+    },
+    load() {
+      loads += 1;
+    },
+    remove() {
+      removed += 1;
+    }
+  };
+
+  Object.defineProperty(globalThis, "navigator", {
+    configurable: true,
+    value: { audioSession }
+  });
+  Object.defineProperty(globalThis, "document", {
+    configurable: true,
+    value: {
+      body: {
+        appendChild(node: unknown) {
+          assert.equal(node, fakeAudioEl);
+          appended += 1;
+        }
+      },
+      createElement(tag: string) {
+        assert.equal(tag, "audio");
+        return fakeAudioEl;
+      }
+    }
+  });
+  Reflect.deleteProperty(globalThis, bridgeSymbol);
+
+  try {
+    const listeners = new Set<() => void>();
+    let resumeCalls = 0;
+    let sessionTypeAtCreate = "";
+    const context = {
+      state: "suspended",
+      destination: new MockNode() as unknown as AudioNode,
+      currentTime: 0,
+      addEventListener(_type: "statechange", listener: () => void) {
+        listeners.add(listener);
+      },
+      removeEventListener(_type: "statechange", listener: () => void) {
+        listeners.delete(listener);
+      },
+      async resume() {
+        resumeCalls += 1;
+        this.state = "running";
+        listeners.forEach((cb) => cb());
+      },
+      async suspend() {
+        this.state = "suspended";
+        listeners.forEach((cb) => cb());
+      },
+      async close() {
+        this.state = "closed";
+      },
+      createGain: () => new MockGain() as unknown as GainNode,
+      createBufferSource: () => new MockSource() as unknown as AudioBufferSourceNode,
+      createPanner: () => new MockNode() as unknown as PannerNode,
+      createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
+      createConvolver: () => new MockNode() as unknown as ConvolverNode
+    };
+
+    const manager = new AudioContextManager({
+      createContext: () => {
+        sessionTypeAtCreate = audioSession.type;
+        return context;
+      }
+    });
+    assert.equal(audioSession.type, "playback");
+    await manager.unlock();
+    assert.equal(sessionTypeAtCreate, "playback");
+    assert.equal(audioSession.type, "playback");
+    assert.equal(fakeAudioEl.loop, true);
+    assert.equal(fakeAudioEl.muted, false);
+    assert.equal(fakeAudioEl.disableRemotePlayback, true);
+    assert.equal(fakeAudioEl.hidden, true);
+    assert.equal(fakeAudioEl.style.display, "none");
+    assert.equal(attrs.get("x-webkit-airplay"), "deny");
+    assert.equal(attrs.get("playsinline"), "");
+    assert.equal(appended, 1);
+    assert.ok(fakeAudioEl.src.startsWith("data:audio/wav;base64,"));
+    assert.equal(plays, 1);
+
+    // Simulate iOS interruption followed by suspended -> automatic non-blocking resume -> running.
+    audioSession.type = "ambient";
+    context.state = "interrupted";
+    listeners.forEach((cb) => cb());
+    assert.equal(manager.state, "locked");
+
+    context.state = "suspended";
+    listeners.forEach((cb) => cb());
+    await Promise.resolve();
+    assert.ok(resumeCalls >= 2);
+    assert.equal(manager.state, "running");
+    assert.equal(audioSession.type, "playback");
+    assert.ok(plays >= 2);
+
+    await manager.suspend();
+    assert.equal(pauses, 1);
+
+    await manager.dispose();
+    assert.equal(loads, 1);
+    assert.equal(removed, 1);
+    assert.equal(fakeAudioEl.src, "");
+  } finally {
+    if (prevBridge === undefined) Reflect.deleteProperty(globalThis, bridgeSymbol);
+    else Reflect.set(globalThis, bridgeSymbol, prevBridge);
+    if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);
+    else Reflect.deleteProperty(globalThis, "navigator");
+    if (prevDocDesc) Object.defineProperty(globalThis, "document", prevDocDesc);
+    else Reflect.deleteProperty(globalThis, "document");
+  }
+});

@@ -52,15 +52,8 @@ export default defineArtDirection({
     exposureEV: 0.15
   },
   framing: { rig: "follow2d", subjectHeightFraction: [0.08, 0.3], fovDeg: [34, 54], mobile: "both" },
-  // WP-09: only the 5 rigged `skins=1` athlete and front-row supporter GLBs remain mounted as models; all static
-  // stadium architecture, goals, floodlight masts, dugouts, trophy, and match ball are procedural multi-material assemblies.
-  assets: [
-    { role: "character", assetKey: "fcSoccerStrikerMeshy", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Walk_Loop", "Run", "Sprint_Loop"] } },
-    { role: "character", assetKey: "fcGoalkeeperMeshy", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Run", "Sprint_Loop"] } },
-    { role: "set-dressing", assetKey: "fcPitchFanAMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
-    { role: "set-dressing", assetKey: "fcPitchFanBMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
-    { role: "set-dressing", assetKey: "fcPitchFanCMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } }
-  ],
+  // 100% native @aura3d/engine procedural multi-material athletes, keepers, referee, supporters, stadium & props (zero GLBs).
+  assets: [],
   vfx: [
     { event: "kick", kind: "fc-turf-divot" },
     { event: "tackle", kind: "fc-turf-divot" },

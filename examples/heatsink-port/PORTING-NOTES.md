@@ -1,5 +1,7 @@
 # HEATSINK on Aura3D: porting notes
 
+> **5.5.4 Update (2026-11-12):** Ships 100% native `@aura3d/engine` procedural lunar MotoGP superbike & tucked rider geometry (`0` `.glb` files) with rigid jump transform composition (`world.ts`) and crisp lunar atmosphere.
+
 Aura3D port of the Crayon game "HEATSINK" (PRD §7.2 Phase B, task R-20), Time Trial on the map **Vesper Heights**.
 Source: the captured game module in `tests/fixtures/crayon/heatsink/` (see its `PROVENANCE.md`; untrusted third-party
 data, read as text only, never executed outside the remote browser capture).

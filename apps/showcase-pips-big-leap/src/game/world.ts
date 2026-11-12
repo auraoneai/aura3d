@@ -16,20 +16,14 @@ import {
   instances,
   looks,
   material,
-  model,
   primitives,
   scene
 } from "@aura3d/engine";
-import { assets, BOSS_CLIPS, PIP_CLIPS } from "../aura-assets.js";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
 import { legacySlabGeometry, type SlabTransform as SlabTransformSpec } from "./legacySlab.js";
 import {
   GATE_RING_MATERIAL,
   SLAB_RADIUS,
-  CRYSTAL_OVERRIDES,
-  SEED_OVERRIDES,
-  PIP_GLOSS,
-  BOSS_GLOSS,
   CONTACT_SHADOWS,
   SURFACES,
   ambientEmitterNode,
@@ -73,6 +67,7 @@ import {
   buildBossThornSpikeNode,
   buildBounceSpringBaseNode,
   buildBounceSpringCapNode,
+  buildBramblebackBossNode,
   buildCheckpointPennantNode,
   buildCheckpointStandNode,
   buildDioramaStaticDecorNodes,
@@ -82,6 +77,8 @@ import {
   buildHazardFeatureNode,
   buildHeartBerryNode,
   buildHedgehogVillagerNode,
+  buildPipHeroNode,
+  buildSingleDecorPropNode,
   buildSunGateArchNode,
   buildSunGateRuneRingNode,
   buildSunseedNode,
@@ -236,228 +233,46 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
 
   switch (d.kind) {
     case "tree":
-      // One coherent low-poly tree family: the old photoreal `pineTree` GLB
-      // read as a different art style (and its wide fir canopy filled the
-      // third-person lens). "tree" keeps its id/height but shares the flat
-      // conifer silhouette used by every other trunk in the course.
-      return [
-        model(assets.props.conifer, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.2 * s, scaleMode: "fit" })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:tree`, "tree", [d.x, d.y, d.z], yaw, s, true)];
     case "conifer":
-      return [
-        model(assets.props.conifer, { name: `${d.id}:conifer`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s, scaleMode: "fit" })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:conifer`, "conifer", [d.x, d.y, d.z], yaw, s, true)];
     case "hawk":
-      return [
-        model(assets.hawk, { name: `${d.id}:hawk`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.5 * s, scaleMode: "fit" })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:hawk`, "hawk", [d.x, d.y, d.z], yaw, s, true)];
     case "mushroom":
-      return [
-        model(assets.props.crystalShard, { name: `${d.id}:mushroom`, castShadow: true, receiveShadow: true, targetHeight: 1.05 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:mushroom`, "mushroom", [d.x, d.y, d.z], yaw, s, true)];
     case "flower":
-      return [
-        model(assets.sunseed, { name: `${d.id}:flower`, castShadow: false, targetHeight: 0.72 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:flower`, "flower", [d.x, d.y, d.z], yaw, s, false)];
     case "rock":
-      return [
-        model(assets.props.boulder, { name: `${d.id}:rock`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.15 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:rock`, "rock", [d.x, d.y, d.z], yaw, s, true)];
     case "windmill":
-      return [
-        model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:windmill`, "windmill", [d.x, d.y, d.z], yaw, s, true)];
     case "sail":
-      return [
-        model(assets.props.watchtower, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:sail`, "sail", [d.x, d.y, d.z], yaw, s, true)];
     case "cloud":
-      return [
-        model(assets.props.rockB, { name: `${d.id}:cloud`, castShadow: false, receiveShadow: false, targetMaxDimension: 1.9 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:cloud`, "cloud", [d.x, d.y, d.z], yaw, s, false)];
     case "fan":
-      return [
-        model(assets.props.turbine, { name: `${d.id}:fan`, castShadow: true, receiveShadow: true, targetHeight: 2.2 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildUpdraftFanNode(`${d.id}:fan`, [d.x, d.y, d.z], yaw, s)];
     case "vent":
-      return [
-        model(assets.props.brazier, { name: `${d.id}:vent`, castShadow: true, receiveShadow: true, targetHeight: 1.35 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:vent`, "vent", [d.x, d.y, d.z], yaw, s, true)];
     case "pillar":
-      return [
-        model(assets.props.pylon, { name: `${d.id}:pillar`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
-    case "arch": {
-      const archRef = d.id.includes("vista") ? assets.sungate : assets.props.arch;
-      return [
-        model(archRef, { name: `${d.id}:arch`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s, scaleMode: "fit" })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
-    }
+      return [buildSingleDecorPropNode(`${d.id}:pillar`, "pillar", [d.x, d.y, d.z], yaw, s, true)];
+    case "arch":
+      return [buildSingleDecorPropNode(`${d.id}:arch`, "arch", [d.x, d.y, d.z], yaw, s, true)];
     case "crystal":
-      return [
-        model(assets.props.crystalShard, { name: `${d.id}:crystal`, castShadow: true, receiveShadow: true, targetHeight: 1.9 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:crystal`, "crystal", [d.x, d.y, d.z], yaw, s, true)];
     case "star":
-      return [
-        model(assets.props.energyCore, { name: `${d.id}:star`, castShadow: tinyShadows, targetMaxDimension: 0.9 * s })
-          .position(d.x, d.y + 0.55 * s, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:star`, "star", [d.x, d.y, d.z], yaw, s, tinyShadows)];
     case "lantern":
-      return [
-        model(assets.props.streetLamp, { name: `${d.id}:lantern`, castShadow: true, receiveShadow: true, targetHeight: 2.3 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:lantern`, "lantern", [d.x, d.y, d.z], yaw, s, true)];
     case "crate":
-      return [
-        model(assets.props.crate, { name: `${d.id}:crate`, castShadow: tinyShadows, receiveShadow: true, targetMaxDimension: 0.95 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:crate`, "crate", [d.x, d.y, d.z], yaw, s, tinyShadows)];
     case "barrel":
-      return [
-        model(assets.props.barrel, { name: `${d.id}:barrel`, castShadow: tinyShadows, receiveShadow: true, targetHeight: 0.98 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildSingleDecorPropNode(`${d.id}:barrel`, "barrel", [d.x, d.y, d.z], yaw, s, tinyShadows)];
     case "banner":
-      return [
-        model(assets.checkpointFlag, { name: `${d.id}:banner`, castShadow: tinyShadows, receiveShadow: true, targetHeight: 2.2 * s })
-          .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
-      ];
+      return [buildWoodlandBannerNode(`${d.id}:banner`, [d.x, d.y, d.z], yaw, s)];
     default:
       return [];
   }
-}
-
-// ---------------------------------------------------------------- PBL-PF1 instanced props (diorama)
-
-type ModelAsset = Parameters<typeof model>[0];
-
-/**
- * One static prop (decor, hazard dressing, pedestal) as an instance of its asset, in the
- * diorama look (PBL-PF1). The same asset, fit measure and shadow flags share one
- * `instances.model` draw class; every instance keeps today's position, yaw and fitted size.
- */
-export interface PropInstance {
-  readonly asset: ModelAsset;
-  /** The fit the size sets: the node fits a unit target and each instance scales to `size`. */
-  readonly measure: "height" | "maxDimension";
-  readonly size: number;
-  readonly position: readonly [number, number, number];
-  readonly yaw: number;
-  readonly castShadow: boolean;
-  readonly receiveShadow: boolean;
-}
-
-/** The diorama decor table: today's asset and fitted size per kind; tiny props cast no shadow-map shadows. */
-export function decorInstance(d: DecorSpec): PropInstance | null {
-  const s = d.s ?? 1;
-  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0): PropInstance =>
-    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: d.yaw ?? 0, castShadow, receiveShadow });
-  switch (d.kind) {
-    case "tree": return at(assets.props.conifer, "height", 3.2 * s);
-    case "conifer": return at(assets.props.conifer, "height", 3.4 * s);
-    case "hawk": return at(assets.hawk, "maxDimension", 1.5 * s);
-    case "mushroom": return at(assets.props.crystalShard, "height", 1.05 * s);
-    case "flower": return at(assets.sunseed, "height", 0.72 * s, false);
-    case "rock": return at(assets.props.boulder, "maxDimension", 1.15 * s);
-    case "windmill": return at(assets.props.windmill, "height", 3.6 * s);
-    case "sail": return at(assets.props.watchtower, "height", 2.6 * s);
-    case "cloud": return at(assets.props.rockB, "maxDimension", 1.9 * s, false, false);
-    case "fan": return at(assets.props.turbine, "height", 2.2 * s);
-    case "vent": return at(assets.props.brazier, "height", 1.35 * s);
-    case "pillar": return at(assets.props.pylon, "height", 3.4 * s);
-    case "arch": return at(d.id.includes("vista") ? assets.sungate : assets.props.arch, "height", 3.4 * s);
-    case "crystal": return at(assets.props.crystalShard, "height", 1.9 * s);
-    case "star": return at(assets.props.energyCore, "maxDimension", 0.9 * s, false, true, 0.55 * s);
-    case "lantern": return at(assets.props.streetLamp, "height", 2.3 * s);
-    case "crate": return at(assets.props.crate, "maxDimension", 0.95 * s, false);
-    case "barrel": return at(assets.props.barrel, "height", 0.98 * s, false);
-    case "banner": return at(assets.checkpointFlag, "height", 2.2 * s, false);
-    default: return null;
-  }
-}
-
-/** A hazard's dressing mesh (crystal shard, or a brazier on lava) at today's place and size. */
-export function hazardInstance(hz: HazardSpec): PropInstance {
-  const h = hz.h ?? 0.5;
-  return {
-    asset: hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard,
-    measure: "height",
-    size: Math.max(0.55, Math.min(1.1, h * 1.4)),
-    position: [hz.x, hz.y - Math.min(h, 0.24), hz.z],
-    yaw: 0,
-    castShadow: true,
-    receiveShadow: true
-  };
-}
-
-/** A spring base or checkpoint pad (the shared pedestal); tiny, so it casts no shadow-map shadow. */
-export function pedestalInstance(x: number, y: number, z: number, size: number): PropInstance {
-  return { asset: assets.props.pedestal, measure: "maxDimension", size, position: [x, y, z], yaw: 0, castShadow: false, receiveShadow: true };
-}
-
-/** Group key and node name suffix: one draw class per asset, fit measure and shadow flags. */
-export function propGroupKey(p: PropInstance): string {
-  return `${p.asset.id}:${p.measure === "height" ? "h" : "max"}:${p.castShadow ? "cast" : "nocast"}:${p.receiveShadow ? "recv" : "norecv"}`;
-}
-
-/**
- * Lower the props to instanced models. `createModelMatrix` folds each instance's
- * position, yaw and scale over the node's unit fit and grounding, so an instance of
- * `size` stands exactly where today's `model(asset, { targetHeight: size })` stood.
- */
-export function propInstanceNodes(props: readonly PropInstance[]): readonly SceneNodeArg[] {
-  const groups = new Map<string, PropInstance[]>();
-  for (const p of props) {
-    const key = propGroupKey(p);
-    const list = groups.get(key);
-    if (list) list.push(p);
-    else groups.set(key, [p]);
-  }
-  return [...groups.entries()].map(([key, list]) => {
-    const first = list[0]!;
-    return instances.model(first.asset, {
-      name: `pbl-props:${key}`,
-      ...(first.measure === "height" ? { targetHeight: 1 } : { targetMaxDimension: 1 }),
-      castShadow: first.castShadow,
-      receiveShadow: first.receiveShadow,
-      // PBL-M2: the crystal shards (crystals, shard mushrooms, hazard dressing) shimmer.
-      ...(first.asset.id === assets.props.crystalShard.id ? { materialOverrides: CRYSTAL_OVERRIDES } : {}),
-      transforms: list.map((p) => ({ position: [p.position[0], p.position[1], p.position[2]] as const, rotation: [0, p.yaw, 0] as const, scale: p.size }))
-    });
-  });
 }
 
 // ---------------------------------------------------------------- world build
@@ -570,8 +385,8 @@ function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: 
   } else {
     builder.add(look);
   }
-  // Light depth haze pushed out (`near >= 65, far >= 260`) so the sunlit meadow & course pop crisply.
-  builder.add(effects.fog({ color: skyColor, near: 72, far: 280, density: 0.0036 }));
+  // Subtle distant atmospheric depth (`near >= 130, maxOpacity <= 0.10`) so the sunlit meadow & course pop crisply.
+  builder.add(effects.fog({ mode: "linear", color: skyColor, near: 130, far: 420, maxOpacity: 0.10 }));
   // Grounding for Pip, pickups, and the course props: since 4.5.0 a
   // screen-space mask that darkens the shadow-casting look key light.
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
@@ -769,7 +584,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   // & borrowed sci-fi/FPS props; `?look=original` keeps its original model nodes unchanged.
   const staticDecorPlacements: StaticDecorPlacement[] = [];
 
-  // Hazards — hurt volumes + sculpted thorny bramble / frost crystal / basalt ember vents in diorama.
+  // Hazards — hurt volumes + sculpted thorny bramble / frost crystal / basalt ember vents.
   const hazards: HazardBox[] = spec.hazards.map((hz) => {
     const h = hz.h ?? 0.5;
     builder.add(
@@ -782,19 +597,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
           : material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
       })
     );
-    if (diorama) {
-      builder.add(buildHazardFeatureNode(`hazard:${hz.id}:mesh`, [hz.x, hz.y - Math.min(h, 0.24), hz.z], hz.w, hz.d, hz.type));
-    } else {
-      const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
-      builder.add(
-        model(hazardRef, {
-          name: `hazard:${hz.id}:mesh`,
-          castShadow: true,
-          receiveShadow: true,
-          targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4))
-        }).position(hz.x, hz.y - Math.min(h, 0.24), hz.z)
-      );
-    }
+    builder.add(buildHazardFeatureNode(`hazard:${hz.id}:mesh`, [hz.x, hz.y - Math.min(h, 0.24), hz.z], hz.w, hz.d, hz.type));
     return { spec: hz, x: hz.x, y: hz.y - h / 2, z: hz.z, hx: hz.w / 2, hy: h / 2, hz: hz.d / 2 };
   });
 
@@ -814,106 +617,54 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     return { spec: w, x: w.x, z: w.z, hx: w.w / 2, hz: w.d / 2, surfaceY: w.y, floorY: w.y - depth };
   });
 
-  // Pickups — ribbed golden sunseeds, oak-cupule golden acorns, and glossy crimson heart-berries in diorama.
+  // Pickups — ribbed golden sunseeds, oak-cupule golden acorns, and glossy crimson heart-berries.
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     const rt = game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] });
-    builder.add(
-      diorama
-        ? buildSunseedNode(nodeName.seed(s.id), [s.x, s.y + 0.16, s.z], rt)
-        : model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit" })
-            .position(s.x, s.y - 0.1, s.z)
-            .runtime(rt)
-    );
+    builder.add(buildSunseedNode(nodeName.seed(s.id), [s.x, s.y + 0.16, s.z], rt));
     spinNodes.push(nodeName.seed(s.id));
   }
   for (const a of spec.acorns) {
     const rt = game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] });
-    builder.add(
-      diorama
-        ? buildGoldenAcornNode(nodeName.acorn(a.id), [a.x, a.y + 0.12, a.z], rt)
-        : model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: false, targetMaxDimension: 0.65, scaleMode: "fit" })
-            .position(a.x, a.y - 0.2, a.z)
-            .runtime(rt)
-    );
+    builder.add(buildGoldenAcornNode(nodeName.acorn(a.id), [a.x, a.y + 0.12, a.z], rt));
     spinNodes.push(nodeName.acorn(a.id));
   }
   for (const hpt of spec.hearts) {
     const rt = game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] });
-    builder.add(
-      diorama
-        ? buildHeartBerryNode(nodeName.heart(hpt.id), [hpt.x, hpt.y + 0.1, hpt.z], rt)
-        : model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
-            .position(hpt.x, hpt.y - 0.18, hpt.z)
-            .runtime(rt)
-    );
+    builder.add(buildHeartBerryNode(nodeName.heart(hpt.id), [hpt.x, hpt.y + 0.1, hpt.z], rt));
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
-  // Springs — coiled copper-and-toadstool bounce springs in diorama; original look untouched.
+  // Springs — coiled copper-and-toadstool procedural bounce springs in both diorama and original looks (zero GLBs).
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
     const rt = game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] });
-    if (diorama) {
-      builder.add(buildBounceSpringBaseNode(`${nodeName.spring(spr.id)}:base`, base));
-      builder.add(buildBounceSpringCapNode(nodeName.spring(spr.id), base, rt));
-    } else {
-      builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.92 })
-          .position(base[0], base[1], base[2])
-      );
-      builder.add(
-        model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: true, receiveShadow: true, targetMaxDimension: 0.82 })
-          .position(base[0], base[1] + 0.14, base[2])
-          .runtime(rt)
-      );
-    }
+    builder.add(buildBounceSpringBaseNode(`${nodeName.spring(spr.id)}:base`, base));
+    builder.add(buildBounceSpringCapNode(nodeName.spring(spr.id), base, rt));
   }
 
-  // Checkpoints — carved timber post + stone pad + fluttering swallowtail pennant in diorama.
+  // Checkpoints — carved timber post + stone pad + fluttering swallowtail pennant (zero GLBs).
   for (const cp of spec.checkpoints) {
     const rt = game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] });
-    if (diorama) {
-      builder.add(buildCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
-      builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt));
-    } else {
-      builder.add(
-        model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9, scaleMode: "fit" })
-          .position(cp.x, cp.y, cp.z)
-          .runtime(rt)
-      );
-      builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.78 })
-          .position(cp.x, cp.y, cp.z)
-      );
-    }
+    builder.add(buildCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
+    builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt));
   }
 
-  // Sun-Gate — rune-carved limestone voussoir arch + sculpted solar rune ring + bevelled star lock in diorama.
+  // Sun-Gate — rune-carved arch + sculpted solar rune ring + bevelled star lock.
   const g = spec.gate;
   const gateRt = game.runtimeNode(nodeName.gate, { tags: ["gate"] });
   const ringRt = game.runtimeNode(nodeName.gateRing, { tags: ["gate"] });
   const lockRt = game.runtimeNode(nodeName.gateLock, { tags: ["gate"] });
+  builder.add(buildSunGateArchNode(nodeName.gate, [g.x, g.y, g.z], 0, gateRt));
   if (diorama) {
-    builder.add(buildSunGateArchNode(nodeName.gate, [g.x, g.y, g.z], 0, gateRt));
     builder.add(buildSunGateRuneRingNode(nodeName.gateRing, [g.x, g.y + 1.5, g.z], GATE_RING_MATERIAL, ringRt));
-    builder.add(buildGateLockStarNode(nodeName.gateLock, [g.x, g.y + 1.5, g.z], lockRt));
   } else {
-    builder.add(
-      model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.4, scaleMode: "fit" })
-        .position(g.x, g.y, g.z)
-        .runtime(gateRt)
-    );
     builder.add(
       primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
         .runtime(ringRt)
     );
-    builder.add(
-      model(assets.props.energyCore, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
-        .position(g.x, g.y + 1.25, g.z)
-        .runtime(lockRt)
-    );
   }
+  builder.add(buildGateLockStarNode(nodeName.gateLock, [g.x, g.y + 1.5, g.z], lockRt));
 
   // Decor + NPCs.
   const cameraObstacles: CameraObstacle[] = [];
@@ -934,36 +685,26 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
   for (const n of spec.npcs) {
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
-    if (diorama) {
-      if (n.who === "sidekick") {
-        builder.add(buildForestBeetleNode(`pbl-villager:${n.id}`, [n.x, n.y, n.z], -0.45));
-      } else {
-        builder.add(buildHedgehogVillagerNode(`pbl-villager:${n.id}`, [n.x, n.y, n.z], -0.45));
-      }
-      continue;
+    const npcName = diorama ? `pbl-villager:${n.id}` : nodeName.npc(n.id);
+    if (n.who === "sidekick") {
+      builder.add(buildForestBeetleNode(npcName, [n.x, n.y, n.z], -0.45));
+    } else {
+      builder.add(buildHedgehogVillagerNode(npcName, [n.x, n.y, n.z], -0.45));
     }
-    const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
-    const clip = n.clip ?? "idle";
-    builder.add(
-      model(ref, { name: nodeName.npc(n.id), castShadow: true, targetHeight: 1.35, scaleMode: "fit" })
-        .position(n.x, n.y, n.z)
-        .rotate(0, Math.PI, 0)
-        .animate({ clip, loop: true })
-    );
   }
 
-  // Hero — always a runtime node; the camera rigs onto it.
+  // Hero — articulated @aura3d/engine procedural Pip rig (zero GLBs); camera rigs onto it.
   builder.add(
-    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.25, scaleMode: "fit", ...(diorama ? { materialOverrides: PIP_GLOSS } : {}) })
-      .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
-      .rotate(0, spec.spawnYaw ?? Math.PI, 0)
-      .animate({ clip: PIP_CLIPS.idle, loop: true })
-      .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
+    buildPipHeroNode(
+      nodeName.hero,
+      [spec.spawn[0], spec.spawn[1], spec.spawn[2]],
+      spec.spawnYaw ?? Math.PI,
+      game.runtimeNode(nodeName.hero, { tags: ["player"] })
+    )
   );
-  // Player Studio cape: diorama uses a shoulder-pinned fluttering wool-felt cloak
-  // with paired GLSL+WGSL cloth billow; original keeps the legacy box mesh.
-  builder.add(
-    (diorama
+  // Player Studio cape: hidden by default (`visible: false`); if enabled in Studio, drapes cleanly behind Pip's back (-Z).
+  const capeBase = (
+    diorama
       ? geometry
           .custom(geometry.define(heroCapeGeometry()), {
             name: nodeName.heroCape,
@@ -971,36 +712,36 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
             castShadow: false,
             receiveShadow: false
           })
-          .position(spec.spawn[0], spec.spawn[1] + 0.78, spec.spawn[2] - 0.04)
+          .position(spec.spawn[0], spec.spawn[1] + 0.71, spec.spawn[2] + 0.12)
+          .rotate(0, spec.spawnYaw ?? Math.PI, 0)
       : primitives.box({
           name: nodeName.heroCape,
           size: [0.3, 0.03, 0.32],
-          position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16],
+          position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.2],
+          rotation: [0, spec.spawnYaw ?? Math.PI, 0],
           material: material.pbr({ color: "#3f8cff", roughness: 0.6 }),
           castShadow: false
         })
-    ).runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
-  );
+  ).runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }));
+  const capeHidden = new (capeBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof capeBase)({
+    ...capeBase.toJSON(),
+    visible: false
+  });
+  builder.add(capeHidden);
 
-  // Boss (W5) — rigged Brambleback with plush+rim overrides + 6 orbiting thorny crystal spikes.
+  // Boss (W5) — articulated @aura3d/engine procedural Brambleback rig + 6 orbiting thorny crystal spikes.
   if (spec.boss) {
     builder.add(
-      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4, scaleMode: "fit", ...(diorama ? { materialOverrides: BOSS_GLOSS } : {}) })
-        .position(0, 2.6, -69)
-        .animate({ clip: BOSS_CLIPS.idle, loop: true })
-        .runtime(game.runtimeNode(nodeName.boss, { tags: ["boss"] }))
+      buildBramblebackBossNode(
+        nodeName.boss,
+        [0, 2.6, -69],
+        game.runtimeNode(nodeName.boss, { tags: ["boss"] })
+      )
     );
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
       const spikeRt = game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] });
-      builder.add(
-        diorama
-          ? buildBossThornSpikeNode(nodeName.bossSpike(i), [Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05], spikeRt)
-          : model(assets.props.crystalShard, { name: nodeName.bossSpike(i), castShadow: true, targetHeight: 0.9 })
-              .position(Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05)
-              .rotate(0, 0, Math.cos(a) * 0.5)
-              .runtime(spikeRt)
-      );
+      builder.add(buildBossThornSpikeNode(nodeName.bossSpike(i), [Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05], spikeRt));
     }
   }
 

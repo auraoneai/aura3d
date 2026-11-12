@@ -19,7 +19,6 @@ import { createWindPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
-import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { PAPER_PASS_NAME, paperPass, paperScale, warmGradingLut } from "./paper-pass";
 
@@ -413,31 +412,10 @@ function reportError(error: unknown): void {
   console.error(error);
 }
 
-/** Load progress on the loading card: only the rigged hero.glb remains as an external GLB asset; all scenery/props are sculpted in code. */
+/** Load progress on the loading card: all valley characters, structures, and props are procedural multi-material @aura3d/engine sculptures. */
 function watchModelLoads(): () => void {
-  const status = $("loading-status");
-  const urls = new Set([new URL((MODEL_ASSETS.hero as unknown as { url: string }).url, location.href).pathname]);
-  const done = new Map<string, number>();
-  const show = (): void => {
-    const mb = [...done.values()].reduce((a, b) => a + b, 0) / 1e6;
-    status.textContent = `Drawing the valley… ${done.size} of ${urls.size} models${mb > 0 ? ` (${mb.toFixed(1)} MB)` : ""}`;
-  };
-  const take = (entries: PerformanceEntryList): void => {
-    let changed = false;
-    for (const e of entries) {
-      const path = new URL(e.name, location.href).pathname;
-      if (!urls.has(path) || done.has(path)) continue;
-      const r = e as PerformanceResourceTiming;
-      done.set(path, r.encodedBodySize || r.transferSize || 0);
-      changed = true;
-    }
-    if (changed) show();
-  };
-  if (typeof PerformanceObserver === "undefined") return () => {};
-  const observer = new PerformanceObserver((list) => take(list.getEntries()));
-  try { observer.observe({ type: "resource", buffered: true }); } catch { return () => {}; }
-  show();
-  return () => observer.disconnect();
+  $("loading-status").textContent = "Drawing the valley…";
+  return () => {};
 }
 
 async function boot(): Promise<void> {

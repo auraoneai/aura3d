@@ -1,20 +1,14 @@
-# Asset provenance: Where the Wind Wanders port
+# Asset provenance: The Bellkeeper's Walk (`where-the-wind-wanders-port`)
 
-Every model here was generated on 2026-10-23 from an original text prompt (no image-to-3D, no input from the original game's art) with Meshy, called only through Kiro Prism. Ownership and commercial-use terms are those of the AuraOne Meshy account plan at generation time (see `provenance/*.rights.json`); no CC0 or exclusivity claim is made. Task ids are in `provenance/*.meta.json` (signed URLs stripped). Optimised with meshopt (`/tmp/meshy/optimize.mjs`: weld, simplify, textures resized, EXT_meshopt_compression). On 2026-10-29 every file was re-encoded for first-load size (`evidence/where-the-wind-wanders-port/audit-fix/scripts/compress-glb.mjs`: JPEG textures, 512 px for the letter, wisp, stones and bell, meshopt quantisation and compression on everything except the rigged hero), 15.71 MB to 8.40 MB in total, and the bell was split out of the bell frame (`split-bell.mjs`). The "was" sizes are the earlier files.
+## 3D Characters, Architecture & Sanctuary Scenery (100% Procedural `@aura3d/engine`)
 
-| Key | Role | Prompt (own words) | Meshy ops | Final size / verts |
-| --- | --- | --- | --- | --- |
-| `hero` | traveller (rigged, Idle/Walk/Run) | a lone wanderer in a long hooded travelling cloak with a long trailing scarf, satchel on one hip, sturdy boots, calm friendly stylised storybook character, hand-painted look, warm earthy palette of moss green cloak and cream scarf, standing in a neutral A-pose | text-to-3d preview+refine, remesh 12k, rig, animate (Idle) | 2.36 MB (was 3.97 MB) / 18,420 |
-| `cottage` | two cottages | a small timber-framed cottage with cream plaster walls, steep terracotta tile roof, a stone chimney, small flower boxes under the windows and ivy on one side | preview+refine | 1.47 MB (was 2.70 MB) / 54,012 |
-| `pine` | 535 instanced pines | a tall stylised pine tree with layered jagged skirts of deep green needles and a slim brown trunk | preview+refine, remesh 1.2k | 0.46 MB (was 0.95 MB) / 2,134 |
-| `oak` | 127 instanced round trees | a broad round-crowned old oak tree with a thick gnarled trunk and a full canopy of layered leaf clusters in fresh spring greens | preview+refine, remesh 2.2k | 0.51 MB (was 1.05 MB) / 3,515 |
-| `shrub` | garden shrubs by the cottages | a rounded flowering garden shrub with dense green leaves and small pink and white blossoms | preview+refine, remesh 1.2k | 0.52 MB (was 0.99 MB) / 1,388 |
-| `stones` | two standing-stone landmarks | a small circle of three weathered standing stones with moss and lichen, rough grey granite | preview+refine | 0.37 MB (was 1.11 MB) / 19,286 |
-| `belltower` | the bell frame | a small open timber bell frame on a stone base with a brass bell hanging inside, steep shingled roof, rope pull | preview+refine | 0.92 MB (was 1.64 MB) / 30,870 (31,852 before the bell was split out) |
-| `bell` | the bell, split out of `belltower` so it swings | (same Meshy task as `belltower`: its bell, yoke and rope, the second-largest connected part of the mesh, 1,074 triangles) | split from belltower | 0.16 MB / 982 |
-| `letter` | the three letters | a cream-coloured sealed envelope with a red wax seal and a faint golden edge, flat paper letter | preview+refine | 0.34 MB (was 0.91 MB) / 15,840 |
-| `boat` | the epilogue boat | a small wooden rowing boat with a single mast and a cream sail, steel-blue painted hull with cream trim | preview+refine | 0.96 MB (was 1.55 MB) / 25,988 |
-| `wisp` | companion wisp | a small friendly floating spirit companion, a glowing violet teardrop-shaped wisp with a soft translucent tail and two tiny bright eyes | preview+refine | 0.32 MB (was 0.84 MB) / 17,218 |
-| `kite` | paper kite (GU47 look; replaces the wisp, WW47-A1) | paper kite with a diamond frame and a ribbon tail (GU47 WP-36 row `bellKite`, Meshy task 01a18c0e-0a3c-73ca-8cb3-7389ab2a19e7, 2026-10-30; rights in provenance/kite.rights.json) | preview+refine (WP-36 pipeline) | 0.28 MB (was 0.80 MB; 512 px JPEG textures + meshopt) / 11,096 triangles |
+All characters, architecture, flora, and interactive props in `The Bellkeeper's Walk` are sculpted procedurally in code using `@aura3d/engine` multi-material assemblies (`art/proceduralModels.ts` on `apps/showcase-port-shared/proceduralKernel.ts`) — zero external `.glb` or Meshy 3D files are shipped:
 
-Also generated but not used: a jetty pier (the procedural jetty is tied to the simulation's walkable gaps), a windmill (the procedural windmill carries the animated sails), a post lantern, and probe animation clips (three run variants, 9 credits).
+- **Bellkeeper Wanderer (`hero`)**: Articulated multi-material `@aura3d/engine` character hierarchy (`latheMesh` woven reed/straw conical traveller hat with indigo hatband and braided chin cord, `icosphereSmoothMesh` serene head, `loftSectionsMesh` layered sage/slate/ochre woven wind-cloak & tunic, leather cross-body courier satchel, `tubeSweepMesh` carved wooden sanctuary staff with suspended gleaming brass chime bell and crimson/gold wind-ribbons, wrapped calf gaiters, and grounded leather boots).
+- **Highland Sanctuary & Village (`belltower`, `belltower-bell`, `cottage`, `windmill`, `packhorse-bridge`, `wayside-shrine`)**: Multi-material ashlar masonry, limewash plaster, mortised oak timber, thatch/slate roofs, mullion glass, and patinated bronze sanctuary bell.
+- **Meadow Flora & Props (`pine`, `oak`, `shrub`, `stones`, `letter`, `kite`, `wisp`, `boat`)**: Procedural multi-material wind-bent pines, gnarled oaks, heather/shrubs, rune standing stones, wax-sealed parchment letters, swallowtail kite, filigree wisp, and clinker sailing skiff.
+
+## Environment HDRI & Fonts
+
+- **Environment IBL (`assets/env/kloppenheim_06_puresky_1k.hdr`)**: Poly Haven `kloppenheim_06_puresky` (Greg Zaal & Jarod Guest, CC0 1.0 Universal; see `env-assets.ts`).
+- **Typography (`assets/fonts/`)**: Licensed faces copied from `packages/game/src/fonts/` (documented in `assets/fonts/NOTICE.txt`).

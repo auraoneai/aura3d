@@ -31,7 +31,6 @@ import {
   lights,
   looks,
   material,
-  model,
   primitives,
   scene,
   type AuraRuntimeNodeHandle
@@ -93,6 +92,8 @@ import { SprayTags } from "./sprayTags";
 import { LIVE_FAN_IDLE, LIVE_FAN_IDS, courtCrowdNodes } from "./crowd";
 import { courtEnclosureNodes, courtSetPieceNodes, courtsideTableNodes } from "./setPieces";
 import {
+  HOOPS_ATHLETE_JOINT_SUFFIXES,
+  buildArticulatedHoopsAthleteNode,
   buildAthleteRestyleOverrides,
   buildAthensVenueShellNode,
   buildBreakawayRimNode,
@@ -110,7 +111,11 @@ import {
   buildTautNetTopNode,
   buildTemperedBackboardNode,
   buildTubularBallCartNode,
-  buildVenicePalmTreeNodes
+  buildVenicePalmTreeNodes,
+  poseArticulatedHoopsAthlete,
+  poseArticulatedSeatedFan,
+  type HoopsAthletePoseResult,
+  type RuntimePoseNodeLike
 } from "./art/proceduralModels";
 import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
@@ -867,15 +872,19 @@ function buildMarkerPoolNodes(): any[] {
 }
 
 function buildAthlete(id: string, team: TeamId): any[] {
-  // Region-split copies of the palette athletes (tools/hoops-athlete-retexture/split-kit-materials.mjs): one material per
-  // body region, so the kit, shorts and socks take the team colours.
-  const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBigKit : assets.hoopsAthleteGuardKit;
+  // Sculpted, multi-material 14-joint procedural streetball athlete: guard (1.92 m lean) vs big (1.99 m power frame),
+  // per-team sleeveless jersey, connected basketball shorts, crew socks, and grounded high-top sneakers.
+  const big = /[124]$/.test(id);
   const kit = teamKit(team);
+  void athleteOverrides;
   return [
-    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true, materialOverrides: athleteOverrides(kit) } as any)
-      .position(0, 0, 6)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode(id)),
+    buildArticulatedHoopsAthleteNode(id, {
+      kit,
+      big,
+      lookOriginal: LOOK_ORIGINAL,
+      position: [0, 0, 6],
+      runtimeFactory: (nodeId) => game.runtimeNode(nodeId)
+    }),
     ...(pooledMarkers() ? [] : buildAthleteAccessories(id, team, kit))
   ];
 }
@@ -884,10 +893,7 @@ function buildCrowd(v: VenueSpec): any[] {
   const rig = COURT_RIGS[v.id];
   const fans = LOOK_ORIGINAL || !rig.bleachers
     ? []
-    : courtCrowdNodes(v.id, rig.bleachers.seat, {
-      // Six seated, animated fans in the front rows + two sculpted `instances.custom` standing spectator pools.
-      live: [assets.aura_hoops_3d_blacktopFanAPoses, assets.aura_hoops_3d_blacktopFanCPoses, assets.aura_hoops_3d_blacktopFanDPoses]
-    });
+    : courtCrowdNodes(v.id, rig.bleachers.seat, undefined, (nodeId) => game.runtimeNode(nodeId));
   return [...courtBleacherNodes(rig), ...fans];
 }
 
@@ -1175,6 +1181,15 @@ const dribbleAims = new Map<string, DribbleAim>();
 const heldRig = new Map<string, { palm: Vec3 | undefined; shoulderY: number | undefined }>();
 /** Last pose kind per athlete and the frame it changed on: the socket still shows the previous pose on a switch frame. */
 const poseKindOf = new Map<string, { kind: string; changedAt: number }>();
+const jointHandles = new Map<string, RuntimePoseNodeLike>();
+const lastAthletePoses = new Map<string, HoopsAthletePoseResult>();
+const lookupRigNode = (nodeId: string): RuntimePoseNodeLike | undefined => {
+  const cached = jointHandles.get(nodeId);
+  if (cached) return cached;
+  const found = auraApp?.nodes.get(nodeId) as unknown as RuntimePoseNodeLike | undefined;
+  if (found) jointHandles.set(nodeId, found);
+  return found;
+};
 // Bind-space arm geometry. The rig has no hand bones (arms end at Forearm), so
 // the palm is the calibrated hand-centroid offset in forearm bone space. These
 // measured constants are only the fallback — armRigFor() derives the live
@@ -1307,6 +1322,22 @@ function resolveHandles(): void {
   heldRig.clear();
   poseKindOf.clear();
   armRigs.clear();
+  jointHandles.clear();
+  lastAthletePoses.clear();
+  for (const id of ROSTER_IDS) {
+    for (const suffix of HOOPS_ATHLETE_JOINT_SUFFIXES) {
+      const jid = `${id}-${suffix}`;
+      const h = auraApp?.nodes.get(jid) as unknown as RuntimePoseNodeLike | undefined;
+      if (h) jointHandles.set(jid, h);
+    }
+  }
+  for (const fid of LIVE_FAN_IDS) {
+    for (const suffix of ["chest", "head", "arm-l", "forearm-l", "arm-r", "forearm-r"]) {
+      const jid = `${fid}-${suffix}`;
+      const h = auraApp?.nodes.get(jid) as unknown as RuntimePoseNodeLike | undefined;
+      if (h) jointHandles.set(jid, h);
+    }
+  }
   markerPools = pooledMarkers() ? {
     shadows: new MarkerPool(req("marker-shadows"), ROSTER_IDS.length),
     ringsHome: new MarkerPool(req("marker-rings-home"), HOME_IDS.length, RING_ROT_HOME),
@@ -1684,24 +1715,23 @@ const footMeters = new Map<string, ReturnType<typeof createFootSlideMeter>>();
 /** The socket frame's height origin is the rig's, not the court's: the lowest foot height seen per athlete stands in for the floor. */
 const footFloor = new Map<string, number>();
 let footReports: Record<string, unknown> = {};
-function sampleFeet(a: AthleteState, root: AnyHandle): void {
+function sampleFeet(a: AthleteState, _root: AnyHandle): void {
   if (initialParams.get("diag") !== "1") return;
-  const anim = (root as any)?.animation;
-  if (typeof anim?.socket !== "function") return;
-  const cy = Math.cos(a.yaw), sy = Math.sin(a.yaw);
+  const posed = lastAthletePoses.get(a.nodeId);
+  if (!posed) return;
   const body = Math.hypot(a.vx, a.vz);
-  for (const bone of ["LeftFoot", "RightFoot"]) {
-    const sock = anim.socket(bone) as BoneSocketView;
-    if (!sock?.valid) continue;
-    const m = sock.worldMatrix();
-    const lx = m[12]!, ly = m[13]!, lz = m[14]!;
+  const pairs: readonly [string, readonly [number, number, number]][] = [
+    ["LeftFoot", posed.footLWorld],
+    ["RightFoot", posed.footRWorld]
+  ];
+  for (const [bone, worldFoot] of pairs) {
     const key = `${a.nodeId}:${bone}`;
     let meter = footMeters.get(key);
     if (!meter) { meter = createFootSlideMeter({ plantedHeight: 0.07, threshold: 0.15 }); footMeters.set(key, meter); }
-    const wy = ly + a.y;
+    const wy = worldFoot[1];
     const floor = Math.min(footFloor.get(a.nodeId) ?? wy, wy);
     footFloor.set(a.nodeId, floor);
-    meter.feed(game_.time, [a.x + lx * cy + lz * sy, wy, a.z - lx * sy + lz * cy], { bodySpeed: body, groundHeight: floor });
+    meter.feed(game_.time, [worldFoot[0], wy, worldFoot[2]], { bodySpeed: body, groundHeight: floor });
   }
 }
 function footEvidence(): Record<string, unknown> {
@@ -1957,18 +1987,16 @@ function enterLive(): void {
   pushEvent("phase", "ball is live", "info");
 }
 
-/** Visual only: swaps the live fans' clip on a make (cross-faded); no sim, RNG or input reads. */
+/** Visual only: animates the 6 procedural seated courtside fans statelessly via "ZYX" Euler angles; no sim, RNG or input reads. */
 function updateLiveFans(): void {
   if (LOOK_ORIGINAL) return;
   const cheering = game_.time < liveFansCheerUntil && liveFansCheerUntil - game_.time <= LIVE_FAN_CHEER_SECONDS;
   LIVE_FAN_IDS.forEach((id, i) => {
     const idle = LIVE_FAN_IDLE[i]!;
     const clip = cheering ? "sitPump" : idle.clip;
-    if (liveFanClip.get(id) === clip) return;
-    const handle = auraApp.nodes.get(id) as AnyHandle;
-    if (!handle || typeof handle.setAnimation !== "function") return;
     liveFanClip.set(id, clip);
-    try { handle.setAnimation({ clip, loop: true, speed: cheering ? 0.92 + 0.04 * (i % 3) : idle.speed, crossFade: 0.3 }); } catch { /* best-effort */ }
+    const spd = cheering ? 0.92 + 0.04 * (i % 3) : idle.speed;
+    poseArticulatedSeatedFan(lookupRigNode, id, i, clip, game_.time, spd);
   });
 }
 
@@ -3200,152 +3228,100 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const holdsBall = a.hasBall && ball.holder === idxOf(a);
   const dribbleNow = stanceNow && holdsBall;
   const checkHold = dribbleNow && game_.phase === "check";
-  // A moving handler keeps the locomotion clip (legs own the stride) and gets
-  // an OVERLAY pose that writes only the arm bones plus a mild lean after the
-  // clip evaluates, so the dribble reads while driving — not just standing.
   const carryNow = !stanceNow && holdsBall && !a.shooting && a.dunkT <= 0 &&
     a.jumpT <= 0 && a.stumble <= 0 && a.actionUntil <= 0;
-  // `animation` is the engine's C-37 runtime extension on model-node handles.
-  const anim = (r.root as any).animation;
-  const facts = armRigFor(a.nodeId, r.root);
-  const chest = anim?.socket?.("Chest");
-  const upperR = anim?.socket?.("RightUpperArm");
-  const upperL = anim?.socket?.("LeftUpperArm");
-  const socketsUp = chest?.valid === true && upperR?.valid === true && upperL?.valid === true;
+  const flare = dribbleNow ? 0.22 : 0.06;
+  void flare;
+  void armRigFor;
+  void armIK;
+  void stanceLegs;
+  void handBounceOverlayAngles;
+  void qFromMat4;
+  void renderedPalmLead;
   const cycleT = bouncePhase(a.nodeId);
   const poseKind = stanceNow ? "stance" : carryNow ? "carry" : "clip";
   const lastKind = poseKindOf.get(a.nodeId);
   if (!lastKind || lastKind.kind !== poseKind) poseKindOf.set(a.nodeId, { kind: poseKind, changedAt: framesRendered });
-  const rigPalm = holdsBall ? renderedPalmLead(a, r.root) : undefined;
+
+  // Off-ball head look-at toward the ball (new look only)
+  const wantsHeadLook = !LOOK_ORIGINAL && !holdsBall && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
+    a.stumble <= 0 && a.actionUntil <= 0;
+  let headLookQuatOverride: [number, number, number, number] | undefined;
+  if (wantsHeadLook) {
+    const prevPose = lastAthletePoses.get(a.nodeId);
+    const headSocket = prevPose?.headLookSocketPos ?? [0, 0.54, 0];
+    const chestQ = prevPose?.chestActorQuat ?? [0, 0, 0, 1];
+    const target = worldToActor([ball.x, ball.y, ball.z], a.x, a.y, a.z, a.yaw);
+    const goal = headLookAngles(headSocket, target, { x: chestQ[0], y: chestQ[1], z: chestQ[2], w: chestQ[3] });
+    const next = stepHeadLook(headLookOn.get(a.nodeId) ?? { yaw: 0, pitch: 0 }, goal, dt, reducedMotion);
+    headLookOn.set(a.nodeId, next);
+    headLookStats.frames++;
+    if (Math.abs(goal.yaw - next.yaw) <= (25 * Math.PI) / 180) headLookStats.within25++;
+    headLookQuatOverride = headLookQuat(next);
+  } else {
+    headLookOn.delete(a.nodeId);
+  }
+
+  // Stateless "ZYX" Euler posing of the 14-joint sculpted streetball athlete rig
+  const posed = poseArticulatedHoopsAthlete(lookupRigNode, {
+    id: a.nodeId,
+    big: /[124]$/.test(a.nodeId),
+    clip: a.clip,
+    time: game_.time,
+    speed,
+    x: a.x,
+    y: a.y + bob,
+    z: a.z,
+    yaw: a.yaw,
+    stanceNow,
+    dribbleNow,
+    checkHold,
+    carryNow,
+    dribbleCycleT: cycleT,
+    idleHandDrop: IDLE_HAND_DROP,
+    qaLean: QA_LEAN,
+    shooting: a.shooting,
+    shotMeterT: game_.shotMeter.t,
+    dunkT: a.dunkT,
+    dunkKind: a.dunkKind,
+    jumpT: a.jumpT,
+    stumble: a.stumble,
+    headLookLocalQuat: headLookQuatOverride
+  });
+  lastAthletePoses.set(a.nodeId, posed);
+  sampleFeet(a, r.root);
+
   if (holdsBall) {
-    heldRig.set(a.nodeId, { palm: rigPalm, shoulderY: upperR?.valid === true ? mat4Translation(upperR.worldMatrix())[1] + 0.96 + a.y : undefined });
+    heldRig.set(a.nodeId, { palm: posed.palmRWorld, shoulderY: posed.shoulderY });
   } else {
     heldRig.delete(a.nodeId);
   }
-  const shoulderOf = (upper: { worldMatrix(out?: Float32Array): ArrayLike<number> }): Vec3 =>
-    mat4Translation(upper.worldMatrix());
+
   let aimed: DribbleAim | undefined;
-  if (stanceNow) {
-    const shoulderR = upperR ? shoulderOf(upperR) : undefined;
-    const shoulderL = upperL ? shoulderOf(upperL) : undefined;
-    const shoulderY = shoulderR ? shoulderR[1] + 0.96 + a.y : DRIB_SHOULDER_FALLBACK;
-    // Phase-coupled cycle — the same dribbleCycleY that positions the ball in
-    // stepBallSim drives the palm here, so hand and ball ride as one.
-    const cyc = dribbleCycleY(cycleT, shoulderY);
-    const bones: Record<string, { rotation?: Quat; position?: { x: number; y: number; z: number } }> =
-      stanceLegs(dribbleNow && !checkHold ? cyc.effort : 0);
-    if (dribbleNow) {
-      // Lean over the ball; the torso dips hard into each push because the arm
-      // alone cannot reach the low bounce (arm 0.56m from a ~1.2m shoulder).
-      const effort = checkHold ? 0 : cyc.effort;
-      const lean = handBounceOverlayAngles(effort, false);
-      bones.Spine = { rotation: qX(checkHold ? 0.16 : lean.spine) };
-      bones.Chest = { rotation: qX(checkHold ? 0.10 : lean.chest) };
-      bones.Head = { rotation: qX(lean.head) };
-    }
-    if (socketsUp && shoulderR && shoulderL) {
-      const chestRot = qFromMat4(chest!.worldMatrix());
-      // Palm targets live in the same actor-local frame as the bones (local +x
-      // is the character's left, +z is forward). The dribbling palm travels
-      // down with the bounce so the hand pushes the ball to the floor and
-      // rises with it, instead of hanging at the hip while the ball bounces.
-      const palmR: Vec3 = checkHold
-        ? [shoulderR[0] - 0.06, shoulderR[1] - 0.46, shoulderR[2] + 0.20]
-        : dribbleNow
-          ? [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.14]
-          : [shoulderR[0] - 0.03, shoulderR[1] - IDLE_HAND_DROP, shoulderR[2] + 0.03];
-      const palmL: Vec3 = checkHold
-        ? [shoulderL[0] - 0.04, shoulderL[1] - 0.42, shoulderL[2] + 0.10]
-        : dribbleNow
-          ? [shoulderL[0] - 0.04, shoulderL[1] - 0.34, shoulderL[2] + 0.16]
-          : [shoulderL[0] + 0.03, shoulderL[1] - IDLE_HAND_DROP, shoulderL[2] + 0.03];
-      // Dribbling elbow stays tucked into the ribs and drives down with the
-      // pound; idle arms hang close so nobody reads as a stiff A-pose.
-      const flare = dribbleNow ? 0.22 : 0.06;
-      const rightArm = armIK(chestRot, shoulderR, palmR, facts.upperLenR, facts.foreLenR, facts.upperDirR, facts.foreDirR,
-        [-flare, -1, dribbleNow ? 0.06 : 0]);
-      const leftArm = armIK(chestRot, shoulderL, palmL, facts.upperLenL, facts.foreLenL, facts.upperDirL, facts.foreDirL,
-        [flare, -1, 0]);
-      bones.RightUpperArm = { rotation: rightArm.upperLocal };
-      bones.RightForearm = { rotation: rightArm.foreLocal };
-      bones.LeftUpperArm = { rotation: leftArm.upperLocal };
-      bones.LeftForearm = { rotation: leftArm.foreLocal };
-      if (dribbleNow) {
-        const cy = Math.cos(a.yaw);
-        const sn = Math.sin(a.yaw);
-        // At the check the ball sits on the right hip, outside the palm so the
-        // 3/4 camera can see it; live it tracks that palm through the bounce.
-        const aimPalm: Vec3 = checkHold
-          ? [palmR[0] - 0.05, palmR[1] + 0.04, palmR[2] + 0.02]
-          : palmR;
-        aimed = {
-          palm: [
-            a.x + cy * aimPalm[0] + sn * aimPalm[2],
-            0.96 + a.y + aimPalm[1],
-            a.z - sn * aimPalm[0] + cy * aimPalm[2]
-          ],
-          actual: rigPalm,
-          shoulderY,
-          t: cycleT,
-          moving: false
-        };
-      }
-    } else {
-      bones.RightUpperArm = { rotation: { x: -0.089, y: -0.066, z: -0.041, w: 0.993 } };
-      bones.RightForearm = { rotation: qX(-0.122) };
-      bones.LeftUpperArm = { rotation: { x: -0.089, y: 0.066, z: 0.041, w: 0.993 } };
-      bones.LeftForearm = { rotation: qX(-0.122) };
-    }
-    r.root.setAnimationPose({ bones });
+  if (dribbleNow) {
     livePoseOn.add(a.nodeId);
-  } else if (carryNow && socketsUp) {
-    // Moving handler: overlay on top of the Run/Walk/Sprint clip. Only the
-    // arms (and a mild spine/chest lean over the ball) are named, so the clip
-    // keeps owning the legs and everything else.
-    const shoulderR = shoulderOf(upperR!);
-    const shoulderL = shoulderOf(upperL!);
-    const shoulderY = shoulderR[1] + 0.96 + a.y;
-    const cyc = dribbleCycleY(cycleT, shoulderY, true);
-    // Upper-body-only run dribble: the torso bends over the ball at the waist (a steady lean plus a push dip) so the
-    // dribbling shoulder comes down far enough for the arm to follow the ball. Legs, hips and feet stay on the clip.
-    const lean = handBounceOverlayAngles(cyc.effort, true, QA_LEAN);
-    const bones: Record<string, { rotation?: Quat; position?: { x: number; y: number; z: number } }> = {
-      Spine: { rotation: qX(lean.spine) },
-      Chest: { rotation: qX(lean.chest) },
-      Head: { rotation: qX(lean.head) }
-    };
-    // The contact point leads the handler in the movement direction (yaw
-    // tracks velocity); the off hand guards near the body instead of mirroring.
-    const palmR: Vec3 = [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.12];
-    const palmL: Vec3 = [shoulderL[0] + 0.04, shoulderL[1] - 0.30, shoulderL[2] + 0.22];
-    const chestRot = qFromMat4(chest!.worldMatrix());
-    const rightArm = armIK(chestRot, shoulderR, palmR, facts.upperLenR, facts.foreLenR, facts.upperDirR, facts.foreDirR,
-      [-0.22, -1, 0.06]);
-    const leftArm = armIK(chestRot, shoulderL, palmL, facts.upperLenL, facts.foreLenL, facts.upperDirL, facts.foreDirL,
-      [0.18, -1, 0]);
-    bones.RightUpperArm = { rotation: rightArm.upperLocal };
-    bones.RightForearm = { rotation: rightArm.foreLocal };
-    bones.LeftUpperArm = { rotation: leftArm.upperLocal };
-    bones.LeftForearm = { rotation: leftArm.foreLocal };
-    r.root.setAnimationPose({ bones, mode: "overlay" });
-    overlayPoseOn.add(a.nodeId);
-    const cy = Math.cos(a.yaw);
-    const sn = Math.sin(a.yaw);
+    overlayPoseOn.delete(a.nodeId);
     aimed = {
-      palm: [
-        a.x + cy * palmR[0] + sn * palmR[2],
-        0.96 + a.y + palmR[1],
-        a.z - sn * palmR[0] + cy * palmR[2]
-      ],
-      actual: rigPalm,
-      shoulderY,
+      palm: checkHold ? posed.checkAimPalmWorld : posed.palmRWorld,
+      actual: posed.palmRWorld,
+      shoulderY: posed.shoulderY,
+      t: cycleT,
+      moving: false
+    };
+  } else if (carryNow) {
+    overlayPoseOn.add(a.nodeId);
+    livePoseOn.delete(a.nodeId);
+    aimed = {
+      palm: posed.palmRWorld,
+      actual: posed.palmRWorld,
+      shoulderY: posed.shoulderY,
       t: cycleT,
       moving: true
     };
-  } else if (livePoseOn.delete(a.nodeId) || overlayPoseOn.delete(a.nodeId)) {
-    // Shooting, dunking, jumping, stumbling, or losing the ball: clear any
-    // pose (replace or overlay) so those animations play unchanged.
-    r.root.setAnimationPose(undefined);
+  } else {
+    if (stanceNow) livePoseOn.add(a.nodeId);
+    else livePoseOn.delete(a.nodeId);
+    overlayPoseOn.delete(a.nodeId);
   }
   if (aimed) {
     dribblePoseOn.add(a.nodeId);
@@ -3354,7 +3330,6 @@ function syncAthlete(a: AthleteState, dt: number): void {
     dribblePoseOn.delete(a.nodeId);
     dribbleAims.delete(a.nodeId);
   }
-  syncHeadLook(a, anim, holdsBall, dt);
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
@@ -3363,34 +3338,6 @@ function syncAthlete(a: AthleteState, dt: number): void {
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
   r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn); // fit-grounding: ok (a centre-based cylinder primitive)
-}
-
-/**
- * H47-AN1 head look-at (new look only): an off-ball athlete that is not in a
- * shot, dunk, jump, stumble or action clip turns its head toward the ball
- * through the engine's last-in-order pose override. The ball handler keeps the
- * dribble pose's head lean (it already looks down at the ball), and every
- * other case clears the override so the clip owns the head again.
- */
-function syncHeadLook(a: AthleteState, anim: any, holdsBall: boolean, dt: number): void {
-  const pose = anim?.pose;
-  if (typeof pose?.setLocalRotation !== "function") return;
-  const wants = !LOOK_ORIGINAL && !holdsBall && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
-    a.stumble <= 0 && a.actionUntil <= 0;
-  const head = wants ? anim.socket?.("Head") : undefined;
-  // The 15-joint streetball rig parents Head directly under Chest (no "Neck" bone).
-  const parent = wants ? anim.socket?.("Chest") : undefined;
-  if (!wants || head?.valid !== true || parent?.valid !== true) {
-    if (headLookOn.delete(a.nodeId)) pose.clear?.("Head");
-    return;
-  }
-  const target = worldToActor([ball.x, ball.y, ball.z], a.x, a.y, a.z, a.yaw);
-  const goal = headLookAngles(mat4Translation(head.worldMatrix()), target, qFromMat4(parent.worldMatrix()));
-  const next = stepHeadLook(headLookOn.get(a.nodeId) ?? { yaw: 0, pitch: 0 }, goal, dt, reducedMotion);
-  headLookOn.set(a.nodeId, next);
-  headLookStats.frames++;
-  if (Math.abs(goal.yaw - next.yaw) <= (25 * Math.PI) / 180) headLookStats.within25++;
-  pose.setLocalRotation("Head", headLookQuat(next));
 }
 
 /* ------------------------------------------------------------------ *
@@ -3608,23 +3555,21 @@ function handProbe(): Record<string, unknown> | null {
   if (initialParams.get("diag") !== "1") return null;
   const out: Record<string, unknown> = {};
   athletes.forEach((a, i) => {
-    const anim = (rigs[i]?.root as any)?.animation;
-    if (typeof anim?.socket !== "function") return;
-    const fore = anim.socket("RightForearm") as BoneSocketView;
-    const hips = anim.socket("Hips") as BoneSocketView;
-    const rec: Record<string, unknown> = { sim: [Number(a.x.toFixed(2)), Number(a.z.toFixed(2))], hasBall: a.hasBall, yaw: Number(a.yaw.toFixed(2)) };
-    if (fore?.valid) rec.palm = athleteLocalToWorld(a, mat4Point(fore.worldMatrix(), PALM_OFFSET_R)).map((v) => Number(v.toFixed(3)));
-    const foreL = anim.socket("LeftForearm") as BoneSocketView;
-    if (foreL?.valid) rec.palmL = athleteLocalToWorld(a, mat4Point(foreL.worldMatrix(), PALM_OFFSET_L)).map((v) => Number(v.toFixed(3)));
-    const elbow = fore?.valid ? athleteLocalToWorld(a, mat4Translation(fore.worldMatrix())) : undefined;
-    if (elbow) rec.elbow = elbow.map((v) => Number(v.toFixed(3)));
-    if (hips?.valid) rec.hips = athleteLocalToWorld(a, mat4Translation(hips.worldMatrix())).map((v) => Number(v.toFixed(3)));
+    const posed = lastAthletePoses.get(a.nodeId);
+    if (!posed) return;
+    const rec: Record<string, unknown> = {
+      sim: [Number(a.x.toFixed(2)), Number(a.z.toFixed(2))],
+      hasBall: a.hasBall,
+      yaw: Number(a.yaw.toFixed(2)),
+      palm: posed.palmRWorld.map((v) => Number(v.toFixed(3))),
+      palmL: posed.palmLWorld.map((v) => Number(v.toFixed(3))),
+      elbow: posed.elbowRWorld.map((v) => Number(v.toFixed(3))),
+      hips: posed.hipsWorld.map((v) => Number(v.toFixed(3))),
+      footL: posed.footLWorld.map((v) => Number(v.toFixed(3))),
+      shoulder: posed.shoulderRWorld.map((v) => Number(v.toFixed(3)))
+    };
     const bnd = (rigs[i]?.root as any)?.bounds?.();
     if (bnd?.min && bnd?.max) rec.bounds = { min: [bnd.min[0], bnd.min[1], bnd.min[2]].map((v: number) => Number(v.toFixed(3))), max: [bnd.max[0], bnd.max[1], bnd.max[2]].map((v: number) => Number(v.toFixed(3))) };
-    const footL = anim.socket("LeftFoot") as BoneSocketView;
-    if (footL?.valid) rec.footL = athleteLocalToWorld(a, mat4Translation(footL.worldMatrix())).map((v) => Number(v.toFixed(3)));
-    const upper = anim.socket("RightUpperArm") as BoneSocketView;
-    if (upper?.valid) rec.shoulder = athleteLocalToWorld(a, mat4Translation(upper.worldMatrix())).map((v) => Number(v.toFixed(3)));
     out[a.nodeId] = rec;
   });
   return out;
@@ -3741,13 +3686,7 @@ function publishEvidence(force = false): void {
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
-    assets: [
-      "hoopsAthleteGuardKit",
-      "hoopsAthleteBigKit",
-      "aura_hoops_3d_blacktopFanAPoses",
-      "aura_hoops_3d_blacktopFanCPoses",
-      "aura_hoops_3d_blacktopFanDPoses"
-    ]
+    assets: []
   };
   publishBeacon(evidence);
 }

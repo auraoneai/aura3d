@@ -1,6 +1,6 @@
 # Why Aura3D over three.js
 
-Version: 5.5.3
+Version: 5.5.4
 
 Every claim on this page names its source, so a developer who checks it finds the same number. Per-capability status (shipped, partial, experimental) with code paths is in [`comparisons/aura3d-capability-audit.md`](comparisons/aura3d-capability-audit.md).
 
@@ -38,7 +38,7 @@ Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, sh
 
 ## Eight reasons, each with the code or evidence behind it
 
-Everything below shipped through 5.5.3 ([`CHANGELOG.md`](../CHANGELOG.md), sections 5.5.3, 5.5.0 and 5.3.0). Each reason names its source and the scope of the check behind it.
+Everything below shipped through 5.5.4 ([`CHANGELOG.md`](../CHANGELOG.md), sections 5.5.4, 5.5.0 and 5.3.0). Each reason names its source and the scope of the check behind it.
 
 ### 1. A typed, declarative scene with typed assets
 
@@ -79,7 +79,7 @@ void app.ready().then(() => console.log(app.diagnostics().renderer?.backendSelec
 
 The same scene code runs on both backends: post effects (SSAO/GTAO, screen-space reflections, depth of field, god rays, motion blur, volumetric light, bloom, grade), sky, fog, particles and generated PBR have native WGSL paths. All 30 showcase games ship with `backend: "auto"` and run on WebGPU by default; `?backend=webgl2` opts any of them out. A game was switched only after a real-GPU check showed the same frame as WebGL2 with 0 errors.
 
-Scope: the switch checks ran on one Apple GPU (M4 Max, headless Chrome, Dawn for WebGPU, ANGLE Metal for WebGL2). The frame-rate ratios used to decide each switch are recorded per game and are not performance claims. Without the option, `createAuraApp` uses WebGL2. Sources: CHANGELOG 5.3.0 ("WebGPU parity"), 5.5.0 and 5.5.3 ("WebGPU draw path"); per-game tables in [`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md); selection rules in [`rendering/native-backends.md`](rendering/native-backends.md).
+Scope: the switch checks ran on one Apple GPU (M4 Max, headless Chrome, Dawn for WebGPU, ANGLE Metal for WebGL2). The frame-rate ratios used to decide each switch are recorded per game and are not performance claims. Without the option, `createAuraApp` uses WebGL2. Sources: CHANGELOG 5.3.0 ("WebGPU parity"), 5.5.0 and 5.5.4 ("WebGPU draw path"); per-game tables in [`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md); selection rules in [`rendering/native-backends.md`](rendering/native-backends.md).
 
 ### 3. Worker rendering, opt-in
 
@@ -96,9 +96,9 @@ const app = createAuraApp("#app", {
 app.onFrame((f) => app.nodes.require("crate").setRotation(0, f.time, 0)); // patches cross to the worker
 ```
 
-Worker apps get `app.nodes` patches, frame callbacks, step and advance, and host-side picking; a node method whose effect cannot be replayed in the worker throws a typed `AuraWorkerError` instead of failing silently. From 5.5.3, `app.diagnostics().fps` counts the frames the worker presents. All 30 showcase games render in a worker with `?worker=1` (13 from 5.3.0, the other 17 from 5.5.0). On the 2026-11-08 real-GPU check of those 17, each title frame matched the main-thread frame (mean absolute difference 0.1 to 5.7 of 255 over two runs; the high end is animated scenes) and each game started and played with no errors.
+Worker apps get `app.nodes` patches, frame callbacks, step and advance, and host-side picking; a node method whose effect cannot be replayed in the worker throws a typed `AuraWorkerError` instead of failing silently. From 5.5.4, `app.diagnostics().fps` counts the frames the worker presents. All 30 showcase games render in a worker with `?worker=1` (13 from 5.3.0, the other 17 from 5.5.0). On the 2026-11-08 real-GPU check of those 17, each title frame matched the main-thread frame (mean absolute difference 0.1 to 5.7 of 255 over two runs; the high end is animated scenes) and each game started and played with no errors.
 
-Scope: opt-in, checked on one Apple GPU; no claim is made that the worker path is faster than the main thread. Physics (`app.physics` and scene bodies), DOM labels and the diagnostics overlay stay with main-thread apps; the worker app tells you so with `AuraWorkerError`. Sources: CHANGELOG 5.3.0, 5.5.0 and 5.5.3 ("Worker rendering"); [`agents/native-capability-recipes.md`](agents/native-capability-recipes.md) (`worker-render`).
+Scope: opt-in, checked on one Apple GPU; no claim is made that the worker path is faster than the main thread. Physics (`app.physics` and scene bodies), DOM labels and the diagnostics overlay stay with main-thread apps; the worker app tells you so with `AuraWorkerError`. Sources: CHANGELOG 5.3.0, 5.5.0 and 5.5.4 ("Worker rendering"); [`agents/native-capability-recipes.md`](agents/native-capability-recipes.md) (`worker-render`).
 
 ### 4. A good-looking frame with no setup
 
@@ -174,7 +174,7 @@ The same AI model (`claude-sonnet-5.5`) built the same eight scenes three times 
 
 <!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
 
-| | Aura3D 5.5.3 | three.js 0.185.1 |
+| | Aura3D 5.5.4 | three.js 0.185.1 |
 |---|---|---|
 | App code per scene, median lines | 270 | 326 |
 | After the follow-up edit | 289 | 352 |
@@ -189,8 +189,8 @@ Lines are non-blank, non-comment lines in the app's `src/`, without generated as
 | What you need | With Aura3D | With three.js | Source |
 |---|---|---|---|
 | A good-looking scene on first run | A bare scene gets a neutral output that keeps authored colours, a built-in studio reflection environment, a shadow-casting `lights.key` and `camera.auto` framing. `looks.preset(id)` adds HDRI lighting, background, grade and post effects in one call (15 genre looks) | Environment, tone mapping, shadows and camera placement are set up by hand | CHANGELOG 5.3.0 N1 to N4; `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` section 11 |
-| WebGPU | `renderer: { backend: "auto" }`: WebGPU first, WebGL2 fallback on the same canvas, same scene code. All 30 showcase games run on WebGPU by default (`?backend=webgl2` opts out) | A separate `WebGPURenderer` from `three/webgpu` that you choose and wire yourself | CHANGELOG 5.3.0 to 5.5.3; `docs/upgrade-5.0.0/README.md` |
-| Rendering off the main thread | `worker: { createWorker }`, with node patches, frame callbacks and picking from the main thread; all 30 showcase games run with `?worker=1` | `OffscreenCanvas` plumbing and a message protocol of your own | CHANGELOG 5.3.0, 5.5.0, 5.5.3 |
+| WebGPU | `renderer: { backend: "auto" }`: WebGPU first, WebGL2 fallback on the same canvas, same scene code. All 30 showcase games run on WebGPU by default (`?backend=webgl2` opts out) | A separate `WebGPURenderer` from `three/webgpu` that you choose and wire yourself | CHANGELOG 5.3.0 to 5.5.4; `docs/upgrade-5.0.0/README.md` |
+| Rendering off the main thread | `worker: { createWorker }`, with node patches, frame callbacks and picking from the main thread; all 30 showcase games run with `?worker=1` | `OffscreenCanvas` plumbing and a message protocol of your own | CHANGELOG 5.3.0, 5.5.0, 5.5.4 |
 | Scene code | 4 of 5 benchmark scenes are shorter, by 26% to 51%: viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer in those scenes | `RESULTS.md` section 1 |
 | Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS.md` section 3 |
 | Bloom, shadows, custom post pass | One call each: `effects.bloom()`, `shadow: true`, `effects.shaderPass()` | `EffectComposer` plus 3 or 4 addon passes; shadow flags on every mesh | `RESULTS.md` section 11 |

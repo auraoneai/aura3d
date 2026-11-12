@@ -1,31 +1,19 @@
-import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
+import { buildProceduralActorNodes, createProceduralActorAssets } from "../../../examples/ninja-runner-port/art/proceduralActors";
 import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
 import { buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 
-const DIR = "examples/ninja-runner-port/assets/meshy/";
-
-describe("generated model assets", () => {
-  it("the manifest matches the shipped GLBs byte for byte (regenerate with tools/crayon-capture/ninja-runner-meshy-manifest.mjs)", () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith(".glb")).map((f) => f.replace(/\.glb$/, "")).sort();
-    expect(Object.keys(MESHY_MANIFEST).sort()).toEqual(files);
-    for (const id of files) {
-      const buf = readFileSync(`${DIR}${id}.glb`);
-      expect(createHash("sha256").update(buf).digest("hex"), id).toBe(MESHY_MANIFEST[id]!.sha256);
-      expect(statSync(`${DIR}${id}.glb`).size).toBe(MESHY_MANIFEST[id]!.bytes);
+describe("procedural Sengoku character & prop assets", () => {
+  it("ships zero .glb files under examples/ninja-runner-port/assets/ and keeps manifest budgets finite", () => {
+    for (const sub of ["examples/ninja-runner-port/assets/meshy", "examples/ninja-runner-port/assets/models"]) {
+      if (!existsSync(sub)) continue;
+      const glbs = readdirSync(sub).filter((f) => f.endsWith(".glb"));
+      expect(glbs, sub).toEqual([]);
     }
-  });
-
-  it("stays inside the asset and triangle budgets", () => {
     const total = Object.values(MESHY_MANIFEST).reduce((n, m) => n + m.bytes, 0);
-    /* 20 MB before the 4.3.0 art pass; the ten added props (about 1 MB each, 512-640 px textures) raise it to 32 MB of lazily loaded game assets */
     expect(total).toBeLessThan(32 * 1024 * 1024);
-    for (const [id, m] of Object.entries(MESHY_MANIFEST)) {
-      const budget = ["hero", "sage", "soldier"].includes(id) ? 30000 : id === "brute" ? 40000 : 8000;
-      expect(m.triangles, id).toBeLessThanOrEqual(budget);
-    }
   });
 
   it("assigns a character model to every actor slot (hero + clones, soldiers, brutes, sage)", () => {
@@ -37,7 +25,7 @@ describe("generated model assets", () => {
     expect(SLOT_MODEL.slice(10, 12)).toEqual(["brute", "brute"]);
   });
 
-  it("evening (meshy07) appends three caster and three scout slots and keeps the 4.6.2 slots as they are", () => {
+  it("evening appends three caster and three scout slots and keeps the base slots as they are", () => {
     expect(EVENING_SLOT_MODEL.slice(0, 13)).toEqual(SLOT_MODEL);
     expect(EVENING_SLOT_MODEL.slice(13)).toEqual(["caster", "caster", "caster", "scout", "scout", "scout"]);
     expect(SLOT_MODEL).not.toContain("caster");
@@ -46,19 +34,24 @@ describe("generated model assets", () => {
     expect(MESHY07_ENEMY_CLIPS.scout).toEqual({ attack: "throw", death: "death" });
   });
 
-  it("ships the meshy07 enemy rigs under the GLB and triangle budgets with rights and task metadata", () => {
-    for (const row of ["ninjaCasterAnimR2", "ninjaScoutAnimR2"]) {
-      const file = `examples/ninja-runner-port/assets/models/ninja_runner_port_${row}.glb`;
-      expect(statSync(file).size, row).toBeLessThanOrEqual(1.5 * 1024 * 1024);
-      const json = JSON.parse(readFileSync(file).subarray(20, 20 + readFileSync(file).readUInt32LE(12)).toString("utf8")) as { accessors: { count: number }[]; meshes: { primitives: { indices: number }[] }[]; skins: unknown[]; animations: { name: string }[] };
-      const tris = json.meshes.flatMap((m) => m.primitives).reduce((n, p) => n + json.accessors[p.indices]!.count / 3, 0);
-      expect(tris, row).toBeLessThan(15000);
-      expect(json.skins.length, row).toBe(1);
-      expect(json.animations.map((a) => a.name), row).toEqual(expect.arrayContaining(["idle", "run", "hit", "death", row.startsWith("ninjaCaster") ? "cast" : "throw"]));
-      for (const kind of ["rights", "meta"]) expect(statSync(`examples/ninja-runner-port/assets/provenance/ninja_runner_port_${row}.${kind}.json`).size, `${row} ${kind}`).toBeGreaterThan(0);
+  it("builds articulated multi-material procedural rigs with canonical clips and bone transforms", () => {
+    const assets = createProceduralActorAssets(undefined, "evening");
+    expect(assets.actors).toHaveLength(EVENING_SLOT_MODEL.length);
+    expect(CHARACTER_URLS.caster).toContain("ninja_runner_port_ninjaCasterAnimR2");
+    expect(CHARACTER_URLS.scout).toContain("ninja_runner_port_ninjaScoutAnimR2");
+
+    for (const [idx, id] of EVENING_SLOT_MODEL.entries()) {
+      const nodes = buildProceduralActorNodes(idx, id, idx >= 1 && idx <= 3);
+      expect(nodes).toHaveLength(6);
+      const actor = assets.actors[idx]!;
+      if (id === "caster") expect(actor.evidence.clips).toEqual(expect.arrayContaining(["idle", "run", "cast", "hit", "death"]));
+      else if (id === "scout") expect(actor.evidence.clips).toEqual(expect.arrayContaining(["idle", "run", "throw", "hit", "death"]));
+      else expect(actor.evidence.clips).toEqual(expect.arrayContaining(["run", "jump", "idle", "slide", "punch", "sword", "hit", "death"]));
+      actor.playClip("run", 0.25);
+      actor.pipeline.resources.scene.updateWorldTransforms();
+      expect(actor.pipeline.resources.scene.findByName("Spine02")).toHaveLength(1);
+      expect(actor.pipeline.resources.scene.findByName("RightHand")).toHaveLength(1);
     }
-    expect(CHARACTER_URLS.caster).toContain("ninja_runner_port_ninjaCasterAnimR2.glb");
-    expect(CHARACTER_URLS.scout).toContain("ninja_runner_port_ninjaScoutAnimR2.glb");
   });
 });
 

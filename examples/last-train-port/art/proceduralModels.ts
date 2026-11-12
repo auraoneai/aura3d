@@ -228,232 +228,410 @@ export function strataUndercroftMaterial(): AuraMaterialSpec {
   return { ...base, custom };
 }
 
-/* ------------------------------------------------------------------ 1. Hero Ghibli Coastal Electric Streetcar */
+/* ------------------------------------------------------------------ 1. Classic Coastal Electric Interurban Railcar */
 
 function coachCrossRing(z: number, halfW: number, yBot: number, yWaist: number, cornerR: number): V3[] {
-  const w0 = halfW - cornerR;
-  const wTop = halfW * 0.985;
-  const wMid = halfW * 1.03;
+  const w0 = Math.max(0.18, halfW - cornerR);
+  const wTop = halfW * 0.99;
+  const wMid = halfW * 1.02;
   return [
     [-w0, yBot, z],
     [w0, yBot, z],
-    [halfW, yBot + 0.14, z],
+    [halfW, yBot + 0.12, z],
     [wMid, (yBot + yWaist) * 0.52, z],
     [wTop, yWaist, z],
     [-wTop, yWaist, z],
     [-wMid, (yBot + yWaist) * 0.52, z],
-    [-halfW, yBot + 0.14, z]
+    [-halfW, yBot + 0.12, z]
   ];
 }
 
 function camberedRoofRing(z: number, halfW: number, yEave: number, crown: number): V3[] {
   return [
-    [-halfW, yEave - 0.06, z],
-    [halfW, yEave - 0.06, z],
-    [halfW * 0.96, yEave + 0.03, z],
-    [halfW * 0.56, yEave + crown * 0.74, z],
+    [-halfW, yEave - 0.05, z],
+    [halfW, yEave - 0.05, z],
+    [halfW * 0.96, yEave + 0.04, z],
+    [halfW * 0.58, yEave + crown * 0.76, z],
     [0, yEave + crown, z],
-    [-halfW * 0.56, yEave + crown * 0.74, z],
-    [-halfW * 0.96, yEave + 0.03, z]
+    [-halfW * 0.58, yEave + crown * 0.76, z],
+    [-halfW * 0.96, yEave + 0.04, z]
   ];
 }
 
 let cachedStreetcarSlots: readonly MultiMatSlot[] | null = null;
+let cachedStreetcarCompactSpecs: CompactSlotSpecs | null = null;
 
 function streetcarSlots(): readonly MultiMatSlot[] {
   if (cachedStreetcarSlots) return cachedStreetcarSlots;
   const slots: MultiMatSlot[] = [];
   const push = (materialIndex: number, mesh: RawMesh): void => { slots.push({ materialIndex, mesh }); };
+  const boxPart = (wx: number, wy: number, wz: number, pos: V3, rot?: V3): RawMesh => {
+    const hx = wx * 0.5, hy = wy * 0.5, hz = wz * 0.5;
+    const ring = (y: number): V3[] => [[-hx, y, -hz], [hx, y, -hz], [hx, y, hz], [-hx, y, hz]];
+    return transformMesh(toFlatShaded(loftSectionsMesh([ring(-hy), ring(hy)], true, true)), rot ? { pos, rot } : { pos });
+  };
 
-  // Slot 0: Vermilion-cherry lacquer lower coach with curved bow/stern dash aprons & tumblehome
-  const zStations: readonly [number, number][] = [
-    [-4.9, 0.92], [-4.72, 1.24], [-4.4, 1.44], [-3.4, 1.48], [0, 1.49],
-    [3.4, 1.48], [4.4, 1.44], [4.72, 1.24], [4.9, 0.92]
-  ];
-  push(0, loftSectionsMesh(zStations.map(([z, hw]) => coachCrossRing(z, hw, 0.76, 1.92, 0.14)), true, false));
-  for (const sgn of [-1, 1] as const) {
-    push(0, transformMesh(bevelBoxMesh(1.9, 0.24, 0.14, 0.03), { pos: [0, 0.68, sgn * 4.86] }));
-  }
-
-  // Slot 1: Cream lacquer upper saloon pillars, arched window headers, cab aprons & clerestory monitor walls
-  for (const sgn of [-1, 1] as const) {
-    const cabSections = [
-      coachCrossRing(sgn * 4.28, 1.44, 1.9, 3.38, 0.12),
-      coachCrossRing(sgn * 4.64, 1.28, 1.9, 3.36, 0.12),
-      coachCrossRing(sgn * 4.82, 0.96, 1.92, 3.32, 0.1)
-    ];
-    push(1, loftSectionsMesh(sgn > 0 ? cabSections : [...cabSections].reverse(), true, false));
-  }
-  const pillarZ = [-3.95, -2.62, -1.3, 0, 1.3, 2.62, 3.95];
+  // Slot 4: Full-length cast-steel chassis underframe solebars & underfloor air reservoirs / traction grid box
+  push(4, boxPart(2.68, 0.16, 9.65, [0, 0.74, 0]));
+  push(4, boxPart(1.18, 0.24, 1.45, [0, 0.62, 0]));
   for (const side of [-1, 1] as const) {
-    for (const pz of pillarZ) {
-      push(1, transformMesh(bevelBoxMesh(0.11, 1.48, 0.2, 0.025), { pos: [side * 1.43, 2.65, pz] }));
+    push(4, transformMesh(latheMesh([[0, -0.58], [0.16, -0.54], [0.17, 0.54], [0, 0.58]], 10), {
+      pos: [side * 0.72, 0.62, side * 0.85],
+      rot: [Math.PI * 0.5, 0, 0]
+    }));
+  }
+
+  // Slot 0: Rich crimson-red (`carPaint` #b8292f) closed lower steel coach body & tapered 3-window cab dash aprons
+  // Main waist spans z = -3.12..+3.12 (`|x| = 1.46`), vestibule step bays at z = ±3.12..±4.08, rounded cab ends to z = ±5.02 (`capEnds = true`)
+  const waistStations: readonly [number, number][] = [
+    [-5.02, 0.64], [-4.86, 1.08], [-4.48, 1.36], [-4.08, 1.44], [-3.12, 1.46],
+    [0, 1.47], [3.12, 1.46], [4.08, 1.44], [4.48, 1.36], [4.86, 1.08], [5.02, 0.64]
+  ];
+  push(0, loftSectionsMesh(waistStations.map(([z, hw]) => coachCrossRing(z, hw, 0.8, 2.02, 0.12)), true, true));
+  // Crimson lower anti-climber end skirts & recessed bi-fold lower door leaves
+  for (const sgn of [-1, 1] as const) {
+    push(0, boxPart(1.88, 0.22, 0.16, [0, 0.73, sgn * 4.95]));
+  }
+
+  // Slot 1: Heritage cream (`#f5ebd6`) upper window band, solid corner posts, continuous letterboard & closed cab crowns
+  // Continuous solid cream letterboard header wrapping both rounded cab ends (`y = 3.08..3.42`, `capEnds = true`)
+  const letterboardStations: readonly [number, number][] = [
+    [-4.96, 0.62], [-4.8, 1.04], [-4.44, 1.33], [-4.08, 1.42], [0, 1.44],
+    [4.08, 1.42], [4.44, 1.33], [4.8, 1.04], [4.96, 0.62]
+  ];
+  push(1, loftSectionsMesh(letterboardStations.map(([z, hw]) => coachCrossRing(z, hw, 3.08, 3.42, 0.08)), true, true));
+
+  // Side cream structural piers separating the 5 saloon window bays (`z = -3.10, -1.86, -0.62, 0.62, 1.86, 3.10`) + cab corner posts (`z = ±4.10`)
+  const saloonPierZ = [-3.1, -1.86, -0.62, 0.62, 1.86, 3.1];
+  for (const side of [-1, 1] as const) {
+    for (const pz of saloonPierZ) {
+      push(1, boxPart(0.11, 1.12, 0.2, [side * 1.43, 2.56, pz]));
     }
-    push(1, transformMesh(bevelBoxMesh(0.12, 0.22, 8.2, 0.025), { pos: [side * 1.43, 3.3, 0] }));
-    for (let b = 0; b < pillarZ.length - 1; b += 1) {
-      const midZ = (pillarZ[b]! + pillarZ[b + 1]!) * 0.5;
-      for (const s of archwayVoussoirSlots({ radius: 0.48, thickness: 0.12, depth: 0.1, voussoirs: 5, stoneMatA: 1, stoneMatB: 1, keystoneMat: 6 })) {
-        push(s.materialIndex, transformMesh(s.mesh, { pos: [side * 1.43, 2.84, midZ], rot: [0, Math.PI * 0.5, 0] }));
+    for (const cabCornerZ of [-4.1, 4.1]) {
+      push(1, boxPart(0.13, 1.12, 0.24, [side * 1.4, 2.56, cabCornerZ]));
+    }
+  }
+
+  // Recessed bi-fold passenger doorway bays at `z = ±3.60` (`|x| = 1.37`) with mahogany/crimson leaves, glazed upper lights, brass grab rails & stepwells
+  for (const side of [-1, 1] as const) {
+    for (const doorZ of [-3.6, 3.6]) {
+      // Recessed vestibule door pocket frame (cream top header + dark stepwell riser)
+      push(1, boxPart(0.12, 0.14, 0.86, [side * 1.41, 3.04, doorZ]));
+      // Twin bi-fold door leaves (mahogany Slot 3 + lower crimson panel Slot 0 + dark-slate door glass Slot 8 + brass divider Slot 6)
+      for (const leafOff of [-0.19, 0.19]) {
+        const lz = doorZ + leafOff;
+        push(3, boxPart(0.055, 2.14, 0.36, [side * 1.37, 1.93, lz]));
+        push(0, boxPart(0.062, 0.88, 0.28, [side * 1.375, 1.36, lz]));
+        push(8, boxPart(0.066, 0.84, 0.24, [side * 1.38, 2.48, lz]));
+        push(6, boxPart(0.07, 0.03, 0.26, [side * 1.382, 2.04, lz]));
+      }
+      // Cast-iron twin boarding stepwells (`y = 0.44` and `y = 0.64`)
+      push(4, boxPart(0.24, 0.05, 0.84, [side * 1.42, 0.64, doorZ]));
+      push(4, boxPart(0.26, 0.05, 0.84, [side * 1.48, 0.44, doorZ]));
+      push(4, boxPart(0.05, 0.42, 0.86, [side * 1.31, 0.62, doorZ]));
+      // Twin vertical brushed-brass boarding grab handles flanking doorway
+      for (const gz of [doorZ - 0.44, doorZ + 0.44]) {
+        push(6, tubeSweepMesh([
+          [side * 1.46, 0.86, gz, 0.02],
+          [side * 1.52, 1.48, gz, 0.02],
+          [side * 1.52, 2.28, gz, 0.02],
+          [side * 1.45, 2.52, gz, 0.02]
+        ], 5));
       }
     }
   }
-  push(1, loftSectionsMesh([
-    coachCrossRing(-3.82, 0.78, 3.64, 4.06, 0.08),
-    coachCrossRing(-3.45, 0.98, 3.64, 4.08, 0.08),
-    coachCrossRing(3.45, 0.98, 3.64, 4.08, 0.08),
-    coachCrossRing(3.82, 0.78, 3.64, 4.06, 0.08)
-  ], true, false));
 
-  // Slot 2: Harbor-teal waist beltline molding & destination headboard frames
-  const beltPts: V4[] = [];
-  for (let i = 0; i <= 24; i += 1) {
-    const a = (i / 24) * Math.PI * 2;
-    const sx = Math.cos(a), sz = Math.sin(a);
-    const rx = 1.5 * Math.sign(sx) * Math.pow(Math.abs(sx), 0.55);
-    const rz = 4.92 * Math.sign(sz) * Math.pow(Math.abs(sz), 0.72);
-    beltPts.push([rx, 1.92, rz, 0.045]);
-  }
-  push(2, tubeSweepMesh(beltPts, 8, false));
+  // Tapered 3-Window Front & Rear Cab Ends (`sgn = +1` front, `-1` rear)
   for (const sgn of [-1, 1] as const) {
-    push(2, transformMesh(bevelBoxMesh(1.48, 0.3, 0.14, 0.025), { pos: [0, 3.52, sgn * 4.72] }));
-  }
+    // Interior dark-slate driver cab console & bulkhead (`z = sgn * 4.35`) so windshields reflect sky/station cleanly without showing void through the car
+    push(4, boxPart(2.42, 1.36, 0.12, [0, 2.44, sgn * 4.28]));
+    push(3, boxPart(2.1, 0.14, 0.42, [0, 1.98, sgn * 4.62]));
 
-  // Slot 3: Teak & mahogany cambered clerestory roof, rooftop duckboards, slatted floor & passenger benches
-  push(3, loftSectionsMesh([
-    camberedRoofRing(-4.95, 1.05, 3.36, 0.24),
-    camberedRoofRing(-4.35, 1.54, 3.38, 0.3),
-    camberedRoofRing(0, 1.56, 3.38, 0.32),
-    camberedRoofRing(4.35, 1.54, 3.38, 0.3),
-    camberedRoofRing(4.95, 1.05, 3.36, 0.24)
-  ], true, false));
-  push(3, loftSectionsMesh([
-    camberedRoofRing(-3.92, 0.84, 4.05, 0.16),
-    camberedRoofRing(-3.4, 1.06, 4.06, 0.2),
-    camberedRoofRing(3.4, 1.06, 4.06, 0.2),
-    camberedRoofRing(3.92, 0.84, 4.05, 0.16)
-  ], true, false));
-  for (const x of [-0.3, 0, 0.3]) {
-    push(3, transformMesh(bevelBoxMesh(0.14, 0.04, 6.4, 0.01), { pos: [x, 4.27, 0] }));
-  }
-  push(3, transformMesh(bevelBoxMesh(2.74, 0.08, 8.8, 0.02), { pos: [0, STREETCAR_FLOOR_Y, 0] }));
-  for (const side of [-1, 1] as const) {
-    push(3, transformMesh(bevelBoxMesh(0.64, 0.1, 7.5, 0.02), { pos: [side * 1.02, 1.3, 0] }));
-    push(3, transformMesh(bevelBoxMesh(0.09, 0.52, 7.5, 0.02), { pos: [side * 1.31, 1.6, 0] }));
-    for (const legZ of [-3.4, -1.7, 0, 1.7, 3.4]) {
-      push(3, transformMesh(bevelBoxMesh(0.5, 0.44, 0.08, 0.015), { pos: [side * 1.02, 1.04, legZ] }));
-    }
-  }
+    // Center driver windshield pane (`x = -0.50..+0.50, y = 2.04..3.08, z = sgn * 4.93`) — dark-slate reflective glass + brass frame
+    push(8, boxPart(0.98, 1.02, 0.04, [0, 2.56, sgn * 4.93]));
+    push(6, boxPart(1.04, 0.045, 0.055, [0, 3.07, sgn * 4.94]));
+    push(6, boxPart(1.04, 0.045, 0.055, [0, 2.04, sgn * 4.95]));
 
-  // Slot 4 & 5: Cast-iron bogie trucks, slatted cowcatchers, diamond pantograph & flanged steel wheels
-  const wheelProfile: V2[] = [
-    [0, -0.09], [0.44, -0.09], [0.44, -0.055], [0.39, -0.04],
-    [0.38, 0.08], [0.31, 0.085], [0.28, 0.045], [0.13, 0.05], [0.13, 0.1], [0, 0.1]
-  ];
-  for (const bogieZ of [-3.1, 3.1]) {
+    // Twin vertical brushed-brass & cream center cab mullions (`x = ±0.52`) + angled corner cab posts (`x = ±1.14`)
     for (const side of [-1, 1] as const) {
-      push(4, transformMesh(bevelBoxMesh(0.12, 0.24, 1.75, 0.025), { pos: [side * 0.9, 0.44, bogieZ] }));
-      push(4, transformMesh(latheMesh([[0, 0], [0.11, 0], [0.12, 0.22], [0, 0.22]], 10), { pos: [side * 0.9, 0.54, bogieZ] }));
+      push(1, boxPart(0.09, 1.08, 0.11, [side * 0.53, 2.56, sgn * 4.9]));
+      push(6, boxPart(0.045, 1.06, 0.06, [side * 0.52, 2.56, sgn * 4.95]));
+      push(1, boxPart(0.11, 1.08, 0.14, [side * 1.19, 2.56, sgn * 4.54], [0, side * sgn * 0.46, 0]));
+      // Angled left & right cab corner windshields (`x = ±0.88, z = sgn * 4.74`) + brass sill/header frames
+      const paneYaw = side * sgn * 0.48;
+      push(8, boxPart(0.68, 1.0, 0.038, [side * 0.87, 2.56, sgn * 4.74], [0, paneYaw, 0]));
+      push(6, boxPart(0.7, 0.042, 0.052, [side * 0.87, 3.06, sgn * 4.75], [0, paneYaw, 0]));
+      push(6, boxPart(0.7, 0.045, 0.055, [side * 0.87, 2.04, sgn * 4.76], [0, paneYaw, 0]));
     }
-    push(4, transformMesh(bevelBoxMesh(1.88, 0.18, 0.34, 0.025), { pos: [0, 0.52, bogieZ] }));
-    for (const dz of [-0.54, 0.54]) {
+
+    // Driver's pantograph windshield wiper pivot, arm & rubber blade across the front (+Z) center windshield only
+    if (sgn > 0) {
+      push(6, transformMesh(latheMesh([[0, 0], [0.032, 0], [0.026, 0.04], [0, 0.045]], 8), {
+        pos: [-0.18, 3.04, 4.96],
+        rot: [Math.PI * 0.5, 0, 0]
+      }));
+      push(4, tubeSweepMesh([
+        [-0.18, 3.03, 4.97, 0.01],
+        [0.06, 2.58, 4.975, 0.009]
+      ], 4));
+      push(7, boxPart(0.018, 0.54, 0.018, [0.05, 2.58, 4.98], [0, 0, -0.22]));
+    }
+
+    // Illuminated destination rollsign box above cab windshield (`LL-01 COASTLINE`)
+    push(4, boxPart(1.62, 0.31, 0.22, [0, 3.5, sgn * 4.78]));
+    push(6, boxPart(1.56, 0.26, 0.05, [0, 3.5, sgn * 4.87]));
+    push(9, boxPart(1.44, 0.19, 0.03, [0, 3.5, sgn * 4.89]));
+    // Dark-enamel route-number divider & crisp letter-bars (`LL-01 | COASTLINE`) silhouetted over the glowing rollsign glass
+    push(4, boxPart(0.022, 0.18, 0.018, [-0.24 * sgn, 3.5, sgn * 4.908]));
+    for (const [bx, bw, bh, by] of [
+      [-0.54, 0.022, 0.1, 3.5],
+      [-0.5, 0.075, 0.022, 3.46],
+      [-0.42, 0.022, 0.1, 3.5],
+      [-0.38, 0.075, 0.022, 3.46],
+      [0.08, 0.48, 0.036, 3.52],
+      [0.24, 0.72, 0.024, 3.465]
+    ] as const) {
+      push(4, boxPart(bw, bh, 0.016, [bx * sgn, by, sgn * 4.908]));
+    }
+  }
+
+  // Slot 2 & 6: Brushed-brass waist belt rail (`y = 2.02`), lower brass pinstripe (`y = 1.00`) & harbor-teal eave frieze (`y = 3.40`)
+  const beltLoop = (y: number, radius: number, rxScale: number, rzScale: number): RawMesh => {
+    const pts: V4[] = [];
+    for (let i = 0; i <= 16; i += 1) {
+      const a = (i / 16) * Math.PI * 2;
+      const sx = Math.cos(a), sz = Math.sin(a);
+      const rx = rxScale * Math.sign(sx) * Math.pow(Math.abs(sx), 0.52);
+      const rz = rzScale * Math.sign(sz) * Math.pow(Math.abs(sz), 0.72);
+      pts.push([rx, y, rz, radius]);
+    }
+    return tubeSweepMesh(pts, 5, false);
+  };
+  push(6, beltLoop(2.02, 0.036, 1.49, 5.03));
+  push(6, beltLoop(1.0, 0.02, 1.48, 5.0));
+  push(2, beltLoop(3.4, 0.032, 1.46, 4.97));
+
+  // Slot 8, 3 & 6: Five glazed side window bays per side (`z = -2.48, -1.24, 0, 1.24, 2.48`)
+  // Tinted dark-blue/slate reflective glass (`#1e3042`) + mahogany inner sash + upper transom bar + brass sill & center mullion
+  for (const side of [-1, 1] as const) {
+    push(6, boxPart(0.08, 0.045, 6.36, [side * 1.45, 2.04, 0]));
+    for (let b = 0; b < saloonPierZ.length - 1; b += 1) {
+      const midZ = (saloonPierZ[b]! + saloonPierZ[b + 1]!) * 0.5;
+      // Dark-slate reflective glass window pane (`1.06 m` wide x `1.02 m` tall)
+      push(8, boxPart(0.034, 1.02, 1.06, [side * 1.41, 2.56, midZ]));
+      // Mahogany inner window frame + horizontal transom bar at `y = 2.82`
+      push(3, boxPart(0.06, 0.045, 1.06, [side * 1.395, 2.82, midZ]));
+      push(3, boxPart(0.065, 1.04, 0.05, [side * 1.39, 2.56, midZ - 0.51]));
+      push(3, boxPart(0.065, 1.04, 0.05, [side * 1.39, 2.56, midZ + 0.51]));
+      // Delicate brushed-brass vertical transom mullion + brass sill trim
+      push(6, boxPart(0.048, 0.26, 0.028, [side * 1.425, 2.95, midZ]));
+    }
+  }
+
+  // Slot 3 & 4: Saloon mahogany floor, longitudinal cushioned mahogany benches, brass stanchions & dark interior ceiling liner
+  push(4, boxPart(2.68, 0.07, 8.2, [0, 3.36, 0]));
+  push(3, boxPart(2.74, 0.08, 8.6, [0, STREETCAR_FLOOR_Y, 0]));
+  for (const side of [-1, 1] as const) {
+    push(3, boxPart(0.62, 0.11, 6.2, [side * 1.02, 1.3, 0]));
+    push(3, boxPart(0.09, 0.54, 6.2, [side * 1.3, 1.62, 0]));
+    for (const legZ of [-2.8, 0, 2.8]) {
+      push(4, boxPart(0.48, 0.44, 0.07, [side * 1.02, 1.04, legZ]));
+    }
+  }
+
+  // Slot 12, 1, 8, 3, 4 & 11: Sloped canvas-grey/oxide roof (`#48505a`), raised clerestory monitor vents, resistor grids & articulated diamond pantograph
+  push(12, loftSectionsMesh([
+    camberedRoofRing(-5.0, 0.68, 3.41, 0.18),
+    camberedRoofRing(-4.72, 1.14, 3.42, 0.25),
+    camberedRoofRing(-4.12, 1.48, 3.43, 0.31),
+    camberedRoofRing(0, 1.5, 3.43, 0.33),
+    camberedRoofRing(4.12, 1.48, 3.43, 0.31),
+    camberedRoofRing(4.72, 1.14, 3.42, 0.25),
+    camberedRoofRing(5.0, 0.68, 3.41, 0.18)
+  ], true, true));
+  // Raised clerestory monitor walls (cream Slot 1) + glazed clerestory vent panes (Slot 8) + sloped canvas-grey monitor roof (Slot 12)
+  push(1, loftSectionsMesh([
+    coachCrossRing(-3.65, 0.72, 3.68, 4.08, 0.07),
+    coachCrossRing(-3.2, 0.94, 3.68, 4.1, 0.07),
+    coachCrossRing(3.2, 0.94, 3.68, 4.1, 0.07),
+    coachCrossRing(3.65, 0.72, 3.68, 4.08, 0.07)
+  ], true, true));
+  for (const side of [-1, 1] as const) {
+    push(8, boxPart(0.032, 0.22, 6.1, [side * 0.95, 3.9, 0]));
+    for (let v = -2; v <= 2; v += 1) {
+      push(6, boxPart(0.045, 0.24, 0.04, [side * 0.955, 3.9, v * 1.25]));
+    }
+  }
+  push(12, loftSectionsMesh([
+    camberedRoofRing(-3.78, 0.78, 4.08, 0.14),
+    camberedRoofRing(-3.25, 1.02, 4.09, 0.18),
+    camberedRoofRing(3.25, 1.02, 4.09, 0.18),
+    camberedRoofRing(3.78, 0.78, 4.08, 0.14)
+  ], true, true));
+  // Timber roofwalk duckboards + cast-iron rooftop resistor grid banks (`z = 1.65`)
+  for (const x of [-0.32, 0, 0.32]) {
+    push(3, boxPart(0.13, 0.035, 6.2, [x, 4.28, 0]));
+  }
+  for (const gx of [-0.46, 0.46]) {
+    push(4, boxPart(0.36, 0.18, 1.28, [gx, 4.36, 1.62]));
+    for (let fin = -2; fin <= 2; fin += 1) {
+      push(5, boxPart(0.38, 0.2, 0.03, [gx, 4.37, 1.62 + fin * 0.26]));
+    }
+  }
+
+  // Crisp Articulated Diamond Pantograph Overhead Collector (`panZ = -1.25`, reaching `y = 6.68` onto `y = 6.70` catenary wire)
+  const panZ = -1.25;
+  for (const [ix, iz] of [[-0.44, panZ - 0.36], [0.44, panZ - 0.36], [-0.44, panZ + 0.36], [0.44, panZ + 0.36]] as const) {
+    push(11, transformMesh(latheMesh([[0, 0], [0.068, 0], [0.052, 0.06], [0.072, 0.11], [0.045, 0.17], [0, 0.18]], 10), { pos: [ix, 4.26, iz] }));
+  }
+  push(4, transformMesh(bevelBoxMesh(1.04, 0.055, 0.86, 0.012), { pos: [0, 4.44, panZ] }));
+  // Spring cylinders on pantograph base frame
+  for (const sx of [-0.24, 0.24]) {
+    push(6, transformMesh(latheMesh([[0, -0.28], [0.045, -0.28], [0.045, 0.28], [0, 0.28]], 10), {
+      pos: [sx, 4.5, panZ],
+      rot: [Math.PI * 0.5, 0, 0]
+    }));
+  }
+  // Full lower & upper diamond pantograph arms (`y = 4.48 -> 5.56 -> 6.62`) + cross-diagonal stabilizer bars
+  for (const sx of [-0.38, 0.38]) {
+    for (const dirZ of [-1, 1] as const) {
+      const elbowX = sx * 0.96, elbowY = 5.56, elbowZ = panZ + dirZ * 0.88;
+      const apexX = sx * 0.86, apexY = 6.62, apexZ = panZ + dirZ * 0.08;
+      push(4, tubeSweepMesh([[sx, 4.48, panZ + dirZ * 0.16, 0.024], [elbowX, elbowY, elbowZ, 0.022]], 6));
+      push(4, tubeSweepMesh([[elbowX, elbowY, elbowZ, 0.02], [apexX, apexY, apexZ, 0.018]], 6));
+    }
+  }
+  for (const dirZ of [-1, 1] as const) {
+    const elbowZ = panZ + dirZ * 0.88;
+    push(4, tubeSweepMesh([[-0.36, 5.56, elbowZ, 0.018], [0.36, 5.56, elbowZ, 0.018]], 6));
+    push(4, tubeSweepMesh([[-0.38, 4.48, panZ + dirZ * 0.16, 0.013], [0.36, 5.56, elbowZ, 0.013]], 5));
+  }
+  // Twin sprung brass/copper contact collector shoes & curved horn tips at `y = 6.68`
+  for (const panOff of [-0.1, 0.1]) {
+    push(6, tubeSweepMesh([
+      [-0.96, 6.58, panZ + panOff, 0.016],
+      [-0.7, 6.68, panZ + panOff, 0.024],
+      [0.7, 6.68, panZ + panOff, 0.024],
+      [0.96, 6.58, panZ + panOff, 0.016]
+    ], 7));
+  }
+
+  // Slot 4, 5 & 6: Proper Cast-Steel Twin-Axle Bogie Trucks & Flanged Steel Wheels Directly on the Steel Rail Heads
+  // Rail head top in `tram-body` local space is `y = 0.07` (`here.y + 0.27` minus `tram-body` `here.y + 0.20`).
+  // Axle center `wy = 0.43` minus outer machined tread radius `0.36` = `0.07` -> wheels sit flush on the rails!
+  const wheelY = 0.43;
+  const wheelWebProfile: V2[] = [
+    [0, -0.075], [0.115, -0.075], [0.125, -0.045], [0.295, -0.038], [0.318, -0.055],
+    [0.318, 0.055], [0.295, 0.038], [0.125, 0.045], [0.115, 0.082], [0, 0.082]
+  ];
+  const wheelTireFlangeProfile: V2[] = [
+    [0.312, -0.072], [0.395, -0.072], [0.395, -0.048], [0.36, -0.036],
+    [0.36, 0.062], [0.312, 0.062], [0.312, -0.072]
+  ];
+  for (const bogieZ of [-3.15, 3.15]) {
+    // Bolster cross-transom & kingpin saddle connecting bogie to underframe
+    push(4, boxPart(1.92, 0.22, 0.42, [0, 0.58, bogieZ]));
+    for (const side of [-1, 1] as const) {
+      // Heavy cast-steel equalizer sideframe beam (`z = bogieZ - 0.98 .. bogieZ + 0.98`) + end tie bars
+      push(4, boxPart(0.11, 0.2, 1.98, [side * 0.89, 0.5, bogieZ]));
+      push(4, boxPart(0.09, 0.08, 1.62, [side * 0.89, 0.34, bogieZ]));
+      // Twin helical coil spring stacks on bolster (`z = bogieZ ± 0.22`)
+      for (const spOff of [-0.21, 0.21]) {
+        push(4, transformMesh(latheMesh([
+          [0, 0], [0.095, 0], [0.105, 0.05], [0.088, 0.11], [0.105, 0.17], [0, 0.22]
+        ], 8), { pos: [side * 0.89, 0.44, bogieZ + spOff] }));
+      }
+    }
+    for (const dz of [-0.62, 0.62]) {
       const az = bogieZ + dz;
-      push(4, transformMesh(tubeSweepMesh([[-0.84, 0.39, az, 0.065], [0.84, 0.39, az, 0.065]], 8), {}));
+      // Solid steel axle shaft (`r = 0.065`)
+      push(4, tubeSweepMesh([[-0.92, wheelY, az, 0.062], [0.92, wheelY, az, 0.062]], 6));
       for (const side of [-1, 1] as const) {
-        push(5, transformMesh(latheMesh(wheelProfile, 22), {
-          pos: [side * 0.72, 0.39, az],
-          rot: [0, 0, side < 0 ? -Math.PI * 0.5 : Math.PI * 0.5]
-        }));
-        for (const ws of wheelAssemblySlots({ radius: 0.34, width: 0.12, spokeCount: 6, tireMat: 4, rimMat: 5 })) {
-          push(ws.materialIndex, transformMesh(ws.mesh, { pos: [side * 0.72, 0.39, az] }));
-        }
+        // Pedestal jaw & journal box (`|x| = 0.90`) + brass oil-box cover (`|x| = 0.96`)
+        push(4, boxPart(0.15, 0.26, 0.26, [side * 0.9, wheelY + 0.02, az]));
+        push(6, boxPart(0.04, 0.15, 0.16, [side * 0.975, wheelY, az]));
+        // Cast-iron brake shoe hugging outer wheel tread
+        const shoeZ = az + (dz > 0 ? 0.38 : -0.38);
+        push(4, boxPart(0.11, 0.24, 0.07, [side * 0.72, wheelY + 0.02, shoeZ], [dz > 0 ? 0.18 : -0.18, 0, 0]));
+        // Dark gunmetal cast-steel wheel center web (`Slot 4`) + bright machined steel tread & inner flange (`Slot 5`)
+        const wheelRot: V3 = [0, 0, side < 0 ? -Math.PI * 0.5 : Math.PI * 0.5];
+        push(4, transformMesh(latheMesh(wheelWebProfile, 14), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
+        push(5, transformMesh(latheMesh(wheelTireFlangeProfile, 14), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
       }
     }
   }
-  // Cowcatcher pilots
+
+  // Dark cast-iron knuckle couplers (`y = 0.64, z = ±5.18`) + slatted V-prow steel cowcatcher pilot on the cab front (`+Z`) only
   for (const sgn of [-1, 1] as const) {
-    push(4, transformMesh(tubeSweepMesh([[-1.08, 0.26, sgn * 4.92, 0.035], [0, 0.22, sgn * 5.14, 0.04], [1.08, 0.26, sgn * 4.92, 0.035]], 6), {}));
-    for (let k = -4; k <= 4; k += 1) {
-      const x = k * 0.24;
-      const zOut = sgn * (5.12 - Math.abs(k) * 0.045);
-      push(4, tubeSweepMesh([[x * 0.92, 0.64, sgn * 4.82, 0.022], [x, 0.25, zOut, 0.022]], 5));
+    push(4, boxPart(0.22, 0.16, 0.34, [0, 0.64, sgn * 5.08]));
+    push(4, boxPart(0.3, 0.22, 0.22, [0, 0.64, sgn * 5.24]));
+    if (sgn > 0) {
+      push(4, tubeSweepMesh([[-1.12, 0.19, 4.9, 0.034], [0, 0.16, 5.24, 0.038], [1.12, 0.19, 4.9, 0.034]], 5));
+      push(4, tubeSweepMesh([[-1.06, 0.58, 4.86, 0.028], [0, 0.56, 5.08, 0.03], [1.06, 0.58, 4.86, 0.028]], 5));
+      for (let k = -2; k <= 2; k += 1) {
+        const x = k * 0.44;
+        const zBot = 5.22 - Math.abs(k) * 0.13;
+        const zTop = 5.06 - Math.abs(k) * 0.08;
+        push(4, tubeSweepMesh([[x * 0.94, 0.57, zTop, 0.022], [x, 0.18, zBot, 0.022]], 4));
+      }
     }
   }
-  // Rooftop diamond pantograph + porcelain insulators (Slot 11)
-  const panZ = -1.15;
-  for (const [ix, iz] of [[-0.42, panZ - 0.32], [0.42, panZ - 0.32], [-0.42, panZ + 0.32], [0.42, panZ + 0.32]] as const) {
-    push(11, transformMesh(latheMesh([[0, 0], [0.065, 0], [0.05, 0.06], [0.07, 0.1], [0.04, 0.16], [0, 0.17]], 10), { pos: [ix, 4.26, iz] }));
-  }
-  push(4, transformMesh(bevelBoxMesh(0.96, 0.05, 0.74, 0.012), { pos: [0, 4.43, panZ] }));
-  for (const sx of [-0.36, 0.36]) {
-    push(4, tubeSweepMesh([[sx, 4.45, panZ, 0.022], [sx * 0.95, 4.6, panZ - 0.52, 0.02], [sx * 0.88, 4.74, panZ, 0.018]], 6));
-    push(4, tubeSweepMesh([[sx, 4.45, panZ, 0.022], [sx * 0.95, 4.6, panZ + 0.52, 0.02], [sx * 0.88, 4.74, panZ, 0.018]], 6));
-  }
-  push(6, tubeSweepMesh([[-0.88, 4.7, panZ, 0.02], [-0.66, 4.76, panZ, 0.026], [0.66, 4.76, panZ, 0.026], [0.88, 4.7, panZ, 0.02]], 7));
 
-  // Slot 6 & 7: Polished brass grab-rails, cyclops headlamp bezel, roof bell, bumpers & rubber buffers
-  for (const side of [-1, 1] as const) {
-    for (const doorZ of [-4.18, 4.18]) {
-      push(6, tubeSweepMesh([
-        [side * 1.47, 1.05, doorZ, 0.024],
-        [side * 1.54, 1.62, doorZ + Math.sign(doorZ) * 0.05, 0.024],
-        [side * 1.48, 2.38, doorZ, 0.024]
-      ], 7));
+  // Slot 6, 7, 9 & 10: Front (+Z) central brass headlamp, rear (-Z) harbor-teal & brass observation tail drum + ruby tail lamps
+  for (const sgn of [-1, 1] as const) {
+    if (sgn > 0) {
+      // Front central spun-brass headlamp bezel & warm lens (`x = 0, y = 1.44, z = +5.02`)
+      push(6, transformMesh(latheMesh([[0, -0.14], [0.24, -0.14], [0.26, 0.04], [0.28, 0.12], [0.21, 0.14], [0.2, 0.04]], 18), {
+        pos: [0, 1.44, 5.02],
+        rot: [Math.PI * 0.5, 0, 0]
+      }));
+      push(9, transformMesh(latheMesh([[0, 0], [0.19, 0.02], [0.17, 0.07], [0, 0.09]], 16), {
+        pos: [0, 1.44, 5.06],
+        rot: [Math.PI * 0.5, 0, 0]
+      }));
+    } else {
+      // Rear observation brass-rimmed harbor-teal herald drum (`x = 0, y = 1.42, z = -4.96`) + upper center ruby brake marker
+      push(6, transformMesh(latheMesh([[0, 0], [0.27, 0], [0.29, 0.045], [0.25, 0.06], [0, 0.06]], 20), {
+        pos: [0, 1.42, -4.93],
+        rot: [-Math.PI * 0.5, 0, 0]
+      }));
+      push(2, transformMesh(latheMesh([[0, 0], [0.22, 0.01], [0.21, 0.035], [0, 0.04]], 18), {
+        pos: [0, 1.42, -4.965],
+        rot: [-Math.PI * 0.5, 0, 0]
+      }));
+      push(6, boxPart(0.32, 0.045, 0.025, [0, 1.42, -5.005]));
+      push(10, boxPart(0.28, 0.07, 0.035, [0, 3.18, -4.95]));
     }
-    push(6, tubeSweepMesh([[side * 1.51, 1.58, -4.2, 0.022], [side * 1.51, 1.58, 4.2, 0.022]], 6));
-  }
-  // Spun-brass cyclops headlamp housing & rear marker bezels
-  push(6, transformMesh(latheMesh([[0, -0.14], [0.25, -0.14], [0.27, 0.04], [0.29, 0.12], [0.22, 0.14], [0.21, 0.04]], 18), {
-    pos: [0, 1.4, 4.9], rot: [Math.PI * 0.5, 0, 0]
-  }));
-  for (const x of [-0.86, 0.86]) {
-    push(6, transformMesh(latheMesh([[0, -0.06], [0.14, -0.06], [0.16, 0.06], [0.11, 0.07]], 14), {
-      pos: [x, 1.36, -4.88], rot: [-Math.PI * 0.5, 0, 0]
-    }));
-  }
-  // Spun-brass rooftop signal bell
-  push(6, transformMesh(latheMesh([[0.16, 0], [0.13, 0.05], [0.11, 0.15], [0.06, 0.21], [0, 0.23]], 14), { pos: [0, 4.28, 3.42] }));
-  // Brass bumpers & black rubber coupler pads
-  for (const sgn of [-1, 1] as const) {
-    push(6, tubeSweepMesh([[-1.18, 0.75, sgn * 4.86, 0.075], [0, 0.75, sgn * 5.03, 0.085], [1.18, 0.75, sgn * 4.86, 0.075]], 8));
-    push(7, transformMesh(latheMesh([[0, 0], [0.15, 0], [0.17, 0.12], [0.12, 0.16], [0, 0.16]], 12), {
-      pos: [0, 0.72, sgn * 5.04], rot: [sgn > 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0, 0]
-    }));
-  }
-
-  // Slot 8: Dark smoked `material.studioGlass` bay windscreens, recessed arched passenger window panes & clerestory transoms
-  // paired with recessed dark mahogany/cast-iron window bay mullions (Slot 3/4) & dark saloon ceiling liner (Slot 4)
-  push(4, transformMesh(bevelBoxMesh(2.58, 0.08, 8.2, 0.015), { pos: [0, 3.31, 0] }));
-  const sideWinPoly: V2[] = [[-0.5, -0.48], [0.5, -0.48], [0.5, 0.34], [0.34, 0.52], [0, 0.58], [-0.34, 0.52], [-0.5, 0.34]];
-  for (const side of [-1, 1] as const) {
-    // Mahogany window sill rail + recessed dark iron mullion sash along each window bay
-    push(3, transformMesh(bevelBoxMesh(0.11, 0.07, 7.95, 0.014), { pos: [side * 1.425, 1.98, 0] }));
-    for (let b = 0; b < pillarZ.length - 1; b += 1) {
-      const midZ = (pillarZ[b]! + pillarZ[b + 1]!) * 0.5;
-      push(4, transformMesh(bevelBoxMesh(0.06, 0.045, 1.04, 0.008), { pos: [side * 1.41, 2.58, midZ] }));
-      push(8, transformMesh(extrudePolygonMesh(sideWinPoly, 0.028, 0.004), { pos: [side * 1.385, 2.52, midZ], rot: [0, Math.PI * 0.5, 0] }));
+    // Twin brass marker (+Z warm white) / ruby tail (-Z glowing red) lamps (`x = ±0.88, y = 1.38`)
+    for (const x of [-0.88, 0.88]) {
+      push(6, transformMesh(latheMesh([[0, -0.06], [0.13, -0.06], [0.15, 0.06], [0.1, 0.07]], 14), {
+        pos: [x, 1.38, sgn * 4.91],
+        rot: [sgn > 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0, 0]
+      }));
+      push(sgn > 0 ? 9 : 10, transformMesh(latheMesh([[0, 0], [0.095, 0.02], [0.085, 0.05], [0, 0.06]], 12), {
+        pos: [x, 1.38, sgn * 4.95],
+        rot: [sgn > 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0, 0]
+      }));
     }
-    push(8, transformMesh(bevelBoxMesh(0.028, 0.24, 6.8, 0.004), { pos: [side * 0.94, 3.86, 0] }));
+    // Curved brushed-brass end bumper bar + rubber buffer pads
+    push(6, tubeSweepMesh([[-1.2, 0.78, sgn * 4.88, 0.062], [0, 0.78, sgn * 5.08, 0.07], [1.2, 0.78, sgn * 4.88, 0.062]], 8));
+    for (const bx of [-0.74, 0.74]) {
+      push(7, transformMesh(latheMesh([[0, 0], [0.11, 0], [0.12, 0.09], [0.09, 0.12], [0, 0.12]], 10), {
+        pos: [bx, 0.78, sgn * 5.0],
+        rot: [sgn > 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0, 0]
+      }));
+    }
   }
-  for (const sgn of [-1, 1] as const) {
-    push(4, transformMesh(bevelBoxMesh(1.74, 0.06, 0.08, 0.01), { pos: [0, 2.18, sgn * 4.78] }));
-    push(8, transformMesh(bevelBoxMesh(1.62, 0.9, 0.032, 0.006), { pos: [0, 2.66, sgn * 4.74] }));
-  }
+  // Spun-brass rooftop signal bell (`z = 3.35`)
+  push(6, transformMesh(latheMesh([[0.17, 0], [0.135, 0.05], [0.115, 0.16], [0.065, 0.22], [0, 0.24]], 14), { pos: [0, 4.28, 3.35] }));
 
-  // Slot 9 & 10: Practical warm 2700K amber interior bench sconces, clerestory globes, rollsigns, headlamp optic & ruby taillamps
-  for (const lz of [-2.7, 0, 2.7]) {
-    push(9, transformMesh(latheMesh([[0, 0], [0.15, 0.04], [0.18, 0.13], [0.11, 0.22], [0, 0.24]], 12), { pos: [0, 3.72, lz] }));
+  // Slot 9: Warm 2700K interior saloon ceiling lamps & window sill glow accents (softly visible behind the dark-slate glass)
+  for (const lz of [-2.48, 0, 2.48]) {
+    push(9, transformMesh(latheMesh([[0, 0], [0.14, 0.04], [0.17, 0.12], [0.1, 0.2], [0, 0.22]], 12), { pos: [0, 3.7, lz] }));
   }
   for (const side of [-1, 1] as const) {
-    // Warm amber interior bench-back & clerestory glow accents visible softly through the smoked glass
-    push(9, transformMesh(bevelBoxMesh(0.05, 0.06, 6.6, 0.01), { pos: [side * 1.24, 1.88, 0] }));
-    push(9, transformMesh(bevelBoxMesh(0.04, 0.08, 6.2, 0.008), { pos: [side * 0.84, 3.84, 0] }));
-  }
-  for (const sgn of [-1, 1] as const) {
-    push(9, transformMesh(bevelBoxMesh(1.24, 0.17, 0.04, 0.008), { pos: [0, 3.52, sgn * 4.79] }));
-  }
-  push(9, transformMesh(latheMesh([[0, 0], [0.2, 0.02], [0.18, 0.07], [0, 0.09]], 16), { pos: [0, 1.4, 4.94], rot: [Math.PI * 0.5, 0, 0] }));
-  for (const x of [-0.86, 0.86]) {
-    push(10, transformMesh(latheMesh([[0, 0], [0.1, 0.02], [0.09, 0.05], [0, 0.06]], 12), { pos: [x, 1.36, -4.92], rot: [-Math.PI * 0.5, 0, 0] }));
+    push(9, transformMesh(bevelBoxMesh(0.045, 0.055, 5.8, 0.008), { pos: [side * 1.24, 1.9, 0] }));
+    push(9, transformMesh(bevelBoxMesh(0.036, 0.075, 5.8, 0.008), { pos: [side * 0.84, 3.88, 0] }));
   }
 
   cachedStreetcarSlots = slots;
@@ -463,29 +641,32 @@ function streetcarSlots(): readonly MultiMatSlot[] {
 export function buildStreetcarBodyNode(name: string, bulbIntensity: number, castShadow: boolean): AuraNodeBuilder<AuraGroupNode> {
   const glowGain = Math.min(1.65, Math.max(0.55, bulbIntensity * 0.68));
   const materials: AuraMaterialSpec[] = [
-    unnamed(material.lacquer({ color: "#9e2f22", roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.45 })),
-    unnamed(material.lacquer({ color: "#efe3c8", roughness: 0.25, clearcoat: 0.88, clearcoatRoughness: 0.05, envMapIntensity: 1.3 })),
+    unnamed(material.carPaint({ color: "#b8292f", roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.5 })),
+    unnamed(material.lacquer({ color: "#f5ebd6", roughness: 0.24, clearcoat: 0.9, clearcoatRoughness: 0.05, envMapIntensity: 1.35 })),
     unnamed(material.lacquer({ color: "#24586c", roughness: 0.22, clearcoat: 0.9, clearcoatRoughness: 0.05 })),
-    unnamed(material.pbr({ color: "#72492d", roughness: 0.68, clearcoat: 0 })),
-    unnamed(material.studioMetal({ color: "#222832", roughness: 0.42, metallic: 0.82 })),
-    unnamed(material.studioMetal({ color: "#d4dce4", roughness: 0.18, metallic: 0.96 })),
-    unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.6 })),
-    unnamed(material.blackRubber({ color: "#1f2226", roughness: 0.84 })),
+    unnamed(material.pbr({ color: "#684128", roughness: 0.64, clearcoat: 0 })),
+    unnamed(material.studioMetal({ color: "#232932", roughness: 0.4, metallic: 0.86 })),
+    unnamed(material.studioMetal({ color: "#d8e2ec", roughness: 0.15, metallic: 0.96, envMapIntensity: 1.65 })),
+    unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.19, metallic: 0.94, envMapIntensity: 1.65 })),
+    unnamed(material.blackRubber({ color: "#1d2025", roughness: 0.84 })),
     unnamed(material.physical({
-      color: "#1a2430",
-      roughness: 0.06,
-      opacity: 0.44,
-      clearcoat: 0.45,
-      clearcoatRoughness: 0.05,
-      ior: 1.5,
-      envMapIntensity: 0.58
+      color: "#1c2d3e",
+      roughness: 0.05,
+      opacity: 0.84,
+      clearcoat: 1,
+      clearcoatRoughness: 0.03,
+      ior: 1.52,
+      envMapIntensity: 1.75
     })),
-    unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: glowGain, practical: true })),
-    unnamed(material.emissive({ color: "#ff5644", emissive: "#ff3b28", emissiveIntensity: Math.max(0.75, bulbIntensity * 0.9), practical: true })),
-    unnamed(material.ceramic({ color: "#f2ede2", roughness: 0.22 }))
+    unnamed(material.emissive({ color: "#ffe5b6", emissive: "#ffc26e", emissiveIntensity: glowGain, practical: true })),
+    unnamed(material.emissive({ color: "#ff5644", emissive: "#ff3b28", emissiveIntensity: Math.max(0.8, bulbIntensity * 0.92), practical: true })),
+    unnamed(material.ceramic({ color: "#f2ede2", roughness: 0.22 })),
+    unnamed(material.pbr({ color: "#48505a", roughness: 0.62, metallic: 0.18, clearcoat: 0.2, clearcoatRoughness: 0.35 }))
   ];
-  return assembleMultiMaterialNode(name, streetcarSlots(), materials, {
-    id: name,
+  if (!cachedStreetcarCompactSpecs) {
+    cachedStreetcarCompactSpecs = buildCompactSlotSpecs(streetcarSlots());
+  }
+  return mountCompactMultiMaterial(name, cachedStreetcarCompactSpecs, materials, {
     castShadow,
     receiveShadow: true
   });
@@ -503,19 +684,20 @@ export function buildTramCoachTrimRawParts(): {
   const glowParts: RawMesh[] = [];
   const glassParts: RawMesh[] = [];
   for (const sgn of [-1, 1] as const) {
-    lacquerParts.push(tubeSweepMesh([[sgn * 1.49, 1.04, -4.4, 0.04], [sgn * 1.5, 1.04, 0, 0.045], [sgn * 1.49, 1.04, 4.4, 0.04]], 6));
-    brassParts.push(tubeSweepMesh([[sgn * 1.52, 1.56, -4.45, 0.028], [sgn * 1.53, 1.56, 0, 0.03], [sgn * 1.52, 1.56, 4.45, 0.028]], 6));
-    for (let r = -4; r <= 4; r += 1) {
-      brassParts.push(transformMesh(latheMesh([[0, 0], [0.025, 0.01], [0.018, 0.03], [0, 0.035]], 8), {
-        pos: [sgn * 1.53, 1.56, r * 1.05], rot: [0, 0, -sgn * Math.PI * 0.5]
+    lacquerParts.push(tubeSweepMesh([[sgn * 1.48, 0.86, -4.1, 0.036], [sgn * 1.49, 0.86, 0, 0.04], [sgn * 1.48, 0.86, 4.1, 0.036]], 6));
+    brassParts.push(tubeSweepMesh([[sgn * 1.49, 2.02, -4.15, 0.028], [sgn * 1.5, 2.02, 0, 0.03], [sgn * 1.49, 2.02, 4.15, 0.028]], 6));
+    for (let r = -3; r <= 3; r += 1) {
+      brassParts.push(transformMesh(latheMesh([[0, 0], [0.022, 0.01], [0.016, 0.028], [0, 0.032]], 8), {
+        pos: [sgn * 1.5, 2.02, r * 1.02],
+        rot: [0, 0, -sgn * Math.PI * 0.5]
       }));
     }
-    glassParts.push(transformMesh(bevelBoxMesh(0.022, 0.22, 6.7, 0.004), { pos: [sgn * 0.95, 3.86, 0] }));
-    glowParts.push(transformMesh(bevelBoxMesh(0.035, 0.065, 6.1, 0.008), { pos: [sgn * 0.85, 3.84, 0] }));
+    glassParts.push(transformMesh(bevelBoxMesh(0.022, 0.21, 6.0, 0.004), { pos: [sgn * 0.96, 3.9, 0] }));
+    glowParts.push(transformMesh(bevelBoxMesh(0.032, 0.06, 5.7, 0.008), { pos: [sgn * 0.84, 3.88, 0] }));
   }
-  for (const z of [4.9, -4.9]) {
-    brassParts.push(tubeSweepMesh([[-1.22, 0.74, z * 0.98, 0.06], [0, 0.74, z, 0.07], [1.22, 0.74, z * 0.98, 0.06]], 7));
-    glowParts.push(transformMesh(bevelBoxMesh(1.12, 0.12, 0.06, 0.01), { pos: [0, 3.52, z * 0.97] }));
+  for (const z of [4.89, -4.89]) {
+    brassParts.push(tubeSweepMesh([[-1.18, 0.78, z * 0.99, 0.055], [0, 0.78, z * 1.035, 0.065], [1.18, 0.78, z * 0.99, 0.055]], 7));
+    glowParts.push(transformMesh(bevelBoxMesh(1.4, 0.17, 0.03, 0.006), { pos: [0, 3.5, z] }));
   }
   const join = (list: readonly RawMesh[]): RawMesh => {
     const spec = mergeRawMeshes(list);
@@ -1487,4 +1669,97 @@ export function buildSkyLanternSpec(): AuraCustomGeometrySpec {
     ], 10, true)
   ]);
   return cachedLanternSpec;
+}
+
+/* ------------------------------------------------------------------ 9. Coastal Stone Keep & Watchtower Landmarks (Zero GLBs) */
+
+const landmarkSpecCache = new Map<"keep" | "tower", CompactSlotSpecs>();
+
+function coastalLandmarkSpec(variant: "keep" | "tower"): CompactSlotSpecs {
+  const hit = landmarkSpecCache.get(variant);
+  if (hit) return hit;
+
+  const slots: MultiMatSlot[] = [];
+  const push = (materialIndex: number, mesh: RawMesh): void => { slots.push({ materialIndex, mesh }); };
+  const boxLoft = (wx: number, wy: number, wz: number, pos: V3, yaw = 0): RawMesh => {
+    const hx = wx * 0.5, hy = wy * 0.5, hz = wz * 0.5;
+    const ring = (y: number): V3[] => [[-hx, y, -hz], [hx, y, -hz], [hx, y, hz], [-hx, y, hz]];
+    return transformMesh(toFlatShaded(loftSectionsMesh([ring(-hy), ring(hy)], true, true)), { pos, rot: [0, yaw, 0] });
+  };
+
+  if (variant === "keep") {
+    // Stepped dressed-limestone plinth + cream-stucco battered keep bastion + crenellated parapet + terracotta hipped turret roof
+    const sq = (half: number, y: number): V3[] => [[-half, y, -half], [half, y, -half], [half, y, half], [-half, y, half]];
+    push(1, boxLoft(12.2, 2.2, 12.2, [0, 1.1, 0]));
+    push(0, toFlatShaded(loftSectionsMesh([sq(5.4, 2.0), sq(4.95, 13.5), sq(4.65, 21.6)], true, true)));
+    push(1, boxLoft(10.2, 0.65, 10.2, [0, 21.8, 0]));
+    for (let f = 0; f < 4; f += 1) {
+      const yaw = f * Math.PI * 0.5;
+      const sx = Math.sin(yaw), sz = Math.cos(yaw);
+      const rx = Math.cos(yaw), rz = -Math.sin(yaw);
+      for (const off of [-3.3, 0, 3.3]) {
+        push(1, boxLoft(1.45, 1.15, 0.72, [sx * 4.65 + rx * off, 22.65, sz * 4.65 + rz * off], yaw));
+      }
+      for (const wy of [9.5, 16.5]) {
+        push(3, boxLoft(1.15, 2.4, 0.18, [sx * 4.88, wy, sz * 4.88], yaw));
+        push(1, boxLoft(1.55, 0.24, 0.42, [sx * 4.98, wy - 1.28, sz * 4.98], yaw));
+      }
+    }
+    push(0, latheMesh([[3.1, 22.0], [2.95, 25.4], [0, 25.4]], 8, true));
+    push(2, latheMesh([[3.55, 25.2], [1.65, 27.6], [0.24, 29.3], [0, 29.5]], 8, true));
+    push(4, tubeSweepMesh([[0, 29.4, 0, 0.06], [0, 30.6, 0, 0.02]], 5));
+  } else {
+    // Tall cylindrical cream-stucco coastal watchtower (`height ~ 34 m`) with corbelled machicolations & conical terracotta roof
+    push(1, latheMesh([[5.4, 0], [5.1, 2.4], [4.6, 2.8], [0, 2.8]], 12));
+    push(0, latheMesh([[4.35, 2.6], [3.95, 14.0], [3.65, 24.8], [0, 24.8]], 12));
+    push(1, latheMesh([[3.65, 13.8], [3.95, 14.1], [3.65, 14.4]], 12));
+    push(1, latheMesh([[3.65, 24.6], [4.35, 25.4], [4.45, 26.5], [0, 26.5]], 12));
+    for (let m = 0; m < 8; m += 1) {
+      const a = (m / 8) * Math.PI * 2;
+      push(1, boxLoft(1.2, 1.1, 0.65, [Math.sin(a) * 4.12, 27.0, Math.cos(a) * 4.12], a));
+    }
+    for (let w = 0; w < 4; w += 1) {
+      const a = w * Math.PI * 0.5 + 0.35;
+      for (const wy of [10.5, 19.2]) {
+        const rr = wy < 15 ? 4.08 : 3.78;
+        push(3, boxLoft(0.95, 2.2, 0.2, [Math.sin(a) * rr, wy, Math.cos(a) * rr], a));
+      }
+    }
+    push(0, latheMesh([[2.85, 26.4], [2.75, 29.4], [0, 29.4]], 10));
+    push(2, latheMesh([[3.45, 29.2], [1.75, 31.8], [0.22, 33.6], [0, 33.8]], 12));
+    push(4, tubeSweepMesh([[0, 33.7, 0, 0.06], [0, 34.9, 0, 0.02]], 5));
+  }
+
+  const spec = buildCompactSlotSpecs(slots);
+  landmarkSpecCache.set(variant, spec);
+  return spec;
+}
+
+export function buildCoastalLandmarkNode(
+  variant: "keep" | "tower",
+  name: string,
+  position: V3,
+  yaw: number,
+  windowGlow: number,
+  snowCap: boolean,
+  castShadow: boolean,
+  batcher?: StaticTownBatcher
+): AuraNodeBuilder<AuraGroupNode> {
+  const lit = windowGlow > 0.05;
+  const materials: AuraMaterialSpec[] = [
+    unnamed(material.pbr({ color: "#ecdcc0", roughness: 0.86, clearcoat: 0 })),
+    unnamed(material.pbr({ color: "#c8baa2", roughness: 0.88, clearcoat: 0 })),
+    unnamed(material.ceramic({ color: snowCap ? "#eef1f4" : "#c4643f", roughness: snowCap ? 0.62 : 0.48 })),
+    lit
+      ? unnamed(material.emissive({ color: "#ffe2a6", emissive: "#ffc972", emissiveIntensity: windowGlow, practical: true }))
+      : unnamed(material.physical({ color: "#3d5568", roughness: 0.08, opacity: 0.82, clearcoat: 1, clearcoatRoughness: 0.04, ior: 1.5, envMapIntensity: 1.4 })),
+    unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.22, metallic: 0.94 }))
+  ];
+  return mountCompactMultiMaterial(name, coastalLandmarkSpec(variant), materials, {
+    position,
+    rotation: [0, yaw, 0],
+    castShadow,
+    receiveShadow: true,
+    batcher
+  });
 }

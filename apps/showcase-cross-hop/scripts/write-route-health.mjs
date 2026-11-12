@@ -21,7 +21,7 @@ if (existsSync(indexHtml)) {
 const assetsDir = join(root, "public", "aura-assets");
 add("aura-assets dir", existsSync(assetsDir));
 const manifest = JSON.parse(readFileSync(join(root, "aura.assets.json"), "utf8"));
-add("manifest assets", Array.isArray(manifest.assets) && manifest.assets.length >= 20, `${manifest.assets?.length ?? 0} assets`);
+add("manifest assets", Array.isArray(manifest.assets) && manifest.assets.length === 0, `${manifest.assets?.length ?? 0} procedural-only assets`);
 add("typegen exists", existsSync(join(root, "src", "aura-assets.ts")));
 
 const report = {

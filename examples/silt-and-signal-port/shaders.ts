@@ -152,9 +152,9 @@ void main() {
     float streak = smoothstep(0.62, 0.9, vnoise(vec2(vWorld.x * 0.6, vWorld.z * 0.02 + siltTime * 0.9)));
     c = mix(c, vec3(0.86, 0.78, 0.62), streak * 0.18 + foam * 0.12);
   }
-  float fogT = smoothstep(108.0, max(420.0, fogFar), length(vWorld - cameraPosition));
+  float fogT = smoothstep(280.0, max(1450.0, fogFar), length(vWorld - cameraPosition));
   float alpha = 0.92 * (1.0 - smoothstep(canalHalf - 1.2, canalHalf, d));
-  outColor = vec4(mix(c, fogColor, fogT * fogT * 0.72), alpha);
+  outColor = vec4(mix(c, fogColor, fogT * fogT * 0.32), alpha);
 }`;
 
 export const RING_VERTEX = /* glsl */ `
@@ -223,8 +223,8 @@ void main() {
   float twinkle = 0.5 + 0.5 * sin(g1 * 62.83 + siltTime * 2.6 + dot(vWorld.xz, V.xz) * 4.5);
   float mica = (step(0.968, g1) + step(0.982, g2) * 0.85) * twinkle * (0.35 + 1.65 * spec) * smoothstep(0.06, 0.45, ndl) * (1.0 - smoothstep(18.0, 185.0, dist));
   vec3 c = sandBase + mix(vec3(1.0, 0.93, 0.78), sunColor, 0.45) * mica * 1.85;
-  float fogT = smoothstep(108.0, max(420.0, fogFar), dist);
-  c = mix(c, fogColor, fogT * fogT * 0.65);
+  float fogT = smoothstep(280.0, max(1450.0, fogFar), dist);
+  c = mix(c, fogColor, fogT * fogT * 0.28);
   float alpha = 1.0;
   if (duneVeil > 0.5) {
     float rx = roadX(vWorld.z);
@@ -281,6 +281,6 @@ void main() {
   float hemi = 0.36 + 0.28 * (0.5 * N.y + 0.5);
   float rim = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0) * 0.18;
   vec3 lit = albedo * (skyAmbient * hemi + sunColor * (ndl * 0.96)) + sunColor * rim;
-  float fogT = smoothstep(108.0, max(420.0, fogFar), length(cameraPosition - vWorld));
-  outColor = vec4(mix(lit, fogColor, fogT * fogT * 0.68), 1.0);
+  float fogT = smoothstep(280.0, max(1450.0, fogFar), length(cameraPosition - vWorld));
+  outColor = vec4(mix(lit, fogColor, fogT * fogT * 0.32), 1.0);
 }`;

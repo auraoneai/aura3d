@@ -287,6 +287,14 @@ export interface AudioMixerOptions {
   readonly schedule?: (fn: () => void, ms: number) => () => void;
   /** Decoded PCM budget for the clip cache. Default AUDIO_LIMITS.cacheBudgetBytes. */
   readonly cacheBudgetBytes?: number;
+  /**
+   * Route voices and standalone songs through an unlocked, AirPlay-eligible
+   * `<audio>` element (`AVPlayer` on Apple/WebKit) with
+   * `disableRemotePlayback = false` and `x-webkit-airplay="allow"` so audio
+   * reaches Apple TV during Screen Mirroring / AirPlay. `"auto"` (default)
+   * enables it on Apple/WebKit DOM browsers.
+   */
+  readonly nativeMediaPlayback?: boolean | "auto";
 }
 
 /** Loudness facts about one decoded clip (linear, 0..1 full scale). */
@@ -357,15 +365,19 @@ type BusId = "voice" | "song" | "sfx" | "bed";
 const BUS_IDS: readonly BusId[] = ["voice", "song", "sfx", "bed"];
 
 interface Track {
+  readonly mode: "webaudio" | "native";
   readonly kind: BusId;
-  readonly clip: AudioClip;
+  readonly clip: AudioClip | null;
+  readonly url: string;
+  readonly durationS: number;
   readonly loop: boolean;
   /** Clip gain from the level check (times the effect's own gain for SFX). */
   readonly level: number;
   state: "playing" | "held" | "done";
   source: AudioBufferSourceNode | null;
   gain: GainNode | null;
-  /** Context time at which position 0 played (playing tracks). */
+  nativeToken: number;
+  /** Context time at which position 0 played (playing Web Audio tracks). */
   startedAtS: number;
   /** Position kept while held (seconds). */
   offsetS: number;
@@ -380,6 +392,275 @@ interface Graph {
   readonly chain: ReturnType<typeof createMasterChain>;
   readonly master: GainNode;
   readonly buses: Readonly<Record<BusId, GainNode>>;
+}
+
+const AIRPLAY_BRIDGE_KEY = Symbol.for("aura3d.airplayKeepaliveBridge");
+
+interface AirplayKeepaliveBridge {
+  acquire(): void;
+  release(): void;
+  play(): void;
+  pause(): void;
+}
+
+interface DomBodyLike {
+  appendChild?(node: unknown): unknown;
+}
+
+interface DomDocumentLike {
+  createElement(tagName: string): unknown;
+  readonly body?: DomBodyLike | null;
+}
+
+interface DomStyleLike {
+  display: string;
+  position?: string;
+  left?: string;
+  top?: string;
+  width?: string;
+  height?: string;
+  opacity?: string;
+  pointerEvents?: string;
+}
+
+interface DomAudioElementLike {
+  loop: boolean;
+  preload: string;
+  muted: boolean;
+  volume: number;
+  controls?: boolean;
+  hidden?: boolean;
+  paused?: boolean;
+  ended?: boolean;
+  disableRemotePlayback?: boolean;
+  currentTime?: number;
+  readonly duration?: number;
+  style?: DomStyleLike;
+  src: string;
+  onended?: (() => void) | null;
+  onerror?: (() => void) | null;
+  onpause?: (() => void) | null;
+  setAttribute(name: string, value: string): void;
+  removeAttribute?(name: string): void;
+  addEventListener?(type: string, listener: () => void): void;
+  removeEventListener?(type: string, listener: () => void): void;
+  play?(): unknown;
+  pause?(): void;
+  load?(): void;
+  remove?(): void;
+}
+
+interface ThenableLike {
+  then(onFulfilled: () => void, onRejected: (reason?: unknown) => void): unknown;
+  catch?(onRejected: (reason?: unknown) => void): unknown;
+}
+
+function isObjectRecord(value: unknown): value is object {
+  return typeof value === "object" && value !== null;
+}
+
+function isAirplayBridge(value: unknown): value is AirplayKeepaliveBridge {
+  return (
+    isObjectRecord(value) &&
+    "acquire" in value &&
+    typeof value.acquire === "function" &&
+    "release" in value &&
+    typeof value.release === "function" &&
+    "play" in value &&
+    typeof value.play === "function" &&
+    "pause" in value &&
+    typeof value.pause === "function"
+  );
+}
+
+function isDomDocument(value: unknown): value is DomDocumentLike {
+  return isObjectRecord(value) && "createElement" in value && typeof value.createElement === "function";
+}
+
+function isDomAudioElement(value: unknown): value is DomAudioElementLike {
+  return isObjectRecord(value) && "setAttribute" in value && typeof value.setAttribute === "function";
+}
+
+function isThenable(value: unknown): value is ThenableLike {
+  return (isObjectRecord(value) || typeof value === "function") && "then" in value && typeof value.then === "function";
+}
+
+function stringProp(obj: object, key: string): string {
+  const val = Reflect.get(obj, key);
+  return typeof val === "string" ? val : "";
+}
+
+function numberProp(obj: object, key: string): number {
+  const val = Reflect.get(obj, key);
+  return typeof val === "number" && Number.isFinite(val) ? val : 0;
+}
+
+function isAppleWebKitBrowser(): boolean {
+  const nav = Reflect.get(globalThis, "navigator");
+  if (!isObjectRecord(nav)) return false;
+  const vendor = stringProp(nav, "vendor");
+  const ua = stringProp(nav, "userAgent");
+  const platform = stringProp(nav, "platform");
+  const touchPoints = numberProp(nav, "maxTouchPoints");
+  if (vendor === "Apple Computer, Inc.") return true;
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+  return platform === "MacIntel" && touchPoints > 1;
+}
+
+function resolveNativeMediaPlayback(setting: boolean | "auto" | undefined): boolean {
+  const doc = Reflect.get(globalThis, "document");
+  if (!isDomDocument(doc)) return false;
+  if (setting === true) return true;
+  if (setting === false) return false;
+  return isAppleWebKitBrowser();
+}
+
+function safeDurationSec(el: DomAudioElementLike | null, fallbackSec: number): number {
+  if (el && typeof el.duration === "number" && Number.isFinite(el.duration) && el.duration > 0) {
+    return el.duration;
+  }
+  return fallbackSec;
+}
+
+function safeCurrentTimeSec(el: DomAudioElementLike | null, fallbackSec: number): number {
+  if (el && typeof el.currentTime === "number" && Number.isFinite(el.currentTime) && el.currentTime >= 0) {
+    return el.currentTime;
+  }
+  return fallbackSec;
+}
+
+function buildSilentWavDataUri(): string {
+  // 0.25s @ 8000 Hz, 16-bit mono PCM (all-zero digital silence, zero DC click).
+  const sampleRate = 8000;
+  const numSamples = 2000;
+  const dataBytes = numSamples * 2;
+  const bytes = new Uint8Array(44 + dataBytes);
+  const view = new DataView(bytes.buffer);
+  const writeAscii = (offset: number, text: string): void => {
+    for (let i = 0; i < text.length; i += 1) bytes[offset + i] = text.charCodeAt(i);
+  };
+  writeAscii(0, "RIFF");
+  view.setUint32(4, 36 + dataBytes, true);
+  writeAscii(8, "WAVE");
+  writeAscii(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(36, "data");
+  view.setUint32(40, dataBytes, true);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    const byte = bytes[i];
+    if (byte !== undefined) binary += String.fromCharCode(byte);
+  }
+  if (typeof globalThis.btoa === "function") return `data:audio/wav;base64,${globalThis.btoa(binary)}`;
+  return "";
+}
+
+/** Ensures iOS/iPadOS Safari treats Web Audio as media playback (bypasses silent switch and routes over AirPlay). */
+function configureBrowserAudioSession(): void {
+  try {
+    const nav = Reflect.get(globalThis, "navigator");
+    if (!isObjectRecord(nav)) return;
+    const session = Reflect.get(nav, "audioSession");
+    if (!isObjectRecord(session)) return;
+    if (Reflect.get(session, "type") !== "playback") {
+      Reflect.set(session, "type", "playback");
+    }
+  } catch {
+    // Ignore environments where navigator.audioSession is unavailable or read-only.
+  }
+}
+
+function getSharedAirplayBridge(): AirplayKeepaliveBridge | null {
+  const existing = Reflect.get(globalThis, AIRPLAY_BRIDGE_KEY);
+  if (isAirplayBridge(existing)) return existing;
+  const doc = Reflect.get(globalThis, "document");
+  if (!isDomDocument(doc)) return null;
+
+  let refs = 0;
+  let element: DomAudioElementLike | null = null;
+  let silentSrc: string | null = null;
+
+  const ensureElement = (): DomAudioElementLike | null => {
+    if (element) return element;
+    const currentDoc = Reflect.get(globalThis, "document");
+    if (!isDomDocument(currentDoc)) return null;
+    if (silentSrc === null) silentSrc = buildSilentWavDataUri();
+    if (!silentSrc) return null;
+    try {
+      const created = currentDoc.createElement("audio");
+      if (!isDomAudioElement(created)) return null;
+      created.loop = true;
+      created.preload = "auto";
+      created.muted = false;
+      created.volume = 1;
+      created.hidden = true;
+      if ("disableRemotePlayback" in created) {
+        created.disableRemotePlayback = true;
+      }
+      if (created.style) {
+        created.style.display = "none";
+      }
+      created.setAttribute("playsinline", "");
+      created.setAttribute("webkit-playsinline", "");
+      created.setAttribute("x-webkit-airplay", "deny");
+      created.setAttribute("aria-hidden", "true");
+      created.setAttribute("data-a3d-airplay-keepalive", "true");
+      if (currentDoc.body && typeof currentDoc.body.appendChild === "function") {
+        currentDoc.body.appendChild(created);
+      }
+      created.src = silentSrc;
+      element = created;
+      return element;
+    } catch {
+      return null;
+    }
+  };
+
+  const bridge: AirplayKeepaliveBridge = {
+    acquire(): void {
+      refs += 1;
+    },
+    release(): void {
+      refs = Math.max(0, refs - 1);
+      if (refs > 0 || !element) return;
+      try {
+        element.pause?.();
+        element.removeAttribute?.("src");
+        element.load?.();
+        element.remove?.();
+      } catch {
+        // Ignore cleanup failures on partial DOM fakes.
+      }
+      element = null;
+    },
+    play(): void {
+      const el = ensureElement();
+      if (!el || typeof el.play !== "function") return;
+      try {
+        const res = el.play();
+        if (isThenable(res)) void res.then(() => undefined, () => undefined);
+      } catch {
+        // Ignore play rejections when browser requires an activation gesture.
+      }
+    },
+    pause(): void {
+      if (!element || typeof element.pause !== "function") return;
+      try {
+        element.pause();
+      } catch {
+        // Ignore pause errors on partial DOM fakes.
+      }
+    }
+  };
+
+  Reflect.set(globalThis, AIRPLAY_BRIDGE_KEY, bridge);
+  return bridge;
 }
 
 function browserAudioAvailable(): boolean {
@@ -423,10 +704,20 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   const { manifest } = options;
   const schedule = options.schedule ?? defaultSchedule;
   const cacheBudget = options.cacheBudgetBytes ?? AUDIO_LIMITS.cacheBudgetBytes;
+  const useNativeMedia = resolveNativeMediaPlayback(options.nativeMediaPlayback);
+  // Configure AudioSession before any AudioContext is created so iOS WebKit binds to playback from init.
+  configureBrowserAudioSession();
+  const managerOptions: { createContext?: () => AudioContextLike } = options.createContext
+    ? { createContext: options.createContext }
+    : {};
+  if (useNativeMedia) {
+    // Wonder World owns the single `<audio>` media element on Apple WebKit; disable the duplicate keepalive loop.
+    Reflect.set(managerOptions, "airplayKeepalive", false);
+  }
   const manager: AudioContextManager | null = options.createContext
-    ? new AudioContextManager({ createContext: options.createContext })
+    ? new AudioContextManager(managerOptions)
     : browserAudioAvailable()
-      ? new AudioContextManager()
+      ? new AudioContextManager(managerOptions)
       : null;
 
   let musicEnabled = options.musicEnabled;
@@ -438,7 +729,20 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   let graphFailed = false;
   let unlockedOnce = false;
   let unlockAttempt: Promise<boolean> | null = null;
+  let airplayBridge: AirplayKeepaliveBridge | null = null;
+  let bridgeAcquired = false;
+  let sawInterrupted = false;
   const abortUnlocks = new Set<() => void>();
+
+  let foregroundEl: DomAudioElementLike | null = null;
+  let foregroundSilentUri: string | null = null;
+  let loadedNativeUrl = "";
+  let nativeTokenCounter = 0;
+  let activeNativeToken = 0;
+  let nativeUnlocked = false;
+  let nativeAutoResumes = 0;
+  let cancelNativeRecovery: (() => void) | null = null;
+  let detachWirelessListener: (() => void) | null = null;
 
   let paused = false;
   let pausedAtS = 0;
@@ -469,6 +773,10 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   const cacheSizes = new Map<string, number>();
   let cachedBytes = 0;
   const failedUrls = new Set<string>();
+  const nativeFailedUrls = new Set<string>();
+  const webAudioOnlyUrls = new Set<string>();
+  for (const ref of Object.values(manifest.beds)) webAudioOnlyUrls.add(ref.url);
+  for (const ref of Object.values(manifest.sfx)) webAudioOnlyUrls.add(ref.url);
   const clipLevelCache = new WeakMap<AudioClip, number>();
 
   // ---- context and graph ----------------------------------------------------
@@ -525,9 +833,9 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     return !disposed && graph !== null && manager !== null && manager.state === "running";
   }
 
-  /** Audible: unlock() has succeeded once and the context runs. Nothing plays before the start gesture. */
+  /** Audible: unlock() has succeeded once and either Web Audio runs or Apple WebKit native media unlocked. */
   function running(): boolean {
-    return unlockedOnce && contextRunning();
+    return !disposed && unlockedOnce && (contextRunning() || (useNativeMedia && nativeUnlocked));
   }
 
   function rawClock(): number {
@@ -540,11 +848,301 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     return now - pausedTotalS - (paused ? now - pausedAtS : 0);
   }
 
+  function ensureAirplayBridge(): AirplayKeepaliveBridge | null {
+    if (disposed || useNativeMedia) return null;
+    if (!airplayBridge) airplayBridge = getSharedAirplayBridge();
+    if (!airplayBridge) return null;
+    if (!bridgeAcquired) {
+      airplayBridge.acquire();
+      bridgeAcquired = true;
+    }
+    return airplayBridge;
+  }
+
+  function syncAirplayBridge(): void {
+    if (useNativeMedia) {
+      airplayBridge?.pause();
+      return;
+    }
+    if (disposed) {
+      airplayBridge?.pause();
+      return;
+    }
+    if (unlockedOnce && soundEnabled && !paused && manager !== null && manager.state === "running") {
+      configureBrowserAudioSession();
+      ensureAirplayBridge()?.play();
+    } else {
+      airplayBridge?.pause();
+    }
+  }
+
+  function releaseAirplayBridge(): void {
+    airplayBridge?.pause();
+    if (bridgeAcquired && airplayBridge) {
+      airplayBridge.release();
+      bridgeAcquired = false;
+    }
+    airplayBridge = null;
+  }
+
+  function clearNativeRecovery(): void {
+    const cancel = cancelNativeRecovery;
+    cancelNativeRecovery = null;
+    cancel?.();
+  }
+
+  function isTransientPlayAbort(reason: unknown): boolean {
+    if (!isObjectRecord(reason) || Reflect.get(reason, "name") !== "AbortError") return false;
+    if (foregroundEl && isObjectRecord(Reflect.get(foregroundEl, "error"))) return false;
+    return nativeAutoResumes < 2;
+  }
+
+  function scheduleNativeRecovery(token: number, track: Track): void {
+    if (
+      disposed ||
+      activeNativeToken !== token ||
+      track.state !== "playing" ||
+      paused ||
+      track.userPaused ||
+      nativeAutoResumes >= 2
+    ) {
+      return;
+    }
+    clearNativeRecovery();
+    cancelNativeRecovery = schedule(() => {
+      cancelNativeRecovery = null;
+      if (
+        disposed ||
+        activeNativeToken !== token ||
+        track.state !== "playing" ||
+        paused ||
+        track.userPaused ||
+        !foregroundEl ||
+        foregroundEl.ended === true
+      ) {
+        return;
+      }
+      nativeAutoResumes += 1;
+      configureBrowserAudioSession();
+      syncForegroundLevels();
+      try {
+        const res = foregroundEl.play?.();
+        if (isThenable(res)) {
+          void res.then(
+            () => {
+              if (!disposed) nativeUnlocked = true;
+            },
+            () => undefined
+          );
+        } else if (typeof foregroundEl.play === "function") {
+          nativeUnlocked = true;
+        }
+      } catch {
+        // Ignore transient route-switch rejections.
+      }
+      if (unlockedOnce && manager && manager.state !== "running" && manager.state !== "closed") {
+        void manager.resume().catch(() => undefined);
+      }
+    }, 120);
+  }
+
+  function ensureForegroundElement(): DomAudioElementLike | null {
+    if (!useNativeMedia || disposed) return null;
+    if (foregroundEl) return foregroundEl;
+    const doc = Reflect.get(globalThis, "document");
+    if (!isDomDocument(doc)) return null;
+    try {
+      const created = doc.createElement("audio");
+      if (!isDomAudioElement(created)) return null;
+      created.loop = false;
+      created.preload = "auto";
+      if ("controls" in created) {
+        created.controls = false;
+      }
+      created.muted = !soundEnabled || sleepGainFactor <= 0.01;
+      try {
+        created.volume = soundEnabled ? AUDIO_LEVELS.master * sleepGainFactor : 0;
+      } catch {
+        // volume is read-only on iOS Safari; ignore.
+      }
+      // Keep the media element eligible for AirPlay / Screen Mirroring (do not use display:none or hidden=true).
+      created.hidden = false;
+      if ("disableRemotePlayback" in created) {
+        created.disableRemotePlayback = false;
+      }
+      if (created.style) {
+        created.style.display = "block";
+        created.style.position = "fixed";
+        created.style.left = "-9999px";
+        created.style.top = "0px";
+        created.style.width = "1px";
+        created.style.height = "1px";
+        created.style.opacity = "0";
+        created.style.pointerEvents = "none";
+      }
+      created.setAttribute("playsinline", "");
+      created.setAttribute("webkit-playsinline", "");
+      created.setAttribute("x-webkit-airplay", "allow");
+      created.setAttribute("aria-hidden", "true");
+      created.setAttribute("data-ww-media-player", "true");
+      if (typeof created.addEventListener === "function") {
+        const onWirelessChange = (): void => {
+          if (disposed) return;
+          configureBrowserAudioSession();
+          if (isWirelessTargetActive()) {
+            stopAllSfx();
+          }
+          syncBed();
+          const current = activeNativeTrack();
+          if (current && current.state === "playing" && !paused && !current.userPaused && activeNativeToken !== 0) {
+            scheduleNativeRecovery(activeNativeToken, current);
+          } else if (unlockedOnce && manager && manager.state !== "running" && manager.state !== "closed") {
+            void manager.resume().catch(() => undefined);
+          }
+        };
+        created.addEventListener("webkitcurrentplaybacktargetiswirelesschanged", onWirelessChange);
+        detachWirelessListener = () => {
+          created.removeEventListener?.("webkitcurrentplaybacktargetiswirelesschanged", onWirelessChange);
+        };
+      }
+      if (doc.body && typeof doc.body.appendChild === "function") {
+        doc.body.appendChild(created);
+      }
+      foregroundEl = created;
+      return foregroundEl;
+    } catch {
+      return null;
+    }
+  }
+
+  function syncForegroundLevels(): void {
+    if (!foregroundEl) return;
+    foregroundEl.muted = !soundEnabled || sleepGainFactor <= 0.01;
+    try {
+      foregroundEl.volume = soundEnabled ? Math.max(0, Math.min(1, AUDIO_LEVELS.master * sleepGainFactor)) : 0;
+    } catch {
+      // volume is read-only on iOS Safari; ignore.
+    }
+  }
+
+  function activeNativeTrack(): Track | null {
+    for (const v of voices) {
+      if (v.mode === "native") return v;
+    }
+    if (songTrack && songTrack.mode === "native") return songTrack;
+    return null;
+  }
+
+  /**
+   * Unlocks the persistent `<audio>` inside the tap gesture with a local silent
+   * buffer (`disableRemotePlayback = true`, `x-webkit-airplay="deny"`) so iOS
+   * never tries to hand off a `data:audio/wav` URI to Apple TV; `startNativeMedia`
+   * switches the element to `x-webkit-airplay="allow"` when a real `.mp3` plays.
+   */
+  function primeForegroundElement(): { readonly attempted: boolean; readonly pending: ThenableLike | null } {
+    if (!useNativeMedia || disposed || activeNativeTrack() !== null) {
+      return { attempted: false, pending: null };
+    }
+    const el = ensureForegroundElement();
+    if (!el || typeof el.play !== "function") return { attempted: false, pending: null };
+    if (nativeUnlocked) {
+      return { attempted: true, pending: null };
+    }
+    if (foregroundSilentUri === null) foregroundSilentUri = buildSilentWavDataUri();
+    if (!foregroundSilentUri) return { attempted: false, pending: null };
+    clearNativeRecovery();
+    nativeTokenCounter += 1;
+    activeNativeToken = 0;
+    el.onended = null;
+    el.onerror = null;
+    el.onpause = null;
+    el.loop = false;
+    if ("disableRemotePlayback" in el) {
+      el.disableRemotePlayback = true;
+    }
+    el.setAttribute("x-webkit-airplay", "deny");
+    syncForegroundLevels();
+    loadedNativeUrl = foregroundSilentUri;
+    el.src = foregroundSilentUri;
+    try {
+      const res = el.play();
+      if (isThenable(res)) {
+        void res.then(
+          () => {
+            if (!disposed) nativeUnlocked = true;
+          },
+          () => undefined
+        );
+        return { attempted: true, pending: res };
+      }
+      nativeUnlocked = true;
+      return { attempted: true, pending: null };
+    } catch {
+      return { attempted: false, pending: null };
+    }
+  }
+
+  function releaseForegroundElement(): void {
+    clearNativeRecovery();
+    detachWirelessListener?.();
+    detachWirelessListener = null;
+    const el = foregroundEl;
+    foregroundEl = null;
+    activeNativeToken = 0;
+    loadedNativeUrl = "";
+    nativeUnlocked = false;
+    nativeAutoResumes = 0;
+    if (!el) return;
+    el.onended = null;
+    el.onerror = null;
+    el.onpause = null;
+    try {
+      el.pause?.();
+      el.removeAttribute?.("src");
+      el.load?.();
+      el.remove?.();
+    } catch {
+      // Ignore cleanup errors on minimal DOM fakes.
+    }
+  }
+
+  function rawContextState(): string {
+    if (graph) return graph.context.state;
+    return manager ? manager.state : "unavailable";
+  }
+
   function markUnlocked(): void {
     if (disposed) return;
     unlockedOnce = true;
+    configureBrowserAudioSession();
+    syncAirplayBridge();
     syncBed();
   }
+
+  const unsubscribeManagerState = manager
+    ? manager.onStateChange((nextState) => {
+        if (disposed) return;
+        const raw = rawContextState();
+        if (raw === "interrupted") {
+          sawInterrupted = true;
+          return;
+        }
+        if (sawInterrupted && raw === "suspended" && unlockedOnce) {
+          sawInterrupted = false;
+          configureBrowserAudioSession();
+          void manager.resume().catch(() => undefined);
+          return;
+        }
+        sawInterrupted = false;
+        if (nextState === "running" && unlockedOnce) {
+          configureBrowserAudioSession();
+          syncAirplayBridge();
+          syncBed();
+        } else if (nextState === "closed") {
+          airplayBridge?.pause();
+        }
+      })
+    : null;
 
   // ---- levels ----------------------------------------------------------------
 
@@ -562,6 +1160,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   }
 
   function applyLevels(): void {
+    syncForegroundLevels();
     const g = graph;
     if (!g) return;
     const now = g.context.currentTime;
@@ -647,13 +1246,38 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
   function newTrack(kind: BusId, clip: AudioClip, loop: boolean, onEnded: (() => void) | null, scale = 1): Track {
     return {
+      mode: "webaudio",
       kind,
       clip,
+      url: "",
+      durationS: clip.duration,
       loop,
       level: levelFor(clip, kind) * scale,
       state: "held",
       source: null,
       gain: null,
+      nativeToken: 0,
+      startedAtS: 0,
+      offsetS: 0,
+      userPaused: false,
+      onEnded
+    };
+  }
+
+  function newNativeTrack(kind: "voice" | "song", ref: AudioClipRef, onEnded: (() => void) | null): Track {
+    const durationS = ref.durationMs > 0 ? ref.durationMs / 1000 : 0;
+    return {
+      mode: "native",
+      kind,
+      clip: null,
+      url: ref.url,
+      durationS,
+      loop: false,
+      level: 1,
+      state: "held",
+      source: null,
+      gain: null,
+      nativeToken: 0,
       startedAtS: 0,
       offsetS: 0,
       userPaused: false,
@@ -662,23 +1286,127 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   }
 
   function position(track: Track): number {
+    if (track.mode === "native") {
+      if (track.state !== "playing") return track.offsetS;
+      if (foregroundEl && track.nativeToken !== 0 && activeNativeToken === track.nativeToken) {
+        const current = safeCurrentTimeSec(foregroundEl, track.offsetS);
+        const dur = safeDurationSec(foregroundEl, track.durationS);
+        return dur > 0 ? Math.min(dur, current) : current;
+      }
+      return track.offsetS;
+    }
     if (track.state !== "playing" || !graph) return track.offsetS;
     const elapsed = Math.max(0, graph.context.currentTime - track.startedAtS);
-    const duration = track.clip.duration;
+    const duration = track.durationS;
     if (track.loop) return duration > 0 ? elapsed % duration : 0;
     return Math.min(duration, elapsed);
   }
 
+  function startNativeMedia(track: Track): { readonly ok: boolean; readonly pending: ThenableLike | null } {
+    const el = ensureForegroundElement();
+    if (!el || typeof el.play !== "function") return { ok: false, pending: null };
+    const resuming = track.nativeToken !== 0 && activeNativeToken === track.nativeToken && loadedNativeUrl === track.url;
+    clearNativeRecovery();
+    if (!resuming) {
+      nativeAutoResumes = 0;
+      nativeTokenCounter += 1;
+      track.nativeToken = nativeTokenCounter;
+      activeNativeToken = track.nativeToken;
+      const token = track.nativeToken;
+      if ("disableRemotePlayback" in el) {
+        el.disableRemotePlayback = false;
+      }
+      el.setAttribute("x-webkit-airplay", "allow");
+      el.loop = track.loop;
+      el.onended = () => {
+        if (activeNativeToken === token && track.state === "playing") naturalEnd(track);
+      };
+      el.onerror = () => {
+        if (activeNativeToken === token && track.state !== "done") {
+          if (track.url) nativeFailedUrls.add(track.url);
+          failTrack(track);
+        }
+      };
+      el.onpause = () => {
+        if (activeNativeToken === token && track.state === "playing" && !paused && !track.userPaused && el.ended !== true) {
+          scheduleNativeRecovery(token, track);
+        }
+      };
+      if (loadedNativeUrl !== track.url) {
+        loadedNativeUrl = track.url;
+        el.src = track.url;
+      } else {
+        try {
+          el.currentTime = track.offsetS;
+        } catch {
+          // Ignore seek errors if media is not seekable yet.
+        }
+      }
+      if (track.offsetS > 0) {
+        try {
+          el.currentTime = track.offsetS;
+        } catch {
+          // Ignore initial seek errors before metadata.
+        }
+      }
+    }
+    syncForegroundLevels();
+    track.state = "playing";
+    try {
+      const res = el.play();
+      if (isThenable(res)) {
+        void res.then(
+          () => {
+            if (!disposed) nativeUnlocked = true;
+          },
+          () => undefined
+        );
+        return { ok: true, pending: res };
+      }
+      nativeUnlocked = true;
+      return { ok: true, pending: null };
+    } catch {
+      return { ok: false, pending: null };
+    }
+  }
+
   function startSource(track: Track, offsetS: number, fadeInS: number): boolean {
+    if (track.mode === "native") {
+      track.offsetS = offsetS;
+      const started = startNativeMedia(track);
+      if (!started.ok) return false;
+      const token = track.nativeToken;
+      if (started.pending) {
+        void started.pending.then(
+          () => {
+            if (track.state !== "playing" || activeNativeToken !== token || paused || track.userPaused) {
+              if (activeNativeToken === token) foregroundEl?.pause?.();
+            }
+          },
+          (err) => {
+            // Only treat rejection as a failure if we did not pause/stop/supersede the track meanwhile.
+            if (!disposed && track.state === "playing" && activeNativeToken === token && !paused && !track.userPaused) {
+              if (isTransientPlayAbort(err)) {
+                scheduleNativeRecovery(token, track);
+              } else {
+                failTrack(track);
+              }
+            }
+          }
+        );
+      }
+      return true;
+    }
     const g = graph;
-    if (!g) return false;
-    const duration = track.clip.duration;
+    const clip = track.clip;
+    if (!g || !clip) return false;
+    const duration = clip.duration;
     let source: AudioBufferSourceNode | null = null;
     let gain: GainNode | null = null;
     try {
       source = g.context.createBufferSource();
       gain = g.context.createGain();
-      source.buffer = track.clip.buffer;
+      source.buffer = clip.buffer;
       source.loop = track.loop;
       const now = g.context.currentTime;
       if (fadeInS > 0) {
@@ -713,6 +1441,23 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
   /** Stops the node (with a short fade) without ending the track's bookkeeping. */
   function stopSource(track: Track, fadeS: number): void {
+    if (track.mode === "native") {
+      if (foregroundEl && track.nativeToken !== 0 && activeNativeToken === track.nativeToken) {
+        clearNativeRecovery();
+        if (track.state === "done") {
+          activeNativeToken = 0;
+          foregroundEl.onended = null;
+          foregroundEl.onerror = null;
+          foregroundEl.onpause = null;
+        }
+        try {
+          foregroundEl.pause?.();
+        } catch {
+          // Ignore pause errors on minimal DOM fakes.
+        }
+      }
+      return;
+    }
     const source = track.source;
     const gain = track.gain;
     track.source = null;
@@ -749,6 +1494,13 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   }
 
   function naturalEnd(track: Track): void {
+    if (track.mode === "native" && foregroundEl && track.nativeToken !== 0 && activeNativeToken === track.nativeToken) {
+      clearNativeRecovery();
+      activeNativeToken = 0;
+      foregroundEl.onended = null;
+      foregroundEl.onerror = null;
+      foregroundEl.onpause = null;
+    }
     const source = track.source;
     const gain = track.gain;
     track.source = null;
@@ -767,6 +1519,19 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   /** A track that could not (re)start ends; its callback runs asynchronously. */
   function failTrack(track: Track): void {
     if (track.state === "done") return;
+    if (track.mode === "native" && foregroundEl && track.nativeToken !== 0 && activeNativeToken === track.nativeToken) {
+      clearNativeRecovery();
+      activeNativeToken = 0;
+      loadedNativeUrl = "";
+      foregroundEl.onended = null;
+      foregroundEl.onerror = null;
+      foregroundEl.onpause = null;
+      try {
+        foregroundEl.pause?.();
+      } catch {
+        // Ignore pause errors on minimal DOM fakes.
+      }
+    }
     track.state = "done";
     const wasSong = track === songTrack;
     forget(track);
@@ -787,8 +1552,8 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   function hold(track: Track): void {
     if (track.state !== "playing") return;
     track.offsetS = position(track);
-    stopSource(track, HOLD_FADE_S);
     track.state = "held";
+    stopSource(track, HOLD_FADE_S);
   }
 
   function release(track: Track): void {
@@ -821,8 +1586,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     applyLevels();
   }
 
+  function isWirelessTargetActive(): boolean {
+    return Boolean(foregroundEl && Reflect.get(foregroundEl, "webkitCurrentPlaybackTargetIsWireless") === true);
+  }
+
   function bedAllowed(): boolean {
-    return !disposed && graph !== null && unlockedOnce && soundEnabled && musicEnabled;
+    return running() && contextRunning() && soundEnabled && musicEnabled && !isWirelessTargetActive();
   }
 
   function syncBed(): void {
@@ -860,7 +1629,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   // ---- SFX -------------------------------------------------------------------------
 
   function effectsLive(): boolean {
-    return running() && soundEnabled && !paused;
+    return running() && contextRunning() && soundEnabled && !paused && !isWirelessTargetActive();
   }
 
   function stopAllSfx(): void {
@@ -879,8 +1648,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   // ---- voice -------------------------------------------------------------------------
 
   function voiceHandle(track: Track): VoiceHandle {
+    const durationSec =
+      track.mode === "native" && track.nativeToken !== 0 && activeNativeToken === track.nativeToken
+        ? safeDurationSec(foregroundEl, track.durationS)
+        : track.durationS;
     return {
-      durationMs: Math.round(track.clip.duration * 1000),
+      durationMs: Math.round(durationSec * 1000),
       positionMs: () => Math.round(position(track) * 1000),
       pause: () => {
         if (track.state === "done") return;
@@ -898,6 +1671,127 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
   function emitPause(): void {
     for (const listener of [...listeners]) listener(paused);
+  }
+
+  async function playNativeVoice(
+    ref: AudioClipRef,
+    request: number,
+    onEnded: () => void,
+    intent?: () => VoiceIntent
+  ): Promise<{ readonly handled: boolean; readonly handle: VoiceHandle | null }> {
+    const wanted = askIntent(intent);
+    if (wanted === "drop") return { handled: true, handle: null };
+    if (songTrack && songTrack.mode === "native") {
+      stopSongInternal();
+    }
+    for (const other of [...voices]) endTrack(other, VOICE_FADE_S);
+    let awaitingStart = true;
+    let endedWhileStarting = false;
+    const track = newNativeTrack("voice", ref, () => {
+      if (awaitingStart) {
+        endedWhileStarting = true;
+        return;
+      }
+      onEnded();
+    });
+    track.userPaused = wanted === "hold";
+    voices.add(track);
+    if (paused || track.userPaused) {
+      awaitingStart = false;
+      track.state = "held";
+      return { handled: true, handle: voiceHandle(track) };
+    }
+    const started = startNativeMedia(track);
+    if (!started.ok) {
+      awaitingStart = false;
+      track.onEnded = null;
+      track.state = "done";
+      forget(track);
+      return { handled: false, handle: null };
+    }
+    const token = track.nativeToken;
+    if (started.pending) {
+      let playRejected = false;
+      let rejectReason: unknown = null;
+      try {
+        await started.pending;
+        if (!disposed) nativeUnlocked = true;
+      } catch (err) {
+        playRejected = true;
+        rejectReason = err;
+      }
+      if (playRejected) {
+        awaitingStart = false;
+        // Ignore abort if paused/stopped/superseded while play() was resolving.
+        if (disposed || request !== voiceRequest || (track.state === "done" && !endedWhileStarting) || activeNativeToken !== token) {
+          return { handled: true, handle: null };
+        }
+        if (paused || track.userPaused || track.state === "held") {
+          return { handled: true, handle: voiceHandle(track) };
+        }
+        if (track.state === "playing" && isTransientPlayAbort(rejectReason)) {
+          scheduleNativeRecovery(token, track);
+          return { handled: true, handle: voiceHandle(track) };
+        }
+        clearNativeRecovery();
+        track.onEnded = null;
+        track.state = "done";
+        if (activeNativeToken === token) {
+          activeNativeToken = 0;
+          if (foregroundEl) {
+            foregroundEl.onended = null;
+            foregroundEl.onerror = null;
+            foregroundEl.onpause = null;
+          }
+        }
+        forget(track);
+        return { handled: false, handle: null };
+      }
+    }
+    awaitingStart = false;
+    if (endedWhileStarting) {
+      if (disposed || request !== voiceRequest) return { handled: true, handle: null };
+      const completed = voiceHandle(track);
+      void Promise.resolve().then(() => Promise.resolve().then(() => Promise.resolve().then(onEnded)));
+      return { handled: true, handle: completed };
+    }
+    if (disposed || request !== voiceRequest || track.state === "done" || activeNativeToken !== token) {
+      if (activeNativeToken === token) foregroundEl?.pause?.();
+      endTrack(track, 0);
+      return { handled: true, handle: null };
+    }
+    const recheck = askIntent(intent);
+    if (recheck === "drop") {
+      endTrack(track, 0);
+      return { handled: true, handle: null };
+    }
+    if (recheck === "hold" || paused || track.userPaused) {
+      track.userPaused = recheck === "hold" || track.userPaused;
+      hold(track);
+    }
+    return { handled: true, handle: voiceHandle(track) };
+  }
+
+  function startWebAudioSong(id: SongId, ref: AudioClipRef, onEnded?: () => void): void {
+    const token = songToken;
+    const requestedAt = activeClock();
+    const begin = (clip: AudioClip): void => {
+      if (token !== songToken || disposed || !(running() && soundEnabled && musicEnabled)) return;
+      const late = activeClock() - requestedAt;
+      const offset = late > SONG_SYNC_THRESHOLD_S ? late : 0;
+      if (offset > clip.duration - SONG_MIN_REMAINING_S) return;
+      const track = newTrack("song", clip, false, onEnded ?? null);
+      songTrack = track;
+      songId = id;
+      if (!beginTrack(track, offset, 0)) forget(track);
+      applyLevels();
+    };
+    const cached = cachedClip(ref.url);
+    if (cached) begin(cached);
+    else
+      void load(ref).then((clip) => {
+        if (clip) begin(clip);
+      });
   }
 
   const mixer: AudioMixer = {
@@ -927,13 +1821,22 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     unlock(): Promise<boolean> {
       const owner = manager;
       if (disposed || !owner) return Promise.resolve(false);
-      // Everything up to owner.unlock() runs synchronously inside the gesture.
-      if (!ensureGraph() || owner.state === "closed") return Promise.resolve(false);
-      if (owner.state === "running") {
+      // Configure iOS AudioSession and prime the single `<audio>` element synchronously inside the gesture.
+      configureBrowserAudioSession();
+      const nativePrime = useNativeMedia ? primeForegroundElement() : { attempted: false, pending: null };
+      if (!useNativeMedia && soundEnabled && !paused) {
+        ensureAirplayBridge()?.play();
+      }
+      const graphOk = ensureGraph() !== null && owner.state !== "closed";
+      if (!graphOk && !(useNativeMedia && nativePrime.attempted)) {
+        syncAirplayBridge();
+        return Promise.resolve(false);
+      }
+      if (graphOk && owner.state === "running") {
         markUnlocked();
         return Promise.resolve(true);
       }
-      const resumed = owner.unlock();
+      const resumed = graphOk ? owner.unlock() : Promise.reject(new Error("Web Audio unavailable"));
       resumed.then(
         () => {
           if (!disposed && owner.state === "running") markUnlocked();
@@ -942,23 +1845,59 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       );
       const attempt = new Promise<boolean>((resolve) => {
         let settled = false;
+        let nativeDone = !useNativeMedia || !nativePrime.pending;
+        let nativeOk = useNativeMedia && nativePrime.attempted && !nativePrime.pending;
+        let contextDone = !graphOk;
         let cancelTimer: () => void = () => undefined;
         const settle = (ok: boolean): void => {
           if (settled) return;
           settled = true;
           cancelTimer();
           abortUnlocks.delete(abort);
-          const unlocked = ok && contextRunning();
+          if (nativeOk) nativeUnlocked = true;
+          const unlocked = ok && (contextRunning() || (useNativeMedia && nativeUnlocked));
           if (unlocked) markUnlocked();
+          else syncAirplayBridge();
           resolve(unlocked);
         };
-        const abort = (): void => settle(false);
+        const maybeSettle = (): void => {
+          if (contextRunning()) {
+            settle(true);
+            return;
+          }
+          if (contextDone && nativeDone) {
+            settle(useNativeMedia && (nativeOk || nativeUnlocked));
+          }
+        };
+        const abort = (): void => settle(contextRunning() || (useNativeMedia && (nativeOk || nativeUnlocked)));
         abortUnlocks.add(abort);
         cancelTimer = schedule(abort, AUDIO_LIMITS.unlockTimeoutMs);
         resumed.then(
-          () => settle(true),
-          () => settle(false)
+          () => {
+            contextDone = true;
+            maybeSettle();
+          },
+          () => {
+            contextDone = true;
+            maybeSettle();
+          }
         );
+        if (nativePrime.pending) {
+          void nativePrime.pending.then(
+            () => {
+              nativeDone = true;
+              nativeOk = true;
+              if (!disposed) nativeUnlocked = true;
+              maybeSettle();
+            },
+            () => {
+              nativeDone = true;
+              maybeSettle();
+            }
+          );
+        } else {
+          maybeSettle();
+        }
       });
       unlockAttempt = attempt;
       void attempt.then(() => {
@@ -970,7 +1909,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     isUnlocked: () => running(),
 
     canPlayVoice: () =>
-      !disposed && soundEnabled && !paused && manager !== null && !graphFailed && (running() || unlockAttempt !== null),
+      !disposed &&
+      soundEnabled &&
+      !paused &&
+      manager !== null &&
+      (!graphFailed || (useNativeMedia && nativeUnlocked)) &&
+      (running() || unlockAttempt !== null),
 
     async startVoice(ref: AudioClipRef, onEnded: () => void, intent?: () => VoiceIntent): Promise<VoiceHandle | null> {
       if (!mixer.canPlayVoice()) return null;
@@ -978,6 +1922,13 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       const request = voiceRequest;
       const pendingUnlock = unlockAttempt;
       if (pendingUnlock) await pendingUnlock;
+      if (request !== voiceRequest || disposed || !soundEnabled || !running()) return null;
+      if (useNativeMedia && !nativeFailedUrls.has(ref.url)) {
+        const nativeResult = await playNativeVoice(ref, request, onEnded, intent);
+        if (nativeResult.handled || request !== voiceRequest || disposed || !soundEnabled || !running()) {
+          return nativeResult.handle;
+        }
+      }
       const clip = request === voiceRequest ? await load(ref) : null;
       if (!clip || request !== voiceRequest || disposed || !soundEnabled || !running()) return null;
       // Asked before any node exists: a line stopped or paused while its clip loaded never sounds.
@@ -996,6 +1947,9 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
     async preload(ref: AudioClipRef | undefined): Promise<boolean> {
       if (!ref || disposed) return false;
+      if (useNativeMedia && !webAudioOnlyUrls.has(ref.url)) {
+        return !nativeFailedUrls.has(ref.url);
+      }
       return (await load(ref)) !== null;
     },
 
@@ -1029,26 +1983,54 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       stopSongInternal();
       if (!(running() && soundEnabled && musicEnabled)) return 0;
       const ref = manifest.songs[id];
-      if (!ref || failedUrls.has(ref.url)) return 0;
-      const token = songToken;
-      const requestedAt = activeClock();
-      const begin = (clip: AudioClip): void => {
-        if (token !== songToken || disposed || !(running() && soundEnabled && musicEnabled)) return;
-        const late = activeClock() - requestedAt;
-        const offset = late > SONG_SYNC_THRESHOLD_S ? late : 0;
-        if (offset > clip.duration - SONG_MIN_REMAINING_S) return;
-        const track = newTrack("song", clip, false, onEnded ?? null);
+      if (!ref) return 0;
+      if (useNativeMedia && voices.size === 0 && !nativeFailedUrls.has(ref.url)) {
+        const track = newNativeTrack("song", ref, onEnded ?? null);
         songTrack = track;
         songId = id;
-        if (!beginTrack(track, offset, 0)) forget(track);
-        applyLevels();
-      };
-      const cached = cachedClip(ref.url);
-      if (cached) begin(cached);
-      else
-        void load(ref).then((clip) => {
-          if (clip) begin(clip);
-        });
+        const started = startNativeMedia(track);
+        if (started.ok) {
+          const token = track.nativeToken;
+          if (started.pending) {
+            void started.pending.then(
+              () => {
+                if (track.state !== "playing" || activeNativeToken !== token || paused || track.userPaused) {
+                  if (activeNativeToken === token) foregroundEl?.pause?.();
+                }
+              },
+              (err) => {
+                if (!disposed && songTrack === track && activeNativeToken === token && track.state === "playing" && !paused) {
+                  if (isTransientPlayAbort(err)) {
+                    scheduleNativeRecovery(token, track);
+                    return;
+                  }
+                  clearNativeRecovery();
+                  track.onEnded = null;
+                  track.state = "done";
+                  activeNativeToken = 0;
+                  loadedNativeUrl = "";
+                  if (foregroundEl) {
+                    foregroundEl.onended = null;
+                    foregroundEl.onerror = null;
+                    foregroundEl.onpause = null;
+                  }
+                  forget(track);
+                  if (!failedUrls.has(ref.url)) {
+                    startWebAudioSong(id, ref, onEnded);
+                  }
+                }
+              }
+            );
+          }
+          applyLevels();
+          return ref.durationMs;
+        }
+        track.onEnded = null;
+        track.state = "done";
+        forget(track);
+      }
+      if (failedUrls.has(ref.url)) return 0;
+      startWebAudioSong(id, ref, onEnded);
       return ref.durationMs;
     },
 
@@ -1102,6 +2084,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       }
       syncBed();
       applyLevels();
+      syncAirplayBridge();
     },
 
     pauseAll(): void {
@@ -1112,6 +2095,14 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       for (const track of [...voices]) hold(track);
       if (songTrack) hold(songTrack);
       if (bedTrack) hold(bedTrack);
+      if (useNativeMedia && activeNativeToken === 0 && foregroundEl && loadedNativeUrl === foregroundSilentUri) {
+        try {
+          foregroundEl.pause?.();
+        } catch {
+          // Ignore pause errors on minimal DOM fakes.
+        }
+      }
+      syncAirplayBridge();
       emitPause();
     },
 
@@ -1120,13 +2111,20 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       pausedTotalS += Math.max(0, rawClock() - pausedAtS);
       paused = false;
       const owner = manager;
-      if (owner && graph && unlockedOnce && owner.state !== "running" && owner.state !== "closed") {
+      const recovering = owner !== null && graph !== null && unlockedOnce && owner.state !== "running" && owner.state !== "closed";
+      if (useNativeMedia && unlockedOnce && activeNativeTrack() === null) {
+        primeForegroundElement();
+      }
+      if (recovering && owner) {
+        configureBrowserAudioSession();
+        if (!useNativeMedia && soundEnabled) ensureAirplayBridge()?.play();
         // After an OS interruption the context may need a nudge; this works inside a gesture.
         void owner.resume().catch(() => undefined);
       }
       for (const track of [...voices]) syncTrack(track);
       if (songTrack) syncTrack(songTrack);
       if (bedTrack) syncTrack(bedTrack);
+      if (!recovering) syncAirplayBridge();
       emitPause();
     },
 
@@ -1155,6 +2153,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       cacheSizes.clear();
       cachedBytes = 0;
       failedUrls.clear();
+      nativeFailedUrls.clear();
     },
 
     snapshot(): AudioMixerSnapshot {
@@ -1187,6 +2186,9 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       mixer.stopAll();
       for (const abort of [...abortUnlocks]) abort();
       disposed = true;
+      unsubscribeManagerState?.();
+      releaseAirplayBridge();
+      releaseForegroundElement();
       listeners.clear();
       const g = graph;
       graph = null;

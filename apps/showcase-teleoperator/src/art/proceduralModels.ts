@@ -1986,3 +1986,621 @@ export function podSensorLaserGeometrySpec(): AuraCustomGeometrySpec {
     ]);
   });
 }
+
+// ---------------------------------------------------------------------------
+// Sculpted Multi-Material Articulated Urban Commuter Rig (`taxi-passenger`)
+// ---------------------------------------------------------------------------
+
+export const PASSENGER_RIG_IDS = {
+  root: "taxi-passenger",
+  pelvis: "taxi-passenger-pelvis",
+  torso: "taxi-passenger-torso",
+  head: "taxi-passenger-head",
+  bag: "taxi-passenger-bag",
+  armL: "taxi-passenger-arm-l",
+  armR: "taxi-passenger-arm-r",
+  forearmR: "taxi-passenger-forearm-r",
+  legL: "taxi-passenger-leg-l",
+  shinL: "taxi-passenger-shin-l",
+  legR: "taxi-passenger-leg-r",
+  shinR: "taxi-passenger-shin-r"
+} as const;
+
+export const COMMUTER_MATERIALS = [
+  // 0: Tailored slate-navy wool commuter trench coat
+  material.fabric({
+    name: "commuter-coat",
+    color: "#25394f",
+    roughness: 0.68,
+    sheen: 0.56,
+    sheenColor: "#94a3b8",
+    sheenRoughness: 0.46
+  }),
+  // 1: Warm terracotta knit turtleneck inner sweater
+  material.fabric({
+    name: "commuter-sweater",
+    color: "#c96a38",
+    roughness: 0.74,
+    sheen: 0.44,
+    sheenColor: "#fed7aa",
+    sheenRoughness: 0.52
+  }),
+  // 2: Tailored charcoal tapered trousers
+  material.fabric({
+    name: "commuter-trousers",
+    color: "#1e242d",
+    roughness: 0.76,
+    sheen: 0.28,
+    sheenColor: "#64748b",
+    sheenRoughness: 0.58
+  }),
+  // 3: Cognac saddle-leather messenger bag, strap & waist belt
+  material.pbr({
+    name: "commuter-leather",
+    color: "#734124",
+    roughness: 0.44,
+    metalness: 0.06,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.32
+  }),
+  // 4: Espresso urban Chelsea boot upper & obsidian phone bezel
+  material.pbr({
+    name: "commuter-boot-upper",
+    color: "#171a21",
+    roughness: 0.46,
+    metalness: 0.08
+  }),
+  // 5: Ivory vulcanized sneaker-boot outsole (planted flat at y = 0)
+  material.pbr({
+    name: "commuter-boot-sole",
+    color: "#e2e8f0",
+    roughness: 0.82,
+    metalness: 0.02
+  }),
+  // 6: Stylized warm natural skin
+  material.pbr({
+    name: "commuter-skin",
+    color: "#d99d7b",
+    roughness: 0.58,
+    metalness: 0.02
+  }),
+  // 7: Sculpted espresso-chestnut wavy hair & expressive eyes/brows
+  material.pbr({
+    name: "commuter-hair",
+    color: "#241712",
+    roughness: 0.5,
+    metalness: 0.05
+  }),
+  // 8: Brushed brass coat buttons & messenger bag buckles
+  material.metal({
+    name: "commuter-brass",
+    color: "#c8a04b",
+    roughness: 0.24,
+    metallic: 0.88,
+    clearcoat: 0,
+    sheen: 0
+  }),
+  // 9: Dispatch-teal ride-hail smartphone screen
+  material.emissive({
+    name: "commuter-phone-screen",
+    color: "#3fd6c6",
+    emissive: "#3fd6c6",
+    emissiveIntensity: 1.95,
+    practical: true
+  })
+] as const;
+
+export interface UrbanCommuterPoseInput {
+  readonly time: number;
+  readonly mode: "hail" | "board" | "alight";
+  readonly walkProgress: number;
+  readonly motionOk: boolean;
+}
+
+export interface UrbanCommuterPose {
+  readonly pelvisPos: V3;
+  readonly pelvisRot: V3;
+  readonly torsoRot: V3;
+  readonly headRot: V3;
+  readonly bagRot: V3;
+  readonly armLRot: V3;
+  readonly armRRot: V3;
+  readonly forearmRRot: V3;
+  readonly legLRot: V3;
+  readonly shinLRot: V3;
+  readonly legRRot: V3;
+  readonly shinRRot: V3;
+  readonly yawOffset: number;
+  readonly rootScale: number;
+}
+
+/**
+ * Deterministic bounded joint pose for the kerbside Urban Commuter Rig (`1.72 m` tall, `minY = 0`).
+ * Never accumulates angles across frames; reduced-motion holds a poised static hail stance (PRD §6.3).
+ */
+export function computeUrbanCommuterPose(input: UrbanCommuterPoseInput): UrbanCommuterPose {
+  const { time, mode, walkProgress, motionOk } = input;
+  if (mode === "hail") {
+    const wave = motionOk ? Math.sin(time * 4.6) : 0;
+    const breath = motionOk ? Math.sin(time * 1.9) : 0;
+    const shift = motionOk ? Math.sin(time * 1.15) : 0;
+    return {
+      pelvisPos: [shift * 0.014, 0.9 + breath * 0.004, 0],
+      pelvisRot: [0, shift * 0.04, shift * -0.025],
+      torsoRot: [-0.03 + breath * 0.018, 0.06 + shift * 0.03, shift * 0.02],
+      headRot: [-0.05 + breath * 0.015, 0.16 + wave * 0.045, wave * 0.03],
+      bagRot: [0.02, 0, -0.03 + shift * -0.035],
+      armLRot: [-0.58 + breath * 0.025, 0.24, 0.14],
+      // Friendly raised cab-hail wave toward the approaching AV pod
+      armRRot: [-2.18, 0.14, -0.34 + wave * 0.2],
+      forearmRRot: [-0.36, 0, wave * 0.34],
+      legLRot: [shift * 0.03, 0, -0.02],
+      shinLRot: [Math.max(0, -shift * 0.04), 0, 0],
+      legRRot: [-shift * 0.03, 0, 0.02],
+      shinRRot: [Math.max(0, shift * 0.04), 0, 0],
+      yawOffset: 0,
+      rootScale: 1
+    };
+  }
+
+  // Boarding / alighting stride across the kerb (hip swing + swing-phase-only positive knee flex)
+  const w = Math.max(0, Math.min(1, walkProgress));
+  const phase = motionOk ? w * Math.PI * 4.2 + time * 1.2 : 0;
+  const s = motionOk ? Math.sin(phase) : 0;
+  const c = motionOk ? Math.cos(phase) : 1;
+  const kneeL = motionOk ? Math.max(0, -c) * 0.58 : 0;
+  const kneeR = motionOk ? Math.max(0, c) * 0.58 : 0;
+  const bob = motionOk ? Math.abs(s) * 0.024 : 0;
+  const doorDuck = mode === "board" && w > 0.82 ? 1 - ((w - 0.82) / 0.18) * 0.24 : 1;
+  return {
+    pelvisPos: [0, 0.9 + bob, 0],
+    pelvisRot: [0.04, s * 0.06, s * 0.03],
+    torsoRot: [0.07, -s * 0.08, -s * 0.025],
+    headRot: [mode === "board" && w > 0.7 ? 0.14 : -0.02, s * 0.04, 0],
+    bagRot: [-s * 0.06, 0, -0.05 - Math.abs(s) * 0.05],
+    armLRot: [-0.42 + s * 0.24, 0.18, 0.12],
+    armRRot: [-s * 0.44, 0, -0.08],
+    forearmRRot: [-0.28 - Math.max(0, s) * 0.22, 0, 0],
+    legLRot: [-s * 0.46, 0, 0],
+    shinLRot: [kneeL, 0, 0],
+    legRRot: [s * 0.46, 0, 0],
+    shinRRot: [kneeR, 0, 0],
+    yawOffset: mode === "board" ? -0.68 : 2.38,
+    rootScale: doorDuck
+  };
+}
+
+function commuterGroupedMesh(name: string, cacheKey: string, buildSlots: () => readonly MultiMatSlot[]) {
+  const spec = memoGeometrySpec(`commuter:${cacheKey}`, () => buildGroupedGeometrySpec(buildSlots()));
+  return geometry.multiMaterial(spec, COMMUTER_MATERIALS, {
+    name,
+    castShadow: true,
+    receiveShadow: true
+  });
+}
+
+/**
+ * Builds the 100% `@aura3d/engine` sculpted, multi-material, articulated **Urban Commuter Rig**
+ * (`1.72 m` tall, boot soles planted cleanly at `local y = 0.00 m`, facing `+Z` in local rig space).
+ */
+export function buildUrbanCommuterNode(options: {
+  readonly id?: string;
+  readonly position?: V3;
+  readonly rotation?: V3;
+  readonly scale?: V3;
+} = {}): GroupNodeBuilder {
+  const rootId = options.id ?? PASSENGER_RIG_IDS.root;
+
+  // Pelvis & flared trench-coat lower skirt (`y = -0.18 .. +0.08` around hip pivot `y = 0.90`)
+  const pelvisGeo = commuterGroupedMesh("commuter-pelvis-mesh", "pelvis", () => [
+    {
+      materialIndex: 0,
+      mesh: transformMesh(
+        latheMesh(
+          [
+            [0.145, -0.18],
+            [0.195, -0.175],
+            [0.182, -0.06],
+            [0.16, 0.05],
+            [0.14, 0.085],
+            [0, 0.085]
+          ],
+          18
+        ),
+        { scale: [1.06, 1, 0.74] }
+      )
+    },
+    {
+      materialIndex: 2,
+      mesh: transformMesh(icosphereSmoothMesh(0.135, 2), { pos: [0, -0.03, 0], scale: [1.08, 0.78, 0.78] })
+    },
+    {
+      materialIndex: 3,
+      mesh: transformMesh(
+        latheMesh(
+          [
+            [0.158, 0.025],
+            [0.166, 0.04],
+            [0.166, 0.068],
+            [0.156, 0.074]
+          ],
+          18
+        ),
+        { scale: [1.05, 1, 0.75] }
+      )
+    },
+    {
+      materialIndex: 8,
+      mesh: transformMesh(bevelBoxMesh(0.044, 0.034, 0.018, 0.005), { pos: [0, 0.052, 0.126] })
+    }
+  ]);
+
+  // Tailored trench-coat torso, notched lapels, warm turtleneck sweater, brass buttons & cross-body strap
+  const torsoGeo = commuterGroupedMesh("commuter-torso-mesh", "torso", () => [
+    // Coat body (`y = 0 .. 0.43`)
+    {
+      materialIndex: 0,
+      mesh: transformMesh(
+        latheMesh(
+          [
+            [0, 0],
+            [0.152, 0.01],
+            [0.162, 0.14],
+            [0.188, 0.3],
+            [0.205, 0.39],
+            [0.145, 0.43],
+            [0, 0.432]
+          ],
+          20
+        ),
+        { scale: [1.08, 1, 0.68] }
+      )
+    },
+    // Sculpted coat collar & left/right lapels
+    {
+      materialIndex: 0,
+      mesh: mergeRawMeshes([
+        transformMesh(
+          latheMesh(
+            [
+              [0.082, 0.39],
+              [0.106, 0.42],
+              [0.112, 0.465],
+              [0.088, 0.468]
+            ],
+            16
+          ),
+          { scale: [1.05, 1, 0.92], pos: [0, 0, -0.01] }
+        ),
+        transformMesh(bevelBoxMesh(0.058, 0.22, 0.026, 0.008), {
+          pos: [-0.058, 0.3, 0.118],
+          rot: [-0.08, -0.18, 0.24]
+        }),
+        transformMesh(bevelBoxMesh(0.058, 0.22, 0.026, 0.008), {
+          pos: [0.058, 0.3, 0.118],
+          rot: [-0.08, 0.18, -0.24]
+        })
+      ])
+    },
+    // Terracotta knit sweater front & rolled turtleneck
+    {
+      materialIndex: 1,
+      mesh: mergeRawMeshes([
+        transformMesh(bevelBoxMesh(0.11, 0.25, 0.04, 0.014), { pos: [0, 0.29, 0.106] }),
+        latheMesh(
+          [
+            [0.062, 0.41],
+            [0.072, 0.435],
+            [0.07, 0.476],
+            [0.054, 0.482],
+            [0, 0.482]
+          ],
+          16
+        )
+      ])
+    },
+    // Diagonal cognac leather messenger strap across front & back
+    {
+      materialIndex: 3,
+      mesh: mergeRawMeshes([
+        tubeSweepMesh(
+          [
+            [0.145, 0.425, 0.02, 0.018],
+            [0.05, 0.28, 0.132, 0.018],
+            [-0.08, 0.12, 0.122, 0.018],
+            [-0.175, -0.02, 0.02, 0.018]
+          ],
+          8
+        ),
+        tubeSweepMesh(
+          [
+            [0.145, 0.425, -0.02, 0.018],
+            [0.03, 0.26, -0.128, 0.018],
+            [-0.09, 0.11, -0.12, 0.018],
+            [-0.175, -0.02, -0.02, 0.018]
+          ],
+          8
+        )
+      ])
+    },
+    // Double-breasted brass coat buttons
+    {
+      materialIndex: 8,
+      mesh: mergeRawMeshes([
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.042, 0.19, 0.122], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.042, 0.19, 0.122], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.042, 0.1, 0.118], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.042, 0.1, 0.118], scale: [1, 1, 0.55] })
+      ])
+    }
+  ]);
+
+  // Cognac leather messenger bag at left hip
+  const bagGeo = commuterGroupedMesh("commuter-bag-mesh", "bag", () => [
+    {
+      materialIndex: 3,
+      mesh: mergeRawMeshes([
+        transformMesh(bevelBoxMesh(0.095, 0.22, 0.27, 0.024), { pos: [0, -0.11, 0] }),
+        transformMesh(bevelBoxMesh(0.104, 0.12, 0.278, 0.022), { pos: [0.004, -0.065, 0] })
+      ])
+    },
+    {
+      materialIndex: 8,
+      mesh: mergeRawMeshes([
+        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.052, -0.13, -0.065] }),
+        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.052, -0.13, 0.065] })
+      ])
+    }
+  ]);
+
+  // Stylized sculpted head, neck, ears, expressive eyes/brows & modern swept hair (`crown at +0.30` -> `1.72 m` total height)
+  const headGeo = commuterGroupedMesh("commuter-head-mesh", "head", () => [
+    {
+      materialIndex: 6,
+      mesh: mergeRawMeshes([
+        latheMesh(
+          [
+            [0.052, 0],
+            [0.048, 0.065],
+            [0, 0.075]
+          ],
+          14
+        ),
+        transformMesh(icosphereSmoothMesh(0.106, 2), { pos: [0, 0.165, 0.008], scale: [0.92, 1.08, 0.98] }),
+        // Sculpted nose & ears
+        transformMesh(icosphereSmoothMesh(0.018, 1), { pos: [0, 0.158, 0.108], scale: [0.68, 1.05, 0.95] }),
+        transformMesh(icosphereSmoothMesh(0.022, 1), { pos: [-0.096, 0.162, 0.002], scale: [0.45, 0.95, 0.7] }),
+        transformMesh(icosphereSmoothMesh(0.022, 1), { pos: [0.096, 0.162, 0.002], scale: [0.45, 0.95, 0.7] })
+      ])
+    },
+    {
+      materialIndex: 7,
+      mesh: mergeRawMeshes([
+        // Sculpted modern wavy hair cap, back taper & swept side fringe
+        transformMesh(icosphereSmoothMesh(0.114, 2), { pos: [0, 0.194, -0.01], scale: [0.97, 0.96, 1.03] }),
+        transformMesh(icosphereSmoothMesh(0.078, 2), { pos: [0.028, 0.252, 0.036], scale: [1.18, 0.56, 0.95], rot: [0.18, 0.12, -0.22] }),
+        tubeSweepMesh(
+          [
+            [-0.075, 0.242, 0.055, 0.028],
+            [-0.01, 0.262, 0.088, 0.032],
+            [0.065, 0.238, 0.082, 0.024],
+            [0.095, 0.198, 0.048, 0.015]
+          ],
+          8
+        ),
+        // Expressive eyes & eyebrows
+        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [-0.036, 0.174, 0.098], scale: [0.9, 1.05, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [0.036, 0.174, 0.098], scale: [0.9, 1.05, 0.55] }),
+        transformMesh(bevelBoxMesh(0.028, 0.007, 0.01, 0.002), { pos: [-0.037, 0.196, 0.098], rot: [0, 0, 0.08] }),
+        transformMesh(bevelBoxMesh(0.028, 0.007, 0.01, 0.002), { pos: [0.037, 0.196, 0.098], rot: [0, 0, -0.08] })
+      ])
+    }
+  ]);
+
+  // Left arm holding glowing #3fd6c6 dispatch smartphone
+  const armLGeo = commuterGroupedMesh("commuter-arm-l-mesh", "arm-l", () => [
+    {
+      materialIndex: 0,
+      mesh: tubeSweepMesh(
+        [
+          [0, 0, 0, 0.054],
+          [-0.03, -0.14, 0.01, 0.048],
+          [-0.035, -0.25, 0.03, 0.045],
+          [0.01, -0.31, 0.15, 0.043],
+          [0.045, -0.32, 0.24, 0.041]
+        ],
+        10
+      )
+    },
+    {
+      materialIndex: 6,
+      mesh: transformMesh(icosphereSmoothMesh(0.034, 2), { pos: [0.055, -0.32, 0.275], scale: [0.85, 0.78, 1.12] })
+    },
+    {
+      materialIndex: 4,
+      mesh: transformMesh(bevelBoxMesh(0.068, 0.125, 0.012, 0.004), {
+        pos: [0.068, -0.295, 0.305],
+        rot: [-0.52, -0.22, 0.08]
+      })
+    },
+    {
+      materialIndex: 9,
+      mesh: transformMesh(bevelBoxMesh(0.058, 0.108, 0.006, 0.002), {
+        pos: [0.07, -0.292, 0.309],
+        rot: [-0.52, -0.22, 0.08]
+      })
+    }
+  ]);
+
+  // Right upper arm + elbow-articulated forearm & open hailing hand
+  const armRUpperGeo = commuterGroupedMesh("commuter-arm-r-mesh", "arm-r-upper", () => [
+    {
+      materialIndex: 0,
+      mesh: tubeSweepMesh(
+        [
+          [0, 0, 0, 0.054],
+          [0.025, -0.12, 0.008, 0.048],
+          [0.038, -0.24, 0.016, 0.044]
+        ],
+        10
+      )
+    }
+  ]);
+
+  const forearmRGeo = commuterGroupedMesh("commuter-forearm-r-mesh", "forearm-r", () => [
+    {
+      materialIndex: 0,
+      mesh: tubeSweepMesh(
+        [
+          [0, 0, 0, 0.044],
+          [0.008, -0.12, 0.01, 0.041],
+          [0.012, -0.22, 0.016, 0.039]
+        ],
+        10
+      )
+    },
+    {
+      materialIndex: 1,
+      mesh: transformMesh(latheMesh([[0.038, -0.215], [0.041, -0.235], [0.035, -0.242]], 12), { pos: [0.012, 0, 0.016] })
+    },
+    {
+      materialIndex: 6,
+      mesh: mergeRawMeshes([
+        transformMesh(bevelBoxMesh(0.026, 0.082, 0.054, 0.01), { pos: [0.014, -0.278, 0.02] }),
+        transformMesh(icosphereSmoothMesh(0.016, 1), { pos: [0.014, -0.268, 0.054], scale: [0.65, 1.2, 0.85], rot: [-0.45, 0, 0] })
+      ])
+    }
+  ]);
+
+  // Left & right thighs (`y = 0 .. -0.43`) + shins & grounded Chelsea sneaker-boots (`y = 0 .. -0.47` -> exact `y = 0.00` ground)
+  const buildThigh = (side: -1 | 1, key: string) =>
+    commuterGroupedMesh(`commuter-thigh-${key}`, `thigh-${key}`, () => [
+      {
+        materialIndex: 2,
+        mesh: tubeSweepMesh(
+          [
+            [0, 0.02, 0, 0.078],
+            [side * 0.004, -0.2, 0.006, 0.068],
+            [side * 0.006, -0.43, 0.004, 0.056]
+          ],
+          12
+        )
+      }
+    ]);
+
+  const buildShinAndBoot = (key: string) =>
+    commuterGroupedMesh(`commuter-shin-${key}`, `shin-${key}`, () => [
+      // Tapered trouser shin + rolled cuff (`y = 0 .. -0.365`)
+      {
+        materialIndex: 2,
+        mesh: mergeRawMeshes([
+          tubeSweepMesh(
+            [
+              [0, 0.01, 0, 0.055],
+              [0, -0.19, -0.006, 0.049],
+              [0, -0.355, 0, 0.044]
+            ],
+            12
+          ),
+          latheMesh(
+            [
+              [0.045, -0.335],
+              [0.051, -0.345],
+              [0.051, -0.368],
+              [0.043, -0.372]
+            ],
+            14
+          )
+        ])
+      },
+      // Contoured Chelsea boot upper (`y = -0.36 .. -0.446`)
+      {
+        materialIndex: 4,
+        mesh: mergeRawMeshes([
+          latheMesh(
+            [
+              [0.043, -0.362],
+              [0.047, -0.405],
+              [0.052, -0.446],
+              [0, -0.446]
+            ],
+            14
+          ),
+          transformMesh(icosphereSmoothMesh(0.052, 2), {
+            pos: [0, -0.424, 0.046],
+            scale: [0.88, 0.56, 1.58]
+          })
+        ])
+      },
+      // Flat vulcanized rubber sole whose bottom sits at exact `y = -0.47` (`0.90 - 0.43 - 0.47 = 0.000 m` sidewalk contact)
+      {
+        materialIndex: 5,
+        mesh: mergeRawMeshes([
+          transformMesh(bevelBoxMesh(0.094, 0.026, 0.215, 0.009), { pos: [0, -0.457, 0.036] })
+        ])
+      }
+    ]);
+
+  const initial = computeUrbanCommuterPose({ time: 0, mode: "hail", walkProgress: 0, motionOk: true });
+
+  const forearmR = group(PASSENGER_RIG_IDS.forearmR, [forearmRGeo], {
+    position: [0.038, -0.24, 0.016],
+    rotation: initial.forearmRRot
+  }).runtime({ id: PASSENGER_RIG_IDS.forearmR });
+
+  const armR = group(PASSENGER_RIG_IDS.armR, [armRUpperGeo, forearmR], {
+    position: [0.205, 0.385, 0],
+    rotation: initial.armRRot
+  }).runtime({ id: PASSENGER_RIG_IDS.armR });
+
+  const armL = group(PASSENGER_RIG_IDS.armL, [armLGeo], {
+    position: [-0.205, 0.385, 0],
+    rotation: initial.armLRot
+  }).runtime({ id: PASSENGER_RIG_IDS.armL });
+
+  const head = group(PASSENGER_RIG_IDS.head, [headGeo], {
+    position: [0, 0.455, 0],
+    rotation: initial.headRot
+  }).runtime({ id: PASSENGER_RIG_IDS.head });
+
+  const bag = group(PASSENGER_RIG_IDS.bag, [bagGeo], {
+    position: [-0.185, -0.02, -0.01],
+    rotation: initial.bagRot
+  }).runtime({ id: PASSENGER_RIG_IDS.bag });
+
+  const torso = group(PASSENGER_RIG_IDS.torso, [torsoGeo, bag, head, armL, armR], {
+    position: [0, 0.06, 0],
+    rotation: initial.torsoRot
+  }).runtime({ id: PASSENGER_RIG_IDS.torso });
+
+  const shinL = group(PASSENGER_RIG_IDS.shinL, [buildShinAndBoot("l")], {
+    position: [-0.006, -0.43, 0.004],
+    rotation: initial.shinLRot
+  }).runtime({ id: PASSENGER_RIG_IDS.shinL });
+
+  const legL = group(PASSENGER_RIG_IDS.legL, [buildThigh(-1, "l"), shinL], {
+    position: [-0.095, 0, 0],
+    rotation: initial.legLRot
+  }).runtime({ id: PASSENGER_RIG_IDS.legL });
+
+  const shinR = group(PASSENGER_RIG_IDS.shinR, [buildShinAndBoot("r")], {
+    position: [0.006, -0.43, 0.004],
+    rotation: initial.shinRRot
+  }).runtime({ id: PASSENGER_RIG_IDS.shinR });
+
+  const legR = group(PASSENGER_RIG_IDS.legR, [buildThigh(1, "r"), shinR], {
+    position: [0.095, 0, 0],
+    rotation: initial.legRRot
+  }).runtime({ id: PASSENGER_RIG_IDS.legR });
+
+  const pelvis = group(PASSENGER_RIG_IDS.pelvis, [pelvisGeo, torso, legL, legR], {
+    position: initial.pelvisPos,
+    rotation: initial.pelvisRot
+  }).runtime({ id: PASSENGER_RIG_IDS.pelvis });
+
+  return group(rootId, [pelvis], {
+    ...(options.position ? { position: options.position } : {}),
+    ...(options.rotation ? { rotation: options.rotation } : {}),
+    ...(options.scale ? { scale: options.scale } : {})
+  }).runtime({ id: rootId });
+}

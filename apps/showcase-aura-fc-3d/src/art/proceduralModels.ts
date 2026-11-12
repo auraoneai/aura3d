@@ -2060,3 +2060,1323 @@ export function buildVenueBackdropNodes(venue: VenueId, accentHex: string): Aura
     }
   });
 }
+
+/* ========================================================================== */
+/* Section 9 — Sculpted Multi-Material Articulated Footballer, Keeper,        */
+/*             Referee & Front-Row Supporter Rigs (Zero Meshy GLBs)           */
+/* ========================================================================== */
+
+export const FOOTBALLER_CANONICAL_HEIGHT = 1.891;
+export const GOALKEEPER_CANONICAL_HEIGHT = 1.899;
+
+export const FOOTBALLER_JOINT_SUFFIXES = [
+  "pelvis",
+  "chest",
+  "head",
+  "arm-l",
+  "forearm-l",
+  "arm-r",
+  "forearm-r",
+  "leg-l",
+  "calf-l",
+  "boot-l",
+  "leg-r",
+  "calf-r",
+  "boot-r"
+] as const;
+
+export type FootballerJointSuffix = (typeof FOOTBALLER_JOINT_SUFFIXES)[number];
+
+export interface FootballerBuildSpec {
+  readonly shirt: string;
+  readonly shorts: string;
+  readonly socks: string;
+  readonly skin: string;
+  readonly trim?: string;
+  readonly boots?: string;
+  readonly targetHeight: number;
+  readonly isKeeper?: boolean;
+  readonly isReferee?: boolean;
+  readonly isCaptain?: boolean;
+  readonly powerFrame?: boolean;
+  readonly fabricRim?: { readonly color: string; readonly power: number; readonly intensity: number };
+}
+
+type Euler3 = readonly [number, number, number];
+
+export interface FootballerJointPose {
+  readonly pelvisOffsetY: number;
+  readonly pelvisOffsetZ: number;
+  readonly pelvis: Euler3;
+  readonly chest: Euler3;
+  readonly head: Euler3;
+  readonly armL: Euler3;
+  readonly forearmL: Euler3;
+  readonly armR: Euler3;
+  readonly forearmR: Euler3;
+  readonly legL: Euler3;
+  readonly calfL: Euler3;
+  readonly bootL: Euler3;
+  readonly legR: Euler3;
+  readonly calfR: Euler3;
+  readonly bootR: Euler3;
+}
+
+export interface FootballerPoseInput {
+  readonly clip: string;
+  readonly phase: number;
+  readonly duration: number;
+  readonly isKeeper?: boolean;
+  readonly celebrateKind?: number;
+  readonly celebrateT?: number;
+  readonly diveDir?: number;
+}
+
+function ovalRing(cx: number, y: number, cz: number, rx: number, rz: number, n = 14): V3[] {
+  const pts: V3[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const a = (i / n) * TAU;
+    pts.push([cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz]);
+  }
+  return pts;
+}
+
+function idSeed(id: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i += 1) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+const combineSafe = (parts: readonly RawMesh[]): RawMesh =>
+  parts.length === 1 ? parts[0]! : combineRaw(parts);
+
+/** Builds the sculpted athletic shorts + waist + drawstring + hip-joint sockets (`pelvis` pivot at y = 0.96). */
+function buildFootballerPelvisParts(power: boolean): { shorts: RawMesh; trim: RawMesh } {
+  const wScale = power ? 1.06 : 1.0;
+  const waist = loftSectionsMesh(
+    [
+      ovalRing(0, -0.09, 0, 0.158 * wScale, 0.112 * wScale, 16),
+      ovalRing(0, -0.02, 0, 0.154 * wScale, 0.108 * wScale, 16),
+      ovalRing(0, 0.055, 0, 0.146 * wScale, 0.101 * wScale, 16),
+      ovalRing(0, 0.095, 0, 0.142 * wScale, 0.098 * wScale, 16)
+    ],
+    true,
+    false
+  );
+  // Hip bridge saddles so upper thighs never show a gap during deep lunges or high kicks
+  const hipCapL = place(icosphereFacetMesh(0.088 * wScale, 1, 0, 3), [0.098, -0.035, 0]);
+  const hipCapR = place(icosphereFacetMesh(0.088 * wScale, 1, 0, 5), [-0.098, -0.035, 0]);
+  const waistband = loftSectionsMesh(
+    [
+      ovalRing(0, 0.056, 0, 0.149 * wScale, 0.104 * wScale, 16),
+      ovalRing(0, 0.092, 0, 0.146 * wScale, 0.102 * wScale, 16)
+    ],
+    false,
+    false
+  );
+  return {
+    shorts: combineSafe([waist, hipCapL, hipCapR]),
+    trim: waistband
+  };
+}
+
+/** Builds the sculpted V-taper match jersey torso, V-neck collar, shoulder yoke & badge/referee detail (`chest` at +0.08 above pelvis). */
+function buildFootballerChestParts(opts: {
+  power: boolean;
+  isKeeper: boolean;
+  isReferee: boolean;
+  isCaptain: boolean;
+}): { jersey: RawMesh; trim: RawMesh; dark: RawMesh; gold: RawMesh } {
+  const w = opts.power ? 1.07 : 1.0;
+  const torso = loftSectionsMesh(
+    [
+      ovalRing(0, -0.02, 0, 0.140 * w, 0.096 * w, 16),
+      ovalRing(0, 0.11, 0, 0.152 * w, 0.106 * w, 16),
+      ovalRing(0, 0.26, 0, 0.178 * w, 0.118 * w, 16),
+      ovalRing(0, 0.39, 0, 0.198 * w, 0.114 * w, 16),
+      ovalRing(0, 0.455, 0, 0.152 * w, 0.094 * w, 16),
+      ovalRing(0, 0.485, 0, 0.072, 0.068, 16)
+    ],
+    true,
+    false
+  );
+  // Sculpted deltoid shoulder caps bridging torso to arm pivots (`[±0.225, 0.41, 0]`)
+  const deltL = place(icosphereFacetMesh(0.078 * w, 1, 0, 7), [0.195 * w, 0.405, 0]);
+  const deltR = place(icosphereFacetMesh(0.078 * w, 1, 0, 9), [-0.195 * w, 0.405, 0]);
+
+  // Rib-knit V-neck collar + shoulder racing stripes + hem piping
+  const collar = loftSectionsMesh(
+    [
+      ovalRing(0, 0.455, 0.006, 0.086, 0.082, 14),
+      ovalRing(0, 0.495, 0.004, 0.074, 0.072, 14)
+    ],
+    false,
+    false
+  );
+  const stripeL = tube(
+    [
+      [0.09, 0.47, 0],
+      [0.155 * w, 0.445, 0],
+      [0.215 * w, 0.42, 0]
+    ],
+    0.014,
+    6,
+    false
+  );
+  const stripeR = tube(
+    [
+      [-0.09, 0.47, 0],
+      [-0.155 * w, 0.445, 0],
+      [-0.215 * w, 0.42, 0]
+    ],
+    0.014,
+    6,
+    false
+  );
+  const crest = place(bevelBoxMesh(0.038, 0.044, 0.012, 0.004, 1), [-0.072 * w, 0.33, 0.114 * w]);
+
+  const trimParts: RawMesh[] = [collar, stripeL, stripeR];
+  const darkParts: RawMesh[] = [];
+  const goldParts: RawMesh[] = [crest];
+
+  if (opts.isReferee) {
+    // Referee breast pocket, card tab & silver whistle lanyard
+    darkParts.push(
+      place(bevelBoxMesh(0.052, 0.058, 0.012, 0.003, 1), [-0.068, 0.315, 0.114]),
+      tube(
+        [
+          [-0.042, 0.47, 0.055],
+          [-0.02, 0.38, 0.108],
+          [0, 0.355, 0.116],
+          [0.02, 0.38, 0.108],
+          [0.042, 0.47, 0.055]
+        ],
+        0.005,
+        5,
+        false
+      )
+    );
+    goldParts.push(place(bevelBoxMesh(0.022, 0.018, 0.024, 0.004, 1), [0, 0.348, 0.12]));
+  } else if (opts.isKeeper) {
+    // Padded chest rib panels on keeper jersey
+    trimParts.push(
+      place(bevelBoxMesh(0.13 * w, 0.022, 0.012, 0.004, 1), [0, 0.28, 0.114 * w]),
+      place(bevelBoxMesh(0.11 * w, 0.022, 0.012, 0.004, 1), [0, 0.23, 0.110 * w])
+    );
+  }
+  if (opts.isCaptain) {
+    goldParts.push(place(bevelBoxMesh(0.014, 0.03, 0.014, 0.003, 1), [0.072 * w, 0.33, 0.114 * w]));
+  }
+
+  return {
+    jersey: combineSafe([torso, deltL, deltR]),
+    trim: combineSafe(trimParts),
+    dark: darkParts.length > 0 ? combineSafe(darkParts) : place(bevelBoxMesh(0.004, 0.004, 0.004, 0.001, 1), [0, 0.25, 0]),
+    gold: combineSafe(goldParts)
+  };
+}
+
+/** Builds the sculpted neck, cranium, jawline, nose, ears, eyes, brows & varied hairstyle (`head` at +0.50 above chest). */
+function buildFootballerHeadParts(hairStyle: number, hasHeadband: boolean): {
+  skin: RawMesh;
+  hair: RawMesh;
+  eyes: RawMesh;
+  trim: RawMesh;
+} {
+  const neck = loftSectionsMesh(
+    [
+      ovalRing(0, -0.025, -0.006, 0.058, 0.056, 12),
+      ovalRing(0, 0.045, -0.002, 0.052, 0.050, 12),
+      ovalRing(0, 0.085, 0.004, 0.056, 0.054, 12)
+    ],
+    true,
+    false
+  );
+  const skull = loftSectionsMesh(
+    [
+      ovalRing(0, 0.072, 0.014, 0.062, 0.068, 14),
+      ovalRing(0, 0.118, 0.012, 0.082, 0.092, 14),
+      ovalRing(0, 0.178, 0.004, 0.092, 0.104, 14),
+      ovalRing(0, 0.242, -0.004, 0.088, 0.100, 14),
+      ovalRing(0, 0.295, -0.008, 0.066, 0.076, 14),
+      ovalRing(0, 0.322, -0.010, 0.028, 0.032, 14)
+    ],
+    true,
+    false
+  );
+  const nose = place(bevelBoxMesh(0.024, 0.042, 0.028, 0.007, 1), [0, 0.172, 0.104], [-0.14, 0, 0]);
+  const earL = place(bevelBoxMesh(0.016, 0.038, 0.024, 0.005, 1), [0.091, 0.176, -0.004]);
+  const earR = place(bevelBoxMesh(0.016, 0.038, 0.024, 0.005, 1), [-0.091, 0.176, -0.004]);
+
+  // Sculpted hairstyle crown
+  const hairBase = loftSectionsMesh(
+    [
+      ovalRing(0, 0.205, -0.014, 0.094, 0.104, 14),
+      ovalRing(0, 0.258, -0.006, 0.095, 0.108, 14),
+      ovalRing(0, 0.312, 0.004, 0.076, 0.090, 14),
+      ovalRing(0, 0.346 + (hairStyle % 2) * 0.012, 0.010, 0.036, 0.046, 14)
+    ],
+    true,
+    false
+  );
+  const hairExtras: RawMesh[] = [hairBase];
+  if (hairStyle === 1) {
+    // Textured forward quiff crest
+    hairExtras.push(place(bevelBoxMesh(0.088, 0.036, 0.068, 0.012, 1), [0, 0.326, 0.044], [-0.18, 0, 0]));
+  } else if (hairStyle === 2) {
+    // Textured curls crown
+    for (const [cx, cy, cz] of [[-0.042, 0.318, 0.02], [0.042, 0.318, 0.02], [0, 0.332, -0.02], [0, 0.325, 0.046]] as const) {
+      hairExtras.push(place(icosphereFacetMesh(0.038, 1, 0.06, 11), [cx, cy, cz]));
+    }
+  } else if (hairStyle === 3) {
+    // Back nape fade + top knot
+    hairExtras.push(place(icosphereFacetMesh(0.036, 1, 0, 13), [0, 0.31, -0.082]));
+  }
+
+  const eyeL = place(bevelBoxMesh(0.022, 0.012, 0.012, 0.003, 1), [0.034, 0.194, 0.098]);
+  const eyeR = place(bevelBoxMesh(0.022, 0.012, 0.012, 0.003, 1), [-0.034, 0.194, 0.098]);
+  const browL = place(bevelBoxMesh(0.030, 0.008, 0.012, 0.002, 1), [0.035, 0.211, 0.100], [0, 0, -0.08]);
+  const browR = place(bevelBoxMesh(0.030, 0.008, 0.012, 0.002, 1), [-0.035, 0.211, 0.100], [0, 0, 0.08]);
+
+  const band = hasHeadband
+    ? loftSectionsMesh(
+        [
+          ovalRing(0, 0.222, -0.002, 0.096, 0.107, 14),
+          ovalRing(0, 0.246, -0.002, 0.095, 0.106, 14)
+        ],
+        false,
+        false
+      )
+    : place(bevelBoxMesh(0.004, 0.004, 0.004, 0.001, 1), [0, 0.18, 0]);
+
+  return {
+    skin: combineSafe([neck, skull, nose, earL, earR]),
+    hair: combineSafe(hairExtras),
+    eyes: combineSafe([eyeL, eyeR, browL, browR]),
+    trim: band
+  };
+}
+
+/** Upper arm: jersey sleeve + cuff trim + bicep/tricep + elbow sphere (`arm-l`/`arm-r`, length 0.27 m). */
+function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean): {
+  jersey: RawMesh;
+  trim: RawMesh;
+  skin: RawMesh;
+} {
+  const shoulderBall = icosphereFacetMesh(0.058, 1, 0, 4);
+  const sleeveBottom = isKeeper ? -0.255 : -0.145;
+  const sleeve = loftSectionsMesh(
+    [
+      ovalRing(0, 0.01, 0, 0.058, 0.058, 12),
+      ovalRing(0, sleeveBottom * 0.5, 0, 0.054, 0.054, 12),
+      ovalRing(0, sleeveBottom, 0, 0.049, 0.049, 12)
+    ],
+    true,
+    false
+  );
+  const cuff = loftSectionsMesh(
+    [
+      ovalRing(0, sleeveBottom - 0.016, 0, 0.050, 0.050, 12),
+      ovalRing(0, sleeveBottom + 0.004, 0, 0.051, 0.051, 12)
+    ],
+    false,
+    false
+  );
+  const trimParts: RawMesh[] = [cuff];
+  if (isCaptainLeft) {
+    trimParts.push(
+      loftSectionsMesh(
+        [
+          ovalRing(0, -0.105, 0, 0.054, 0.054, 12),
+          ovalRing(0, -0.068, 0, 0.056, 0.056, 12)
+        ],
+        false,
+        false
+      )
+    );
+  }
+  const bicepSkin = isKeeper
+    ? place(icosphereFacetMesh(0.044, 1, 0, 6), [0, -0.27, 0])
+    : combineSafe([
+        loftSectionsMesh(
+          [
+            ovalRing(0, -0.14, 0, 0.046, 0.046, 12),
+            ovalRing(0, -0.21, 0, 0.043, 0.044, 12),
+            ovalRing(0, -0.27, 0, 0.039, 0.040, 12)
+          ],
+          true,
+          false
+        ),
+        place(icosphereFacetMesh(0.042, 1, 0, 6), [0, -0.27, 0])
+      ]);
+  return {
+    jersey: combineSafe([shoulderBall, sleeve]),
+    trim: combineSafe(trimParts),
+    skin: bicepSkin
+  };
+}
+
+/** Forearm + wrist tape + sculpted hand or padded goalkeeper glove (`forearm-l`/`forearm-r`, length 0.25 m). */
+function buildFootballerForearmParts(sideSign: 1 | -1, isKeeper: boolean): {
+  skinOrSleeve: RawMesh;
+  wristTape: RawMesh;
+  gloveOrHand: RawMesh;
+} {
+  const forearm = loftSectionsMesh(
+    [
+      ovalRing(0, 0.01, 0, 0.041, 0.042, 12),
+      ovalRing(0, -0.11, 0, 0.037, 0.038, 12),
+      ovalRing(0, -0.21, 0, 0.030, 0.032, 12)
+    ],
+    true,
+    false
+  );
+  const tape = loftSectionsMesh(
+    [
+      ovalRing(0, -0.225, 0, 0.033, 0.035, 12),
+      ovalRing(0, -0.192, 0, 0.034, 0.036, 12)
+    ],
+    true,
+    false
+  );
+  if (isKeeper) {
+    // Chunky pro goalkeeper latex glove + spread thumb
+    const glovePalm = place(bevelBoxMesh(0.062, 0.098, 0.038, 0.012, 1), [0, -0.268, 0.008]);
+    const gloveThumb = place(bevelBoxMesh(0.024, 0.048, 0.024, 0.007, 1), [-sideSign * 0.034, -0.252, 0.026], [-0.35, 0, sideSign * 0.42]);
+    return {
+      skinOrSleeve: forearm,
+      wristTape: tape,
+      gloveOrHand: combineSafe([glovePalm, gloveThumb])
+    };
+  }
+  const palm = place(bevelBoxMesh(0.044, 0.074, 0.026, 0.008, 1), [0, -0.256, 0.006]);
+  const thumb = place(bevelBoxMesh(0.018, 0.036, 0.018, 0.005, 1), [-sideSign * 0.024, -0.244, 0.020], [-0.30, 0, sideSign * 0.35]);
+  return {
+    skinOrSleeve: forearm,
+    wristTape: tape,
+    gloveOrHand: combineSafe([palm, thumb])
+  };
+}
+
+/** Upper leg: tailored shorts leg cuff + racing stripe + muscular quadriceps/hamstring + kneecap (`leg`, length 0.43 m). */
+function buildFootballerUpperLegParts(sideSign: 1 | -1, power: boolean): {
+  shorts: RawMesh;
+  trim: RawMesh;
+  skin: RawMesh;
+} {
+  const s = power ? 1.07 : 1.0;
+  const shortsLeg = loftSectionsMesh(
+    [
+      ovalRing(0, 0.03, 0, 0.090 * s, 0.094 * s, 14),
+      ovalRing(0, -0.10, 0, 0.086 * s, 0.090 * s, 14),
+      ovalRing(0, -0.205, 0, 0.082 * s, 0.084 * s, 14)
+    ],
+    true,
+    false
+  );
+  const hem = loftSectionsMesh(
+    [
+      ovalRing(0, -0.218, 0, 0.083 * s, 0.085 * s, 14),
+      ovalRing(0, -0.198, 0, 0.084 * s, 0.086 * s, 14)
+    ],
+    false,
+    false
+  );
+  const sideStripe = tube(
+    [
+      [sideSign * 0.084 * s, 0.01, 0],
+      [sideSign * 0.083 * s, -0.21, 0]
+    ],
+    0.010,
+    5,
+    false
+  );
+  const quad = loftSectionsMesh(
+    [
+      ovalRing(0, -0.195, 0.003, 0.072 * s, 0.076 * s, 14),
+      ovalRing(0, -0.31, 0.004, 0.064 * s, 0.068 * s, 14),
+      ovalRing(0, -0.42, 0.002, 0.053 * s, 0.056 * s, 14)
+    ],
+    true,
+    false
+  );
+  const kneeCap = place(icosphereFacetMesh(0.054 * s, 1, 0, 8), [0, -0.43, 0.006]);
+  return {
+    shorts: shortsLeg,
+    trim: combineSafe([hem, sideStripe]),
+    skin: combineSafe([quad, kneeCap])
+  };
+}
+
+/** Lower leg: upper calf skin + turnover match sock + contoured shin-guard bulge + ankle tape (`calf`, length 0.41 m). */
+function buildFootballerLowerLegParts(power: boolean): {
+  skin: RawMesh;
+  sock: RawMesh;
+  trim: RawMesh;
+} {
+  const s = power ? 1.05 : 1.0;
+  const upperCalf = loftSectionsMesh(
+    [
+      ovalRing(0, 0.01, -0.002, 0.053 * s, 0.056 * s, 14),
+      ovalRing(0, -0.085, -0.006, 0.056 * s, 0.060 * s, 14),
+      ovalRing(0, -0.135, -0.004, 0.054 * s, 0.058 * s, 14)
+    ],
+    true,
+    false
+  );
+  const sockTurnover = loftSectionsMesh(
+    [
+      ovalRing(0, -0.165, -0.003, 0.057 * s, 0.061 * s, 14),
+      ovalRing(0, -0.125, -0.003, 0.058 * s, 0.062 * s, 14)
+    ],
+    true,
+    false
+  );
+  const sockShaft = loftSectionsMesh(
+    [
+      ovalRing(0, -0.155, -0.003, 0.055 * s, 0.059 * s, 14),
+      ovalRing(0, -0.24, 0.005, 0.051 * s, 0.058 * s, 14),
+      ovalRing(0, -0.34, 0.002, 0.041 * s, 0.045 * s, 14),
+      ovalRing(0, -0.41, 0, 0.038 * s, 0.042 * s, 14)
+    ],
+    true,
+    false
+  );
+  const ankleTape = loftSectionsMesh(
+    [
+      ovalRing(0, -0.395, 0, 0.040 * s, 0.044 * s, 12),
+      ovalRing(0, -0.358, 0, 0.042 * s, 0.046 * s, 12)
+    ],
+    false,
+    false
+  );
+  return {
+    skin: upperCalf,
+    sock: sockShaft,
+    trim: combineSafe([sockTurnover, ankleTape])
+  };
+}
+
+/** Pro football boot: sculpted anatomical last + heel counter + tongue + soleplate + 6 studs grounded at y = -0.10 m. */
+function buildFootballerBootParts(): {
+  upper: RawMesh;
+  accent: RawMesh;
+  soleAndStuds: RawMesh;
+} {
+  const ankleCollar = loftSectionsMesh(
+    [
+      ovalRing(0, -0.048, -0.004, 0.043, 0.052, 12),
+      ovalRing(0, 0.008, -0.002, 0.040, 0.046, 12)
+    ],
+    true,
+    false
+  );
+  // Sculpted shoe last along +Z from heel (-0.088) to toe (+0.188)
+  const bootUpper = loftSectionsMesh(
+    [
+      [[-0.034, -0.084, -0.088], [0.034, -0.084, -0.088], [0.036, -0.032, -0.082], [-0.036, -0.032, -0.082]],
+      [[-0.044, -0.086, -0.020], [0.044, -0.086, -0.020], [0.042, -0.026, -0.015], [-0.042, -0.026, -0.015]],
+      [[-0.048, -0.086, 0.065], [0.048, -0.086, 0.065], [0.044, -0.038, 0.065], [-0.044, -0.038, 0.065]],
+      [[-0.041, -0.086, 0.142], [0.041, -0.086, 0.142], [0.036, -0.052, 0.140], [-0.036, -0.052, 0.140]],
+      [[-0.024, -0.084, 0.188], [0.024, -0.084, 0.188], [0.020, -0.064, 0.184], [-0.020, -0.064, 0.184]]
+    ],
+    true,
+    false
+  );
+  const heelCounter = place(bevelBoxMesh(0.072, 0.046, 0.034, 0.008, 1), [0, -0.058, -0.076]);
+  const sideChevron = place(bevelBoxMesh(0.098, 0.018, 0.072, 0.004, 1), [0, -0.056, 0.042], [0.16, 0, 0]);
+  const soleplate = place(bevelBoxMesh(0.088, 0.012, 0.268, 0.004, 1), [0, -0.088, 0.048]);
+  const studProto = latheMesh([[0, 0], [0.007, 0], [0.009, 0.012], [0, 0.012]], 6);
+  const studs: RawMesh[] = [soleplate];
+  for (const [sx, sz] of [
+    [-0.026, -0.064], [0.026, -0.064],
+    [-0.030, 0.048], [0.030, 0.048],
+    [-0.022, 0.138], [0.022, 0.138]
+  ] as const) {
+    // Stud bottom rests cleanly at y = -0.100 (so 0.96 - 0.02 - 0.43 - 0.41 - 0.10 = 0.000!)
+    studs.push(place(studProto, [sx, -0.100, sz]));
+  }
+  return {
+    upper: combineSafe([ankleCollar, bootUpper]),
+    accent: combineSafe([heelCounter, sideChevron]),
+    soleAndStuds: combineSafe(studs)
+  };
+}
+
+/**
+ * Builds a complete sculpted, multi-material, anatomically articulated footballer / goalkeeper / referee node
+ * rooted at `${id}-body` (or `${id}` when `rawName` is true, e.g. `fc-referee`).
+ */
+export function buildArticulatedFootballerNode(
+  id: string,
+  spec: FootballerBuildSpec,
+  opts: { readonly rawRootName?: boolean; readonly runtimeFactory?: (nodeId: string) => any } = {}
+): AuraNodeBuilder<AuraGroupNode> {
+  const rootName = opts.rawRootName ? id : `${id}-body`;
+  const rt = opts.runtimeFactory;
+  const bindRt = <T extends AuraNodeBuilder<any>>(node: T, nodeId: string): T =>
+    rt ? node.runtime(rt(nodeId)) : node;
+
+  const isKeeper = spec.isKeeper === true;
+  const isReferee = spec.isReferee === true;
+  const isCaptain = spec.isCaptain === true;
+  const power = spec.powerFrame === true;
+  const canonicalH = isKeeper ? GOALKEEPER_CANONICAL_HEIGHT : FOOTBALLER_CANONICAL_HEIGHT;
+  const uniformScale = spec.targetHeight / canonicalH;
+  const seed = idSeed(id);
+  const hairColors = ["#171412", "#2e1f16", "#4b3221", "#12151c", "#634229"] as const;
+  const hairColor = hairColors[seed % hairColors.length]!;
+  const hairStyle = seed % 4;
+  const hasHeadband = !isReferee && !isKeeper && seed % 5 === 0;
+  const trimHex = spec.trim ?? (isReferee ? "#15171c" : isKeeper ? "#f4f7fb" : spec.shorts);
+  const bootHex = spec.boots ?? (isReferee ? "#14161c" : isKeeper ? "#1f2530" : "#181d26");
+
+  // Multi-material kit, skin, sock, leather boot, latex glove & trim materials
+  const jerseyMat = material.fabric({
+    name: `${id}-kit`,
+    color: spec.shirt,
+    roughness: 0.52,
+    sheen: 0.48,
+    sheenRoughness: 0.62,
+    sheenColor: "#eef4fc",
+    ...(spec.fabricRim ? { rim: spec.fabricRim } : {})
+  } as any);
+  const shortsMat = material.fabric({
+    name: `${id}-shorts`,
+    color: spec.shorts,
+    roughness: 0.58,
+    sheen: 0.42,
+    sheenRoughness: 0.66,
+    sheenColor: "#eef4fc",
+    ...(spec.fabricRim ? { rim: spec.fabricRim } : {})
+  } as any);
+  const socksMat = material.fabric({
+    name: `${id}-socks`,
+    color: spec.socks,
+    roughness: 0.66,
+    sheen: 0.34,
+    sheenRoughness: 0.72,
+    sheenColor: "#e4ecf6"
+  });
+  const trimMat = material.fabric({
+    name: `${id}-trim`,
+    color: trimHex,
+    roughness: 0.50,
+    sheen: 0.40,
+    sheenRoughness: 0.60,
+    sheenColor: "#ffffff"
+  });
+  const skinMat = material.physical({
+    name: `${id}-skin`,
+    color: spec.skin,
+    roughness: 0.54,
+    metalness: 0,
+    clearcoat: 0.08,
+    clearcoatRoughness: 0.62
+  });
+  const hairMat = material.matteClay({
+    name: `${id}-hair`,
+    color: hairColor,
+    roughness: 0.78
+  });
+  const eyeMat = material.lacquer({
+    name: `${id}-eyes`,
+    color: "#151820",
+    roughness: 0.2,
+    clearcoat: 0.8
+  });
+  const bootUpperMat = material.lacquer({
+    name: `${id}-boot`,
+    color: bootHex,
+    roughness: 0.28,
+    clearcoat: 0.68,
+    clearcoatRoughness: 0.20
+  });
+  const bootAccentMat = material.carPaint({
+    name: `${id}-boot-accent`,
+    color: isReferee ? "#f2f4f8" : spec.shirt,
+    roughness: 0.24,
+    clearcoat: 0.82
+  });
+  const studMat = material.studioMetal({
+    name: `${id}-studs`,
+    color: "#38414e",
+    roughness: 0.34,
+    metalness: 0.76
+  });
+  const gloveMat = material.clearcoatPaint({
+    name: `${id}-glove`,
+    color: "#f3f7fc",
+    roughness: 0.36,
+    clearcoat: 0.45
+  });
+  const badgeGoldMat = material.brushedMetal({
+    name: `${id}-badge`,
+    color: "#e6c35c",
+    roughness: 0.28,
+    metalness: 0.85
+  });
+
+  // Memoized raw part meshes
+  const pelvisParts = memo(`fc-ath-pelvis:${power ? 1 : 0}`, () => buildFootballerPelvisParts(power));
+  const chestParts = memo(
+    `fc-ath-chest:${power ? 1 : 0}:${isKeeper ? 1 : 0}:${isReferee ? 1 : 0}:${isCaptain ? 1 : 0}`,
+    () => buildFootballerChestParts({ power, isKeeper, isReferee, isCaptain })
+  );
+  const headParts = memo(`fc-ath-head:${hairStyle}:${hasHeadband ? 1 : 0}`, () =>
+    buildFootballerHeadParts(hairStyle, hasHeadband)
+  );
+  const uarmL = memo(`fc-ath-uarm:L:${isKeeper ? 1 : 0}:${isCaptain ? 1 : 0}`, () =>
+    buildFootballerUpperArmParts(isKeeper, isCaptain)
+  );
+  const uarmR = memo(`fc-ath-uarm:R:${isKeeper ? 1 : 0}`, () =>
+    buildFootballerUpperArmParts(isKeeper, false)
+  );
+  const farmL = memo(`fc-ath-farm:L:${isKeeper ? 1 : 0}`, () => buildFootballerForearmParts(1, isKeeper));
+  const farmR = memo(`fc-ath-farm:R:${isKeeper ? 1 : 0}`, () => buildFootballerForearmParts(-1, isKeeper));
+  const ulegL = memo(`fc-ath-uleg:L:${power ? 1 : 0}`, () => buildFootballerUpperLegParts(1, power));
+  const ulegR = memo(`fc-ath-uleg:R:${power ? 1 : 0}`, () => buildFootballerUpperLegParts(-1, power));
+  const calfGeom = memo(`fc-ath-calf:${power ? 1 : 0}`, () => buildFootballerLowerLegParts(power));
+  const bootGeom = memo("fc-ath-boot", () => buildFootballerBootParts());
+
+  const shoulderX = power ? 0.236 : 0.224;
+  const hipX = power ? 0.108 : 0.102;
+
+  const headNode = bindRt(
+    group(
+      `${id}-head`,
+      [
+        assembleSlots(
+          `${id}-head-mesh`,
+          [
+            { mesh: headParts.skin, material: skinMat },
+            { mesh: headParts.hair, material: hairMat },
+            { mesh: headParts.eyes, material: eyeMat },
+            ...(hasHeadband ? [{ mesh: headParts.trim, material: trimMat }] : [])
+          ],
+          { castShadow: true, receiveShadow: true }
+        )
+      ],
+      { position: [0, 0.50, 0] }
+    ),
+    `${id}-head`
+  );
+
+  const forearmLNode = bindRt(
+    group(
+      `${id}-forearm-l`,
+      [
+        assembleSlots(
+          `${id}-forearm-l-mesh`,
+          [
+            { mesh: farmL.skinOrSleeve, material: isKeeper ? jerseyMat : skinMat },
+            { mesh: farmL.wristTape, material: trimMat },
+            { mesh: farmL.gloveOrHand, material: isKeeper ? gloveMat : skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        )
+      ],
+      { position: [0, -0.27, 0] }
+    ),
+    `${id}-forearm-l`
+  );
+
+  const forearmRNode = bindRt(
+    group(
+      `${id}-forearm-r`,
+      [
+        assembleSlots(
+          `${id}-forearm-r-mesh`,
+          [
+            { mesh: farmR.skinOrSleeve, material: isKeeper ? jerseyMat : skinMat },
+            { mesh: farmR.wristTape, material: trimMat },
+            { mesh: farmR.gloveOrHand, material: isKeeper ? gloveMat : skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        )
+      ],
+      { position: [0, -0.27, 0] }
+    ),
+    `${id}-forearm-r`
+  );
+
+  const armLNode = bindRt(
+    group(
+      `${id}-arm-l`,
+      [
+        assembleSlots(
+          `${id}-arm-l-mesh`,
+          [
+            { mesh: uarmL.jersey, material: jerseyMat },
+            { mesh: uarmL.trim, material: trimMat },
+            { mesh: uarmL.skin, material: skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        forearmLNode
+      ],
+      { position: [shoulderX, 0.41, 0] }
+    ),
+    `${id}-arm-l`
+  );
+
+  const armRNode = bindRt(
+    group(
+      `${id}-arm-r`,
+      [
+        assembleSlots(
+          `${id}-arm-r-mesh`,
+          [
+            { mesh: uarmR.jersey, material: jerseyMat },
+            { mesh: uarmR.trim, material: trimMat },
+            { mesh: uarmR.skin, material: skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        forearmRNode
+      ],
+      { position: [-shoulderX, 0.41, 0] }
+    ),
+    `${id}-arm-r`
+  );
+
+  const chestSlots: MaterialSlot[] = [
+    { mesh: chestParts.jersey, material: jerseyMat },
+    { mesh: chestParts.trim, material: trimMat },
+    { mesh: chestParts.gold, material: badgeGoldMat }
+  ];
+  if (isReferee) chestSlots.push({ mesh: chestParts.dark, material: eyeMat });
+
+  const chestNode = bindRt(
+    group(
+      `${id}-chest`,
+      [
+        assembleSlots(`${id}-chest-mesh`, chestSlots, { castShadow: true, receiveShadow: true }),
+        headNode,
+        armLNode,
+        armRNode
+      ],
+      { position: [0, 0.08, 0] }
+    ),
+    `${id}-chest`
+  );
+
+  const bootLNode = bindRt(
+    group(
+      `${id}-boot-l`,
+      [
+        assembleSlots(
+          `${id}-boot-l-mesh`,
+          [
+            { mesh: bootGeom.upper, material: bootUpperMat },
+            { mesh: bootGeom.accent, material: bootAccentMat },
+            { mesh: bootGeom.soleAndStuds, material: studMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        )
+      ],
+      { position: [0, -0.41, 0] }
+    ),
+    `${id}-boot-l`
+  );
+
+  const bootRNode = bindRt(
+    group(
+      `${id}-boot-r`,
+      [
+        assembleSlots(
+          `${id}-boot-r-mesh`,
+          [
+            { mesh: bootGeom.upper, material: bootUpperMat },
+            { mesh: bootGeom.accent, material: bootAccentMat },
+            { mesh: bootGeom.soleAndStuds, material: studMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        )
+      ],
+      { position: [0, -0.41, 0] }
+    ),
+    `${id}-boot-r`
+  );
+
+  const calfLNode = bindRt(
+    group(
+      `${id}-calf-l`,
+      [
+        assembleSlots(
+          `${id}-calf-l-mesh`,
+          [
+            { mesh: calfGeom.skin, material: skinMat },
+            { mesh: calfGeom.sock, material: socksMat },
+            { mesh: calfGeom.trim, material: trimMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        bootLNode
+      ],
+      { position: [0, -0.43, 0] }
+    ),
+    `${id}-calf-l`
+  );
+
+  const calfRNode = bindRt(
+    group(
+      `${id}-calf-r`,
+      [
+        assembleSlots(
+          `${id}-calf-r-mesh`,
+          [
+            { mesh: calfGeom.skin, material: skinMat },
+            { mesh: calfGeom.sock, material: socksMat },
+            { mesh: calfGeom.trim, material: trimMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        bootRNode
+      ],
+      { position: [0, -0.43, 0] }
+    ),
+    `${id}-calf-r`
+  );
+
+  const legLNode = bindRt(
+    group(
+      `${id}-leg-l`,
+      [
+        assembleSlots(
+          `${id}-leg-l-mesh`,
+          [
+            { mesh: ulegL.shorts, material: shortsMat },
+            { mesh: ulegL.trim, material: trimMat },
+            { mesh: ulegL.skin, material: skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        calfLNode
+      ],
+      { position: [hipX, -0.02, 0] }
+    ),
+    `${id}-leg-l`
+  );
+
+  const legRNode = bindRt(
+    group(
+      `${id}-leg-r`,
+      [
+        assembleSlots(
+          `${id}-leg-r-mesh`,
+          [
+            { mesh: ulegR.shorts, material: shortsMat },
+            { mesh: ulegR.trim, material: trimMat },
+            { mesh: ulegR.skin, material: skinMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        calfRNode
+      ],
+      { position: [-hipX, -0.02, 0] }
+    ),
+    `${id}-leg-r`
+  );
+
+  const pelvisNode = bindRt(
+    group(
+      `${id}-pelvis`,
+      [
+        assembleSlots(
+          `${id}-pelvis-mesh`,
+          [
+            { mesh: pelvisParts.shorts, material: shortsMat },
+            { mesh: pelvisParts.trim, material: trimMat }
+          ],
+          { castShadow: true, receiveShadow: true }
+        ),
+        chestNode,
+        legLNode,
+        legRNode
+      ],
+      { position: [0, 0.96, 0] }
+    ),
+    `${id}-pelvis`
+  );
+
+  const scaleNode = group(`${id}-scale`, [pelvisNode], { scale: [uniformScale, uniformScale, uniformScale] });
+  return bindRt(group(rootName, [scaleNode], { position: [0, 0, 0] }), rootName);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Stateless Biomechanical `"ZYX"` Euler Kinematics for Footballer Rig        */
+/* -------------------------------------------------------------------------- */
+
+const clampRange = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+const smooth01 = (x: number): number => {
+  const t = clampRange(x, 0, 1);
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Computes one leg's hip, knee, and ankle X-axis angles for a gait cycle where `u in [0, 1)`:
+ * - `u in [0, 0.5)`: STANCE phase — `sin(hipRx)` sweeps linearly from `-strideSin` (foot forward `+Z`)
+ *   to `+strideSin` (foot back `-Z`) so the planted boot moves backward at exact constant speed
+ *   `4 * L_eff * strideSin / cycleSeconds` (`STANCE_SPEED_MODEL`), eliminating foot slide!
+ * - `u in [0.5, 1.0)`: SWING phase — knee flexes smoothly backward (`+kneeRx`, never `< 0`!) to clear the turf
+ *   while the hip swings forward back to `-strideSin`.
+ */
+function sampleGaitLeg(uRaw: number, strideSin: number, swingKneePeak: number, stanceKneePeak: number): {
+  hipRx: number;
+  kneeRx: number;
+  bootRx: number;
+} {
+  const u = ((uRaw % 1) + 1) % 1;
+  if (u < 0.5) {
+    const s = u / 0.5; // 0..1 over stance
+    // Linear horizontal foot sweep from +Z (`hipRx < 0`) to -Z (`hipRx > 0`)
+    const sinTheta = -strideSin * (1 - 2 * s);
+    const hipRx = Math.asin(clampRange(sinTheta, -0.84, 0.84));
+    const kneeRx = Math.sin(s * Math.PI) * stanceKneePeak;
+    const bootRx = -(hipRx + kneeRx) * 0.65 + (s > 0.72 ? (s - 0.72) * 0.75 : 0);
+    return { hipRx, kneeRx: Math.max(0, kneeRx), bootRx };
+  }
+  const w = (u - 0.5) / 0.5; // 0..1 over swing
+  const ease = 0.5 - 0.5 * Math.cos(w * Math.PI);
+  const sinTheta = strideSin * (1 - 2 * ease);
+  const hipRx = Math.asin(clampRange(sinTheta, -0.84, 0.84));
+  const kneeRx = Math.pow(Math.sin(w * Math.PI), 0.85) * swingKneePeak;
+  const bootRx = -0.18 * Math.sin(w * Math.PI);
+  return { hipRx, kneeRx: Math.max(0, kneeRx), bootRx };
+}
+
+/**
+ * Pure, stateless `"ZYX"` Euler joint pose calculator for every `Aura FC 3D` animation state:
+ * `Ready`, `Walk_Loop`, `Run`, `Sprint_Loop`, `KickTap`, `KickPass`, `KickShot`,
+ * `Attack` (slide tackle / knee-slide celebration), and `Jump_Loop` (keeper dive / spin / leap celebration).
+ */
+export function computeFootballerJointPose(input: FootballerPoseInput): FootballerJointPose {
+  const dur = Math.max(0.05, input.duration || 0.6);
+  const u = clampRange(input.phase / dur, 0, 1);
+  const cyc = ((input.phase / dur) % 1 + 1) % 1;
+  const isKeeper = input.isKeeper === true;
+
+  // 1. Goalkeeper lateral dive (`Jump_Loop` when `isKeeper` and not celebrating)
+  if (input.clip === "Jump_Loop" && isKeeper && (input.celebrateT ?? 0) <= 0.2) {
+    const ext = Math.sin(clampRange(u * 1.15, 0, 1) * Math.PI * 0.78);
+    const dir = input.diveDir && input.diveDir !== 0 ? Math.sign(input.diveDir) : 1;
+    return {
+      pelvisOffsetY: 0.96 + ext * 0.14,
+      pelvisOffsetZ: ext * 0.08,
+      pelvis: [0.10 * ext, 0, 0],
+      chest: [0.14 * ext, dir * 0.14 * ext, dir * 0.18 * ext],
+      head: [-0.22 * ext, dir * 0.26 * ext, 0],
+      // Both keeper gloved arms reach overhead toward the top corner!
+      armL: [-2.45 * ext - 0.35, 0, 0.22],
+      forearmL: [-0.28, 0, 0],
+      armR: [-2.45 * ext - 0.35, 0, -0.22],
+      forearmR: [-0.28, 0, 0],
+      legL: [0.18 * ext, 0, 0.08],
+      calfL: [0.52 * ext + 0.12, 0, 0],
+      bootL: [0.22 * ext, 0, 0],
+      legR: [-0.14 * ext, 0, -0.08],
+      calfR: [0.38 * ext + 0.10, 0, 0],
+      bootR: [0.18 * ext, 0, 0]
+    };
+  }
+
+  // 2. Goal celebrations (`Jump_Loop` fist-leap / aircraft spin, or `Ready` heart celebration)
+  if (input.clip === "Jump_Loop") {
+    const hop = Math.abs(Math.sin(cyc * Math.PI));
+    const spinMode = input.celebrateKind === 1;
+    return {
+      pelvisOffsetY: 0.96 + hop * (spinMode ? 0.08 : 0.24),
+      pelvisOffsetZ: 0,
+      pelvis: [-0.06 * hop, 0, 0],
+      chest: [-0.10 * hop, 0, 0],
+      head: [-0.14 * hop, 0, 0],
+      armL: spinMode ? [-0.15, 0, 1.32] : [-2.55 * hop - 0.45, 0, 0.28],
+      forearmL: spinMode ? [-0.18, 0, 0] : [-0.42, 0, 0],
+      armR: spinMode ? [-0.15, 0, -1.32] : [-2.65 * hop - 0.55, 0, -0.24],
+      forearmR: spinMode ? [-0.18, 0, 0] : [-0.36, 0, 0],
+      legL: [-0.22 * hop, 0, 0.06],
+      calfL: [0.58 * hop + 0.08, 0, 0],
+      bootL: [0.24 * hop, 0, 0],
+      legR: [-0.16 * hop, 0, -0.06],
+      calfR: [0.52 * hop + 0.08, 0, 0],
+      bootR: [0.24 * hop, 0, 0]
+    };
+  }
+
+  // 3. Slide tackle & knee-slide celebration (`Attack`)
+  if (input.clip === "Attack") {
+    const lunge = Math.sin(clampRange(u * 1.25, 0, 1) * Math.PI * 0.65);
+    const kneeSlide = (input.celebrateT ?? 0) > 0.2 && input.celebrateKind === 0;
+    if (kneeSlide) {
+      return {
+        pelvisOffsetY: 0.54,
+        pelvisOffsetZ: 0.14,
+        pelvis: [-0.24, 0, 0],
+        chest: [-0.28, 0, 0],
+        head: [-0.18, 0, 0],
+        armL: [-1.85, 0, 0.55],
+        forearmL: [-0.55, 0, 0],
+        armR: [-1.85, 0, -0.55],
+        forearmR: [-0.55, 0, 0],
+        legL: [0.12, 0, 0.08],
+        calfL: [1.48, 0, 0],
+        bootL: [0.42, 0, 0],
+        legR: [0.12, 0, -0.08],
+        calfR: [1.48, 0, 0],
+        bootR: [0.42, 0, 0]
+      };
+    }
+    return {
+      pelvisOffsetY: 0.96 - lunge * 0.56,
+      pelvisOffsetZ: lunge * 0.22,
+      pelvis: [-0.58 * lunge, -0.18 * lunge, 0],
+      chest: [0.22 * lunge, 0.20 * lunge, 0],
+      head: [0.18 * lunge, -0.10 * lunge, 0],
+      armL: [0.45 * lunge, 0, 0.48],
+      forearmL: [-0.52, 0, 0],
+      armR: [-0.62 * lunge, 0, -0.44],
+      forearmR: [-0.65, 0, 0],
+      // Left support leg tucks underneath while right cleated boot sweeps forward along the turf
+      legL: [-0.32 * lunge, 0, 0.10],
+      calfL: [1.42 * lunge + 0.10, 0, 0],
+      bootL: [0.25 * lunge, 0, 0],
+      legR: [-0.96 * lunge, 0, -0.06],
+      calfR: [0.12 * (1 - lunge) + 0.04, 0, 0],
+      bootR: [0.35 * lunge, 0, 0]
+    };
+  }
+
+  // 4. Kick clips (`KickTap`, `KickPass`, `KickShot`)
+  //    Backswing peaks at u ~ 0.34 (`hipRx > 0`, `kneeRx > 0`), whips through ball contact at `u = 0.74` (`CONTACT_FRAC = 0.45..0.74`),
+  //    and follows through cleanly (`hipRx < 0`) while Left support leg stays planted on the turf!
+  if (input.clip === "KickTap" || input.clip === "KickPass" || input.clip === "KickShot") {
+    const intensity = input.clip === "KickTap" ? 0.62 : input.clip === "KickPass" ? 0.84 : 1.0;
+    let rHip = 0;
+    let rKnee = 0.12;
+    let rBoot = 0;
+    if (u < 0.36) {
+      const k = smooth01(u / 0.36);
+      rHip = 0.66 * intensity * k; // backswing (`+rx` = backward `-Z`)
+      rKnee = 0.12 + 1.18 * intensity * k; // knee cocks backward (`<= 75°`, never forward)
+      rBoot = 0.24 * intensity * k;
+    } else if (u < 0.78) {
+      // High-velocity strike whip through ball contact (`u ~ 0.45..0.74`)
+      const k = (u - 0.36) / 0.42;
+      const whip = smooth01(k);
+      rHip = 0.66 * intensity * (1 - whip) + (-0.82 * intensity) * whip;
+      rKnee = (0.12 + 1.18 * intensity) * (1 - smooth01(Math.min(1, k * 1.22))) + 0.10 * whip;
+      rBoot = 0.24 * intensity * (1 - whip) - 0.18 * intensity * whip;
+    } else {
+      // Balanced follow-through
+      const k = smooth01((u - 0.78) / 0.22);
+      rHip = -0.82 * intensity * (1 - 0.22 * k);
+      rKnee = 0.10 + 0.28 * intensity * k;
+      rBoot = -0.18 * intensity * (1 - 0.5 * k);
+    }
+    const strikeTwist = Math.sin(u * Math.PI) * 0.26 * intensity;
+    // Standing left leg stays firmly planted on `[0, 0, 0]` (`hipRx = -0.10`, `kneeRx = +0.20`, `bootRx = -0.10`)
+    return {
+      pelvisOffsetY: 0.95,
+      pelvisOffsetZ: 0,
+      pelvis: [-0.08 * Math.sin(u * Math.PI) * intensity, strikeTwist * 0.35, 0.06 * intensity * Math.sin(u * Math.PI)],
+      chest: [0.14 * (1 - u) * intensity - 0.08 * u * intensity, -strikeTwist * 0.65, -0.08 * intensity * Math.sin(u * Math.PI)],
+      head: [0.16 * (1 - u * 0.6), 0, 0],
+      // Left counterbalance arm sweeps wide across/out as right foot strikes
+      armL: [-0.68 * intensity * Math.sin(u * Math.PI) - 0.12, 0, 0.42 + 0.28 * intensity * Math.sin(u * Math.PI)],
+      forearmL: [-0.62 - 0.25 * Math.sin(u * Math.PI), 0, 0],
+      armR: [0.48 * intensity * Math.sin(u * Math.PI), 0, -0.26],
+      forearmR: [-0.54, 0, 0],
+      legL: [-0.10, 0, 0.04],
+      calfL: [0.20, 0, 0],
+      bootL: [-0.10, 0, 0],
+      legR: [rHip, 0, -0.04],
+      calfR: [clampRange(rKnee, 0, 1.85), 0, 0],
+      bootR: [rBoot, 0, 0]
+    };
+  }
+
+  // 5. Distance-locked Gaits (`Walk_Loop`, `Run`, `Sprint_Loop`)
+  //    Calibrated to `STANCE_SPEED_MODEL` (`2.3483`, `4.465`, `5.8429`) with `L_eff = 0.96 m`!
+  if (input.clip === "Walk_Loop" || input.clip === "Run" || input.clip === "Sprint_Loop") {
+    const isWalk = input.clip === "Walk_Loop";
+    const isSprint = input.clip === "Sprint_Loop";
+    const strideSin = isWalk ? 0.489 : isSprint ? 0.730 : 0.651;
+    const swingKnee = isWalk ? 0.66 : isSprint ? 1.52 : 1.24; // all <= 87 deg (1.52 rad < 110 deg!)
+    const stanceKnee = isWalk ? 0.12 : isSprint ? 0.24 : 0.20;
+    const torsoLean = isWalk ? 0.07 : isSprint ? 0.26 : 0.17;
+    const armAmp = isWalk ? 0.36 : isSprint ? 0.88 : 0.68;
+    const elbowBase = isWalk ? -0.44 : isSprint ? -1.42 : -1.18;
+    const bounceAmp = isWalk ? 0.016 : isSprint ? 0.046 : 0.036;
+
+    const rightLeg = sampleGaitLeg(cyc, strideSin, swingKnee, stanceKnee);
+    const leftLeg = sampleGaitLeg(cyc + 0.5, strideSin, swingKnee, stanceKnee);
+    const strideWave = Math.sin(cyc * TAU); // >0 during first half (right stance / left swing)
+    const bounce = -Math.cos(cyc * TAU * 2) * bounceAmp;
+    const hipTwist = -strideWave * (isWalk ? 0.06 : 0.10); // <= 5.7 deg (under 8 deg twist limit!)
+
+    return {
+      pelvisOffsetY: 0.955 + bounce,
+      pelvisOffsetZ: 0,
+      pelvis: [torsoLean * 0.32, hipTwist, strideWave * 0.035],
+      chest: [torsoLean * 0.68, -hipTwist * 1.45, -strideWave * 0.04],
+      head: [-torsoLean * 0.55, hipTwist * 0.35, 0],
+      // Contralateral arm swing: when right leg is back (`cyc ~ 0.5`), right arm swings forward
+      armL: [-rightLeg.hipRx * (armAmp / strideSin), 0, 0.16],
+      forearmL: [elbowBase - Math.max(0, rightLeg.hipRx) * 0.25, 0, 0],
+      armR: [-leftLeg.hipRx * (armAmp / strideSin), 0, -0.16],
+      forearmR: [elbowBase - Math.max(0, leftLeg.hipRx) * 0.25, 0, 0],
+      legL: [leftLeg.hipRx, 0, 0.03],
+      calfL: [leftLeg.kneeRx, 0, 0],
+      bootL: [leftLeg.bootRx, 0, 0],
+      legR: [rightLeg.hipRx, 0, -0.03],
+      calfR: [rightLeg.kneeRx, 0, 0],
+      bootR: [rightLeg.bootRx, 0, 0]
+    };
+  }
+
+  // 6. `Ready` athletic stance (keeper crouched ready stance vs outfielder dynamic ready bounce; or heart celebration)
+  const breath = Math.sin(cyc * TAU);
+  const heartCeleb = (input.celebrateT ?? 0) > 0.2 && input.celebrateKind === 3;
+  if (heartCeleb) {
+    return {
+      pelvisOffsetY: 0.95 + breath * 0.012,
+      pelvisOffsetZ: 0,
+      pelvis: [0.02, 0, 0],
+      chest: [-0.06, 0, 0],
+      head: [-0.08, breath * 0.08, 0],
+      armL: [-1.18, -0.42, -0.28],
+      forearmL: [-1.35, 0, -0.35],
+      armR: [-1.18, 0.42, 0.28],
+      forearmR: [-1.35, 0, 0.35],
+      legL: [-0.08, 0, 0.06],
+      calfL: [0.16, 0, 0],
+      bootL: [-0.08, 0, 0],
+      legR: [-0.08, 0, -0.06],
+      calfR: [0.16, 0, 0],
+      bootR: [-0.08, 0, 0]
+    };
+  }
+
+  const crouch = isKeeper ? 0.065 : 0.022;
+  const kneeIdle = isKeeper ? 0.34 : 0.16;
+  return {
+    pelvisOffsetY: 0.96 - crouch + breath * 0.012,
+    pelvisOffsetZ: 0,
+    pelvis: [isKeeper ? 0.12 : 0.05, breath * 0.03, 0],
+    chest: [isKeeper ? 0.18 : 0.08, -breath * 0.04, 0],
+    head: [isKeeper ? -0.18 : -0.06, breath * 0.05, 0],
+    armL: [isKeeper ? -0.52 : -0.14 + breath * 0.05, 0, isKeeper ? 0.42 : 0.18],
+    forearmL: [isKeeper ? -0.92 : -0.52, 0, 0],
+    armR: [isKeeper ? -0.52 : -0.14 - breath * 0.05, 0, isKeeper ? -0.42 : -0.18],
+    forearmR: [isKeeper ? -0.92 : -0.52, 0, 0],
+    legL: [-kneeIdle * 0.52, 0, isKeeper ? 0.12 : 0.05],
+    calfL: [kneeIdle, 0, 0],
+    bootL: [-kneeIdle * 0.48, 0, 0],
+    legR: [-kneeIdle * 0.52, 0, isKeeper ? -0.12 : -0.05],
+    calfR: [kneeIdle, 0, 0],
+    bootR: [-kneeIdle * 0.48, 0, 0]
+  };
+}
+
+/** Applies a stateless `"ZYX"` Euler pose to all 13 articulated joints of a footballer/keeper/referee rig. */
+export function poseArticulatedFootballer(
+  lookup: ((nodeId: string) => any) | undefined,
+  id: string,
+  input: FootballerPoseInput
+): FootballerJointPose {
+  const pose = computeFootballerJointPose(input);
+  if (!lookup) return pose;
+  const rot = (suffix: FootballerJointSuffix, e: Euler3) => {
+    lookup(`${id}-${suffix}`)?.setRotation?.(e[0], e[1], e[2]);
+  };
+  const pelvis = lookup(`${id}-pelvis`);
+  pelvis?.setPosition?.(0, pose.pelvisOffsetY, pose.pelvisOffsetZ);
+  pelvis?.setRotation?.(pose.pelvis[0], pose.pelvis[1], pose.pelvis[2]);
+  rot("chest", pose.chest);
+  rot("head", pose.head);
+  rot("arm-l", pose.armL);
+  rot("forearm-l", pose.forearmL);
+  rot("arm-r", pose.armR);
+  rot("forearm-r", pose.forearmR);
+  rot("leg-l", pose.legL);
+  rot("calf-l", pose.calfL);
+  rot("boot-l", pose.bootL);
+  rot("leg-r", pose.legR);
+  rot("calf-r", pose.calfR);
+  rot("boot-r", pose.bootR);
+  return pose;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Front-Row Articulated Supporter Fans (`fc-fan-0..5`)                       */
+/* -------------------------------------------------------------------------- */
+
+const FAN_PALETTES = [
+  { jacket: "#b2352f", scarf: "#f2f0e2", trousers: "#1f2b3d", skin: "#d09a6a" },
+  { jacket: "#1d3557", scarf: "#d8ff3e", trousers: "#252932", skin: "#8a5f42" },
+  { jacket: "#d9e8f7", scarf: "#b2352f", trousers: "#16233e", skin: "#e0b48a" }
+] as const;
+
+export function buildArticulatedPitchFanNode(
+  index: number,
+  variant: 0 | 1 | 2,
+  targetHeight: number,
+  runtimeFactory?: (nodeId: string) => any
+): AuraNodeBuilder<AuraGroupNode> {
+  const pal = FAN_PALETTES[variant];
+  const id = `fc-fan-${index}`;
+  return buildArticulatedFootballerNode(
+    id,
+    {
+      shirt: pal.jacket,
+      shorts: pal.trousers,
+      socks: pal.trousers,
+      skin: pal.skin,
+      trim: pal.scarf,
+      boots: "#22262e",
+      targetHeight
+    },
+    { rawRootName: true, runtimeFactory }
+  );
+}
+
+/** Statelessly poses front-row supporter `fc-fan-${index}` in `"idle"`, `"cheer"`, or `"pump"`. */
+export function poseArticulatedPitchFan(
+  lookup: ((nodeId: string) => any) | undefined,
+  index: number,
+  clip: "idle" | "cheer" | "pump",
+  t: number
+): void {
+  if (!lookup) return;
+  const id = `fc-fan-${index}`;
+  const ph = t * (clip === "idle" ? 2.1 : 6.4) + index * 0.85;
+  const s = Math.sin(ph);
+  const bounce = clip === "idle" ? Math.abs(s) * 0.015 : Math.abs(s) * 0.065;
+  const pelvis = lookup(`${id}-pelvis`);
+  pelvis?.setPosition?.(0, 0.955 + bounce, 0);
+  pelvis?.setRotation?.(0, s * 0.06, 0);
+  lookup(`${id}-chest`)?.setRotation?.(clip === "idle" ? 0.04 : -0.08 * Math.abs(s), -s * 0.10, s * 0.05);
+  lookup(`${id}-head`)?.setRotation?.(clip === "idle" ? -0.04 : -0.14, s * 0.12, 0);
+  if (clip === "cheer") {
+    lookup(`${id}-arm-l`)?.setRotation?.(-2.55 + s * 0.28, 0, 0.34 + s * 0.12);
+    lookup(`${id}-forearm-l`)?.setRotation?.(-0.35, 0, 0);
+    lookup(`${id}-arm-r`)?.setRotation?.(-2.55 - s * 0.28, 0, -0.34 + s * 0.12);
+    lookup(`${id}-forearm-r`)?.setRotation?.(-0.35, 0, 0);
+  } else if (clip === "pump") {
+    const pump = Math.max(0, s);
+    lookup(`${id}-arm-l`)?.setRotation?.(-0.55, 0, 0.22);
+    lookup(`${id}-forearm-l`)?.setRotation?.(-1.05, 0, 0);
+    lookup(`${id}-arm-r`)?.setRotation?.(-1.65 - pump * 0.95, 0, -0.22);
+    lookup(`${id}-forearm-r`)?.setRotation?.(-0.95 + pump * 0.55, 0, 0);
+  } else {
+    lookup(`${id}-arm-l`)?.setRotation?.(-0.18 + s * 0.08, 0, 0.18);
+    lookup(`${id}-forearm-l`)?.setRotation?.(-0.58, 0, 0);
+    lookup(`${id}-arm-r`)?.setRotation?.(-0.18 - s * 0.08, 0, -0.18);
+    lookup(`${id}-forearm-r`)?.setRotation?.(-0.58, 0, 0);
+  }
+}
+

@@ -45,12 +45,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.22, 0.6], fovDeg: [30, 58], mobile: "both" },
-  assets: [
-    // Rigged Meshy tour golfer (`skins=1`): drives the swing overlay and the idle/wave/cheer clips
-    { role: "hero", assetKey: "links_golfer_player", maxTriangles: 20000, minTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle", "wave", "cheer"] } },
-    // Rigged tour athlete (`skins=1`): caddy, gallery spectators and `?golfer=old` player; all static course props/landmarks are procedural
-    { role: "set-dressing", assetKey: "linksGolferAthleteMeshy", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Idle_Loop"] } }
-  ],
+  assets: [],
   vfx: [
     { event: "tee-strike", kind: "links-strike" },
     { event: "fairway-landing", kind: "links-divot" },

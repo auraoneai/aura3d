@@ -3,10 +3,10 @@
   "balloon": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/balloon.glb",
+   "url": "/procedural/splat-rush/balloon",
    "hash": "sha256-905a8cb98fd76f3e95466e65aa819924a8605d9a0f55ababd27d636c94d0d89a",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "balloon"
@@ -14,10 +14,10 @@
   "easelIsland": {
    "type": "model",
    "format": "glb",
-   "url": "/aura-assets/chroma-easel-island.glb",
+   "url": "/procedural/splat-rush/chroma-easel-island",
    "hash": "sha256-6f6d5f35f6a8ae63b9f37eb0be69dbe43395c944b57aac1e61518d3d2f101287",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "easelIsland"
@@ -25,10 +25,10 @@
   "gemDouble": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/gem-double.glb",
+   "url": "/procedural/splat-rush/gem-double",
    "hash": "sha256-4234b67b834fffef6af45cae16ea3adc9a8517b2cc18ea87d02ba5528c6af333",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "gemDouble"
@@ -36,10 +36,10 @@
   "gemRainbow": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/gem-rainbow.glb",
+   "url": "/procedural/splat-rush/gem-rainbow",
    "hash": "sha256-5533b1776bca95726dc68ace33b8b93bec11abc9bdff0c09cb73a42d596c6d35",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "gemRainbow"
@@ -47,10 +47,10 @@
   "gemShield": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/gem-shield.glb",
+   "url": "/procedural/splat-rush/gem-shield",
    "hash": "sha256-f1d1c0078ebacfd434d3bd2e89543b5cc4e60f5ed73d6acbab5e73111d2b5a26",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "gemShield"
@@ -58,10 +58,10 @@
   "gemSwitch": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/gem-switch.glb",
+   "url": "/procedural/splat-rush/gem-switch",
    "hash": "sha256-5a761f9dd3ce48a3175f7afc7e6eccca50da25d12b2ccf77d956cd2ef94e7eba",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "gemSwitch"
@@ -69,10 +69,10 @@
   "islandTower": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/island-tower.glb",
+   "url": "/procedural/splat-rush/island-tower",
    "hash": "sha256-a38933a2a9a471772dbe35c2c0db0f0fdf4788f7e3c62643b00e2bc0b7060f0d",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "islandTower"
@@ -80,10 +80,10 @@
   "islandTree": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/island-tree.glb",
+   "url": "/procedural/splat-rush/island-tree",
    "hash": "sha256-8857f4dcb39bd2f3d8c24adaa53dc5512e3d7e41729169a12e8b6f6243eb3723",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "islandTree"
@@ -91,10 +91,10 @@
   "paintPotIsland": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/splat-rush-port/assets/models/paint-pot-island.glb",
+   "url": "/procedural/splat-rush/paint-pot-island",
    "hash": "sha256-e942c632cb7046cb72fb2c57bea8ffb58c5d7bbb1cdc2c4db65743e6671e7bd4",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "paintPotIsland"
@@ -102,10 +102,10 @@
   "paletteIsland": {
    "type": "model",
    "format": "glb",
-   "url": "/aura-assets/chroma-palette-island.glb",
+   "url": "/procedural/splat-rush/chroma-palette-island",
    "hash": "sha256-bbbbb4084e86aa32998e0e805563fcfd6af6af6a00efffc483866a05084ce452",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/splat-rush-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "paletteIsland"
@@ -113,168 +113,98 @@
  },
  "drift-and-deliver MODEL_ASSETS": {
   "clocktower": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/clocktower.glb",
-   "hash": "sha256-2a1059d8c13b17209202995da8e9acc028399df7534233b255d2f38c28d37706",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "clocktower"
+   "key": "clocktower",
+   "category": "landmark",
+   "procedural": true,
+   "targetMetres": 38
   },
   "courier": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/courier.glb",
-   "hash": "sha256-5bad4129b1109d866de42b3666bc482073a9a08ed03c7d901f543add48f2cbba",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "courier"
+   "key": "courier",
+   "category": "vehicle",
+   "procedural": true,
+   "targetMetres": 4.4
   },
   "hatch": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/hatch.glb",
-   "hash": "sha256-4bda108ecb13d9890661e4f9a611904f7c32634d77f4e7baa364bcc880193c98",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hatch"
+   "key": "hatch",
+   "category": "vehicle",
+   "procedural": true,
+   "targetMetres": 3.7
   },
   "hydrant": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/hydrant.glb",
-   "hash": "sha256-1ae03a9d75cd93f9c31a9aa4ed20fa7e3054f8e039ccfe5905a71c307866edf9",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hydrant"
+   "key": "hydrant",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 0.8
   },
   "lamp": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/lamp.glb",
-   "hash": "sha256-86fef2d34542dce7a84146acaad458058fafa1d0f4634cfeacbc52ef5917a1c0",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lamp"
+   "key": "lamp",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 5
   },
   "lighthouse": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/lighthouse.glb",
-   "hash": "sha256-dc0753bfeba905a42422e7748a07bf1e62f1cb026f136e06f85b8828347e1418",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lighthouse"
+   "key": "lighthouse",
+   "category": "landmark",
+   "procedural": true,
+   "targetMetres": 24
   },
   "palm": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/palm.glb",
-   "hash": "sha256-65b89d01c5aee94540ff04841845ec72cf42cf3c0cf30b6ca97f58ed895e5877",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "palm"
+   "key": "palm",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 7.5
   },
   "sedan": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/sedan.glb",
-   "hash": "sha256-fac209266bd3ed4195b3a809025a773017f64364be1a7641ffa0846945fed39b",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "sedan"
+   "key": "sedan",
+   "category": "vehicle",
+   "procedural": true,
+   "targetMetres": 4.5
   },
   "shelter": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/shelter.glb",
-   "hash": "sha256-578b76b11ca99660e11c3e4a1edfdef4c062fc9826f1cc24ed3f511f10a787f9",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "shelter"
+   "key": "shelter",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 4.2
   },
   "signal": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/signal.glb",
-   "hash": "sha256-33e96793382ff6e3b8d8c685332a2dfb02ea1b869fc1988514976f53d2eed955",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "signal"
+   "key": "signal",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 4.2
   },
   "tree": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/tree.glb",
-   "hash": "sha256-4d264419765776dffd472d62b7db873f68c172c6ce88c3fda6f4c8442bb6700d",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "tree"
+   "key": "tree",
+   "category": "prop",
+   "procedural": true,
+   "targetMetres": 4.6
   },
   "truck": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/truck.glb",
-   "hash": "sha256-6e9614ec658b0f96aa909419878231d4a97a15d121e9613caf3937a1164a042e",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "truck"
+   "key": "truck",
+   "category": "vehicle",
+   "procedural": true,
+   "targetMetres": 6
   },
   "van": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/van.glb",
-   "hash": "sha256-327356a17ddfb9d7c54eb84f8e57a062e451f6228594dad7914f47e80e2978c9",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "van"
+   "key": "van",
+   "category": "vehicle",
+   "procedural": true,
+   "targetMetres": 4.7
   },
   "watertank": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/drift-and-deliver-port/assets/models/watertank.glb",
-   "hash": "sha256-f79b0d9bfc54302ac90ae4ea8e085337bd73e3ef8b0364e4b039978dd6483ff4",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "watertank"
+   "key": "watertank",
+   "category": "landmark",
+   "procedural": true,
+   "targetMetres": 3.4
   }
  },
  "heatsink MODELS": {
   "barrel": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/barrel.glb",
+   "url": "/procedural/heatsink/models/barrel",
    "hash": "sha256-8625604ee3c67a56fb2a584715f6b5495c8174657a8f569433de15ba457f9f89",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "barrel"
@@ -282,10 +212,10 @@
   "drone": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/drone2.glb",
+   "url": "/procedural/heatsink/models/drone2",
    "hash": "sha256-52931d5e54b29b4ca8a26e8ec9a8bc41cbef11c61d149c58d02aec1850af8c41",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "drone"
@@ -293,10 +223,10 @@
   "ionHeavyDrone": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/heatsink_port_ionHeavyDrone.glb",
+   "url": "/procedural/heatsink/models/heatsink_port_ionHeavyDrone",
    "hash": "sha256-d1ef5d347eb44725b7b21a87c21faad8e1529e83792369efd9436f9976c6c346",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "ionHeavyDrone"
@@ -304,10 +234,10 @@
   "ionSentryDrone": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/heatsink_port_ionSentryDrone.glb",
+   "url": "/procedural/heatsink/models/heatsink_port_ionSentryDrone",
    "hash": "sha256-7af110b660a44dac0e457b86e4eac10a4b47620743a3ba5d79aea07dde3c3f44",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "ionSentryDrone"
@@ -315,10 +245,10 @@
   "pickupRepair": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/pickup-repair.glb",
+   "url": "/procedural/heatsink/models/pickup-repair",
    "hash": "sha256-884e0b311177e6c45e7fad2c6af7c10d0b4ee748478daee41bb454954f5d9b27",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "pickupRepair"
@@ -326,10 +256,10 @@
   "pickupShield": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/pickup-shield.glb",
+   "url": "/procedural/heatsink/models/pickup-shield",
    "hash": "sha256-dabd71858e03ddc34a790bf7e14db53321084794f5e5771fdde595c0753b0b1d",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "pickupShield"
@@ -337,10 +267,10 @@
   "plantCap": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/plant-cap.glb",
+   "url": "/procedural/heatsink/models/plant-cap",
    "hash": "sha256-028a45df884369e4e4703329322c4bb92857086b02492150381f90ecbc7cb223",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "plantCap"
@@ -348,10 +278,10 @@
   "plantCoral": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/plant-coral.glb",
+   "url": "/procedural/heatsink/models/plant-coral",
    "hash": "sha256-d3f503fff9947f4d61d24bfc893185bd1637328b106e08726c88f79db48d04d7",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "plantCoral"
@@ -359,10 +289,10 @@
   "pylon": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/pylon.glb",
+   "url": "/procedural/heatsink/models/pylon",
    "hash": "sha256-e8cf27c19fb713c4fd9d7938e8eb7d76482d9a84a2717d0d64b19a0b26b0f335",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "pylon"
@@ -370,10 +300,10 @@
   "ruinArch": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/ruin-arch.glb",
+   "url": "/procedural/heatsink/models/ruin-arch",
    "hash": "sha256-c0abd976ddbdf2e301c4d8400a03c9ade7c3cfb5cf52f85a00e87a6055283b21",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "ruinArch"
@@ -381,269 +311,25 @@
   "ruinMonolith": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/heatsink-port/assets/models/ruin-monolith.glb",
+   "url": "/procedural/heatsink/models/ruin-monolith",
    "hash": "sha256-49711ae57d13f48205f007592c7f755e43363629633e379d1bd791401104c8e8",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/heatsink-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "ruinMonolith"
   }
  },
- "kid-goku MESHY": {
-  "boulder": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/boulder.glb",
-   "hash": "sha256-dc434e5aa88e9ca983de25c430a2af94dfb650dcba693c9bbeba3a08a5705ab2",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "boulder"
-  },
-  "cloud": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/cloud.glb",
-   "hash": "sha256-8b4999c78bb9820959bf3057bf5c0d071c4808be643c47c7d8efdcd1c0dbd0a0",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "cloud"
-  },
-  "hero": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/hero.glb",
-   "hash": "sha256-ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hero"
-  },
-  "mesa": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/mesa.glb",
-   "hash": "sha256-f263c29886b61d62a10f039db46e00bcc8a831d862d9b57078596289ec55df93",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "mesa"
-  },
-  "ptero": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/ptero.glb",
-   "hash": "sha256-c32f9773f2a5d7decb22c95c3911ce0248ab41243c29ae6891126c6a8c68435b",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "ptero"
-  },
-  "rex": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/rex.glb",
-   "hash": "sha256-7ee8612cf712d520adfaf0bab45565ad57a8d5ac9d400a2445df17b1e0371ada",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "rex"
-  },
-  "treePine": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/treePine.glb",
-   "hash": "sha256-925ac1da0c193542552bc35e8caad41bfc14438eb1a650b5742559ce8061cd2b",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "treePine"
-  },
-  "treeRound": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/kid-goku-beyond-the-clouds-port/assets/meshy/treeRound.glb",
-   "hash": "sha256-300b4bc85497a32c1d52cc26dea2eeff4e4b5022a7499f17b2fb50a4b1f4c83d",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "treeRound"
-  }
- },
- "last-train MESHY_ASSETS": {
-  "clockTower": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/clock-tower.glb",
-   "hash": "sha256-2655ad824c490d3965273acfab2c12292fc8a1af82b328d85a749f09f42437be",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "clockTower"
-  },
-  "crates": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/crates.glb",
-   "hash": "sha256-e037dd6cb054c0f67e03521f6e992ac920852b11467a1c7801706af5d3c3dc46",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "crates"
-  },
-  "houseBlue": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/house-blue.glb",
-   "hash": "sha256-46cb282e97d521fd6409c319e12152548d861a950c00cbc05d11f2c9916cb8c5",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "houseBlue"
-  },
-  "houseCream": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/house-cream.glb",
-   "hash": "sha256-28a191c2a6ee3bccd3ebb1ce6a5df8e7057fe5838f0210f6b760b93589b1649e",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "houseCream"
-  },
-  "houseOchre": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/house-ochre.glb",
-   "hash": "sha256-1d9070594cd823195ec2d3458f10c69aeccf8e21e5ad391c1a80f2ed1ef9b3c1",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "houseOchre"
-  },
-  "lamp": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/lamp.glb",
-   "hash": "sha256-66bb1e5bc3780484e52f5836034afe53fdcd08872720984c78672ac9abe77204",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lamp"
-  },
-  "lamplightUndersideAR2": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/lamplight-underside-ar2.glb",
-   "hash": "sha256-b77a91e9bb47a9567e6dc975d898cccd40731feaeed25a509223cfc6ccb6b83e",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lamplightUndersideAR2"
-  },
-  "lighthouse": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/lighthouse.glb",
-   "hash": "sha256-d950164609a9857961db4e5bb1862066d502b7b43417c44e65d91d80039982ae",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lighthouse"
-  },
-  "paxEasy": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/pax-easy.glb",
-   "hash": "sha256-37f865b022634e9ece058f177e102c9e788f4ad4b0c37a11b478d51e47a039a3",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "paxEasy"
-  },
-  "paxRushed": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/pax-rushed.glb",
-   "hash": "sha256-fdf52973e49d3daed261fb2aea1ef3d1c688547c84bae2d824e10cd0e33d4402",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "paxRushed"
-  },
-  "paxSightseer": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/pax-sightseer.glb",
-   "hash": "sha256-09879bab49364c70ee844b31531170a99db9e63d0977fa91f75df8c5d37dad94",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "paxSightseer"
-  },
-  "paxSleeper": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/pax-sleeper2.glb",
-   "hash": "sha256-e092ce387e6feb975b1a484c8b03980016bc92f03fd3496f3112db92e5538ccb",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "paxSleeper"
-  },
-  "tram": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/tram.glb",
-   "hash": "sha256-5de647e625490fa139d3fa4e3b83276114a4a2b58c321a00ccdf983e7292f89c",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "tram"
-  },
-  "tramEnamel": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/last-train-port/assets/meshy/tram-enamel.glb",
-   "hash": "sha256-05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "tramEnamel"
-  }
- },
+ "kid-goku MESHY": {},
+ "last-train MESHY_ASSETS": {},
  "ninja-runner PROP_ASSETS": {
   "boulder": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/boulder.glb",
+   "url": "/procedural/ninja/prop/boulder",
    "hash": "sha256-87e9a38d2b9e5be6dde640058c4801f7924cbaf4166706f4183dc5de692d4e90",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "boulder"
@@ -651,10 +337,10 @@
   "bush": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/bush.glb",
+   "url": "/procedural/ninja/prop/bush",
    "hash": "sha256-d4d37a174221548bcbd001f394b08f08e65b90d935dcff924aac3d1d1585e9b5",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "bush"
@@ -662,10 +348,10 @@
   "cliffA": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/cliffA.glb",
+   "url": "/procedural/ninja/prop/cliffA",
    "hash": "sha256-f3d681b71ff2e552401dca95cf4dbe3b87b59a064b3188227b575ed56949e2c7",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "cliffA"
@@ -673,10 +359,10 @@
   "cliffB": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/cliffB.glb",
+   "url": "/procedural/ninja/prop/cliffB",
    "hash": "sha256-b759d85961565cad5d7f3f74e72cbf12fb7b90ed57f4bc6d7927b68ffd37940e",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "cliffB"
@@ -684,10 +370,10 @@
   "fenceRail": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/fenceRail.glb",
+   "url": "/procedural/ninja/prop/fenceRail",
    "hash": "sha256-c2483cbc162f76531097ad2f52bb7a338e5577391fe76fb6b665e4bf3cec7377",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "fenceRail"
@@ -695,10 +381,10 @@
   "gate": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/gate.glb",
+   "url": "/procedural/ninja/prop/gate",
    "hash": "sha256-39c541911d50802160d052041d7a35f17ce343135f96b1d987b2a16b52bfcb2d",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "gate"
@@ -706,10 +392,10 @@
   "houseA": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/houseA.glb",
+   "url": "/procedural/ninja/prop/houseA",
    "hash": "sha256-2d169a991dc3f6842eae79de9ede957cf689998b1741298a8abb260a60437193",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "houseA"
@@ -717,10 +403,10 @@
   "houseB": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/houseB.glb",
+   "url": "/procedural/ninja/prop/houseB",
    "hash": "sha256-0d6da6235b8bc4e4813c7057dc7db49bcb581e0a7064e462cef7e3725b545625",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "houseB"
@@ -728,10 +414,10 @@
   "houseC": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/houseC.glb",
+   "url": "/procedural/ninja/prop/houseC",
    "hash": "sha256-dc5fca2181c23129be23c874d56c82bee780d29ca7e51a24f0a4e6b2465b4174",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "houseC"
@@ -739,10 +425,10 @@
   "houseD": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/houseD.glb",
+   "url": "/procedural/ninja/prop/houseD",
    "hash": "sha256-85b4153348530e81e1b1ed93cfa12e10cc9a71a700f1109febadfdf4d3645e04",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "houseD"
@@ -750,10 +436,10 @@
   "lantern": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/lantern.glb",
+   "url": "/procedural/ninja/prop/lantern",
    "hash": "sha256-4bb6f2a7d276d113762bb52a2354a0baf27e25e22232b7e5a2436ee8df9f6b18",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "lantern"
@@ -761,10 +447,10 @@
   "marketStall": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/marketStall.glb",
+   "url": "/procedural/ninja/prop/marketStall",
    "hash": "sha256-2823f084d84011a47f5f0903ae8d443e723984a9bba1277ad2539bd10a512053",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "marketStall"
@@ -772,10 +458,10 @@
   "oak": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/oak.glb",
+   "url": "/procedural/ninja/prop/oak",
    "hash": "sha256-78f7cdc7c6bb965a375779f213a4e3f10450ecef925b14cc2c13bd3c9ac4481d",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "oak"
@@ -783,10 +469,10 @@
   "pine": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/pine.glb",
+   "url": "/procedural/ninja/prop/pine",
    "hash": "sha256-55359e1b7934514bcf64b89270ba941c973b867b114cd2bed94ff2a8e43a161b",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "pine"
@@ -794,10 +480,10 @@
   "ridge": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/ridge.glb",
+   "url": "/procedural/ninja/prop/ridge",
    "hash": "sha256-2c60443dcf8f57e8d36dc131f1cd7a166257632dcf8929b9d9a2352e8249d7d2",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "ridge"
@@ -805,10 +491,10 @@
   "teahouse": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/teahouse.glb",
+   "url": "/procedural/ninja/prop/teahouse",
    "hash": "sha256-65c365dc57edc3ba936c9d7457a59555989232fccc4c7f399982f018c5681152",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "teahouse"
@@ -816,10 +502,10 @@
   "tower": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/ninja-runner-port/assets/meshy/tower.glb",
+   "url": "/procedural/ninja/prop/tower",
    "hash": "sha256-876304bcb466bba46efba73ed6b4eb702f201a2477360c659631f7f82ca18cc2",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25"
+    "license": "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT"
    },
    "kind": "aura-asset-ref",
    "id": "tower"
@@ -829,10 +515,10 @@
   "barrier": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/barrier.glb",
+   "url": "/procedural/serpentine/barrier",
    "hash": "sha256-1abcb50e0356ee708a5db10e4b8dc64f876089ddc634dce8a8786e044273db40",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "barrier"
@@ -840,10 +526,10 @@
   "cart": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/cart.glb",
+   "url": "/procedural/serpentine/cart",
    "hash": "sha256-b524d3694dfebc51538817c72e23d90c2b0d86800706ea0ef1e0d5bb1b2c3366",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "cart"
@@ -851,10 +537,10 @@
   "feast": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/feast.glb",
+   "url": "/procedural/serpentine/feast",
    "hash": "sha256-ef57f499e2352bb73b9098a73190f88412b86aa54a1b9b711d7f69b2e856bac7",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "feast"
@@ -862,10 +548,10 @@
   "gate": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/gate.glb",
+   "url": "/procedural/serpentine/gate",
    "hash": "sha256-f7f33f94d0ff7d3b2943d6571cea389d74952b60a4f9c6df651635626fec768a",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "gate"
@@ -873,10 +559,10 @@
   "island": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/island.glb",
+   "url": "/procedural/serpentine/island",
    "hash": "sha256-605edc6b1c487fe3d8d9c649bd29e13dd6a57f394fdfc3ba4aacf386d79bd7bb",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "island"
@@ -884,10 +570,10 @@
   "lantern": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/lantern.glb",
+   "url": "/procedural/serpentine/lantern",
    "hash": "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "lantern"
@@ -895,10 +581,10 @@
   "ogre": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/ogre.glb",
+   "url": "/procedural/serpentine/ogre",
    "hash": "sha256-67e9ae1a89bdc48a0b6a28a535421071bca767930d317381c67cc2aaaf3ec519",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "ogre"
@@ -906,10 +592,10 @@
   "serpentHead": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/serpentHead.glb",
+   "url": "/procedural/serpentine/serpentHead",
    "hash": "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "serpentHead"
@@ -917,10 +603,10 @@
   "spireA": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/spireA.glb",
+   "url": "/procedural/serpentine/spireA",
    "hash": "sha256-41758a150ff3f2fac901c5de4889042b7d0872c3652bde256e4a45a89e549ca6",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "spireA"
@@ -928,10 +614,10 @@
   "spireB": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/spireB.glb",
+   "url": "/procedural/serpentine/spireB",
    "hash": "sha256-29693db9f821da39921adefbf0359b7c7f449935c444b47fa4109a4ef7ca2cf0",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "spireB"
@@ -939,296 +625,18 @@
   "spireC": {
    "type": "model",
    "format": "glb",
-   "url": "<root>/examples/saiyan-snake-way-port/assets/spireC.glb",
+   "url": "/procedural/serpentine/spireC",
    "hash": "sha256-667c6275cebd1596364e4d626ff51eb685db2d8fe6dd1d44797d8e3c5dfd18e7",
    "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+    "license": "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)"
    },
    "kind": "aura-asset-ref",
    "id": "spireC"
   }
  },
- "strange-orbit MESHY": {
-  "bikeRider": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/bike_rider.glb",
-   "hash": "sha256-14a3894bcf736861d5727871a1e226f6b070ded71caae0e71745475ebb55b90a",
-   "sizeBytes": 2327988,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "bikeRider"
-  },
-  "boulderA": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/boulder_a.glb",
-   "hash": "sha256-73780bab5a5d5bf6f764fdad86ea9fb41272c7077e747de306c49f6b5b5df3df",
-   "sizeBytes": 985564,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "boulderA"
-  },
-  "boulderB": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/boulder_b.glb",
-   "hash": "sha256-d937a8f6d322e5d1227ec36672c2cae114841d3d0ca0b7249690f67b57b5e95e",
-   "sizeBytes": 1220756,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "boulderB"
-  },
-  "lander": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/lander.glb",
-   "hash": "sha256-0b91a90f924fb6c3247b940ac766f256dd431785ed66a8359526b3622fdb33d1",
-   "sizeBytes": 1596388,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lander"
-  },
-  "observatory": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/observatory.glb",
-   "hash": "sha256-462c297a1030cc790c9dfc6733b595573cdba359ee6c0b5bc6ed42d20ce26f8c",
-   "sizeBytes": 1780036,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "observatory"
-  },
-  "pylon": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/pylon.glb",
-   "hash": "sha256-65a69d017ee7cbf583041f1a473ab3d74ef4a9c55b79c29a74ae2481522cec30",
-   "sizeBytes": 1072016,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "pylon"
-  },
-  "rivalBike": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/rival_bike.glb",
-   "hash": "sha256-74e0fbd5bdea8b953303f305ffa77655cad65ff0588da17bd21670b086ef61ba",
-   "sizeBytes": 2393304,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "rivalBike"
-  },
-  "skateRider": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/strange-orbit-port/assets/models/skate_rider.glb",
-   "hash": "sha256-a26459be6bfb6683432a5e803c562b60144527b5564454ca2b6b503f63466ee5",
-   "sizeBytes": 1783240,
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt; see assets/provenance"
-   },
-   "kind": "aura-asset-ref",
-   "id": "skateRider"
-  }
- },
- "where-the-wind-wanders MODEL_ASSETS": {
-  "bell": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/belltower-bell.glb",
-   "hash": "sha256-9cfea7c02304ebddc4a89cbc3f13d6e529f25690dc44a558f846cc3786089387",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "bell"
-  },
-  "belltower": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/belltower.glb",
-   "hash": "sha256-71520d983e45551dbd61b55a38f128976c38621228734943a0dca26849e80c5f",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "belltower"
-  },
-  "boat": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/boat.glb",
-   "hash": "sha256-967c9c64c9ef38bfaae193b1937418fdc80b8f9914916bb963eaf98e7211c335",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "boat"
-  },
-  "cottage": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/cottage.glb",
-   "hash": "sha256-9e07d9b0e155bf2dfb86428bb70da138fc0ea51c165fca0d3d276d174f946f2e",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "cottage"
-  },
-  "hero": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/hero.glb",
-   "hash": "sha256-c10cbf7d835d6b7f1c53f2ebb13fa65fb34ec6550ac74aa619012145c5a3a230",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hero"
-  },
-  "kite": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/kite.glb",
-   "hash": "sha256-033195d62aeb3b2e90659a7b7df3f9f25874a17d3142c28b2b5b658bf3acc19e",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "kite"
-  },
-  "letter": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/letter.glb",
-   "hash": "sha256-dbd2c4e10ce2960f0621b9b8099ea80e80791df46a5626d47733829f9dc26087",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "letter"
-  },
-  "oak": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/oak.glb",
-   "hash": "sha256-5dfffb564f540fef386d5a5db032bbd9f041fb75f73491e3e7eab75381eaeb79",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "oak"
-  },
-  "pine": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/pine.glb",
-   "hash": "sha256-3364ba0eb714389e06dc4d119e58a9aa96512d16f3377ce71a34ef7c307c6c8d",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "pine"
-  },
-  "shrub": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/shrub.glb",
-   "hash": "sha256-3ab37835b509a15edd5b041807605aecb144ff02dced2b107e672730c37a0627",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "shrub"
-  },
-  "stones": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/stones.glb",
-   "hash": "sha256-1ac94b684dc3c4d0afa1a759448b73ddd62637eda8683c5a6d789f25752ee7cf",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "stones"
-  },
-  "wisp": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/wisp.glb",
-   "hash": "sha256-a7191fd8befb0d8927577b98ef47c23d3f186a760d03bd8a4ed02b7ede1260e7",
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
-   },
-   "kind": "aura-asset-ref",
-   "id": "wisp"
-  }
- },
+ "strange-orbit MESHY": {},
+ "where-the-wind-wanders MODEL_ASSETS": {},
  "silt-and-signal assets": {
-  "aqueduct": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/aqueduct.glb",
-   "hash": "sha256-f3954fff6860a5fcb908e2d52591e16f81f789f6f35f1e0879f165b82a285d98",
-   "bounds": [
-    1.902,
-    1.28,
-    0.67
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "aqueduct"
-  },
-  "banner": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/banner.glb",
-   "hash": "sha256-5da0fd3a11600705d435c881f0012b5424c17d357d84090915c177fa4e415186",
-   "bounds": [
-    0.778,
-    1.905,
-    0.14
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "banner"
-  },
-  "board": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/board.glb",
-   "hash": "sha256-cb725a12a84664201367ca277f5e9155089fb1319464ba5c69800525434b742b",
-   "bounds": [
-    0.3,
-    0.137,
-    0.7
-   ],
-   "metadata": {
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "board"
-  },
   "bricksColor": {
    "type": "texture",
    "format": "jpg",
@@ -1261,64 +669,6 @@
    },
    "kind": "aura-asset-ref",
    "id": "bricksRough"
-  },
-  "canyonrocks": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/canyonrocks.glb",
-   "hash": "sha256-2988706391e2b9f488c4c986b981dd25ce62e72c751f6b3356dc66bdf23b75fd",
-   "bounds": [
-    1.9,
-    0.911,
-    1.667
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "canyonrocks"
-  },
-  "courier": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/courier.glb",
-   "hash": "sha256-6ff58fb9e3b9b715a8e9c1234619308ed58f4a5ec29e47166a05e5d412447edd",
-   "bounds": [
-    0.01,
-    0.018,
-    0.006
-   ],
-   "metadata": {
-    "animationClips": [
-     "idle",
-     "walk",
-     "run"
-    ],
-    "animations": [
-     "idle",
-     "walk",
-     "run"
-    ],
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "courier"
-  },
-  "gatehouse": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/gatehouse.glb",
-   "hash": "sha256-60a2284a723269203a2571ce7646234f22a7b3cf924aa7fd1978113023cba0f6",
-   "bounds": [
-    1.901,
-    1.409,
-    0.78
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "gatehouse"
   },
   "grassColor": {
    "type": "texture",
@@ -1386,106 +736,6 @@
    "kind": "aura-asset-ref",
    "id": "groundRough"
   },
-  "hero": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/hero.glb",
-   "hash": "sha256-407a9aa65fe186bac976d46fb78fbc303471eb75328fca31d7bbfc1812bc81ea",
-   "bounds": [
-    1.6,
-    2.7,
-    0.8
-   ],
-   "metadata": {
-    "animationClips": [
-     "idle",
-     "drive",
-     "sit",
-     "walk",
-     "sprint",
-     "emote-yes",
-     "interact-right",
-     "pick-up"
-    ],
-    "animations": [
-     "idle",
-     "drive",
-     "sit",
-     "walk",
-     "sprint",
-     "emote-yes",
-     "interact-right",
-     "pick-up"
-    ],
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hero"
-  },
-  "house": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/house.glb",
-   "hash": "sha256-7aa00a1bee1828e5518426cf85f744c9ffd142d66850ff0ae08fca2c27a09757",
-   "bounds": [
-    1.64,
-    0.88,
-    0.968
-   ],
-   "metadata": {
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "house"
-  },
-  "hoverboard": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/hoverboard.glb",
-   "hash": "sha256-4efacc1c0f985e061a89345e7ca5b991579ced89efc1d34ce1aa2d34e5655488",
-   "bounds": [
-    1.903,
-    0.365,
-    1.125
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "hoverboard"
-  },
-  "lamp": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/lamp.glb",
-   "hash": "sha256-7fbcdb9322a84d89fb7b7dfc2ff95a1ade9e6b574c63a05d3132f6c573f55d60",
-   "bounds": [
-    0.425,
-    0.6,
-    0.425
-   ],
-   "metadata": {
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lamp"
-  },
-  "lantern": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/lantern.glb",
-   "hash": "sha256-29711fb1dfeaa430df1c3b4fa011e621f9613e5b693f6ee489267d5f3996baea",
-   "bounds": [
-    0.323,
-    1.903,
-    0.166
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "lantern"
-  },
   "pavingColor": {
    "type": "texture",
    "format": "jpg",
@@ -1518,22 +768,6 @@
    },
    "kind": "aura-asset-ref",
    "id": "pavingRough"
-  },
-  "pillar": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/pillar.glb",
-   "hash": "sha256-c3905d6a2cea48aee50224ea435282993975b22128f87b397b157f522aaa4445",
-   "bounds": [
-    0.711,
-    1.903,
-    0.713
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "pillar"
   },
   "plasterColor": {
    "type": "texture",
@@ -1568,38 +802,6 @@
    "kind": "aura-asset-ref",
    "id": "plasterRough"
   },
-  "ringclean": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/ringclean.glb",
-   "hash": "sha256-2dffaf16cfa75b0003d1048c05ed3c9e95b6c1c3195f6ba4116fd11783e4008d",
-   "bounds": [
-    1.902,
-    1.903,
-    0.314
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "ringclean"
-  },
-  "ringgate": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/ringgate.glb",
-   "hash": "sha256-bf2300aac5583b1c2ad7169a390275ec0311e7117ef8e8031aae46958c0c7e08",
-   "bounds": [
-    1.899,
-    1.309,
-    1.9
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "ringgate"
-  },
   "rockColor": {
    "type": "texture",
    "format": "jpg",
@@ -1632,98 +834,6 @@
    },
    "kind": "aura-asset-ref",
    "id": "rockRough"
-  },
-  "rocks": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/rocks.glb",
-   "hash": "sha256-8fe1d77dc723f5603219e1bb88e6e7c3905ba3ab47e42769311b0821a87b2585",
-   "bounds": [
-    1,
-    1,
-    1
-   ],
-   "metadata": {
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "rocks"
-  },
-  "silt_and_signal_port_duneAdobeA": {
-   "type": "model",
-   "format": "glb",
-   "url": "/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
-   "hash": "sha256-514e8fc2f9630b0a18414a1a47de4aa97d58c66872b66706fb64b6973cb4e703",
-   "bounds": [
-    1.64,
-    0.88,
-    0.968
-   ],
-   "sizeBytes": 423580,
-   "metadata": {
-    "license": "Meshy generated asset (paid API, plan terms at generation time)",
-    "sourcePath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
-    "outputPath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
-    "provenance": {
-     "sourcePath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
-     "outputPath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
-     "license": "Meshy generated asset (paid API, plan terms at generation time)",
-     "licenseUrl": "https://www.meshy.ai/terms",
-     "sourceFamily": "meshy",
-     "meshyTaskId": "01a1af5f-4e32-74b4-8204-af3abfb90159",
-     "retrievedAt": "2026-11-04T04:31:29.478Z"
-    }
-   },
-   "kind": "aura-asset-ref",
-   "id": "silt_and_signal_port_duneAdobeA"
-  },
-  "stall": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/stall.glb",
-   "hash": "sha256-f610e63a9c11dc5cc5a00f3f21d2bfbd80171a4f28fef2f482cfb022cb5c2fac",
-   "bounds": [
-    1.901,
-    1.417,
-    1.173
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "stall"
-  },
-  "tree": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/tree.glb",
-   "hash": "sha256-e14290412ced6fb472f86885ce4158911ba12ec5be15f556a7745a7397b5d31d",
-   "bounds": [
-    0.927,
-    1.684,
-    0.883
-   ],
-   "metadata": {
-    "license": "CC0-1.0"
-   },
-   "kind": "aura-asset-ref",
-   "id": "tree"
-  },
-  "watchtower": {
-   "type": "model",
-   "format": "glb",
-   "url": "<root>/examples/silt-and-signal-port/assets/models/watchtower.glb",
-   "hash": "sha256-e1b4f84d7daffb49629dbe90d741abf47acded34745c15c68227173e629d3c83",
-   "bounds": [
-    0.804,
-    1.902,
-    0.863
-   ],
-   "metadata": {
-    "license": "Meshy generated asset (AuraOne account plan terms at generation time)"
-   },
-   "kind": "aura-asset-ref",
-   "id": "watchtower"
   }
  }
 }

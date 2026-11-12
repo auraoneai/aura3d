@@ -10,7 +10,7 @@ cd "$APP"
 fail=0
 step() { echo; echo "== $1"; shift; "$@" || { echo "FAILED: $*"; fail=1; }; }
 
-step "typecheck (published @aura3d 5.5.3 types)" ./node_modules/.bin/tsc -p tsconfig.published.json --noEmit
+step "typecheck (published @aura3d 5.5.4 types)" ./node_modules/.bin/tsc -p tsconfig.published.json --noEmit
 if [ "${1:-}" = "--workspace" ]; then
   step "typecheck (monorepo workspace sources)" "$REPO/node_modules/.bin/tsc" -p "$APP/tsconfig.json" --noEmit
 fi

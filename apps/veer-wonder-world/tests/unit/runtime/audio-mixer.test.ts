@@ -291,6 +291,7 @@ class FakeContext implements AudioDecodeContextLike {
   readonly sources: FakeSource[] = [];
   resumeCalls = 0;
   closeCalls = 0;
+  private readonly stateListeners = new Set<() => void>();
   private readonly library: AudioLibrary;
   private readonly resumeMode: ResumeMode;
 
@@ -299,23 +300,36 @@ class FakeContext implements AudioDecodeContextLike {
     this.resumeMode = resumeMode;
   }
 
+  addEventListener(type: "statechange", listener: () => void): void {
+    if (type === "statechange") this.stateListeners.add(listener);
+  }
+
+  removeEventListener(type: "statechange", listener: () => void): void {
+    if (type === "statechange") this.stateListeners.delete(listener);
+  }
+
+  emitState(state: string): void {
+    this.state = state;
+    for (const listener of [...this.stateListeners]) listener();
+  }
+
   resume(): Promise<void> {
     this.resumeCalls += 1;
     if (this.state === "closed") return Promise.reject(new Error("closed"));
     if (this.resumeMode === "hang") return new Promise<void>(() => undefined);
     if (this.resumeMode === "reject") return Promise.reject(new Error("NotAllowedError"));
-    this.state = "running";
+    this.emitState("running");
     return Promise.resolve();
   }
 
   suspend(): Promise<void> {
-    if (this.state !== "closed") this.state = "suspended";
+    if (this.state !== "closed") this.emitState("suspended");
     return Promise.resolve();
   }
 
   close(): Promise<void> {
     this.closeCalls += 1;
-    this.state = "closed";
+    this.emitState("closed");
     return Promise.resolve();
   }
 
@@ -1129,5 +1143,511 @@ describe("audio mixer + narration player", () => {
     songSource.end();
     expect(songEnded).toBe(1);
     mixer.dispose();
+  });
+});
+
+describe("audio mixer: AirPlay and iOS interruption recovery", () => {
+  it("configures playback AudioSession and coordinates the silent AirPlay keepalive across unlock, pause, mute, and dispose", async () => {
+    const prevNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const prevDocDesc = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const bridgeSymbol = Symbol.for("aura3d.airplayKeepaliveBridge");
+    const prevBridge = Reflect.get(globalThis, bridgeSymbol);
+
+    const audioSession = { type: "ambient" };
+    const attrs = new Map<string, string>();
+    let plays = 0;
+    let pauses = 0;
+    let loads = 0;
+    let appended = 0;
+    let removed = 0;
+    const fakeAudioEl = {
+      loop: false,
+      preload: "",
+      muted: true,
+      volume: 0,
+      hidden: false,
+      disableRemotePlayback: false,
+      style: { display: "" },
+      src: "",
+      setAttribute(name: string, value: string) {
+        attrs.set(name, value);
+      },
+      removeAttribute(name: string) {
+        attrs.delete(name);
+        if (name === "src") this.src = "";
+      },
+      play() {
+        plays += 1;
+        return Promise.resolve();
+      },
+      pause() {
+        pauses += 1;
+      },
+      load() {
+        loads += 1;
+      },
+      remove() {
+        removed += 1;
+      }
+    };
+
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { audioSession } });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        body: {
+          appendChild: (node: unknown) => {
+            expect(node).toBe(fakeAudioEl);
+            appended += 1;
+          }
+        },
+        createElement: () => fakeAudioEl
+      }
+    });
+    Reflect.deleteProperty(globalThis, bridgeSymbol);
+
+    try {
+      const { mixer } = setup();
+      await expect(mixer.unlock()).resolves.toBe(true);
+      expect(audioSession.type).toBe("playback");
+      expect(fakeAudioEl.loop).toBe(true);
+      expect(fakeAudioEl.muted).toBe(false);
+      expect(fakeAudioEl.disableRemotePlayback).toBe(true);
+      expect(fakeAudioEl.hidden).toBe(true);
+      expect(fakeAudioEl.style.display).toBe("none");
+      expect(attrs.get("x-webkit-airplay")).toBe("deny");
+      expect(attrs.get("playsinline")).toBe("");
+      expect(appended).toBe(1);
+      expect(fakeAudioEl.src.startsWith("data:audio/wav;base64,")).toBe(true);
+      expect(plays).toBeGreaterThanOrEqual(1);
+
+      const playsAfterUnlock = plays;
+      mixer.pauseAll();
+      expect(pauses).toBe(1);
+
+      mixer.resumeAll();
+      expect(plays).toBeGreaterThan(playsAfterUnlock);
+
+      const playsBeforeMute = plays;
+      const pausesBeforeMute = pauses;
+      mixer.setSoundEnabled(false);
+      expect(pauses).toBeGreaterThan(pausesBeforeMute);
+
+      mixer.setSoundEnabled(true);
+      expect(plays).toBeGreaterThan(playsBeforeMute);
+
+      const pausesBeforeDispose = pauses;
+      mixer.dispose();
+      expect(pauses).toBeGreaterThan(pausesBeforeDispose);
+      expect(loads).toBe(1);
+      expect(removed).toBe(1);
+    } finally {
+      if (prevBridge === undefined) Reflect.deleteProperty(globalThis, bridgeSymbol);
+      else Reflect.set(globalThis, bridgeSymbol, prevBridge);
+      if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);
+      else Reflect.deleteProperty(globalThis, "navigator");
+      if (prevDocDesc) Object.defineProperty(globalThis, "document", prevDocDesc);
+      else Reflect.deleteProperty(globalThis, "document");
+    }
+  });
+
+  it("auto-resumes after an iOS interruption and starts a bed queued while locked", async () => {
+    const { mixer, ctx, refs } = setup();
+    await expect(mixer.unlock()).resolves.toBe(true);
+    const context = ctx();
+    const callsAfterUnlock = context.resumeCalls;
+
+    // AirPlay / iOS route switch interrupts the AudioContext -> manager becomes locked.
+    context.emitState("interrupted");
+    expect(mixer.isUnlocked()).toBe(false);
+    expect(mixer.canPlayVoice()).toBe(false);
+
+    // Bed requested while interrupted stays queued until context is running again.
+    mixer.setBed("meadowBed");
+    await flush();
+    expect(context.sources).toHaveLength(0);
+
+    // WebKit transitions interrupted -> suspended once the interruption ends: auto-resume runs and restarts the bed.
+    context.emitState("suspended");
+    await flush();
+    expect(context.resumeCalls).toBeGreaterThan(callsAfterUnlock);
+    expect(mixer.isUnlocked()).toBe(true);
+    expect(mixer.canPlayVoice()).toBe(true);
+    expect(mixer.snapshot().bedId).toBe("meadowBed");
+    expect(context.sources.filter((s) => s.playing && s.buffer)).toHaveLength(1);
+    await expect(mixer.startVoice(refs.line, () => undefined)).resolves.not.toBeNull();
+    mixer.dispose();
+  });
+
+  it("auto-detects Apple WebKit and routes voices & songs through a single unlocked <audio> element for AirPlay/Screen Mirroring", async () => {
+    const prevNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const prevDocDesc = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const bridgeSymbol = Symbol.for("aura3d.airplayKeepaliveBridge");
+    const prevBridge = Reflect.get(globalThis, bridgeSymbol);
+
+    const audioSession = { type: "ambient" };
+    const createdElements: {
+      readonly attrs: Map<string, string>;
+      readonly listeners: Map<string, Set<() => void>>;
+      loop: boolean;
+      preload: string;
+      muted: boolean;
+      volume: number;
+      hidden: boolean;
+      paused: boolean;
+      ended: boolean;
+      disableRemotePlayback: boolean;
+      currentTime: number;
+      duration: number;
+      src: string;
+      style: { display: string };
+      onended: (() => void) | null;
+      onerror: (() => void) | null;
+      onpause: (() => void) | null;
+      plays: string[];
+      pauses: number;
+      loads: number;
+      removed: number;
+      rejectNextPlay: boolean;
+      setAttribute(name: string, value: string): void;
+      removeAttribute(name: string): void;
+      addEventListener(type: string, listener: () => void): void;
+      removeEventListener(type: string, listener: () => void): void;
+      play(): Promise<void>;
+      pause(): void;
+      load(): void;
+      remove(): void;
+    }[] = [];
+    const appended: unknown[] = [];
+
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: {
+        vendor: "Apple Computer, Inc.",
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+        audioSession
+      }
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        body: {
+          appendChild: (node: unknown) => {
+            appended.push(node);
+          }
+        },
+        createElement: () => {
+          const attrs = new Map<string, string>();
+          const listeners = new Map<string, Set<() => void>>();
+          const el = {
+            attrs,
+            listeners,
+            loop: true,
+            preload: "",
+            muted: false,
+            volume: 1,
+            hidden: false,
+            paused: true,
+            ended: false,
+            disableRemotePlayback: false,
+            currentTime: 0,
+            duration: 2,
+            src: "",
+            style: { display: "" },
+            onended: null as (() => void) | null,
+            onerror: null as (() => void) | null,
+            onpause: null as (() => void) | null,
+            plays: [] as string[],
+            pauses: 0,
+            loads: 0,
+            removed: 0,
+            rejectNextPlay: false,
+            setAttribute(name: string, value: string) {
+              attrs.set(name, value);
+            },
+            removeAttribute(name: string) {
+              attrs.delete(name);
+              if (name === "src") this.src = "";
+            },
+            addEventListener(type: string, listener: () => void) {
+              let set = listeners.get(type);
+              if (!set) {
+                set = new Set();
+                listeners.set(type, set);
+              }
+              set.add(listener);
+            },
+            removeEventListener(type: string, listener: () => void) {
+              listeners.get(type)?.delete(listener);
+            },
+            play() {
+              this.plays.push(this.src);
+              if (this.rejectNextPlay) {
+                this.rejectNextPlay = false;
+                return Promise.reject(new Error("native media blocked"));
+              }
+              this.paused = false;
+              this.ended = false;
+              return Promise.resolve();
+            },
+            pause() {
+              this.paused = true;
+              this.pauses += 1;
+            },
+            load() {
+              this.loads += 1;
+            },
+            remove() {
+              this.removed += 1;
+            }
+          };
+          createdElements.push(el);
+          return el;
+        }
+      }
+    });
+    Reflect.deleteProperty(globalThis, bridgeSymbol);
+
+    try {
+      const { mixer, refs, ctx, library, timers } = setup();
+      // AudioSession is set to playback immediately on mixer creation (before AudioContext creation).
+      expect(audioSession.type).toBe("playback");
+
+      // Synchronously primes one persistent `<audio>` element locally inside the unlock gesture
+      // WITHOUT sending a `data:audio/wav` URI over AirPlay.
+      await expect(mixer.unlock()).resolves.toBe(true);
+      expect(createdElements).toHaveLength(1);
+      const el = createdElements[0]!;
+      expect(appended).toEqual([el]);
+      expect(el.disableRemotePlayback).toBe(true);
+      expect(el.hidden).toBe(false);
+      expect(el.style.display).toBe("block");
+      expect(el.loop).toBe(false);
+      expect(el.attrs.get("x-webkit-airplay")).toBe("deny");
+      expect(el.attrs.get("playsinline")).toBe("");
+      expect(el.plays[0]?.startsWith("data:audio/wav;base64,")).toBe(true);
+      // AudioContextManager did not spin up a competing keepalive singleton on Apple WebKit.
+      expect(Reflect.get(globalThis, bridgeSymbol)).toBeUndefined();
+
+      // Preload skips Web Audio decode for voices/songs on Apple WebKit, while still preloading SFX/beds.
+      library.failing.add(refs.line.url);
+      await expect(mixer.preload(refs.line)).resolves.toBe(true);
+      await expect(mixer.preload(refs.hello)).resolves.toBe(true);
+      expect(library.count(refs.line.url)).toBe(0);
+      expect(library.count(refs.hello.url)).toBe(0);
+      await expect(mixer.preload(refs.woof)).resolves.toBe(true);
+      expect(library.count(refs.woof.url)).toBe(1);
+
+      // Voice plays through `<audio>` (`AVPlayer`) with AirPlay enabled (`x-webkit-airplay="allow"`,
+      // `disableRemotePlayback = false`), even when Web Audio decode was marked failing!
+      const ended: string[] = [];
+      const handle = await mixer.startVoice(refs.line, () => ended.push("ended"), () => "play");
+      expect(handle).not.toBeNull();
+      expect(el.disableRemotePlayback).toBe(false);
+      expect(el.attrs.get("x-webkit-airplay")).toBe("allow");
+      expect(el.loop).toBe(false);
+      expect(el.src).toBe(refs.line.url);
+      expect(el.plays.at(-1)).toBe(refs.line.url);
+      expect(ctx().sources).toHaveLength(0);
+      library.failing.delete(refs.line.url);
+
+      // External AirPlay route-switch pause (`onpause` with `ended = false`) auto-resumes `<audio>` after 120ms.
+      const playsBeforeRouteSwitch = el.plays.length;
+      el.paused = true;
+      el.onpause?.();
+      timers.advance(120);
+      await flush();
+      expect(el.plays.length).toBe(playsBeforeRouteSwitch + 1);
+
+      // Wireless target change event also triggers bounded recovery while playing.
+      const playsBeforeWirelessEvent = el.plays.length;
+      for (const fn of el.listeners.get("webkitcurrentplaybacktargetiswirelesschanged") ?? []) fn();
+      timers.advance(120);
+      await flush();
+      expect(el.plays.length).toBe(playsBeforeWirelessEvent + 1);
+
+      // AirPlay / Screen Mirroring interrupting AudioContext does NOT block native `<audio>` voices or songs.
+      ctx().emitState("interrupted");
+      expect(mixer.isUnlocked()).toBe(true);
+      expect(mixer.canPlayVoice()).toBe(true);
+
+      // User pause (`pauseAll`) does NOT trigger auto-recovery when `onpause` fires.
+      el.currentTime = 0.75;
+      mixer.pauseAll();
+      el.onpause?.();
+      timers.advance(500);
+      expect(el.pauses).toBe(1);
+      expect(handle?.positionMs()).toBe(750);
+      const playsBeforeResume = el.plays.length;
+      mixer.resumeAll();
+      expect(el.plays.length).toBe(playsBeforeResume + 1);
+      expect(el.src).toBe(refs.line.url);
+
+      // Muting keeps voice running muted for caption timing.
+      mixer.setSoundEnabled(false);
+      expect(el.muted).toBe(true);
+      mixer.setSoundEnabled(true);
+      expect(el.muted).toBe(false);
+
+      // Natural end invokes `onEnded` once and clears voice count.
+      el.ended = true;
+      el.onended?.();
+      expect(ended).toEqual(["ended"]);
+      expect(mixer.snapshot().voices).toBe(0);
+
+      // Songs play natively too, and starting speech cleanly preempts a playing song.
+      expect(mixer.playSong("hello")).toBe(refs.hello.durationMs);
+      expect(el.disableRemotePlayback).toBe(false);
+      expect(el.attrs.get("x-webkit-airplay")).toBe("allow");
+      expect(el.src).toBe(refs.hello.url);
+      expect(mixer.snapshot().songId).toBe("hello");
+      const h2 = await mixer.startVoice(refs.line2, () => ended.push("ended-2"));
+      expect(mixer.snapshot().songId).toBeNull();
+      expect(el.src).toBe(refs.line2.url);
+      h2?.stop();
+
+      // If Web Audio resumes after interruption and native `<audio>.play()` fails, `startVoice` falls back to Web Audio cleanly.
+      ctx().emitState("suspended");
+      await flush();
+      el.rejectNextPlay = true;
+      const fallback = await mixer.startVoice(refs.line3, () => ended.push("fallback-ended"));
+      expect(fallback).not.toBeNull();
+      expect(ctx().sources.filter((s) => s.playing)).toHaveLength(1);
+      fallback?.stop();
+
+      mixer.dispose();
+      expect(el.loads).toBe(1);
+      expect(el.removed).toBe(1);
+    } finally {
+      if (prevBridge === undefined) Reflect.deleteProperty(globalThis, bridgeSymbol);
+      else Reflect.set(globalThis, bridgeSymbol, prevBridge);
+      if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);
+      else Reflect.deleteProperty(globalThis, "navigator");
+      if (prevDocDesc) Object.defineProperty(globalThis, "document", prevDocDesc);
+      else Reflect.deleteProperty(globalThis, "document");
+    }
+  });
+
+  it("marks native media unlocked on first real voice play even if silent prime aborted, and delivers early onended", async () => {
+    const prevNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const prevDocDesc = Object.getOwnPropertyDescriptor(globalThis, "document");
+    let firstPlay = true;
+    let abortNextPlay = false;
+    let endDuringPlay = false;
+    let playCount = 0;
+    const fakeEl = {
+      loop: false,
+      preload: "",
+      muted: false,
+      volume: 1,
+      hidden: false,
+      paused: true,
+      ended: false,
+      disableRemotePlayback: false,
+      currentTime: 0,
+      duration: 0.4,
+      src: "",
+      style: { display: "" },
+      onended: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+      onpause: null as (() => void) | null,
+      setAttribute() {},
+      removeAttribute() {},
+      play() {
+        playCount += 1;
+        this.ended = false;
+        if (firstPlay) {
+          firstPlay = false;
+          const abortErr = new Error("interrupted by new load request");
+          abortErr.name = "AbortError";
+          return Promise.reject(abortErr);
+        }
+        if (abortNextPlay) {
+          abortNextPlay = false;
+          this.paused = true;
+          const abortErr = new Error("The play() request was interrupted by a call to pause()");
+          abortErr.name = "AbortError";
+          return Promise.reject(abortErr);
+        }
+        this.paused = false;
+        return new Promise<void>((resolve) => {
+          if (endDuringPlay) {
+            this.ended = true;
+            this.onended?.();
+          }
+          resolve();
+        });
+      },
+      pause() {
+        this.paused = true;
+      },
+      load() {},
+      remove() {}
+    };
+
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: {
+        vendor: "Apple Computer, Inc.",
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1"
+      }
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        body: { appendChild: () => undefined },
+        createElement: () => fakeEl
+      }
+    });
+
+    try {
+      const { mixer, manifest, timers, ctx } = setup();
+      // Unlock succeeds via Web Audio even though silent prime rejected with AbortError.
+      await expect(mixer.unlock()).resolves.toBe(true);
+
+      const ended: string[] = [];
+      const player = createNarrationPlayer({
+        mixer,
+        clip: (key) => manifest.lines[key],
+        onStart: () => undefined,
+        onEnd: (key) => ended.push(key),
+        estimateMs: () => 2000,
+        now: () => timers.now,
+        schedule: timers.schedule
+      });
+
+      // Even if a tiny clip finishes before `el.play()` settles, NarrationPlayer still receives `onEnd` AND `nativeUnlocked` becomes true!
+      endDuringPlay = true;
+      player.play(LINE_1);
+      await flush();
+      await flush();
+      expect(ended).toEqual(["e17.greet.1"]);
+
+      // Now interrupting Web Audio does NOT lock the mixer because `nativeUnlocked` became true on `LINE_1`.
+      ctx().emitState("interrupted");
+      expect(mixer.isUnlocked()).toBe(true);
+      expect(mixer.canPlayVoice()).toBe(true);
+
+      // Transient AbortError during buffering (e.g. iOS AirPlay route handoff) keeps native `<audio>` alive & auto-recovers!
+      endDuringPlay = false;
+      abortNextPlay = true;
+      const playsBeforeSong = playCount;
+      expect(mixer.playSong("hello")).toBeGreaterThan(0);
+      await flush();
+      expect(ctx().sources).toHaveLength(0);
+      timers.advance(120);
+      await flush();
+      expect(playCount).toBe(playsBeforeSong + 2);
+      expect(fakeEl.paused).toBe(false);
+      expect(mixer.snapshot().songId).toBe("hello");
+
+      player.dispose();
+      mixer.dispose();
+    } finally {
+      if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);
+      else Reflect.deleteProperty(globalThis, "navigator");
+      if (prevDocDesc) Object.defineProperty(globalThis, "document", prevDocDesc);
+      else Reflect.deleteProperty(globalThis, "document");
+    }
   });
 });

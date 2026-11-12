@@ -253,7 +253,7 @@ async function boot(): Promise<void> {
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { preset: "cinematic-film", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
+    output: { toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

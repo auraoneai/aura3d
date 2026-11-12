@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/kid-goku-beyond-the-clouds-port/art/direction.ts",
-  "sourceSha256": "c99f94610c6c03a560a1fec74423986402a86a3616abf9c7452c594280971b43",
+  "sourceSha256": "f93410ee940d4470cb8aaeae2217fa9cd18417b141c1b765b74f71447ec0be21",
   "id": "showcase-cloud-runner-port",
   "genre": "platformer",
   "signatureEffect": "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
@@ -37,15 +37,7 @@
       "kind": "hdri",
       "background": false
     },
-    "models": [
-      {
-        "assetKey": "hero",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "ball",
@@ -121,16 +113,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "hero",
-        "maxTriangles": 60000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "skypearl",
@@ -193,20 +176,7 @@
       }
     ],
     "signatureEffect": "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
-    "standIns": [
-      {
-        "feature": "storm towers and cloud sea drawn in the sky dome until the Meshy cumulus towers and deck tiles land",
-        "file": "shaders.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 cumulus towers and cloud-deck tiles admitted"
-      },
-      {
-        "feature": "procedural staff, hut, bridges and cord posts until the Meshy set pieces land",
-        "file": "props.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 staff, hut, bridge, arch, waystone and cord pole admitted"
-      }
-    ],
+    "standIns": [],
     "criticalCategories": [
       "lighting",
       "environment_world",

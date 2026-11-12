@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   broadcastCrispCubeText,
@@ -6,16 +8,32 @@ import {
   riverWaterMaterial
 } from "../src/game/surfaceShaders";
 import { VEHICLE_OVERRIDES, critterNodeTransforms } from "../src/game/critterLook";
-import { buildScene, lane, setLookMode, startRun, st, step } from "../src/game/core";
-import { MOVER_LENGTH, laneMovers, moverHalf } from "../src/game/world";
+import { CRITTERS, buildScene, lane, probeScene, setLookMode, startRun, st, step } from "../src/game/core";
+import { MOVER_LENGTH, TRAIN_CAR_LENGTH, laneMovers, moverHalf } from "../src/game/world";
 import { COL_W } from "../src/game/themes";
+import {
+  HOP_YAW,
+  composeCharacterEulerXYZ,
+  hopPitch,
+  hopScale,
+  idleBreathScale,
+  turnToward
+} from "../src/game/diorama";
+import { CRITTER_ASSET_IDS, assets } from "../src/aura-assets";
+import manifest from "../aura.assets.json";
 import {
   buildHeroVehicleMultiMaterialNode,
   buildHorizonRidgeSpec,
   buildMeadowBushSpec,
+  buildProceduralCritterNode,
   buildProceduralVehicleSpec,
   buildRailTrackStripSpec,
-  buildWoodlandTreeSpec
+  buildRescuePodNode,
+  buildStarCoinStandingSpec,
+  buildStarCoinUnitSpec,
+  buildStoopingHawkNode,
+  buildWoodlandTreeSpec,
+  inspectProceduralCritterBounds
 } from "../src/art/proceduralModels";
 
 type SceneNode = {
@@ -23,8 +41,11 @@ type SceneNode = {
   light?: string;
   effect?: string;
   name?: string;
+  mode?: string;
   near?: number;
   far?: number;
+  maxOpacity?: number;
+  density?: number;
   children?: SceneNode[];
 };
 const flattenNodes = (nodes: SceneNode[]): SceneNode[] =>
@@ -140,9 +161,95 @@ describe("WP-14 Cross Hop 10/10 diorama overhaul", () => {
       const fogNodes = all.filter((n) => n.kind === "effect" && n.effect === "fog");
       expect(fogNodes.length).toBeGreaterThan(0);
       for (const fog of fogNodes) {
-        expect(fog.near ?? 0).toBeGreaterThanOrEqual(70);
-        expect(fog.far ?? 0).toBeGreaterThanOrEqual(260);
+        expect(fog.mode).toBe("linear");
+        expect(fog.near ?? 0).toBeGreaterThanOrEqual(145);
+        expect(fog.far ?? 0).toBeGreaterThanOrEqual(420);
+        expect(fog.maxOpacity ?? 1).toBeLessThanOrEqual(0.24);
+        expect(fog.density).toBeUndefined();
       }
+      const dofNodes = all.filter(
+        (n) => n.kind === "effect" && (n.effect === "depth-of-field" || n.effect === "depthOfField")
+      );
+      expect(dofNodes).toHaveLength(0);
+      expect(all.filter((n) => n.kind === "model")).toHaveLength(0);
     }
+  });
+
+  it("ships zero Meshy .glb files and sculpts all 12 playable critters, hawk, pod, coins & fleet grounded at minY = 0", () => {
+    const appRoot = path.resolve(__dirname, "..");
+    const glbFiles: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === "node_modules") continue;
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name.toLowerCase().endsWith(".glb")) glbFiles.push(full);
+      }
+    };
+    walk(appRoot);
+    expect(glbFiles).toEqual([]);
+    expect(manifest.assets).toEqual([]);
+    expect(Object.keys(assets)).toEqual([]);
+
+    expect(CRITTERS).toHaveLength(12);
+    expect(CRITTER_ASSET_IDS).toHaveLength(12);
+    for (const critterId of CRITTER_ASSET_IDS) {
+      const info = inspectProceduralCritterBounds(critterId, 1.05);
+      expect(info.vertexCount).toBeGreaterThanOrEqual(500);
+      expect(info.materialGroupCount).toBeGreaterThanOrEqual(5);
+      expect(info.bounds.min[1]).toBeCloseTo(0, 4);
+      expect(info.bounds.max[1]).toBeCloseTo(1.05, 4);
+      expect(info.bounds.min[0] + info.bounds.max[0]).toBeCloseTo(0, 4);
+      expect(info.bounds.min[2] + info.bounds.max[2]).toBeCloseTo(0, 4);
+      const nodeJson = buildProceduralCritterNode(critterId, { name: `hero-${critterId}`, targetHeight: 1.05 }).toJSON();
+      expect(JSON.stringify(nodeJson)).not.toContain(".glb");
+    }
+
+    for (const [kind, target] of [
+      ["car", MOVER_LENGTH.car],
+      ["hatch", MOVER_LENGTH.hatch],
+      ["suv", MOVER_LENGTH.suv],
+      ["taxi", MOVER_LENGTH.taxi],
+      ["van", MOVER_LENGTH.van],
+      ["pickup", MOVER_LENGTH.pickup],
+      ["truck", MOVER_LENGTH.truck],
+      ["tram", MOVER_LENGTH.tram],
+      ["train", TRAIN_CAR_LENGTH],
+      ["hover", MOVER_LENGTH.hover]
+    ] as const) {
+      const spec = buildProceduralVehicleSpec(kind, { targetMaxDimension: target });
+      expect(spec.bounds!.min[1]).toBeCloseTo(0, 3);
+    }
+
+    expect(buildStarCoinStandingSpec(0.5).bounds!.min[1]).toBeCloseTo(0, 3);
+    expect(buildStarCoinUnitSpec().bounds).toBeDefined();
+    expect(JSON.stringify(buildStoopingHawkNode().toJSON())).toContain("hawk");
+    expect(JSON.stringify(buildRescuePodNode().toJSON())).toContain("pod-dome-glass");
+    const probe4 = probeScene(4) as { nodes: SceneNode[] };
+    expect(flattenNodes(probe4.nodes).filter((n) => n.kind === "model")).toHaveLength(0);
+  });
+
+  it("animates hop squash/stretch, forward pitch arc, idle breath, and drift-free ZYX yaw banking", () => {
+    expect(hopScale(0.08, true, -1, false)[1]).toBeLessThan(0.9);
+    expect(hopScale(0.48, true, -1, false)[1]).toBeGreaterThan(1.08);
+    expect(hopPitch(0.25, true, -1, false)).toBeLessThan(-0.15);
+    expect(hopPitch(0.75, true, -1, false)).toBeGreaterThan(0.15);
+    expect(hopPitch(0, false, -1, false)).toBe(0);
+    expect(idleBreathScale(0.45, false, -1, false)[1]).not.toBe(1);
+
+    // Simulate 1,000 hop & turn cycles across all 4 cardinal directions and verify zero cumulative drift at rest
+    let yaw = Math.PI;
+    const dirs = ["fwd", "left", "fwd", "right", "back"] as const;
+    for (let i = 0; i < 1000; i++) {
+      const goal = HOP_YAW[dirs[i % dirs.length]!]!;
+      for (let f = 0; f < 8; f++) yaw = turnToward(yaw, goal, 1 / 60);
+    }
+    const finalGoal = HOP_YAW[dirs[999 % dirs.length]!]!;
+    expect(yaw).toBeCloseTo(finalGoal, 10);
+    const restA = composeCharacterEulerXYZ(finalGoal, 0, 0);
+    const restB = composeCharacterEulerXYZ(yaw, hopPitch(1, false, 0.5, false), 0);
+    expect(restB[0]).toBeCloseTo(restA[0], 10);
+    expect(restB[1]).toBeCloseTo(restA[1], 10);
+    expect(restB[2]).toBeCloseTo(restA[2], 10);
   });
 });

@@ -195,6 +195,18 @@ import {
   type ContactConfig,
   buildContactConfig
 } from "./batter-pose";
+import {
+  BASEBALL_ACCENT_PART_SUFFIXES,
+  BASEBALL_PLAYER_BONES,
+  applyBaseballPoseStateless,
+  computeBaseballBoneMatrices,
+  computeBaseballRolePose,
+  computeBaseballSocketWorldTRS,
+  poseArticulatedBallparkWaver,
+  roleForBaseballActorId,
+  type BaseballBoneName,
+  type BaseballPoseBonesInput
+} from "./art/proceduralModels";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 /* ================================================================== *
@@ -435,7 +447,7 @@ function boot(): void {
     try {
       if (!lab.output) {
         const outSpec = {
-          preset: plan.output.preset,
+          preset: plan.output.preset === "cinematic-film" ? ("daylight-outdoor" as const) : plan.output.preset,
           toneMapping: plan.output.toneMapping,
           exposure: plan.output.exposure,
           dither: true
@@ -566,6 +578,12 @@ function boot(): void {
     }
   }
 
+  const ALL_ATHLETE_IDS = [...KIT_OWNERS, "coach-1b", "coach-3b"] as const;
+  let actorJoints: Record<string, Partial<Record<BaseballBoneName, AnyHandle>>> = {};
+  let actorBoneMats: Record<string, Record<BaseballBoneName | "Root", number[]>> = {};
+  let waverArmsL: AnyHandle[] = [];
+  let waverArmsR: AnyHandle[] = [];
+
   function bindHandles(): void {
     kitVisible.clear();
     lastClipByActor.clear();
@@ -600,7 +618,20 @@ function boot(): void {
       H[`${id}-cap`] = tryReq(`${id}-cap`);
       H[`${id}-belt`] = tryReq(`${id}-belt`);
     }
+    actorJoints = {};
+    actorBoneMats = {};
+    for (const id of ALL_ATHLETE_IDS) {
+      const joints: Partial<Record<BaseballBoneName, AnyHandle>> = {};
+      for (const bone of BASEBALL_PLAYER_BONES) joints[bone] = tryReq(`${id}-${bone}`);
+      actorJoints[id] = joints;
+      actorBoneMats[id] = computeBaseballBoneMatrices();
+      for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) {
+        H[`${id}-${suffix}`] = tryReq(`${id}-${suffix}`);
+      }
+    }
     H.wavers = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}`));
+    waverArmsL = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}-arm-l`));
+    waverArmsR = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}-arm-r`));
     H.trail = Array.from({ length: TRAIL_COUNT }, (_, i) => tryReq(`ball-trail-${i}`));
     H.windows = Array.from({ length: 4 }, (_, i) => tryReq(`window-target-${i}`));
   }
@@ -1479,13 +1510,17 @@ function boot(): void {
   function applyUniforms(): void {
     const batterColor = G.mode === "studio" ? G.studio.color : battingClub().color;
     const fieldColor = fieldingClub().color;
+    const fieldAccent = material.fabric({ color: fieldColor, roughness: 0.62, sheen: 0.45 });
+    const batterAccent = material.fabric({ color: batterColor, roughness: 0.62, sheen: 0.45 });
     for (const id of ["pitcher", ...FIELDER_IDS]) {
       H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor, true));
       H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor, false));
+      for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) H[`${id}-${suffix}`]?.setMaterial(fieldAccent);
     }
-    for (const id of ["batter", "runner-0", "runner-1", "runner-2"]) {
+    for (const id of ["batter", "runner-0", "runner-1", "runner-2", "coach-1b", "coach-3b"]) {
       H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor, true));
       H[`${id}-belt`]?.setMaterial(uniformMaterial(batterColor, false));
+      for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) H[`${id}-${suffix}`]?.setMaterial(batterAccent);
     }
     G.lastBatColor = batterColor;
     G.lastFieldColor = fieldColor;
@@ -2856,14 +2891,19 @@ function boot(): void {
     lastContact: null as null | { normal: Vec3; sprayDeg: number; launchDeg: number; normalBatSpeed: number; blendedSprayDeg: number; blendedLaunchDeg: number }
   };
 
-  function setAthlete(id: string, x: number, y: number, z: number, yaw: number, clip = "Crouch_Idle_Loop", speed = 1.0): void {
+  function setAthlete(id: string, x: number, y: number, z: number, yaw: number, clip = "Crouch_Idle_Loop", speed = 1.0, nowSec = performance.now() / 1000): void {
     const h = H[id];
     if (!h) return;
-    // `scaleMode: "fit"` grounds the model's lowest vertex on the node position, so the node sits at the ground (a +0.94 m "centred GLB" offset floated every athlete a metre up).
     h.setPosition(x, y, z).setRotation(0, yaw, 0).setVisible(true);
     setKitVisible(id, true);
     setActorAnimation(id, h, clip, speed);
     athleteState[id] = { pos: [x, y, z], yaw };
+    if (id !== "batter" || clip === "Sprint_Loop") {
+      const seedPhase = (id.charCodeAt(id.length - 1) ?? 0) * 0.37;
+      const rolePose = computeBaseballRolePose(roleForBaseballActorId(id), clip, nowSec, seedPhase, speed);
+      applyBaseballPoseStateless(actorJoints[id] ?? {}, rolePose);
+      actorBoneMats[id] = computeBaseballBoneMatrices(rolePose);
+    }
   }
 
   function hideAthlete(id: string): void {
@@ -2924,84 +2964,54 @@ function boot(): void {
   };
 
   function syncEquipmentSockets(): void {
-    // Catcher's mitt rides the crouched catcher's left forearm once the catcher rig skeleton is valid.
-    if (!mittAttached && H.catcherMitt) {
-      const catcher = H["f-c"]?.animation as AttachableActor | undefined;
-      if (catcher && catcher.socket("LeftForearm").valid) {
-        try {
-          batSocket.disposeMitt = attachToBone(catcher, {
-            bone: "LeftForearm",
-            target: "catcher-mitt",
-            position: GLOVE_ATTACH_POS,
-            rotation: [-0.5, 2.9, 0.15],
-            scale: 1
-          }).detach;
-          mittAttached = true;
-          H.catcherMitt.setVisible(kitVisible.get("f-c") !== false);
-        } catch {
-          /* retry next frame if skeleton still settling */
-        }
-      } else {
-        H.catcherMitt.setVisible(false);
-      }
+    if (H.catcherMitt && actorJoints["f-c"]?.LeftForearm) {
+      mittAttached = true;
+      H.catcherMitt.setVisible(kitVisible.get("f-c") !== false);
     }
-
     for (const id of GLOVE_OWNERS) {
-      if (attachedGloves.has(id) || !H[`glove-${id}`]) continue;
-      const owner = H[id]?.animation as AttachableActor | undefined;
-      if (!owner || !owner.socket("LeftForearm").valid) {
-        H[`glove-${id}`]?.setVisible(false);
-        continue;
-      }
-      try {
-        batSocket.disposeGloves.push(
-          attachToBone(owner, {
-            bone: "LeftForearm",
-            target: `glove-${id}`,
-            position: GLOVE_ATTACH_POS,
-            rotation: [-0.5, 2.9, 0.15],
-            scale: 1
-          }).detach
-        );
+      if (H[`glove-${id}`] && actorJoints[id]?.LeftForearm) {
         attachedGloves.add(id);
         refreshEquipmentVisibility(id);
-      } catch {
-        H[`glove-${id}`]?.setVisible(false);
       }
     }
-
     for (const id of KIT_OWNERS) {
-      const owner = H[id]?.animation as AttachableActor | undefined;
-      if (!owner) continue;
-      if (!attachedCaps.has(id) && H[`${id}-cap`]) {
-        if (owner.socket("Head").valid) {
-          try {
-            batSocket.disposeKit.push(
-              attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach
-            );
-            attachedCaps.add(id);
-            refreshEquipmentVisibility(id);
-          } catch {
-            H[`${id}-cap`]?.setVisible(false);
-          }
-        } else {
-          H[`${id}-cap`]?.setVisible(false);
-        }
+      if (H[`${id}-cap`] && actorJoints[id]?.Head) {
+        attachedCaps.add(id);
+        refreshEquipmentVisibility(id);
       }
-      if (!attachedBelts.has(id) && H[`${id}-belt`]) {
-        if (owner.socket("Hips").valid) {
-          try {
-            batSocket.disposeKit.push(
-              attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach
-            );
-            attachedBelts.add(id);
-            refreshEquipmentVisibility(id);
-          } catch {
-            H[`${id}-belt`]?.setVisible(false);
-          }
-        } else {
-          H[`${id}-belt`]?.setVisible(false);
-        }
+      if (H[`${id}-belt`] && actorJoints[id]?.Hips) {
+        attachedBelts.add(id);
+        refreshEquipmentVisibility(id);
+      }
+    }
+  }
+
+  function updateProceduralEquipmentTransforms(): void {
+    const catcherSt = athleteState["f-c"];
+    const catcherMats = actorBoneMats["f-c"];
+    if (mittAttached && H.catcherMitt && catcherSt && catcherMats && kitVisible.get("f-c") !== false) {
+      const trs = computeBaseballSocketWorldTRS(catcherMats, "LeftForearm", catcherSt.pos, catcherSt.yaw, GLOVE_ATTACH_POS, [-0.5, 2.9, 0.15]);
+      H.catcherMitt.setPosition(trs.position[0], trs.position[1], trs.position[2]).setRotation(trs.rotation[0], trs.rotation[1], trs.rotation[2]);
+    }
+    for (const id of GLOVE_OWNERS) {
+      const st = athleteState[id];
+      const mats = actorBoneMats[id];
+      const h = H[`glove-${id}`];
+      if (!h || !st || !mats || !attachedGloves.has(id) || kitVisible.get(id) !== true) continue;
+      const trs = computeBaseballSocketWorldTRS(mats, "LeftForearm", st.pos, st.yaw, GLOVE_ATTACH_POS, [-0.5, 2.9, 0.15]);
+      h.setPosition(trs.position[0], trs.position[1], trs.position[2]).setRotation(trs.rotation[0], trs.rotation[1], trs.rotation[2]);
+    }
+    for (const id of KIT_OWNERS) {
+      const st = athleteState[id];
+      const mats = actorBoneMats[id];
+      if (!st || !mats || kitVisible.get(id) !== true) continue;
+      if (attachedCaps.has(id) && H[`${id}-cap`]) {
+        const capTrs = computeBaseballSocketWorldTRS(mats, "Head", st.pos, st.yaw, CAP_ATTACH_POS, [0, 0, 0]);
+        H[`${id}-cap`].setPosition(capTrs.position[0], capTrs.position[1], capTrs.position[2]).setRotation(capTrs.rotation[0], capTrs.rotation[1], capTrs.rotation[2]);
+      }
+      if (attachedBelts.has(id) && H[`${id}-belt`]) {
+        const beltTrs = computeBaseballSocketWorldTRS(mats, "Hips", st.pos, st.yaw, BELT_ATTACH_POS, [0, 0, 0]);
+        H[`${id}-belt`].setPosition(beltTrs.position[0], beltTrs.position[1], beltTrs.position[2]).setRotation(beltTrs.rotation[0], beltTrs.rotation[1], beltTrs.rotation[2]);
       }
     }
   }
@@ -3045,19 +3055,12 @@ function boot(): void {
     batSocket.s = ACTOR_FIT;
     batSocket.n = [...FIT_GROUND_N] as Vec3;
     try {
-      const batter = H.batter?.animation as AttachableActor | undefined;
-      if (!batter) throw new Error("ATTACH_ACTOR_MISSING: the batter animation handle is not available");
-      // After app.setScene the new rigs load asynchronously: until the skeleton exists every socket reads invalid. Retry on
-      // later frames instead of failing for the rest of the session (a park switch used to leave the bat unplaced for good).
-      if ((!batter.socket("RightForearm").valid || !batter.socket("LeftForearm").valid) && batSocket.retries < 600) {
-        batSocket.stage = "idle";
-        batSocket.retries += 1;
-        batSocket.retryAtFrame = framesRendered + 4;
-        return;
+      if (!H.batter || !actorJoints.batter?.RightForearm || !actorJoints.batter?.LeftForearm) {
+        throw new Error("ATTACH_ACTOR_MISSING: procedural batter rig handles are not available");
       }
-      // This rig names its arm bones RightForearm / LeftForearm and has no hand bones: the solver poses both forearms and the bat follows the right palm.
-      for (const bone of ["RightForearm", "LeftForearm"]) if (!batter.socket(bone).valid) throw new Error(`ATTACH_BONE_NOT_FOUND: the batter has no bone "${bone}"`);
       syncEquipmentSockets();
+      H.batCal?.setVisible(false);
+      batSocket.stage = "attached";
     } catch (err) {
       failBatSocket(String((err as Error)?.message ?? err));
     }
@@ -3071,29 +3074,20 @@ function boot(): void {
 
   /** QA evidence: where the batter's arm bones and the bat knob are in world space (metres). */
   function measureBatGrip(): void {
-    const actor = H.batter?.animation as {
-      socket?: (b: string) => { valid: boolean; worldMatrix: (o?: Float32Array) => Float32Array };
-      animationState?: () => unknown;
-    } | undefined;
     const bat = H.bat;
-    if (!actor?.socket || !bat) return;
+    const mats = actorBoneMats.batter;
+    const st = athleteState["batter"];
+    if (!mats || !st || !bat) return;
     const round = (v: readonly number[]): Vec3 => [Number(v[0]!.toFixed(3)), Number(v[1]!.toFixed(3)), Number(v[2]!.toFixed(3))];
     const bones: Record<string, Vec3 | null> = {};
-    for (const name of ["Chest", "RightUpperArm", "RightForearm", "RightHand", "LeftForearm", "LeftHand"]) {
-      try {
-        const sock = actor.socket(name);
-        // Call through `actor` so `socket` keeps its `this` (a detached method read zeros).
-        bones[name] = sock.valid ? round(boneWorldPosition(actor as never, name)) : null;
-      } catch {
-        bones[name] = null;
-      }
+    for (const name of ["Chest", "RightUpperArm", "RightForearm", "LeftForearm"] as const) {
+      const m = mats[name];
+      bones[name] = m ? round(worldFromActor([m[12]!, m[13]!, m[14]!], st.pos, st.yaw)) : null;
     }
+    bones.RightHand = null;
+    bones.LeftHand = null;
     batState.bones = bones;
-    try {
-      batState.animState = JSON.stringify(actor.animationState?.() ?? null).slice(0, 400);
-    } catch {
-      batState.animState = "unavailable";
-    }
+    batState.animState = "procedural-14-bone";
     const r = bat.rotation as unknown as Vec3;
     const q = qMul(qAxis([0, 0, 1], r[2]), qMul(qAxis([0, 1, 0], r[1]), qAxis([1, 0, 0], r[0])));
     const dir = qRot(q, [1, 0, 0]);
@@ -3101,33 +3095,26 @@ function boot(): void {
     const half = 0.51;
     const knob: Vec3 = [c[0] - dir[0] * half, c[1] - dir[1] * half, c[2] - dir[2] * half];
     batState.knobWorld = round(knob);
-    // The bat transform read here was written by the previous render, which drew
-    // the previous frame's solved pose; `palmWorld` still holds that frame's palm
-    // (it is refreshed below this call), so both sides come from the same frame.
     const palm = swingEvidence.palmWorld;
     batState.knobToHand = Number(Math.hypot(knob[0] - palm[0], knob[1] - palm[1], knob[2] - palm[2]).toFixed(3));
   }
 
 
-  /** QA probe: true palm positions from the engine bone matrices vs the engine-placed bat axis (metres, world). */
+  /** QA probe: true palm positions from the procedural bone matrices vs the placed bat axis (metres, world). */
   function gripProbe(): Record<string, unknown> | null {
-    const actor = H.batter?.animation as { socket?: (b: string) => { valid: boolean; worldMatrix: (o?: Float32Array) => Float32Array } } | undefined;
     const bat = H.bat;
-    if (!actor?.socket || !bat) return null;
-    const palmOf = (bone: string, local: Vec3): Vec3 | null => {
-      const sock = actor.socket!(bone);
-      if (!sock.valid) return null;
-      const m = sock.worldMatrix();
-      // Socket matrices are in the actor's skeleton frame (the frame the pose solver works in); convert to scene world like the bat.
+    const mats = actorBoneMats.batter;
+    const st = athleteState["batter"];
+    if (!mats || !st || !bat) return null;
+    const palmOf = (bone: BaseballBoneName, local: Vec3): Vec3 | null => {
+      const m = mats[bone];
+      if (!m) return null;
       const actorPt: Vec3 = [m[0]! * local[0] + m[4]! * local[1] + m[8]! * local[2] + m[12]!, m[1]! * local[0] + m[5]! * local[1] + m[9]! * local[2] + m[13]!, m[2]! * local[0] + m[6]! * local[1] + m[10]! * local[2] + m[14]!];
-      const st = athleteState["batter"];
-      if (!st) return null;
-      // True world: the batter node's own transform (position, yaw, fit scale) applied to the skeleton-frame point plus the fit's grounding shift.
       return worldFromActor(actorPt, st.pos, st.yaw);
     };
     const pr = palmOf("RightForearm", RIG.palmR);
     const pl = palmOf("LeftForearm", RIG.palmL);
-    const feet = ["LeftFoot", "RightFoot", "LeftToes", "Hips", "Head"].map((b) => [b, palmOf(b, [0, 0, 0])] as const);
+    const feet = (["LeftFoot", "RightFoot", "Hips", "Head"] as const).map((b) => [b, palmOf(b, [0, 0, 0])] as const);
     const r = bat.rotation as unknown as Vec3;
     const q = qMul(qAxis([0, 0, 1], r[2]), qMul(qAxis([0, 1, 0], r[1]), qAxis([1, 0, 0], r[0])));
     const dir = qRot(q, [1, 0, 0]);
@@ -3251,7 +3238,7 @@ function boot(): void {
    */
   let batterStepBlend = 0;
   function updateBatterPose(dt: number, now: number, batterPos: Vec3, batterYaw: number): { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null {
-    if (!H.batter || typeof H.batter.setAnimationPose !== "function") return null;
+    if (!H.batter || !actorJoints.batter) return null;
     const sampled = sampleBatterTarget(swingDrive, now);
     // Walking up to the plate the clip owns the legs: ease the crouch out and back so the hips and feet do not pop.
     batterStepBlend = clamp(batterStepBlend + (G.batterStepTimer > 0 ? dt : -dt) / 0.3, 0, 1);
@@ -3263,7 +3250,9 @@ function boot(): void {
     swingDrive.prevTauL = pose.tauL;
     swingDrive.prevGamma = pose.gamma;
     try {
-      H.batter.setAnimationPose({ bones: poseBonesForEngine(pose.bones), mode: "overlay" });
+      const bonesInput = pose.bones as unknown as BaseballPoseBonesInput;
+      applyBaseballPoseStateless(actorJoints.batter, bonesInput);
+      actorBoneMats.batter = computeBaseballBoneMatrices(bonesInput);
       batState.poseApplied = true;
     } catch (err) {
       batState.poseApplied = false;
@@ -3431,11 +3420,15 @@ function boot(): void {
     // 1B & 3B base coaches grounded at y = 0 in athletic ready crouch (never stiff bind A-pose).
     if (H.coach1b) {
       H.coach1b.setPosition(21.5, 0, -14.8).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
-      setActorAnimation("coach-1b", H.coach1b, "Crouch_Idle_Loop", 0.92);
+      const p1 = computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 0.4, 0.92);
+      applyBaseballPoseStateless(actorJoints["coach-1b"] ?? {}, p1);
+      actorBoneMats["coach-1b"] = computeBaseballBoneMatrices(p1);
     }
     if (H.coach3b) {
       H.coach3b.setPosition(-21.5, 0, -14.8).setRotation(0, Math.PI * 0.72, 0).setVisible(true);
-      setActorAnimation("coach-3b", H.coach3b, "Crouch_Idle_Loop", 0.96);
+      const p3 = computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 1.9, 0.96);
+      applyBaseballPoseStateless(actorJoints["coach-3b"] ?? {}, p3);
+      actorBoneMats["coach-3b"] = computeBaseballBoneMatrices(p3);
     }
 
     // Fielders — active fielder chasing a live batted ball sprints (Sprint_Loop); all stationary fielders hold athletic Crouch_Idle_Loop
@@ -3524,36 +3517,16 @@ function boot(): void {
       setAthlete(`runner-${i}`, pos[0], pos[1], pos[2], yaw, isAdvancing ? "Sprint_Loop" : "Crouch_Idle_Loop", isAdvancing ? 1.45 : 0.98);
     });
 
-    // Waver crowd — front-row rigged spectators grounded at y = 0 with natural bent-elbow stance overlay
+    updateProceduralEquipmentTransforms();
+
+    // Waver crowd — front-row procedural spectators grounded at y = 0 with animated arm waves
     const crowd = crowdPlacements(pk);
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
       const c = crowd[i];
-      // GU47 DIA-N1: staggered hops for 2.4 s after a home run (none under reduced motion or ?look=original).
       const hop = sceneCtx.variant === "gu47" ? cheerHop(i, performance.now() / 1000 - boardHrAt, reducedMotion) : 0;
       if (c) w.setPosition(c.x, hop, c.z).setRotation(0, c.yaw, 0);
-      setActorAnimation(`waver-${i}`, w, "Idle_Loop", hop > 0 ? 1.6 : 1.0 + (i % 5) * 0.05);
-      if (!posedWavers.has(i) && typeof w.setAnimationPose === "function") {
-        const sock = (w.animation as AttachableActor | undefined)?.socket?.("LeftForearm");
-        if (sock?.valid) {
-          try {
-            const cheerSide = i % 3 === 0 ? -0.32 : -0.14;
-            w.setAnimationPose({
-              mode: "overlay",
-              bones: {
-                Spine: { rotation: [0.06, 0, 0, 0.998] },
-                LeftUpperArm: { rotation: [-0.14, 0.08, 0.16, 0.974] },
-                LeftForearm: { rotation: [-0.36, 0, 0, 0.933] },
-                RightUpperArm: { rotation: [cheerSide, -0.08, -0.16, 0.93] },
-                RightForearm: { rotation: [-0.42, 0, 0, 0.907] }
-              }
-            });
-            posedWavers.add(i);
-          } catch {
-            /* best-effort crowd posture */
-          }
-        }
-      }
+      poseArticulatedBallparkWaver(waverArmsL[i], waverArmsR[i], i, t, hop, reducedMotion);
     });
     if (sceneCtx.variant === "gu47" && pk.id === "lunar") (H.lunarEarth as AnyHandle)?.setRotation(0, earthYaw(performance.now() / 1000, reducedMotion), 0);
 

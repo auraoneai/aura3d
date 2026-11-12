@@ -6,7 +6,7 @@
  * paired GLSL+WGSL sky/cloud/catenary/signal shaders, static `update: "once"` station reflection probes, SSR, contact
  * shadows, cinematic bloom, `cinema-warm` LUT, and visual-only impact rig + flange spark flipbooks.
  */
-import { AuraNodeBuilder, camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef, type AuraMaterialSpec, type AuraSceneNode } from "@aura3d/engine";
+import { AuraNodeBuilder, camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef, type AuraMaterialSpec, type AuraSceneNode } from "@aura3d/engine";
 import { BANDS, HDRI_URL, bandFor, lightningFlash, storminess, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
 import { LanternSky } from "./lanterns";
 import { RiderMotion, seatedRiderPose, tramBob } from "./riderMotion";
@@ -20,6 +20,7 @@ import {
   buildCoastalBoulderSpec,
   buildCoastalBushSpec,
   buildCoastalHouseNode,
+  buildCoastalLandmarkNode,
   buildCoastalPineSpec,
   buildCoastalTreeTrunkSpec,
   buildFreightCratesNode,
@@ -142,23 +143,8 @@ const dyn = (r: Ribbon) => geometry.dynamic({ positions: f32(r.positions), norma
 const pbr = (color: string, roughness = 0.8, metallic = 0) => material.pbr({ color, roughness, metallic });
 const glow = (color: string, intensity = 1.2) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
 
-const LICENSE_KENNEY = "CC0-1.0 (Kenney Pirate Kit, kenney.nl), retinted for Lamplight Line";
-/**
- * GU47 phase 9 (PRD D2: owned assets): the two distant landmarks are CC0 Kenney Pirate Kit towers this game owns (claimed in the
- * GU47 CC0 ledger), their colormap retinted from blue-grey stone to cream stucco with terracotta roofs and the pivot centred like
- * the GLBs they replace (sources and the retint in assets/ATTRIBUTION.md).
- */
+/** CC0 Poly Haven environment HDRIs; all 3D geometry is authored procedurally on `@aura3d/engine` (`zero` `.glb` assets). */
 const ASSETS = defineAuraAssets({
-  lamplightKeep: {
-    type: "model", format: "glb", url: new URL("./assets/lamplight-keep.glb", import.meta.url).pathname,
-    sha256: "bfa55dfb12dfe0ca47d4f69e97c437ddf1c712595e4f5f44e4846af85f768b5c", sizeBytes: 63524,
-    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-small" } }
-  },
-  lamplightTower: {
-    type: "model", format: "glb", url: new URL("./assets/lamplight-tower.glb", import.meta.url).pathname,
-    sha256: "e2e98d8c6db7d0d2ee0decc264f4cd66b10a6d16c665962f598a4ae550282ca0", sizeBytes: 59776,
-    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-large" } }
-  },
   skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } },
   /* GU47 LT-04: the band HDRIs from the E-A catalogue (served at /hdri/<id>_1k.hdr; CC0, Poly Haven, public/hdri/ATTRIBUTION.md) */
   belfast_sunset_puresky: { type: "texture", format: "hdr", url: HDRI_URL("belfast_sunset_puresky"), metadata: { license: "CC0 1.0, Poly Haven belfast_sunset_puresky (1k, E-A catalogue)" } },
@@ -227,35 +213,44 @@ export function tramGroups(): TramGroup[] {
   g["tram-brass"].appendRaw(sculpted.brass);
   g["tram-glass"].appendRaw(sculpted.glass);
   g["tram-glow"].appendRaw(sculpted.glow);
-  boxAt(g["tram-dark"], [0, 0.55, 0], [3.1, 0.5, 9.9]);
-  boxAt(g["tram-livery"], [0, 1.2, 0], [3.0, 0.95, 9.4]);
-  boxAt(g["tram-cream"], [0, 1.62, 0], [3.04, 0.14, 9.44]);
-  boxAt(g["tram-wood"], [0, 1.7, 0], [2.8, 0.08, 9.0]);
-  roofDome(g["tram-cream"], 3.82, 3.3, 0.9, 9.7);
-  boxAt(g["tram-teal"], [0, 3.78, 0], [3.3, 0.14, 9.8]);
-  for (const z of [4.62, -4.62]) boxAt(g["tram-livery"], [0, 2.1, z], [3.0, 0.8, 0.12]);
-  for (const x of [-0.9, 0.9]) { boxAt(g["tram-glow"], [x, 1.35, 4.72], [0.36, 0.36, 0.2]); boxAt(g["tram-tail"], [x, 1.35, -4.72], [0.26, 0.26, 0.12]); }
-  for (const x of [-1.45, 1.45]) for (const z of [-3.9, -1.95, 0, 1.95, 3.9]) boxAt(g["tram-cream"], [x, 2.7, z], [0.12, 2.1, 0.16]);
-  for (const z of [-3.2, 3.2]) for (const x of [-1.2, 1.2]) cylinderX(g["tram-dark"], [x, 0.38, z], 0.43, 0.26);
-  SEATS.forEach((s2) => boxAt(g["tram-wood"], [s2[0] * 1.12, 1.82, s2[2]], [0.82, 0.12, 0.62]));
-  const cream = "#efe3c8", livery = "#9e2f22", teal = "#24586c", dark = "#232830", brass = "#d4a64f";
+  boxAt(g["tram-dark"], [0, 0.72, 0], [2.72, 0.22, 9.7]);
+  boxAt(g["tram-livery"], [0, 1.41, 0], [2.92, 1.22, 9.85]);
+  boxAt(g["tram-cream"], [0, 2.72, 0], [2.88, 1.38, 9.75]);
+  boxAt(g["tram-wood"], [0, STREETCAR_FLOOR_Y, 0], [2.74, 0.08, 8.8]);
+  roofDome(g["tram-dark"], 3.74, 2.98, 0.56, 9.95);
+  boxAt(g["tram-teal"], [0, 3.4, 0], [2.94, 0.08, 9.82]);
+  for (const z of [4.93, -4.93]) boxAt(g["tram-glass"], [0, 2.56, z], [2.32, 1.02, 0.05]);
+  boxAt(g["tram-glow"], [0, 1.44, 5.04], [0.36, 0.36, 0.14]);
+  boxAt(g["tram-brass"], [0, 1.44, -4.96], [0.44, 0.44, 0.08]);
+  for (const sgn of [-1, 1] as const) {
+    boxAt(g["tram-glow"], [0, 3.5, sgn * 4.89], [1.44, 0.19, 0.04]);
+  }
+  for (const x of [-0.88, 0.88]) {
+    boxAt(g["tram-glow"], [x, 1.38, 4.94], [0.24, 0.24, 0.1]);
+    boxAt(g["tram-tail"], [x, 1.38, -4.94], [0.24, 0.24, 0.1]);
+  }
+  for (const x of [-1.42, 1.42]) {
+    for (const z of [-2.48, -1.24, 0, 1.24, 2.48]) boxAt(g["tram-glass"], [x, 2.56, z], [0.04, 1.02, 1.06]);
+  }
+  for (const z of [-3.77, -2.53, 2.53, 3.77]) for (const x of [-0.72, 0.72]) cylinderX(g["tram-dark"], [x, 0.43, z], 0.36, 0.14);
+  SEATS.forEach((s2) => boxAt(g["tram-wood"], [s2[0] * 1.12, 1.3, s2[2]], [0.64, 0.11, 0.62]));
+  const cream = "#f5ebd6", livery = "#b8292f", teal = "#24586c", dark = "#232932", brass = "#dbb056";
   return [
-    { id: "tram-livery", mesh: g["tram-livery"], mat: unnamed(material.lacquer({ color: livery, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.04 })), cast: true },
-    { id: "tram-cream", mesh: g["tram-cream"], mat: unnamed(material.lacquer({ color: cream, roughness: 0.28, clearcoat: 0.85, clearcoatRoughness: 0.06 })), cast: true },
-    { id: "tram-teal", mesh: g["tram-teal"], mat: unnamed(material.lacquer({ color: teal, roughness: 0.24, clearcoat: 0.9, clearcoatRoughness: 0.05 })), cast: false },
-    { id: "tram-dark", mesh: g["tram-dark"], mat: unnamed(material.studioMetal({ color: dark, roughness: 0.36, metallic: 0.88 })), cast: true },
-    { id: "tram-brass", mesh: g["tram-brass"], mat: unnamed(material.studioMetal({ color: brass, roughness: 0.22, metallic: 0.94 })), cast: false },
-    { id: "tram-wood", mesh: g["tram-wood"], mat: pbr("#7a5236", 0.72), cast: false },
-    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#1a2430", roughness: 0.06, opacity: 0.44, clearcoat: 0.45, clearcoatRoughness: 0.05, ior: 1.5, envMapIntensity: 0.58 })), cast: false },
-    { id: "tram-glow", mesh: g["tram-glow"], mat: glow("#ffe8b8", 1.5), cast: false },
+    { id: "tram-livery", mesh: g["tram-livery"], mat: unnamed(material.carPaint({ color: livery, roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.04 })), cast: true },
+    { id: "tram-cream", mesh: g["tram-cream"], mat: unnamed(material.lacquer({ color: cream, roughness: 0.24, clearcoat: 0.9, clearcoatRoughness: 0.05 })), cast: true },
+    { id: "tram-teal", mesh: g["tram-teal"], mat: unnamed(material.lacquer({ color: teal, roughness: 0.22, clearcoat: 0.9, clearcoatRoughness: 0.05 })), cast: false },
+    { id: "tram-dark", mesh: g["tram-dark"], mat: unnamed(material.studioMetal({ color: dark, roughness: 0.38, metallic: 0.86 })), cast: true },
+    { id: "tram-brass", mesh: g["tram-brass"], mat: unnamed(material.studioMetal({ color: brass, roughness: 0.2, metallic: 0.94 })), cast: false },
+    { id: "tram-wood", mesh: g["tram-wood"], mat: pbr("#684128", 0.66), cast: false },
+    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#1c2d3e", roughness: 0.05, opacity: 0.84, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.52, envMapIntensity: 1.75 })), cast: false },
+    { id: "tram-glow", mesh: g["tram-glow"], mat: glow("#ffe5b6", 1.5), cast: false },
     { id: "tram-tail", mesh: g["tram-tail"], mat: glow("#ff4a3a", 2), cast: false }
   ];
 }
 
 /**
- * Sculpted `lacquer` & `studioMetal` brass beltline/bumper trim + warm 2700K interior carriage glow behind `studioGlass`
- * clerestory panes for the band look's streetcar (moved rigidly with the tram pose; prefixed `a3g-fx-` so the C-35
- * light/material snapshot stays frozen).
+ * Sculpted `carPaint` & `studioMetal` brass beltline/bumper trim + warm 2700K interior carriage glow behind dark-slate
+ * clerestory panes for the band look's interurban railcar (moved rigidly with the tram pose; prefixed `a3g-fx-`).
  */
 function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof TRAM_FX_IDS)[number]; readonly mesh: MeshData; readonly mat: AuraMaterialSpec }[] {
   const lacquer = new MeshData(), brass = new MeshData(), glowMesh = new MeshData(), glass = new MeshData();
@@ -265,10 +260,10 @@ function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof T
   glowMesh.appendRaw(parts.glow);
   glass.appendRaw(parts.glass);
   return [
-    { id: "a3g-fx-tram-lacquer", mesh: lacquer, mat: unnamed(material.lacquer({ color: "#7f231c", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.5 })) },
-    { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.studioMetal({ color: "#d8aa56", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.7 })) },
-    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: Math.min(1.5, Math.max(0.28, bulbIntensity * 0.65)), practical: true })) },
-    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#1a2430", roughness: 0.06, opacity: 0.44, clearcoat: 0.45, clearcoatRoughness: 0.05, ior: 1.5, envMapIntensity: 0.58 })) }
+    { id: "a3g-fx-tram-lacquer", mesh: lacquer, mat: unnamed(material.carPaint({ color: "#b8292f", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.5 })) },
+    { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.19, metallic: 0.94, envMapIntensity: 1.7 })) },
+    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe5b6", emissive: "#ffc26e", emissiveIntensity: Math.min(1.5, Math.max(0.32, bulbIntensity * 0.65)), practical: true })) },
+    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#1c2d3e", roughness: 0.05, opacity: 0.84, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.52, envMapIntensity: 1.75 })) }
   ];
 }
 
@@ -374,12 +369,12 @@ const spriteMaterial = (tint: readonly [number, number, number]) => material.cus
  */
 if (LOOK === "bands" && !FX.has("noshadow")) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
-/** GU47 LT-07: the tilt-shift band (screen rows in focus) and the grain; DOF and god rays drop below High in the engine's post tiers. */
+/** GU47 LT-07: legacy TILT_SHIFT constant retained for exports; DoF stays off so town buildings, rails, and stations stay crisp. */
 export const TILT_SHIFT = { bandCenter: 0.56, bandWidth: 0.34, angleDeg: 0 } as const;
 export const GRAIN = 0.03;
 
-/** GU47 LT-06, phase 2: the band-B god-ray extinction. 0.12 filled the golden-hour frame with an orange haze (recap2, software WebGL2). */
-export const GOD_RAY_DENSITY = 0.015;
+/** GU47 LT-06: subtle golden-hour shaft density in band B without washing town facades in haze. */
+export const GOD_RAY_DENSITY = 0.006;
 
 /** GU47 bands A-E (bands.ts): band HDRI, PCF key (phase 3: PCSS drew no readable shadow in software WebGL2), hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
 function addBandLighting(b: Scene, data: SimData, band: BandId): void {
@@ -396,7 +391,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   }
   // GU47 LT-08: six static station box probes (`update: "once"`), memoized per route and never rebuilt per frame
   if (!FX.has("noprobes")) for (const probeNode of stationReflectionProbes(data, STATION_PROBE_RESOLUTION, 2)) b.add(probeNode);
-  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: row.fog.color, near: row.fog.near, far: row.fog.far, maxOpacity: 0.72, density: row.fog.density }));
+  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: row.fog.color, near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
   if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.58, thickness: 0.09, intensity: 0.94, lights: "shadowed" }));
   // Wet station platform & brushed steel rail reflections (roughness 0.22 <= 0.35 full-strength gate).
@@ -408,11 +403,8 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: row.exposure, temperature: row.grade.temperature, tint: row.grade.tint, ...(!FX.has("nolut") ? { lut: CINEMA_WARM_CUBE_URL, lutIntensity: 0.38 } : {}) }));
   if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
   if (!FX.has("nograin")) b.add(effects.filmGrain({ name: "grain", intensity: GRAIN }));
-  // GU47 LT-07: tilt-shift miniature band (E-C S6 dof-tilt-shift); High only via the post tiers.
-  if (!FX.has("nodof")) b.add(effects.depthOfField({ name: "tilt-shift", tiltShift: { ...TILT_SHIFT } }));
-  // GU47 LT-06: god rays in band B only (High only in the post tiers); the sun flare in A/B, moved with the camera.
-  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAY_DENSITY, color: row.key.color, intensity: 0.55, godRayDensity: 0.35 }));
-  if (row.flare && !FX.has("noflare")) b.add(lights.lensFlare({ name: "sun-flare", position: keyPosition(row, 3000), intensity: 0.55, runtime: { id: "sun-flare" } }));
+  // GU47 LT-06: subtle god rays in band B only (High tier); no tilt-shift DoF blur and no sun-flare tint ring over the train.
+  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAY_DENSITY, color: row.key.color, intensity: 0.14, godRayDensity: 0.22 }));
 }
 
 function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): Scene {
@@ -432,7 +424,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: night ? 0.2 : 0.8 }) : environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
   if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
-  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: night ? FOG_NIGHT : FOG_DAY, near: 120, far: 420, maxOpacity: 0.74, density: night ? 0.00018 : 0.00014 }));
+  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: night ? FOG_NIGHT : FOG_DAY, near: 260, far: 980, maxOpacity: 0.3, density: night ? 0.00018 : 0.00014 }));
   // AO is off by default: on the hdr-msaa path the engine drops the ssao pass for a missing normals input (audit D-08,
   // engine row owned by E2), so it cost a pass request and drew nothing. `?fx=ao` puts it back for when the engine runs it.
   if (FX.has("ao")) b.add(effects.ambientOcclusion({ name: "ao" }));
@@ -622,11 +614,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
-    const landmark = [ASSETS.lamplightKeep, ASSETS.lamplightKeep, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightKeep][i]!;
+    const landmarkVariant = (["keep", "keep", "tower", "tower", "tower", "keep"] as const)[i]!;
     const lx = 36 * (i % 2 ? 1 : -1), la = -26 + (i % 3) * 18;
     placed.push([lx, la]);
-    const lh = landmark === ASSETS.lamplightKeep ? 30 : 34;
-    b.add(model(landmark, { name: `landmark-${i}`, position: [s0.x + sx * lx + fx * la, top + lh / 2 - 0.4, s0.z + sz * lx + fz * la], rotation: [0, yaw + i, 0], targetMaxDimension: lh, castShadow: false, receiveShadow: true }).runtime({ id: `landmark-${i}` }));
+    b.add(buildCoastalLandmarkNode(landmarkVariant, `landmark-${i}`, [s0.x + sx * lx + fx * la, top, s0.z + sz * lx + fz * la], yaw + i, winGlow, snowTown, false, townBatch));
     for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
       const [cx, cz] = at(4.6, al);
       b.add(buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, cast, townBatch));
@@ -955,21 +946,37 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     clouds.setUniform?.("hazeColor", mixRgb(hor, [0.05, 0.07, 0.16], nightLevel));
     clouds.setPosition(here.x, 0, here.z);
 
-    /* chase camera, widening with speed */
+    /* gameplay rear-chase & docked rear-platform 3/4 camera — always framing the train and railway track ahead */
+    const absSpeed = Math.abs(sim.speed);
     const still = options.reducedMotion === true;
     const orbit = options.orbit && !still ? seconds * 0.16 : 0;
-    const dockTarget = sim.phase === "enroute" ? 0 : 1;
-    dockBlend = dockBlend < 0 || dt === 0 ? dockTarget : dockBlend + (dockTarget - dockBlend) * Math.min(1, dt * 2.2);
+    const dockTarget = sim.phase !== "enroute" && absSpeed < 0.3 ? 1 : 0;
+    dockBlend = dockBlend < 0 || dt === 0 ? dockTarget : dockBlend + (dockTarget - dockBlend) * Math.min(1, dt * 3.2);
     const kd = dockBlend * dockBlend * (3 - 2 * dockBlend);
     const sh = Math.hypot(f[0], f[2]) || 1, sd: V3 = [f[2] / sh, 0, -f[0] / sh];
-    const chaseEye: V3 = [here.x - f[0] * 17, here.y + 6.2 - f[1] * 17, here.z - f[2] * 17];
-    const chaseTarget: V3 = [here.x + f[0] * 12, here.y + 2.2 + f[1] * 12, here.z + f[2] * 12];
-    const sway = still ? 0 : Math.sin(seconds * 0.45) * 0.5;
-    // Phase 3 (4.7.1, band look): the docked view drops from 7.4 m to 5.2 m and stands 1 m further out, so the platform keeps
-    // its passengers in view under a horizon instead of a top-down plaza (rubric camera 4: "an editor or diorama view").
-    const band = shownBand !== null, dockLat = band ? 14 : 13, dockUp = band ? 5.2 : 7.4, aimUp = band ? 2.9 : 2.6;
-    const dockEye: V3 = [here.x - sd[0] * (dockLat + sway) - f[0] * 8, here.y + dockUp + (still ? 0 : Math.sin(seconds * 0.31) * 0.3), here.z - sd[2] * (dockLat + sway) - f[2] * 8];
-    const dockAim: V3 = [here.x + f[0] * 4 + sd[0] * 3, here.y + aimUp, here.z + f[2] * 4 + sd[2] * 3];
+    const lean = Math.max(-1, Math.min(1, sim.roll / 0.42));
+    const speed01 = Math.max(0, Math.min(1, absSpeed / Math.max(1, data.tables.TM)));
+    const chaseBack = 14.5 + speed01 * 3.0;
+    const chaseUp = 5.2 + speed01 * 0.4;
+    const chaseLat = lean * 0.65;
+    const chaseEye: V3 = [
+      here.x - f[0] * chaseBack + sd[0] * chaseLat,
+      here.y + chaseUp - f[1] * chaseBack,
+      here.z - f[2] * chaseBack + sd[2] * chaseLat
+    ];
+    const chaseTarget: V3 = [here.x + f[0] * 22, here.y + 2.0 + f[1] * 22, here.z + f[2] * 22];
+    const sway = still ? 0 : Math.sin(seconds * 0.45) * 0.12;
+    const band = shownBand !== null;
+    const dockEye: V3 = [
+      here.x - f[0] * 13.5 - sd[0] * (3.4 + sway),
+      here.y + 4.8 - f[1] * 13.5 + (still ? 0 : Math.sin(seconds * 0.31) * 0.08),
+      here.z - f[2] * 13.5 - sd[2] * (3.4 + sway)
+    ];
+    const dockAim: V3 = [
+      here.x + f[0] * 10 - sd[0] * 0.8,
+      here.y + 2.1 + f[1] * 10,
+      here.z + f[2] * 10 - sd[2] * 0.8
+    ];
     const mix3 = (a: V3, c: V3, t: number): V3 => [a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t, a[2] + (c[2] - a[2]) * t];
     const eye: V3 = options.orbit
       ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + (band ? 5.6 : 7.5) + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
@@ -1018,7 +1025,6 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     }
 
     /* GU47 LT-02 + WP-24: practical pool, volumetric headlamp shaft & 8x4 wheel-flange spark flipbooks */
-    const absSpeed = Math.abs(sim.speed);
     if (shownBand !== null) {
       const row = BANDS[shownBand];
       const hlPose = headlampPose(here, f);
@@ -1049,25 +1055,23 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         const sh2 = node(id);
         sh2.setVisible(sparkAlpha > 0.02);
         if (sparkAlpha > 0.02) {
-          const sp = applyMat3(rot, [lat, 0.24, 3.0]);
+          const sp = applyMat3(rot, [lat, 0.14, 3.15]);
           sh2.setPosition(here.x + sp[0], here.y + 0.2 + bob + sp[1], here.z + sp[2]);
           sh2.setRotation(0, sparkYaw, 0);
           sh2.setUniform?.("burstState", [(sparkFrame + fOff) % 32, sparkAlpha, 1.85, 0]);
         }
       }
-      if (row.flare && !FX.has("noflare")) {
-        const sd = skySunDirection(row);
-        node("sun-flare").setPosition(eye[0] + sd[0] * 3000, eye[1] + sd[1] * 3000, eye[2] + sd[2] * 3000);
-      }
     }
     prevSpeed = absSpeed;
     const feel = impactRig.step(dt);
-    let wantEye = eye, wantLook = target, fovTarget = 56 - 4 * kd + Math.min(8, absSpeed * 0.35);
-    let shakeOffset: V3 | undefined, cut = false;
+    let wantEye = eye, wantLook = target, fovTarget = 56 - 2 * kd + speed01 * 6;
+    let shakeOffset: V3 | undefined;
+    const cut = false;
     if (shownBand !== null && !options.orbit) {
+      // Observe ShotDirector for telemetry & catch-shake only — never override gameplay track-ahead eye/look with side cutaways!
       shots.observe({ phase: sim.phase, complete: sim.attempt.status === "complete", catches: sim.attempt.catches }, seconds);
       const shot = shots.frame({ eye, target, fov: fovTarget }, { here: [here.x, here.y, here.z], forward: f, side: sd }, seconds, still);
-      wantEye = shot.eye; wantLook = shot.target; fovTarget = shot.fov; shakeOffset = shot.shakeOffset; cut = shot.cut;
+      shakeOffset = shot.shakeOffset;
       if (!still) {
         fovTarget += feel.fovDeltaDeg ?? 0;
         if (Math.hypot(feel.shakeOffset[0], feel.shakeOffset[1], feel.shakeOffset[2]) > 1e-4) {
@@ -1076,10 +1080,11 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
             : feel.shakeOffset;
         }
       }
-      if (cut) chase.reset();
     }
+    const camRoll = still || options.orbit ? 0 : lean * 0.035 * (1 - kd);
+    const camUp: V3 = [sd[0] * Math.sin(camRoll), Math.cos(camRoll), sd[2] * Math.sin(camRoll)];
     const pose = chase.step({ wantEye, wantLook, fovTarget, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
-    const safe = guardPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, lastGoodPose, { position: [here.x, here.y + 6.2, here.z + 17], target: [here.x, here.y + 2.2, here.z], up: [0, 1, 0], fov: 56 });
+    const safe = guardPose({ position: pose.eye, target: pose.look, up: camUp, fov: pose.fov }, lastGoodPose, { position: [here.x - f[0] * 14.5, here.y + 5.2, here.z - f[2] * 14.5], target: [here.x + f[0] * 22, here.y + 2.0, here.z + f[2] * 22], up: [0, 1, 0], fov: 56 });
     lastGoodPose = safe;
     cam.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });
     shownPose = { eye: [...safe.position], target: [...safe.target], fov: safe.fov };

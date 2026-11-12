@@ -4,8 +4,9 @@
  * standing crowd is at most 2 draws; six seated, animated fans (Meshy-07) add one skinned draw each. Layout is pure and deterministic (a local LCG: no RNG draw from the sim or cosmetic
  * streams), nothing collides, and only the new look mounts it (`?look=original` keeps the 4.6 bleachers empty).
  */
-import { instances, model, type AuraAssetRef, type AuraColor, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
+import { instances, type AuraAssetRef, type AuraColor, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
 import {
+  buildArticulatedSeatedFanNode,
   getArticulatedSpectatorSlots,
   standingCrowdBottomsMaterial,
   standingCrowdHeadwearMaterial,
@@ -117,8 +118,8 @@ export function crowdLayout(seat: string, seed: number): CrowdLayout {
 }
 
 export interface CrowdAssets {
-  /** The three seated, animated fans (A, C, D poses), in `LIVE_FAN_SLOTS[].model` order. */
-  readonly live: readonly [AuraAssetRef<"model">, AuraAssetRef<"model">, AuraAssetRef<"model">];
+  /** Optional legacy parameter retained for API compatibility; live fans are procedural articulated nodes. */
+  readonly live?: readonly AuraAssetRef<"model">[];
 }
 
 /** World transforms of the seated live fans (pure; the model origin is between the feet, facing +z before yaw). */
@@ -150,8 +151,13 @@ function pickPaletteColors(count: number, palette: readonly AuraColor[], salt: n
   return out;
 }
 
-/** The crowd of one court: 5 `articulatedFolkSlots` hardware-instanced `instances.custom` batches (`material.pbr`, `clearcoat: 0`) plus the six seated live fans. */
-export function courtCrowdNodes(courtId: string, seat: string, refs: CrowdAssets): AuraNodeBuilder<AuraSceneNode>[] {
+/** The crowd of one court: 5 `articulatedFolkSlots` hardware-instanced `instances.custom` batches (`material.pbr`, `clearcoat: 0`) plus the six procedural articulated seated live fans. */
+export function courtCrowdNodes(
+  courtId: string,
+  seat: string,
+  _refs?: CrowdAssets,
+  runtimeFactory?: (nodeId: string) => unknown
+): AuraNodeBuilder<AuraSceneNode>[] {
   const seed = 0x6f4a ^ [...courtId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   const layout = crowdLayout(seat, seed);
   const folk = getArticulatedSpectatorSlots();
@@ -176,12 +182,18 @@ export function courtCrowdNodes(courtId: string, seat: string, refs: CrowdAssets
       colors
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
-  // Seated live fans: one skinned draw each, created visible at their seats (a skinned model created hidden may never draw).
+  // Seated live fans: procedural multi-material articulated spectators seated on the row-0 riser.
   const live = liveFanTransforms().map((t, i) =>
-    model(refs.live[LIVE_FAN_SLOTS[i]!.model], { name: LIVE_FAN_IDS[i]!, role: "setDressing", targetHeight: LIVE_FAN_REST_HEIGHT[LIVE_FAN_SLOTS[i]!.model]! * t.scale, scaleMode: "fit", castShadow: false, receiveShadow: true } as Parameters<typeof model>[1])
-      .position(...t.position)
-      .rotation(...t.rotation)
-      .animate({ clip: LIVE_FAN_IDLE[i]!.clip, loop: true, speed: LIVE_FAN_IDLE[i]!.speed }) as unknown as AuraNodeBuilder<AuraSceneNode>);
+    buildArticulatedSeatedFanNode({
+      id: LIVE_FAN_IDS[i]!,
+      index: i,
+      variant: LIVE_FAN_SLOTS[i]!.model,
+      position: t.position,
+      rotation: t.rotation,
+      scale: t.scale,
+      runtimeFactory
+    })
+  );
 
   return [
     batch(folk.coat, "crowd-folk-coat", trsAll, coatColorsAll, standingCrowdPbrMaterial()),

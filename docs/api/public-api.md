@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.5.3` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.5.3` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.5.3` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.5.3` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.3` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.5.3` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.5.3` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.3` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.5.3` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.5.3` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.5.3` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.5.3` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.5.3` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.5.3` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.5.3` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.5.3` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.5.3` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.5.3` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.5.3` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.5.3` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.5.3` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.5.3` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.5.3` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.5.3` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.5.3` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.5.3` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.5.3` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.5.3` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.5.3` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.5.3` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.5.3` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.5.3` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.5.3` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.5.3` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.5.3` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.3` | `./dist/engine/public/index.d.ts` | 11134 |
-| `@aura3d/engine/animation` | `5.5.3` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.5.3` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.5.3` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.5.3` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.3` | `./dist/engine/public/devtools.d.ts` | 10811 |
-| `@aura3d/engine/ecs` | `5.5.3` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.5.3` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.3` | `./dist/game/index.d.ts` | 11563 |
-| `@aura3d/engine/game/art` | `5.5.3` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.5.3` | `./dist/game/capture/index.d.ts` | 11092 |
-| `@aura3d/engine/game/styles.css` | `5.5.3` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.5.3` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.5.3` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.5.3` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.5.3` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.5.3` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.5.3` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.5.3` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.5.3` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.5.3` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.5.3` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.3` | `./dist/engine/public/renderer.d.ts` | 11070 |
-| `@aura3d/engine/scatter` | `5.5.3` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.5.3` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.5.3` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.5.3` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.5.3` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.3` | `./dist/engine/public/v5.d.ts` | 8556 |
-| `@aura3d/engine/v5/context` | `5.5.3` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.3` | `./dist/game/v5.d.ts` | 11559 |
-| `@aura3d/engine/v5/internal` | `5.5.3` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.5.3` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.5.3` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.5.3` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.5.3` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.5.3` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.5.3` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.5.3` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.5.3` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.5.3` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.5.3` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.5.3` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.5.3` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.5.3` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.3` | `./dist/index.d.ts` | 4343 |
-| `@aura3d/rendering/contracts` | `5.5.3` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.5.3` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.5.3` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.5.3` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.5.3` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.5.3` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.5.3` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.5.3` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.5.3` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.5.3` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.5.3` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.5.3` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.5.3` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.5.3` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.5.3` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.5.3` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.5.3` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.5.3` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.5.3` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.5.3` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.5.3` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.5.3` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.5.3` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.5.3` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.3` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.5.3` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.5.3` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.5.3` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.3` | `./dist/lanes/index.d.ts` | 1046 |
-| `@aura3d/rendering/lighting` | `5.5.3` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.5.3` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.5.3` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.5.3` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.5.3` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.5.3` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.5.3` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.5.3` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.5.3` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.5.3` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.5.3` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.5.3` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.5.4` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.5.4` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.5.4` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.5.4` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.4` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.5.4` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.5.4` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.4` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.5.4` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.5.4` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.5.4` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.5.4` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.5.4` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.5.4` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.5.4` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.5.4` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.5.4` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.5.4` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.5.4` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.5.4` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.5.4` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.5.4` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.5.4` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.5.4` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.5.4` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.5.4` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.5.4` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.5.4` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.5.4` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.5.4` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.5.4` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.5.4` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.5.4` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.5.4` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.5.4` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.5.4` | `./dist/engine/public/index.d.ts` | 11135 |
+| `@aura3d/engine/animation` | `5.5.4` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.5.4` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.5.4` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.5.4` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.5.4` | `./dist/engine/public/devtools.d.ts` | 10812 |
+| `@aura3d/engine/ecs` | `5.5.4` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.5.4` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.5.4` | `./dist/game/index.d.ts` | 11564 |
+| `@aura3d/engine/game/art` | `5.5.4` | `./dist/game/art/index.d.ts` | 334 |
+| `@aura3d/engine/game/capture` | `5.5.4` | `./dist/game/capture/index.d.ts` | 11093 |
+| `@aura3d/engine/game/styles.css` | `5.5.4` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.5.4` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.5.4` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.5.4` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.5.4` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.5.4` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.5.4` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.5.4` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.5.4` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.5.4` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.5.4` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.5.4` | `./dist/engine/public/renderer.d.ts` | 11071 |
+| `@aura3d/engine/scatter` | `5.5.4` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.5.4` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.5.4` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.5.4` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.5.4` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.5.4` | `./dist/engine/public/v5.d.ts` | 8556 |
+| `@aura3d/engine/v5/context` | `5.5.4` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.5.4` | `./dist/game/v5.d.ts` | 11560 |
+| `@aura3d/engine/v5/internal` | `5.5.4` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.5.4` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.5.4` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.5.4` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.5.4` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.5.4` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.5.4` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.5.4` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.5.4` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.5.4` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.5.4` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.5.4` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.5.4` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.5.4` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.5.4` | `./dist/index.d.ts` | 4343 |
+| `@aura3d/rendering/contracts` | `5.5.4` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.5.4` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.5.4` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.5.4` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.5.4` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.5.4` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.5.4` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.5.4` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.5.4` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.5.4` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.5.4` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.5.4` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.5.4` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.5.4` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.5.4` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.5.4` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.5.4` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.5.4` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.5.4` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.5.4` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.5.4` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.5.4` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.5.4` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.5.4` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.4` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.5.4` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.5.4` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.5.4` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.5.4` | `./dist/lanes/index.d.ts` | 1046 |
+| `@aura3d/rendering/lighting` | `5.5.4` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.5.4` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.5.4` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.5.4` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.5.4` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.5.4` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.5.4` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.5.4` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.5.4` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.5.4` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.5.4` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.5.4` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
 
 ### Export conditions
 
@@ -5398,8 +5398,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
 
 ### Export conditions
 
@@ -5445,8 +5445,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
 
 ### Export conditions
 
@@ -7219,8 +7219,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
 
 ### Export conditions
 
@@ -7259,8 +7259,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/apps@5.5.3#sha256=0ca5d7904999c0522f720162cce0015baec2b7ab9a12585162b4e47e6260f8af`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/apps@5.5.4#sha256=8ca1aaf39d1ff484bd6d905f4709ac81f30271d89b9d3dbe97e7efe06bb9d9db`
 
 ### Export conditions
 
@@ -7324,8 +7324,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/asset-index@5.5.3#sha256=9576eb5fca112734c1355a7706f168835895c9ab8cd74c8bf729f301f8074e66`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/asset-index@5.5.4#sha256=c2641f3bf595ba122c35e0dc8f698d347c73926d294a1dc776d1d814aa595d72`
 
 ### Export conditions
 
@@ -8062,8 +8062,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -13787,8 +13787,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -18490,8 +18490,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -19399,8 +19399,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -21834,8 +21834,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -23594,8 +23594,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -23880,8 +23880,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
 
 ### Export conditions
 
@@ -23900,8 +23900,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/audio@5.5.3#sha256=e4a7d2a8e80ffe818123972ac9afa17ed72edff6b1eadb9dd0bcd89fb3961249`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/audio@5.5.4#sha256=b34618d33af47e0817747136b0d20b464bcf7226c1ab5a45593a7919f27e92f2`
 
 ### Export conditions
 
@@ -24440,16 +24440,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -26534,8 +26561,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/cli@5.5.3#sha256=3f027d4ab68fada714338174719c54815c7a4f8d47156f0ab359b0c2fe84b1c5`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/cli@5.5.4#sha256=40b99bfe991dd14569fd67c219a6c2622d9424c33f7d07d8b6a581688cdb2bea`
 
 ### Export conditions
 
@@ -28705,8 +28732,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/controls@5.5.3#sha256=cfac23e368484792d42cc7fc8e9670048ab4971b1fdfe09597cf422a23fe1418`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/controls@5.5.4#sha256=ba5e6de6d31c85eb18712c745c3640c59d84274a2bb700ce80378cb335ab6d9a`
 
 ### Export conditions
 
@@ -30508,8 +30535,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/core@5.5.3#sha256=ef1edc892bca8ecdcf81d74b0011c418f7c28820ce4a74db53bb39ab9f7b0ab2`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/core@5.5.4#sha256=e0317002e6aff7ea9760bf602784f01e69c9b8216c73df7a03fc988c7cfdfc52`
 
 ### Export conditions
 
@@ -31023,8 +31050,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.5.3`
-- Packed identity: `archive:create-aura3d@5.5.3#sha256=b4ead8c3ab120b35100be6a04b9773c759528da2586d2f3c958962095d8f09d0`
+- Version: `5.5.4`
+- Packed identity: `archive:create-aura3d@5.5.4#sha256=e3a25f749009215fbc00b9ec91b6059ecc8115d0964dd3bd07d9677fa3ed0275`
 
 ### Export conditions
 
@@ -31793,8 +31820,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/debug@5.5.3#sha256=dd6b659c144b1e250798762304963f2be7a1b914c6ccbdbd85dca5299ad42a6f`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/debug@5.5.4#sha256=f6ff1699656b0a76f1e476ed47d6691868ffd5aa839b361003ff18bf04959495`
 
 ### Export conditions
 
@@ -33173,8 +33200,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/debug@5.5.3#sha256=dd6b659c144b1e250798762304963f2be7a1b914c6ccbdbd85dca5299ad42a6f`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/debug@5.5.4#sha256=f6ff1699656b0a76f1e476ed47d6691868ffd5aa839b361003ff18bf04959495`
 
 ### Export conditions
 
@@ -33381,8 +33408,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/ecs@5.5.3#sha256=810f69cd075e169efa6e11396a77dddc944c8e661da9480b52971e863765d9d1`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/ecs@5.5.4#sha256=ff498a493963d5fd94824003f6ca596e8df2e51c6cc3b621d9d8a5508b2865bf`
 
 ### Export conditions
 
@@ -34049,8 +34076,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.3#sha256=0c5ced09dd8672f4b88b19e08a08a7d078a0413b81952a804caed4819f4cb790`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.4#sha256=d0c8ae33a1eab06ff9ced04ce76ea7c7eba14ef2f56e99743d403973380f13af`
 
 ### Export conditions
 
@@ -36632,8 +36659,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -106598,16 +106625,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -123204,8 +123258,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -126087,8 +126141,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -131813,8 +131867,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -132352,16 +132406,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -134446,8 +134527,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -136248,8 +136329,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -206115,16 +206196,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -220302,8 +220410,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -220969,8 +221077,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -223551,8 +223659,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -295350,16 +295458,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -312431,8 +312566,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -315607,8 +315742,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -387192,16 +387327,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -401119,8 +401281,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -401130,8 +401292,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -401156,8 +401318,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -401883,8 +402045,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -403124,8 +403286,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -403763,8 +403925,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -405753,8 +405915,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -406378,8 +406540,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -409050,8 +409212,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -410302,8 +410464,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -410565,8 +410727,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -410862,8 +411024,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -481911,16 +482073,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -496844,8 +497033,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -496977,8 +497166,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -498102,8 +498291,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -498186,8 +498375,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -499366,8 +499555,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -503671,8 +503860,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -572702,8 +572891,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -572948,8 +573137,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -644618,16 +644807,43 @@ export interface AudioContextLike {
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
     readonly createContext?: () => AudioContextLike;
+    /**
+     * Configure iOS/Safari `navigator.audioSession.type` on unlock/resume so Web
+     * Audio is treated as intentional media playback (bypasses hardware silent
+     * switch and enables AirPlay/Screen Mirroring audio routing). Defaults to
+     * `"playback"`; pass `false` to disable.
+     */
+    readonly audioSessionType?: "playback" | "ambient" | "solo-ambient" | "transient" | "transient-solo" | "play-and-record" | false;
+    /**
+     * Maintain a silent looped `<audio>` element (`disableRemotePlayback = true`,
+     * `x-webkit-airplay="deny"`) while unlocked in browser DOM environments so
+     * iOS/macOS Safari keeps Web Audio bound to an active media playback session
+     * without hijacking Screen Mirroring / AirPlay media handoff. Defaults to `true`.
+     */
+    readonly airplayKeepalive?: boolean;
+}
+export interface AirplayKeepaliveBridge {
+    acquire(): void;
+    release(): void;
+    play(): void;
+    pause(): void;
 }
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
     private attachedContext?;
     private unlocked;
+    private everUnlocked;
+    private interrupted;
     private intentionalSuspend;
+    private airplayBridge;
+    private bridgeAcquired;
     private readonly stateListeners;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private ensureAudioSession;
+    private ensurePlaybackRouting;
+    private pauseAirplayBridge;
     private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
@@ -661800,8 +662016,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -667140,8 +667356,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -667328,8 +667544,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -667399,7 +667615,7 @@ export interface AuraWorkerRendererOptions {
     readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
     /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
     readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
-    /** 5.5.3: override host coarse-pointer detection forwarded to the worker's `init` request. */
+    /** 5.5.4: override host coarse-pointer detection forwarded to the worker's `init` request. */
     readonly coarsePointer?: boolean;
     /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
     readonly disposeTimeoutMs?: number;
@@ -667650,7 +667866,7 @@ export type AuraWorkerRequest = {
     readonly syncLocalScenes?: boolean;
     readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */
     readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */
-    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.3: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
+    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.4: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
     readonly coarsePointer?: boolean;
 } | {
     readonly type: "scene";
@@ -667727,7 +667943,7 @@ export interface AuraWorkerFrameResult {
      */
     readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
     /**
-     * 5.5.3: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
+     * 5.5.4: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
      * `label` overlays on the host thread.
      */
     readonly viewProjection?: Float32Array | readonly number[];
@@ -667861,7 +668077,7 @@ export type AuraWorkerNodePatchOp = {
     readonly app: AuraWorkerAppCall;
     readonly args: readonly unknown[];
 }
-/** 5.5.3: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+/** 5.5.4: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
  | {
     readonly structural: "add";
     readonly node: AuraSceneNode;
@@ -668062,8 +668278,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
 
 ### Export conditions
 
@@ -668520,8 +668736,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/input@5.5.3#sha256=a977e964449de99d88ee2622f02bdb3171b584740f56c0c410b9f77c19a2223d`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/input@5.5.4#sha256=b17bdfc12424e49232834c1e06900c93be8f02dc138c6ab28caa347a24881e8e`
 
 ### Export conditions
 
@@ -669762,8 +669978,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/math@5.5.3#sha256=a14c58fb3e2691e653971a832b6ff673e435bc8312cf3a2fb85e22d0cf555f45`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/math@5.5.4#sha256=e3b9749b3ed8e248257bdfd702aee24a5a09225b34f28e71d9dbc9d8fa6f80c2`
 
 ### Export conditions
 
@@ -671749,8 +671965,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/math@5.5.3#sha256=a14c58fb3e2691e653971a832b6ff673e435bc8312cf3a2fb85e22d0cf555f45`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/math@5.5.4#sha256=e3b9749b3ed8e248257bdfd702aee24a5a09225b34f28e71d9dbc9d8fa6f80c2`
 
 ### Export conditions
 
@@ -672997,8 +673213,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.3#sha256=53edc3a3f494ea06c263a706cf98a23ff503fd2809468f05afc9f6f3d15b10f4`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.4#sha256=d68c6e17c2553469bb9800b3d428f2517adc69d5f63c25549f8dd7e9c9c4b3e9`
 
 ### Export conditions
 
@@ -673128,8 +673344,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
 
 ### Export conditions
 
@@ -675352,8 +675568,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.3#sha256=95bb5f54d03482ca0b120e3587d724ded66d0ac49ba8b1faf135633c74bd86ed`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.4#sha256=4aaaf54a2d5914fb0dcf2e18d3ae8a5c78bda5c44ffc82bb37b8c2c8b45486e4`
 
 ### Export conditions
 
@@ -675811,8 +676027,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
 
 ### Export conditions
 
@@ -677064,8 +677280,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
 
 ### Export conditions
 
@@ -677328,8 +677544,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/product-studio@5.5.3#sha256=94d1d58bec2ad5109c053164ffb3d419cf92bd8006e510d54fc4a1d031057412`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/product-studio@5.5.4#sha256=6a34be431cae4b4c210a3243dc4adceca1d5f63b4461663724db6b59eac2dc5c`
 
 ### Export conditions
 
@@ -677610,8 +677826,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/react@5.5.3#sha256=13806206aaa21527a04f23aa46085650b0b6920730157edffa47f2811a36aca4`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/react@5.5.4#sha256=e63d6d04488930d33df33ae68a0fa908b2da7e6770d54ded4f1e9ed0be799c30`
 
 ### Export conditions
 
@@ -678012,8 +678228,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -710481,8 +710697,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712083,8 +712299,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712128,8 +712344,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712173,8 +712389,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712243,8 +712459,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712296,8 +712512,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712382,8 +712598,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712452,8 +712668,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712482,8 +712698,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712626,8 +712842,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712684,8 +712900,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -712732,8 +712948,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714334,8 +714550,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714394,8 +714610,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714479,8 +714695,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714536,8 +714752,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714644,8 +714860,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714850,8 +715066,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -714979,8 +715195,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715039,8 +715255,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715157,8 +715373,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715253,8 +715469,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715314,8 +715530,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715390,8 +715606,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715429,8 +715645,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715462,8 +715678,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715495,8 +715711,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715567,8 +715783,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -715608,8 +715824,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -722785,8 +723001,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -723424,8 +723640,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -726950,8 +727166,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -727683,8 +727899,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -727818,8 +728034,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -728061,8 +728277,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -728617,8 +728833,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -731629,8 +731845,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
 
 ### Export conditions
 
@@ -732743,8 +732959,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/scene@5.5.3#sha256=e2cd4ce55c035d08ffa550fb7eb2b786ee831ddbde6bf5d21063b3bdc7078a92`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/scene@5.5.4#sha256=d7cf079bc554fde0adc75e095cd3887de69e57a248e52348095cf9e6dd91be63`
 
 ### Export conditions
 
@@ -733869,8 +734085,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/scene@5.5.3#sha256=e2cd4ce55c035d08ffa550fb7eb2b786ee831ddbde6bf5d21063b3bdc7078a92`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/scene@5.5.4#sha256=d7cf079bc554fde0adc75e095cd3887de69e57a248e52348095cf9e6dd91be63`
 
 ### Export conditions
 
@@ -733954,8 +734170,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/scripting@5.5.3#sha256=899ae75d71410f36647937ff7f451cd223cdb85e19ea3906455574d60b916f53`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/scripting@5.5.4#sha256=ecf98aeb46a826c7877c40ca9a7db5f7a8254c4f38cb12166cc237c62e7dcdc4`
 
 ### Export conditions
 
@@ -735135,8 +735351,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.5.3`
-- Packed identity: `archive:@aura3d/workflows@5.5.3#sha256=cf5088a7ec863f1d60c79bc449035e609ce771601eaa3242390cecfd2cddb39f`
+- Version: `5.5.4`
+- Packed identity: `archive:@aura3d/workflows@5.5.4#sha256=7bdd7f82ace54f6fa888e492053902c5e21e390afff66cf5b6284d42a7942cf5`
 
 ### Export conditions
 

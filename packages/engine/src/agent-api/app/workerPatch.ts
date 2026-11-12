@@ -43,7 +43,7 @@ export type AuraWorkerNodePatchOp =
   | { readonly batched: string; readonly state: BatchedMeshStateSnapshot }
   /** 5.4: an app-level runtime control replayed in the worker (see {@link WORKER_APP_CALLS}). */
   | { readonly app: AuraWorkerAppCall; readonly args: readonly unknown[] }
-  /** 5.5.3: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+  /** 5.5.4: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
   | { readonly structural: "add"; readonly node: AuraSceneNode; readonly options?: { readonly parent?: string } }
   | { readonly structural: "remove"; readonly id: string }
   | { readonly structural: "clear" };

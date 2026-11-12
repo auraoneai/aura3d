@@ -42,10 +42,10 @@
   .compare-small { margin-top: 16px; color: var(--ink-3); font: 13px/1.5 var(--font-ui); }
   @media (max-width: 900px) { .why-moat { grid-template-columns: 1fr; } }
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Why Aura3D over three.js: everything three.js leaves to you, built in","description":"Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.","softwareVersion": "5.5.3","url":"https://aura3d.auraone.ai/docs/aura3d-vs-threejs","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Why Aura3D over three.js: everything three.js leaves to you, built in","description":"Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.","softwareVersion": "5.5.4","url":"https://aura3d.auraone.ai/docs/aura3d-vs-threejs","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
 </head>
 <body>
-<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates">Templates</a><a class="nav-link" href="/docs/assets">Assets</a><a class="nav-link" href="/docs/deployment">Deploy</a></div><div class="nav-actions"><span class="nav-version">v5.5.3</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart">Start building</a></div></div></nav>
+<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates">Templates</a><a class="nav-link" href="/docs/assets">Assets</a><a class="nav-link" href="/docs/deployment">Deploy</a></div><div class="nav-actions"><span class="nav-version">v5.5.4</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart">Start building</a></div></div></nav>
 
 <main class="compare-page">
   <header class="compare-hero">
@@ -161,7 +161,7 @@ createAuraApp(&quot;#app&quot;, {
     <div class="wrap">
       <div class="compare-section-head">
         <h2>Eight reasons, each with the code behind it</h2>
-        <p>Everything here shipped through 5.5.3. Each card names its source and the scope of the check behind it.</p>
+        <p>Everything here shipped through 5.5.4. Each card names its source and the scope of the check behind it.</p>
       </div>
       <div class="compare-feature-grid why-moat">
         <article>
@@ -174,12 +174,12 @@ scene().add(model(assets.robot, { targetHeight: 1.8 }))</code></pre>
         </article>
         <article>
           <h3>2. WebGPU, with a WebGL2 fallback</h3>
-          <p>One option. The same scene code runs on both backends, post effects included. All {{GAME_COUNT}} showcase games run on WebGPU by default; <code>?backend=webgl2</code> opts any of them out.</p>
+          <p>One option. The same scene code runs on both backends across desktop and Safari/iOS, post effects included. All {{GAME_COUNT}} showcase games run on WebGPU by default with automatic WebGL2 fallback; <code>?backend=webgl2</code> forces WebGL2.</p>
           <pre class="code"><code>createAuraApp(&quot;#app&quot;, {
   scene,
   renderer: { backend: &quot;auto&quot; } // WebGPU first, WebGL2 fallback
 });</code></pre>
-          <p class="compare-small">Each game switched after a real-GPU check showed the same frame as WebGL2 and 0 errors (Apple M4 Max, headless Chrome). Without the option, the engine uses WebGL2. <code>CHANGELOG.md</code> 5.3.0 to 5.5.3, <code>docs/upgrade-5.0.0/README.md</code></p>
+          <p class="compare-small">Each game switched after a real-GPU check showed the same frame as WebGL2 and 0 errors (Apple M4 Max, headless Chrome). Without the option, the engine uses WebGL2. <code>CHANGELOG.md</code> 5.3.0 to 5.5.4, <code>docs/upgrade-5.0.0/README.md</code></p>
         </article>
         <article>
           <h3>3. Rendering in a worker, opt-in</h3>
@@ -193,7 +193,7 @@ createAuraApp(&quot;#app&quot;, {
     fallback: &quot;main-thread&quot;
   }
 });</code></pre>
-          <p class="compare-small">All {{GAME_COUNT}} showcase games render in a worker with <code>?worker=1</code>. Opt-in; physics and DOM labels stay with main-thread apps; no speed claim against the main thread. <code>CHANGELOG.md</code> 5.3.0, 5.5.0, 5.5.3</p>
+          <p class="compare-small">All {{GAME_COUNT}} showcase games render in a worker with <code>?worker=1</code>. Opt-in; physics and DOM labels stay with main-thread apps; no speed claim against the main thread. <code>CHANGELOG.md</code> 5.3.0 to 5.5.4</p>
         </article>
         <article>
           <h3>4. A good frame with no setup</h3>
@@ -232,7 +232,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
         </article>
         <article>
           <h3>8. {{GAME_COUNT}} playable games</h3>
-          <p>Racing, sports, action, platformers and arcade, built on the same public API and kits, all on WebGPU by default. <a href="/apps/showcase-index/">Play them</a>.</p>
+          <p>Racing, sports, action, platformers and arcade built on 100% native <code>@aura3d/engine</code> multi-material procedural art, <code>RuntimeQualityGovernor</code>, mobile touch controls and first-gesture audio unlock—all WebGPU-first with automatic WebGL2 fallback across desktop and Safari/iOS. <a href="/apps/showcase-index/">Play them</a>.</p>
           <p class="compare-small"><code>docs/workflows/game-inventory.json</code></p>
         </article>
       </div>
@@ -277,15 +277,15 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">WebGPU</span></div>
-          <div class="compare-value aura"><code>renderer: { backend: "auto" }</code>: WebGPU first, WebGL2 fallback on the same canvas, same scene code. All {{GAME_COUNT}} showcase games run on WebGPU by default.</div>
+          <div class="compare-value aura"><code>renderer: { backend: "auto" }</code>: WebGPU first across desktop and Safari/iOS, automatic WebGL2 fallback on the same canvas, same scene code. All {{GAME_COUNT}} showcase games run on WebGPU by default.</div>
           <div class="compare-value base">A separate <code>WebGPURenderer</code> from <code>three/webgpu</code> that you choose and wire yourself.</div>
-          <div class="compare-src"><code>CHANGELOG.md</code> 5.3.0 to 5.5.3, <code>docs/upgrade-5.0.0/README.md</code></div>
+          <div class="compare-src"><code>CHANGELOG.md</code> 5.3.0 to 5.5.4, <code>docs/upgrade-5.0.0/README.md</code></div>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Rendering off the main thread</span></div>
           <div class="compare-value aura"><code>worker: { createWorker }</code>, with node patches, frame callbacks and picking from the main thread. Opt-in; every showcase game runs with <code>?worker=1</code>.</div>
           <div class="compare-value base"><code>OffscreenCanvas</code> plumbing and a message protocol of your own.</div>
-          <div class="compare-src"><code>CHANGELOG.md</code> 5.3.0, 5.5.0, 5.5.3</div>
+          <div class="compare-src"><code>CHANGELOG.md</code> 5.3.0 to 5.5.4</div>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Scene code</span></div>
@@ -331,7 +331,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Getting assets</span></div>
-          <div class="compare-value aura"><code>aura3d assets search</code> and <code>resolve</code> pull licence-tagged open models (CC0, CC-BY) and type them. Meshy generation, optimization, inspection and thumbnails come from the same CLI.</div>
+          <div class="compare-value aura"><code>aura3d assets search</code> and <code>resolve</code> pull licence-tagged open models (CC0, CC-BY) and type them; multi-material procedural sculpting is built into <code>@aura3d/engine</code>, and asset optimization, inspection and thumbnails come from the same CLI.</div>
           <div class="compare-value base">Bring your own files and tools.</div>
           <div class="compare-src"><code>packages/aura3d-cli/src/cli-help.ts</code></div>
         </div>
@@ -343,7 +343,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Game shell</span></div>
-          <div class="compare-value aura">HUD, touch controls, juice and session flow (<code>@aura3d/engine/game</code>), plus genre kits for racket sports, karting, car soccer, fighting and platformer motion.</div>
+          <div class="compare-value aura">HUD, mobile touch controls, first-gesture audio unlock, <code>RuntimeQualityGovernor</code>, juice and session flow (<code>@aura3d/engine/game</code>), plus genre kits for racket sports, karting, car soccer, fighting and platformer motion.</div>
           <div class="compare-value base">Not included.</div>
           <div class="compare-src"><code>docs/api/root-exports.md</code> (game-kit exports), <code>docs/api/game-kit.md</code></div>
         </div>
@@ -397,7 +397,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Proof it ships</span></div>
-          <div class="compare-value aura">{{GAME_COUNT}} playable games built on Aura3D.</div>
+          <div class="compare-value aura">{{GAME_COUNT}} playable games built on Aura3D with 100% native multi-material procedural art.</div>
           <div class="compare-value base">Not applicable.</div>
           <div class="compare-src"><code>docs/workflows/game-inventory.json</code>, <a href="/apps/showcase-index/">showcase</a></div>
         </div>
@@ -431,7 +431,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
       <div class="compare-feature-grid why-moat">
         <article><h3>Assets you can trust</h3><p>Assets are typed, hashed and licensed end to end, and the renderer enforces it at run time. The CLI admits each model with its source and a hash, generates the typed key, and <code>check-deploy</code> fails the build when a hashed file is missing. In production the renderer refuses to draw an unverified model. If you ship AI-generated or third-party art, this is your licensing and supply-chain answer.</p></article>
         <article><h3>An engine agents can write</h3><p>The API, docs, recipes and skills ship together and are tuned by a repeatable cold-start trial (<code>tools/agent-eval</code>). As we improved the docs, fresh agents working from the Aura3D docs alone went from 8 to 14 working scenes out of 15 and from 40 to 10 median turns, and every first build compiled (15 of 15). One model, 15 runs per arm.</p></article>
-        <article><h3>The whole game stack</h3><p>Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits come in one install, and {{GAME_COUNT}} shipped games exercise them.</p></article>
+        <article><h3>The whole game stack</h3><p>Fixed-step loop, seeded replay, QA hooks, <code>RuntimeQualityGovernor</code>, safety net, high-refresh interpolation, HUD, mobile touch, gesture audio unlock and genre kits come in one install, and {{GAME_COUNT}} shipped games exercise them.</p></article>
         <article><h3>Quality gates in the product</h3><p>The public-example boundary test, route-health specs in all {{TEMPLATE_COUNT}} templates, <code>assets validate --release</code> and <code>check-deploy</code> come with the code. You get the release process along with the engine.</p></article>
       </div>
     </div>
@@ -458,7 +458,7 @@ npx @aura3d/cli@latest import-three recipes/windmill.mjs</code></pre>
   <section class="compare-cta"><div class="wrap"><h2>Build the product, not the engine.</h2><p>Scaffold a template, add a typed asset and ship a route you can check. Your agent writes the code; Aura3D supplies the stack.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart">Start building</a><a class="btn btn-ghost" href="/apps/showcase-index/">Play the games</a></div></div></section>
 </main>
 
-<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v5.5.3, MIT licensed</span><span>Benchmark figures: Aura3D benchmark, five scenes</span></div></div></footer>
+<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v5.5.4, MIT licensed</span><span>Benchmark figures: Aura3D benchmark, five scenes</span></div></div></footer>
 <script type="module" src="/marketing/src/main.ts"></script>
 </body>
 </html>

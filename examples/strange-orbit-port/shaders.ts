@@ -82,7 +82,7 @@ vec3 shadeRough(vec3 albedo, vec3 N, vec3 emissive, vec3 world, float rough) {
 vec3 shade(vec3 albedo, vec3 N, vec3 emissive, vec3 world) {
   return shadeRough(albedo, N, emissive, world, 0.9);
 }
-/** Aerial perspective from the scene fog (exp2, the same colour and density the engine fogs the GLBs with). */
+/** Aerial perspective from the scene fog (exp2, the same colour and density the engine fogs procedural nodes with). */
 vec3 haze(vec3 c, vec3 world) {
   float d = length(world - cameraPosition);
   float x = max(u_a3dFogDensity, 0.0) * d;
@@ -91,7 +91,7 @@ vec3 haze(vec3 c, vec3 world) {
   float below = clamp(-world.y / 28.0, 0.0, 1.0);
   f = max(f, below * 0.12 * (1.0 - exp(-d / 240.0)));
   return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.24));` : `
-  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.82));`}
+  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.28));`}
 }
 `;
 

@@ -9,8 +9,6 @@
 // only today: their contracted "BC+N" set is the target of the WP-36 retexture (asset needs in the lane report).
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
-const FIGHTER = { role: "character", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 2048 } as const;
-
 export default defineArtDirection({
   id: "showcase-iron-crown",
   genre: "fighting",
@@ -54,14 +52,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "fighting", subjectHeightFraction: [0.2, 0.3], fovDeg: [40, 45], mobile: "both" },
-  assets: [
-    { ...FIGHTER, assetKey: "ironcrownKenji", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownVolt", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownBoulder", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownSeraph", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownJinx", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownSovereign", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } }
-  ],
+  assets: [],
   vfx: [
     { event: "hit", kind: "ic-forge-spark" },
     { event: "blocked", kind: "ic-guard-ember" },

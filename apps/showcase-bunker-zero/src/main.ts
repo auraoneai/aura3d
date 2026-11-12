@@ -12,11 +12,10 @@ import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
-  camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material, model,
+  camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material,
   primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
-import { assets } from "./aura-assets";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, isSolid, type FloorDef } from "./maps";
 import {
   createSim, cellCenter, captureLoadout, defaultLoadout, drainEvents, ENEMIES, MAX_SUMMONS, WEAPONS,
@@ -28,6 +27,7 @@ import {
   outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
 import {
+  buildCombatMacheteNode,
   buildPulseCarbineNode,
   buildReflexOpticNode,
   buildRocketLauncherNode,
@@ -36,21 +36,22 @@ import {
   buildTacticalSleeveNode,
   buildTacticalWristCuffNode,
   formatTacticalFeed,
-  VIEWMODEL_ASSET,
   viewmodelFraming,
   VIEWMODEL_YAW_OFFSET,
   weaponHudLabel
 } from "./weapons-view";
 import {
+  buildArticulatedEnemyNode,
   buildBallisticArmorNode,
   buildBallisticTracerNode,
   buildBlastDoorBulkheadNode,
+  buildBulkheadLampNode,
   buildBullionCaseNode,
   buildClearanceKeycardNode,
   buildConduitPipeInstances,
   buildCorridorTrimInstances,
-  buildEnemyOpticVisorNode,
   buildHazardDrumPoolNodes,
+  buildMedicalBoxNode,
   buildMergedCorridorSteelNode,
   buildMilitaryCratePoolNodes,
   buildMunitionBoxNode,
@@ -58,8 +59,13 @@ import {
   buildPilasterColumnInstances,
   buildRocketWarheadNode,
   buildSecretPushWallNode,
+  buildShutterDoorNode,
   buildWorkLightInstances,
-  enemyMaterialOverrides
+  computeEnemyRigPose,
+  ENEMY_RIG_PARTS,
+  makeEnemyRigIds,
+  type BunkerEnemyKind,
+  type EnemyRigIds
 } from "./art/proceduralModels";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -162,19 +168,12 @@ const hash2 = (x: number, z: number) => {
 
 // BZ-14 / WP-11: hostiles read by light, armored metallic sheen (`enemyMaterialOverrides`) and sculpted `practical: true` optic visors.
 
-// Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
-/** GU47 phase 9 (D2) owned-prop placement: crack lamp on the push block's face, exit shutter and lamp, medkit span, columns. */
+/** GU47 phase 9 / WP-11 procedural prop placement: crack lamp on the push block's face, exit shutter and lamp, columns. */
 const BZ_CRACK_LAMP = { height: 0.5, out: 0.47, y: 1.15 } as const;
 const BZ_EXIT_SHUTTER = { heightFrac: 0.78, maxHeight: 2.4, wallGap: CELL / 2 - 0.17, lampGap: CELL / 2 - 0.08, lampHeight: 0.42 } as const;
-const BZ_MEDKIT_SPAN = 0.8;
-/** The machete viewmodel's blade-to-pommel length: the borrowed knife it replaces drew 0.63 m long at targetHeight 0.34. */
-const BZ_KNIFE_LENGTH = 0.62;
 const BZ_COLUMN = { side: 1.2 } as const;
 /** Crack-lamp offset from its push block (the lamp rides the block's face while it slides). */
 const CRACK_OFFSET = new Map<string, [number, number]>();
-const pickupGlow = (color: string, emissive: string, emissiveIntensity: number, extra: { metallic?: number; roughness?: number } = {}) => [
-  { color, colorMode: "multiply" as const, emissive, emissiveIntensity, ...extra }
-];
 
 // ---------------------------------------------------------------------------
 // scene graph — everything exists from boot; runtime nodes move per frame
@@ -453,7 +452,7 @@ function buildScene() {
             buildSecretPushWallNode(wallH, cast, `f${slot} push ${pI}`)
               .position(wx, 0, wz)
               .runtime(slotNode(slot, `f${slot}-pw-${x}-${z}`, ["pushwall"])),
-            model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} crack ${pI}`, targetHeight: BZ_CRACK_LAMP.height })
+            buildBulkheadLampNode(BZ_CRACK_LAMP.height, `f${slot} crack ${pI}`)
               .position(wx - side[0] * CELL * BZ_CRACK_LAMP.out, BZ_CRACK_LAMP.y, wz - side[1] * CELL * BZ_CRACK_LAMP.out)
               .rotate(0, Math.atan2(-side[0], -side[1]), 0)
               .runtime(slotNode(slot, `f${slot}-crack-${x}-${z}`, ["crack"]))
@@ -484,12 +483,11 @@ function buildScene() {
             }
           );
           nodes.push(
-            // GU47 phase 9 (D2): the lift shutter (Poly Haven rollershutter_door, CC0) at the back of the exit cell under a caged
-            // bulkhead lamp replaces the borrowed neon arch and pad beacon; presentation only (the exit cell is the sim's)
-            model(assets.bzShutterDoor, { castShadow: cast, name: `f${slot} exit`, targetHeight: exitShutterH })
+            // WP-11: procedural multi-material corrugated steel roller-shutter lift door + caged bulkhead lamp
+            buildShutterDoorNode(exitShutterH, cast, `f${slot} exit`)
               .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.wallGap, 0, wz + exitWall[1] * BZ_EXIT_SHUTTER.wallGap)
               .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exit")),
-            model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} exitpost`, targetHeight: BZ_EXIT_SHUTTER.lampHeight })
+            buildBulkheadLampNode(BZ_EXIT_SHUTTER.lampHeight, `f${slot} exitpost`)
               .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.lampGap, exitShutterH + 0.08, wz + exitWall[1] * BZ_EXIT_SHUTTER.lampGap)
               .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exitpost")),
             primitives.box({
@@ -522,10 +520,10 @@ function buildScene() {
           );
           kI++;
           break;
-        case "+": case "*":
+        case "+": case "*": case "!":
           nodes.push(
-            model(assets.bzMedicalBox, { castShadow: false, name: `f${slot} medkit ${x}-${z}`, targetMaxDimension: BZ_MEDKIT_SPAN, materialOverrides: pickupGlow("#e4ddd0", "#b8402e", 0.12, { roughness: 0.5 }) })
-              .position(wx, 0.45, wz)
+            buildMedicalBoxNode(ch === "*" ? "plate" : "medkit", false, `f${slot} medkit ${x}-${z}`)
+              .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
           break;
@@ -580,58 +578,52 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: enemyMaterialOverrides("guard") })
-              .position(wx, 0, wz)
-              .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"])),
-            buildEnemyOpticVisorNode("guard", `f${slot} guard visor ${eI}`)
-              .position(wx, 1.66, wz)
-              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
+            buildArticulatedEnemyNode(
+              "guard",
+              `f${slot} guard ${eI}`,
+              (partId, part) => slotNode(slot, partId, ["enemy", "guard", part]),
+              `f${slot}-en-${x}-${z}`,
+              true
+            ).position(wx, 0, wz)
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.5);
           eI++;
           break;
         case "d":
           nodes.push(
-            model(assets.bzHoundMeshy, {
-              name: `f${slot} hound ${eI}`, targetHeight: 1.05, materialOverrides: enemyMaterialOverrides("dog")
-            })
-              .position(wx, 0, wz)
-              .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"])),
-            buildEnemyOpticVisorNode("dog", `f${slot} hound visor ${eI}`)
-              .position(wx, 0.8, wz)
-              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
+            buildArticulatedEnemyNode(
+              "dog",
+              `f${slot} hound ${eI}`,
+              (partId, part) => slotNode(slot, partId, ["enemy", "dog", part]),
+              `f${slot}-en-${x}-${z}`,
+              true
+            ).position(wx, 0, wz)
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.45);
           eI++;
           break;
         case "G":
           nodes.push(
-            model(assets.bzGunnerMeshy, {
-              name: `f${slot} gunner ${eI}`, targetHeight: 2.0, materialOverrides: enemyMaterialOverrides("gunner")
-            })
-              .position(wx, 0, wz)
-              .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"])),
-            buildEnemyOpticVisorNode("gunner", `f${slot} gunner visor ${eI}`)
-              .position(wx, 1.76, wz)
-              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
+            buildArticulatedEnemyNode(
+              "gunner",
+              `f${slot} gunner ${eI}`,
+              (partId, part) => slotNode(slot, partId, ["enemy", "gunner", part]),
+              `f${slot}-en-${x}-${z}`,
+              true
+            ).position(wx, 0, wz)
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.55);
           eI++;
           break;
         case "B":
           nodes.push(
-            model(assets.bzWardenMeshy, {
-              name: `f${slot} boss ${eI}`, targetHeight: 3.1, materialOverrides: enemyMaterialOverrides("boss")
-            })
-              .position(wx, 0, wz)
-              .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"])),
-            buildEnemyOpticVisorNode("boss", `f${slot} boss visor ${eI}`)
-              .position(wx, 2.62, wz)
-              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
+            buildArticulatedEnemyNode(
+              "boss",
+              `f${slot} boss ${eI}`,
+              (partId, part) => slotNode(slot, partId, ["enemy", "boss", part]),
+              `f${slot}-en-${x}-${z}`,
+              true
+            ).position(wx, 0, wz)
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.85);
           eI++;
@@ -642,13 +634,13 @@ function buildScene() {
     if (rows.some((r) => r.includes("B"))) {
       for (let i = 0; i < MAX_SUMMONS; i++) {
         nodes.push(
-          model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: enemyMaterialOverrides("guard") })
-            .position(slot * FLOOR_SPAN, -50, 0)
-            .animate({ clip: "Run", loop: true, speed: 1.3 })
-            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"])),
-          buildEnemyOpticVisorNode("guard", `f${slot} summon visor ${i}`)
-            .position(slot * FLOOR_SPAN, -50, 0)
-            .runtime(slotNode(slot, `f${slot}-visor-summon-${i}`, ["enemy", "visor", "summon"]))
+          buildArticulatedEnemyNode(
+            "guard",
+            `f${slot} summon ${i}`,
+            (partId, part) => slotNode(slot, partId, ["enemy", "guard", "summon", part]),
+            `f${slot}-summon-${i}`,
+            true
+          ).position(slot * FLOOR_SPAN, -50, 0)
         );
         addBlob(slot, `f${slot}-summon-${i}`, slot * FLOOR_SPAN, 0, 0.5, false);
       }
@@ -691,7 +683,7 @@ function buildScene() {
 
   // ---- player rig: WP-11 sculpted multi-material viewmodels + tactical sleeves/gloves + muzzle starburst ---------
   nodes.push(
-    model(assets.bzMachete, { castShadow: false, name: "vm knife", targetMaxDimension: BZ_KNIFE_LENGTH })
+    buildCombatMacheteNode("vm knife")
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
     buildServicePistolNode("vm pistol")
@@ -1062,7 +1054,7 @@ let mode: "descent" | "killhouse" = "descent";
 let floorIdx = 0;
 let dogtag = "RAZOR-6";
 const nodeCache = new Map<string, NodeHandle | null>();
-const enemyAnimCache = new Map<string, string>();
+const enemyRigShown = new Map<string, boolean>();
 /** Node by id, or null when the scene has no such node: per-frame code skips missing nodes instead of throwing (C1). */
 function opt(id: string): NodeHandle | null {
   let n = nodeCache.get(id);
@@ -1077,11 +1069,24 @@ function req(id: string): NodeHandle {
   if (!n) throw new Error(`Bunker Zero: scene node "${id}" is missing`);
   return n;
 }
-function setEnemyClip(id: string, node: NodeHandle, clip: string, speed: number) {
-  const key = `${clip}:${speed.toFixed(2)}`;
-  if (enemyAnimCache.get(id) === key) return;
-  enemyAnimCache.set(id, key);
-  node.setAnimation({ clip, loop: true, speed });
+function setEnemyRigVisible(ids: EnemyRigIds, shown: boolean) {
+  if (enemyRigShown.get(ids.body) === shown) return;
+  enemyRigShown.set(ids.body, shown);
+  for (const part of ENEMY_RIG_PARTS) opt(ids[part])?.setVisible(shown);
+}
+function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnemyRigPose>) {
+  const rig = opt(ids.rig);
+  if (rig) {
+    rig.setPosition(pose.rigPos[0], pose.rigPos[1], pose.rigPos[2]);
+    rig.setRotation(pose.rigRot[0], pose.rigRot[1], pose.rigRot[2]);
+  }
+  opt(ids.torso)?.setRotation(pose.torsoRot[0], pose.torsoRot[1], pose.torsoRot[2]);
+  opt(ids.head)?.setRotation(pose.headRot[0], pose.headRot[1], pose.headRot[2]);
+  opt(ids.armL)?.setRotation(pose.armLRot[0], pose.armLRot[1], pose.armLRot[2]);
+  opt(ids.armR)?.setRotation(pose.armRRot[0], pose.armRRot[1], pose.armRRot[2]);
+  opt(ids.legL)?.setRotation(pose.legLRot[0], pose.legLRot[1], pose.legLRot[2]);
+  opt(ids.legR)?.setRotation(pose.legRRot[0], pose.legRRot[1], pose.legRRot[2]);
+  opt(ids.spec)?.setRotation(pose.specRot[0], pose.specRot[1], pose.specRot[2]);
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
 const vmHands = {
@@ -1264,10 +1269,7 @@ let lastPoseTime = -1;
 let poseDt = 1 / 60;
 let qaFrozen = false;
 const activeSlot = () => (sim.state.mode === "killhouse" ? 6 : floorIdx);
-const enemyIds = (slot: number, e: Enemy) => {
-  const st = enemyNodeStem(e);
-  return { body: `f${slot}-${st.body}`, eye: `f${slot}-${st.eye}`, visor: `f${slot}-visor-${st.body}` };
-};
+const enemyIds = (slot: number, e: Enemy): EnemyRigIds => makeEnemyRigIds(`f${slot}-${enemyNodeStem(e).body}`);
 
 // ---------------------------------------------------------------------------
 // run state: the loadout and score carry floor to floor in a descent run (C14); the results panel totals the run (C3)
@@ -1314,19 +1316,12 @@ function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions 
   if (m === "killhouse") banner("KILL HOUSE", "clear the floor before the clock runs out");
   else banner(`FLOOR ${def.id + 1} — ${def.name.toUpperCase()}`, def.subtitle);
 }
-/** C18: every floor slot but the active one is hidden, static geometry included, and off-floor skeletal clips are paused. */
+/** C18: every floor slot but the active one is hidden, static geometry included. */
 function hideAllRuntime() {
   const slot = activeSlot();
+  enemyRigShown.clear();
   for (let s = 0; s < ALL_FLOORS.length; s++) {
     for (const id of SLOT_IDS[s]!) opt(id)?.setVisible(false);
-    if (s !== slot) {
-      for (const id of SLOT_IDS[s]!) {
-        if (id.includes("-en-") || id.includes("-summon-")) {
-          opt(id)?.setAnimation?.(undefined);
-          enemyAnimCache.delete(id);
-        }
-      }
-    }
     if (s === slot) for (const id of SLOT_STATIC_IDS[s]!) opt(id)?.setVisible(true);
   }
   vmParked.clear();
@@ -1349,15 +1344,8 @@ function hideAllRuntime() {
   }
 }
 function bindFloor() {
-  const slot = activeSlot();
-  enemyAnimCache.clear();
-  resetPropPools(slot);
-  for (const e of sim.state.enemies) {
-    const { body } = enemyIds(slot, e);
-    const node = opt(body);
-    if (!node) continue;
-    setEnemyClip(body, node, e.kind === "boss" ? "Idle_Loop" : "Walk_Loop", e.kind === "dog" ? 1.35 : 1.05);
-  }
+  enemyRigShown.clear();
+  resetPropPools(activeSlot());
 }
 const cellOf = (v: number) => Math.floor(v / CELL);
 const NO_INPUT: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
@@ -1736,74 +1724,59 @@ function syncScenePose(inp: SimInput) {
     muzzleWasLit = false;
   }
 
-  // ---- enemies (skeletal animation + procedural stride cadence); nodes that do not exist are skipped (C1)
+  // ---- enemies (articulated hierarchical group pivots + deterministic ZYX joint poses); nodes that do not exist are skipped (C1)
   const slot = activeSlot();
   let vulnerable: Enemy | null = null;
   let bossAlive = false;
   for (const e of sim.state.enemies) {
     const ids = enemyIds(slot, e);
     const node = opt(ids.body);
-    const eye = opt(ids.visor) ?? opt(ids.eye);
     if (!node) continue;
+    const phaseSeed = e.sx * 1.37 + e.sz * 0.73;
     if (e.state === "dead") {
-      eye?.setVisible(false);
       placeBlob(ids.body, 0, 0, false);
       if (e.deathT < 4) {
-        setEnemyClip(ids.body, node, "Idle_Loop", 0.2);
-        node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
-        node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), 0);
-        node.setVisible(true);
+        const yaw = enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind));
+        enemyYaw.set(ids.body, yaw);
+        node.setPosition(e.x + ox, 0, e.z);
+        node.setRotation(0, yaw, 0);
+        applyEnemyRigPose(ids, computeEnemyRigPose({
+          kind: e.kind,
+          state: "dead",
+          time: sim.state.time,
+          stateT: e.stateT,
+          painT: e.painT,
+          deathT: e.deathT,
+          phaseSeed
+        }));
+        setEnemyRigVisible(ids, true);
       } else {
-        if (enemyAnimCache.has(ids.body)) {
-          enemyAnimCache.delete(ids.body);
-          node.setAnimation?.(undefined);
-        }
-        node.setVisible(false);
+        setEnemyRigVisible(ids, false);
       }
       continue;
     }
     if (e.kind === "boss") bossAlive = true;
-    let clip = "Idle_Loop";
-    let speed = 1.0;
-    let strideBob = Math.sin(sim.state.time * 3.2 + e.sx) * 0.015;
-    let strideRoll = 0;
-    if (e.state === "patrol") {
-      clip = "Walk_Loop";
-      speed = e.kind === "dog" ? 1.35 : 1.08;
-      strideBob = Math.abs(Math.sin(sim.state.time * 7.5 + e.sx)) * 0.045;
-      strideRoll = Math.sin(sim.state.time * 7.5 + e.sx) * 0.04;
-    } else if (e.state === "chase") {
-      clip = e.kind === "dog" ? "Sprint_Loop" : "Run";
-      speed = e.kind === "dog" ? 1.6 : 1.3;
-      strideBob = Math.abs(Math.sin(sim.state.time * 11.0 + e.sx)) * 0.065;
-      strideRoll = Math.sin(sim.state.time * 11.0 + e.sx) * 0.055;
-    } else if (e.state === "attack") {
-      clip = e.kind === "dog" ? "Attack" : "Shoot";
-      speed = 1.45;
-      strideBob = e.kind === "boss" ? Math.sin(sim.state.time * 30) * 0.035 : 0.02;
-    } else if (e.state === "pain") {
-      clip = "Contest";
-      speed = 1.4;
-    }
-    setEnemyClip(ids.body, node, clip, speed);
-    node.setPosition(e.x + ox, strideBob, e.z);
+    if (e.kind === "boss" && e.vulnerableT > 0) vulnerable = e;
+    node.setPosition(e.x + ox, 0, e.z);
     placeBlob(ids.body, e.x + ox, e.z, true);
     const yaw = nextEnemyYaw(enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
     enemyYaw.set(ids.body, yaw);
-    node.setRotation(0, yaw, strideRoll);
-    node.setVisible(true);
-    const eyeY = e.kind === "dog" ? 0.8 : e.kind === "boss" ? 2.62 : e.kind === "gunner" ? 1.76 : 1.66;
-    if (e.kind === "boss" && e.vulnerableT > 0) vulnerable = e;
-    if (eye) {
-      eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
-      eye.setRotation(0, yaw, strideRoll);
-      // C27: the Warden's eyes flare while its vent is open
-      if (e.kind === "boss") {
-        const flare = e.vulnerableT > 0 ? 1.35 + Math.sin(sim.state.time * 14) * 0.2 : 1;
-        eye.setScale(flare);
-      }
-      eye.setVisible(true);
-    }
+    node.setRotation(0, yaw, 0);
+    const shoulderY = e.kind === "dog" ? 0.72 : e.kind === "boss" ? 2.22 : e.kind === "gunner" ? 1.5 : 1.48;
+    const tracking = e.state === "alert" || e.state === "chase" || e.state === "attack";
+    const aimPitch = tracking ? -Math.atan2(EYE - shoulderY, Math.max(1.2, Math.hypot(p.x - e.x, p.z - e.z))) : 0;
+    applyEnemyRigPose(ids, computeEnemyRigPose({
+      kind: e.kind,
+      state: e.state,
+      time: sim.state.time,
+      stateT: e.stateT,
+      painT: e.painT,
+      deathT: 0,
+      vulnerableT: e.vulnerableT,
+      phaseSeed,
+      aimPitch
+    }));
+    setEnemyRigVisible(ids, true);
   }
   if (vulnerable) {
     ventLight.setPosition(vulnerable.x + ox, 1.9, vulnerable.z);

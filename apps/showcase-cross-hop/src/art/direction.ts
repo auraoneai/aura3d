@@ -2,8 +2,6 @@
 // Fantasy: a handmade tabletop toy diorama seen through a tilt-shift lens, with a day clock across six themes.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
-const CRITTERS = ["hop", "chick", "turtle", "bun", "axolotl", "ducky", "roboFrog", "toastCat", "mushroomKid", "knightToad", "astroFrog", "goldenHop"] as const;
-
 export default defineArtDirection({
   id: "cross-hop",
   genre: "platformer",
@@ -44,17 +42,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "follow2d", subjectHeightFraction: [0.15, 0.2], fovDeg: [32, 35], mobile: "both" },
-  assets: [
-    ...CRITTERS.map((assetKey) => ({
-      role: (assetKey === "hop" ? "hero" : "character") as "hero" | "character",
-      assetKey,
-      maxTriangles: 60000,
-      minTriangles: 2000,
-      textureSet: "BC+N" as const,
-      maxTextureSize: 1024 as const,
-      animated: { clips: ["Idle", "Regular_Jump"] }
-    }))
-  ],
+  assets: [],
   vfx: [
     { event: "hop-land", kind: "crosshop-land-dust" },
     { event: "log-land", kind: "crosshop-log-splash" },

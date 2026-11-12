@@ -8,7 +8,9 @@
  */
 import {
   AuraNodeBuilder,
+  game,
   geometry,
+  group,
   instances,
   material,
   type AuraColor,
@@ -890,7 +892,7 @@ export function buildCheckpointPennantNode(name: string, pos: readonly [number, 
   }).runtime(runtimeSpec);
 }
 
-export function buildWoodlandBannerNode(name: string, pos: readonly [number, number, number], yaw: number, scale: number, runtimeSpec: Parameters<AuraNodeBuilder<AuraGroupNode>["runtime"]>[0]): AuraNodeBuilder<AuraGroupNode> {
+export function buildWoodlandBannerNode(name: string, pos: readonly [number, number, number], yaw: number, scale: number, runtimeSpec?: Parameters<AuraNodeBuilder<AuraGroupNode>["runtime"]>[0]): AuraNodeBuilder<AuraGroupNode> {
   const post = mergeSubmeshes([
     tubeSweepMesh([[0, 0, 0], [0, 1.15, 0], [0, 2.15, 0]], [0.055, 0.048, 0.04], 8),
     transformMesh(bevelBoxMesh(0.76, 0.065, 0.065, 0.015, 1), { position: [0, 2.02, 0] })
@@ -901,7 +903,7 @@ export function buildWoodlandBannerNode(name: string, pos: readonly [number, num
     { bevel: 0.008, centerZ: true }
   );
   const finial = transformMesh(latheMesh([[0, 0], [0.07, 0.04], [0.05, 0.12], [0, 0.16]], 12), { position: [0, 2.14, 0] });
-  return stampNoCastShadow(
+  const node = stampNoCastShadow(
     assembleMultiMaterialNode(
       name,
       [
@@ -910,8 +912,9 @@ export function buildWoodlandBannerNode(name: string, pos: readonly [number, num
         { mesh: finial, material: PBL_MAT.sunGold }
       ],
       { position: [...pos], rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }
-    ).runtime(runtimeSpec)
+    )
   );
+  return runtimeSpec ? node.runtime(runtimeSpec) : node;
 }
 
 /** Warm carved-timber & burnished gold sun-medallion Sun Gate arch (`archwayVoussoirSlots` + solar sunburst crown). */
@@ -1071,7 +1074,7 @@ function watchtowerParts(): readonly DecorBucketPart[] {
   ];
 }
 
-export function buildUpdraftFanNode(name: string, pos: readonly [number, number, number], yaw: number, scale: number, runtimeSpec: Parameters<AuraNodeBuilder<AuraGroupNode>["runtime"]>[0]): AuraNodeBuilder<AuraGroupNode> {
+export function buildUpdraftFanNode(name: string, pos: readonly [number, number, number], yaw: number, scale: number, runtimeSpec?: Parameters<AuraNodeBuilder<AuraGroupNode>["runtime"]>[0]): AuraNodeBuilder<AuraGroupNode> {
   const stoneRing = latheMesh([[0.72, 0], [1.08, 0], [1.1, 0.18], [0.86, 0.28], [0.68, 0.24]], 18);
   const woodParts: ProceduralMesh[] = [
     latheMesh([[0, 0.06], [0.28, 0.06], [0.3, 0.34], [0.22, 0.42], [0, 0.44]], 14)
@@ -1090,7 +1093,7 @@ export function buildUpdraftFanNode(name: string, pos: readonly [number, number,
     );
   }
   const ironHub = latheMesh([[0, 0.4], [0.16, 0.41], [0.12, 0.5], [0, 0.53]], 12);
-  return assembleMultiMaterialNode(
+  const node = assembleMultiMaterialNode(
     name,
     [
       { mesh: stoneRing, material: PBL_MAT.limestone },
@@ -1098,7 +1101,8 @@ export function buildUpdraftFanNode(name: string, pos: readonly [number, number,
       { mesh: ironHub, material: PBL_MAT.copperCoil }
     ],
     { position: [...pos], rotation: [0, yaw, 0], scale, castShadow: true, receiveShadow: true }
-  ).runtime(runtimeSpec);
+  );
+  return runtimeSpec ? node.runtime(runtimeSpec) : node;
 }
 
 function mossyPillarParts(): readonly DecorBucketPart[] {
@@ -1873,4 +1877,406 @@ export function buildDioramaStaticDecorNodes(
     out.push(stampNoCastShadow(assembleMultiMaterialNode("pbl-diorama-decor-sky", slots, { castShadow: false, receiveShadow: false })));
   }
   return out;
+}
+
+/** Single-prop procedural woodland decor node (`?look=original` fallback so zero Meshy GLBs are ever mounted). */
+export function buildSingleDecorPropNode(
+  name: string,
+  kind: StaticDecorKind,
+  pos: readonly [number, number, number],
+  yaw = 0,
+  scale = 1,
+  castShadow = true
+): AuraNodeBuilder<AuraGroupNode> {
+  const slots: MaterialSlot[] = templatePartsForDecor(kind).map((part) => ({
+    mesh: part.mesh,
+    material: PBL_MAT[part.paletteKey]
+  }));
+  const lift = kind === "star" ? 0.55 * scale : 0;
+  const node = assembleMultiMaterialNode(name, slots, {
+    position: [pos[0], pos[1] + lift, pos[2]],
+    rotation: [0, yaw, 0],
+    scale,
+    castShadow,
+    receiveShadow: castShadow
+  });
+  return castShadow ? node : stampNoCastShadow(node);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 7. Articulated Procedural Pip Hero & Brambleback Boss Rigs (Zero GLBs)     */
+/* -------------------------------------------------------------------------- */
+
+const PIP_RIG_MAT = {
+  mossTunic: material.felt({ name: "pip moss tunic", color: "#4f7a3a", roughness: 0.78 }),
+  creamFur: material.fabric({ name: "pip birch cream fur", color: "#efe3c8", roughness: 0.76, sheen: 0.42, sheenColor: "#fff8ea" }),
+  russetCoat: material.fabric({ name: "pip woodland russet", color: "#d4743b", roughness: 0.74, sheen: 0.36, sheenColor: "#ffd6b0" }),
+  toadstoolCap: PBL_MAT.crimsonLacquer,
+  creamSpot: PBL_MAT.creamCapSpot,
+  leatherBoot: PBL_MAT.oakCupule,
+  goldBuckle: PBL_MAT.sunGold,
+  glossyEye: PBL_MAT.glossyEye,
+  sproutLeaf: PBL_MAT.emeraldLeaf
+} as const;
+
+interface GroupedPartSpec {
+  readonly spec: AuraCustomGeometrySpec;
+  readonly materials: readonly AuraMaterialSpec[];
+}
+
+let cachedPipRig: {
+  readonly torso: GroupedPartSpec;
+  readonly head: GroupedPartSpec;
+  readonly earL: GroupedPartSpec;
+  readonly earR: GroupedPartSpec;
+  readonly arm: GroupedPartSpec;
+  readonly foot: GroupedPartSpec;
+  readonly tail: GroupedPartSpec;
+} | null = null;
+
+function ensurePipRig(): NonNullable<typeof cachedPipRig> {
+  if (cachedPipRig) return cachedPipRig;
+
+  // Plump pear-shaped moss tunic + cream belly bib + chestnut belt & backpack + brass buckle (pivot at y = 0.44)
+  const tunicBody = mergeSubmeshes([
+    latheMesh([[0, -0.18], [0.22, -0.17], [0.25, -0.06], [0.23, 0.08], [0.18, 0.22], [0.15, 0.28], [0, 0.29]], 18),
+    latheMesh([[0.15, 0.23], [0.22, 0.21], [0.20, 0.28], [0.14, 0.29]], 16)
+  ]);
+  const bellyBib = transformMesh(
+    latheMesh([[0, -0.13], [0.13, -0.11], [0.155, 0.0], [0.13, 0.14], [0, 0.19]], 14),
+    { position: [0, 0.02, 0.11], scale: [1.0, 1.0, 0.82] }
+  );
+  const beltAndPack = mergeSubmeshes([
+    latheMesh([[0.225, -0.06], [0.258, -0.06], [0.258, 0.005], [0.225, 0.005]], 16),
+    transformMesh(bevelBoxMesh(0.24, 0.22, 0.14, 0.04), { position: [0, 0.08, -0.20], rotation: [0.12, 0, 0] }),
+    transformMesh(latheMesh([[0, -0.13], [0.055, -0.13], [0.058, 0.13], [0, 0.13]], 10), {
+      position: [0, 0.20, -0.21],
+      rotation: [0, 0, Math.PI * 0.5]
+    })
+  ]);
+  const buckle = mergeSubmeshes([
+    transformMesh(bevelBoxMesh(0.095, 0.082, 0.036, 0.01), { position: [0, -0.028, 0.252] }),
+    transformMesh(bevelBoxMesh(0.055, 0.045, 0.028, 0.008), { position: [0, 0.09, -0.275] })
+  ]);
+  const torso: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([tunicBody, bellyBib, beltAndPack, buckle]),
+    materials: [PIP_RIG_MAT.mossTunic, PIP_RIG_MAT.creamFur, PIP_RIG_MAT.leatherBoot, PIP_RIG_MAT.goldBuckle]
+  };
+
+  // Plump expressive woodland sprout-fox head + toadstool beret cap + cream spots + sprout leaf (pivot at y = 0.76)
+  const russetSkull = transformMesh(
+    latheMesh([[0, -0.06], [0.18, -0.04], [0.245, 0.08], [0.235, 0.21], [0.16, 0.30], [0, 0.33]], 18),
+    { position: [0, 0, -0.01] }
+  );
+  const creamCheeksAndSnout = mergeSubmeshes([
+    transformMesh(icosphereSmoothMesh(0.135, 2, 0.004, 11, 0.2), { position: [-0.115, 0.055, 0.115], scale: [1.05, 0.85, 0.92] }),
+    transformMesh(icosphereSmoothMesh(0.135, 2, 0.004, 13, 0.2), { position: [0.115, 0.055, 0.115], scale: [1.05, 0.85, 0.92] }),
+    loftSectionsMesh([
+      { z: 0.12, width: 0.24, height: 0.16, y: 0.055 },
+      { z: 0.24, width: 0.16, height: 0.12, y: 0.05 },
+      { z: 0.31, width: 0.08, height: 0.075, y: 0.06 }
+    ])
+  ]);
+  const eyesAndNose = mergeSubmeshes([
+    transformMesh(icosphereSmoothMesh(0.042, 2, 0.001, 17, 0.1), { position: [-0.095, 0.135, 0.215], scale: [0.95, 1.15, 0.75] }),
+    transformMesh(icosphereSmoothMesh(0.042, 2, 0.001, 19, 0.1), { position: [0.095, 0.135, 0.215], scale: [0.95, 1.15, 0.75] }),
+    transformMesh(icosphereSmoothMesh(0.032, 1, 0.001, 23, 0.1), { position: [0, 0.072, 0.318], scale: [1.15, 0.85, 0.95] })
+  ]);
+  const beretCap = transformMesh(
+    latheMesh([[0.18, 0.18], [0.31, 0.19], [0.34, 0.26], [0.27, 0.36], [0.13, 0.42], [0, 0.44]], 20),
+    { position: [0, 0.01, -0.02], rotation: [-0.14, 0, 0.05] }
+  );
+  const capSpotsAndCatchlights: ProceduralMesh[] = [
+    transformMesh(icosphereSmoothMesh(0.015, 1, 0.001, 29, 0.1), { position: [-0.082, 0.152, 0.246] }),
+    transformMesh(icosphereSmoothMesh(0.015, 1, 0.001, 31, 0.1), { position: [0.108, 0.152, 0.246] })
+  ];
+  for (let i = 0; i < 6; i += 1) {
+    const a = (i / 6) * TAU + 0.4;
+    const spot = latheMesh([[0, 0], [0.048, 0], [0.04, 0.018], [0, 0.026]], 10);
+    capSpotsAndCatchlights.push(
+      transformMesh(spot, {
+        position: [Math.cos(a) * 0.22, 0.34, Math.sin(a) * 0.22 - 0.03],
+        rotation: [Math.sin(a) * 0.38 - 0.12, 0, -Math.cos(a) * 0.38]
+      })
+    );
+  }
+  const sproutTop = mergeSubmeshes([
+    tubeSweepMesh([[0, 0.43, -0.05], [0.01, 0.49, -0.04], [0.04, 0.52, -0.02]], [0.024, 0.018, 0.012], 7),
+    transformMesh(
+      loftSectionsMesh([
+        { z: 0, width: 0.03, height: 0.014 },
+        { z: 0.09, width: 0.095, height: 0.018, y: 0.02 },
+        { z: 0.17, width: 0.02, height: 0.01 }
+      ]),
+      { position: [0.03, 0.49, -0.03], rotation: [-0.25, 0.65, 0.2] }
+    )
+  ]);
+  const head: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([
+      russetSkull,
+      creamCheeksAndSnout,
+      eyesAndNose,
+      beretCap,
+      mergeSubmeshes(capSpotsAndCatchlights),
+      sproutTop
+    ]),
+    materials: [
+      PIP_RIG_MAT.russetCoat,
+      PIP_RIG_MAT.creamFur,
+      PIP_RIG_MAT.glossyEye,
+      PIP_RIG_MAT.toadstoolCap,
+      PIP_RIG_MAT.creamSpot,
+      PIP_RIG_MAT.sproutLeaf
+    ]
+  };
+
+  // Expressive tapered ears (left & right, anchored at ear base `(0, 0, 0)`)
+  const makeEar = (side: -1 | 1): GroupedPartSpec => {
+    const outer = transformMesh(
+      loftSectionsMesh([
+        { z: 0, width: 0.11, height: 0.065 },
+        { z: 0.12, width: 0.12, height: 0.055, x: side * 0.02 },
+        { z: 0.24, width: 0.045, height: 0.028, x: side * 0.04 }
+      ]),
+      { rotation: [-Math.PI * 0.44, 0, -side * 0.36] }
+    );
+    const inner = transformMesh(
+      loftSectionsMesh([
+        { z: 0.02, width: 0.065, height: 0.03 },
+        { z: 0.12, width: 0.07, height: 0.028, x: side * 0.016 },
+        { z: 0.20, width: 0.025, height: 0.016, x: side * 0.03 }
+      ]),
+      { position: [0, 0, 0.018], rotation: [-Math.PI * 0.44, 0, -side * 0.36] }
+    );
+    return {
+      spec: buildGroupedGeometrySpec([outer, inner]),
+      materials: [PIP_RIG_MAT.russetCoat, PIP_RIG_MAT.creamFur]
+    };
+  };
+
+  // Moss-sleeved arm + cream mitten paw (pivot at shoulder `(0, 0, 0)`, extending down `-0.26 m`)
+  const armSleeve = latheMesh([[0, -0.17], [0.064, -0.16], [0.068, -0.07], [0.062, 0.02], [0, 0.055]], 12);
+  const pawMitten = transformMesh(icosphereSmoothMesh(0.064, 2, 0.003, 37, 0.15), {
+    position: [0, -0.21, 0.015],
+    scale: [0.95, 1.08, 1.12]
+  });
+  const arm: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([armSleeve, pawMitten]),
+    materials: [PIP_RIG_MAT.mossTunic, PIP_RIG_MAT.creamFur]
+  };
+
+  // Cream breeches + chunky chestnut woodland boot resting cleanly at `y = -0.30 m` (pivot at hip `(0, 0, 0)`)
+  const legBreeches = latheMesh([[0, -0.15], [0.066, -0.14], [0.076, -0.04], [0.068, 0.04], [0, 0.06]], 12);
+  const boot = mergeSubmeshes([
+    latheMesh([[0.058, -0.26], [0.082, -0.26], [0.086, -0.14], [0.072, -0.12]], 12),
+    transformMesh(
+      loftSectionsMesh([
+        { z: -0.08, width: 0.14, height: 0.10, y: -0.25 },
+        { z: 0.04, width: 0.155, height: 0.11, y: -0.245 },
+        { z: 0.15, width: 0.135, height: 0.095, y: -0.255 }
+      ]),
+      { position: [0, 0, 0] }
+    )
+  ]);
+  const foot: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([legBreeches, boot]),
+    materials: [PIP_RIG_MAT.creamFur, PIP_RIG_MAT.leatherBoot]
+  };
+
+  // Upturned fluffy russet-and-cream woodland tail extending along `-Z` (pivot at `(0, 0, 0)`)
+  const tailBase = tubeSweepMesh(
+    [[0, 0, 0], [0, 0.03, -0.12], [0, 0.12, -0.24], [0, 0.21, -0.30]],
+    [0.055, 0.092, 0.105, 0.078],
+    10
+  );
+  const tailTip = tubeSweepMesh(
+    [[0, 0.17, -0.27], [0, 0.25, -0.33], [0, 0.31, -0.35]],
+    [0.082, 0.065, 0.018],
+    10
+  );
+  const tail: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([tailBase, tailTip]),
+    materials: [PIP_RIG_MAT.russetCoat, PIP_RIG_MAT.creamFur]
+  };
+
+  cachedPipRig = { torso, head, earL: makeEar(-1), earR: makeEar(1), arm, foot, tail };
+  return cachedPipRig;
+}
+
+/** Articulated 1.25 m multi-material `@aura3d/engine` Pip hero rig (`pip` + child limb runtime nodes, zero GLBs). */
+export function buildPipHeroNode(
+  name: string,
+  pos: readonly [number, number, number],
+  yaw: number,
+  rt: ReturnType<typeof game.runtimeNode>
+): AuraNodeBuilder<AuraGroupNode> {
+  const rig = ensurePipRig();
+  const part = (id: string, p: GroupedPartSpec, at: readonly [number, number, number]) =>
+    geometry
+      .multiMaterial(p.spec, p.materials, { name: id, position: [...at], castShadow: true, receiveShadow: true })
+      .runtime(game.runtimeNode(id, { tags: ["player", "limb"] }));
+
+  return group(name, [
+    part(`${name}:torso`, rig.torso, [0, 0.44, 0]),
+    part(`${name}:head`, rig.head, [0, 0.76, 0]),
+    part(`${name}:ear-l`, rig.earL, [-0.155, 0.99, -0.02]),
+    part(`${name}:ear-r`, rig.earR, [0.155, 0.99, -0.02]),
+    part(`${name}:arm-l`, rig.arm, [-0.215, 0.65, 0]),
+    part(`${name}:arm-r`, rig.arm, [0.215, 0.65, 0]),
+    part(`${name}:foot-l`, rig.foot, [-0.105, 0.30, 0]),
+    part(`${name}:foot-r`, rig.foot, [0.105, 0.30, 0]),
+    part(`${name}:tail`, rig.tail, [0, 0.35, -0.16])
+  ])
+    .position(pos[0], pos[1], pos[2])
+    .rotate(0, yaw, 0)
+    .runtime(rt);
+}
+
+const BOSS_RIG_MAT = {
+  barkHide: PBL_MAT.roughBark,
+  plumBramble: material.matteClay({ name: "brambleback plum carapace", color: "#5e2748", roughness: 0.84 }),
+  mossPlate: PBL_MAT.velvetMoss,
+  crimsonThorn: PBL_MAT.crimsonLacquer,
+  ivoryTusk: PBL_MAT.creamCapSpot,
+  amberHeart: PBL_MAT.amberLanternGlow
+} as const;
+
+let cachedBossRig: {
+  readonly body: GroupedPartSpec;
+  readonly armL: GroupedPartSpec;
+  readonly armR: GroupedPartSpec;
+  readonly leg: GroupedPartSpec;
+} | null = null;
+
+function ensureBossRig(): NonNullable<typeof cachedBossRig> {
+  if (cachedBossRig) return cachedBossRig;
+
+  // Massive hunched thorn-boar golem torso + snarling snout + dorsal crimson thorns + glowing amber rune & eyes (pivot at y = 1.08)
+  const barkTrunk = mergeSubmeshes([
+    latheMesh([[0, -0.52], [0.58, -0.46], [0.78, -0.12], [0.84, 0.28], [0.68, 0.64], [0.36, 0.84], [0, 0.88]], 18),
+    loftSectionsMesh([
+      { z: 0.42, width: 0.86, height: 0.68, y: 0.16 },
+      { z: 0.78, width: 0.64, height: 0.50, y: 0.08 },
+      { z: 1.02, width: 0.42, height: 0.34, y: 0.04 }
+    ])
+  ]);
+  const plumCarapace = transformMesh(
+    latheMesh([[0, -0.38], [0.54, -0.32], [0.76, 0.05], [0.78, 0.42], [0.52, 0.78], [0, 0.94]], 16),
+    { position: [0, 0.12, -0.18], rotation: [-0.24, 0, 0] }
+  );
+  const mossShoulders = mergeSubmeshes([
+    transformMesh(icosphereFacetMesh(0.38, 1, 0.12, 61), { position: [-0.62, 0.46, 0.06], scale: [1.15, 0.72, 1.05] }),
+    transformMesh(icosphereFacetMesh(0.38, 1, 0.12, 67), { position: [0.62, 0.46, 0.06], scale: [1.15, 0.72, 1.05] }),
+    transformMesh(latheMesh([[0, 0.72], [0.46, 0.68], [0.34, 0.88], [0, 0.94]], 12), { position: [0, 0.14, -0.14] })
+  ]);
+  const dorsalThorns: ProceduralMesh[] = [];
+  const thornCone = latheMesh([[0, 0], [0.13, 0.02], [0.075, 0.26], [0, 0.52]], 7);
+  for (let i = 0; i < 7; i += 1) {
+    const t = i / 6;
+    const arc = -0.35 + t * 1.15;
+    dorsalThorns.push(
+      transformMesh(thornCone, {
+        position: [0, 0.82 - Math.abs(t - 0.35) * 0.42, 0.22 - t * 0.92],
+        rotation: [-0.25 - t * 0.85, 0, 0],
+        scale: 1.05 - Math.abs(t - 0.4) * 0.35
+      })
+    );
+    if (i % 2 === 1) {
+      for (const side of [-1, 1] as const) {
+        dorsalThorns.push(
+          transformMesh(thornCone, {
+            position: [side * 0.44, 0.54 - t * 0.25, 0.05 - t * 0.65],
+            rotation: [-0.35 - arc * 0.3, 0, -side * 0.52],
+            scale: 0.78
+          })
+        );
+      }
+    }
+  }
+  const tusks = mergeSubmeshes([
+    tubeSweepMesh([[-0.22, -0.02, 0.86], [-0.32, 0.08, 1.08], [-0.28, 0.32, 1.16]], [0.075, 0.055, 0.016], 8),
+    tubeSweepMesh([[0.22, -0.02, 0.86], [0.32, 0.08, 1.08], [0.28, 0.32, 1.16]], [0.075, 0.055, 0.016], 8)
+  ]);
+  const amberRunesAndEyes = mergeSubmeshes([
+    transformMesh(icosphereSmoothMesh(0.085, 1, 0.002, 71, 0.2), { position: [-0.23, 0.28, 0.78], scale: [1.15, 0.72, 0.85] }),
+    transformMesh(icosphereSmoothMesh(0.085, 1, 0.002, 73, 0.2), { position: [0.23, 0.28, 0.78], scale: [1.15, 0.72, 0.85] }),
+    transformMesh(bevelBoxMesh(0.26, 0.26, 0.09, 0.03), { position: [0, -0.08, 0.74], rotation: [0, 0, Math.PI * 0.25] })
+  ]);
+  const body: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([
+      barkTrunk,
+      plumCarapace,
+      mossShoulders,
+      mergeSubmeshes(dorsalThorns),
+      tusks,
+      amberRunesAndEyes
+    ]),
+    materials: [
+      BOSS_RIG_MAT.barkHide,
+      BOSS_RIG_MAT.plumBramble,
+      BOSS_RIG_MAT.mossPlate,
+      BOSS_RIG_MAT.crimsonThorn,
+      BOSS_RIG_MAT.ivoryTusk,
+      BOSS_RIG_MAT.amberHeart
+    ]
+  };
+
+  // Heavy smasher golem arms (pivot at shoulder `(0, 0, 0)`, extending down `-0.95 m`)
+  const makeBossArm = (side: -1 | 1): GroupedPartSpec => {
+    const limb = mergeSubmeshes([
+      latheMesh([[0, -0.52], [0.18, -0.48], [0.21, -0.22], [0.19, 0.04], [0, 0.16]], 12),
+      transformMesh(bevelBoxMesh(0.38, 0.36, 0.40, 0.07), { position: [side * 0.03, -0.74, 0.06] })
+    ]);
+    const bracerSpikes = mergeSubmeshes([
+      transformMesh(thornCone, { position: [side * 0.18, -0.46, 0.04], rotation: [0, 0, -side * 1.15], scale: 0.52 }),
+      transformMesh(thornCone, { position: [side * 0.16, -0.66, 0.08], rotation: [0.2, 0, -side * 1.1], scale: 0.48 })
+    ]);
+    const mossCuff = transformMesh(latheMesh([[0.17, -0.56], [0.24, -0.56], [0.24, -0.42], [0.17, -0.42]], 12), {
+      position: [0, 0, 0]
+    });
+    return {
+      spec: buildGroupedGeometrySpec([limb, bracerSpikes, mossCuff]),
+      materials: [BOSS_RIG_MAT.barkHide, BOSS_RIG_MAT.crimsonThorn, BOSS_RIG_MAT.mossPlate]
+    };
+  };
+
+  // Rooted trunk legs grounded at `y = -0.64 m` (`world y = 0` when hip is at `0.64 m`)
+  const legBark = mergeSubmeshes([
+    latheMesh([[0, -0.64], [0.26, -0.64], [0.28, -0.48], [0.22, -0.18], [0.24, 0.06], [0, 0.14]], 12),
+    transformMesh(bevelBoxMesh(0.36, 0.18, 0.46, 0.05), { position: [0, -0.55, 0.08] })
+  ]);
+  const legClaws = mergeSubmeshes([
+    transformMesh(thornCone, { position: [-0.10, -0.58, 0.28], rotation: [Math.PI * 0.46, 0, 0], scale: 0.36 }),
+    transformMesh(thornCone, { position: [0.10, -0.58, 0.28], rotation: [Math.PI * 0.46, 0, 0], scale: 0.36 })
+  ]);
+  const leg: GroupedPartSpec = {
+    spec: buildGroupedGeometrySpec([legBark, legClaws]),
+    materials: [BOSS_RIG_MAT.barkHide, BOSS_RIG_MAT.ivoryTusk]
+  };
+
+  cachedBossRig = { body, armL: makeBossArm(-1), armR: makeBossArm(1), leg };
+  return cachedBossRig;
+}
+
+/** Articulated 2.4 m multi-material `@aura3d/engine` Brambleback boss rig (`brambleback` + runtime limbs, zero GLBs). */
+export function buildBramblebackBossNode(
+  name: string,
+  pos: readonly [number, number, number],
+  rt: ReturnType<typeof game.runtimeNode>
+): AuraNodeBuilder<AuraGroupNode> {
+  const rig = ensureBossRig();
+  const part = (id: string, p: GroupedPartSpec, at: readonly [number, number, number]) =>
+    geometry
+      .multiMaterial(p.spec, p.materials, { name: id, position: [...at], castShadow: true, receiveShadow: true })
+      .runtime(game.runtimeNode(id, { tags: ["boss", "limb"] }));
+
+  return group(name, [
+    part(`${name}:body`, rig.body, [0, 1.08, 0]),
+    part(`${name}:arm-l`, rig.armL, [-0.78, 1.38, 0.12]),
+    part(`${name}:arm-r`, rig.armR, [0.78, 1.38, 0.12]),
+    part(`${name}:leg-l`, rig.leg, [-0.44, 0.64, -0.06]),
+    part(`${name}:leg-r`, rig.leg, [0.44, 0.64, -0.06])
+  ])
+    .position(pos[0], pos[1], pos[2])
+    .runtime(rt);
 }

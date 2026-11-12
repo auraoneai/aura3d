@@ -1,13 +1,14 @@
 /**
  * Craterline GP (`examples/strange-orbit-port`) — 100% Native `@aura3d/engine` 5.5.1
- * Multi-Material Procedural 3D Vehicles, EVA Riders, Lunar GP Track & Colony Props (`WP-19`).
+ * Multi-Material Procedural 3D Lunar GP Racing Motorcycles, Tucked Riders, Track & Colony Props (`WP-19`).
  *
- * Replaces all 9 static single-mesh Meshy clay `.glb` mounts and raw cone/box placeholders
- * with smooth lofted hoverbikes & gravity-skates, articulated EVA spacesuit riders with
- * gold-tinted `material.physical` bubble visors, open `latticeTrussMesh` start/finish gantries,
- * geodesic lunar habitat domes, parabolic `latheMesh` deep-space comms dishes, solar-panel
- * arrays, Apollo descent landers, domed observatories, rover service trailers, pressurized
- * cryo-fuel tanks, and stratified regolith boulders & basalt spires. Zero `three` imports.
+ * Authors sleek futuristic Lunar GP racing motorcycles with Cobalt/Crimson/Carbon liveries,
+ * exposed gunmetal twin-spar frames & swingarms, telescopic front forks, wide dark racing slicks,
+ * compact twin titanium exhaust nozzles, MotoGP-tucked riders with dark gold/iridescent visors,
+ * open `latticeTrussMesh` start/finish gantries, geodesic lunar habitat domes, parabolic
+ * `latheMesh` deep-space comms dishes, solar-panel arrays, Apollo descent landers, domed
+ * observatories, rover service trailers, pressurized cryo-fuel tanks, and stratified regolith boulders.
+ * Zero `three` imports.
  */
 import {
   geometry,
@@ -198,6 +199,46 @@ export function lunarRubberGripMaterial(color = "#151922"): AuraMaterialSpec {
   );
 }
 
+/** Wide dark rubber MotoGP racing slick compound (`roughness: 0.78`, `#171a20`). */
+export function racingSlickTireMaterial(color = "#171a20"): AuraMaterialSpec {
+  return unnamed(
+    material.blackRubber({
+      color,
+      roughness: 0.78,
+      envMapIntensity: 0.34
+    })
+  );
+}
+
+/** Deep gloss carbon-lacquer lower aero belly pan & mudguard finish (`material.lacquer`). */
+export function carbonLacquerMaterial(color = "#151923"): AuraMaterialSpec {
+  return unnamed(
+    material.lacquer({
+      color,
+      roughness: 0.18,
+      clearcoat: 0.94,
+      clearcoatRoughness: 0.04,
+      envMapIntensity: 1.38
+    })
+  );
+}
+
+/** Dark-tinted smoked bubble windscreen (`material.physical`, WebGPU-safe `castShadow: false`). */
+export function darkSmokeWindscreenMaterial(color = "#101826", opacity = 0.62): AuraMaterialSpec {
+  return unnamed(
+    material.physical({
+      color,
+      roughness: 0.04,
+      metallic: 0.08,
+      opacity,
+      clearcoat: 1,
+      clearcoatRoughness: 0.02,
+      ior: 1.52,
+      envMapIntensity: 1.9
+    })
+  );
+}
+
 export function regolithBasaltMaterial(color = "#6d5b56", roughness = 0.92): AuraMaterialSpec {
   return unnamed(
     material.matteClay({
@@ -250,8 +291,11 @@ function normalizeMeshGroundedUnit(mesh: RawMesh): RawMesh {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Lunar Hoverbike + Gravity-Skate + Seated EVA Lower Body (`rider-i-model`)
+// 1. Lunar GP Racing Motorcycle + Gravity-Skate + Tucked Rider Lower Body (`rider-i-model`)
 // ---------------------------------------------------------------------------
+// Mesh axes for `bike`: `-Z` = nose (+X rig forward), `+Z` = tail (-X rig aft), `+Y` = up, `+X` = right (+Z rig side).
+// Front wheel hub sits at `[0, 0.33, -0.74]` (R = 0.33 -> z in [-1.07, -0.41], y <= 0.66, |x| <= 0.095).
+// Rear wheel hub sits at `[0, 0.33, +0.72]` (R = 0.33 -> z in [+0.39, +1.05], y <= 0.66, |x| <= 0.095).
 
 const cachedBikeHullSlots = (() => {
   let cache: readonly MultiMatSlot[] | null = null;
@@ -259,208 +303,310 @@ const cachedBikeHullSlots = (() => {
     if (cache) return cache;
     const slots: MultiMatSlot[] = [];
 
-    // Main aerodynamic twin-turbine fuselage cowling (smooth normals: flatShaded = false)
-    const fuselageSections: V3[][] = [
-      superEllipseRingZ(0.035, 0.035, 0.03, 0.58, -1.12, 16, 0.92),
-      superEllipseRingZ(0.13, 0.12, 0.09, 0.62, -0.84, 16, 0.88),
-      superEllipseRingZ(0.21, 0.21, 0.14, 0.66, -0.46, 16, 0.84),
-      superEllipseRingZ(0.19, 0.24, 0.16, 0.65, -0.14, 16, 0.86),
-      superEllipseRingZ(0.16, 0.13, 0.15, 0.56, 0.18, 16, 0.9),
-      superEllipseRingZ(0.24, 0.17, 0.14, 0.53, 0.58, 16, 0.82),
-      superEllipseRingZ(0.21, 0.13, 0.1, 0.51, 0.88, 16, 0.86)
+    // Slot 0 (`liveryClearcoatMaterial` — Cobalt/Teal/Crimson GP livery with `rim` & `clearcoat: 1`):
+    // 1A. Sculpted aerodynamic MotoGP nose cowl sweeping cleanly above the front wheel (y >= 0.68 over front tire)
+    const noseCowlSections: V3[][] = [
+      superEllipseRingZ(0.032, 0.022, 0.018, 0.70, -1.05, 16, 0.9),
+      superEllipseRingZ(0.115, 0.052, 0.032, 0.725, -0.90, 16, 0.86),
+      superEllipseRingZ(0.175, 0.072, 0.048, 0.75, -0.70, 16, 0.84),
+      superEllipseRingZ(0.19, 0.078, 0.065, 0.755, -0.50, 16, 0.84),
+      superEllipseRingZ(0.165, 0.055, 0.055, 0.74, -0.42, 16, 0.88)
     ];
-    slots.push({ mesh: loftSectionsMesh(fuselageSections, true, false), materialIndex: 0 });
+    slots.push({ mesh: loftSectionsMesh(noseCowlSections, true, false), materialIndex: 0 });
 
-    // Sculpted nose canard winglets & side intake pods (smooth normals)
-    const canardPoly: V2[] = [
-      [0, -0.02],
-      [0.24, -0.05],
-      [0.26, 0.01],
-      [0.05, 0.035]
+    // 1B. Sculpted fuel tank with proud front shoulders (-0.36) narrowing into concave rider knee recesses (-0.08..+0.06)
+    const fuelTankSections: V3[][] = [
+      superEllipseRingZ(0.145, 0.065, 0.055, 0.725, -0.43, 16, 0.88),
+      superEllipseRingZ(0.182, 0.105, 0.085, 0.735, -0.28, 16, 0.82),
+      superEllipseRingZ(0.148, 0.095, 0.08, 0.73, -0.14, 16, 0.86),
+      superEllipseRingZ(0.112, 0.075, 0.065, 0.71, -0.02, 16, 0.9),
+      superEllipseRingZ(0.102, 0.048, 0.048, 0.695, 0.08, 16, 0.92)
     ];
+    slots.push({ mesh: loftSectionsMesh(fuelTankSections, true, false), materialIndex: 0 });
+
+    // 1C. Upswept sharp MotoGP wasp-tail cowl rising cleanly above the wide rear slick (y >= 0.72 over rear wheel)
+    const tailCowlSections: V3[][] = [
+      superEllipseRingZ(0.118, 0.048, 0.036, 0.725, 0.26, 16, 0.88),
+      superEllipseRingZ(0.138, 0.068, 0.042, 0.765, 0.44, 16, 0.84),
+      superEllipseRingZ(0.122, 0.064, 0.038, 0.80, 0.64, 16, 0.84),
+      superEllipseRingZ(0.078, 0.042, 0.028, 0.825, 0.80, 16, 0.88),
+      superEllipseRingZ(0.032, 0.022, 0.018, 0.835, 0.90, 16, 0.92)
+    ];
+    slots.push({ mesh: loftSectionsMesh(tailCowlSections, true, false), materialIndex: 0 });
+
+    // Slot 1 (`accentCarPaintMaterial` — high-contrast racing stripes, side cheek fairings & knee sliders):
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.052, 0.018, 0.38, 0.006), {
+        pos: [0, 0.832, -0.22],
+        rot: [0.06, 0, 0]
+      }),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.068, 0.018, 0.34, 0.006), {
+        pos: [0, 0.852, 0.58],
+        rot: [0.16, 0, 0]
+      }),
+      materialIndex: 1
+    });
+
+    // Slot 2 (`carbonLacquerMaterial` — dark gloss carbon-weave belly pan & close-fitting front fender hugger):
+    // Belly pan sits strictly between front wheel (-0.41) and rear wheel (+0.39) so zero tire clipping occurs.
+    const bellyPanSections: V3[][] = [
+      superEllipseRingZ(0.078, 0.055, 0.045, 0.31, -0.37, 14, 0.86),
+      superEllipseRingZ(0.138, 0.095, 0.072, 0.33, -0.20, 14, 0.8),
+      superEllipseRingZ(0.142, 0.092, 0.075, 0.32, 0.04, 14, 0.8),
+      superEllipseRingZ(0.112, 0.068, 0.055, 0.33, 0.25, 14, 0.86),
+      superEllipseRingZ(0.065, 0.042, 0.035, 0.35, 0.34, 14, 0.9)
+    ];
+    slots.push({ mesh: loftSectionsMesh(bellyPanSections, true, false), materialIndex: 2 });
+
+    // Carbon front fender arch hugging just above the front slick crown
+    const fenderPts = catmullRomSpline3([
+      [0, 0.625, -0.92],
+      [0, 0.678, -0.76],
+      [0, 0.642, -0.58]
+    ], 5);
+    slots.push({
+      mesh: transformMesh(
+        tubeSweepMesh(fenderPts.map((p) => [p[0], p[1], p[2], 0.088] as const), 12, false),
+        { scale: [1.08, 0.22, 1] }
+      ),
+      materialIndex: 2
+    });
+
     for (const side of [-1, 1] as const) {
+      // Sculpted diagonal side cheek fairing panels sweeping from nose cowl down to mid-frame (no protruding pods!)
+      const cheekSections: V3[][] = [
+        superEllipseRingZ(0.018, 0.048, 0.042, 0, -0.58, 10, 0.86),
+        superEllipseRingZ(0.024, 0.085, 0.078, -0.04, -0.36, 10, 0.84),
+        superEllipseRingZ(0.02, 0.065, 0.058, -0.08, -0.18, 10, 0.88)
+      ];
       slots.push({
-        mesh: transformMesh(extrudePolygonMesh(canardPoly, 0.22, 0.012, false), {
-          pos: [side * 0.1, 0.58, -0.82],
-          rot: [0.12, side * 0.18, -side * 0.14],
-          scale: [side, 1, 1]
+        mesh: transformMesh(loftSectionsMesh(cheekSections, true, false), {
+          pos: [side * 0.158, 0.61, 0],
+          rot: [0, side * 0.06, -side * 0.12]
         }),
         materialIndex: 1
       });
 
-      const podSections: V3[][] = [
-        superEllipseRingZ(0.055, 0.075, 0.065, 0, -0.48, 12, 0.85),
-        superEllipseRingZ(0.085, 0.105, 0.09, 0, -0.16, 12, 0.82),
-        superEllipseRingZ(0.075, 0.095, 0.08, 0, 0.34, 12, 0.85),
-        superEllipseRingZ(0.045, 0.06, 0.05, 0, 0.66, 12, 0.9)
-      ];
+      // Carbon tank knee-grip traction pads inside the tank recesses
       slots.push({
-        mesh: transformMesh(loftSectionsMesh(podSections, true, false), {
-          pos: [side * 0.22, 0.49, 0]
+        mesh: transformMesh(bevelBoxMesh(0.016, 0.085, 0.22, 0.005), {
+          pos: [side * 0.132, 0.72, -0.10],
+          rot: [0, side * 0.14, 0]
         }),
-        materialIndex: 0
+        materialIndex: 5
       });
 
-      // Radiator louvers inside each side intake pod
-      for (let l = 0; l < 4; l += 1) {
-        slots.push({
-          mesh: transformMesh(bevelBoxMesh(0.09, 0.018, 0.08, 0.004), {
-            pos: [side * 0.275, 0.53 - l * 0.034, -0.34 + l * 0.055],
-            rot: [0.38, 0, 0]
-          }),
-          materialIndex: 2
-        });
-      }
-
-      // Raked front vane forks + telescopic fork stanchions + rear swingarm + ventral hover skid
-      const vanePoly: V2[] = [
-        [-0.04, -0.24],
-        [0.045, -0.24],
-        [0.065, 0.22],
-        [-0.025, 0.24]
-      ];
-      slots.push({
-        mesh: transformMesh(extrudePolygonMesh(vanePoly, 0.032, 0.008, false), {
-          pos: [side * 0.105, 0.55, -0.58],
-          rot: [0.56, Math.PI * 0.5, 0]
-        }),
-        materialIndex: 3
-      });
+      // Slot 3 (`anisotropicAlloyMaterial` dark gunmetal):
+      // Exposed twin-spar perimeter frame beam sweeping from steering head (-0.50, 0.73) to swingarm pivot (+0.16, 0.41)
       slots.push({
         mesh: tubeSweepMesh(
           [
-            [side * 0.095, 0.82, -0.43, 0.024],
-            [side * 0.105, 0.56, -0.58, 0.022],
-            [side * 0.105, 0.34, -0.72, 0.02]
+            [side * 0.088, 0.73, -0.50, 0.026],
+            [side * 0.136, 0.59, -0.22, 0.032],
+            [side * 0.132, 0.44, 0.08, 0.03],
+            [side * 0.126, 0.39, 0.18, 0.028]
           ],
           10,
           false
         ),
         materialIndex: 3
       });
+      // Exposed tubular rear subframe strut supporting the upswept tail cowl
       slots.push({
         mesh: tubeSweepMesh(
           [
-            [side * 0.11, 0.47, 0.22, 0.032],
-            [side * 0.125, 0.39, 0.48, 0.028],
-            [side * 0.115, 0.34, 0.72, 0.024]
-          ],
-          10,
-          false
-        ),
-        materialIndex: 2
-      });
-      slots.push({
-        mesh: tubeSweepMesh(
-          [
-            [side * 0.14, 0.13, -0.44, 0.018],
-            [side * 0.15, 0.1, -0.1, 0.02],
-            [side * 0.15, 0.1, 0.32, 0.02],
-            [side * 0.13, 0.15, 0.54, 0.016]
+            [side * 0.118, 0.43, 0.16, 0.018],
+            [side * 0.105, 0.60, 0.34, 0.016],
+            [side * 0.092, 0.74, 0.52, 0.014]
           ],
           8,
           false
         ),
-        materialIndex: 2
-      });
-
-      // +Z Rear twin ion thruster outer nacelle bells & glowing plasma rings
-      const shroudProfile: V2[] = [
-        [0.068, 0],
-        [0.095, 0.05],
-        [0.108, 0.16],
-        [0.116, 0.24],
-        [0.096, 0.24],
-        [0.082, 0.08]
-      ];
-      slots.push({
-        mesh: transformMesh(latheMesh(shroudProfile, 18, false), {
-          pos: [side * 0.13, 0.5, 0.74],
-          rot: [Math.PI * 0.5, 0, 0]
-        }),
         materialIndex: 3
       });
-      const coreProfile: V2[] = [
-        [0, 0.02],
-        [0.076, 0.04],
-        [0.084, 0.18],
-        [0, 0.21]
-      ];
-      slots.push({
-        mesh: transformMesh(latheMesh(coreProfile, 16, false), {
-          pos: [side * 0.13, 0.5, 0.78],
-          rot: [Math.PI * 0.5, 0, 0]
-        }),
-        materialIndex: 6
-      });
 
-      // Seated articulated EVA rider lower leg (hip -> knee -> boot on alloy footpeg)
+      // Twin-sided sculpted dark gunmetal rear swingarm (|x| = 0.126 > 0.095 tire halfWidth -> clean hub clearance!)
       slots.push({
         mesh: tubeSweepMesh(
           [
-            [side * 0.105, 0.74, 0.12, 0.078],
-            [side * 0.165, 0.62, -0.14, 0.068],
-            [side * 0.175, 0.42, 0.03, 0.058],
-            [side * 0.165, 0.35, 0.09, 0.052]
+            [side * 0.126, 0.40, 0.16, 0.034],
+            [side * 0.132, 0.385, 0.44, 0.032],
+            [side * 0.122, 0.33, 0.72, 0.026]
           ],
-          12,
+          10,
           false
         ),
-        materialIndex: 5
-      });
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.095, 0.075, 0.21, 0.022), {
-          pos: [side * 0.168, 0.33, 0.04],
-          rot: [0.18, 0, 0]
-        }),
-        materialIndex: 4
-      });
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.09, 0.022, 0.05, 0.006), {
-          pos: [side * 0.185, 0.3, 0.06]
-        }),
         materialIndex: 3
       });
-    }
-
-    // Swept clip-on handlebars, rubber grips, contoured saddle & nose LED headlamp
-    const barPts = catmullRomSpline3([
-      [-0.33, 0.87, -0.34],
-      [-0.17, 0.92, -0.43],
-      [0, 0.91, -0.46],
-      [0.17, 0.92, -0.43],
-      [0.33, 0.87, -0.34]
-    ], 6);
-    slots.push({
-      mesh: tubeSweepMesh(barPts.map((p) => [p[0], p[1], p[2], 0.019] as const), 10, false),
-      materialIndex: 3
-    });
-    for (const side of [-1, 1] as const) {
+      // Lower swingarm triangulation brace + machined rear axle carrier block
       slots.push({
         mesh: tubeSweepMesh(
           [
-            [side * 0.21, 0.9, -0.4, 0.026],
-            [side * 0.34, 0.865, -0.335, 0.026]
+            [side * 0.124, 0.35, 0.22, 0.018],
+            [side * 0.128, 0.32, 0.48, 0.018],
+            [side * 0.122, 0.33, 0.72, 0.018]
+          ],
+          8,
+          false
+        ),
+        materialIndex: 3
+      });
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.028, 0.056, 0.075, 0.008), {
+          pos: [side * 0.122, 0.33, 0.72]
+        }),
+        materialIndex: 3
+      });
+
+      // Rearset alloy footpeg hanger + knurled racing peg
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.055, 0.018, 0.024, 0.005), {
+          pos: [side * 0.162, 0.365, 0.20]
+        }),
+        materialIndex: 3
+      });
+
+      // Slot 4 (`polishedTitaniumMaterial` anodized gold-titanium):
+      // Inverted telescopic front fork outer tube & lower slider reaching cleanly to front wheel hub (-0.74, 0.33)
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.112, 0.755, -0.49, 0.025],
+            [side * 0.115, 0.565, -0.605, 0.024]
           ],
           10,
           false
         ),
         materialIndex: 4
       });
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.115, 0.57, -0.60, 0.019],
+            [side * 0.118, 0.33, -0.74, 0.019]
+          ],
+          10,
+          false
+        ),
+        materialIndex: 3
+      });
+      // Radial front brake caliper mount at bottom of fork leg
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.028, 0.068, 0.062, 0.008), {
+          pos: [side * 0.114, 0.355, -0.70],
+          rot: [0.46, 0, 0]
+        }),
+        materialIndex: 4
+      });
+
+      // Low MotoGP clip-on handlebar tube + black rubber grip (`[side * 0.25, 0.73, -0.42]`)
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.11, 0.748, -0.49, 0.015],
+            [side * 0.19, 0.738, -0.45, 0.014],
+            [side * 0.27, 0.724, -0.405, 0.014]
+          ],
+          8,
+          false
+        ),
+        materialIndex: 4
+      });
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.185, 0.739, -0.452, 0.02],
+            [side * 0.275, 0.723, -0.402, 0.02]
+          ],
+          8,
+          false
+        ),
+        materialIndex: 5
+      });
+
+      // Slot 6 (`evaThermalSuitMaterial` dark racing leathers):
+      // Tucked MotoGP rider thigh hugging fuel tank recess -> knee -> shin -> boot tucked onto rearset footpeg!
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.088, 0.735, 0.17, 0.072],
+            [side * 0.136, 0.565, -0.13, 0.062],
+            [side * 0.148, 0.415, 0.16, 0.05]
+          ],
+          12,
+          false
+        ),
+        materialIndex: 6
+      });
+      // Livery knee-slider puck on outer knee
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.026, 0.068, 0.088, 0.01), {
+          pos: [side * 0.168, 0.555, -0.12],
+          rot: [0.24, side * 0.12, 0]
+        }),
+        materialIndex: 1
+      });
+      // Sleek armored racing boot planted toes-down on rearset footpeg
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.078, 0.064, 0.185, 0.02), {
+          pos: [side * 0.152, 0.39, 0.18],
+          rot: [0.34, 0, 0]
+        }),
+        materialIndex: 5
+      });
+
+      // Slot 7 (`practicalIonGlowMaterial`): aggressive twin slanted LED endurance headlamps in nose cowl
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.056, 0.02, 0.042, 0.006), {
+          pos: [side * 0.062, 0.708, -1.005],
+          rot: [0.18, side * 0.22, -side * 0.18]
+        }),
+        materialIndex: 7
+      });
     }
+
+    // Machined upper & lower triple clamp bridges across steering head
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.24, 0.075, 0.42, 0.028), {
-        pos: [0, 0.72, 0.16],
-        rot: [-0.08, 0, 0]
+      mesh: transformMesh(bevelBoxMesh(0.24, 0.022, 0.065, 0.006), {
+        pos: [0, 0.752, -0.495],
+        rot: [0.46, 0, 0]
       }),
       materialIndex: 4
     });
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.16, 0.05, 0.07, 0.016), {
-        pos: [0, 0.6, -1.07],
-        rot: [0.22, 0, 0]
+      mesh: transformMesh(bevelBoxMesh(0.245, 0.024, 0.068, 0.006), {
+        pos: [0, 0.59, -0.585],
+        rot: [0.46, 0, 0]
+      }),
+      materialIndex: 3
+    });
+
+    // Contoured black Alcantara MotoGP race saddle +ライダー pelvis bridge seamlessly meeting `torso`
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.205, 0.048, 0.28, 0.018), {
+        pos: [0, 0.705, 0.18],
+        rot: [0.08, 0, 0]
+      }),
+      materialIndex: 5
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.195, 0.115, 0.19, 0.046), {
+        pos: [0, 0.755, 0.16],
+        rot: [0.28, 0, 0]
       }),
       materialIndex: 6
+    });
+
+    // Razor-thin vertical LED tail blade recessed in upswept wasp-tail tip
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.044, 0.036, 0.035, 0.008), {
+        pos: [0, 0.832, 0.895],
+        rot: [0.14, 0, 0]
+      }),
+      materialIndex: 7
     });
 
     cache = slots;
@@ -584,21 +730,49 @@ export interface RiderVehicleNodeOptions {
   readonly look: OrbitLook;
 }
 
+/** Builds the sleek Lunar GP racing motorcycle chassis (`rider-i-model`) with Cobalt/Crimson/Carbon contrast, exposed twin-spar frame, swingarm & forks. */
+export function buildHoverBikeChassisNode(
+  options: RiderVehicleNodeOptions
+): GroupBuilder {
+  const slots = cachedBikeHullSlots();
+  const rimColor = options.isHero ? "#ffe2c4" : "#c8d0ef";
+  const rimIntensity = options.isHero ? 0.28 : 0.34;
+  const glowColor = options.isHero ? "#62e2ff" : "#ffae5c";
+  const materials: readonly AuraMaterialSpec[] = [
+    liveryClearcoatMaterial(options.primaryColor, rimColor, rimIntensity),
+    accentCarPaintMaterial(options.accentColor),
+    carbonLacquerMaterial("#151923"),
+    anisotropicAlloyMaterial("#2b3340", 0.26),
+    polishedTitaniumMaterial("#d6b265", 0.16),
+    lunarRubberGripMaterial("#151820"),
+    evaThermalSuitMaterial(options.suitColor, "#9aa6b8"),
+    practicalIonGlowMaterial(glowColor, options.isHero ? 2.8 : 2.2)
+  ];
+  return assembleMultiMaterialNode(options.id, slots, materials, {
+    id: options.id,
+    castShadow: options.castShadow,
+    receiveShadow: options.look === "original"
+  });
+}
+
 /** Builds `rider-i-model` (`parts[0]`) with per-rider clearcoat livery (`material 0`) & `rim` highlight. */
 export function createLunarRiderVehicleNode(
   options: RiderVehicleNodeOptions
 ): GroupBuilder {
-  const slots = options.vehicle === "skate" ? cachedSkateHullSlots() : cachedBikeHullSlots();
+  if (options.vehicle === "bike") {
+    return buildHoverBikeChassisNode(options);
+  }
+  const slots = cachedSkateHullSlots();
   const rimColor = options.isHero ? "#ffe2c4" : "#c8d0ef";
   const rimIntensity = options.isHero ? 0.28 : 0.35;
   const glowColor = options.isHero ? "#7ae6ff" : "#ffae5c";
   const materials: readonly AuraMaterialSpec[] = [
     liveryClearcoatMaterial(options.primaryColor, rimColor, rimIntensity),
     accentCarPaintMaterial(options.accentColor),
-    anisotropicAlloyMaterial("#8c97a6", 0.27),
-    polishedTitaniumMaterial("#e2eaf3", 0.13),
+    anisotropicAlloyMaterial("#3a4352", 0.27),
+    polishedTitaniumMaterial("#cdd6e2", 0.15),
     lunarRubberGripMaterial("#141821"),
-    evaThermalSuitMaterial(options.suitColor, "#f7f2ea"),
+    evaThermalSuitMaterial(options.suitColor, "#9aa6b8"),
     practicalIonGlowMaterial(glowColor, options.isHero ? 2.9 : 2.2)
   ];
   return assembleMultiMaterialNode(options.id, slots, materials, {
@@ -637,6 +811,97 @@ export function createGhostRiderNode(vehicle: Vehicle): PrimitiveBuilder {
 // 2. Articulated Rider Sub-Parts (`fairing`, `wheelF/R`, `nozzleL/R`, `coneL/R`, `torso`, `visor`)
 // ---------------------------------------------------------------------------
 
+/** Builds a wide MotoGP racing slick wheel centered on local `+Y` axle (`wheel` maps `+Y -> +Z` lateral axle). */
+function buildMotoGpWheelSlots(radius: number, halfWidth: number, spokes: number): MultiMatSlot[] {
+  const slots: MultiMatSlot[] = [];
+  const rimR = radius * 0.64;
+
+  // Slot 0: Wide rounded MotoGP dark rubber racing slick tire (`latheMesh` around local +Y axle)
+  const slickProfile: V2[] = [
+    [rimR, -halfWidth * 0.82],
+    [radius * 0.78, -halfWidth * 0.98],
+    [radius * 0.91, -halfWidth],
+    [radius * 0.975, -halfWidth * 0.68],
+    [radius, -halfWidth * 0.26],
+    [radius, halfWidth * 0.26],
+    [radius * 0.975, halfWidth * 0.68],
+    [radius * 0.91, halfWidth],
+    [radius * 0.78, halfWidth * 0.98],
+    [rimR, halfWidth * 0.82],
+    [rimR * 0.94, halfWidth * 0.72],
+    [rimR * 0.94, -halfWidth * 0.72],
+    [rimR, -halfWidth * 0.82]
+  ];
+  slots.push({ mesh: latheMesh(slickProfile, 26, false), materialIndex: 0 });
+
+  // Slot 1: Deep-dish machined alloy rim barrel + center hub + 5-spoke split turbine spokes
+  const rimBarrel: V2[] = [
+    [rimR * 0.88, -halfWidth * 0.72],
+    [rimR * 0.98, -halfWidth * 0.76],
+    [rimR * 0.98, halfWidth * 0.76],
+    [rimR * 0.88, halfWidth * 0.72],
+    [rimR * 0.88, -halfWidth * 0.72]
+  ];
+  slots.push({ mesh: latheMesh(rimBarrel, 22, false), materialIndex: 1 });
+
+  const hubProfile: V2[] = [
+    [0, -halfWidth * 0.86],
+    [radius * 0.19, -halfWidth * 0.86],
+    [radius * 0.22, -halfWidth * 0.45],
+    [radius * 0.22, halfWidth * 0.45],
+    [radius * 0.19, halfWidth * 0.86],
+    [0, halfWidth * 0.86]
+  ];
+  slots.push({ mesh: latheMesh(hubProfile, 16, false), materialIndex: 1 });
+
+  for (let s = 0; s < spokes; s += 1) {
+    const baseAngle = (s / spokes) * Math.PI * 2;
+    for (const branch of [-0.14, 0.14] as const) {
+      const a0 = baseAngle + branch * 0.35;
+      const a1 = baseAngle + branch;
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [Math.cos(a0) * radius * 0.19, 0, Math.sin(a0) * radius * 0.19, radius * 0.036],
+            [Math.cos(a1) * rimR * 0.9, 0, Math.sin(a1) * rimR * 0.9, radius * 0.026]
+          ],
+          6,
+          false
+        ),
+        materialIndex: 1
+      });
+    }
+  }
+
+  // Slot 2: Twin ventilated steel brake rotors flanking the hub
+  for (const side of [-1, 1] as const) {
+    const yDisc = side * halfWidth * 0.56;
+    const rotorProfile: V2[] = [
+      [radius * 0.26, yDisc - 0.008],
+      [radius * 0.50, yDisc - 0.008],
+      [radius * 0.50, yDisc + 0.008],
+      [radius * 0.26, yDisc + 0.008],
+      [radius * 0.26, yDisc - 0.008]
+    ];
+    slots.push({ mesh: latheMesh(rotorProfile, 20, false), materialIndex: 2 });
+  }
+
+  // Slot 3: Crisp glowing cyan/amber rim lip caliper accent ring on both wheel faces
+  for (const side of [-1, 1] as const) {
+    const yLip = side * halfWidth * 0.77;
+    const accentRing: V2[] = [
+      [rimR * 0.92, yLip - 0.006],
+      [rimR * 1.01, yLip - 0.006],
+      [rimR * 1.01, yLip + 0.006],
+      [rimR * 0.92, yLip + 0.006],
+      [rimR * 0.92, yLip - 0.006]
+    ];
+    slots.push({ mesh: latheMesh(accentRing, 22, false), materialIndex: 3 });
+  }
+
+  return slots;
+}
+
 const cachedSubPartMeshes = (() => {
   let cache: {
     readonly bikeFairing: AuraCustomGeometrySpec;
@@ -645,115 +910,105 @@ const cachedSubPartMeshes = (() => {
     readonly skateWheel: readonly MultiMatSlot[];
     readonly nozzle: readonly MultiMatSlot[];
     readonly machCone: AuraCustomGeometrySpec;
-    readonly torso: readonly MultiMatSlot[];
+    readonly bikeTorso: readonly MultiMatSlot[];
+    readonly skateTorso: readonly MultiMatSlot[];
     readonly visorHelmet: readonly MultiMatSlot[];
   } | null = null;
-
-  const buildGyroWheel = (radius: number, halfWidth: number, spokes: number): MultiMatSlot[] => {
-    // `wheelAssemblySlots` builds axle along X; rotate -90 deg about Z so axle aligns along +Y for `wheelSpin`
-    const raw = wheelAssemblySlots({
-      radius,
-      width: halfWidth * 2,
-      spokeCount: spokes,
-      tireMat: 0,
-      rimMat: 1,
-      rotorMat: 2
-    }).map((s) => ({
-      mesh: transformMesh(s.mesh, { rot: [0, 0, Math.PI * 0.5] }),
-      materialIndex: s.materialIndex
-    }));
-    const glowRing: V2[] = [
-      [radius * 0.56, -halfWidth * 0.72],
-      [radius * 0.64, -halfWidth * 0.72],
-      [radius * 0.64, halfWidth * 0.72],
-      [radius * 0.56, halfWidth * 0.72]
-    ];
-    raw.push({ mesh: latheMesh(glowRing, 18, false), materialIndex: 3 });
-    return raw;
-  };
 
   return () => {
     if (cache) return cache;
 
+    // Curved MotoGP dark-smoke double-bubble windscreen sweeping smoothly from nose cowl (+X) up & aft (-X)
+    // `superEllipseRingZ` lofts along Z; rotating -90 deg about Y maps -Z -> +X (forward nose edge) and +Z -> -X (aft lip)
+    const windscreenSections: V3[][] = [
+      superEllipseRingZ(0.055, 0.012, 0.008, -0.045, -0.24, 12, 0.9),
+      superEllipseRingZ(0.125, 0.042, 0.012, -0.005, -0.08, 12, 0.84),
+      superEllipseRingZ(0.145, 0.058, 0.012, 0.038, 0.08, 12, 0.82),
+      superEllipseRingZ(0.132, 0.048, 0.01, 0.068, 0.20, 12, 0.86)
+    ];
     const fairingBike = mergeRawMeshes([
-      transformMesh(
-        loftSectionsMesh(
-          [
-            superEllipseRingZ(0.03, 0.025, 0.02, 0, -0.44, 10, 0.9),
-            superEllipseRingZ(0.11, 0.06, 0.045, 0.01, -0.08, 10, 0.84),
-            superEllipseRingZ(0.085, 0.048, 0.035, 0, 0.42, 10, 0.88)
-          ],
-          true,
-          false
-        ),
-        { rot: [0, -Math.PI * 0.5, 0] }
-      )
+      transformMesh(loftSectionsMesh(windscreenSections, true, false), {
+        rot: [0, -Math.PI * 0.5, 0]
+      })
     ]);
     const fairingSkate = mergeRawMeshes([
       transformMesh(bevelBoxMesh(0.76, 0.04, 0.22, 0.014), { pos: [0, 0, 0] })
     ]);
 
-    const nozzleProfile: V2[] = [
-      [0.042, -0.11],
-      [0.036, -0.04],
-      [0.052, 0.04],
-      [0.068, 0.11],
-      [0.054, 0.11],
-      [0.038, 0.02]
+    // Compact sleek anodized-titanium slash-cut exhaust/ion nozzle (`alongForward` maps +Y -> -X aft)
+    const nozzleSleeveProfile: V2[] = [
+      [0.032, -0.10],
+      [0.038, -0.03],
+      [0.045, 0.05],
+      [0.048, 0.10],
+      [0.041, 0.10],
+      [0.034, 0.02],
+      [0.032, -0.10]
+    ];
+    const nozzleCollarProfile: V2[] = [
+      [0.044, 0.055],
+      [0.050, 0.065],
+      [0.050, 0.092],
+      [0.045, 0.098],
+      [0.044, 0.055]
     ];
     const nozzle: MultiMatSlot[] = [
-      { mesh: latheMesh(nozzleProfile, 16, false), materialIndex: 0 },
+      { mesh: latheMesh(nozzleSleeveProfile, 18, false), materialIndex: 0 },
+      { mesh: latheMesh(nozzleCollarProfile, 18, false), materialIndex: 1 },
       {
         mesh: latheMesh(
           [
-            [0, -0.02],
-            [0.044, 0.02],
-            [0.05, 0.095],
-            [0, 0.105]
+            [0, -0.01],
+            [0.034, 0.02],
+            [0.039, 0.088],
+            [0, 0.095]
           ],
           14,
           false
         ),
-        materialIndex: 1
+        materialIndex: 2
       }
     ];
 
-    const coneProfile = bezierCurve2([0.068, -0.18], [0.082, -0.05], [0.038, 0.1], [0.003, 0.24], 10);
-    const machCone = mergeRawMeshes([latheMesh([[0, -0.18], ...coneProfile], 14, false)]);
+    const coneProfile = bezierCurve2([0.046, -0.15], [0.056, -0.04], [0.028, 0.09], [0.003, 0.21], 10);
+    const machCone = mergeRawMeshes([latheMesh([[0, -0.15], ...coneProfile], 14, false)]);
 
     cache = {
       bikeFairing: fairingBike,
       skateFairing: fairingSkate,
-      bikeWheel: buildGyroWheel(0.29, 0.055, 6),
-      skateWheel: buildGyroWheel(0.095, 0.042, 5),
+      bikeWheel: buildMotoGpWheelSlots(0.33, 0.095, 5),
+      skateWheel: buildMotoGpWheelSlots(0.095, 0.042, 5),
       nozzle,
       machCone,
-      torso: buildEvaTorsoSlots(),
-      visorHelmet: buildEvaHelmetSlots()
+      bikeTorso: buildMotoGpTorsoSlots(true),
+      skateTorso: buildMotoGpTorsoSlots(false),
+      visorHelmet: buildMotoGpHelmetSlots()
     };
     return cache;
   };
 })();
 
-function buildEvaTorsoSlots(): MultiMatSlot[] {
+function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
 
-  // Smooth lofted EVA thermal suit torso (rig axes: +X forward chest, +Y up, +Z shoulders)
-  const makeTorsoRing = (rx: number, rz: number, y: number): V3[] => {
+  // Tapered athletic MotoGP racing leathers torso (`+X` chest toward tank, `-X` arched spine, `+Y` waist->neck, `+-Z` shoulders)
+  const makeTorsoRing = (rxFront: number, rxBack: number, rz: number, cx: number, y: number): V3[] => {
     const pts: V3[] = [];
     for (let i = 0; i < 16; i += 1) {
       const a = (i / 16) * Math.PI * 2;
-      pts.push([Math.cos(a) * rx, y, Math.sin(a) * rz]);
+      const ca = Math.cos(a);
+      const rx = ca >= 0 ? rxFront : rxBack;
+      pts.push([cx + ca * rx, y, Math.sin(a) * rz]);
     }
     return pts;
   };
   slots.push({
     mesh: loftSectionsMesh(
       [
-        makeTorsoRing(0.11, 0.145, -0.22),
-        makeTorsoRing(0.135, 0.175, -0.06),
-        makeTorsoRing(0.15, 0.205, 0.12),
-        makeTorsoRing(0.11, 0.145, 0.24)
+        makeTorsoRing(0.092, 0.095, 0.118, -0.015, -0.20),
+        makeTorsoRing(0.108, 0.105, 0.145, 0.0, -0.06),
+        makeTorsoRing(0.118, 0.112, 0.172, 0.01, 0.10),
+        makeTorsoRing(0.088, 0.088, 0.118, 0.015, 0.22)
       ],
       true,
       false
@@ -761,107 +1016,210 @@ function buildEvaTorsoSlots(): MultiMatSlot[] {
     materialIndex: 0
   });
 
-  // Contoured `clearcoatPaint` chest telemetry pack (+X front) & shoulder pauldrons
+  // Compact sculpted aerodynamic MotoGP speed-hump tapering seamlessly down the spine (-X dorsal side; NO boxy backpack!)
+  const speedHumpSections: V3[][] = [
+    makeTorsoRing(0.018, 0.032, 0.045, -0.085, -0.14),
+    makeTorsoRing(0.022, 0.062, 0.072, -0.10, 0.02),
+    makeTorsoRing(0.024, 0.068, 0.078, -0.102, 0.14),
+    makeTorsoRing(0.016, 0.036, 0.052, -0.082, 0.215)
+  ];
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.065, 0.18, 0.21, 0.018), { pos: [0.145, 0.05, 0] }),
+    mesh: loftSectionsMesh(speedHumpSections, true, false),
     materialIndex: 1
   });
+
+  // Sleek contoured chest armor plate (+X front)
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.018, 0.045, 0.11, 0.005), { pos: [0.18, 0.08, 0] }),
-    materialIndex: 3
+    mesh: transformMesh(bevelBoxMesh(0.036, 0.14, 0.17, 0.014), { pos: [0.112, 0.05, 0] }),
+    materialIndex: 1
   });
 
-  // Dorsal PLSS life-support backpack (-X back) + twin `latheMesh` cryo O2 cylinders
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.13, 0.31, 0.26, 0.024), { pos: [-0.165, 0.04, 0] }),
-    materialIndex: 2
-  });
-  const tankProf: V2[] = [
-    [0, -0.14],
-    [0.048, -0.12],
-    [0.052, 0],
-    [0.048, 0.12],
-    [0, 0.14]
-  ];
   for (const side of [-1, 1] as const) {
+    // Titanium/livery MotoGP shoulder slider cups
     slots.push({
-      mesh: transformMesh(latheMesh(tankProf, 14, false), { pos: [-0.215, 0.03, side * 0.072] }),
-      materialIndex: 2
-    });
-    // Articulated EVA shoulder -> elbow -> gauntlet reaching forward toward handlebars
-    slots.push({
-      mesh: tubeSweepMesh(
-        [
-          [0.02, 0.16, side * 0.21, 0.064],
-          [0.18, 0.04, side * 0.25, 0.055],
-          [0.34, -0.04, side * 0.21, 0.048]
-        ],
-        12,
-        false
-      ),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.11, 0.075, 0.08, 0.02), {
-        pos: [0.37, -0.05, side * 0.2],
-        rot: [0, -side * 0.15, -0.2]
+      mesh: transformMesh(bevelBoxMesh(0.078, 0.068, 0.052, 0.02), {
+        pos: [0.015, 0.155, side * 0.182],
+        rot: [side * 0.22, 0, -0.18]
       }),
       materialIndex: 1
     });
+
+    if (tuckedBike) {
+      // Articulated MotoGP tuck arm: shoulder -> low tucked elbow -> forearm -> racing glove gripping clip-on bar!
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [0.015, 0.16, side * 0.175, 0.052],
+            [0.225, 0.105, side * 0.252, 0.046],
+            [0.415, 0.142, side * 0.242, 0.038]
+          ],
+          12,
+          false
+        ),
+        materialIndex: 0
+      });
+      // Armored racing gauntlet glove wrapped onto clip-on grip
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.095, 0.055, 0.065, 0.018), {
+          pos: [0.43, 0.148, side * 0.24],
+          rot: [0, -side * 0.14, 0.12]
+        }),
+        materialIndex: 2
+      });
+    } else {
+      // Athletic crouched gravity-skate balance arms
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [0.015, 0.15, side * 0.175, 0.052],
+            [0.14, 0.04, side * 0.23, 0.045],
+            [0.27, -0.02, side * 0.20, 0.038]
+          ],
+          12,
+          false
+        ),
+        materialIndex: 0
+      });
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.09, 0.055, 0.065, 0.018), {
+          pos: [0.29, -0.03, side * 0.195],
+          rot: [0, -side * 0.15, -0.16]
+        }),
+        materialIndex: 2
+      });
+    }
   }
   return slots;
 }
 
-function buildEvaHelmetSlots(): MultiMatSlot[] {
+function buildMotoGpHelmetSlots(): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
 
-  // Smooth pressurized EVA helmet shell (`latheMesh` with smooth normals)
-  const shellProf: V2[] = [
-    [0, -0.13],
-    [0.118, -0.12],
-    [0.148, -0.04],
-    [0.154, 0.04],
-    [0.132, 0.115],
-    [0.075, 0.152],
-    [0, 0.162]
+  // Aerodynamic full-face MotoGP racing helmet shell elongated fore-aft (`+X` pointed chin bar, `-X` rear aero spoiler)
+  // Built via `superEllipseRingZ` (-Z chin -> +Z rear spoiler) rotated -90 deg about Y so -Z maps to +X forward!
+  const helmetSections: V3[][] = [
+    superEllipseRingZ(0.048, 0.038, 0.048, -0.035, -0.155, 16, 0.88),
+    superEllipseRingZ(0.105, 0.095, 0.088, 0.0, -0.095, 16, 0.84),
+    superEllipseRingZ(0.126, 0.125, 0.108, 0.012, -0.01, 16, 0.84),
+    superEllipseRingZ(0.118, 0.118, 0.098, 0.018, 0.085, 16, 0.84),
+    superEllipseRingZ(0.072, 0.068, 0.048, 0.032, 0.165, 16, 0.78),
+    superEllipseRingZ(0.032, 0.022, 0.016, 0.042, 0.205, 16, 0.86)
   ];
-  slots.push({ mesh: latheMesh(shellProf, 20, false), materialIndex: 0 });
-
-  // Anodized neck disconnect ring + dorsal crest fin + ear comms pods
-  const ringProf: V2[] = [
-    [0.105, -0.138],
-    [0.136, -0.138],
-    [0.138, -0.108],
-    [0.108, -0.108]
-  ];
-  slots.push({ mesh: latheMesh(ringProf, 18, false), materialIndex: 2 });
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.22, 0.036, 0.044, 0.012), { pos: [-0.02, 0.142, 0] }),
+    mesh: transformMesh(loftSectionsMesh(helmetSections, true, false), {
+      rot: [0, -Math.PI * 0.5, 0]
+    }),
+    materialIndex: 0
+  });
+
+  // Center crown racing stripe & rear aero diffuser lip (`accentColor`)
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.24, 0.022, 0.046, 0.008), {
+      pos: [-0.015, 0.122, 0],
+      rot: [0, 0, -0.08]
+    }),
     materialIndex: 1
   });
-  for (const side of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.085, 0.085, 0.036, 0.012), { pos: [0, 0.01, side * 0.152] }),
-      materialIndex: 2
-    });
-  }
 
-  // Forward-facing panoramic gold-reflective bubble visor (+X face, smooth normals)
-  const visorProf: V2[] = [
-    [0, 0.01],
-    [0.095, 0.025],
-    [0.132, 0.068],
-    [0.138, 0.115],
-    [0.112, 0.135]
+  // Dark inner eyeport recess + chin-bar air vent (`lunarRubberGripMaterial`) so visor reads rich dark-gold, never hollow
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.08, 0.075, 0.19, 0.022), {
+      pos: [0.088, 0.015, 0]
+    }),
+    materialIndex: 2
+  });
+
+  // Wraparound dark gold / iridescent MotoGP racing shield visor (+X forward face, `material.physical`, `castShadow: false`)
+  const visorSections: V3[][] = [
+    superEllipseRingZ(0.068, 0.036, 0.032, 0.012, -0.148, 14, 0.88),
+    superEllipseRingZ(0.118, 0.048, 0.042, 0.018, -0.095, 14, 0.84),
+    superEllipseRingZ(0.131, 0.045, 0.038, 0.022, -0.035, 14, 0.86)
   ];
   slots.push({
-    mesh: transformMesh(latheMesh(visorProf, 20, false), {
-      pos: [0.055, 0.012, 0],
-      rot: [0, 0, -Math.PI * 0.5]
+    mesh: transformMesh(loftSectionsMesh(visorSections, true, false), {
+      rot: [0, -Math.PI * 0.5, 0]
     }),
     materialIndex: 3
   });
   return slots;
+}
+
+/** Builds wide dark racing slick wheel (`roughness: 0.78`, `#171a20`) with 5-spoke turbine rim & glowing caliper accent. */
+export function buildBikeWheelNode(options: {
+  readonly id: string;
+  readonly vehicle?: Vehicle;
+  readonly isHero: boolean;
+}): GroupBuilder {
+  const meshes = cachedSubPartMeshes();
+  const glowHex = options.isHero ? "#52dcff" : "#ff9d42";
+  return assembleMultiMaterialNode(
+    options.id,
+    options.vehicle === "skate" ? meshes.skateWheel : meshes.bikeWheel,
+    [
+      racingSlickTireMaterial("#171a20"),
+      polishedTitaniumMaterial("#cdd6e2", 0.16),
+      anisotropicAlloyMaterial("#586270", 0.28),
+      practicalIonGlowMaterial(glowHex, options.isHero ? 2.1 : 1.7)
+    ],
+    { id: options.id, castShadow: false, receiveShadow: false }
+  );
+}
+
+/** Builds compact sleek anodized-titanium exhaust / ion thruster nozzle tucked under the tail cowl. */
+export function buildThrusterPodNode(options: {
+  readonly id: string;
+  readonly isHero: boolean;
+}): GroupBuilder {
+  const meshes = cachedSubPartMeshes();
+  const glowHex = options.isHero ? "#52dcff" : "#ff9d42";
+  return assembleMultiMaterialNode(
+    options.id,
+    meshes.nozzle,
+    [
+      anisotropicAlloyMaterial("#3b4554", 0.24),
+      goldFoilMetalMaterial(),
+      practicalIonGlowMaterial(glowHex, options.isHero ? 3.0 : 2.3)
+    ],
+    { id: options.id, castShadow: false, receiveShadow: false }
+  );
+}
+
+/** Builds the MotoGP-tucked racing rider (`torso` with sculpted speed-hump or `visor` full-face helmet with dark-gold shield). */
+export function buildSpacesuitRiderNode(options: {
+  readonly id: string;
+  readonly part?: "torso" | "visor";
+  readonly vehicle?: Vehicle;
+  readonly liveryColor: string;
+  readonly accentColor: string;
+  readonly suitColor: string;
+  readonly isHero: boolean;
+}): GroupBuilder {
+  const meshes = cachedSubPartMeshes();
+  if (options.part === "visor") {
+    const helmetShellHex = mixColorHex(options.liveryColor, "#141924", 0.28);
+    const visorHex = options.isHero ? "#d89834" : "#6ec8e8";
+    return assembleMultiMaterialNode(
+      options.id,
+      meshes.visorHelmet,
+      [
+        accentCarPaintMaterial(helmetShellHex),
+        accentCarPaintMaterial(options.accentColor),
+        lunarRubberGripMaterial("#0d1118"),
+        goldReflectiveGlassMaterial(visorHex, 0.72)
+      ],
+      { id: options.id, castShadow: false, receiveShadow: false }
+    );
+  }
+  return assembleMultiMaterialNode(
+    options.id,
+    options.vehicle === "skate" ? meshes.skateTorso : meshes.bikeTorso,
+    [
+      evaThermalSuitMaterial(options.suitColor, "#9aa6b8"),
+      accentCarPaintMaterial(options.liveryColor),
+      lunarRubberGripMaterial("#151820")
+    ],
+    { id: options.id, castShadow: false, receiveShadow: false }
+  );
 }
 
 export interface RiderSubPartOptions {
@@ -879,7 +1237,7 @@ export function createRiderSubPartNode(
   options: RiderSubPartOptions
 ): GroupBuilder | PrimitiveBuilder {
   const meshes = cachedSubPartMeshes();
-  const glowHex = options.isHero ? "#66dcff" : "#ff9d42";
+  const glowHex = options.isHero ? "#52dcff" : "#ff9d42";
 
   switch (options.kind) {
     case "fairing":
@@ -888,35 +1246,26 @@ export function createRiderSubPartNode(
           name: options.id,
           castShadow: false,
           receiveShadow: false,
-          material: accentCarPaintMaterial(options.liveryColor)
+          material: options.vehicle === "skate"
+            ? accentCarPaintMaterial(options.liveryColor)
+            : darkSmokeWindscreenMaterial("#101826", 0.62)
         })
         .runtime({ id: options.id });
 
     case "wheelF":
     case "wheelR":
-      return assembleMultiMaterialNode(
-        options.id,
-        options.vehicle === "skate" ? meshes.skateWheel : meshes.bikeWheel,
-        [
-          lunarRubberGripMaterial("#12161f"),
-          polishedTitaniumMaterial("#e4ecf5", 0.12),
-          anisotropicAlloyMaterial("#6d7785", 0.32),
-          practicalIonGlowMaterial(glowHex, options.isHero ? 2.4 : 1.8)
-        ],
-        { id: options.id, castShadow: false, receiveShadow: false }
-      );
+      return buildBikeWheelNode({
+        id: options.id,
+        vehicle: options.vehicle,
+        isHero: options.isHero
+      });
 
     case "nozzleL":
     case "nozzleR":
-      return assembleMultiMaterialNode(
-        options.id,
-        meshes.nozzle,
-        [
-          anisotropicAlloyMaterial("#8e99a8", 0.24),
-          practicalIonGlowMaterial(glowHex, options.isHero ? 3.1 : 2.3)
-        ],
-        { id: options.id, castShadow: false, receiveShadow: false }
-      );
+      return buildThrusterPodNode({
+        id: options.id,
+        isHero: options.isHero
+      });
 
     case "coneL":
     case "coneR":
@@ -940,31 +1289,27 @@ export function createRiderSubPartNode(
         .runtime({ id: options.id });
 
     case "torso":
-      return assembleMultiMaterialNode(
-        options.id,
-        meshes.torso,
-        [
-          evaThermalSuitMaterial(options.suitColor, "#f6f0e6"),
-          accentCarPaintMaterial(options.liveryColor),
-          lunarCeramicMaterial("#e8e4dc"),
-          practicalIonGlowMaterial(glowHex, 2.2)
-        ],
-        { id: options.id, castShadow: false, receiveShadow: false }
-      );
+      return buildSpacesuitRiderNode({
+        id: options.id,
+        part: "torso",
+        vehicle: options.vehicle,
+        liveryColor: options.liveryColor,
+        accentColor: options.accentColor,
+        suitColor: options.suitColor,
+        isHero: options.isHero
+      });
 
     case "visor":
     default:
-      return assembleMultiMaterialNode(
-        options.id,
-        meshes.visorHelmet,
-        [
-          lunarCeramicMaterial("#f2efe9"),
-          accentCarPaintMaterial(options.accentColor),
-          polishedTitaniumMaterial("#cfd8e3", 0.16),
-          goldReflectiveGlassMaterial("#ffd8a8", 0.45)
-        ],
-        { id: options.id, castShadow: false, receiveShadow: false }
-      );
+      return buildSpacesuitRiderNode({
+        id: options.id,
+        part: "visor",
+        vehicle: options.vehicle,
+        liveryColor: options.liveryColor,
+        accentColor: options.accentColor,
+        suitColor: options.suitColor,
+        isHero: options.isHero
+      });
   }
 }
 

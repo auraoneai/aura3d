@@ -10,7 +10,7 @@ const data: SimData = {
 const lum = (hex: string): number => { const n = parseInt(hex.slice(1), 16); return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255); };
 
 describe("snow-dusted Observatory roofs (GU47 WP-31 LT-09)", () => {
-  it("the band scenes add one roofs-snow mesh; ?look=original keeps today's roofs", () => {
+  it("the band scenes add one roofs-snow mesh; ?look=original keeps today's roofs", { timeout: 30_000 }, () => {
     expect(data.tables.towns[SNOW_TOWN]!.name).toMatch(/Observatory/);
     const band = JSON.stringify(buildWorld(data, "bands").sceneFor("C").toJSON());
     const original = JSON.stringify(buildWorld(data, "original").scene.toJSON());

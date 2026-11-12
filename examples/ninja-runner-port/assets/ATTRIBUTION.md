@@ -1,49 +1,5 @@
 # Asset attribution
 
-The previous CC0 character rig (Aura3D catalog `auraClashPlayerRig`) was replaced by the generated characters below and is no longer shipped.
+None of these assets come from the original game.
 
-
-## Generated models (Meshy text-to-3D through Kiro Prism, 2026-10-23)
-
-Text prompts only (no image input, no original-game names or art). Output terms are those of the AuraOne Meshy plan at generation time (`assets/provenance/*.rights.json`); no CC0 or exclusivity is claimed. Characters: text-to-3D preview + PBR refine, Meshy remesh, Meshy rigging (24-joint humanoid), then Meshy animation-library actions merged into one GLB per character under canonical clip names. Props: text-to-3D + PBR refine, Meshy remesh to a low triangle budget, 512 px textures. Task ids (not signed URLs) below.
-
-| File | Prompt (own words) | Refine task | Remesh task | Rig task | Library action id -> clip | Size / triangles |
-| --- | --- | --- | --- | --- | --- | --- |
-| hero.glb | a lean young ninja hero, stylised game character, dark indigo jacket and trousers with an orange scarf and wrist wraps, plain blank metal forehead guard, cloth sandals, confident athletic build, A-pose, full body, clean hand-painted PBR textures | 01a169ce-c672-70ac-929d-a0bc7ba411fc | see ledger | n/a | basic running -> run, 0 -> idle, 13 -> jump, 524 -> slide, 96 -> punch, 239 -> sword, 178 -> hit, 189 -> death | 3.9 MB / 12393 |
-| sage.glb | a ninja in a warm ochre and burnt-orange sage robe with dark red trim and a black sash, bold dark eye markings, short spiky hair, plain forehead guard, stylised game character, A-pose, full body, hand-painted PBR textures | 01a169d3-68bb-73ff-a768-ff3207bd0e0c | see ledger | n/a | basic running -> run, 0 -> idle, 13 -> jump, 524 -> slide, 96 -> punch, 239 -> sword, 178 -> hit, 189 -> death | 2.8 MB / 12352 |
-| soldier.glb | a masked foot-soldier ninja enemy, slate-grey and charcoal tunic with a face cloth and light shoulder plates, wrapped legs, stylised game character, A-pose, full body, hand-painted PBR textures | 01a169d1-a013-74e2-a439-bcdf674ba4fe | see ledger | n/a | basic running -> run, 0 -> idle, 178 -> hit, 4 -> sword, 192 -> jab, 147 -> block | 1.9 MB / 10390 |
-| brute.glb | a huge burly brute warrior boss, broad shoulders and thick arms, moss-green and iron-grey heavy armour with spiked shoulder plates and a horned helmet, stylised game character, A-pose, full body, hand-painted PBR textures | 01a169ce-c0f0-7318-85e1-02ea5f934d35 | see ledger | n/a | basic running -> run, 0 -> idle, 178 -> hit, 128 -> punch | 2.8 MB / 15608 |
-| houseA.glb | a two-storey timber-framed village house with cream plaster walls, dark wooden beams, wooden shutters, a small chimney and a curved blue-grey clay tile gable roof, stylised hand-painted game asset, no base | 01a169e2-d7ba-7141-a868-e905b4582807 | see ledger | n/a | n/a | 0.9 MB / 3764 |
-| houseB.glb | a narrow three-storey townhouse with warm sand plaster, dark timber bands, a small wooden balcony and a steep red-brown tiled roof, stylised hand-painted game asset, no base | 01a169e5-94b9-71b0-95d4-4587340d7b74 | see ledger | n/a | n/a | 1.0 MB / 3932 |
-| tower.glb | a round stone watchtower with a conical dark slate tile roof, small arched windows and a wooden door, stylised hand-painted game asset, no base | 01a169e8-a858-76f9-aa78-2ca5a14316ab | see ledger | n/a | n/a | 0.9 MB / 3937 |
-| gate.glb | a traditional wooden village gate with two thick pillars, a crossbeam and a curved tiled roof canopy, stylised hand-painted game asset, no base | 01a169eb-5172-76d0-a71e-88ee33b73f5c | see ledger | n/a | n/a | 1.0 MB / 3488 |
-| pine.glb | a stylised pine tree with layered dark green boughs and a rough brown trunk, hand-painted game asset, no base | 01a169eb-4115-77e8-9107-ca5441a3bc27 | see ledger | n/a | n/a | 1.0 MB / 1588 |
-| lantern.glb | a tall wooden lamp post with a hanging paper lantern glowing warm orange, stylised hand-painted game asset, no base | 01a169f4-66c6-7493-b466-536a5c6307d4 | see ledger | n/a | n/a | 0.7 MB / 1351 |
-| oak.glb | a stylised broadleaf oak tree with a thick gnarled trunk and a rounded lush green canopy, hand-painted game asset, no base | 01a16a17-ee1b-70f7-8914-7b1b3f80dd9d | see ledger | n/a | n/a | 1.0 MB / 1372 |
-| cliffA.glb | a tall weathered granite cliff face section for a game background, layered grey rock strata with moss-covered ledges, small ferns, vertical cracks, stylized realistic, game prop | 01a1759e-1d4f-73f5-b4ab-14ed7e2cc657 | 01a175a5-d69f-7695-b31f-393f2cde8e67 | n/a | n/a | 0.9 MB |
-| cliffB.glb | a rugged sandstone rock outcrop cliff with warm tan and ochre layers, a few dry shrubs on top, smooth worn edges, stylized realistic, game prop | 01a1759e-749b-7357-817a-7f5c484aede0 | 01a175a5-d6e7-74d9-9035-5027c91cce89 | n/a | n/a | 0.9 MB |
-| boulder.glb | a large mossy river boulder, rounded grey stone with green moss patches and small cracks, stylized realistic, game prop | 01a1759e-743d-760a-a6e3-8829a74b4443 | 01a175a5-d755-746e-b47d-c52d7a7cbbc8 | n/a | n/a | 0.8 MB |
-| houseC.glb | a small stone cottage with a steep slate roof, stone chimney, wooden door, two small shuttered windows, ivy on one wall, warm lamp glow in the windows, stylized realistic fantasy village building, game prop | 01a1759f-094a-7220-b637-8f3a6b8c3069 | 01a175a5-d756-7038-97a8-7686c717358a | n/a | n/a | 1.4 MB |
-| houseD.glb | a tall narrow timber-frame townhouse with an overhanging upper storey, dark wood beams, cream plaster, red clay tile roof, small balcony with flower boxes, stylized realistic fantasy village building, game prop | 01a1759e-75f1-7330-b795-2cf08cf3811a | 01a175a5-d77b-7095-b992-1469956de072 | n/a | n/a | 1.4 MB |
-| teahouse.glb | a small two-tier tea house with curved dark-tile eaves, red-lacquered wooden pillars, paper lantern strings, sliding screen doors, stone base steps, stylized realistic, game prop | 01a175a0-441a-71cd-b7b9-ababfce69f45 | 01a175a5-d7c8-71a2-a475-027e7cde3802 | n/a | n/a | 1.6 MB |
-| marketStall.glb | a village market stall with a striped teal and cream cloth awning, wooden counter, baskets of vegetables and wooden crates, stylized realistic, game prop | 01a1759e-b769-7714-9d55-4c7f91961db8 | 01a175a5-d776-723c-950f-8ff6b43e3678 | n/a | n/a | 1.4 MB |
-| bush.glb | a lush round green shrub with dense layered leaves and a few small pink blossoms, rounded bush for a village roadside, stylized realistic, game prop | 01a175b2-1795-7144-a949-33866a248174 | 01a175ba-9247-76ea-918d-e6a2f1e56937 | n/a | n/a | 0.2 MB |
-| ridge.glb | a distant forested mountain ridge landform with soft rounded peaks covered in dark green pine forest and grey rock outcrops, low detail background scenery, stylized realistic, game prop | 01a175af-da23-752f-8017-3fc3fcc01bf2 | 01a175b8-0f59-728d-adf5-6b4a801a2660 | n/a | n/a | 1.0 MB |
-| fenceRail.glb | a short section of rustic wooden post-and-rail fence with weathered grey planks and small moss patches, stylized realistic, game prop | 01a175af-da37-7253-981e-407ee788229a | 01a175b8-0ed8-7798-8294-194603e7f8a3 | n/a | n/a | 0.9 MB |
-
-Credits for this game come from `/tmp/meshy/ledger.jsonl` (game tag `ninja`); the unused `bridge` and an early duplicate soldier/sage/brute preview are recorded there too. Raw downloads and the un-optimised GLBs stay in the ignored `artifacts/meshy/` directory.
-
-
-## 4.3.0 art pass (2026-10-25)
-
-Ten more generated models replace the placeholder box houses, flat-faceted cliffs, cone tufts, low-poly rocks and smooth sphere hills: `houseC`, `houseD` (two more village house designs), `teahouse` (plaza building and the rooftops pagoda stacks), `marketStall`, `cliffA`/`cliffB` (valley cliffs), `boulder` (forest and riverbank rocks), `bush` (verge and forest-floor shrubs), `ridge` (distant hills and peaks) and `fenceRail`. Same call path as above (Meshy text-to-3D preview + PBR refine, then remesh to about 4,500 triangles, through Kiro Prism), own text prompts, no image input. Optimised with dedup, weld, 512-640 px textures and meshopt. Ledger tag `ninja`; the Meshy spend is uncapped by owner decision on 2026-10-25 and tracked for visibility only. `bush` was generated twice because the first run looked stuck: the second run reused the first refine, so one extra preview (20 credits) is recorded in the ledger and unused.
-
-
-## GU47 wave 2 set-pieces (2026-11-03)
-
-`models/ninja_runner_port_ninjaShrineGate.glb`, `ninja_runner_port_ninjaWaterWheel.glb` and `ninja_runner_port_ninjaPagodaSilhouette.glb`: Meshy text-to-3D from own text prompts (rights and task metadata in `provenance/ninja_runner_port_*.json`), decimated locally (gltf-transform weld + meshopt simplify, then a sloppy pass for the cap) to 5,678 / 7,297 / 7,452 triangles with 1024 px textures. Drawn in the evening look only (`setpieces.ts`).
-
-
-## GU47 meshy07 rigged enemies (2026-11-09)
-
-`models/ninja_runner_port_ninjaCasterAnimR2.glb` (robed owl caster) and `ninja_runner_port_ninjaScoutAnimR2.glb` (fox scout): Meshy text-to-3D rows `ninjaCasterR2` / `ninjaScoutR2` (own text prompts), rigged by Meshy (`ninjaCasterRigR2` / `ninjaScoutRigR2`) and animated (`ninjaCasterAnimR2`: idle, cast, hit, death; `ninjaScoutAnimR2`: idle, throw, hit, death); the rig task's `run` clip is merged onto the same 24-joint skeleton by node name. Decimated locally (dedup, weld, meshopt simplify with the skin kept) from 54,807 / 56,344 to 11,998 / 11,999 triangles with 512 px textures (1.39 / 1.16 MB). Task ids and credits in `provenance/ninja_runner_port_ninja{Caster,Scout}AnimR2.meta.json`. Drawn in the evening look only (`EVENING_SLOT_MODEL` in `models.ts`).
+All 3D characters (`hero`, `sage`, `soldier`, `brute`, `caster`, `scout`), Sengoku village houses, teahouses, watchtowers, torii/shrine gates, waterwheels, pagodas, market stalls, lanterns, pines, oaks, boulders, cliffs, and distant ridges in `Shadowstep Gauntlet` (`ninja-runner-port`) are authored 100% procedurally in TypeScript on `@aura3d/engine` (`art/proceduralActors.ts`, `art/proceduralModels.ts`, and `world.ts`). Zero Meshy or external `.glb` files are bundled or fetched.

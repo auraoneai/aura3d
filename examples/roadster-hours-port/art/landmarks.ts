@@ -1,7 +1,7 @@
 /**
- * GU47 WP-32 RH47-11/15: per-route landmark placements (pure, unit tested). Until the WP-36 Meshy landmark set lands
- * (turbine with a separate rotor, sea stack, mesa, arch, hoodoo, uplink mast, arcology, maglev tube, antenna), the world
- * draws these as instanced engine-lit primitives at the same spots, so the asset keys drop in without moving anything.
+ * GU47 WP-32 RH47-11/15: per-route landmark placements (pure, unit tested). Sculpted procedural landmarks
+ * (turbine with a separate rotor, sea stack, mesa, arch, hoodoo, uplink mast, arcology, maglev tube, antenna,
+ * coastal viaduct, roadside diner, suspension tower) mount as instanced or multi-material engine-lit nodes at these spots.
  * Every landmark stands off the road (outside the guardrails), so nothing here can touch collision or the sim.
  *
  * Kinds per route (RH47-11 acceptance: >= 4): Sunbreak lighthouse, town, wind turbines, sea stacks; Redline mesas,

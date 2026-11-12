@@ -157,7 +157,7 @@ export function createWorkerPointerEventBuffer(): {
 }
 
 export type AuraWorkerRequest =
-  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean; readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */ readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */ readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.3: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */ readonly coarsePointer?: boolean }
+  | { readonly type: "init"; readonly id: number; readonly canvas: OffscreenCanvas; readonly scene: AuraSceneSnapshot; readonly renderer?: AuraCreateAppRendererOptions; readonly assets?: AuraAssetsOption; readonly size: OffscreenCanvasSize; readonly autoStart: boolean; readonly syncLocalScenes?: boolean; readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */ readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */ readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.4: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */ readonly coarsePointer?: boolean }
   | { readonly type: "scene"; readonly id: number; readonly scene: AuraSceneSnapshot }
   | { readonly type: "input"; readonly id: number; readonly input: AuraWorkerInput }
   /** K1: batched node transform, visibility, material, animation-param and camera changes, applied before the next frame. */
@@ -193,7 +193,7 @@ export interface AuraWorkerFrameResult {
    */
   readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
   /**
-   * 5.5.3: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
+   * 5.5.4: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
    * `label` overlays on the host thread.
    */
   readonly viewProjection?: Float32Array | readonly number[];

@@ -1,9 +1,9 @@
 /** Cross Hop core: scene builder, pooled visuals, run simulation. */
 import {
-  game, looks, lights, effects, model, scene, camera, instances,
+  game, looks, lights, effects, scene, camera, instances,
   primitives, material, sky, type AuraApp, type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../aura-assets";
+import type { CritterAssetId } from "../aura-assets";
 import {
   COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, THEMES,
   themeIndexForRow, type LaneType
@@ -11,9 +11,12 @@ import {
 import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
 import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT } from "./look";
-import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
+import {
+  BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, composeCharacterEulerXYZ,
+  damp, dioramaPose, hopPitch, hopScale, HOP_YAW, idleBreathScale, kitLod, kitSlots,
+  lampSlots, screenY, shortestAngleDelta, turnToward
+} from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
-import { critterNodeTransforms, critterOverrides } from "./critterLook";
 import {
   CROSS_HOP_PROCEDURAL_MATERIALS,
   buildHollowRiverLogSpec,
@@ -22,6 +25,7 @@ import {
   buildMeadowBushSpec,
   buildMossySteppingBoulderSpec,
   buildNotchedLilyPadSpec,
+  buildProceduralCritterNode,
   buildProceduralVehicleSpec,
   buildRailTrackStripSpec,
   buildRescuePodNode,
@@ -67,7 +71,7 @@ export type Mode = "title" | "run" | "dead";
 export type RunKind = "quick" | "tour" | "drill";
 
 export interface CritterDef {
-  readonly id: string; readonly label: string; readonly asset: keyof typeof assets;
+  readonly id: string; readonly label: string; readonly asset: CritterAssetId;
   readonly price: number; readonly tagline: string;
 }
 export const CRITTERS: readonly CritterDef[] = [
@@ -107,10 +111,6 @@ const COLORS = {
   coin: "#ffd94a", pod: "#ff9ed2", carBody: "#e05555", water: "#3f8fd2",
   glow: "#ff8a3d", railSignal: "#ff3355"
 };
-
-/** Matte warm grade shared by the player, hawk, and spectator critters so the
- *  Meshy animals sit in the same flat storybook palette as the lanes. */
-const CRITTER_MAT = material.pbr({ color: "#fff1df", roughness: 0.93, metalness: 0 });
 
 // ---------------- game state ----------------
 export interface GameState {
@@ -164,7 +164,7 @@ export const st: GameState = {
   seed: 1, time: 0,
   score: 0, coins: 0, row: 0, bestRow: 0,
   playerRow: 0, playerCol: 0,
-  hop: { active: false, t: 0, fromX: 0, fromY: 0.17, fromZ: 0, toX: 0, toY: 0.17, toZ: 0, dir: "fwd" },
+  hop: { active: false, t: 0, fromX: 0, fromY: 0.12, fromZ: 0, toX: 0, toY: 0.12, toZ: 0, dir: "fwd" },
   idle: 0, dead: null, deadAt: 0,
   lanes: new Map(),
   critter: CRITTERS[0],
@@ -190,14 +190,14 @@ export const PLATFORM_SNAP = 0.9;
 export const SIM_STEP = 1 / 60;
 
 /**
- * Exact top-surface Y of a lane or its active platform in world units:
+ * Exact top-surface Y of a lane or its active platform in world units (`minY = 0` procedural critters stand flush):
  * - Meadow / Road / Tram ground strip: center y = 0, sy = 0.24 -> top = 0.12
  * - Rail: railbed + ties + rails -> top = 0.13
  * - River log: center y = 0.08, sy = 0.22 -> top = 0.22
- * - River lilypad: raised so critter base stays >= 0.17 -> top = 0.12
+ * - River lilypad: top = 0.12
  * - Lava stone: center y = 0.06, sy = 0.20 -> top = 0.16
  */
-const CRITTER_FOOT_OFFSET = 0.05;
+const CRITTER_FOOT_OFFSET = 0;
 
 /** Tighter chase rig: closer/lower lens and a wider FOV so the critter,
  *  near lane edges, and the horizon all share the frame. */
@@ -391,15 +391,35 @@ function buildLookGroup(th: (typeof THEMES)[number]) {
 /** Name of the look preset's key light; the diorama look drops it for its own runtime sun (`sun-key`). */
 const LOOK_KEY_NAME = "look key light";
 
+function makeLinearFogNode(name: string, color: string, near: number, far: number, maxOpacity: number) {
+  return {
+    ...effects.fog({ name, mode: "linear", color, near, far }).toJSON(),
+    maxOpacity
+  };
+}
+
+function isSuppressedPresetEffect(effect: string | undefined, dropAo = false): boolean {
+  return (
+    effect === "bloom" ||
+    effect === "fog" ||
+    effect === "depth-of-field" ||
+    effect === "depthOfField" ||
+    (dropAo && effect === "ambient-occlusion")
+  );
+}
+
 /**
  * GU47 CH47-01/03/04/06: the diorama look for one theme. The preset brings the theme's own HDRI (IBL only; the
- * gradient sky draws the background), height fog, grade and post preset; its key and rim are dropped (the scene's
- * runtime `sun-key` is the one shadowed key) and a hemisphere fill replaces the 4.6 ambient light.
+ * gradient sky draws the background), crisp linear distance fog, grade and post preset (never active DoF blur);
+ * its key and rim are dropped (the scene's runtime `sun-key` is the one shadowed key) and a hemisphere fill replaces
+ * the 4.6 ambient light.
  */
 function buildDioramaLookGroup(ti: number) {
   const th = THEMES[ti]!;
   const L = THEME_LOOKS[ti]!;
   const lookId = th.look as Parameters<typeof looks.preset>[0];
+  // Never pass `"cinematic-film"` into `looks.preset` so it cannot inject active gameplay Depth-of-Field blur.
+  const safePost = L.post === "cinematic-film" ? "daylight-outdoor" : L.post;
   const group = looks.preset(lookId, {
     exposureEv: L.exposureEv,
     hdri: L.hdri,
@@ -410,18 +430,18 @@ function buildDioramaLookGroup(ti: number) {
     rim: false,
     fogDensityScale: 0,
     grade: { contrast: L.grade.contrast, saturation: L.grade.saturation, temperature: L.grade.temperature },
-    post: L.post
+    post: safePost
   }).runtime(game.runtimeNode("look")).toJSON();
   const children = group.children
     // The scene's own `sun-key` is the key; the scene's bloom node carries the theme bloom (setEffect).
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
-    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
+    .filter((child) => !(child.kind === "effect" && isSuppressedPresetEffect(child.effect)))
     .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: L.hemi.sky, groundColor: L.hemi.ground, intensity: L.hemi.intensity }).toJSON()])
-    .concat(L.fog ? [effects.fog({ name: "cross-hop depth haze", mode: "linear", color: L.fog.color, near: 78, far: 280 }).toJSON()] : []);
+    .concat(L.fog ? [makeLinearFogNode("cross-hop depth haze", L.fog.color, L.fog.near, L.fog.far, L.fog.maxOpacity)] : []);
   return { ...group, background: L.sky.horizon, children };
 }
 
-/** GU47 CH47-03: the theme's gradient sky; stars at night, light clouds at dawn and noon. The sun glow rides the key. */
+/** GU47 CH47-03: the theme's gradient sky; stars at night, light clouds at dawn and noon. `affectsFog: false` prevents milky white horizon wash. */
 function buildSky(ti: number, row: number) {
   const L = THEME_LOOKS[ti]!;
   const k = keyAt(ti, null, row);
@@ -435,7 +455,7 @@ function buildSky(ti: number, row: number) {
     ...(L.sky.stars ? { stars: { count: L.sky.stars.count, brightness: L.sky.stars.brightness } } : {}),
     ...(L.sky.clouds ? { clouds: { coverage: L.sky.clouds.coverage, speed: L.sky.clouds.speed, color: L.sky.clouds.color } } : {}),
     captureEnvironment: false,
-    affectsFog: true
+    affectsFog: false
   }).runtime(game.runtimeNode("sky")).toJSON();
 }
 
@@ -466,7 +486,7 @@ function buildOriginalLookGroup(th: (typeof THEMES)[number]) {
     // the sky 4.6.2 drew behind every theme (the override would turn it into a flat colour wall).
   }).runtime(game.runtimeNode("look")).toJSON();
   const tunedChildren = group.children
-    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
+    .filter((child) => !(child.kind === "effect" && isSuppressedPresetEffect(child.effect)))
     .map((child) => {
       if (child.kind === "light" && child.light === "directional") {
         return {
@@ -483,8 +503,8 @@ function buildOriginalLookGroup(th: (typeof THEMES)[number]) {
       }
       return child;
     })
-    // Theme-matched distant horizon haze (`near >= 70, far >= 260`) for bright toy-diorama clarity.
-    .concat([effects.fog({ name: "cross-hop depth haze", mode: "linear", color: th.palette.horizon, near: 78, far: 280 }).toJSON()]);
+    // Crisp distant linear horizon haze (`near >= 145, far >= 420, maxOpacity <= 0.24`) with zero milky wash.
+    .concat([makeLinearFogNode("cross-hop depth haze", th.palette.horizon, 165, 460, 0.18)]);
   return {
     ...group,
     background: th.palette.sky,
@@ -509,12 +529,12 @@ export function probeScene(level: number): unknown {
     s.add(instances.custom(buildProceduralVehicleSpec("car", { targetMaxDimension: MOVER_LENGTH.car }), { name: "p3-cars", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: [{ position: [-4, 0, -3], scale: [1, 1, 1] }, { position: [4, 0, -3], scale: [1, 1, 1] }] }));
   }
   if (level >= 4) {
-    s.add(model(assets.hop, { name: "p4-critter", targetHeight: 1.05, castShadow: true }).position(0, 0.17, 2).rotate(0, Math.PI, 0).animate({ clip: "Idle", loop: true }));
+    s.add(buildProceduralCritterNode("hop", { name: "p4-critter", targetHeight: 1.05, castShadow: true }).position(0, 0.12, 2).rotate(0, Math.PI, 0));
   }
   return s.toJSON();
 }
 
-const SPECTATOR_CRITTERS: readonly (keyof typeof assets)[] = [
+const SPECTATOR_CRITTERS: readonly CritterAssetId[] = [
   "chick", "turtle", "bun", "axolotl", "ducky", "roboFrog", "toastCat", "mushroomKid", "knightToad", "astroFrog", "goldenHop"
 ];
 
@@ -597,12 +617,16 @@ function buildVividLookGroup(ti: number) {
     },
     rim: false
   }).runtime(game.runtimeNode("look")).toJSON();
-  const hazeNode = V.fog.density > 0
-    ? effects.fog({ name: "cross-hop depth haze", mode: "linear", color: V.fog.color, density: V.fog.density, near: 74, far: 268 }).toJSON()
-    : effects.fog({ name: "cross-hop horizon haze", mode: "linear", color: V.fog.color, near: 86, far: 295 }).toJSON();
+  const hazeNode = makeLinearFogNode(
+    V.fog.density > 0 ? "cross-hop depth haze" : "cross-hop horizon haze",
+    V.fog.color,
+    V.fog.near,
+    V.fog.far,
+    V.fog.maxOpacity
+  );
   const children = group.children
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
-    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog" || child.effect === "ambient-occlusion")))
+    .filter((child) => !(child.kind === "effect" && isSuppressedPresetEffect(child.effect, true)))
     .map((child) => (child.kind === "environment" ? { ...child, intensity: V.environmentIntensity, background: false } : child))
     .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: V.hemi.sky, groundColor: V.hemi.ground, intensity: V.hemi.intensity }).toJSON()])
     .concat([hazeNode]);
@@ -671,9 +695,6 @@ function buildVividScene(): unknown {
       target: [0, CAM.targetY, -CAM.ahead],
       fov: CAM.fov
     }));
-  if (!reducedMotion) {
-    s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: 1.7, tiltShift: { bandCenter: 0.6, bandWidth: 0.48 } }));
-  }
   const amb = ambientNode(0);
   if (amb) s.add(amb);
   for (let i = 0; i < FLIPBOOK_SLOTS; i++) {
@@ -718,20 +739,20 @@ function swapVividLook(ti: number): void {
   try {
     (n0.get("sun-key") as LightHandleLike | undefined)?.setLight?.({ color: V.sun.color, intensity: V.sun.intensity, direction: sunDirection(V.sun.elevationDeg, V.sun.azimuthDeg) }, { transitionSeconds: reducedMotion ? 0 : 0.6 });
   } catch { /* setLight needs A3D_QR_LIGHTING */ }
-  try { post()?.setEffect?.("bloom", { intensity: V.bloom.intensity, threshold: V.bloom.threshold }); } catch { /* post v2 only */ }
+  try {
+    post()?.setEffect?.("bloom", { intensity: V.bloom.intensity, threshold: V.bloom.threshold });
+    post()?.setEffectEnabled?.("depthOfField", false);
+  } catch { /* post v2 only */ }
   syncLamps(ti, true);
   appliedLook = ti;
   themeChangedAt = st.time;
   lastKeyRow = -1;
 }
 
-/** Tilt-shift band centre at boot (the player row sits low in the diorama frame); updated every frame. */
-const TILT_CENTER0 = 0.68;
-
 /**
  * GU47 WP-24: the tabletop diorama scene. One shadowed sun (`sun-key`), hemisphere fill and the theme's HDRI as IBL,
- * a gradient sky, per-theme height fog and post preset, the signature tilt-shift DOF (absent under reduced motion;
- * the post tier drops it below High), per-surface ground pools and textured critters.
+ * a gradient sky, crisp per-theme linear distance fog, zero gameplay Depth-of-Field blur, per-surface ground pools and
+ * sculpted multi-material procedural critters.
  */
 function buildDioramaScene(): unknown {
   const L0 = THEME_LOOKS[0]!;
@@ -747,9 +768,6 @@ function buildDioramaScene(): unknown {
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: pose.position, target: pose.target, fov: pose.fov }));
-  if (!reducedMotion) {
-    s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: L0.tiltShift.maxBlur, tiltShift: { bandCenter: TILT_CENTER0, bandWidth: L0.tiltShift.bandWidth } }));
-  }
   const amb = ambientNode(0);
   if (amb) s.add(amb);
   const flat = backdropFlat(pose.position, pose.target, pose.fov, FLOOR_Y);
@@ -866,9 +884,9 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     instances.custom(buildMeadowBushSpec(), { name: "d-bushes", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.bush), castShadow: false, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-bush")),
     instances.custom(buildRailTrackStripSpec(STRIP_W), { name: "m-rail-tracks", material: material.pbr({ color: "#ffffff", roughness: 0.42, metalness: 0.34, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.railTrack), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-railTrack")),
     instances.custom(buildVergeArchitectureSpec(), { name: "d-b", material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
-    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", rich) })
-      .position(0, 0.17, 0).rotate(0, Math.PI, 0)
-      .animate({ clip: "Idle", loop: true })
+    buildProceduralCritterNode("hop", { name: "player", targetHeight: 1.05, castShadow: true })
+      .position(0, 0.12, 0)
+      .rotate(0, Math.PI, 0)
       .runtime(game.runtimeNode("player")),
     buildStoopingHawkNode()
       .position(0, -999, 0)
@@ -876,13 +894,11 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     buildRescuePodNode()
       .position(0, -999, 0)
       .runtime(game.runtimeNode("pod")),
-    // 3D Meshy spectator critters cheering along the outer meadow banks! The diorama look mounts them after the
-    // first frame (CH47-18 lazy load, `mountSpectators`).
+    // Sculpted multi-material spectator critters cheering along the outer meadow banks (lazy-mounted on diorama via `mountSpectators`).
     ...(diorama ? [] : SPECTATOR_CRITTERS).map((key, idx) =>
-      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, rich) })
+      buildProceduralCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
         .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
-        .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode(`spectator-${idx}`))
     )
   ];
@@ -916,7 +932,7 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   return out;
 }
 
-/** CH47-18: the diorama look loads the 11 spectator critters after the app is ready, so they stay off the boot path. */
+/** CH47-18: the diorama look mounts the 11 sculpted spectator critters after the app is ready, so they stay off the boot path. */
 let spectatorsMounted = false;
 export function mountSpectators(): void {
   if (!app || lookMode !== "diorama" || spectatorsMounted) return;
@@ -924,28 +940,15 @@ export function mountSpectators(): void {
   const n0 = app.nodes as unknown as { add(n: never): void };
   SPECTATOR_CRITTERS.forEach((key, idx) => {
     try {
-      n0.add(model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, true) })
-        .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
-        .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
-        .animate({ clip: "Idle", loop: true })
-        .runtime(game.runtimeNode(`spectator-${idx}`))
-        .toJSON() as never);
+      n0.add(
+        buildProceduralCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
+          .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
+          .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
+          .runtime(game.runtimeNode(`spectator-${idx}`))
+          .toJSON() as never
+      );
     } catch { /* runtime add unsupported: no spectators */ }
   });
-}
-
-/** CH47-08 + WP-14: vivid & diorama keep each critter's textures + rim/clearcoat + amphibian crouch; original paints cream. */
-function critterMaterial(key: string, rich: boolean): {
-  material?: typeof CRITTER_MAT;
-  materialOverrides?: ReturnType<typeof critterOverrides>;
-  nodeTransforms?: ReturnType<typeof critterNodeTransforms>;
-} {
-  if (!rich) return { material: CRITTER_MAT };
-  const nodeTransforms = critterNodeTransforms(key);
-  return {
-    materialOverrides: critterOverrides(key),
-    ...(nodeTransforms ? { nodeTransforms } : {})
-  };
 }
 /** Drawn heights and depths (metres) of the movers, for their shadow decals. */
 const SHADE_SIZE: Record<string, readonly [number, number]> = {
@@ -965,15 +968,14 @@ function shade(x: number, groundY: number, z: number, len: number, dep: number, 
 let app: AuraApp | null = null;
 let nodeOk = true;
 export let nodeErr = "";
-let activePlayerClip = "Idle";
 /** Theme index of the look group currently mounted (CH-6). The mounted scene starts with theme 0. */
 let appliedLook = 0;
 
 export function bindApp(a: AuraApp): void {
   app = a;
+  try { post()?.setEffectEnabled?.("depthOfField", false); } catch { /* post v2 only */ }
   if (lookMode !== "original") {
     try { registerCrossHopVfx(a.effects as never, reducedMotion); } catch { /* vfx lane off */ }
-    if (reducedMotion) { try { post()?.setEffectEnabled?.("depthOfField", false); } catch { /* post v2 only */ } }
   }
 }
 
@@ -1411,7 +1413,7 @@ function swapDioramaLook(ti: number): void {
   } catch { /* setLight needs A3D_QR_LIGHTING */ }
   try {
     post()?.setEffect?.("bloom", { intensity: L.bloom.intensity, threshold: L.bloom.threshold });
-    if (!reducedMotion) post()?.setEffect?.("depthOfField", { maxBlur: L.tiltShift.maxBlur });
+    post()?.setEffectEnabled?.("depthOfField", false);
   } catch { /* post v2 only */ }
   syncLamps(ti, true);
   appliedLook = ti;
@@ -1563,21 +1565,21 @@ export function displayPose(alpha: number): { x: number; y: number; z: number; h
     const x = st.hop.fromX + (st.hop.toX - st.hop.fromX) * t;
     const z = st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * t;
     const y = st.hop.fromY + (st.hop.toY - st.hop.fromY) * t + Math.sin(Math.PI * t) * 0.68;
-    return { x, y: Math.max(0.17, y), z, hopping: true };
+    return { x, y: Math.max(0.12, y), z, hopping: true };
   }
   let x = st.playerCol * COL_W;
   // Riding a log or stone: the platform moves at a constant speed, so the drawn x trails the sim by `lag`.
   if (!st.dead && (pl.type === "river" || pl.type === "lava")) x -= pl.dir * pl.speed * lag;
-  return { x, y: Math.max(0.17, playerBaseY(pl)), z: laneZ(st.playerRow), hopping: false };
+  return { x, y: Math.max(0.12, playerBaseY(pl)), z: laneZ(st.playerRow), hopping: false };
 }
 
 /** Draw-side state of the diorama look (never read by the sim). */
 let frameDt = 0, lastDrawTime = -1, landedAt = -1, wasHopping = false, drawnYaw = Math.PI;
 let camX = 0, camZ = 0, camPrimed = false, lastBand = -1;
-/** Last diorama camera pose and tilt-shift band, for the QA hook and tests. */
+/** Last diorama camera pose and player focus band, for the QA hook and tests. */
 export const dioramaView = { position: [0, 0, 0] as [number, number, number], target: [0, 0, 0] as [number, number, number], fov: CAM_DIORAMA.fov as number, bandCenter: 0.68 };
 
-/** CH47-11 camera (damped follow, crane-down intro, theme lift, death push-in) and CH47-05 tilt-shift focus. */
+/** CH47-11 camera (damped follow, crane-down intro, theme lift, death push-in) and QA focus band tracking (DoF blur disabled). */
 function syncDioramaCamera(px: number, pz: number, py: number, warn: number): void {
   if (!app) return;
   if (!camPrimed || st.time < 1e-6) { camX = px; camZ = pz; camPrimed = true; }
@@ -1607,7 +1609,6 @@ function syncDioramaCamera(px: number, pz: number, py: number, warn: number): vo
   if (band === null || Math.abs(band - lastBand) < 0.004) return;
   lastBand = band;
   dioramaView.bandCenter = band;
-  try { post()?.setEffect?.("depthOfField", { tiltShift: [band, THEME_LOOKS[appliedLook]!.tiltShift.bandWidth] }); } catch { /* post v2 only */ }
 }
 
 export function syncVisuals(alpha = 1): void {
@@ -1724,31 +1725,30 @@ export function syncVisuals(alpha = 1): void {
   try {
     const h = nodes.require("player");
     h.setPosition(px, pose.y, pz);
+    if (pose.hopping && !wasHopping) landedAt = -1;
+    if (!pose.hopping && wasHopping) landedAt = tr;
+    wasHopping = pose.hopping;
+    const landSince = landedAt < 0 ? -1 : tr - landedAt;
+    const goalYaw = HOP_YAW[st.hop.dir] ?? Math.PI;
     if (lookMode !== "original") {
-      // CH47-12 / WP-14: anticipation squash, take-off stretch and landing squash, 70 ms damped yaw turns.
-      if (pose.hopping && !wasHopping) landedAt = -1;
-      if (!pose.hopping && wasHopping) landedAt = tr;
-      wasHopping = pose.hopping;
-      const [sxz, sy] = hopScale(st.hop.t, pose.hopping, landedAt < 0 ? -1 : tr - landedAt, reducedMotion);
+      // CH47-12 / WP-14: anticipation/landing squash, apex stretch, idle breath, forward pitch arc & ZYX yaw banking.
+      const [sxz, sy] = hopScale(st.hop.t, pose.hopping, landSince, reducedMotion);
+      const [bxz, by] = st.dead ? [1, 1] : idleBreathScale(tr, pose.hopping, landSince, reducedMotion);
       if (st.dead && squash !== 1) h.setScale([1.25, squash, 1.25]);
-      else h.setScale([sxz, sy, sxz]);
-      drawnYaw = turnToward(drawnYaw, HOP_YAW[st.hop.dir] ?? Math.PI, frameDt);
-      h.setRotation(0, drawnYaw, 0);
+      else h.setScale([sxz * bxz, sy * by, sxz * bxz]);
+      const yawErr = shortestAngleDelta(drawnYaw, goalYaw);
+      drawnYaw = turnToward(drawnYaw, goalYaw, frameDt);
+      const pitch = st.dead ? 0 : hopPitch(st.hop.t, pose.hopping, landSince, reducedMotion);
+      const bank = st.dead || reducedMotion ? 0 : Math.max(-0.22, Math.min(0.22, -yawErr * 0.28));
+      const [rx, ry, rz] = composeCharacterEulerXYZ(drawnYaw, pitch, bank);
+      h.setRotation(rx, ry, rz);
     } else {
       if (pose.hopping) h.setScale(1.0 + Math.sin(Math.PI * Math.max(0, Math.min(1, st.hop.t))) * 0.25);
       else h.setScale(squash);
-      if (st.hop.dir === "left") h.setRotation(0, -Math.PI / 2, 0);
-      else if (st.hop.dir === "right") h.setRotation(0, Math.PI / 2, 0);
-      else if (st.hop.dir === "back") h.setRotation(0, 0, 0);
-      else h.setRotation(0, Math.PI, 0);
-    }
-    const targetClip = pose.hopping ? "Regular_Jump" : "Idle";
-    if (targetClip !== activePlayerClip) {
-      activePlayerClip = targetClip;
-      // CH47-12: one jump clip per hop (speed fits the clip to HOP_DUR, played once).
-      h.setAnimation(lookMode !== "original" && targetClip === "Regular_Jump"
-        ? { clip: targetClip, loop: false, speed: 2.2 }
-        : { clip: targetClip, loop: true, speed: targetClip === "Regular_Jump" ? 2.2 : 1.0 });
+      drawnYaw = goalYaw;
+      const pitch = st.dead ? 0 : hopPitch(st.hop.t, pose.hopping, landSince, reducedMotion);
+      const [rx, ry, rz] = composeCharacterEulerXYZ(goalYaw, pitch, 0);
+      h.setRotation(rx, ry, rz);
     }
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
@@ -1763,9 +1763,17 @@ export function syncVisuals(alpha = 1): void {
     sp.setVisible(true);
     const side = idx % 2 === 0 ? -1 : 1;
     const sx = side * (SCENERY_X + 0.6 + (idx % 3) * 1.15);
-    const cheerBob = reducedMotion ? 0 : Math.abs(Math.sin(tr * 5.2 + idx * 1.1)) * 0.22;
+    const phase = tr * 5.2 + idx * 1.1;
+    const bounceWave = Math.abs(Math.sin(phase));
+    const cheerBob = reducedMotion ? 0 : bounceWave * 0.22;
     sp.setPosition(sx, FLOOR_Y + cheerBob, laneZ(specRow));
-    sp.setRotation(0, side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42, 0);
+    const specYaw = side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42;
+    const specRoll = reducedMotion ? 0 : Math.sin(phase * 0.5) * 0.08;
+    const [srx, sry, srz] = composeCharacterEulerXYZ(specYaw, reducedMotion ? 0 : -bounceWave * 0.09, specRoll);
+    sp.setRotation(srx, sry, srz);
+    const cheerSy = reducedMotion ? 1 : 0.94 + bounceWave * 0.14;
+    const cheerSxz = 1 / Math.sqrt(cheerSy);
+    sp.setScale?.([cheerSxz, cheerSy, cheerSxz]);
   }
 
   // Keep the two-plane sky, sun, and landscape under the course anchored to
@@ -2209,9 +2217,9 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode !== "original") })
-        .position(st.playerCol * COL_W, py, pz).rotate(0, Math.PI, 0)
-        .animate({ clip: "Idle", loop: true })
+      buildProceduralCritterNode(c.asset, { name: "player", targetHeight: 1.05, castShadow: true })
+        .position(st.playerCol * COL_W, py, pz)
+        .rotate(0, Math.PI, 0)
         .runtime(game.runtimeNode("player"))
         .toJSON() as never
     );

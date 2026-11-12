@@ -347,10 +347,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const progress = (fraction: number, label?: string): void => { try { options.onBootProgress?.(fraction, label); } catch { /* cosmetic */ } };
       progress(0.1, "scene");
       const rawGamut = new URLSearchParams(pageSearch).get("gamut")?.trim().toLowerCase();
-      const prefersP3 =
-        rawGamut === "srgb"
-          ? false
-          : rawGamut === "p3" || (typeof window !== "undefined" && window.matchMedia?.("(color-gamut: p3)").matches === true);
+      // Only opt into Display-P3 when explicitly requested via `?gamut=p3`: WebGPU post/RGBA8 presentation
+      // contracts require sRGB output encoding unless a dedicated P3 float target is configured.
+      const prefersP3 = rawGamut === "p3";
       app = createAuraApp(target, {
         scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".

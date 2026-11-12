@@ -57,12 +57,14 @@ describe("GU47 WP-34 look table", () => {
     }
   });
 
-  it("DG-S3: every chapter has a height-fog node; DG-P3: bloom has threshold 1.0 and no radius; DG-P2: grade and vignette 0.22", { timeout: 60_000 }, () => {
+  it("DG-S3: every chapter uses clean distant linear fog (near >= 240, far >= 1400, maxOpacity <= 0.36); DG-P3: bloom has threshold 1.0 and no radius; DG-P2: grade and vignette 0.22", { timeout: 60_000 }, () => {
     for (let c = 0; c < CHAPTER_LOOKS.length; c++) {
       const list = nodes(c);
       const fog = list.find((n) => n.effect === "fog")!;
-      expect(fog.mode).toBe("height");
-      expect(fog.heightFalloff).toBeGreaterThan(0);
+      expect(fog.mode).toBe("linear");
+      expect(fog.near).toBeGreaterThanOrEqual(240);
+      expect(fog.far).toBeGreaterThanOrEqual(1400);
+      expect(fog.maxOpacity).toBeLessThanOrEqual(0.36);
       const bloom = list.find((n) => n.effect === "bloom")!;
       expect(bloom.threshold).toBe(1);
       expect(bloom.postAuthored).not.toContain("radius");

@@ -25,9 +25,9 @@ function snapshotOf(id: (typeof WORLD_IDS)[number]): ArtDirectionSnapshot {
 }
 
 describe("pips-big-leap art direction (PRD 3.2)", () => {
-  it("passes defineArtDirection and contracts ONLY the 3 rigged character GLBs", () => {
+  it("passes defineArtDirection with zero Meshy GLB assets (100% @aura3d/engine procedural)", () => {
     expect(defineArtDirection(direction)).toBe(direction);
-    expect(direction.assets.map((a) => a.assetKey)).toEqual(["pipsPip", "pipsBrambleback", "leapBeetleAnim"]);
+    expect(direction.assets).toEqual([]);
   });
 
   it("states the identity: moss, toadstool red, birch cream; sun-seed gold reserved; a unique miniature-lens signature", () => {

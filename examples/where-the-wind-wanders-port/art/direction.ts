@@ -44,9 +44,7 @@ export default defineArtDirection({
     exposureEV: 0.07
   },
   framing: { rig: "chase", subjectHeightFraction: [0.18, 0.22], fovDeg: [40, 52], mobile: "both" },
-  assets: [
-    { role: "hero", assetKey: "hero", maxTriangles: 20000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["Idle", "Walk", "Run"] } }
-  ],
+  assets: [],
   vfx: [
     { event: "wind-petals", kind: "wind-petals" },
     { event: "gust-streak", kind: "wind-gust-streak" },

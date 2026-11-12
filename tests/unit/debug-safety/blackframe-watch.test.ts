@@ -310,4 +310,26 @@ describe("black-frame watch: HiDPI canvases", () => {
     expect(calls.find((c) => c[0] === "getImageData")).toEqual(["getImageData", 0, 0, W, H]);
     expect(rig.navigated).toHaveLength(1);
   });
+
+  it("ignores transparent all-zero post-present WebGPU swapchain reads (alpha = 0) instead of false-reloading", () => {
+    const expiredSwapchain = new Uint8Array(TEXELS * 4); // [0, 0, 0, 0] everywhere
+    const clearRect = vi.fn();
+    const ctx = {
+      imageSmoothingEnabled: true,
+      clearRect,
+      drawImage: () => undefined,
+      getImageData: () => ({ data: expiredSwapchain })
+    };
+    const probeCanvas = { width: 0, height: 0, getContext: () => ctx };
+    vi.stubGlobal("document", { readyState: "complete", hidden: false, querySelectorAll: () => [], createElement: () => probeCanvas });
+    const rig = new Rig();
+    const webgpuCanvas = { width: 2560, height: 1440 } as HTMLCanvasElement;
+    const { readProbe: _unused, ...rest } = rig.options({ fastFrames: 4 });
+    void _unused;
+    const watch = createBlackFrameWatch(webgpuCanvas, rest as BlackFrameWatchOptions);
+    rig.run(watch, 200);
+    expect(clearRect).toHaveBeenCalledWith(0, 0, W, H);
+    expect(rig.navigated).toHaveLength(0);
+    expect(watch.observation().blackSamples).toBe(0);
+  });
 });

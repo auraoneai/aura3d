@@ -3,8 +3,7 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, geometry, instances, lights, looks, material, model, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
-import { assets } from "./aura-assets.route";
+import { camera, effects, game, geometry, instances, lights, looks, material, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import { baseballSeamTextures, batWoodTexture, flipbookAtlasDataUrl, ivyBrickTexture, turfTextures } from "./turfTextures";
 import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
@@ -34,6 +33,8 @@ import {
 import { BATTER_YAW } from "./batter-pose";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import {
+  buildArticulatedBallparkWaverNode,
+  buildArticulatedBaseballPlayerNode,
   createAthleteBeltNode,
   createAthleteCapNode,
   createBallparkSpectatorsNodes,
@@ -469,21 +470,10 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
     );
   }
 
-  // Animated front-row wavers — real admitted 3D rigged athletes grounded at y = 0
+  // Animated front-row wavers — 100% native @aura3d/engine articulated spectators grounded at y = 0
   void rng;
   for (const [i, c] of crowdPlacements(park).entries()) {
-    nodes.push(
-      model(assets.diamondCrowdAthlete, {
-        name: `waver-${i}`,
-        targetHeight: 1.88,
-        role: "setDressing",
-        scaleMode: "fit"
-      })
-        .position(c.x, 0, c.z)
-        .rotate(0, c.yaw, 0)
-        .animate({ clip: "Idle_Loop", loop: true, speed: 1.1 })
-        .runtime(game.runtimeNode(`waver-${i}`))
-    );
+    nodes.push(buildArticulatedBallparkWaverNode(i, [c.x, 0, c.z], c.yaw));
   }
 
   // Scoreboard + floodlight towers
@@ -903,22 +893,9 @@ export function horizonNode(band: HorizonBand): any {
   return band.shape === "box" ? instances.box({ ...options, size: [1, 1, 1] as Vec3 }) : instances.cylinder({ ...options, size: [1, 1, 1] as Vec3 });
 }
 
-const ATHLETE_UNIFORM_OVERRIDES = [{ color: "#f3ede0", colorMode: "multiply" as const, roughness: 0.78, metallic: 0 }] as const;
-
-/** An admitted 3D catalog athlete grounded cleanly with skeletal animation in an immediate athletic ready crouch. */
-export function buildAthleteNodes(id: string, asset: any, initialClip = "Crouch_Idle_Loop", gu47 = true): any[] {
-  return [
-    model(asset, {
-      name: id,
-      targetHeight: 1.88,
-      role: "primaryCharacter",
-      scaleMode: "fit",
-      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
-    })
-      .position(0, -80, 0)
-      .animate({ clip: initialClip, loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode(id))
-  ];
+/** A 100% procedural multi-material articulated baseball athlete grounded cleanly in an immediate athletic ready crouch. */
+export function buildAthleteNodes(id: string, _asset?: unknown, _initialClip = "Crouch_Idle_Loop", _gu47 = true): any[] {
+  return [buildArticulatedBaseballPlayerNode(id, { roadKit: id === "batter" || id.startsWith("runner-") })];
 }
 
 /** GU47 phase 4: lacquered helmets and caps catch the sky (rubric ibl_reflections); main.ts tints them per team. */
@@ -952,32 +929,12 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   const zoneColor = gu47 ? PARK_LOOKS[parkId].turf.chalk : "#f5f1e4";
   const landColor = gu47 ? PARK_LOOKS[parkId].accent : "#7dfcff";
   const nodes: any[] = [
-    ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop", gu47),
-    ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop", gu47),
-    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.diamondAthlete, "Crouch_Idle_Loop", gu47)),
-    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, "Crouch_Idle_Loop", gu47)).flat(),
-    model(assets.diamondAthlete, {
-      name: "coach-1b",
-      targetHeight: 1.88,
-      role: "primaryCharacter",
-      scaleMode: "fit",
-      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
-    })
-      .position(21.5, 0, -14.8)
-      .rotate(0, -Math.PI * 0.72, 0)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("coach-1b")),
-    model(assets.diamondAthlete, {
-      name: "coach-3b",
-      targetHeight: 1.88,
-      role: "primaryCharacter",
-      scaleMode: "fit",
-      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
-    })
-      .position(-21.5, 0, -14.8)
-      .rotate(0, Math.PI * 0.72, 0)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("coach-3b")),
+    ...buildAthleteNodes("pitcher", undefined, "Crouch_Idle_Loop", gu47),
+    ...buildAthleteNodes("batter", undefined, "Idle_Loop", gu47),
+    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, undefined, "Crouch_Idle_Loop", gu47)),
+    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, undefined, "Crouch_Idle_Loop", gu47)).flat(),
+    buildArticulatedBaseballPlayerNode("coach-1b", { roadKit: true, position: [21.5, 0, -14.8], yaw: -Math.PI * 0.72 }),
+    buildArticulatedBaseballPlayerNode("coach-3b", { roadKit: true, position: [-21.5, 0, -14.8], yaw: Math.PI * 0.72 }),
     // Catcher's mitt — hidden below the field until socketed to the crouched catcher's left forearm at runtime
     createCatcherMittNode([0, -80, 0], false)
   ];

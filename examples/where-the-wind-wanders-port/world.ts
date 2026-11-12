@@ -25,7 +25,7 @@ import { buildScenery } from "./scenery";
 import { NO_MOTION, bodyMotion, followDrive } from "./gait-motion";
 import { STRIDE_SPEED, footstepCell } from "./locomotion";
 import { KITE_FLIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
-import { createWindmillSailsNode } from "./art/proceduralModels";
+import { computeBellkeeperRightHandLocal, createWindmillSailsNode } from "./art/proceduralModels";
 import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
@@ -682,7 +682,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     const post = lookPostFor(options.daylightKey ?? 0);
     const duskBoot = isDuskKey(options.daylightKey ?? 0);
     builder
-      .add(effects.fog({ name: "valley-fog", mode: "linear", color: "#d8ecd6", near: 98, far: 365 }))
+      .add(effects.fog({ name: "valley-fog", mode: "linear", color: "#cfe4dc", near: 165, far: 520, maxOpacity: 0.24 }))
       .add(effects.bloom({ name: "bloom", ...post.bloom, knee: 0.35, clampLuminance: 8 }))
       .add(effects.colorGrade({ name: "grade", ...post.grade, temperature: duskBoot ? 0.12 : 0.07, shadows: [0.97, 0.99, 1.03], highlights: [1.03, 1.01, 0.97] }))
       .add(effects.vignette({ name: "vignette", ...post.vignette }));
@@ -710,32 +710,53 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         return h;
       };
       const heroAnim = set.hero ? createHeroAnimator(app) : null;
-      // WW47-AN2: the admitted hero rig has `neck`, `Head` and the forward-facing `headfront` joint.
-      // Constraints are registered only after the model loads and only while an interaction is in reach.
+      // WW47-AN2: procedural Bellkeeper head gaze turns gently toward nearby letters and the sanctuary bell.
       const heroActor = !original && set.hero ? node("hero") as ReturnType<typeof node> & { readonly animation?: AuraActorAnimationApi } : null;
       let gazeTarget: string | null = null;
       let disposeGaze: (() => void) | null = null;
-      const clearGaze = (): void => { disposeGaze?.(); disposeGaze = null; gazeTarget = null; };
-      const updateGaze = (state: WindState, onBoat: boolean): void => {
-        if (!heroActor || onBoat) { clearGaze(); return; }
-        const near = nearbyInteraction(state.pos, state.found);
+      let gazeYaw = 0, gazePitch = 0;
+      const clearGaze = (): void => { disposeGaze?.(); disposeGaze = null; gazeTarget = null; gazeYaw = 0; gazePitch = 0; };
+      const updateGaze = (state: WindState, hy: number, curYaw: number, dtSec: number, onBoat: boolean): void => {
+        const near = !original && !onBoat ? nearbyInteraction(state.pos, state.found) : { letter: -1, bell: false };
         const id = near.letter >= 0 ? `letter-${near.letter}` : near.bell ? "bell" : null;
-        if (id === gazeTarget) return;
-        clearGaze();
-        if (!id) return;
-        const animation = heroActor.animation;
-        if (!animation?.ik || !animation.socket("neck").valid
-          || !animation.socket("Head").valid || !animation.socket("headfront").valid) return;
-        const letter = near.letter >= 0 ? LETTERS[near.letter] : undefined;
-        const target: [number, number, number] = letter
-          ? [letter.x, terrainHeight(letter.x, letter.z) + 1.35, letter.z]
-          : [sc.bellHang.x, sc.bellHang.y, sc.bellHang.z];
-        disposeGaze = animation.ik.add({
-          kind: "look-at", target, forwardAxis: "+y", yawLimitDeg: 175, pitchLimitDeg: 35,
-          bones: [{ bone: "neck", weight: 0.2 }, { bone: "Head", weight: 0.8 }, { bone: "headfront", weight: 0 }],
-          halfLife: options.reducedMotion?.() ? 0.45 : 0.15
-        });
-        gazeTarget = id;
+        let goalYaw = 0, goalPitch = 0;
+        if (id) {
+          const letter = near.letter >= 0 ? LETTERS[near.letter] : undefined;
+          const target: [number, number, number] = letter
+            ? [letter.x, terrainHeight(letter.x, letter.z) + 1.35, letter.z]
+            : [sc.bellHang.x, sc.bellHang.y, sc.bellHang.z];
+          const dx = target[0] - state.pos.x;
+          const dy = target[1] - (hy + 2.25);
+          const dz = target[2] - state.pos.z;
+          let relYaw = Math.atan2(dx, dz) - curYaw;
+          while (relYaw > Math.PI) relYaw -= Math.PI * 2;
+          while (relYaw < -Math.PI) relYaw += Math.PI * 2;
+          if (Math.abs(relYaw) < 1.95) {
+            goalYaw = Math.max(-0.62, Math.min(0.62, relYaw * 0.72));
+            goalPitch = Math.max(-0.32, Math.min(0.32, -Math.atan2(dy, Math.max(0.4, Math.hypot(dx, dz))) * 0.65));
+          }
+          if (id !== gazeTarget) {
+            disposeGaze?.();
+            disposeGaze = null;
+            const animation = heroActor?.animation;
+            if (animation?.ik && animation.socket("neck").valid && animation.socket("Head").valid && animation.socket("headfront").valid) {
+              disposeGaze = animation.ik.add({
+                kind: "look-at", target, forwardAxis: "+y", yawLimitDeg: 175, pitchLimitDeg: 35,
+                bones: [{ bone: "neck", weight: 0.2 }, { bone: "Head", weight: 0.8 }, { bone: "headfront", weight: 0 }],
+                halfLife: options.reducedMotion?.() ? 0.45 : 0.15
+              });
+            }
+            gazeTarget = id;
+          }
+        } else if (gazeTarget !== null) {
+          disposeGaze?.();
+          disposeGaze = null;
+          gazeTarget = null;
+        }
+        const halfLife = options.reducedMotion?.() ? 0.45 : 0.15;
+        const gk = dtSec > 0 ? 1 - Math.pow(0.5, dtSec / halfLife) : 1;
+        gazeYaw += (goalYaw - gazeYaw) * gk;
+        gazePitch += (goalPitch - gazePitch) * gk;
       };
       if (set.bell) node("bell").setVisible(false);
       if (hasHighVfx) {
@@ -753,7 +774,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let bodyDrive = 0, footCell = -1;
       let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
       let epilogue: number | null = null;
-      let bellAngle = 0;
+      let bellAngle = 0, bellRingAt = -1, wasBellComplete = false;
       let swayTime = 0, lastTime = 0;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
       /** WW47-A1/AN1: the kite rides downwind of the traveller, its face turned toward the view, bobbing and rolling with the gust; a catenary linen thread links RightHand to the kite bridle. */
@@ -774,9 +795,10 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const upwindYaw = Math.atan2(-WIND_DIR[0], -WIND_DIR[1]);
         const yawK = upwindYaw + Math.sign(-upwindYaw) * (KITE_FLIGHT.towardViewDeg * Math.PI) / 180 + 0.1 * m * Math.sin(t * 0.9);
         node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(-0.35 - 0.06 * m * Math.sin(t * 1.7), yawK, 0.14 * m * Math.sin(t * 1.1 + 0.4 * g));
-        let ax = hx + Math.cos(yaw) * 0.26;
-        let ay = hy + 1.42;
-        let az = hz - Math.sin(yaw) * 0.26;
+        const handLocal = heroAnim ? computeBellkeeperRightHandLocal(heroAnim.pose) : [-0.28, 1.48, 0.22] as const;
+        let ax = hx + handLocal[0] * Math.cos(yaw) + handLocal[2] * Math.sin(yaw);
+        let ay = hy + handLocal[1];
+        let az = hz - handLocal[0] * Math.sin(yaw) + handLocal[2] * Math.cos(yaw);
         const handSock = heroActor?.animation?.socket("RightHand");
         if (handSock?.valid) {
           const m4 = handSock.worldMatrix(handMat);
@@ -861,7 +883,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
+        snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); bellRingAt = -1; wasBellComplete = state.complete; heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
         playSequence(id) { sequencer.start(id); },
@@ -876,7 +898,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           }
           sequencer.skip(); seqComplete = false;
           vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
-          feelFound = 0; feelComplete = false;
+          feelFound = 0; feelComplete = false; bellRingAt = -1; wasBellComplete = false;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
           lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); bodyDrive = 0; footCell = -1; gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
@@ -885,6 +907,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const { x, z } = state.pos;
           const y = terrainHeight(x, z);
           const hop = state.hop.height;
+          if (state.complete && !wasBellComplete) bellRingAt = time;
+          wasBellComplete = state.complete;
           // gait follows distance travelled; the contact shadow stays on the ground
           const moved = Math.hypot(x - lastX, z - lastZ);
           if (state.step !== lastStep) {
@@ -904,12 +928,17 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const air = state.hop.phase === "air" ? 1 : state.hop.phase === "takeoff" ? 0.4 : 0;
           const squash = state.hop.phase === "takeoff" ? -0.08 : state.hop.phase === "landing" ? -0.1 : state.hop.phase === "air" ? 0.06 : 0;
           const onBoat = epilogue !== null;
+          // wind sway runs on its own clock so reduced motion can slow it without touching the sim or the camera
+          swayTime += Math.max(0, Math.min(0.25, time - lastTime)) * motion();
+          if (time < lastTime) swayTime = time;
+          lastTime = time;
+          updateGaze(state, y + hop, yaw, Math.max(0, Math.min(0.25, dt)), onBoat);
+          const bellRingAmt = bellRingAt >= 0 && time >= bellRingAt ? Math.max(0, 1 - (time - bellRingAt) / 2.6) : 0;
+
           const tr = node(set.hero ? "hero" : "traveller");
-          const cloakNode = app.nodes.get("bellkeeper-cloak") ?? null;
           if (onBoat) {
             const b = boatPose(epilogue!);
             tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0);
-            cloakNode?.setVisible(!original).setPosition(b.x, b.y + 2.48, b.z - 0.3).setRotation(0.06, b.yaw, 0);
             if (!heroAnim) tr.setUniform?.("windTime", time);
             node("shadow").setPosition(b.x, -10, b.z);
           } else {
@@ -917,21 +946,6 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             bodyDrive = followDrive(bodyDrive, heroAnim && state.hop.phase === "idle" ? heroAnim.speed / STRIDE_SPEED.Walk : 0, dt);
             const bm = heroAnim && !original ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
             tr.setPosition(x, y + hop + bm.bob, z).setRotation(bm.pitch, yaw, bm.roll);
-            if (cloakNode) {
-              cloakNode.setVisible(!original);
-              let cx = x;
-              let cy = y + hop + bm.bob + (set.hero ? 2.02 : 1.92);
-              let cz = z;
-              const neckSock = heroActor?.animation?.socket("neck");
-              if (neckSock?.valid) {
-                const m4 = neckSock.worldMatrix(handMat);
-                cx = m4[12]!;
-                cy = m4[13]! - 0.06;
-                cz = m4[14]!;
-              }
-              const cloakBillow = 0.08 * walkAmt + 0.05 * Math.sin(swayTime * 2.2);
-              cloakNode.setPosition(cx, cy, cz).setRotation(bm.pitch + cloakBillow, yaw, bm.roll);
-            }
             node("shadow").setPosition(x, y + 0.06, z).setScale((1 - 0.35 * Math.min(1, hop / 1.2)) * (1 + 0.5 * bm.bob));
             // a foot plants: a few grass specks at the heel (same footfall cell as the footstep sound)
             const cell = footstepCell(state.stride);
@@ -940,9 +954,20 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             if (!original) node("traveller-fill").setPosition(x, y + hop + TRAVELLER_FILL.up, z + TRAVELLER_FILL.toward);
           }
           if (heroAnim) {
-            heroAnim.update({ x, z, airborne: state.hop.phase !== "idle", onBoat, time });
+            heroAnim.update({
+              x,
+              z,
+              airborne: state.hop.phase !== "idle",
+              onBoat,
+              time,
+              windTime: swayTime,
+              gust: gustAt(x, z, swayTime),
+              hopPhase: state.hop.phase,
+              bellRing: bellRingAmt * motion(),
+              lookYaw: gazeYaw,
+              lookPitch: gazePitch
+            });
           } else tr.setScale(1.3);
-          if (!original) updateGaze(state, onBoat);
           if (!heroAnim) {
             tr.setUniform?.("gait", gait);
             tr.setUniform?.("walkAmt", onBoat ? 0 : walkAmt);
@@ -950,10 +975,6 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             tr.setUniform?.("squash", squash);
             tr.setUniform?.("windTime", time);
           }
-          // wind sway runs on its own clock so reduced motion can slow it without touching the sim or the camera
-          swayTime += Math.max(0, Math.min(0.25, time - lastTime)) * motion();
-          if (time < lastTime) swayTime = time;
-          lastTime = time;
           for (const id of allUniformNodes) node(id).setUniform?.("windTime", id === "foliage" || id === "props" ? swayTime : time);
           if (hasHighVfx) {
             for (let i = 0; i < MEADOW_SHAFTS.length; i++) node(`meadow-shaft-${i}`).setUniform?.("windTime", time);

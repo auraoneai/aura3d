@@ -77,11 +77,11 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
     expect(direction.lighting.environment).toEqual({ hdri: "belfast_sunset_puresky", background: "hdri" });
   });
 
-  it("mounts only contracted models (every scene model key is in the direction)", () => {
+  it("mounts only contracted models (every scene model key is in the direction — 0 GLBs, 100% procedural)", () => {
     const contracted = new Set(direction.assets.map((asset) => asset.assetKey));
     const keys = mountedModelKeys();
-    expect(keys).toHaveLength(5);
-    expect(contracted.size).toBe(5);
+    expect(keys).toHaveLength(0);
+    expect(contracted.size).toBe(0);
     expect(keys.filter((key) => !contracted.has(key))).toEqual([]);
   });
 
@@ -118,15 +118,24 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
     }
     const layout = crowdLayout("#c2662d", 1234);
     expect([...layout.colorsB, ...layout.colorsC]).not.toContain("#ffffff");
-    const crowdNodes = courtCrowdNodes("rucker", "#c2662d", {
-      live: [assets.aura_hoops_3d_blacktopFanAPoses, assets.aura_hoops_3d_blacktopFanCPoses, assets.aura_hoops_3d_blacktopFanDPoses]
-    });
+    const crowdNodes = courtCrowdNodes("rucker", "#c2662d");
     const instancedCrowd = crowdNodes.filter((n) => (n.toJSON() as { kind?: string }).kind === "primitive");
     expect(instancedCrowd.length).toBe(5);
     for (const n of instancedCrowd) {
       const mat = (n.toJSON() as { material?: { clearcoat?: number; sheen?: number } }).material;
       expect(mat?.clearcoat ?? 0).toBe(0);
       expect(mat?.sheen ?? 0).toBe(0);
+    }
+    for (const id of COURT_IDS) {
+      const rig = COURT_RIGS[id];
+      if (rig.fog.enabled) {
+        expect(rig.fog.near, `${id} fog near`).toBeGreaterThanOrEqual(190);
+      }
+      const fogNode = courtLookNodes(rig).find((n) => (n.toJSON() as { kind?: string }).kind === "fog");
+      if (fogNode) {
+        const fogJson = fogNode.toJSON() as { maxOpacity?: number };
+        expect(fogJson.maxOpacity ?? 0, `${id} fog maxOpacity`).toBeLessThanOrEqual(0.18);
+      }
     }
   });
 });

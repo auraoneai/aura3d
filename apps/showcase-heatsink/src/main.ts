@@ -600,6 +600,7 @@ async function boot(): Promise<void> {
       const transitionSeconds = shownSector === "" ? 0 : SECTOR_CROSSFADE_SECONDS;
       auraApp.atmosphere?.setFog(
         {
+          mode: "linear",
           color: target.fog.color,
           density: target.fog.density,
           near: target.fog.near,
