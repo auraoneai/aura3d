@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/splat-rush-port/art/direction.ts",
-  "sourceSha256": "d39167d0d88bb530f973b4956c859da6f7e206bfcbdf28c61df10858ae77cb62",
+  "sourceSha256": "bd9f7a72e9ebe6ed4463352cb1508f25fdc640f9d4d7a0b8feb9c728abf71047",
   "id": "splat-rush-port",
   "genre": "platformer",
   "signatureEffect": "Hand-inked cel paint carnival at sunset: plum-inked toon ribbon road under a golden-to-violet painted sky with gate-coloured paint splashes.",
@@ -38,76 +38,892 @@
       "kind": "hdri",
       "background": false
     },
-    "models": [
+    "models": [],
+    "materials": [
       {
-        "assetKey": "islandTree",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-0"
       },
       {
-        "assetKey": "islandTower",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-1"
       },
       {
-        "assetKey": "balloon",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-2"
       },
       {
-        "assetKey": "paintPotIsland",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-3"
       },
       {
-        "assetKey": "easelIsland",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-4"
       },
       {
-        "assetKey": "paletteIsland",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-7"
       },
       {
-        "assetKey": "gemRainbow",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-9"
       },
       {
-        "assetKey": "gemShield",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-14"
       },
       {
-        "assetKey": "gemDouble",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-15"
       },
       {
-        "assetKey": "gemSwitch",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "backdrop-0-mat-16"
+      },
+      {
+        "node": "backdrop-0-mat-17"
+      },
+      {
+        "node": "backdrop-0-mat-18"
+      },
+      {
+        "node": "backdrop-0-mat-20"
+      },
+      {
+        "node": "backdrop-0-glass"
+      },
+      {
+        "node": "backdrop-1-mat-0"
+      },
+      {
+        "node": "backdrop-1-mat-1"
+      },
+      {
+        "node": "backdrop-1-mat-2"
+      },
+      {
+        "node": "backdrop-1-mat-3"
+      },
+      {
+        "node": "backdrop-1-mat-4"
+      },
+      {
+        "node": "backdrop-1-mat-7"
+      },
+      {
+        "node": "backdrop-1-mat-8"
+      },
+      {
+        "node": "backdrop-1-mat-9"
+      },
+      {
+        "node": "backdrop-1-mat-13"
+      },
+      {
+        "node": "backdrop-1-mat-15"
+      },
+      {
+        "node": "backdrop-1-mat-16"
+      },
+      {
+        "node": "backdrop-1-mat-17"
+      },
+      {
+        "node": "backdrop-1-mat-19"
+      },
+      {
+        "node": "backdrop-1-mat-20"
+      },
+      {
+        "node": "backdrop-1-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-1-glass"
+      },
+      {
+        "node": "backdrop-2-mat-3"
+      },
+      {
+        "node": "backdrop-2-mat-6"
+      },
+      {
+        "node": "backdrop-2-mat-7"
+      },
+      {
+        "node": "backdrop-2-mat-8"
+      },
+      {
+        "node": "backdrop-2-mat-9"
+      },
+      {
+        "node": "backdrop-2-mat-14"
+      },
+      {
+        "node": "backdrop-2-mat-15"
+      },
+      {
+        "node": "backdrop-2-mat-16"
+      },
+      {
+        "node": "backdrop-2-mat-17"
+      },
+      {
+        "node": "backdrop-2-mat-18"
+      },
+      {
+        "node": "backdrop-2-mat-20"
+      },
+      {
+        "node": "backdrop-2-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-3-mat-0"
+      },
+      {
+        "node": "backdrop-3-mat-1"
+      },
+      {
+        "node": "backdrop-3-mat-2"
+      },
+      {
+        "node": "backdrop-3-mat-3"
+      },
+      {
+        "node": "backdrop-3-mat-4"
+      },
+      {
+        "node": "backdrop-3-mat-7"
+      },
+      {
+        "node": "backdrop-3-mat-8"
+      },
+      {
+        "node": "backdrop-3-mat-9"
+      },
+      {
+        "node": "backdrop-3-mat-10"
+      },
+      {
+        "node": "backdrop-3-mat-14"
+      },
+      {
+        "node": "backdrop-3-mat-15"
+      },
+      {
+        "node": "backdrop-3-mat-16"
+      },
+      {
+        "node": "backdrop-3-mat-20"
+      },
+      {
+        "node": "backdrop-3-glass"
+      },
+      {
+        "node": "backdrop-4-mat-0"
+      },
+      {
+        "node": "backdrop-4-mat-1"
+      },
+      {
+        "node": "backdrop-4-mat-2"
+      },
+      {
+        "node": "backdrop-4-mat-3"
+      },
+      {
+        "node": "backdrop-4-mat-4"
+      },
+      {
+        "node": "backdrop-4-mat-5"
+      },
+      {
+        "node": "backdrop-4-mat-7"
+      },
+      {
+        "node": "backdrop-4-mat-8"
+      },
+      {
+        "node": "backdrop-4-mat-9"
+      },
+      {
+        "node": "backdrop-4-mat-11"
+      },
+      {
+        "node": "backdrop-4-mat-14"
+      },
+      {
+        "node": "backdrop-4-mat-15"
+      },
+      {
+        "node": "backdrop-4-mat-16"
+      },
+      {
+        "node": "backdrop-4-mat-18"
+      },
+      {
+        "node": "backdrop-4-mat-20"
+      },
+      {
+        "node": "backdrop-4-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-4-glass"
+      },
+      {
+        "node": "backdrop-5-mat-3"
+      },
+      {
+        "node": "backdrop-5-mat-6"
+      },
+      {
+        "node": "backdrop-5-mat-7"
+      },
+      {
+        "node": "backdrop-5-mat-8"
+      },
+      {
+        "node": "backdrop-5-mat-9"
+      },
+      {
+        "node": "backdrop-5-mat-14"
+      },
+      {
+        "node": "backdrop-5-mat-15"
+      },
+      {
+        "node": "backdrop-5-mat-16"
+      },
+      {
+        "node": "backdrop-5-mat-17"
+      },
+      {
+        "node": "backdrop-5-mat-18"
+      },
+      {
+        "node": "backdrop-5-mat-20"
+      },
+      {
+        "node": "backdrop-5-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-6-mat-0"
+      },
+      {
+        "node": "backdrop-6-mat-1"
+      },
+      {
+        "node": "backdrop-6-mat-2"
+      },
+      {
+        "node": "backdrop-6-mat-3"
+      },
+      {
+        "node": "backdrop-6-mat-4"
+      },
+      {
+        "node": "backdrop-6-mat-7"
+      },
+      {
+        "node": "backdrop-6-mat-8"
+      },
+      {
+        "node": "backdrop-6-mat-9"
+      },
+      {
+        "node": "backdrop-6-mat-10"
+      },
+      {
+        "node": "backdrop-6-mat-14"
+      },
+      {
+        "node": "backdrop-6-mat-15"
+      },
+      {
+        "node": "backdrop-6-mat-16"
+      },
+      {
+        "node": "backdrop-6-mat-20"
+      },
+      {
+        "node": "backdrop-6-glass"
+      },
+      {
+        "node": "backdrop-7-mat-3"
+      },
+      {
+        "node": "backdrop-7-mat-6"
+      },
+      {
+        "node": "backdrop-7-mat-7"
+      },
+      {
+        "node": "backdrop-7-mat-8"
+      },
+      {
+        "node": "backdrop-7-mat-9"
+      },
+      {
+        "node": "backdrop-7-mat-14"
+      },
+      {
+        "node": "backdrop-7-mat-15"
+      },
+      {
+        "node": "backdrop-7-mat-16"
+      },
+      {
+        "node": "backdrop-7-mat-17"
+      },
+      {
+        "node": "backdrop-7-mat-18"
+      },
+      {
+        "node": "backdrop-7-mat-20"
+      },
+      {
+        "node": "backdrop-7-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-8-mat-0"
+      },
+      {
+        "node": "backdrop-8-mat-1"
+      },
+      {
+        "node": "backdrop-8-mat-2"
+      },
+      {
+        "node": "backdrop-8-mat-3"
+      },
+      {
+        "node": "backdrop-8-mat-4"
+      },
+      {
+        "node": "backdrop-8-mat-7"
+      },
+      {
+        "node": "backdrop-8-mat-8"
+      },
+      {
+        "node": "backdrop-8-mat-9"
+      },
+      {
+        "node": "backdrop-8-mat-13"
+      },
+      {
+        "node": "backdrop-8-mat-15"
+      },
+      {
+        "node": "backdrop-8-mat-16"
+      },
+      {
+        "node": "backdrop-8-mat-17"
+      },
+      {
+        "node": "backdrop-8-mat-19"
+      },
+      {
+        "node": "backdrop-8-mat-20"
+      },
+      {
+        "node": "backdrop-8-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-8-glass"
+      },
+      {
+        "node": "backdrop-9-mat-0"
+      },
+      {
+        "node": "backdrop-9-mat-1"
+      },
+      {
+        "node": "backdrop-9-mat-2"
+      },
+      {
+        "node": "backdrop-9-mat-3"
+      },
+      {
+        "node": "backdrop-9-mat-4"
+      },
+      {
+        "node": "backdrop-9-mat-5"
+      },
+      {
+        "node": "backdrop-9-mat-9"
+      },
+      {
+        "node": "backdrop-9-mat-11"
+      },
+      {
+        "node": "backdrop-9-mat-12"
+      },
+      {
+        "node": "backdrop-9-mat-14"
+      },
+      {
+        "node": "backdrop-9-mat-15"
+      },
+      {
+        "node": "backdrop-9-mat-16"
+      },
+      {
+        "node": "backdrop-9-mat-17"
+      },
+      {
+        "node": "backdrop-9-mat-18"
+      },
+      {
+        "node": "backdrop-9-mat-19"
+      },
+      {
+        "node": "backdrop-9-glass"
+      },
+      {
+        "node": "backdrop-10-mat-3"
+      },
+      {
+        "node": "backdrop-10-mat-6"
+      },
+      {
+        "node": "backdrop-10-mat-7"
+      },
+      {
+        "node": "backdrop-10-mat-8"
+      },
+      {
+        "node": "backdrop-10-mat-9"
+      },
+      {
+        "node": "backdrop-10-mat-14"
+      },
+      {
+        "node": "backdrop-10-mat-15"
+      },
+      {
+        "node": "backdrop-10-mat-16"
+      },
+      {
+        "node": "backdrop-10-mat-17"
+      },
+      {
+        "node": "backdrop-10-mat-18"
+      },
+      {
+        "node": "backdrop-10-mat-20"
+      },
+      {
+        "node": "backdrop-10-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-11-mat-0"
+      },
+      {
+        "node": "backdrop-11-mat-1"
+      },
+      {
+        "node": "backdrop-11-mat-2"
+      },
+      {
+        "node": "backdrop-11-mat-3"
+      },
+      {
+        "node": "backdrop-11-mat-4"
+      },
+      {
+        "node": "backdrop-11-mat-7"
+      },
+      {
+        "node": "backdrop-11-mat-8"
+      },
+      {
+        "node": "backdrop-11-mat-9"
+      },
+      {
+        "node": "backdrop-11-mat-13"
+      },
+      {
+        "node": "backdrop-11-mat-15"
+      },
+      {
+        "node": "backdrop-11-mat-16"
+      },
+      {
+        "node": "backdrop-11-mat-17"
+      },
+      {
+        "node": "backdrop-11-mat-19"
+      },
+      {
+        "node": "backdrop-11-mat-20"
+      },
+      {
+        "node": "backdrop-11-mat-21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "backdrop-11-glass"
+      },
+      {
+        "node": "pickup-rainbow-0 material 9"
+      },
+      {
+        "node": "pickup-rainbow-0 material 14"
+      },
+      {
+        "node": "pickup-rainbow-0 material 15"
+      },
+      {
+        "node": "pickup-rainbow-0 material 16"
+      },
+      {
+        "node": "pickup-rainbow-0 material 18"
+      },
+      {
+        "node": "pickup-rainbow-0 material 19"
+      },
+      {
+        "node": "pickup-rainbow-0 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-rainbow-0"
+      },
+      {
+        "node": "pickup-rainbow-1 material 9"
+      },
+      {
+        "node": "pickup-rainbow-1 material 14"
+      },
+      {
+        "node": "pickup-rainbow-1 material 15"
+      },
+      {
+        "node": "pickup-rainbow-1 material 16"
+      },
+      {
+        "node": "pickup-rainbow-1 material 18"
+      },
+      {
+        "node": "pickup-rainbow-1 material 19"
+      },
+      {
+        "node": "pickup-rainbow-1 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-rainbow-1"
+      },
+      {
+        "node": "pickup-rainbow-2 material 9"
+      },
+      {
+        "node": "pickup-rainbow-2 material 14"
+      },
+      {
+        "node": "pickup-rainbow-2 material 15"
+      },
+      {
+        "node": "pickup-rainbow-2 material 16"
+      },
+      {
+        "node": "pickup-rainbow-2 material 18"
+      },
+      {
+        "node": "pickup-rainbow-2 material 19"
+      },
+      {
+        "node": "pickup-rainbow-2 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-rainbow-2"
+      },
+      {
+        "node": "pickup-rainbow-3 material 9"
+      },
+      {
+        "node": "pickup-rainbow-3 material 14"
+      },
+      {
+        "node": "pickup-rainbow-3 material 15"
+      },
+      {
+        "node": "pickup-rainbow-3 material 16"
+      },
+      {
+        "node": "pickup-rainbow-3 material 18"
+      },
+      {
+        "node": "pickup-rainbow-3 material 19"
+      },
+      {
+        "node": "pickup-rainbow-3 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-rainbow-3"
+      },
+      {
+        "node": "pickup-shield-0-opaque material 9"
+      },
+      {
+        "node": "pickup-shield-0-opaque material 15"
+      },
+      {
+        "node": "pickup-shield-0-opaque material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-shield-0-glass"
+      },
+      {
+        "node": "pickup-halo-shield-0"
+      },
+      {
+        "node": "pickup-shield-1-opaque material 9"
+      },
+      {
+        "node": "pickup-shield-1-opaque material 15"
+      },
+      {
+        "node": "pickup-shield-1-opaque material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-shield-1-glass"
+      },
+      {
+        "node": "pickup-halo-shield-1"
+      },
+      {
+        "node": "pickup-shield-2-opaque material 9"
+      },
+      {
+        "node": "pickup-shield-2-opaque material 15"
+      },
+      {
+        "node": "pickup-shield-2-opaque material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-shield-2-glass"
+      },
+      {
+        "node": "pickup-halo-shield-2"
+      },
+      {
+        "node": "pickup-shield-3-opaque material 9"
+      },
+      {
+        "node": "pickup-shield-3-opaque material 15"
+      },
+      {
+        "node": "pickup-shield-3-opaque material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-shield-3-glass"
+      },
+      {
+        "node": "pickup-halo-shield-3"
+      },
+      {
+        "node": "pickup-x2-0 material 9"
+      },
+      {
+        "node": "pickup-x2-0 material 14"
+      },
+      {
+        "node": "pickup-x2-0 material 16"
+      },
+      {
+        "node": "pickup-x2-0 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-x2-0"
+      },
+      {
+        "node": "pickup-x2-1 material 9"
+      },
+      {
+        "node": "pickup-x2-1 material 14"
+      },
+      {
+        "node": "pickup-x2-1 material 16"
+      },
+      {
+        "node": "pickup-x2-1 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-x2-1"
+      },
+      {
+        "node": "pickup-x2-2 material 9"
+      },
+      {
+        "node": "pickup-x2-2 material 14"
+      },
+      {
+        "node": "pickup-x2-2 material 16"
+      },
+      {
+        "node": "pickup-x2-2 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-x2-2"
+      },
+      {
+        "node": "pickup-x2-3 material 9"
+      },
+      {
+        "node": "pickup-x2-3 material 14"
+      },
+      {
+        "node": "pickup-x2-3 material 16"
+      },
+      {
+        "node": "pickup-x2-3 material 21",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-x2-3"
+      },
+      {
+        "node": "pickup-switch-0 material 9"
+      },
+      {
+        "node": "pickup-switch-0 material 14"
+      },
+      {
+        "node": "pickup-switch-0 material 15"
+      },
+      {
+        "node": "pickup-switch-0 material 16"
+      },
+      {
+        "node": "pickup-switch-0 material 17"
+      },
+      {
+        "node": "pickup-switch-0 material 18"
+      },
+      {
+        "node": "pickup-switch-0 material 19"
+      },
+      {
+        "node": "pickup-switch-0 material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-switch-0"
+      },
+      {
+        "node": "pickup-switch-1 material 9"
+      },
+      {
+        "node": "pickup-switch-1 material 14"
+      },
+      {
+        "node": "pickup-switch-1 material 15"
+      },
+      {
+        "node": "pickup-switch-1 material 16"
+      },
+      {
+        "node": "pickup-switch-1 material 17"
+      },
+      {
+        "node": "pickup-switch-1 material 18"
+      },
+      {
+        "node": "pickup-switch-1 material 19"
+      },
+      {
+        "node": "pickup-switch-1 material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-switch-1"
+      },
+      {
+        "node": "pickup-switch-2 material 9"
+      },
+      {
+        "node": "pickup-switch-2 material 14"
+      },
+      {
+        "node": "pickup-switch-2 material 15"
+      },
+      {
+        "node": "pickup-switch-2 material 16"
+      },
+      {
+        "node": "pickup-switch-2 material 17"
+      },
+      {
+        "node": "pickup-switch-2 material 18"
+      },
+      {
+        "node": "pickup-switch-2 material 19"
+      },
+      {
+        "node": "pickup-switch-2 material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-switch-2"
+      },
+      {
+        "node": "pickup-switch-3 material 9"
+      },
+      {
+        "node": "pickup-switch-3 material 14"
+      },
+      {
+        "node": "pickup-switch-3 material 15"
+      },
+      {
+        "node": "pickup-switch-3 material 16"
+      },
+      {
+        "node": "pickup-switch-3 material 17"
+      },
+      {
+        "node": "pickup-switch-3 material 18"
+      },
+      {
+        "node": "pickup-switch-3 material 19"
+      },
+      {
+        "node": "pickup-switch-3 material 22",
+        "emissiveIntensity": 2,
+        "practical": true
+      },
+      {
+        "node": "pickup-halo-switch-3"
       }
     ],
     "drawCalls": 38
@@ -174,78 +990,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "backdrop",
-        "assetKey": "islandTree",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "islandTower",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "paintPotIsland",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "easelIsland",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "paletteIsland",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "balloon",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "gemRainbow",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "gemShield",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "gemDouble",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "gemSwitch",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "gate-match",

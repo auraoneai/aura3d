@@ -56,41 +56,7 @@ const direction: GameArtDirection = {
   assets: [
     { role: "hero", assetKey: "pipsPip", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "RunFast", "Regular_Jump", "Dead", "Victory_Cheer"] } },
     { role: "enemy", assetKey: "pipsBrambleback", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "Attack", "Hit_Reaction", "Dead", "Chest_Pound_Taunt"] } },
-    // NPC runners: kept until the rigged villagers (PBL-A3, WP-36) replace them.
-    { role: "character", assetKey: "showcaseSidekickRunner", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
-    { role: "character", assetKey: "helperChar", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
-    // GU47 wave 2 (PBL-A3): the two woodland villagers, Meshy text-to-3D, static pose (no rig, no clips);
-    // counts, JPEG maps (base colour + normal + metallic-roughness) and 1024 px sizes read from the GLBs.
-    { role: "character", assetKey: "leapHedgehog", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 10 (PBL-A3): the beetle is the rigged Meshy row (rig + animate), decimated 54,866 to 30,000 triangles, 1024 px maps;
-    // it replaces the static wave-2 beetle and plays its idle clip.
-    { role: "character", assetKey: "leapBeetleAnim", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle"] } },
-    // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course (23,964 to 31,866 triangles each).
-    { role: "world", assetKey: "leapBaseGarden", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "leapBaseCanopy", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "leapBaseMillpond", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "leapBaseMeadow", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "pipsSunseed", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "pipsGoldenAcorn", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "pipsCheckpointFlag", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "pipsSungate", maxTriangles: 10000, textureSet: "BC", maxTextureSize: 1024 },
-    // Borrowed shared props: mounted today, replaced by the woodland set (PBL-A2, WP-36).
-    { role: "set-dressing", assetKey: "propConifer", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "propBoulder", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "propRockB", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeWindmillMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeWatchtowerMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeCrateMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeBarrelMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "skylineCrystalShardMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "fpsEnergyCorePickupMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "auraClashCornerBrazierPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "neonStreetLampProp", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "heatsinkBoostPad", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "heatsinkArch", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "galleryShiftPedestal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "reactorFusionTurbineMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "blockfallReactorContainmentPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "character", assetKey: "leapBeetleAnim", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle"] } }
   ],
   // One entry per gameplay event; the pack lives in src/game/vfx.ts.
   vfx: [

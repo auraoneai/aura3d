@@ -54,6 +54,9 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const rand = lehmer(seed);
   const placements: Scenery["placements"] = { bell: [], cottages: [], pines: [], oaks: [], shrubs: [], stones: [] };
   const props = newMesh();
+  const sink = newMesh();
+  const millProps = replace.cottage ? sink : props;
+  const oldOakProps = replace.trees ? sink : props;
   const blobs: ShadowBlob[] = [];
   const keepClear: { x: number; z: number; r: number }[] = [];
   const lanterns: { x: number; y: number; z: number }[] = [];
@@ -143,30 +146,30 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
 
   // windmill: stone base, tapered wooden body with a gallery and stairs, shingled cap, cloth sails
   const my = terrainHeight(mill.x, mill.z) - 0.2;
-  addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[4.1, 0], [3.9, 2.3], [3.65, 4.5]], seg: 20, kind: KIND.stone, color: C.stoneDark, colorTop: C.stone });
-  addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[3.6, 4.4], [3.2, 8.2], [2.7, 12.2], [2.45, 13.8]], seg: 20, kind: KIND.wood, color: lin("#6f4f32"), colorTop: lin("#9c7448") });
-  for (const by3 of [7.4, 10.6]) addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[3.34 - (by3 - 7.4) * 0.12, by3], [3.42 - (by3 - 7.4) * 0.12, by3 + 0.05], [3.42 - (by3 - 7.4) * 0.12, by3 + 0.22], [3.34 - (by3 - 7.4) * 0.12, by3 + 0.27]], seg: 20, kind: KIND.wood, color: C.woodDark });
-  addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[4.7, 4.5], [4.7, 4.72], [3.4, 4.72]], seg: 20, kind: KIND.deck, color: C.woodLight });
+  addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[4.1, 0], [3.9, 2.3], [3.65, 4.5]], seg: 20, kind: KIND.stone, color: C.stoneDark, colorTop: C.stone });
+  addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[3.6, 4.4], [3.2, 8.2], [2.7, 12.2], [2.45, 13.8]], seg: 20, kind: KIND.wood, color: lin("#6f4f32"), colorTop: lin("#9c7448") });
+  for (const by3 of [7.4, 10.6]) addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[3.34 - (by3 - 7.4) * 0.12, by3], [3.42 - (by3 - 7.4) * 0.12, by3 + 0.05], [3.42 - (by3 - 7.4) * 0.12, by3 + 0.22], [3.34 - (by3 - 7.4) * 0.12, by3 + 0.27]], seg: 20, kind: KIND.wood, color: C.woodDark });
+  addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[4.7, 4.5], [4.7, 4.72], [3.4, 4.72]], seg: 20, kind: KIND.deck, color: C.woodLight });
   for (let i = 0; i < 18; i++) {
     const a2 = (i / 18) * Math.PI * 2;
-    addCylinder(props, { x: mill.x + Math.cos(a2) * 4.6, y: my + 4.72, z: mill.z + Math.sin(a2) * 4.6, r0: 0.06, r1: 0.06, h: 1.0, seg: 5, kind: KIND.wood, color: C.woodDark });
+    addCylinder(millProps, { x: mill.x + Math.cos(a2) * 4.6, y: my + 4.72, z: mill.z + Math.sin(a2) * 4.6, r0: 0.06, r1: 0.06, h: 1.0, seg: 5, kind: KIND.wood, color: C.woodDark });
   }
-  addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[4.6, 5.65], [4.72, 5.65], [4.72, 5.78], [4.6, 5.78]], seg: 20, kind: KIND.wood, color: C.woodLight });
+  addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[4.6, 5.65], [4.72, 5.65], [4.72, 5.78], [4.6, 5.78]], seg: 20, kind: KIND.wood, color: C.woodLight });
   for (let i = 0; i < 8; i++) {
-    addBox(props, { x: mill.x + 4.4 + i * 0.42, y: my + 4.42 - i * 0.56, z: mill.z + 1.9, w: 0.6, h: 0.12, d: 1.15, kind: KIND.wood, color: C.woodLight });
-    if (i % 2 === 0) addCylinder(props, { x: mill.x + 4.4 + i * 0.42, y: my - 0.1, z: mill.z + 2.45, r0: 0.05, r1: 0.05, h: 4.5 - i * 0.56 + 0.7, seg: 5, kind: KIND.wood, color: C.woodDark });
+    addBox(millProps, { x: mill.x + 4.4 + i * 0.42, y: my + 4.42 - i * 0.56, z: mill.z + 1.9, w: 0.6, h: 0.12, d: 1.15, kind: KIND.wood, color: C.woodLight });
+    if (i % 2 === 0) addCylinder(millProps, { x: mill.x + 4.4 + i * 0.42, y: my - 0.1, z: mill.z + 2.45, r0: 0.05, r1: 0.05, h: 4.5 - i * 0.56 + 0.7, seg: 5, kind: KIND.wood, color: C.woodDark });
   }
-  addBox(props, { x: mill.x, y: my + 1.45, z: mill.z + 3.82, w: 1.9, h: 2.9, d: 0.3, kind: KIND.wood, color: C.woodDark, colorTop: C.barkLight });
-  addBox(props, { x: mill.x, y: my + 3.0, z: mill.z + 3.72, w: 2.3, h: 0.28, d: 0.3, kind: KIND.stone, color: C.stoneDark });
+  addBox(millProps, { x: mill.x, y: my + 1.45, z: mill.z + 3.82, w: 1.9, h: 2.9, d: 0.3, kind: KIND.wood, color: C.woodDark, colorTop: C.barkLight });
+  addBox(millProps, { x: mill.x, y: my + 3.0, z: mill.z + 3.72, w: 2.3, h: 0.28, d: 0.3, kind: KIND.stone, color: C.stoneDark });
   for (const [wy, ww] of [[7.0, 1.0], [9.4, 0.9], [11.8, 0.8]] as const) {
     const rr = 3.6 - (wy - 4.4) * 0.12 - 0.1;
-    addBox(props, { x: mill.x, y: my + wy, z: mill.z + rr, w: ww, h: ww * 1.3, d: 0.25, kind: KIND.glass, color: lin("#25404a") });
-    addBox(props, { x: mill.x, y: my + wy, z: mill.z + rr + 0.05, w: ww + 0.3, h: 0.12, d: 0.18, kind: KIND.wood, color: C.woodDark });
-    addBox(props, { x: mill.x, y: my + wy, z: mill.z + rr + 0.05, w: 0.1, h: ww * 1.5, d: 0.18, kind: KIND.wood, color: C.woodDark });
+    addBox(millProps, { x: mill.x, y: my + wy, z: mill.z + rr, w: ww, h: ww * 1.3, d: 0.25, kind: KIND.glass, color: lin("#25404a") });
+    addBox(millProps, { x: mill.x, y: my + wy, z: mill.z + rr + 0.05, w: ww + 0.3, h: 0.12, d: 0.18, kind: KIND.wood, color: C.woodDark });
+    addBox(millProps, { x: mill.x, y: my + wy, z: mill.z + rr + 0.05, w: 0.1, h: ww * 1.5, d: 0.18, kind: KIND.wood, color: C.woodDark });
   }
-  addLathe(props, { x: mill.x, y: my, z: mill.z, profile: [[2.6, 13.7], [3.05, 14.0], [2.55, 15.3], [1.35, 16.6], [0.35, 17.5], [0.0, 17.8]], seg: 20, kind: KIND.roof, color: lin("#4d3626"), colorTop: lin("#7b5638") });
-  addBlob(props, { x: mill.x, y: my + 17.9, z: mill.z, rx: 0.26, ry: 0.26, rz: 0.26, rings: 4, seg: 6, kind: KIND.gold, color: C.gold });
-  addBox(props, { x: mill.x, y: my + 14.7, z: mill.z + 2.35, w: 0.7, h: 0.7, d: 1.3, kind: KIND.wood, color: C.woodDark });
+  addLathe(millProps, { x: mill.x, y: my, z: mill.z, profile: [[2.6, 13.7], [3.05, 14.0], [2.55, 15.3], [1.35, 16.6], [0.35, 17.5], [0.0, 17.8]], seg: 20, kind: KIND.roof, color: lin("#4d3626"), colorTop: lin("#7b5638") });
+  addBlob(millProps, { x: mill.x, y: my + 17.9, z: mill.z, rx: 0.26, ry: 0.26, rz: 0.26, rings: 4, seg: 6, kind: KIND.gold, color: C.gold });
+  addBox(millProps, { x: mill.x, y: my + 14.7, z: mill.z + 2.35, w: 0.7, h: 0.7, d: 1.3, kind: KIND.wood, color: C.woodDark });
   for (let i = 0; i < 7; i++) blobs.push({ x: mill.x + SUN_SHADOW.x * (3 + i * 3.0), z: mill.z + SUN_SHADOW.z * (3 + i * 3.0), rx: 3.8 - i * 0.2, rz: 3.4 - i * 0.2, strength: 0.4 - i * 0.04 });
   blobs.push({ x: mill.x, z: mill.z, rx: 5, rz: 5, strength: 0.4 });
   keepClear.push({ x: mill.x, z: mill.z, r: 7 });
@@ -176,13 +179,13 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const fenceAt = (x: number, z: number, scale: number): void => {
     const y = terrainHeight(x, z);
     const w = scale * FENCE_ASPECT;
-    for (const ry of [0.75, 0.42]) addBox(props, { x, y: y + ry, z, w: w * 1.02, h: 0.12, d: 0.08, kind: KIND.wood, color: C.wood, jitter: 0.08, rand });
+    for (const ry of [0.75, 0.42]) addBox(millProps, { x, y: y + ry, z, w: w * 1.02, h: 0.12, d: 0.08, kind: KIND.wood, color: C.wood, jitter: 0.08, rand });
     const pickets = Math.round(w / 0.32);
     for (let i = 0; i <= pickets; i++) {
       const px = x - w / 2 + (i / pickets) * w;
-      addBox(props, { x: px, y: y + 0.5 + (i % 2) * 0.03, z, w: 0.12, h: 0.98, d: 0.05, kind: KIND.wood, color: C.woodLight, colorTop: scaleRgb(C.woodLight, 1.1), jitter: 0.08, rand });
+      addBox(millProps, { x: px, y: y + 0.5 + (i % 2) * 0.03, z, w: 0.12, h: 0.98, d: 0.05, kind: KIND.wood, color: C.woodLight, colorTop: scaleRgb(C.woodLight, 1.1), jitter: 0.08, rand });
     }
-    for (const dx of [-0.5, 0.5]) addBox(props, { x: x + dx * w, y: y + 0.5, z, w: 0.16, h: 1.1, d: 0.16, kind: KIND.wood, color: C.woodDark });
+    for (const dx of [-0.5, 0.5]) addBox(millProps, { x: x + dx * w, y: y + 0.5, z, w: 0.16, h: 1.1, d: 0.16, kind: KIND.wood, color: C.woodDark });
     keepClear.push({ x, z, r: 1.1 });
   };
   for (let x = -18; x < -7; x += 4) fenceAt(x, -4, 1.45);
@@ -229,8 +232,8 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   }
   for (const sx of [-1.28, 1.28]) addBox(props, { x: jx + sx, y: deckY + 0.9, z: -13.4, w: 0.07, h: 0.07, d: 8.5, kind: KIND.wood, color: C.woodLight });
   const jettyEnd = { x: jx, y: deckY, z: -17.2 };
-  addCylinder(props, { x: jx, y: deckY, z: -17.4, r0: 0.1, r1: 0.1, h: 2.1, seg: 6, kind: KIND.wood, color: C.woodDark });
-  addBox(props, { x: jx, y: deckY + 2.2, z: -17.4, w: 0.42, h: 0.34, d: 0.42, kind: KIND.glass, color: lin("#403015") });
+  addCylinder(millProps, { x: jx, y: deckY, z: -17.4, r0: 0.1, r1: 0.1, h: 2.1, seg: 6, kind: KIND.wood, color: C.woodDark });
+  addBox(millProps, { x: jx, y: deckY + 2.2, z: -17.4, w: 0.42, h: 0.34, d: 0.42, kind: KIND.glass, color: lin("#403015") });
   lanterns.push({ x: jx, y: deckY + 2.2, z: -17.4 });
   keepClear.push({ x: jx, z: -13, r: 4.6 });
   // shoreline reeds anchor + rocks
@@ -325,10 +328,10 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   // the old oak at the first letter: a wide, gnarled crown on a short, thick trunk
   {
     const ox = -25, oz = 0, oy = terrainHeight(ox, oz) - 0.2;
-    addLathe(props, { x: ox, y: oy, z: oz, profile: [[2.6, 0], [1.9, 0.7], [1.45, 2.2], [1.2, 4.6], [1.0, 6.0]], seg: 14, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight });
+    addLathe(oldOakProps, { x: ox, y: oy, z: oz, profile: [[2.6, 0], [1.9, 0.7], [1.45, 2.2], [1.2, 4.6], [1.0, 6.0]], seg: 14, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight });
     for (let i = 0; i < 5; i++) {
       const a = i * 1.26 + 0.3;
-      addCylinder(props, { x: ox, y: oy + 4.8, z: oz, r0: 0.62, r1: 0.26, h: 3.0, seg: 7, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, lean: [Math.cos(a) * 4.2, 2.6, Math.sin(a) * 4.2] });
+      addCylinder(oldOakProps, { x: ox, y: oy + 4.8, z: oz, r0: 0.62, r1: 0.26, h: 3.0, seg: 7, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, lean: [Math.cos(a) * 4.2, 2.6, Math.sin(a) * 4.2] });
     }
     const phase = rand() * 6.28;
     for (let i = 0; i < 110; i++) {
@@ -336,7 +339,7 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
       const dome = Math.sqrt(Math.max(0, 1 - (rr / 7.4) ** 2));
       const h = 7.6 + dome * 5.6 + rand() * 1.8;
       const r = 1.1 + rand() * 1.1;
-      addBlob(props, { x: ox + Math.cos(a) * rr, y: oy + h, z: oz + Math.sin(a) * rr * 0.9, rx: r, ry: r * 0.8, rz: r, rings: 5, seg: 8, bump: 0.25, kind: KIND.leaf, color: lin("#2a5421"), colorTop: lin("#b0c63e"), jitter: 0.14, rand, sway: 0.08, phase: phase + i * 0.3, upNormal: 0.5 });
+      addBlob(oldOakProps, { x: ox + Math.cos(a) * rr, y: oy + h, z: oz + Math.sin(a) * rr * 0.9, rx: r, ry: r * 0.8, rz: r, rings: 5, seg: 8, bump: 0.25, kind: KIND.leaf, color: lin("#2a5421"), colorTop: lin("#b0c63e"), jitter: 0.14, rand, sway: 0.08, phase: phase + i * 0.3, upNormal: 0.5 });
     }
     blobs.push({ x: ox + SUN_SHADOW.x * 7, z: oz + SUN_SHADOW.z * 7, rx: 9.5, rz: 8, strength: 0.52 });
     keepClear.push({ x: ox, z: oz, r: 5.2 });

@@ -4,7 +4,7 @@ import { ROADSIDE, ROADSIDE_KINDS, ROADSIDE_SPAN, roadsidePose } from "../../../
 import { NumberSurgeSim } from "../../../apps/showcase-number-surge/src/sim";
 import { buildWorld } from "../../../apps/showcase-number-surge/src/world";
 
-describe("number surge Meshy roadside dressing", () => {
+describe("number surge procedural roadside dressing", () => {
   it("every piece stays clear of the road and never hides (parked at a tiny scale instead)", () => {
     const halfRoad = DIMS.ROAD_WIDTH / 2;
     for (const p of ROADSIDE) {
@@ -19,14 +19,21 @@ describe("number surge Meshy roadside dressing", () => {
     }
   });
 
-  it("batches all pieces into 4 GPU-instanced model nodes (one per asset kind) with positive scales", () => {
+  it("mounts zero static GLB models and batches all roadside pieces into procedural instances.custom nodes with positive scales", () => {
     const world = buildWorld({ sim: new NumberSurgeSim(7), aspect: 16 / 9 });
-    const nodes = world.scene.toJSON().nodes as unknown as { kind: string; name?: string; instances?: { scale?: number | number[] }[] }[];
-    const models = nodes.filter((n) => n.kind === "model");
-    expect(models.map((n) => n.name).sort()).toEqual(ROADSIDE_KINDS.map((k) => `roadside-${k}`).sort());
-    const totalInstances = models.reduce((sum, m) => sum + (m.instances?.length ?? 0), 0);
+    const nodes = world.scene.toJSON().nodes as unknown as {
+      kind: string;
+      primitive?: string;
+      name?: string;
+      instances?: { scale?: number | number[] }[];
+    }[];
+    expect(nodes.filter((n) => n.kind === "model")).toEqual([]);
+    const primaryIds = new Set(ROADSIDE_KINDS.map((k) => `roadside-${k}`));
+    const primaryBatches = nodes.filter((n) => n.kind === "primitive" && n.primitive === "custom" && n.name !== undefined && primaryIds.has(n.name));
+    expect(primaryBatches.map((n) => n.name).sort()).toEqual([...primaryIds].sort());
+    const totalInstances = primaryBatches.reduce((sum, m) => sum + (m.instances?.length ?? 0), 0);
     expect(totalInstances).toBe(ROADSIDE.length);
-    for (const m of models) {
+    for (const m of primaryBatches) {
       for (const inst of m.instances ?? []) {
         const s = typeof inst.scale === "number" ? inst.scale : (inst.scale?.[0] ?? 1);
         expect(s).toBeGreaterThan(0);

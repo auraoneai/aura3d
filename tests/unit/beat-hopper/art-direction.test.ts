@@ -28,6 +28,10 @@ describe("beat-hopper art direction", () => {
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
     expect(snapshot.hasAmbient).toBe(false);
     expect(snapshot.environment.kind).toBe("preset");
+    expect(JSON.stringify(nodes)).not.toContain(".glb");
+    expect(nodes.some((n) => n.name === "grp-dress-stacks")).toBe(true);
+    expect(nodes.some((n) => n.name === "grp-dress-decks")).toBe(true);
+    expect(nodes.some((n) => n.name === "beat-threshold-gate")).toBe(true);
     const violations = auditArtDirection(direction, snapshot);
     writeArtDirectionAudit("apps/showcase-beat-hopper/src/art/direction.ts", { direction, snapshot, violations });
     expect(violations).toEqual([]);

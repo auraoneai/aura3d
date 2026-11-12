@@ -50,42 +50,14 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.22, 0.5], fovDeg: [30, 44], mobile: "both" },
   assets: [
+    // WP-07: Only the 15-joint streetball athletes (guards & bigs) and 6 seated skinned fans remain GLB assets;
+    // all 22 static props, hoop stanchions, backboards, rims, basketballs, standing crowds, and 5 streetball venues
+    // are sculpted procedurally with multi-material `@aura3d/engine` presets in `src/art/proceduralModels.ts`.
     { role: "character", assetKey: "hoopsAthleteGuardKit", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Crouch_Idle_Loop", "Run", "Sprint_Loop", "Shoot", "Jump_Loop", "Contest"] } },
     { role: "character", assetKey: "hoopsAthleteBigKit", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Crouch_Idle_Loop", "Run", "Sprint_Loop", "Shoot", "Jump_Loop", "Contest"] } },
-    { role: "hero", assetKey: "hoopsBall", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "hoopsHoopRig", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "hoopsBackboard", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "hoopsRim", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "hoopsCourtShell", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "hoopsScoreboard", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 phase 4 WP-36 blacktopFloodlightRig: the Meshy retexture drawn for the Rucker floods on the new look (6,064 tris).
-    { role: "set-dressing", assetKey: "hoops_blacktopFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 2 WP-36 Meshy models, new look only (measured from the GLBs: BC+N+ORM, 3 JPEG maps each):
-    // fans 1,705 / 1,504 tris at 512 px, instanced on the bleachers (src/crowd.ts); set-pieces (src/setPieces.ts):
-    // Rucker mural wall 6,732, Venice lifeguard tower 10,586, Manila corrugated roofs 11,123 (x2 instanced),
-    // Shanghai dock container 7,461 (x2 instanced), all at 1024 px. No threshold was loosened.
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanB", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanC", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopMuralWall", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopLifeguardTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopCorrugatedRoof", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopContainer", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 3 (H47-A1): the re-rolled covered bleacher, 25,104 -> 17,714 triangles after the meshopt pass, 1k maps.
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopBleacherR2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // Meshy-07: six seated, skinned live fans (src/crowd.ts), decimated with the skin kept: 3,876 / 3,928 / 4,147 tris, 512 px maps.
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanAPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanCPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanDPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsTrophy", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsPalm", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsCanopy", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "hoopsSkyline", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "hoopsTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "hoopsEarth", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "hoopsOrbitArena", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanDPoses", maxTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
   ],
   // Every juice event that draws maps to one kind of the src/fxPack.ts pack (H47-V1); the spray tag is H47-V3.
   vfx: [

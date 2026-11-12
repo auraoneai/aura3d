@@ -14,7 +14,7 @@ import {
   type PresentationNode
 } from "../../../apps/showcase-pips-big-leap/src/game/presentation";
 
-type Node = { readonly kind: string; readonly name?: string; readonly runtime?: unknown; readonly targetHeight?: number; readonly castShadow?: boolean; readonly children?: readonly Node[] };
+type Node = { readonly kind: string; readonly name?: string; readonly runtime?: unknown; readonly scale?: number | readonly number[]; readonly castShadow?: boolean; readonly children?: readonly Node[] };
 const flat = (nodes: readonly Node[]): Node[] => nodes.flatMap((n) => [n, ...(n.kind === "group" ? flat(n.children ?? []) : [])]);
 const sceneOf = (id: (typeof WORLD_IDS)[number], look?: "original") =>
   flat((buildWorld(worldSpec(id), look ? { look } : {}).scene.toJSON() as unknown as { nodes: Node[] }).nodes);
@@ -42,7 +42,7 @@ describe("pips-big-leap prop motion (PBL-AN1)", () => {
       for (const d of animated) {
         const n = nodes.find((x) => x.name === `${d.id}:${d.kind}`)!;
         expect(n.runtime, n.name).toBeDefined();
-        expect(n.targetHeight).toBeCloseTo(2.2 * (d.s ?? 1), 9);
+        expect(typeof n.scale === "number" ? n.scale : 1).toBeCloseTo(d.s ?? 1, 9);
         if (d.kind === "banner") { banners += 1; expect(n.castShadow).toBe(false); } else fans += 1;
       }
       expect(buildWorld(worldSpec(id), { look: "original" }).presentation.animatedDecor).toEqual([]);

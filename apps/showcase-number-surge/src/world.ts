@@ -15,7 +15,6 @@ import {
   lights,
   looks,
   material,
-  primitives,
   scene,
   texture,
   type AuraApp,
@@ -38,15 +37,21 @@ import {
   type Rgb
 } from "../../../examples/shared/runner-kit/index";
 import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
+import {
+  SURGE_MATERIALS,
+  buildCeramicEscortOrbSpec,
+  buildHeroSurgeBallNode,
+  buildLacquerEscortOrbSpec,
+  highwayGateGantryFrameMeshData,
+  powerupMedallionMeshData
+} from "./art/proceduralModels";
 import { CONFIG, opLabel, type BossWall, type Gate, type NumberSurgeSim, type Powerup } from "./sim";
 import {
   DIMS,
-  chamferedGateFrameMesh,
   gatePanelMesh,
   groundQuad,
   opLabelMesh,
   particleMesh,
-  powerupMesh,
   quadMesh,
   roadDashMesh,
   roadEdgeMesh,
@@ -334,9 +339,9 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("edges", edges, stripSpec(LINEAR.roadEdge, 1.95, 0.95));
   addBatch("dashes", dashes, stripSpec(LINEAR.roadStripe, 1.65, 0.85));
 
-  // Refractive holographic gate panels + beveled metallic chrome stanchions.
+  // Refractive holographic gate panels + lattice-truss alloy math-gate gantries.
   const panels = new Batch(gatePanelMesh(), CONFIG.GATES, LINEAR.gateGood, CORRIDOR_BOUNDS);
-  const frames = new Batch(chamferedGateFrameMesh(), CONFIG.GATES, LINEAR.gateFrame, CORRIDOR_BOUNDS);
+  const frames = new Batch(highwayGateGantryFrameMeshData(), CONFIG.GATES, LINEAR.gateFrame, CORRIDOR_BOUNDS);
   addBatch("gate-panels", panels, frostedGateSpec());
   addBatch("gate-frames", frames, stanchionSpec(KEY_SUN_DIR), true);
 
@@ -347,25 +352,8 @@ export function buildWorld(options: WorldOptions): World {
     add(`op-label-${i}`, opLabelMesh(), labelSpec(opTextures[i]!));
   }
 
-  // Glossy clearcoat hero core + curved spherical-cap numeral inlay + hex-Fresnel barrier.
-  builder.add(
-    primitives
-      .sphere({
-        name: "ball",
-        size: DIMS.BALL_RADIUS * 2,
-        params: { widthSegments: 32, heightSegments: 24 },
-        castShadow: true,
-        receiveShadow: true,
-        material: material.clearcoatPaint({
-          color: "#18d8ff",
-          roughness: 0.12,
-          metalness: 0.08,
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.05
-        })
-      })
-      .runtime({ id: "ball" })
-  );
+  // Multi-material clearcoat hero core + brushed-alloy gyro bands + curved spherical-cap numeral inlay + hex-Fresnel barrier.
+  builder.add(buildHeroSurgeBallNode(DIMS.BALL_RADIUS));
   const numberCanvas = makeCanvas(256, 256);
   paintNumber(numberCanvas.g, CONFIG.START_NUMBER);
   const numberTexture = texture.canvas({ canvas: numberCanvas.canvas, colorSpace: "linear" });
@@ -373,28 +361,26 @@ export function buildWorld(options: WorldOptions): World {
   add("ball-shadow", shadowMesh(), shadowSpec());
   add("shield", sphereMesh(0.96, 24, 16), hexShieldSpec(LINEAR.shield));
 
-  // Glossy lacquer & ceramic value-evolution crowd tokens (1 GPU-instanced draw per material family, positive scales only).
+  // Star-bevelled lacquer & crown-cut ceramic value-evolution crowd tokens (1 GPU-instanced draw per material family, positive scales only).
   builder
     .add(
       instances
-        .sphere({
+        .custom(buildLacquerEscortOrbSpec(), {
           name: "crowd-lacquer",
-          size: 0.28,
           castShadow: true,
           receiveShadow: true,
-          material: material.lacquer({ color: "#2be4ff", roughness: 0.09, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
+          material: SURGE_MATERIALS.escortLacquer,
           transforms: parkedTransforms(LACQUER_TOKEN_MAX)
         })
         .runtime({ id: "crowd-lacquer" })
     )
     .add(
       instances
-        .sphere({
+        .custom(buildCeramicEscortOrbSpec(), {
           name: "crowd-ceramic",
-          size: 0.24,
           castShadow: true,
           receiveShadow: true,
-          material: material.ceramic({ color: "#ffe066", roughness: 0.14 }),
+          material: SURGE_MATERIALS.escortCeramic,
           transforms: parkedTransforms(CERAMIC_TOKEN_MAX)
         })
         .runtime({ id: "crowd-ceramic" })
@@ -410,7 +396,7 @@ export function buildWorld(options: WorldOptions): World {
     add(`wall-label-${i}`, wallLabelMesh(), labelSpec(wallTextures[i]!));
   }
 
-  const powerups = new Batch(powerupMesh(), CONFIG.POWERUPS, LINEAR.powerup, CORRIDOR_BOUNDS);
+  const powerups = new Batch(powerupMedallionMeshData(), CONFIG.POWERUPS, LINEAR.powerup, CORRIDOR_BOUNDS);
   addBatch("powerups", powerups, toonSpec([1, 1, 1], undefined, [0.1, 0.08, 0.0], true));
 
   const particles = new Batch(particleMesh(), CONFIG.PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
@@ -437,7 +423,7 @@ export function buildWorld(options: WorldOptions): World {
   add("underlay", groundQuad(240, 480, 0, -15, -120), toonSpec(hexToLinear("#141133")));
 
   const scenery = addScenery(builder);
-  // GPU-instanced Meshy roadside dressing (palms, neon sevens, dice), all clear of the lanes.
+  // GPU-instanced procedural roadside dressing (cyber-palms, neon sevens, dice, mileposts, gantries & hazard rigs).
   const roadside = addRoadside(builder);
 
   // Atmosphere + Eevee HDR post-stack (paired with AgX toneMapping in main.ts).
@@ -445,8 +431,8 @@ export function buildWorld(options: WorldOptions): World {
     .add(looks.fogForExtent({ name: "skyway-fog", extent: 220, color: "#1d1b4b", haze: 0.65, mode: "exp2" }))
     .add(effects.contactShadows({ length: 0.35, thickness: 0.2, steps: 12, intensity: 0.65 }))
     .add(effects.ambientOcclusion({ name: "skyway-ao", intensity: 0.45, radius: 0.6 }))
-    .add(effects.screenSpaceReflections({ name: "skyway-ssr", intensity: 0.55, roughness: 0.28, maxDistance: 28 }))
-    .add(effects.cinematicBloom({ name: "skyway-bloom", intensity: 0.48, threshold: 0.78, radius: 0.42 }))
+    .add(effects.screenSpaceReflections({ name: "skyway-ssr", intensity: 0.32, roughness: 0.28, maxDistance: 28 }))
+    .add(effects.neonBloom({ intensity: 0.52, color: "#ff4fd8", threshold: 0.74, radius: 0.44 }))
     .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08, vibrance: 0.08, temperature: -0.02, gain: 1.04 }))
     .add(effects.vignette({ name: "vignette", intensity: 0.2, color: "#120a2a" }));
 

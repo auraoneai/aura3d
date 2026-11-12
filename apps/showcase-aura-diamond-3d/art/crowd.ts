@@ -1,10 +1,8 @@
 /**
- * Aura Diamond 3D stands crowd (GU47 DIA-A2): about 600 seated fans on the bleacher benches, in the park's section
- * colours, drawn as one instanced draw of the Meshy seated fan. The 18 skinned wavers at the wall stay as they are.
- *
- * GU47 phase 4: the fans are the WP-36 Meshy seated fan (`ballpark_fanA`), one instanced draw; fan rows B-D and the
- * impostors are still pending in WP-36. Pure and deterministic: the
- * fan colours come from their own seeded generator, never the game's RNG.
+ * Aura Diamond 3D stands crowd (GU47 DIA-A2 + WP-08): 588 articulated procedural seated spectators on the bleacher
+ * benches in the park's section colours (`stand-fans` resting pose + `stand-fans-b` rally pose, `clearcoat: 0, sheen: 0`).
+ * The 18 skinned wavers (`diamondCrowdAthlete`) at the wall stay animated. Pure and deterministic: the fan colours come
+ * from their own seeded generator, never the game's RNG.
  */
 import { bleacherPlacements, makeRng, PARK_ORDER, type ParkSpec, type Vec3 } from "../src/rules";
 import { PARK_LOOKS, type DiamondTier } from "./look";

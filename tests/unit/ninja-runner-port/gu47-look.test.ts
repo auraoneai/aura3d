@@ -1,22 +1,36 @@
 import { groundFrame } from "../../../examples/ninja-runner-port/course";
 import { describe, expect, it } from "vitest";
-import { instances, scene } from "../../../packages/engine/src";
+import { scene } from "../../../packages/engine/src";
 import { auditArtDirection, snapshotForAudit } from "../../../packages/game/src/art/index";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 import direction from "../../../examples/ninja-runner-port/art/direction";
 import { lightRig, lanternPoolSize } from "../../../examples/ninja-runner-port/lighting";
-import { PROP_ASSETS } from "../../../examples/ninja-runner-port/models";
+import {
+  buildPagodaSetpieceNode,
+  buildProceduralDistrictBatches,
+  buildShrineGateSetpieceNode,
+  buildWaterWheelSetpieceGroup
+} from "../../../examples/ninja-runner-port/art/proceduralModels";
+import { buildProceduralCourseAccents, buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
+import { eveningSetPieces, shrineCentre } from "../../../examples/ninja-runner-port/setpieces";
 import {
   DISTRICT_LOOKS, PALETTE, bracket, districtIdAt, linearToHex, lookAtDistance, lookMode, nearestLanterns
 } from "../../../examples/ninja-runner-port/districtLook";
 import { AMBIENT_BY_DISTRICT, NINJA_PRESETS, emissionScale, registerNinjaVfx, scaledPreset } from "../../../examples/ninja-runner-port/vfx";
 import { NINJA_DISTRICTS } from "../../browser/game-luma-targets";
 
-/** The evening scene's lights and models as `buildWorld` mounts them (the DOM-free part of the scene). */
+/** The evening scene's lights and procedural multi-material world as `buildWorld` mounts them (the DOM-free part of the scene). */
 function eveningSnapshot(quality: "low" | "high") {
   const builder = scene();
   for (const node of lightRig({ mode: "evening", quality, shadow: true })) builder.add(node);
-  for (const [id, asset] of Object.entries(PROP_ASSETS)) builder.add(instances.model(asset, { name: `model-${id}`, transforms: [{ position: [0, 0, 0] }] }));
+  const sink: ModelSink = {};
+  buildScenery(sink, { paintedTrees: true });
+  const setPieces = eveningSetPieces();
+  const accents = buildProceduralCourseAccents(shrineCentre());
+  for (const batch of buildProceduralDistrictBatches(sink, accents, { castShadow: true })) builder.add(batch);
+  for (const p of setPieces.shrineGate) builder.add(buildShrineGateSetpieceNode(p));
+  for (const p of setPieces.waterWheel) builder.add(buildWaterWheelSetpieceGroup(p));
+  for (const p of setPieces.pagoda) builder.add(buildPagodaSetpieceNode(p));
   const appLike = { scene: builder.toJSON(), diagnostics: () => ({ drawCalls: 0 }) } as unknown as Parameters<typeof snapshotForAudit>[0];
   return snapshotForAudit(appLike, { assets: {} });
 }

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-cross-hop/src/art/direction.ts",
-  "sourceSha256": "b0d1a0fc68e20cb836d466527fe01dab6931daa2a29a616f266b2220092fc3c4",
+  "sourceSha256": "7f976df1ce99a984d13084c0106139672109197b573bef9d8ccfbc91b6ed8ab5",
   "id": "cross-hop",
   "genre": "platformer",
   "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
@@ -40,93 +40,9 @@
     },
     "models": [
       {
-        "assetKey": "trafficSedan",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficHatch",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficSuv",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficTaxi",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficVan",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficPickup",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficBoxtruck",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "tramCar",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trainCar",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "trafficSkyCar",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "hop",
         "triangles": 0,
         "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hawk",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rescuePod",
-        "triangles": 0,
-        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       }
@@ -179,6 +95,46 @@
         "practical": false
       },
       {
+        "node": "m-cars",
+        "practical": false
+      },
+      {
+        "node": "m-hatch",
+        "practical": false
+      },
+      {
+        "node": "m-suv",
+        "practical": false
+      },
+      {
+        "node": "m-taxi",
+        "practical": false
+      },
+      {
+        "node": "m-van",
+        "practical": false
+      },
+      {
+        "node": "m-pickup",
+        "practical": false
+      },
+      {
+        "node": "m-trucks",
+        "practical": false
+      },
+      {
+        "node": "m-trams",
+        "practical": false
+      },
+      {
+        "node": "m-trains",
+        "practical": false
+      },
+      {
+        "node": "m-hover",
+        "practical": false
+      },
+      {
         "node": "m-logs",
         "practical": false
       },
@@ -212,7 +168,45 @@
         "practical": false
       },
       {
-        "name": "felt",
+        "name": "matte clay",
+        "node": "hawk material 0",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "hawk material 1",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "hawk material 2",
+        "practical": false
+      },
+      {
+        "node": "hawk material 3",
+        "emissiveIntensity": 1.32,
+        "practical": true
+      },
+      {
+        "name": "lacquer",
+        "node": "pod-base material 0",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "pod-base material 1",
+        "practical": false
+      },
+      {
+        "node": "pod-base material 2",
+        "emissiveIntensity": 1.32,
+        "practical": true
+      },
+      {
+        "node": "pod-dome-glass",
+        "practical": false
+      },
+      {
         "node": "s-felt",
         "practical": false
       },
@@ -466,108 +460,6 @@
             "Regular_Jump"
           ]
         }
-      },
-      {
-        "role": "enemy",
-        "assetKey": "hawk",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "rescuePod",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "coin",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficSedan",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficHatch",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficSuv",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficTaxi",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficVan",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficPickup",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficBoxtruck",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "tramCar",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trainCar",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "trafficSkyCar",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [
@@ -648,20 +540,7 @@
       }
     ],
     "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
-    "standIns": [
-      {
-        "feature": "verge dressing kits, gate arches, lamp model, lane furniture (primitive pools)",
-        "file": "src/game/core.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 cross-hop kit GLBs admitted"
-      },
-      {
-        "feature": "coin, logs, lily pad, basalt stone (primitive pools)",
-        "file": "src/game/core.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 cross-hop prop GLBs admitted"
-      }
-    ],
+    "standIns": [],
     "criticalCategories": [
       "postprocessing",
       "lighting",

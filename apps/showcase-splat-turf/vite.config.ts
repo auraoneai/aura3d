@@ -18,7 +18,10 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5200,
-    strictPort: true
+    strictPort: true,
+    fs: {
+      allow: [appDir, path.resolve(appDir, "../showcase-port-shared"), path.resolve(appDir, "../..")]
+    }
   },
   preview: {
     host: "127.0.0.1",

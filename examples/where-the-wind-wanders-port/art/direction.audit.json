@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/where-the-wind-wanders-port/art/direction.ts",
-  "sourceSha256": "75b09c0a49cd6384c767878b20982501b8aebfb0c5669389c8970d48efadbbaf",
+  "sourceSha256": "027f790179b698bcec9d7b67fb8c191d401406aee5ad21d98294df8cfba4bca7",
   "id": "where-the-wind-wanders-port",
   "genre": "platformer",
   "signatureEffect": "Visible wind over a gouache valley: cloud shadows and gust waves roll downwind across sage grass while one continuous day moves from afternoon to lilac dusk.",
@@ -54,78 +54,8 @@
     },
     "models": [
       {
-        "assetKey": "cottage",
-        "triangles": 52686,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "belltower",
-        "triangles": 26014,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bell",
-        "triangles": 1074,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pine",
-        "triangles": 849,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "oak",
-        "triangles": 1324,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "shrub",
-        "triangles": 498,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "stones",
-        "triangles": 22516,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "letter",
-        "triangles": 22374,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "hero",
         "triangles": 12345,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "kite",
-        "triangles": 11096,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boat",
-        "triangles": 27958,
         "textures": 3,
         "unlit": false,
         "overridesTextures": false
@@ -209,83 +139,6 @@
             "Run"
           ]
         }
-      },
-      {
-        "role": "world",
-        "assetKey": "belltower",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "bell",
-        "maxTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "cottage",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "boat",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "letter",
-        "maxTriangles": 24000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "oak",
-        "maxTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "pine",
-        "maxTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "shrub",
-        "maxTriangles": 1000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "stones",
-        "maxTriangles": 24000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "wisp",
-        "maxTriangles": 22000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "kite",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

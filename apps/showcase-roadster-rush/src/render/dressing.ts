@@ -1,11 +1,20 @@
 /**
- * GU47 AO-W1: skyway dressing, all world-anchored and instanced. Cyan beacon rings every 30 m mark the sky lane's edges above
- * the piers, an interchange span crosses overhead every 600 m above the 24 m flight ceiling, shadowless billboard frames
- * stand beside the deck every 210 m, and each sign gantry carries one SDF label. Draws: rings 1, span decks 1, span piers 1,
- * billboard frames 1, billboard faces 1, gantry labels 5 (one per gantry slot) = 10 (budget 12). The Meshy interchange span
- * and billboard frame (WP-36) replace the primitive pieces through these layouts.
+ * GU47 AO-W1 / WP-02: sculpted skyway dressing, all world-anchored and instanced. Segmented sodium aero-gate rings every 30 m
+ * mark the sky lane's edges above the piers, a truss-braced interchange span crosses overhead every 600 m above the 24 m flight
+ * ceiling, space-frame billboard trusses stand beside the deck every 210 m, cantilevered davit light poles line the shoulders,
+ * and each sign gantry carries one SDF label.
  */
+import type { AuraCustomGeometrySpec } from "@aura3d/engine";
 import { HAZE_FLOOR_Y } from "../art/ground";
+import {
+  buildBeaconRingSpec,
+  buildBillboardFrameSpec,
+  buildLightArmSpec,
+  buildLightLampSpec,
+  buildLightPoleSpec,
+  buildSpanDeckSpec,
+  buildSpanPierSpec
+} from "../art/proceduralModels";
 
 export const RING_STRIDE_Z = 30;
 export const RING_ROWS = 14;
@@ -66,4 +75,25 @@ export function billboardLayout(pz: number): Placement[] {
     const side = Math.round(z / BILLBOARD_STRIDE_Z) % 2 === 0 ? -1 : 1;
     return { x: side * BILLBOARD_X, y: BILLBOARD_Y, z };
   });
+}
+
+/** Procedural sculpted geometry specs for cantilevered light poles, aero beacon rings, viaduct spans & space-frame billboards. */
+export function skywayDressingSpecs(): {
+  readonly lightPole: AuraCustomGeometrySpec;
+  readonly lightArm: AuraCustomGeometrySpec;
+  readonly lightLamp: AuraCustomGeometrySpec;
+  readonly beaconRing: AuraCustomGeometrySpec;
+  readonly spanDeck: AuraCustomGeometrySpec;
+  readonly spanPier: AuraCustomGeometrySpec;
+  readonly billboardFrame: AuraCustomGeometrySpec;
+} {
+  return {
+    lightPole: buildLightPoleSpec(),
+    lightArm: buildLightArmSpec(),
+    lightLamp: buildLightLampSpec(),
+    beaconRing: buildBeaconRingSpec(RING_SIZE),
+    spanDeck: buildSpanDeckSpec(SPAN_DECK_SIZE),
+    spanPier: buildSpanPierSpec(SPAN_PIER_SIZE),
+    billboardFrame: buildBillboardFrameSpec(BILLBOARD_FRAME_SIZE)
+  };
 }

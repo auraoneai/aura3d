@@ -2,11 +2,14 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { auditArtDirection, snapshotForAudit, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import type { AuraApp } from "@aura3d/engine";
+import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap";
 import direction from "../../../apps/showcase-last-train-port/art/direction";
 import { BANDS, BAND_IDS, HDRI_URL, LAMPLIGHT_PALETTE } from "../../../examples/last-train-port/bands";
+import { lightBeamWithWgsl, strataUndercroftMaterial } from "../../../examples/last-train-port/art/proceduralModels";
 import { PRACTICAL_COUNT } from "../../../examples/last-train-port/lights";
 import { buildWorld } from "../../../examples/last-train-port/world";
 import type { RouteData, SimData, Tables } from "../../../examples/last-train-port/sim";
+import { checkWgslTwin } from "../apps/wgslTwinChecks";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 const data: SimData = {
@@ -71,5 +74,22 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     for (const name of ["catenary", "signal-posts", "signal-heads", "festoon-bulbs", "sky-lanterns"]) expect(json, name).toContain(`"${name}"`);
     data.tables.towns.forEach((town, i) => { expect(json).toContain(`"nameboard-${i}"`); expect(json).toContain(town.name.toUpperCase()); });
     expect(JSON.stringify(buildWorld(data, "original").scene.toJSON())).not.toContain('"catenary"');
+  });
+
+  it("replaces all 14 Meshy GLBs with procedural multi-material meshes and valid WebGPU WGSL twins (WP-25)", () => {
+    expect(direction.assets).toHaveLength(2);
+    for (const band of BAND_IDS) {
+      const bandJson = world.sceneFor(band).toJSON();
+      expect(JSON.stringify(bandJson)).not.toContain("assets/meshy/");
+      expect(webgpuCustomShaderGap(bandJson), band).toBeUndefined();
+    }
+    const beamMat = lightBeamWithWgsl({ color: "#fff1c6", intensity: 0.42, length: 42 });
+    const strataMat = strataUndercroftMaterial();
+    expect(beamMat.kind).toBe("custom");
+    expect(strataMat.kind).toBe("custom");
+    if (beamMat.kind === "custom") checkWgslTwin("lamplight-light-beam", beamMat.custom, false);
+    if (strataMat.kind === "custom") checkWgslTwin("lamplight-strata-undercroft", strataMat.custom, true);
+    expect(webgpuCustomShaderGap(beamMat)).toBeUndefined();
+    expect(webgpuCustomShaderGap(strataMat)).toBeUndefined();
   });
 });

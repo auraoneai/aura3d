@@ -1,13 +1,14 @@
 /**
- * Beat Hopper Meshy stage dressing (presentation only): GPU-instanced club speaker stacks (`bhSpeakerStack`,
- * `bhSpeakerStackB`) and floating neon DJ turntables (`bhTurntable`) beside the elevated track.
- * Alternating clusters repeat every `CLUSTER_P = 32 m` (`PERIOD = 64 m` full left-right cycle); all clusters draw in
- * just 3 `instances.model(...)` GPU-instanced calls inside two periodic scrolling stage groups (`grp-dress-stacks`
- * grounded at `FLOOR_Y` so 132 BPM bass-thump scale keeps speaker feet locked to the floor, and `grp-dress-decks` at
- * `DECK.y`). Positive scales only (`det > 0`) guarantee single-call GPU instancing on both WebGPU and WebGL2.
+ * Beat Hopper procedural concert stage dressing (presentation only): GPU-instanced curved J-hang concert
+ * line-array speaker towers (`dress-stack-a-*`), folded-horn modular synth stacks (`dress-stack-b-*`), and
+ * floating twin direct-drive DJ turntable consoles (`dress-deck-*`) beside the elevated track.
+ * Alternating clusters repeat every `CLUSTER_P = 32 m` (`PERIOD = 64 m` full left-right cycle) inside two
+ * periodic scrolling stage groups (`grp-dress-stacks` grounded at `FLOOR_Y` so 132 BPM bass-thump scale keeps
+ * speaker feet locked to the floor, and `grp-dress-decks` at `DECK.y`). Positive scales only (`det > 0`)
+ * guarantee single-call GPU instancing on both WebGPU and WebGL2.
  */
-import { group, instances, type AuraApp, type AuraSceneBuilder, type AuraTransformSpec } from "@aura3d/engine";
-import { assets } from "./aura-model-assets";
+import { group, type AuraApp, type AuraSceneBuilder, type AuraTransformSpec } from "@aura3d/engine";
+import { buildConcertDressingNodes } from "./art/proceduralModels";
 import { FLOOR_Y } from "./stage";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -22,9 +23,6 @@ export const DRESSING_SLOTS = Math.ceil((NEAR_Z - (FAR_Z - PERIOD)) / CLUSTER_P)
 const STACK_A = { x: 5.75, height: 8.6, dz: 0 } as const;
 const STACK_B = { x: 7.8, height: 6.6, dz: 2.8 } as const;
 const DECK = { x: 6.4, y: -2.9, size: 5.2, dz: -6 } as const;
-
-const RIM_MAGENTA = { color: "#ff2fb3", power: 2.4, intensity: 0.85 } as const;
-const RIM_CYAN = { color: "#23e6ff", power: 2.2, intensity: 0.8 } as const;
 
 export function addDressing(builder: AuraSceneBuilder): void {
   const stackATransforms: AuraTransformSpec[] = [];
@@ -48,43 +46,23 @@ export function addDressing(builder: AuraSceneBuilder): void {
     });
   }
 
+  const { stackChildren, deckChildren } = buildConcertDressingNodes({
+    stackATransforms,
+    stackBTransforms,
+    deckTransforms,
+    stackAHeight: STACK_A.height,
+    stackBHeight: STACK_B.height,
+    deckMaxDim: DECK.size
+  });
+
   builder.add(
-    group("grp-dress-stacks", [
-      instances.model(assets.bhSpeakerStack, {
-        name: "dress-stack-a-inst",
-        scaleMode: "fit",
-        targetHeight: STACK_A.height,
-        castShadow: false,
-        receiveShadow: false,
-        transforms: stackATransforms,
-        materialOverrides: [{ rim: RIM_MAGENTA }]
-      }),
-      instances.model(assets.bhSpeakerStackB, {
-        name: "dress-stack-b-inst",
-        scaleMode: "fit",
-        targetHeight: STACK_B.height,
-        castShadow: false,
-        receiveShadow: false,
-        transforms: stackBTransforms,
-        materialOverrides: [{ rim: RIM_CYAN }]
-      })
-    ])
+    group("grp-dress-stacks", stackChildren)
       .position(0, FLOOR_Y, 0)
       .runtime({ id: "grp-dress-stacks" })
   );
 
   builder.add(
-    group("grp-dress-decks", [
-      instances.model(assets.bhTurntable, {
-        name: "dress-deck-inst",
-        scaleMode: "fit",
-        targetMaxDimension: DECK.size,
-        castShadow: false,
-        receiveShadow: false,
-        transforms: deckTransforms,
-        materialOverrides: [{ rim: RIM_CYAN }]
-      })
-    ])
+    group("grp-dress-decks", deckChildren)
       .position(0, DECK.y, 0)
       .runtime({ id: "grp-dress-decks" })
   );

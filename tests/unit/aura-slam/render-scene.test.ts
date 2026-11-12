@@ -74,6 +74,16 @@ describe("aura-slam view: scene composition", () => {
     expect(new Set(all).size).toBe(all.length);
   });
 
+  it("WP-01: World Tour mounts sculpted procedural multi-material venue set-pieces with zero static GLB models", () => {
+    const walk = (nodes: Doc["nodes"] = []): NonNullable<Doc["nodes"]> =>
+      nodes.flatMap((n) => [n, ...walk(n.children as Doc["nodes"])]);
+    const allNodes = walk(doc.nodes);
+    expect(allNodes.filter((n) => n.kind === "model")).toHaveLength(0);
+    for (const proceduralId of ["wt-umpire-stand", "wt-sideline-kit-north", "wt-sideline-kit-south", "wt-center-strap-anchor", "stadium-floodlight-left", "stadium-floodlight-right", "stadium-scoreboard-gantry", "wt-stadium-bowl"]) {
+      expect(names.has(proceduralId), proceduralId).toBe(true);
+    }
+  });
+
   it("?look=original keeps the four-light rig and three post effects; the live quality flags are unchanged", () => {
     expect(originalSceneLights()).toHaveLength(4);
     expect(originalPostEffects()).toHaveLength(3);

@@ -8,7 +8,20 @@ import { CIRCUITS, DRONE_SPECS } from "../../../apps/showcase-heatsink/src/data"
 import { CIRCUIT_LOOKS } from "../../../apps/showcase-heatsink/src/look";
 import { assets, HEATSINK_ASSET_KEYS } from "../../../apps/showcase-heatsink/src/aura-assets";
 
-type Node = { kind: string; name?: string; light?: string; type?: string; effect?: string; shadow?: unknown; castShadow?: boolean; instances?: unknown[]; children?: Node[]; nodes?: Node[] };
+type Node = {
+  kind: string;
+  primitive?: string;
+  name?: string;
+  light?: string;
+  type?: string;
+  effect?: string;
+  shadow?: unknown;
+  castShadow?: boolean;
+  material?: { color?: string; clearcoat?: number; opacity?: number; ior?: number; sheen?: number };
+  instances?: unknown[];
+  children?: Node[];
+  nodes?: Node[];
+};
 const flatten = (nodes: readonly Node[]): Node[] => nodes.flatMap((n) => [n, ...flatten((n.children ?? n.nodes ?? []) as Node[])]);
 
 describe("heatsink scene", () => {
@@ -88,8 +101,12 @@ describe("heatsink scene", () => {
     for (const name of ["road-spine-a", "road-spine-b", "road-lanes", "wall-chevrons-a", "wall-chevrons-b", "laser-bolts"]) {
       expect(nodes.find((n) => n.name === name)?.castShadow, name).toBe(false);
     }
-    const primitives = nodes.filter((n) => n.kind === "primitive" && !Array.isArray(n.instances));
+    const primitives = nodes.filter((n) => n.kind === "primitive" && n.primitive !== "custom" && !Array.isArray(n.instances));
     expect(primitives.length).toBeLessThan(10);
+    for (const inst of instanced.filter((n) => n.instances!.length > 16)) {
+      expect(inst.material?.clearcoat ?? 0, `${inst.name} clearcoat`).toBe(0);
+      expect(inst.material?.sheen ?? 0, `${inst.name} sheen`).toBe(0);
+    }
   });
   it("mounts rain only on MEGACITY, dust only on DUSTFALL, embers only on VESPER, and no weather on reduced motion (HS-06)", () => {
     const weatherOf = (id: keyof typeof CIRCUITS, reducedMotion = false) =>
@@ -109,13 +126,25 @@ describe("heatsink scene", () => {
     expect(embers.maxParticles).toBeLessThanOrEqual(96);
     expect(embers.blend).toBe("additive");
   });
-  it("drops the shadow casters of far towers and emissive pieces, keeps them on arches, tunnels and drones (HS-20, WP-07)", () => {
-    const models = nodes.filter((n) => n.kind === "model") as unknown as { name: string; castShadow?: boolean }[];
-    const castOf = (name: string) => models.find((m) => m.name === name)?.castShadow;
-    for (const name of ["batch-heatsink_thermalTowerLIron", "prop-tower-t-left", "prop-tower-x-right", "batch-heatsinkHoloBillboard", "prop-checkpoint-ring", "prop-lava-fall"]) expect(castOf(name), name).toBe(false);
-    for (const name of ["batch-heatsink_thermalArchIron", "batch-heatsinkTunnelFrame", "prop-overpass", "prop-gantry-start", "drone-orion"]) expect(castOf(name), name).not.toBe(false);
+  it("drops the shadow casters of far towers, emissive pieces and canopies, keeps them on arches, tunnels and drone hulls (HS-20, WP-03)", () => {
+    const castsShadow = (name: string): boolean => {
+      const root = nodes.find((n) => n.name === name);
+      expect(root, name).toBeDefined();
+      const prims = flatten([root!]).filter((n) => n.kind === "primitive");
+      expect(prims.length, `${name} primitives`).toBeGreaterThan(0);
+      return prims.some((p) => p.castShadow !== false);
+    };
+    for (const name of ["batch-heatsink_thermalTowerLIron", "prop-tower-t-left", "prop-tower-x-right", "batch-heatsinkHoloBillboard", "prop-checkpoint-ring", "prop-lava-fall"]) {
+      expect(castsShadow(name), name).toBe(false);
+    }
+    for (const name of ["batch-heatsink_thermalArchIron", "batch-heatsinkTunnelFrame", "prop-overpass", "prop-gantry-start", "drone-orion"]) {
+      expect(castsShadow(name), name).toBe(true);
+    }
+    for (const glass of nodes.filter((n) => n.kind === "primitive" && (n.material?.opacity ?? 1) < 1)) {
+      expect(glass.castShadow, glass.name).toBe(false);
+    }
   });
-  it("tints every drone towards its DRONE_SPECS colour (hue within 20 deg) under a clearcoat, keeping its textures (HS-10)", () => {
+  it("sculpts every drone as a multi-material craft tinted towards its DRONE_SPECS colour (hue within 20 deg) under a clearcoat (HS-10, WP-03)", () => {
     const hue = (hex: string) => {
       const n = Number.parseInt(hex.slice(1), 16);
       const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255) as [number, number, number];
@@ -125,16 +154,20 @@ describe("heatsink scene", () => {
       return (h * 60 + 360) % 360;
     };
     for (const id of Object.keys(DRONE_SPECS) as (keyof typeof DRONE_SPECS)[]) {
-      const node = nodes.find((n) => n.name === DRONE_SPECS[id].nodeId) as unknown as { materialOverrides?: { color: string; colorMode: string; clearcoat: number; replaceTextures?: boolean }[] };
-      const o = node.materialOverrides?.[0];
-      expect(o?.colorMode, id).toBe("multiply");
-      expect(o?.replaceTextures, id).not.toBe(true);
-      expect(o!.clearcoat, id).toBeGreaterThan(0.5);
-      const delta = Math.abs(hue(o!.color) - hue(DRONE_SPECS[id].color));
+      const spec = DRONE_SPECS[id];
+      const hullGroup = nodes.find((n) => n.name === `${spec.nodeId}-hull`);
+      const canopy = nodes.find((n) => n.name === `${spec.nodeId}-canopy`);
+      expect(hullGroup?.children?.length ?? 0, `${id} multi-material slots`).toBeGreaterThanOrEqual(4);
+      expect(canopy?.castShadow, `${id} canopy shadow`).toBe(false);
+      expect(canopy?.material?.opacity, `${id} canopy opacity`).toBeCloseTo(0.42, 2);
+      const primaryMat = hullGroup?.children?.[0]?.material;
+      expect(primaryMat?.clearcoat ?? 0, id).toBeGreaterThan(0.5);
+      const delta = Math.abs(hue(primaryMat!.color!) - hue(spec.color));
       expect(Math.min(delta, 360 - delta), id).toBeLessThanOrEqual(20);
     }
   });
-  it("stays inside the route budget of 32 model nodes", () => {
+  it("mounts zero static GLB models and stays inside the route budget of 32 model nodes (WP-03)", () => {
+    expect(MODEL_NODE_COUNT).toBe(0);
     expect(nodes.filter((n) => n.kind === "model")).toHaveLength(MODEL_NODE_COUNT);
     const budget = JSON.parse(readFileSync("apps/showcase-heatsink/route-health.json", "utf8")).budgets.maxModelNodes;
     expect(MODEL_NODE_COUNT).toBeLessThanOrEqual(budget);

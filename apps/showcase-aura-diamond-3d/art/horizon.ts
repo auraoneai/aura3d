@@ -25,7 +25,7 @@ export interface HorizonInstance {
 export interface HorizonBand {
   /** Node name (one instanced draw). */
   readonly name: string;
-  readonly shape: "box" | "cylinder";
+  readonly shape: "box" | "cylinder" | "stepped-tower" | "crater-ridge";
   /** Base colour; `colors` tints each instance when set. */
   readonly color: string;
   readonly colors?: readonly string[];
@@ -101,7 +101,7 @@ function horizonRow(park: ParkId): HorizonBand | null {
     case "skyline":
       return {
         name: "midtown-far-blocks",
-        shape: "box",
+        shape: "stepped-tower",
         color: "#121a26",
         roughness: 0.55,
         windows: { emissive: "#f3c77a", intensity: 0.85 },
@@ -128,7 +128,7 @@ function horizonRow(park: ParkId): HorizonBand | null {
     case "lunar":
       return {
         name: "lunar-crater-rim",
-        shape: "cylinder",
+        shape: "crater-ridge",
         color: "#4f4e4b",
         colors: ["#4f4e4b", "#5a5955", "#46453f", "#605e58"],
         roughness: 1,

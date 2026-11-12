@@ -45,17 +45,7 @@ export default defineArtDirection({
     exposureEV: 1.75
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [60, 76], mobile: "both" },
-  assets: [
-    { role: "vehicle", assetKey: "bikeRider", maxTriangles: 120000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "rivalBike", maxTriangles: 120000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "skateRider", maxTriangles: 120000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "pylon", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "boulderA", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "boulderB", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "backdrop", assetKey: "lander", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "backdrop", assetKey: "observatory", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "craterlineMoonRock", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
-  ],
+  assets: [],
   vfx: [
     { event: "land", kind: "craterline-land-dust" },
     { event: "hit", kind: "craterline-hit-debris" },

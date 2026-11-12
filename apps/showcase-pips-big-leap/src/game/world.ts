@@ -29,6 +29,7 @@ import {
   CRYSTAL_OVERRIDES,
   SEED_OVERRIDES,
   PIP_GLOSS,
+  BOSS_GLOSS,
   CONTACT_SHADOWS,
   SURFACES,
   ambientEmitterNode,
@@ -68,25 +69,43 @@ import type {
   PlatformKind, PlatSpec, SolidBox, SpringSpec, WaterSpec, WorldId, WorldSpec
 } from "./types.js";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
+import {
+  buildBossThornSpikeNode,
+  buildBounceSpringBaseNode,
+  buildBounceSpringCapNode,
+  buildCheckpointPennantNode,
+  buildCheckpointStandNode,
+  buildDioramaStaticDecorNodes,
+  buildGateLockStarNode,
+  buildGoldenAcornNode,
+  buildHazardFeatureNode,
+  buildHeartBerryNode,
+  buildHedgehogVillagerNode,
+  buildSunGateArchNode,
+  buildSunGateRuneRingNode,
+  buildSunseedNode,
+  buildUpdraftFanNode,
+  buildWoodlandBannerNode,
+  type StaticDecorKind,
+  type StaticDecorPlacement
+} from "../art/proceduralModels.js";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type SceneNodeArg = Parameters<SceneBuilder["add"]>[0];
 
 /**
- * GU47 wave 2 (PBL-E1): the generated Meshy base island each world tiles under its course
- * (extents are the decimated GLBs'; `surface` is the height fraction of the walkable top).
- * Starfall Garden (w6) and the two worlds whose generated islands read wrong (the basalt
- * cellar and the hollow palace) keep the primitive base.
+ * Procedural storybook island plinth dimensions per world (`surface` is the walkable top fraction).
+ * Starfall Garden (w6), Basalt Cellar (w4), and Hollow Palace (w5) use terraced bluffs.
  */
 export const BASE_TILES: Readonly<Partial<Record<WorldId, BaseTile>>> = {
-  academy: { asset: assets.bases.garden, size: [1.898, 0.669, 1.618], surface: 0.45 },
-  w1: { asset: assets.bases.canopy, size: [1.722, 0.695, 1.903], surface: 0.39 },
-  w2: { asset: assets.bases.millpond, size: [1.89, 1.139, 1.902], surface: 0.3 },
-  w3: { asset: assets.bases.meadow, size: [1.884, 0.495, 1.897], surface: 0.58 }
+  academy: { size: [1.898, 0.669, 1.618], surface: 0.45 },
+  w1: { size: [1.722, 0.695, 1.903], surface: 0.39 },
+  w2: { size: [1.89, 1.139, 1.902], surface: 0.3 },
+  w3: { size: [1.884, 0.495, 1.897], surface: 0.58 }
 };
 
-/** The villager that stands in for each NPC runner in the diorama look (PBL-A3). */
-export const VILLAGER_BY_WHO = { helper: { asset: assets.hedgehog, height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4, clip: "idle" } } as const;
+/** The villager that stands in for each NPC runner in the diorama look: rigged beetle + procedural spiny hedgehog. */
+export const VILLAGER_BY_WHO = { helper: { kind: "procedural-hedgehog", height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4, clip: "idle" } } as const;
 
 // ---------------------------------------------------------------- palettes
 
@@ -526,11 +545,11 @@ function phaseOf(id: string): number {
 function animatedDecorNode(d: DecorSpec): SceneNodeArg {
   const s = d.s ?? 1;
   const name = `${d.id}:${d.kind}`;
-  const asset = d.kind === "banner" ? assets.checkpointFlag : assets.props.turbine;
-  return model(asset, { name, castShadow: d.kind !== "banner", receiveShadow: true, targetHeight: 2.2 * s })
-    .position(d.x, d.y, d.z)
-    .rotate(0, d.yaw ?? 0, 0)
-    .runtime(game.runtimeNode(name, { tags: ["decor"] }));
+  const rt = game.runtimeNode(name, { tags: ["decor"] });
+  if (d.kind === "banner") {
+    return buildWoodlandBannerNode(name, [d.x, d.y, d.z], d.yaw ?? 0, s, rt);
+  }
+  return buildUpdraftFanNode(name, [d.x, d.y, d.z], d.yaw ?? 0, s, rt);
 }
 
 /** Today's atmosphere (`?look=original`), unchanged. */
@@ -743,12 +762,11 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
 
-  // PBL-PF1 (diorama): hazard dressing, pedestals and decor are collected here and drawn
-  // as instanced models below; the original look keeps one model node each.
-  const props: PropInstance[] = [];
+  // WP-06 (diorama): procedural multi-material woodland assemblies replace all 26 static Meshy
+  // & borrowed sci-fi/FPS props; `?look=original` keeps its original model nodes unchanged.
+  const staticDecorPlacements: StaticDecorPlacement[] = [];
 
-  // Hazards — hurt volumes + 3D GLB crystal/brazier hazard clusters (diorama: plum
-  // bramble mat, glowing practical lava and embers, clearcoat frost; PBL-M2 interim).
+  // Hazards — hurt volumes + sculpted thorny bramble / frost crystal / basalt ember vents in diorama.
   const hazards: HazardBox[] = spec.hazards.map((hz) => {
     const h = hz.h ?? 0.5;
     builder.add(
@@ -762,7 +780,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       })
     );
     if (diorama) {
-      props.push(hazardInstance(hz));
+      builder.add(buildHazardFeatureNode(`hazard:${hz.id}:mesh`, [hz.x, hz.y - Math.min(h, 0.24), hz.z], hz.w, hz.d, hz.type));
     } else {
       const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
       builder.add(
@@ -793,88 +811,106 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     return { spec: w, x: w.x, z: w.z, hx: w.w / 2, hz: w.d / 2, surfaceY: w.y, floorY: w.y - depth };
   });
 
-  // Pickups — bespoke Meshy sun-seed / golden-acorn / energy-core models driven per frame.
-  // C11: small spinning pickups do not cast shadow-map shadows (each caster is
-  // a depth draw per cascade); the screen-space contact shadows still ground them.
+  // Pickups — ribbed golden sunseeds, oak-cupule golden acorns, and glossy crimson heart-berries in diorama.
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
+    const rt = game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] });
     builder.add(
-      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit", ...(diorama ? { materialOverrides: SEED_OVERRIDES } : {}) })
-        .position(s.x, s.y - 0.1, s.z)
-        .runtime(game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] }))
+      diorama
+        ? buildSunseedNode(nodeName.seed(s.id), [s.x, s.y + 0.16, s.z], rt)
+        : model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit" })
+            .position(s.x, s.y - 0.1, s.z)
+            .runtime(rt)
     );
     spinNodes.push(nodeName.seed(s.id));
   }
   for (const a of spec.acorns) {
+    const rt = game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] });
     builder.add(
-      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: false, targetMaxDimension: 0.65, scaleMode: "fit" })
-        .position(a.x, a.y - 0.2, a.z)
-        .runtime(game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] }))
+      diorama
+        ? buildGoldenAcornNode(nodeName.acorn(a.id), [a.x, a.y + 0.12, a.z], rt)
+        : model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: false, targetMaxDimension: 0.65, scaleMode: "fit" })
+            .position(a.x, a.y - 0.2, a.z)
+            .runtime(rt)
     );
     spinNodes.push(nodeName.acorn(a.id));
   }
   for (const hpt of spec.hearts) {
+    const rt = game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] });
     builder.add(
-      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
-        .position(hpt.x, hpt.y - 0.18, hpt.z)
-        .runtime(game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] }))
+      diorama
+        ? buildHeartBerryNode(nodeName.heart(hpt.id), [hpt.x, hpt.y + 0.1, hpt.z], rt)
+        : model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
+            .position(hpt.x, hpt.y - 0.18, hpt.z)
+            .runtime(rt)
     );
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
-  // Springs — 3D Meshy boost pad + pedestal base (diorama: tiny props cast no
-  // shadow-map shadows, PBL-PF1; contact shadows still ground them).
+  // Springs — coiled copper-and-toadstool bounce springs in diorama; original look untouched.
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
+    const rt = game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] });
     if (diorama) {
-      props.push(pedestalInstance(base[0], base[1], base[2], 0.92));
+      builder.add(buildBounceSpringBaseNode(`${nodeName.spring(spr.id)}:base`, base));
+      builder.add(buildBounceSpringCapNode(nodeName.spring(spr.id), base, rt));
     } else {
       builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 })
+        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.92 })
           .position(base[0], base[1], base[2])
       );
+      builder.add(
+        model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: true, receiveShadow: true, targetMaxDimension: 0.82 })
+          .position(base[0], base[1] + 0.14, base[2])
+          .runtime(rt)
+      );
     }
-    builder.add(
-      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.82 })
-        .position(base[0], base[1] + 0.14, base[2])
-        .runtime(game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] }))
-    );
   }
 
-  // Checkpoints — bespoke Meshy leaf-banner flag + 3D pedestal base.
+  // Checkpoints — carved timber post + stone pad + fluttering swallowtail pennant in diorama.
   for (const cp of spec.checkpoints) {
-    builder.add(
-      model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9, scaleMode: "fit" })
-        .position(cp.x, cp.y, cp.z)
-        .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
-    );
+    const rt = game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] });
     if (diorama) {
-      props.push(pedestalInstance(cp.x, cp.y, cp.z, 0.78));
+      builder.add(buildCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
+      builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt));
     } else {
       builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 })
+        model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9, scaleMode: "fit" })
+          .position(cp.x, cp.y, cp.z)
+          .runtime(rt)
+      );
+      builder.add(
+        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.78 })
           .position(cp.x, cp.y, cp.z)
       );
     }
   }
 
-  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
-  // Diorama: the ring is sun-seed gold and marked practical (a light source, not fill).
+  // Sun-Gate — rune-carved limestone voussoir arch + sculpted solar rune ring + bevelled star lock in diorama.
   const g = spec.gate;
-  builder.add(
-    model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.4, scaleMode: "fit" })
-      .position(g.x, g.y, g.z)
-      .runtime(game.runtimeNode(nodeName.gate, { tags: ["gate"] }))
-  );
-  builder.add(
-    primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: diorama ? GATE_RING_MATERIAL : material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
-      .runtime(game.runtimeNode(nodeName.gateRing, { tags: ["gate"] }))
-  );
-  builder.add(
-    model(assets.props.energyCore, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
-      .position(g.x, g.y + 1.25, g.z)
-      .runtime(game.runtimeNode(nodeName.gateLock, { tags: ["gate"] }))
-  );
+  const gateRt = game.runtimeNode(nodeName.gate, { tags: ["gate"] });
+  const ringRt = game.runtimeNode(nodeName.gateRing, { tags: ["gate"] });
+  const lockRt = game.runtimeNode(nodeName.gateLock, { tags: ["gate"] });
+  if (diorama) {
+    builder.add(buildSunGateArchNode(nodeName.gate, [g.x, g.y, g.z], 0, gateRt));
+    builder.add(buildSunGateRuneRingNode(nodeName.gateRing, [g.x, g.y + 1.5, g.z], GATE_RING_MATERIAL, ringRt));
+    builder.add(buildGateLockStarNode(nodeName.gateLock, [g.x, g.y + 1.5, g.z], lockRt));
+  } else {
+    builder.add(
+      model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.4, scaleMode: "fit" })
+        .position(g.x, g.y, g.z)
+        .runtime(gateRt)
+    );
+    builder.add(
+      primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
+        .runtime(ringRt)
+    );
+    builder.add(
+      model(assets.props.energyCore, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
+        .position(g.x, g.y + 1.25, g.z)
+        .runtime(lockRt)
+    );
+  }
 
   // Decor + NPCs.
   const cameraObstacles: CameraObstacle[] = [];
@@ -885,31 +921,28 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       builder.add(animatedDecorNode(d));
       animatedDecor.push({ name: `${d.id}:${d.kind}`, kind: d.kind as AnimatedDecor["kind"], yaw: d.yaw ?? 0, phase: phaseOf(d.id) });
     } else if (diorama) {
-      const prop = decorInstance(d);
-      if (prop) props.push(prop);
+      staticDecorPlacements.push({ kind: d.kind as StaticDecorKind, x: d.x, y: d.y, z: d.z, yaw: d.yaw, s: d.s });
     } else {
       for (const node of decorNodes(d)) builder.add(node);
     }
   }
-  // PBL-PF1: one instanced draw class per prop asset (diorama only).
-  for (const node of propInstanceNodes(props)) builder.add(node);
+  if (diorama) {
+    for (const node of buildDioramaStaticDecorNodes(staticDecorPlacements)) builder.add(node);
+  }
   for (const n of spec.npcs) {
-    // C19: NPCs are camera obstacles too, so the boom shortens instead of
-    // letting a 1.35 m runner fill the foreground.
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
-    // GU47 phase 4: the diorama draws no voxel NPCs. Every rubric judgement named the blocky
-    // helper/sidekick as the style clash in the frame (modeling, composition, animation).
-    // GU47 wave 2 (PBL-A3): the generated hedgehog and beetle villagers take their places, in a
-    // static pose (the text-to-3D models are unrigged; a rig is the open follow-up). They are
-    // pure decor (no runtime node, no collider); the camera obstacle stays so the camera and
-    // collision world are identical in both looks (PRD D8).
     if (diorama) {
-      const villager = VILLAGER_BY_WHO[n.who];
-      const villagerNode = model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
-        .position(n.x, n.y, n.z)
-        .rotate(0, -0.45, 0);
-      // The beetle is rigged (wave 10): it loops its idle clip; the hedgehog stays a static pose.
-      builder.add("clip" in villager ? villagerNode.animate({ clip: villager.clip, loop: true }) : villagerNode);
+      if (n.who === "sidekick") {
+        const villager = VILLAGER_BY_WHO.sidekick;
+        builder.add(
+          model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
+            .position(n.x, n.y, n.z)
+            .rotate(0, -0.45, 0)
+            .animate({ clip: villager.clip, loop: true })
+        );
+      } else {
+        builder.add(buildHedgehogVillagerNode(`pbl-villager:${n.id}`, [n.x, n.y, n.z], -0.45));
+      }
       continue;
     }
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
@@ -922,9 +955,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     );
   }
 
-  // Hero — always a runtime node; the camera rigs onto it. `targetHeight: 1.25`
-  // with `scaleMode: "fit"` sizes Pip's bespoke GLB prominently in frame with
-  // his feet grounded on the platform top surface.
+  // Hero — always a runtime node; the camera rigs onto it.
   builder.add(
     model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.25, scaleMode: "fit", ...(diorama ? { materialOverrides: PIP_GLOSS } : {}) })
       .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
@@ -954,22 +985,24 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     ).runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
-  // Boss (W5) — bespoke Meshy Brambleback; body is runtime-driven and the
-  // 3D crystal-shard satellites remain the phase telegraph (out = invulnerable).
+  // Boss (W5) — rigged Brambleback with plush+rim overrides + 6 orbiting thorny crystal spikes.
   if (spec.boss) {
     builder.add(
-      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4, scaleMode: "fit" })
+      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4, scaleMode: "fit", ...(diorama ? { materialOverrides: BOSS_GLOSS } : {}) })
         .position(0, 2.6, -69)
         .animate({ clip: BOSS_CLIPS.idle, loop: true })
         .runtime(game.runtimeNode(nodeName.boss, { tags: ["boss"] }))
     );
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
+      const spikeRt = game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] });
       builder.add(
-        model(assets.props.crystalShard, { name: nodeName.bossSpike(i), castShadow: true, targetHeight: 0.9 })
-          .position(Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05)
-          .rotate(0, 0, Math.cos(a) * 0.5)
-          .runtime(game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] }))
+        diorama
+          ? buildBossThornSpikeNode(nodeName.bossSpike(i), [Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05], spikeRt)
+          : model(assets.props.crystalShard, { name: nodeName.bossSpike(i), castShadow: true, targetHeight: 0.9 })
+              .position(Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05)
+              .rotate(0, 0, Math.cos(a) * 0.5)
+              .runtime(spikeRt)
       );
     }
   }

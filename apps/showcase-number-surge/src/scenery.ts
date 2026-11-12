@@ -9,8 +9,23 @@
  * Everything here is a pure function of the shown scroll distance and time. It never reads or writes the simulation's
  * state or its random stream (layout variety comes from a fixed hash), so gameplay is unchanged.
  */
-import { geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
+import { geometry, instances, material, scene, texture, type AuraApp, type AuraTransformSpec } from "@aura3d/engine";
 import { Batch, hexToLinear, mergeMeshes, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
+import {
+  SURGE_MATERIALS,
+  buildBoulevardCanopySpec,
+  buildCypressFoliageSpec,
+  buildCypressTrunkSpec,
+  buildMultiplierPodiumMonumentNode,
+  buildStadiumSkylineNode,
+  buildSuspensionBridgeArchNode,
+  buildWindTurbineRotorSpec,
+  buildWindTurbineTowerSpec,
+  haunchedPierCapMeshData,
+  steppedSkyscraperMeshData,
+  stratifiedFloatingIsleMeshData,
+  vStrutHighwayPierMeshData
+} from "./art/proceduralModels";
 import { boxMesh } from "./meshes";
 import {
   CRYSTAL_WALL_FRAGMENT_WGSL, DECK_FRAGMENT_WGSL, EDGE_GLOW_FRAGMENT_WGSL, EDGE_GLOW_VERTEX_WGSL, FROSTED_GATE_FRAGMENT_WGSL,
@@ -902,15 +917,11 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
   add("mountains-far", dyn(mountainRing(272, 34, 18, 52, 91)), mountainSpec(SCENERY.mountainFar, 0.0024));
   add("mountains-near", dyn(mountainRing(238, 26, 10, 34, 17)), mountainSpec(SCENERY.mountainNear, 0.0034));
 
-  const towers = new Batch(boxMesh(1, 1, 1, 0, 0.5, 0), TOWER_COUNT, [1, 1, 1]);
+  const towers = new Batch(steppedSkyscraperMeshData(), TOWER_COUNT, [1, 1, 1]);
   builder.add(geometry.custom(towers.geometry(), { name: "towers", material: material.custom(towerSpec(1, 1, SCENERY.facade)) }).runtime({ id: "towers" }));
-  const pylonMesh = mergeMeshes([
-    boxMesh(0.7, 1, 0.7, -2.9, 0, 0),
-    boxMesh(0.7, 1, 0.7, 2.9, 0, 0)
-  ]);
-  const pylons = new Batch(pylonMesh, PYLON_COUNT, L("#3ef2ff"));
+  const pylons = new Batch(vStrutHighwayPierMeshData(), PYLON_COUNT, L("#3ef2ff"));
   builder.add(geometry.custom(pylons.geometry(), { name: "pylons", material: material.custom(towerSpec(0, 1, "#120c2c")) }).runtime({ id: "pylons" }));
-  const pylonCap = new Batch(boxMesh(7.6, 0.5, 1.2, 0, -0.45, 0), PYLON_COUNT, L("#ff4fd8"));
+  const pylonCap = new Batch(haunchedPierCapMeshData(), PYLON_COUNT, L("#ff4fd8"));
   builder.add(geometry.custom(pylonCap.geometry(), { name: "pylon-caps", material: material.custom(towerSpec(0, 0, "#1a1240")) }).runtime({ id: "pylon-caps" }));
   const motes = new Batch(boxMesh(0.14, 0.14, 0.14), MOTE_COUNT, [1, 1, 1]);
   builder.add(geometry.custom(motes.geometry(), {
@@ -919,19 +930,141 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
   }).runtime({ id: "motes" }));
 
   for (const isle of ISLES) {
-    add(`${isle.id}-rock`, dyn(islandMesh(isle.r, isle.z0)), rockSpec(isle.color.map((c) => c / 1.9) as unknown as Rgb, isle.r));
+    add(`${isle.id}-rock`, dyn(stratifiedFloatingIsleMeshData(isle.r, isle.z0)), rockSpec(isle.color.map((c) => c / 1.9) as unknown as Rgb, isle.r));
     add(`${isle.id}-halo`, dyn(haloQuad(isle.r * 4.2, isle.r * 0.75)), haloSpec(isle.color.map((c) => c / 1.9) as unknown as Rgb, 0.42));
     add(`${isle.id}-glyph`, dyn(glyphMesh(isle.glyph, isle.r * 1.5)), glyphSpec(isle.color, isle.z0));
   }
+
+  // Skyline wind turbines (8 towers + live-spinning 3-blade airfoil rotors) & boulevard cypress/canopy avenue.
+  const WIND_COUNT = 8;
+  const AVENUE_PER_KIND = 8;
+  const MONUMENT_SPAN = 240;
+  const MONUMENT_NEAR = 12;
+  const MONUMENT_FAR = MONUMENT_NEAR - MONUMENT_SPAN;
+  const monumentCycle = (z0: number, scrollDist: number) => {
+    const z = ((((z0 + scrollDist) % MONUMENT_SPAN) + MONUMENT_SPAN) % MONUMENT_SPAN) + MONUMENT_FAR;
+    const fade = smooth((z - MONUMENT_FAR) / 36) * smooth((MONUMENT_NEAR - z) / 12);
+    return { z, scale: Math.max(0.001, fade), visible: fade > 0.02 };
+  };
+
+  const windTowerPose = (i: number, scrollDist: number): { tower: AuraTransformSpec; rotor: AuraTransformSpec } => {
+    const side = i % 2 === 0 ? -1 : 1;
+    const x = side * (31 + ((i * 5) % 4) * 2.6);
+    const { z, scale } = monumentCycle((i / WIND_COUNT) * MONUMENT_SPAN + 14, scrollDist * 0.85);
+    const s = Math.max(0.001, scale * (0.9 + (i % 3) * 0.1));
+    const yaw = side * -0.22;
+    return {
+      tower: { position: [x, SCENERY.floorY, z], rotation: [0, yaw, 0], scale: s },
+      rotor: {
+        position: [x + Math.sin(yaw) * 1.65 * s, SCENERY.floorY + 22.0 * s, z + Math.cos(yaw) * 1.65 * s],
+        rotation: [0, yaw, 0],
+        scale: s
+      }
+    };
+  };
+
+  const avenueTreePose = (i: number, zOffset: number, scrollDist: number): AuraTransformSpec => {
+    const side = i % 2 === 0 ? -1 : 1;
+    const x = side * (14.8 + ((i * 3) % 3) * 1.25);
+    const { z, scale } = monumentCycle((i / AVENUE_PER_KIND) * MONUMENT_SPAN + zOffset, scrollDist);
+    return {
+      position: [x, SCENERY.floorY, z],
+      rotation: [0, i * 1.15, 0],
+      scale: Math.max(0.001, scale * (1.05 + (i % 3) * 0.08))
+    };
+  };
+
+  const initWind = Array.from({ length: WIND_COUNT }, (_, i) => windTowerPose(i, 0));
+  const initCypress = Array.from({ length: AVENUE_PER_KIND }, (_, i) => avenueTreePose(i, 9, 0));
+  const initBoulevard = Array.from({ length: AVENUE_PER_KIND }, (_, i) => avenueTreePose(i, 24, 0));
+
+  builder
+    .add(
+      instances
+        .custom(buildWindTurbineTowerSpec(), {
+          name: "scenery-wind-towers",
+          material: SURGE_MATERIALS.instancedAlloyBatch,
+          transforms: initWind.map((w) => w.tower),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-wind-towers" })
+    )
+    .add(
+      instances
+        .custom(buildWindTurbineRotorSpec(), {
+          name: "scenery-wind-rotors",
+          material: SURGE_MATERIALS.ivoryLacquerBatch,
+          transforms: initWind.map((w) => w.rotor),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-wind-rotors" })
+    )
+    .add(
+      instances
+        .custom(buildCypressTrunkSpec(), {
+          name: "scenery-cypress-trunks",
+          material: SURGE_MATERIALS.boulevardWoodPbr,
+          transforms: [...initCypress, ...initBoulevard],
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-cypress-trunks" })
+    )
+    .add(
+      instances
+        .custom(buildCypressFoliageSpec(29), {
+          name: "scenery-cypress-foliage",
+          material: SURGE_MATERIALS.cypressFoliagePbr,
+          transforms: initCypress,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-cypress-foliage" })
+    )
+    .add(
+      instances
+        .custom(buildBoulevardCanopySpec(11), {
+          name: "scenery-boulevard-canopy",
+          material: SURGE_MATERIALS.palmCanopyPbr,
+          transforms: initBoulevard,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-boulevard-canopy" })
+    )
+    .add(buildSuspensionBridgeArchNode("scenery-bridge-arch"))
+    .add(buildStadiumSkylineNode("scenery-stadium-0"))
+    .add(buildStadiumSkylineNode("scenery-stadium-1"))
+    .add(buildMultiplierPodiumMonumentNode("scenery-finish-monument"));
 
   return {
     bind(_app: AuraApp, node: (id: string) => NodeHandle): SceneryRuntime {
       const towerK = new Float64Array(TOWER_COUNT).fill(Number.NaN);
       const pylonK = new Float64Array(PYLON_COUNT).fill(Number.NaN);
       const moteK = new Float64Array(MOTE_COUNT).fill(Number.NaN);
+      const windTowerScratch = new Array<AuraTransformSpec>(WIND_COUNT);
+      const windRotorScratch = new Array<AuraTransformSpec>(WIND_COUNT);
+      const cypressScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND);
+      const boulevardScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND);
+      const trunkScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND * 2);
       const grid = node("grid");
       for (const id of SCENERY_BATCHES) node(id);
       node("pylon-caps");
+      for (const id of [
+        "scenery-wind-towers",
+        "scenery-wind-rotors",
+        "scenery-cypress-trunks",
+        "scenery-cypress-foliage",
+        "scenery-boulevard-canopy",
+        "scenery-bridge-arch",
+        "scenery-stadium-0",
+        "scenery-stadium-1",
+        "scenery-finish-monument"
+      ]) {
+        node(id);
+      }
 
       function update(travelled: number, time: number): void {
         // Ahead of the ball is −z (the camera looks down −z), so run space decreases as the ball travels.
@@ -995,6 +1128,55 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
           node(`${isle.id}-halo`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);
           node(`${isle.id}-glyph`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);
         }
+
+        // Skyline wind turbines + avenue foliage
+        for (let i = 0; i < WIND_COUNT; i += 1) {
+          const w = windTowerPose(i, travelled);
+          windTowerScratch[i] = w.tower;
+          const rRot = w.rotor.rotation ?? [0, 0, 0];
+          windRotorScratch[i] = {
+            ...w.rotor,
+            rotation: [rRot[0], rRot[1], time * 1.45 + i * 0.9]
+          };
+        }
+        node("scenery-wind-towers").setInstances(windTowerScratch);
+        node("scenery-wind-rotors").setInstances(windRotorScratch);
+
+        for (let i = 0; i < AVENUE_PER_KIND; i += 1) {
+          cypressScratch[i] = avenueTreePose(i, 9, travelled);
+          boulevardScratch[i] = avenueTreePose(i, 24, travelled);
+          trunkScratch[i] = cypressScratch[i]!;
+          trunkScratch[AVENUE_PER_KIND + i] = boulevardScratch[i]!;
+        }
+        node("scenery-cypress-trunks").setInstances(trunkScratch);
+        node("scenery-cypress-foliage").setInstances(cypressScratch);
+        node("scenery-boulevard-canopy").setInstances(boulevardScratch);
+
+        // Suspension bridge arch, skyline stadiums & tiered multiplier podium finish-stair monument
+        const bridgePose = monumentCycle(55, travelled);
+        node("scenery-bridge-arch")
+          .setVisible(bridgePose.visible)
+          .setPosition(0, 0, bridgePose.z)
+          .setScale(bridgePose.scale);
+
+        const stadiumL = monumentCycle(95, travelled * 0.78);
+        const stadiumR = monumentCycle(215, travelled * 0.78);
+        node("scenery-stadium-0")
+          .setVisible(stadiumL.visible)
+          .setPosition(-44, SCENERY.floorY, stadiumL.z)
+          .setRotation(0, 0.28, 0)
+          .setScale(stadiumL.scale);
+        node("scenery-stadium-1")
+          .setVisible(stadiumR.visible)
+          .setPosition(44, SCENERY.floorY, stadiumR.z)
+          .setRotation(0, -0.28, 0)
+          .setScale(stadiumR.scale);
+
+        const finishPose = monumentCycle(175, travelled);
+        node("scenery-finish-monument")
+          .setVisible(finishPose.visible)
+          .setPosition(0, 0, finishPose.z)
+          .setScale(finishPose.scale);
       }
       return { update };
     }

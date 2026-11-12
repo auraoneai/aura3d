@@ -53,10 +53,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "static", subjectHeightFraction: [0.06, 0.16], fovDeg: [15, 60], mobile: "both" },
-  assets: [
-    // GU47 wave 10 (TT-A2) + WP-01: owned lattice floodlight tower (`tennisFloodMast`); grandstand & scoreboard gantry are sculpted procedural geometry.
-    { role: "prop", assetKey: "tennisFloodMast", maxTriangles: 26506, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
-  ],
+  assets: [],
   vfx: [
     { event: "ball-bounce-clay", kind: "clay-puff" },
     { event: "ball-bounce-grass", kind: "grass-flick" },

@@ -61,6 +61,13 @@ describe("iron-crown art direction (GU47 WP-15)", () => {
     expect(direction.signatureEffect).toMatch(/letterbox/);
   });
 
+  it("contracts strictly the 6 rigged fighters and zero static prop GLBs (WP-05)", () => {
+    expect(direction.assets).toHaveLength(6);
+    for (const entry of direction.assets) {
+      expect(entry.role, entry.assetKey).toBe("character");
+    }
+  });
+
   it("lists a VFX entry for every preset of the pack", () => {
     const kinds = new Set(direction.vfx.map((entry) => entry.kind));
     for (const kind of IRON_CROWN_VFX_KINDS) expect(kinds.has(kind), kind).toBe(true);

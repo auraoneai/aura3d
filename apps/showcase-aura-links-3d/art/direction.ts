@@ -46,29 +46,10 @@ export default defineArtDirection({
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.22, 0.6], fovDeg: [30, 58], mobile: "both" },
   assets: [
-    // GU47 wave 7: the player is the Meshy rigged golfer (16,420 triangles after the meshopt pass from 54,734; three 1024 px maps: base colour, normal, ORM); it drives the swing overlay and the idle/cheer clips
+    // Rigged Meshy tour golfer (`skins=1`): drives the swing overlay and the idle/wave/cheer clips
     { role: "hero", assetKey: "links_golfer_player", maxTriangles: 20000, minTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle", "wave", "cheer"] } },
-    // the original athlete: the caddy, the gallery fans and the `?golfer=old` player
-    { role: "set-dressing", assetKey: "linksGolferAthleteMeshy", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Idle_Loop"] } },
-    { role: "prop", assetKey: "linksGolfCartMeshy", maxTriangles: 16000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "linksPinFlagMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "linksGolfBall", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "propRockA", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "linksDunesBeaconTower", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "linksBurnFootbridge", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "linksCraterCrystal", maxTriangles: 1000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "linksAlpineSnowPine", maxTriangles: 1000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "linksHarbourFloodlight", maxTriangles: 1000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "linksHarbourTowerA", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "linksHarbourTowerB", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "linksHarbourTowerC", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "linksMareLander", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "linksMareRover", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "linksMareRelay", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    // GU47 wave 3 (LINKS-08): two Links-owned Meshy landmarks, 27,766 and 32,602 triangles (pipeline copy / one meshopt pass), 1k maps
-    { role: "set-dressing", assetKey: "links_basalt_columns", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "links_cable_car_station", maxTriangles: 34000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    // Rigged tour athlete (`skins=1`): caddy, gallery spectators and `?golfer=old` player; all static course props/landmarks are procedural
+    { role: "set-dressing", assetKey: "linksGolferAthleteMeshy", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Idle_Loop"] } }
   ],
   vfx: [
     { event: "tee-strike", kind: "links-strike" },

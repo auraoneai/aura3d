@@ -1,98 +1,149 @@
-// GU47 WP-16 (G06) PBL-PF1: the diorama draws decor, hazard dressing and pedestals as instanced models, one draw
-// class per asset / fit / shadow flags, and every instance stands where today's model node stood at today's size.
+// WP-06 (Pip's Big Leap): verifies that all 26 static Meshy & borrowed sci-fi/FPS GLBs and raw flora/plinth
+// primitives in the diorama look are replaced by sculpted multi-material procedural assemblies, while keeping
+// the 3 rigged character GLBs (`pipsPip`, `pipsBrambleback`, `leapBeetleAnim`) and `?look=original` intact.
 import { describe, expect, it } from "vitest";
-import { ANIMATED_DECOR_KINDS, buildWorld, decorInstance, hazardInstance, propGroupKey } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap";
+import { ANIMATED_DECOR_KINDS, buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { dioramaName } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { WORLD_IDS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
+import { PBL_MAT, millpondCausticsMaterial, storybookStrataMaterial } from "../../../apps/showcase-pips-big-leap/src/art/proceduralModels";
+import { checkGlslUnchanged, checkWgslDepthTwin, checkWgslTwin } from "../apps/wgslTwinChecks";
 
 type Transform = { readonly position?: readonly number[]; readonly rotation?: readonly number[]; readonly scale?: number | readonly number[] };
 type Node = {
   readonly kind: string;
+  readonly primitive?: string;
   readonly name?: string;
   readonly asset?: { readonly id?: string };
   readonly position?: readonly number[];
   readonly rotation?: readonly number[];
+  readonly scale?: number | readonly number[];
   readonly castShadow?: boolean;
   readonly receiveShadow?: boolean;
-  readonly targetHeight?: number;
-  readonly targetMaxDimension?: number;
+  readonly intensity?: number;
+  readonly material?: Record<string, unknown> & { readonly custom?: { readonly wgsl?: { readonly vertex?: string; readonly fragment?: string } } };
   readonly instances?: readonly Transform[];
   readonly runtime?: unknown;
   readonly children?: readonly Node[];
 };
 
+const ALLOWED_RIGGED_GLBS = new Set(["pipsPip", "pipsBrambleback", "leapBeetleAnim"]);
+
 const flat = (nodes: readonly Node[]): Node[] => nodes.flatMap((n) => [n, ...(n.kind === "group" ? flat(n.children ?? []) : [])]);
 const sceneOf = (id: (typeof WORLD_IDS)[number], look?: "original") =>
   flat((buildWorld(worldSpec(id), look ? { look } : {}).scene.toJSON() as unknown as { nodes: Node[] }).nodes);
-const propNodes = (nodes: readonly Node[]) => nodes.filter((n) => (n.name ?? "").startsWith("pbl-props:"));
 
-describe("pips-big-leap instanced props (PBL-PF1)", () => {
-  it("places every decor prop where the original look's model node stands, at its fitted size", () => {
+describe("pips-big-leap procedural multi-material props (WP-06)", () => {
+  it("mounts ONLY the 3 rigged character GLBs across all 7 diorama worlds (zero static Meshy or borrowed props)", () => {
     for (const id of WORLD_IDS) {
-      const original = sceneOf(id, "original");
-      for (const d of worldSpec(id).decor) {
-        const node = original.find((n) => n.name === `${d.id}:${d.kind}`);
-        const prop = decorInstance(d);
-        expect(node, `${id} ${d.id}`).toBeDefined();
-        expect(prop, `${id} ${d.id}`).not.toBeNull();
-        expect(prop!.asset.id, `${id} ${d.id}`).toBe(node!.asset?.id);
-        expect(prop!.size, `${id} ${d.id}`).toBeCloseTo(prop!.measure === "height" ? node!.targetHeight! : node!.targetMaxDimension!, 9);
-        expect(prop!.position, `${id} ${d.id}`).toEqual(node!.position);
-        expect(prop!.yaw).toBe(node!.rotation?.[1] ?? 0);
-        expect(prop!.receiveShadow).toBe(node!.receiveShadow);
+      const models = sceneOf(id).filter((n) => n.kind === "model");
+      expect(models.length, id).toBeGreaterThanOrEqual(1);
+      for (const m of models) {
+        expect(ALLOWED_RIGGED_GLBS.has(m.asset?.id ?? ""), `${id} unexpected GLB ${m.asset?.id} on ${m.name}`).toBe(true);
       }
-      for (const hz of worldSpec(id).hazards) {
-        const node = original.find((n) => n.name === `hazard:${hz.id}:mesh`);
-        const prop = hazardInstance(hz);
-        expect(prop.asset.id).toBe(node!.asset?.id);
-        expect(prop.size).toBeCloseTo(node!.targetHeight!, 9);
-        expect(prop.position).toEqual(node!.position);
-      }
+      expect(sceneOf(id).filter((n) => (n.name ?? "").startsWith("pbl-props:")), id).toEqual([]);
     }
   });
 
-  it("draws the props through fewer instanced draw classes than props, one instance per prop", () => {
+  it("replaces pickups, bounce springs, checkpoints, Sun Gate, hazards, and decor with multi-material custom geometry", () => {
     for (const id of WORLD_IDS) {
       const spec = worldSpec(id);
       const nodes = sceneOf(id);
-      const props = propNodes(nodes);
+
+      for (const s of spec.seeds) {
+        const seed = nodes.find((n) => n.name === nodeName.seed(s.id));
+        expect(seed?.kind, `${id} seed:${s.id}`).toBe("group");
+        expect(seed?.castShadow).toBe(false);
+        expect((seed?.children ?? []).length).toBeGreaterThanOrEqual(3);
+      }
+      for (const a of spec.acorns) {
+        const acorn = nodes.find((n) => n.name === nodeName.acorn(a.id));
+        expect(acorn?.kind, `${id} acorn:${a.id}`).toBe("group");
+        expect(acorn?.castShadow).toBe(false);
+        expect((acorn?.children ?? []).length).toBeGreaterThanOrEqual(3);
+      }
+      for (const h of spec.hearts) {
+        const heart = nodes.find((n) => n.name === nodeName.heart(h.id));
+        expect(heart?.kind, `${id} heart:${h.id}`).toBe("group");
+        expect(heart?.castShadow).toBe(false);
+        expect((heart?.children ?? []).length).toBeGreaterThanOrEqual(2);
+      }
+      for (const sp of spec.springs) {
+        const cap = nodes.find((n) => n.name === nodeName.spring(sp.id));
+        const base = nodes.find((n) => n.name === `${nodeName.spring(sp.id)}:base`);
+        expect(cap?.runtime).toBeDefined();
+        expect((base?.children ?? []).length).toBeGreaterThanOrEqual(3);
+      }
+      for (const cp of spec.checkpoints) {
+        const flag = nodes.find((n) => n.name === nodeName.checkpointFlag(cp.id));
+        const stand = nodes.find((n) => n.name === `${nodeName.checkpoint(cp.id)}:pad`);
+        expect(flag?.primitive).toBe("custom");
+        expect(flag?.runtime).toBeDefined();
+        expect((stand?.children ?? []).length).toBeGreaterThanOrEqual(3);
+      }
+
+      const gate = nodes.find((n) => n.name === nodeName.gate);
+      const ring = nodes.find((n) => n.name === nodeName.gateRing);
+      const lock = nodes.find((n) => n.name === nodeName.gateLock);
+      expect((gate?.children ?? []).length).toBeGreaterThanOrEqual(4);
+      expect(ring?.primitive).toBe("custom");
+      expect((lock?.children ?? []).length).toBeGreaterThanOrEqual(2);
+
       const staticDecor = spec.decor.filter((d) => !ANIMATED_DECOR_KINDS.has(d.kind));
-      const expected = staticDecor.length + spec.hazards.length + spec.springs.length + spec.checkpoints.length;
-      const instanced = props.reduce((sum, n) => sum + (n.instances?.length ?? 0), 0);
-      expect(instanced, id).toBe(expected);
-      expect(props.length, id).toBeLessThan(expected);
-      expect(new Set(props.map((n) => n.name)).size).toBe(props.length);
-      for (const n of props) {
-        expect(n.runtime, n.name).toBeUndefined();
-        expect(n.targetHeight === 1 || n.targetMaxDimension === 1, n.name).toBe(true);
+      if (staticDecor.length > 0) {
+        const castDecor = nodes.find((n) => n.name === "pbl-diorama-decor-cast");
+        expect(castDecor?.kind, id).toBe("group");
+        expect((castDecor?.children ?? []).length, id).toBeGreaterThanOrEqual(2);
       }
-      // No per-prop model node is left in the diorama look.
-      expect(nodes.filter((n) => /:(mesh|base|pad)$/.test(n.name ?? "") || staticDecor.some((d) => n.name === `${d.id}:${d.kind}`)).map((n) => n.name), id).toEqual([]);
     }
   });
 
-  it("keeps tiny props (pedestals, crates, barrels, banners, star cores, flowers) out of the shadow map", () => {
+  it("pairs every strata/caustics custom shader with a WebGPU WGSL twin, caps SSR at <= 0.10, and keeps instanced flora extension-free", () => {
+    const strataMat = storybookStrataMaterial({ slope: { angle: 42, blend: 12, flatColor: "#5e8f48" } });
+    const causticsMat = millpondCausticsMaterial({ surfaceY: 0, depthFade: 0.22 });
+    expect(strataMat.kind).toBe("custom");
+    expect(causticsMat.kind).toBe("custom");
+    if (strataMat.kind === "custom" && strataMat.custom) {
+      checkWgslTwin("pbl-storybook-strata", strataMat.custom, false);
+      checkWgslDepthTwin("pbl-storybook-strata", strataMat.custom);
+      checkGlslUnchanged([["pbl-storybook-strata", strataMat.custom]]);
+    }
+    if (causticsMat.kind === "custom" && causticsMat.custom) {
+      checkWgslTwin("pbl-millpond-caustics", causticsMat.custom, false);
+      checkWgslDepthTwin("pbl-millpond-caustics", causticsMat.custom);
+      checkGlslUnchanged([["pbl-millpond-caustics", causticsMat.custom]]);
+    }
     for (const id of WORLD_IDS) {
-      for (const n of propNodes(sceneOf(id))) {
-        const tiny = /pedestal|crate|barrel|checkpoint|flag|energy|core|sunseed/i.test(n.asset?.id ?? "");
-        if (tiny) expect(n.castShadow, n.name).toBe(false);
+      expect(webgpuCustomShaderGap(buildWorld(worldSpec(id)).scene.toJSON()), `pips-big-leap:${id}`).toBeUndefined();
+      const nodes = sceneOf(id);
+      for (const n of nodes) {
+        if (n.material?.kind === "custom") {
+          expect(n.material.custom?.wgsl?.vertex, `${id} ${n.name} missing WGSL vertex`).toBeTruthy();
+          expect(n.material.custom?.wgsl?.fragment, `${id} ${n.name} missing WGSL fragment`).toBeTruthy();
+        }
+        if (n.name === dioramaName.ssr) {
+          expect(n.intensity ?? 0, `${id} SSR cap`).toBeLessThanOrEqual(0.1);
+        }
+        if ((n.name ?? "").startsWith("pbl-flora-")) {
+          expect(n.primitive, `${id} ${n.name}`).toBe("custom");
+          expect(n.castShadow).toBe(false);
+          expect((n.material?.clearcoat as number | undefined) ?? 0).toBe(0);
+          expect((n.material?.sheen as number | undefined) ?? 0).toBe(0);
+        }
       }
     }
+    expect(PBL_MAT.sunRibGlow.practical).toBe(true);
+    expect(PBL_MAT.cyanRuneGlow.practical).toBe(true);
+    expect(PBL_MAT.amberLanternGlow.practical).toBe(true);
   });
 
-  it("groups by asset, fit measure and shadow flags", () => {
-    const spec = worldSpec("w1");
-    const trees = spec.decor.filter((d) => d.kind === "tree" || d.kind === "conifer").map((d) => decorInstance(d)!);
-    expect(new Set(trees.map(propGroupKey)).size).toBe(1);
-    const shard = spec.decor.find((d) => d.kind === "mushroom")!;
-    expect(propGroupKey(decorInstance(shard)!)).toBe(propGroupKey(hazardInstance(spec.hazards[0]!)));
-  });
-
-  it("keeps the original look's one-model-per-prop scene", () => {
+  it("keeps the `?look=original` one-model-per-prop scene untouched", () => {
     for (const id of WORLD_IDS) {
       const nodes = sceneOf(id, "original");
-      expect(propNodes(nodes), id).toEqual([]);
-      for (const d of worldSpec(id).decor) expect(nodes.some((n) => n.name === `${d.id}:${d.kind}`), `${id} ${d.id}`).toBe(true);
+      for (const d of worldSpec(id).decor) {
+        expect(nodes.some((n) => n.name === `${d.id}:${d.kind}`), `${id} ${d.id}`).toBe(true);
+      }
     }
   });
 });

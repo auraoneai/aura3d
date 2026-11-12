@@ -29,9 +29,11 @@ describe("heatsink art direction", () => {
     expect(direction.lighting.fill).not.toBe("ambient");
   });
 
-  it("lists every mounted model asset in the contract", () => {
+  it("prunes static Meshy GLBs to [] and mounts zero static model nodes on every circuit (WP-03)", () => {
+    expect(direction.assets).toEqual([]);
     const keys = new Set(direction.assets.map((a) => a.assetKey));
     for (const circuit of CIRCUIT_ORDER) {
+      expect(snapshotOf(circuit).models, circuit).toEqual([]);
       for (const model of snapshotOf(circuit).models) expect(keys.has(model.assetKey), `${circuit}: ${model.assetKey}`).toBe(true);
     }
   });

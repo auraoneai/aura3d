@@ -4,6 +4,13 @@
  * `tests/unit/beat-hopper/meshes.test.ts`; sculpted stage/obstacle/skater-bot helpers extend them cleanly.
  */
 import { mergeMeshes, type MeshData } from "../../../examples/shared/runner-kit/index";
+import {
+  sculptMonolithWallMesh,
+  sculptPlasmaCrossbarMesh,
+  sculptSkaterBotMeshes,
+  sculptSpeakerBlockMesh,
+  sculptStanchionPostsMesh
+} from "./art/proceduralModels";
 
 export type { MeshData };
 export { mergeMeshes };
@@ -191,49 +198,24 @@ export function cylinderMesh(rBottom: number, rTop: number, length: number, radi
   return m;
 }
 
-/** Sculpted sub-bass speaker cabinet (`BLOCK_SIZE` footprint, base at y = 0): beveled shell + front woofer ring & cone. */
+/** Sculpted sub-bass speaker cabinet (`BLOCK_SIZE` footprint, base at y = 0): chamfered shell + `latheMesh` woofer cone & bass ports. */
 export function speakerBlockMesh(): MeshData {
-  const { w, h, d } = BLOCK_SIZE;
-  const core = translateMesh(boxMesh(w - 0.08, h - 0.06, d), 0, h / 2, 0);
-  const sideFrame = translateMesh(boxMesh(w, h - 0.14, d - 0.10), 0, h / 2, 0);
-  const topCap = translateMesh(boxMesh(w - 0.14, h, d - 0.10), 0, h / 2, 0);
-  const wooferRing = translateMesh(cylinderMesh(0.31, 0.27, 0.07, 14, true), 0, h * 0.52, d / 2 + 0.015);
-  const dustCap = sphereMesh(0.14, 10, 6, 0, h * 0.52, d / 2 + 0.01);
-  return mergeMeshes([core, sideFrame, topCap, wooferRing, dustCap]);
+  return sculptSpeakerBlockMesh();
 }
 
-/** Chrome stanchion posts + mounting collars for the overhead duck bar (`BAR_SIZE`, base at y = 0). */
+/** Stepped `latheMesh` stanchion posts + mounting yokes for the overhead duck bar (`BAR_SIZE`, base at y = 0). */
 export function stanchionPostsMesh(): MeshData {
-  const postX = BAR_SIZE.w / 2 - BAR_SIZE.postW / 2;
-  const postH = BAR_SIZE.y + BAR_SIZE.h * 0.35;
-  return mergeMeshes([
-    translateMesh(cylinderMesh(0.095, 0.08, postH, 12, false), -postX, postH / 2, 0),
-    translateMesh(cylinderMesh(0.095, 0.08, postH, 12, false), postX, postH / 2, 0),
-    translateMesh(boxMesh(0.26, 0.08, 0.28), -postX, 0.04, 0),
-    translateMesh(boxMesh(0.26, 0.08, 0.28), postX, 0.04, 0),
-    translateMesh(boxMesh(0.22, BAR_SIZE.h + 0.06, BAR_SIZE.d + 0.06), -postX, BAR_SIZE.y, 0),
-    translateMesh(boxMesh(0.22, BAR_SIZE.h + 0.06, BAR_SIZE.d + 0.06), postX, BAR_SIZE.y, 0)
-  ]);
+  return sculptStanchionPostsMesh();
 }
 
-/** Glowing anodized plasma crossbar (`BAR_SIZE.y = 1.12`, exact 0.97 m duck clearance). */
+/** Glowing anodized plasma emitter crossbar (`BAR_SIZE.y = 1.12`, exact 0.97 m duck clearance). */
 export function plasmaCrossbarMesh(): MeshData {
-  return mergeMeshes([
-    translateMesh(boxMesh(BAR_SIZE.w - 0.06, BAR_SIZE.h, BAR_SIZE.d - 0.06), 0, BAR_SIZE.y, 0),
-    translateMesh(boxMesh(BAR_SIZE.w, BAR_SIZE.h * 0.55, BAR_SIZE.d + 0.04), 0, BAR_SIZE.y, 0)
-  ]);
+  return sculptPlasmaCrossbarMesh();
 }
 
-/** Sculpted tall equalizer monolith body (`WALL_SIZE`, base at y = 0) with side fins & crown cap. */
+/** Sculpted tall equalizer monolith body (`WALL_SIZE`, base at y = 0) with acoustic diffuser louvers & crown cap. */
 export function monolithWallMesh(): MeshData {
-  const { w, h, d, capH } = WALL_SIZE;
-  return mergeMeshes([
-    translateMesh(boxMesh(w - 0.10, h, d), 0, h / 2, 0),
-    translateMesh(boxMesh(w, h - 0.16, d - 0.12), 0, h / 2, 0),
-    translateMesh(boxMesh(w + 0.08, capH, d + 0.08), 0, h + capH / 2, 0),
-    translateMesh(boxMesh(w + 0.04, 0.10, d + 0.04), 0, h * 0.66, 0),
-    translateMesh(boxMesh(w + 0.04, 0.10, d + 0.04), 0, h * 0.33, 0)
-  ]);
+  return sculptMonolithWallMesh();
 }
 
 /** Top-surface chasm opening quad (`GAP_SIZE.w x GAP_SIZE.d` at `y = 0.014`) with clean `[0..1]` UVs for interior mapping. */
@@ -337,51 +319,7 @@ export function headbandArcMesh(archRadius = 0.34, tubeRadius = 0.036, arcSegs =
   return m;
 }
 
-/** Articulated synth-skater bot parts in local pivot frames (chassis, head, visor, headphones, ear-cups, hover-skates). */
+/** Articulated synth-skater bot parts in local pivot frames (lofted cuirass, aero-helmet, wraparound visor, spline headphones, lathed ear-cups, hover-skates). */
 export function skaterBotMeshes() {
-  const torso = mergeMeshes([
-    translateMesh(capsuleMesh(0.24, 0.28, 16, 5), 0, 0.04, 0),
-    translateMesh(boxMesh(0.46, 0.24, 0.32), 0, 0.12, 0.01),
-    translateMesh(boxMesh(0.32, 0.22, 0.14), 0, 0.11, 0.20)
-  ]);
-  const head = sphereMesh(0.25, 16, 12, 0, 0, 0);
-  const visor = mergeMeshes([
-    translateMesh(boxMesh(0.38, 0.13, 0.18), 0, 0.02, -0.17),
-    translateMesh(boxMesh(0.42, 0.09, 0.14), 0, 0.02, -0.14)
-  ]);
-  const headband = translateMesh(headbandArcMesh(0.28, 0.032, 18, 10), 0, -0.02, 0);
-  const earCups = mergeMeshes([
-    translateMesh(cylinderMesh(0.11, 0.11, 0.075, 14, false), -0.275, -0.01, 0),
-    translateMesh(cylinderMesh(0.11, 0.11, 0.075, 14, false), 0.275, -0.01, 0)
-  ]);
-  // Rotate ear-cup cylinders 90 deg around Z so discs face +/-X cleanly
-  const earCupDiscs: MeshData = { positions: [], normals: [], uvs: earCups.uvs.slice(), indices: earCups.indices.slice() };
-  {
-    const left = cylinderMesh(0.115, 0.10, 0.08, 14, false);
-    const rotZ90 = (src: MeshData, sign: number, ox: number): MeshData => {
-      const out: MeshData = { positions: [], normals: [], uvs: src.uvs.slice(), indices: src.indices.slice() };
-      for (let i = 0; i < src.positions.length; i += 3) {
-        const x = src.positions[i]!, y = src.positions[i + 1]!, z = src.positions[i + 2]!;
-        const nx = src.normals[i]!, ny = src.normals[i + 1]!, nz = src.normals[i + 2]!;
-        out.positions.push(-sign * y + ox, sign * x, z);
-        out.normals.push(-sign * ny, sign * nx, nz);
-      }
-      return out;
-    };
-    const mergedCups = mergeMeshes([rotZ90(left, 1, -0.27), rotZ90(left, -1, 0.27)]);
-    earCupDiscs.positions = mergedCups.positions;
-    earCupDiscs.normals = mergedCups.normals;
-    earCupDiscs.uvs = mergedCups.uvs;
-    earCupDiscs.indices = mergedCups.indices;
-  }
-  const arm = mergeMeshes([
-    translateMesh(capsuleMesh(0.075, 0.22, 10, 4), 0, -0.14, 0),
-    sphereMesh(0.09, 10, 8, 0, -0.30, -0.02)
-  ]);
-  const skate = mergeMeshes([
-    translateMesh(boxMesh(0.18, 0.10, 0.48), 0, 0.09, -0.02),
-    translateMesh(boxMesh(0.07, 0.06, 0.58), 0, 0.03, -0.02)
-  ]);
-  const skateBlade = translateMesh(boxMesh(0.09, 0.035, 0.62), 0, 0.018, -0.02);
-  return { torso, head, visor, headband, earCups: earCupDiscs, arm, skate, skateBlade };
+  return sculptSkaterBotMeshes();
 }

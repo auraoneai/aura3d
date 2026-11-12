@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/ninja-runner-port/art/direction.ts",
-  "sourceSha256": "aef4af10f88ba80364e6b402869958a92c56737a71871e54193aec52fa1e5749",
+  "sourceSha256": "0d2a2d22b186c4006589a3c40f5d681b7733c791b65caa329fcdf9bec84da785",
   "id": "showcase-ninja-runner-port",
   "genre": "rhythm-runner",
   "signatureEffect": "scarf-trail: a vermilion scarf ribbon streaming from the runner's upper spine under an indigo woodblock ink outline, the evening sinking with distance.",
@@ -62,128 +62,354 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
+    "models": [],
+    "materials": [
       {
-        "assetKey": "houseA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseC-ishigakiStone-0",
+        "practical": false
       },
       {
-        "assetKey": "houseB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseC-shikkuiWall-1",
+        "practical": false
       },
       {
-        "assetKey": "tower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseC-kawaraRoof-2",
+        "practical": false
       },
       {
-        "assetKey": "gate",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseC-goldTrim-3",
+        "practical": false
       },
       {
-        "assetKey": "pine",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-tower-ishigakiStone-0",
+        "practical": false
       },
       {
-        "assetKey": "lantern",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-tower-shikkuiWall-1",
+        "practical": false
       },
       {
-        "assetKey": "oak",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-tower-cedarWood-2",
+        "practical": false
       },
       {
-        "assetKey": "houseC",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-tower-kawaraRoof-3",
+        "practical": false
       },
       {
-        "assetKey": "houseD",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-tower-goldTrim-4",
+        "practical": false
       },
       {
-        "assetKey": "teahouse",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseB-ishigakiStone-0",
+        "practical": false
       },
       {
-        "assetKey": "marketStall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseB-shikkuiWall-1",
+        "practical": false
       },
       {
-        "assetKey": "cliffA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseB-cedarWood-2",
+        "practical": false
       },
       {
-        "assetKey": "cliffB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseB-warmLanternCore-3",
+        "emissiveIntensity": 1.85,
+        "practical": true
       },
       {
-        "assetKey": "boulder",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseB-kawaraRoof-4",
+        "practical": false
       },
       {
-        "assetKey": "bush",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseA-ishigakiStone-0",
+        "practical": false
       },
       {
-        "assetKey": "ridge",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseA-shikkuiWall-1",
+        "practical": false
       },
       {
-        "assetKey": "fenceRail",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
+        "node": "proc-houseA-cedarWood-2",
+        "practical": false
+      },
+      {
+        "node": "proc-houseA-warmLanternCore-3",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-houseA-kawaraRoof-4",
+        "practical": false
+      },
+      {
+        "node": "proc-houseD-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-houseD-shikkuiWall-1",
+        "practical": false
+      },
+      {
+        "node": "proc-houseD-vermilion-2",
+        "practical": false
+      },
+      {
+        "node": "proc-houseD-warmLanternCore-3",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-houseD-kawaraRoof-4",
+        "practical": false
+      },
+      {
+        "node": "proc-lantern-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-lantern-warmLanternCore-1",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-gate-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-gate-vermilion-1",
+        "practical": false
+      },
+      {
+        "node": "proc-gate-kawaraRoof-2",
+        "practical": false
+      },
+      {
+        "node": "proc-gate-goldTrim-3",
+        "practical": false
+      },
+      {
+        "node": "proc-gate-warmLanternCore-4",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-marketStall-cedarWood-0",
+        "practical": false
+      },
+      {
+        "node": "proc-marketStall-clothCanopy-1",
+        "practical": false
+      },
+      {
+        "node": "proc-marketStall-shikkuiWall-2",
+        "practical": false
+      },
+      {
+        "node": "proc-marketStall-warmLanternCore-3",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-teahouse-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-teahouse-cedarWood-1",
+        "practical": false
+      },
+      {
+        "node": "proc-teahouse-shikkuiWall-2",
+        "practical": false
+      },
+      {
+        "node": "proc-teahouse-clothCanopy-3",
+        "practical": false
+      },
+      {
+        "node": "proc-teahouse-warmLanternCore-4",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-teahouse-kawaraRoof-5",
+        "practical": false
+      },
+      {
+        "node": "proc-fenceRail-bambooCulm-0",
+        "practical": false
+      },
+      {
+        "node": "proc-fenceRail-cedarWood-1",
+        "practical": false
+      },
+      {
+        "node": "proc-pine-cedarWood-0",
+        "practical": false
+      },
+      {
+        "node": "proc-pine-pineFoliage-1",
+        "practical": false
+      },
+      {
+        "node": "proc-bush-pineFoliage-0",
+        "practical": false
+      },
+      {
+        "node": "proc-boulder-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-boulder-mossStone-1",
+        "practical": false
+      },
+      {
+        "node": "proc-cliffB-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-cliffB-mossStone-1",
+        "practical": false
+      },
+      {
+        "node": "proc-cliffA-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-ridge-mossStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-bambooGrove-bambooCulm-0",
+        "practical": false
+      },
+      {
+        "node": "proc-bambooGrove-pineFoliage-1",
+        "practical": false
+      },
+      {
+        "node": "proc-ishigakiRampart-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-ishigakiRampart-kawaraRoof-1",
+        "practical": false
+      },
+      {
+        "node": "proc-stoneBridgeArch-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-stoneBridgeArch-mossStone-1",
+        "practical": false
+      },
+      {
+        "node": "proc-stoneBridgeArch-goldTrim-2",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 0",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 1",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 3",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 5",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "node": "setpiece-shrineGate material 10",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 1",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 2",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 5",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 6",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 7",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel material 1",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel material 2",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel material 7",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 0",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 1",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 3",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 4",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 5",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "node": "setpiece-pagoda material 10",
+        "practical": false
       }
     ],
-    "materials": [],
     "drawCalls": 0
   },
   "direction": {
@@ -320,123 +546,38 @@
         }
       },
       {
-        "role": "world",
-        "assetKey": "houseA",
-        "maxTriangles": 8000,
+        "role": "enemy",
+        "assetKey": "ninja-caster",
+        "maxTriangles": 15000,
+        "minTriangles": 2000,
         "textureSet": "BC+N",
-        "maxTextureSize": 1024
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "idle",
+            "run",
+            "cast",
+            "hit",
+            "death"
+          ]
+        }
       },
       {
-        "role": "world",
-        "assetKey": "houseB",
-        "maxTriangles": 8000,
+        "role": "enemy",
+        "assetKey": "ninja-scout",
+        "maxTriangles": 15000,
+        "minTriangles": 2000,
         "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "houseC",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "houseD",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "teahouse",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "tower",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "gate",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "marketStall",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "lantern",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "fenceRail",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "pine",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "oak",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "bush",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "boulder",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "cliffA",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "cliffB",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ridge",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "idle",
+            "run",
+            "throw",
+            "hit",
+            "death"
+          ]
+        }
       }
     ],
     "vfx": [

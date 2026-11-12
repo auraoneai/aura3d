@@ -3,7 +3,8 @@
  * tests/fixtures/aura-slam-original/adapter/main.ts). Only this module and the renderer touch engine scene nodes; the pose itself is
  * computed by ./pose. Costume colours come from an injectable appearance resolver (Phase 2 roster/appearance data).
  */
-import { game, material, primitives, racketSports, type AuraRuntimeNodeHandle, type AuraSceneNode } from "@aura3d/engine";
+import { game, geometry, material, primitives, racketSports, type AuraRuntimeNodeHandle, type AuraSceneNode } from "@aura3d/engine";
+import { getAthleteRigSpecs } from "../art/proceduralModels";
 import type { PoseResult } from "../contract";
 
 type Vec3 = [number, number, number];
@@ -69,10 +70,16 @@ export interface AthleteRigHandles {
 export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneNode[] {
   const shirtColor = isPlayer ? "#f3f0dc" : "#db582f";
   const pantsColor = isPlayer ? "#214b3e" : "#25364d";
+  const trimColor = isPlayer ? "#214b3e" : "#f3f0dc";
   const skinColor = isPlayer ? "#c9926d" : "#805039";
   const hairColor = isPlayer ? "#30281f" : "#211e1c";
   const shoeColor = "#f3f0dc";
   const racketColor = "#1d2927";
+  const specs = getAthleteRigSpecs();
+
+  const kitMat = (c: string) => material.fabric({ color: c, roughness: 0.78, sheen: 0.5, sheenColor: c });
+  const skinMat = (r = 0.74) => material.pbr({ color: skinColor, roughness: r });
+  const carbonMat = material.clearcoatPaint({ color: racketColor, metalness: 0.35, roughness: 0.28, clearcoat: 0.92, clearcoatRoughness: 0.1 });
 
   const nodes: AuraSceneNode[] = [
     primitives
@@ -86,79 +93,71 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
       .runtime(game.runtimeNode(`${prefix}-shadow`))
       .toJSON(),
 
-    primitives
-      .capsule({
+    geometry
+      .custom(specs.torso, {
         name: `${prefix}-torso`,
-        size: [0.35, 0.69, 0.35],
-        material: material.pbr({ color: shirtColor, roughness: 0.78 })
+        material: kitMat(shirtColor)
       })
       .runtime(game.runtimeNode(`${prefix}-torso`))
       .toJSON(),
 
-    primitives
-      .cylinder({
+    geometry
+      .custom(specs.collar, {
         name: `${prefix}-collar`,
         castShadow: SMALL_CAST,
-        size: [0.29, 0.07, 0.29],
-        material: material.pbr({ color: isPlayer ? "#214b3e" : "#f3f0dc", roughness: 0.75 })
+        material: kitMat(trimColor)
       })
       .runtime(game.runtimeNode(`${prefix}-collar`))
       .toJSON(),
 
-    primitives
-      .box({
+    geometry
+      .custom(specs.hips, {
         name: `${prefix}-hips`,
-        size: [0.34, 0.22, 0.24],
-        material: material.pbr({ color: pantsColor, roughness: 0.82 })
+        material: kitMat(pantsColor)
       })
       .runtime(game.runtimeNode(`${prefix}-hips`))
       .toJSON(),
 
-    primitives
-      .sphere({
+    geometry
+      .custom(specs.head, {
         name: `${prefix}-head`,
-        size: [0.27, 0.27, 0.27],
-        material: material.pbr({ color: skinColor, roughness: 0.72 })
+        material: skinMat(0.72)
       })
       .runtime(game.runtimeNode(`${prefix}-head`))
       .toJSON(),
 
-    primitives
-      .sphere({
+    geometry
+      .custom(specs.hair, {
         name: `${prefix}-hair`,
-        size: [0.284, 0.284, 0.284],
         material: material.pbr({ color: hairColor, roughness: 0.88 })
       })
       .runtime(game.runtimeNode(`${prefix}-hair`))
       .toJSON(),
 
-    primitives
-      .box({
+    geometry
+      .custom(specs.visor, {
         name: `${prefix}-visor`,
         castShadow: SMALL_CAST,
-        size: [0.22, 0.028, 0.16],
-        material: material.pbr({ color: isPlayer ? "#214b3e" : "#f3f0dc", roughness: 0.65 })
+        material: kitMat(trimColor)
       })
       .runtime(game.runtimeNode(`${prefix}-visor`))
       .toJSON(),
 
-    primitives
-      .sphere({
+    geometry
+      .custom(specs.apolloHelmet, {
         name: `${prefix}-apollo-helmet`,
         castShadow: SMALL_CAST,
-        size: [0.38, 0.38, 0.38],
-        material: material.pbr({ color: "#d8b458", metalness: 0.82, roughness: 0.2 })
+        material: material.studioMetal({ color: "#d8b458", roughness: 0.18 })
       })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode(`${prefix}-apollo-helmet`))
       .toJSON(),
 
-    primitives
-      .box({
+    geometry
+      .custom(specs.apolloPack, {
         name: `${prefix}-apollo-pack`,
         castShadow: SMALL_CAST,
-        size: [0.3, 0.4, 0.18],
-        material: material.pbr({ color: "#e5e7eb", roughness: 0.55 })
+        material: material.clearcoatPaint({ color: "#e5e7eb", roughness: 0.34, clearcoat: 0.72 })
       })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode(`${prefix}-apollo-pack`))
@@ -167,36 +166,32 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
 
   for (const legSide of ["left", "right"] as const) {
     nodes.push(
-      primitives
-        .cylinder({
+      geometry
+        .custom(specs.upperLeg, {
           name: `${prefix}-${legSide}-upper-leg`,
-          size: [1, 1, 1],
-          material: material.pbr({ color: pantsColor, roughness: 0.82 })
+          material: kitMat(pantsColor)
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-upper-leg`))
         .toJSON(),
-      primitives
-        .cylinder({
+      geometry
+        .custom(specs.lowerLeg, {
           name: `${prefix}-${legSide}-lower-leg`,
-          size: [1, 1, 1],
-          material: material.pbr({ color: skinColor, roughness: 0.76 })
+          material: skinMat(0.76)
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-lower-leg`))
         .toJSON(),
-      primitives
-        .sphere({
+      geometry
+        .custom(specs.knee, {
           name: `${prefix}-${legSide}-knee`,
           castShadow: SMALL_CAST,
-          size: [0.136, 0.136, 0.136],
-          material: material.pbr({ color: skinColor, roughness: 0.76 })
+          material: skinMat(0.76)
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-knee`))
         .toJSON(),
-      primitives
-        .box({
+      geometry
+        .custom(specs.shoe, {
           name: `${prefix}-${legSide}-shoe`,
-          size: [0.13, 0.095, 0.25],
-          material: material.pbr({ color: shoeColor, roughness: 0.65 })
+          material: material.sneakerMesh({ color: shoeColor, roughness: 0.7, sheen: 0.35 })
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-shoe`))
         .toJSON()
@@ -205,77 +200,69 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
 
   for (const armSide of ["left", "right"] as const) {
     nodes.push(
-      primitives
-        .cylinder({
+      geometry
+        .custom(specs.upperArm, {
           name: `${prefix}-${armSide}-upper-arm`,
-          size: [1, 1, 1],
-          material: material.pbr({ color: shirtColor, roughness: 0.78 })
+          material: kitMat(shirtColor)
         })
         .runtime(game.runtimeNode(`${prefix}-${armSide}-upper-arm`))
         .toJSON(),
-      primitives
-        .cylinder({
+      geometry
+        .custom(specs.lowerArm, {
           name: `${prefix}-${armSide}-lower-arm`,
-          size: [1, 1, 1],
-          material: material.pbr({ color: skinColor, roughness: 0.74 })
+          material: skinMat(0.74)
         })
         .runtime(game.runtimeNode(`${prefix}-${armSide}-lower-arm`))
         .toJSON(),
-      primitives
-        .sphere({
+      geometry
+        .custom(specs.hand, {
           name: `${prefix}-${armSide}-hand`,
           castShadow: SMALL_CAST,
-          size: [0.104, 0.104, 0.104],
-          material: material.pbr({ color: skinColor, roughness: 0.74 })
+          material: skinMat(0.74)
         })
         .runtime(game.runtimeNode(`${prefix}-${armSide}-hand`))
         .toJSON()
     );
   }
 
-  // 3D Tennis Racket (handle, V-throat struts, oval hoop, string bed)
+  // 3D Carbon-Graphite Tennis Racket (octagonal cushioned grip, aero V-throat shafts, swept oval hoop, string bed)
   nodes.push(
-    primitives
-      .cylinder({
+    geometry
+      .custom(specs.racketHandle, {
         name: `${prefix}-racket-handle`,
         castShadow: SMALL_CAST,
-        size: [1, 1, 1],
-        material: material.pbr({ color: "#f3efdf", roughness: 0.68 })
+        material: material.rubber({ color: "#f3efdf", roughness: 0.72 })
       })
       .runtime(game.runtimeNode(`${prefix}-racket-handle`))
       .toJSON(),
-    primitives
-      .cylinder({
+    geometry
+      .custom(specs.racketThroat, {
         name: `${prefix}-racket-throat-left`,
         castShadow: SMALL_CAST,
-        size: [1, 1, 1],
-        material: material.pbr({ color: racketColor, metalness: 0.35, roughness: 0.42 })
+        material: carbonMat
       })
       .runtime(game.runtimeNode(`${prefix}-racket-throat-left`))
       .toJSON(),
-    primitives
-      .cylinder({
+    geometry
+      .custom(specs.racketThroat, {
         name: `${prefix}-racket-throat-right`,
         castShadow: SMALL_CAST,
-        size: [1, 1, 1],
-        material: material.pbr({ color: racketColor, metalness: 0.35, roughness: 0.42 })
+        material: carbonMat
       })
       .runtime(game.runtimeNode(`${prefix}-racket-throat-right`))
       .toJSON(),
-    primitives
-      .torus({
+    geometry
+      .custom(specs.racketHoop, {
         name: `${prefix}-racket-hoop`,
         castShadow: SMALL_CAST,
-        size: [0.35, 0.35, 0.032],
-        material: material.pbr({ color: racketColor, metalness: 0.4, roughness: 0.38 })
+        material: carbonMat
       })
       .runtime(game.runtimeNode(`${prefix}-racket-hoop`))
       .toJSON(),
-    primitives
-      .cylinder({
+    geometry
+      .custom(specs.racketStrings, {
         name: `${prefix}-racket-strings`,
         castShadow: SMALL_CAST,
-        size: [0.32, 0.006, 0.32],
         material: material.pbr({ color: "#e4e4cd", roughness: 0.5 })
       })
       .runtime(game.runtimeNode(`${prefix}-racket-strings`))

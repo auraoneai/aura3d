@@ -226,11 +226,31 @@ function sealEdges(data: Uint8Array, size: number): void {
   }
 }
 
+const PROCEDURAL_MATERIAL_CACHE_MAX = 64;
+const proceduralMaterialCache = new Map<string, ProceduralMaterialTexture>();
+
+function proceduralMaterialCacheKey(kind: ProceduralMaterialKind, size: number, params: ProceduralMaterialParams): string {
+  const d = params.direction;
+  const dirKey = d ? `${d[0]},${d[1]},${d[2]}` : "";
+  return `${kind}|${size}|${params.scale}|${params.strength}|${params.seed ?? 0}|${dirKey}`;
+}
+
 export function generateProceduralMaterialTexture(
   kind: ProceduralMaterialKind,
   params: ProceduralMaterialParams
 ): ProceduralMaterialTexture {
   const size = params.size ?? 512;
+  const cacheKey = proceduralMaterialCacheKey(kind, size, params);
+  const cached = proceduralMaterialCache.get(cacheKey);
+  if (cached) {
+    return {
+      data: cached.data.slice(),
+      width: cached.width,
+      height: cached.height,
+      colorSpace: cached.colorSpace,
+      slot: cached.slot
+    };
+  }
   let data: Uint8Array;
   switch (kind) {
     case "fabric-normal": data = fabricNormal(size, params); break;
@@ -243,5 +263,11 @@ export function generateProceduralMaterialTexture(
     }
   }
   sealEdges(data, size);
-  return { data, width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
+  const built: ProceduralMaterialTexture = { data, width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
+  if (proceduralMaterialCache.size >= PROCEDURAL_MATERIAL_CACHE_MAX) {
+    const oldest = proceduralMaterialCache.keys().next().value;
+    if (oldest !== undefined) proceduralMaterialCache.delete(oldest);
+  }
+  proceduralMaterialCache.set(cacheKey, built);
+  return { data: data.slice(), width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
 }

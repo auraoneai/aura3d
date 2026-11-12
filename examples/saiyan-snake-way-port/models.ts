@@ -42,7 +42,7 @@ export function runnerModelForLook(mode: LookMode) {
 
 export type MeshyKey = keyof typeof MESHY;
 
-/** Entity types drawn as a single Meshy model: pooled slot count, target height (m) and the model's yaw offset. */
+/** Procedural multi-material entity pools (`art/proceduralModels.ts`): pooled slot count, target height (m), baseY and yaw offset. */
 export const ENTITY_MODELS: Readonly<Record<string, { readonly key: MeshyKey; readonly pool: number; readonly height: number; readonly baseY: number; readonly yaw: number }>> = {
   arch: { key: "gate", pool: 8, height: 4.6, baseY: 2.2, yaw: 0 },
   barrier: { key: "barrier", pool: 16, height: 2.5, baseY: 1.1, yaw: 0 },

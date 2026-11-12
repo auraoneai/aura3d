@@ -140,6 +140,11 @@
         display: block; font-family: var(--font-ui); font-weight: 400; font-size: 12px;
         font-variant-caps: normal; letter-spacing: 0.02em; color: #b2bcc8; margin-top: 2px;
       }
+      @media (max-width: 560px) {
+        #bz-floor-tag { left: 10px; max-width: calc(100vw - 166px); padding: 4px 9px; font-size: 11px; letter-spacing: 0.07em; }
+        #bz-floor-tag small { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #bz-coords { right: 10px; padding: 4px 8px; font-size: 11px; }
+      }
 
       #bz-vignette {
         position: fixed; inset: 0; z-index: 28; pointer-events: none;

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-roadster-rush/src/art/direction.ts",
-  "sourceSha256": "0121e75559cd1201780e1e413645052881f037054cace8b9f6d21fa035488691",
+  "sourceSha256": "8a1963cb6a9b01363ea29224bc9981535caf7aa6bb622f5fbd8fd4d999fd7214",
   "id": "showcase-roadster-rush",
   "genre": "racing",
   "signatureEffect": "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
@@ -63,99 +63,7 @@
       "kind": "hdri",
       "background": false
     },
-    "models": [
-      {
-        "assetKey": "hero",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "roadsterRushSkyCar",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "skycar-far",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "sedan",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hatch",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "suv",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "taxi",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "van",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pickup",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boxtruck",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bus",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "carrier",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "traffic-far-lod",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "light-lamps",
@@ -286,117 +194,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "hero",
-        "maxTriangles": 60000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "enemy",
-        "assetKey": "roadsterRushSkyCar",
-        "maxTriangles": 60000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "skycar-far",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "sedan",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "hatch",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "suv",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "taxi",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "van",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "pickup",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "boxtruck",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "bus",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "carrier",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "traffic-far-lod",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "apex-glass-towers",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "crash",
@@ -459,20 +257,7 @@
       }
     ],
     "signatureEffect": "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
-    "standIns": [
-      {
-        "feature": "glass tower kit (procedural curtain-wall towers until the Meshy kit lands)",
-        "file": "src/render/towers.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 apex glass tower kit admitted"
-      },
-      {
-        "feature": "deck pylons (instanced primitive pylons until the Meshy pylon lands)",
-        "file": "src/render/pylons.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 apex deck pylon admitted"
-      }
-    ],
+    "standIns": [],
     "criticalCategories": [
       "lighting",
       "atmospheric_effects",

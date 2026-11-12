@@ -1,14 +1,16 @@
 /**
- * Polarity Orbs Meshy backdrop (Meshy-07, presentation only): 6 GPU-instanced `instances.model(assets.x)` batches
- * flanking the ferrofluid slate road. `poChargeCoil` (left, warm +) and `poMagnet` (right, cool −) stand close to the
- * track edges (`x = ±7.4..9.8 m`) as electromagnetic pylons, while crystal clusters and floating crystal islands drift
- * in outer parallax lanes. Two tiled spans per batch wrap seamlessly via `zShift = (distance * PARALLAX) % SPAN`.
+ * Polarity Orbs procedural multi-material Tokamak & Magnetic Lab backdrop (WP-17, presentation only):
+ * 6 scrolling `group(g.id, ...).runtime({ id: g.id })` landmark & corridor assemblies flanking the
+ * ferrofluid slate road. `poChargeCoil` (left, warm +) and `poMagnet` (right, cool −) stand close to
+ * the track edges (`x = ±7.4..9.8 m`) alongside machined aluminum arena bezels, copper busbar gantries,
+ * and cryo-manifolds, while borosilicate vacuum quartz pods and stratified Tokamak sky islands drift
+ * in outer parallax lanes. Two tiled spans per group wrap seamlessly via `zShift = (distance * PARALLAX) % SPAN`.
  */
-import { instances, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
-import { assets } from "./aura-model-assets";
+import type { AuraApp, AuraSceneBuilder } from "@aura3d/engine";
+import { buildBackdropGroupNode, type BackdropAssetKind } from "./art/proceduralModels";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
-type AssetKind = keyof typeof assets;
+type AssetKind = BackdropAssetKind;
 
 export interface BackdropPiece {
   readonly id: string;
@@ -187,17 +189,7 @@ export function backdropPose(p: BackdropPiece, distance: number, elapsed: number
 
 export function addBackdrop(builder: AuraSceneBuilder): void {
   for (const g of BACKDROP_GROUPS) {
-    builder.add(
-      instances
-        .model(assets[g.kind], {
-          name: g.id,
-          targetMaxDimension: g.size,
-          castShadow: false,
-          receiveShadow: false,
-          transforms: g.transforms
-        })
-        .runtime({ id: g.id })
-    );
+    builder.add(buildBackdropGroupNode(g));
   }
 }
 

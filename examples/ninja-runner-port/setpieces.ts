@@ -1,19 +1,21 @@
 /**
- * GU47 wave 2 (NR-12/NR-13) evening set-pieces: a shrine gate in a forest clearing, a water wheel on the river bank at the
- * crossing and a pagoda over the rooftop run's lower town. Pure and deterministic; presentation only (no sim, collision or
- * input reads these). Placements are in the `ModelPlacement` form `world.ts` already instances. The GLB origins are the
- * model centres, so each position lifts the centre by half the scaled height from the wanted base.
+ * Evening multi-material procedural set-pieces (WP-24):
+ * - `shrineGate`: Myojin vermilion torii shrine gate (`8.8m` tall, base at `y = 0`) in the forest clearing.
+ * - `waterWheel`: Timber & iron watermill wheel (`8.0m` diameter, centered at `(0, 0, 0)` on its local X spin axis,
+ *   so `lift = 4.0m` places the axle 4.0m above the river-bed base `-2.7m` and dips the lower paddles into the river).
+ * - `pagoda`: 5-tier Sengoku castle pagoda (`36.0m` tall, base at `y = 0`) over the rooftop run's lower town.
+ * Pure and deterministic; presentation only (no sim, collision or input reads these).
  */
 import { groundFrame, pathWidth } from "./course";
 import { surfaceY } from "./meshes";
 import type { ModelPlacement } from "./scenery";
 
 export type SetPieceId = "shrineGate" | "waterWheel" | "pagoda";
-/** Optimized model bounds (width, height, depth) and the height of the origin above the base (-min y), in model units. */
+/** Procedural set-piece bounds (width, height, depth) and height of local `(0, 0, 0)` above base (`lift`), in world meters. */
 export const SET_PIECE_BOUNDS: Readonly<Record<SetPieceId, { readonly size: readonly [number, number, number]; readonly lift: number }>> = {
-  shrineGate: { size: [1.896, 1.37, 0.452], lift: 0.686 },
-  waterWheel: { size: [1.671, 1.89, 1.87], lift: 0.951 },
-  pagoda: { size: [1.065, 1.903, 1.207], lift: 0.952 }
+  shrineGate: { size: [11.4, 8.8, 3.2], lift: 0 },
+  waterWheel: { size: [2.16, 8.0, 8.0], lift: 4.0 },
+  pagoda: { size: [14.8, 36.0, 14.8], lift: 0 }
 };
 /** Wanted world height (m) of each piece. */
 export const SET_PIECE_HEIGHT: Readonly<Record<SetPieceId, number>> = { shrineGate: 8.8, waterWheel: 8, pagoda: 36 };

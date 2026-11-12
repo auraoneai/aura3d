@@ -33,6 +33,58 @@ import {
 } from "./rules";
 import { BATTER_YAW } from "./batter-pose";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import {
+  createAthleteBeltNode,
+  createAthleteCapNode,
+  createBaseBagsNode,
+  createBoulevardLampNode,
+  createCanyonArchNode,
+  createCanyonHoodooNode,
+  createCanyonMesaNode,
+  createCanyonRockNode,
+  createCatcherMittNode,
+  createCoastalPineNode,
+  createDesertJuniperNode,
+  createDomeBannerSingleNode,
+  createDomeBannersInstancedNode,
+  createDomeRafterSingleNode,
+  createDomeRaftersInstancedNode,
+  createDugoutsNode,
+  createFielderGloveNode,
+  createFloodTowerNode,
+  createFloodTowersInstancedNode,
+  createFoulPolesNode,
+  createHarborBayBridgeNode,
+  createHarborBrickArcadeNode,
+  createHarborLighthouseNode,
+  createHarborPierNode,
+  createHarborRocksInstancedNode,
+  createHarborSailboatsNodes,
+  createHarborWindmillNode,
+  createIvyGrandstandNode,
+  createIvyRowhouseNode,
+  createIvyStatueNode,
+  createIvyTrophyNode,
+  createIvyVineSingleNode,
+  createIvyVinesInstancedNode,
+  createIvyWaterTowerNode,
+  createLunarCommsDomeNode,
+  createLunarEarthNode,
+  createLunarHabitatNode,
+  createLunarRoverNode,
+  createProceduralBatNode,
+  createRegolithMoundSingleNode,
+  createRegolithMoundsInstancedNode,
+  createScoreboardGantryNode,
+  createSeatedFansBatchNode,
+  createSkylineTowerNode,
+  createStadiumShellsNode,
+  createTyphoonDomeShellNode,
+  createWindowTargetNode,
+  DIAMOND_MATS,
+  getLunarCraterRimSpec,
+  getMidtownFarBlockSpec
+} from "./art/proceduralModels";
 
 /* ================================================================== *
  *  Field geometry (metres, compact-but-proportional diamond)          *
@@ -204,7 +256,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     // Infield, home circle, the three base circles (and the cylindrical mound in ?look=original), then the four base paths.
     instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: clayTransforms }),
     instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths, ...flush }),
-    instances.model(assets.diamondBase, { name: "base-bags", targetHeight: 0.16, scaleMode: "fit", transforms: t.bags }),
+    createBaseBagsNode(t.bags),
     instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates, ...flush }),
     // Batter's and catcher's boxes, then the two foul lines.
     instances.box({ name: "field-chalk", size: [1, 0.02, 1], material: chalk(), transforms: t.chalk, ...flush }),
@@ -214,7 +266,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }),
       transforms: t.poles.map((p) => ({ position: [p.position[0], 5.5, p.position[2]] as Vec3 }))
     }),
-    instances.model(assets.diamondFoulPole, { name: "foul-poles", targetHeight: 11, role: "setDressing", scaleMode: "fit", transforms: t.poles })
+    createFoulPolesNode(t.poles)
   );
 
   // Outfield wall — segmented arc from foul pole to foul pole
@@ -274,11 +326,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     ...(ctx.variant === "gu47"
       ? [instances.cylinder({ name: "ondeck-mats", size: [1.6, 0.02, 1.6], params: { radialSegments: 40 }, material: ondeckMat47, castShadow: false, transforms: [{ position: [-7.1, 0.018, 2.2] }, { position: [7.1, 0.018, 2.2] }] } as any)]
       : [ondeck("ondeck-l", -7.1), ondeck("ondeck-r", 7.1)]),
-    instances.model(assets.diamondDugout, {
-      name: "dugouts", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
-      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }],
-      transforms: t.dugouts
-    })
+    createDugoutsNode(t.dugouts, "#4b5259")
   );
 
   return nodes;
@@ -358,18 +406,15 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   const rng = makeRng(0xbeef);
 
   // Grandstand stadium shells framing the outer ballpark skyline, placed behind each park's own fence (rules.ts shellPlacements).
-  // DIA-W2: one instanced draw for the three shells (-2); the centre shell's 30 m fit is the 28 m fit scaled by 30/28.
+  // DIA-W2 + WP-08: one instanced cantilevered multi-deck grandstand draw for the three shells (-2).
   nodes.push(
-    instances.model(assets.diamondStadium, {
-      name: "stadium-shells",
-      targetMaxDimension: 28,
-      role: "setDressing",
-      scaleMode: "fit",
-      transforms: shellPlacements(park).map((sh) => {
+    createStadiumShellsNode(
+      shellPlacements(park).map((sh) => {
         const k = sh.name.endsWith("-c") ? 30 / 28 : 1;
         return { position: [sh.x, 0, sh.z] as Vec3, rotation: [0, sh.yaw, 0] as Vec3, scale: [k, k, k] as Vec3 };
-      })
-    })
+      }),
+      "#334154"
+    )
   );
 
   // Grounded tiered stadium bleachers wrapping the outfield arc
@@ -394,37 +439,31 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
     })
   );
 
-  // GU47 DIA-A2 + WP-36: about 600 seated fans on the benches above, instanced draws of the two Meshy seated fans
-  // (`ballpark_fanA`, 625 triangles; wave 1: `ballpark_fanB`, 555 triangles, on about half the seats, art/crowd.ts
-  // `fanVariantB`), the kit tinted towards the section colour (art/crowd.ts keeps seats and colours).
+  // GU47 DIA-A2 + WP-08: 588 articulated procedural seated spectators (`stand-fans` resting pose + `stand-fans-b` rally pose),
+  // tinted towards each section's colour (`clearcoat: 0, sheen: 0`).
   if (ctx.variant === "gu47") {
     const seats = fanSeats(park, ctx.tier);
     const { shirts } = fanColors(park, seats);
     const useB = fanVariantB(park, seats);
-    const fanGroup = (asset: typeof assets.ballpark_fanA | typeof assets.ballpark_fanB, name: string, pickB: boolean) => {
+    const fanGroup = (variant: "a" | "b", name: string, pickB: boolean) => {
       const idx = seats.map((_, i) => i).filter((i) => useB[i] === pickB);
-      return instances.model(asset, {
+      return createSeatedFansBatchNode(
         name,
-        targetHeight: FAN_MODEL.height,
-        scaleMode: "fit",
-        role: "setDressing",
-        // DIA-W2: distant seated fans are already grounded by the benches.
-        // Keep their main-pass silhouettes, not hundreds of per-cascade shadows.
-        castShadow: false,
-        // Phase 4 round 3: the textured cream kit read as a grey mass behind the back-lit benches at stand distance; a flat
-        // material under the section colours keeps the seated silhouettes and brings the crowd colour back.
-        material: material.pbr({ color: "#ffffff", roughness: 0.8 }),
-        transforms: idx.map((i) => {
+        variant,
+        idx.map((i) => {
           const s = seats[i]!;
-          return { position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3, rotation: [0, fanModelYaw(s.yaw), 0] as Vec3 };
+          return {
+            position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3,
+            rotation: [0, fanModelYaw(s.yaw), 0] as Vec3
+          };
         }),
-        colors: idx.map((i) => fanTint(shirts[i]!))
-      });
+        idx.map((i) => fanTint(shirts[i]!))
+      );
     };
-    nodes.push(fanGroup(assets.ballpark_fanA, "stand-fans", false), fanGroup(assets.ballpark_fanB, "stand-fans-b", true));
+    nodes.push(fanGroup("a", "stand-fans", false), fanGroup("b", "stand-fans-b", true));
   }
 
-  // Animated front-row wavers — real admitted 3D Meshy athletes grounded at y = 0
+  // Animated front-row wavers — real admitted 3D rigged athletes grounded at y = 0
   void rng;
   for (const [i, c] of crowdPlacements(park).entries()) {
     nodes.push(
@@ -445,7 +484,7 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   // Behind the centre bleacher section, at the same rig-to-screen spacing the art was tuned with.
   const sb = scoreboardPlacement(park);
   nodes.push(
-    model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb.rig[0], sb.rig[1], sb.rig[2]).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
+    createScoreboardGantryNode(sb.rig),
     primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: scoreboardScreenMaterial(ctx) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
@@ -459,9 +498,10 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
       [park.fenceCorner * 0.5, 0, 14]
     ];
     towers.forEach(([tx, , tz], i) => {
+      const litColor = park.id === "lunar" ? "#bfe0ff" : "#fff2d4";
       nodes.push(
-        model(assets.diamondFloodlight, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0),
-        lights.spot({ name: `flood-spot-${i}`, position: [tx * 0.9, 15, tz * 0.9], target: [0, 0, -10], angle: 0.6, penumbra: 0.55, intensity: 2.0, color: park.id === "lunar" ? "#bfe0ff" : "#fff2d4", distance: 160 }),
+        createFloodTowerNode(`flood-${i}`, [tx, 0, tz], [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0], 16, litColor),
+        lights.spot({ name: `flood-spot-${i}`, position: [tx * 0.9, 15, tz * 0.9], target: [0, 0, -10], angle: 0.6, penumbra: 0.55, intensity: 2.0, color: litColor, distance: 160 }),
         effects.lightCone({ name: `flood-cone-${i}`, position: [tx * 0.9, 14.6, tz * 0.9], direction: [-tx * 0.05, -1, (10 - tz) * 0.05], color: "#bfe0ff", intensity: 0.22, length: 15, coneAngle: 0.5, softness: 0.6 } as any)
       );
     });
@@ -493,18 +533,15 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
         [-park.fenceCorner * 0.5, 14],
         [park.fenceCorner * 0.5, 14]
       ];
-      // GU47 phase 6 (draw budget): the far pair of unlit towers is one instanced draw. The near pair stands beside and
-      // behind the broadcast camera and stays two single models: as one instance group (or one group of four) its
-      // bounding sphere reached into the view, so it stopped culling and the triangle counter rose by 0.35-0.57M.
+      // GU47 phase 6 (draw budget): the far pair of unlit towers is one instanced draw; near pair stays two individual nodes for frustum culling.
       const towerYaw = (tx: number, tz: number): Vec3 => [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0];
       nodes.push(
-        instances.model(assets.diamondFloodlight, {
-          name: "flood-towers-far", targetHeight: 16, role: "setDressing", scaleMode: "fit",
-          transforms: towers.slice(0, 2).map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: towerYaw(tx, tz) }))
-        }),
-        ...towers.slice(2).map(([tx, tz], i) =>
-          model(assets.diamondFloodlight, { name: `flood-${i + 2}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(...towerYaw(tx, tz))
-        )
+        createFloodTowersInstancedNode(
+          "flood-towers-far",
+          towers.slice(0, 2).map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: towerYaw(tx, tz) })),
+          16
+        ),
+        ...towers.slice(2).map(([tx, tz], i) => createFloodTowerNode(`flood-${i + 2}`, [tx, 0, tz], towerYaw(tx, tz), 16))
       );
     }
     return nodes;
@@ -514,7 +551,7 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
       const [x, y, z] = lamp.position;
       const [bx, bz] = lamp.base ?? [x, z];
       nodes.push(
-        model(assets.diamondFloodlight, { name: `${lamp.name}-tower`, targetHeight: y, role: "setDressing", scaleMode: "fit" }).position(bx, 0, bz).rotate(0, Math.atan2(-bx, 10 - bz) + Math.PI, 0),
+        createFloodTowerNode(`${lamp.name}-tower`, [bx, 0, bz], [0, Math.atan2(-bx, 10 - bz) + Math.PI, 0], y, lamp.color),
         lights.spot({ name: lamp.name, position: lamp.position, target: lamp.target, angle: lamp.angle, penumbra: lamp.penumbra, intensity: lamp.intensity, color: lamp.color, distance: lamp.distance })
       );
       if (lamp.cone) {
@@ -539,25 +576,22 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
   return nodes;
 }
 
-/** `?look=original`: Ivy's 4.6.2 trophy, statue and seven vine panels as separate nodes. */
+/** `?look=original`: Ivy's trophy, statue and seven vine panels as separate procedural nodes. */
 function ivyOriginalDressing(park: ParkSpec): any[] {
   return [
-    model(assets.diamondTrophy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 0, 8.4).rotate(0, 0.9, 0),
-    model(assets.diamondTrophy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
+    createIvyTrophyNode(),
+    createIvyStatueNode(),
     ...Array.from({ length: 7 }, (_, i) => {
       const theta = -36 + i * 12;
       const pm = fencePoint(park, theta, 0);
-      return model(assets.diamondIvyWall, { name: `ivy-vine-${i}`, targetHeight: park.wallH + 1.2, role: "setDressing", scaleMode: "fit" })
-        .position(pm[0] * 0.995, 0, pm[2] * 0.995)
-        .rotate(0, (theta * Math.PI) / 180, 0);
+      return createIvyVineSingleNode(`ivy-vine-${i}`, [pm[0] * 0.995, 0, pm[2] * 0.995], (theta * Math.PI) / 180, park.wallH);
     })
   ];
 }
 
 /**
- * GU47 wave 2 (DIA-A1): the Meshy set pieces that stand behind each park's far fence. GU47 variant only (`?look=original`
- * keeps the 4.6.2 dressing). Each piece is its own node so it culls on its own (an instanced group spread across the
- * horizon never leaves the frustum); every yaw turns the model's front (+z) toward home plate. Presentation only.
+ * GU47 wave 2 + WP-08 (DIA-A1): procedural multi-material architectural & geological landmarks standing behind each
+ * park's far fence. Each piece is its own node so it frustum-culls independently; every yaw turns local +Z toward home.
  */
 const farYaw = (x: number, z: number): number => Math.atan2(-x, -z);
 
@@ -568,36 +602,38 @@ export function wave2SetPieces(park: ParkSpec, low = false): any[] {
   };
   switch (park.id) {
     case "sandlot": {
-      // The harbor lighthouse stands on the far shore past the bay (HARBOR_WATER z -200), right of centre field.
       const [x, z] = [105, -212];
-      return [model(assets.aura_diamond_3d_ballparkLighthouse, { name: "harbor-lighthouse", targetHeight: 24, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z), 0)];
+      return [createHarborLighthouseNode([x, 0, z], farYaw(x, z))];
     }
     case "canyon": {
-      // Three flat-topped mesas far behind the rim; the dust and height fog soften them into the horizon.
-      return ([[-48, 285, 30, 0.2], [-4, 320, 36, -0.3], [40, 290, 28, 0.1]] as const).filter((_, i) => !low || i !== 0).map(([deg, r, h, jitter], i) => {
-        const [x, z] = ring(deg, r);
-        return model(assets.aura_diamond_3d_ballparkMesa, { name: `canyon-mesa-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.4, z).rotate(0, farYaw(x, z) + jitter, 0);
-      }).concat(
-        // GU47 wave 3 (DIA-A1): two balanced-cap sandstone hoodoos in front of the mesas, between the rim rocks and the dust horizon.
-        ([[-30, 200, 22, 0.2], [26, 215, 26, -0.25]] as const).filter((_, i) => !low || i === 1).map(([deg, r, h, jitter], i) => {
+      return ([[-48, 285, 30, 0.2], [-4, 320, 36, -0.3], [40, 290, 28, 0.1]] as const)
+        .filter((_, i) => !low || i !== 0)
+        .map(([deg, r, h, jitter], i) => {
           const [x, z] = ring(deg, r);
-          return model(assets.aura_diamond_3d_ballparkHoodooR2, { name: `canyon-hoodoo-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.2, z).rotate(0, farYaw(x, z) + jitter, 0);
+          return createCanyonMesaNode(`canyon-mesa-${i}`, [x, -0.4, z], farYaw(x, z) + jitter, h, i);
         })
-      );
+        .concat(
+          ([[-30, 200, 22, 0.2], [26, 215, 26, -0.25]] as const)
+            .filter((_, i) => !low || i === 1)
+            .map(([deg, r, h, jitter], i) => {
+              const [x, z] = ring(deg, r);
+              return createCanyonHoodooNode(`canyon-hoodoo-${i}`, [x, -0.2, z], farYaw(x, z) + jitter, h, i);
+            })
+        );
     }
     case "ivy": {
-      // Rowhouse blocks over the outfield wall (the 4.6.2 band stayed off: hard-edged slabs) and one water tower dead centre.
-      const houses = ([[-46, 0.1], [-22, -0.12], [22, 0.14], [46, -0.08]] as const).filter((_, i) => !low || i % 2 === 1).map(([deg, jitter], i) => {
-        const [x, z] = ring(deg, 168);
-        return model(assets.aura_diamond_3d_ballparkRowhouseRoof, { name: `ivy-rowhouse-${i}`, targetHeight: 18, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z) + jitter, 0);
-      });
+      const houses = ([[-46, 0.1], [-22, -0.12], [22, 0.14], [46, -0.08]] as const)
+        .filter((_, i) => !low || i % 2 === 1)
+        .map(([deg, jitter], i) => {
+          const [x, z] = ring(deg, 168);
+          return createIvyRowhouseNode(`ivy-rowhouse-${i}`, [x, 0, z], farYaw(x, z) + jitter);
+        });
       const [tx, tz] = ring(0, 175);
-      return [...houses, model(assets.aura_diamond_3d_ballparkWaterTower, { name: "ivy-water-tower", targetHeight: 22, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz)];
+      return [...houses, createIvyWaterTowerNode([tx, 0, tz], farYaw(tx, tz))];
     }
     case "lunar": {
-      // The moon base habitat, left of centre, clear of the fence like the comms dome on the right.
       const [x, z] = clearOfFence(park, -62, -100, 16);
-      return [model(assets.aura_diamond_3d_ballparkHabitat, { name: "lunar-habitat", targetHeight: 10, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z), 0)];
+      return [createLunarHabitatNode([x, 0, z], farYaw(x, z))];
     }
     default:
       return [];
@@ -608,17 +644,12 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const nodes: any[] = [];
   const gu47 = ctx.variant === "gu47";
   const lookRow = PARK_LOOKS[park.id];
-  // Photoreal rock GLBs carry warm AI textures that fight the flat-shaded
-  // players. Knock them back to a restrained desert palette and reduce their
-  // silhouettes so the field stays the subject.
-  const rockOverride = [{ color: "#745845", colorMode: "replace" as const, replaceTextures: true, roughness: 0.96, metallic: 0 }];
-  const rockOverrideAlt = [{ color: "#82644e", colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
+  void ivyBrickTexture;
   // Outfield props come from rules.ts PROP_SPOTS, pushed behind each park's fence (C3).
   const at = (name: string): [number, number] => propSpot(park, name);
   switch (park.id) {
     case "sandlot": {
       const W = HARBOR_WATER;
-      const harborBrick = gu47 ? ivyBrickTexture() : null;
       const harborWaterMat = gu47
         ? material.custom(
             dualAnimatedWaterSpec({
@@ -633,49 +664,21 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
           )
         : material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 });
 
-      // Right-field weathered brick bayside arcade (replaces the smeared Meshy canyon arch in GU47)
-      const arcadeBoxes: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
-      const arcadeCaps: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+      const arcadeBays: { pos: Vec3; rotY: number; span: number }[] = [];
       if (gu47) {
         const bays = 6;
-        for (let i = 0; i <= bays; i++) {
+        for (let i = 0; i < bays; i++) {
           const theta = 15 + (24 * i) / bays;
+          const thetaNext = 15 + (24 * (i + 1)) / bays;
           const p = fencePoint(park, theta, 0, 5.2);
-          const yaw = ((theta * Math.PI) / 180);
-          // Brick pier column
-          arcadeBoxes.push({ position: [p[0], 3.4, p[2]], rotation: [0, yaw, 0], scale: [1.35, 6.8, 1.35] });
-          if (i < bays) {
-            const thetaNext = 15 + (24 * (i + 1)) / bays;
-            const pNext = fencePoint(park, thetaNext, 0, 5.2);
-            const mid: Vec3 = [(p[0] + pNext[0]) * 0.5, 6.1, (p[2] + pNext[2]) * 0.5];
-            const span = Math.hypot(pNext[0] - p[0], pNext[2] - p[2]) + 0.3;
-            const spanYaw = Math.atan2(pNext[0] - p[0], pNext[2] - p[2]) + Math.PI / 2;
-            // Upper brick spandrel beam framing the harbor cove arches
-            arcadeBoxes.push({ position: mid, rotation: [0, spanYaw, 0], scale: [span, 1.5, 1.4] });
-            arcadeCaps.push({ position: [mid[0], 7.02, mid[2]], rotation: [0, spanYaw, 0], scale: [span + 0.18, 0.34, 1.62] });
-          }
+          const pNext = fencePoint(park, thetaNext, 0, 5.2);
+          const mid: Vec3 = [(p[0] + pNext[0]) * 0.5, 0, (p[2] + pNext[2]) * 0.5];
+          const span = Math.hypot(pNext[0] - p[0], pNext[2] - p[2]) + 0.3;
+          const spanYaw = Math.atan2(pNext[0] - p[0], pNext[2] - p[2]) + Math.PI / 2;
+          arcadeBays.push({ pos: mid, rotY: spanYaw, span });
         }
       }
 
-      // Distant bayside steel suspension bridge spanning behind the cove horizon
-      const bridgeSteel: { position: Vec3; rotation?: Vec3; scale: Vec3 }[] = gu47
-        ? [
-            // West tower legs + crossbars
-            { position: [86, 18, -242], scale: [2.2, 36, 2.2] },
-            { position: [93, 18, -240], scale: [2.2, 36, 2.2] },
-            { position: [89.5, 24, -241], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
-            { position: [89.5, 33, -241], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
-            // East tower legs + crossbars
-            { position: [194, 18, -234], scale: [2.2, 36, 2.2] },
-            { position: [201, 18, -232], scale: [2.2, 36, 2.2] },
-            { position: [197.5, 24, -233], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
-            { position: [197.5, 33, -233], rotation: [0, 0.26, 0], scale: [9.2, 1.6, 1.8] },
-            // Suspension truss road deck
-            { position: [144, 11.5, -237], rotation: [0, -0.074, 0], scale: [188, 1.8, 5.2] }
-          ]
-        : [];
-
-      // Moored sailboats in the right-field harbor cove
       const boatSpots: readonly [number, number, number, number][] = [
         [76, -142, 0.45, 1.0],
         [98, -154, -0.25, 1.12],
@@ -685,80 +688,28 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       ];
 
       nodes.push(
-        model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
+        createHarborPierNode([at("harbor-pier")[0], -0.3, at("harbor-pier")[1]], 0.3),
         primitives
           .plane({ name: "harbor-water", size: [W.w, W.d] as any, castShadow: false, material: harborWaterMat })
           .position(W.x, W.y, W.z)
           .runtime(game.runtimeNode("harbor-water")),
-        model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
+        createHarborWindmillNode("sandlot-windmill", [at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]], 0.6, 13),
         ...(gu47
           ? [
-              instances.box({
-                name: "sandlot-brick-arcade",
-                size: [1, 1, 1],
-                castShadow: false,
-                material: material.physical({
-                  color: harborBrick ? "#e6c6b8" : "#8b4636",
-                  roughness: 0.84,
-                  metallic: 0,
-                  ...(harborBrick ? { texture: harborBrick as any } : {})
-                }),
-                transforms: arcadeBoxes
-              }),
-              instances.box({
-                name: "sandlot-arcade-coping",
-                size: [1, 1, 1],
-                castShadow: false,
-                material: material.physical({ color: "#cbbba4", roughness: 0.72, metallic: 0 }),
-                transforms: arcadeCaps
-              }),
-              instances.box({
-                name: "sandlot-bay-bridge",
-                size: [1, 1, 1],
-                castShadow: false,
-                material: material.brushedMetal({ color: "#9e3b2b", roughness: 0.42, metallic: 0.76 }),
-                transforms: bridgeSteel
-              }),
-              instances.box({
-                name: "sandlot-sailboats-hulls",
-                size: [1, 1, 1],
-                castShadow: false,
-                material: material.clearcoatPaint({ color: "#22384f", roughness: 0.26, clearcoat: 0.75, clearcoatRoughness: 0.14 }),
-                transforms: boatSpots.map(([bx, bz, byaw, s]) => ({
-                  position: [bx, W.y + 0.32 * s, bz] as Vec3,
-                  rotation: [0, byaw, 0] as Vec3,
-                  scale: [1.55 * s, 0.68 * s, 5.2 * s] as Vec3
-                }))
-              }),
-              instances.cone({
-                name: "sandlot-sailboats-sails",
-                size: [1, 1, 1],
-                castShadow: false,
-                material: material.physical({ color: "#e8d5b8", roughness: 0.64, sheen: 0.38, sheenRoughness: 0.58, sheenColor: "#ffdca8" }),
-                transforms: boatSpots.map(([bx, bz, byaw, s]) => ({
-                  position: [bx, W.y + 3.6 * s, bz] as Vec3,
-                  rotation: [0, byaw, 0] as Vec3,
-                  scale: [0.32 * s, 6.2 * s, 2.8 * s] as Vec3
-                }))
-              }),
-              // GU47 phase 6 (draw budget): the two rocks as one instanced draw, each instance in its 4.6.2 override colour
-              // over a white replace override (pine-b's 6.5 m fit is pine-a's 7 m fit scaled by 6.5/7).
-              instances.model(assets.diamondRock, {
-                name: "harbor-rocks", targetHeight: 7, role: "setDressing", scaleMode: "fit",
-                materialOverrides: [{ ...rockOverride[0]!, color: "#ffffff", roughness: 0.95 }],
-                transforms: [
-                  { position: [at("pine-a")[0], 0, at("pine-a")[1]] as Vec3 },
-                  { position: [at("pine-b")[0], 0, at("pine-b")[1]] as Vec3, rotation: [0, 1.2, 0] as Vec3, scale: [6.5 / 7, 6.5 / 7, 6.5 / 7] as Vec3 }
-                ],
-                colors: [rockOverride[0]!.color, rockOverrideAlt[0]!.color]
-              })
+              createHarborBrickArcadeNode(arcadeBays),
+              createHarborBayBridgeNode([144, 0, -237], -0.074),
+              ...createHarborSailboatsNodes(boatSpots, W.y),
+              createHarborRocksInstancedNode([
+                { position: [at("pine-a")[0], 0, at("pine-a")[1]] as Vec3 },
+                { position: [at("pine-b")[0], 0, at("pine-b")[1]] as Vec3, rotation: [0, 1.2, 0] as Vec3, scale: [6.5 / 7, 6.5 / 7, 6.5 / 7] as Vec3 }
+              ])
             ]
           : [
-              model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
-              model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
-              model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0)
+              createCanyonArchNode("sandlot-tower", [at("sandlot-tower")[0], 0, at("sandlot-tower")[1]], -0.4, 12),
+              createCoastalPineNode("pine-a", [at("pine-a")[0], 0, at("pine-a")[1]], 7),
+              createCoastalPineNode("pine-b", [at("pine-b")[0], 0, at("pine-b")[1]], 6.5).rotate(0, 1.2, 0)
             ]),
-        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-lamp")[0], 0, at("sandlot-lamp")[1])
+        createBoulevardLampNode("sandlot-lamp", [at("sandlot-lamp")[0], 0, at("sandlot-lamp")[1]], 5.4)
       );
       break;
     }
@@ -766,108 +717,82 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       const buildings: [number, number][] = [[46, 0.5], [52, -0.4], [38, 0.9], [30, -0.9], [60, 0.1]];
       buildings.forEach(([h, r], i) => {
         const [x, z] = at(`skyline-bldg-${i}`);
-        nodes.push(model(assets.diamondTower, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
+        nodes.push(createSkylineTowerNode(`skyline-bldg-${i}`, [x, 0, z], 15 + (i % 3) * 2.5, h, 14 + ((i + 1) % 2) * 2.5, i).rotate(0, r, 0));
       });
       for (let i = 0; i < 4; i++) {
         const theta = -24 + i * 16;
         const pm = fencePoint(park, theta, 0);
-        nodes.push(
-          primitives
-            .box({ name: `window-target-${i}`, size: [7.5, 4.6, 0.5], material: material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55 }) })
-            .position(pm[0] * 1.18, 9.5 + i * 2.2, pm[2] * 1.18 - 3)
-            .rotate(0, (theta * Math.PI) / 180, 0)
-            .runtime(game.runtimeNode(`window-target-${i}`))
-        );
+        nodes.push(createWindowTargetNode(i, [pm[0] * 1.18, 9.5 + i * 2.2, pm[2] * 1.18 - 3], (theta * Math.PI) / 180));
       }
       for (const [lx, lz] of [[-26, 8], [26, 8], [-46, -30], [46, -30]] as const) {
-        nodes.push(model(assets.diamondFloodlight, { name: `lamp-${lx}`, targetHeight: 6, role: "setDressing", scaleMode: "fit" }).position(lx, 0, lz));
+        nodes.push(createBoulevardLampNode(`lamp-${lx}`, [lx, 0, lz], 6));
       }
       break;
     }
     case "canyon": {
       const rocks: [number, number][] = [[13, 0.3], [15, -0.7], [7.5, 1.1], [6.5, -0.4], [22, 0]];
-      // GU47 DIA-M2: the hard noon reads the rock GLB's own textures (the 4.6.2 flat override painted them out).
       rocks.forEach(([h, r], i) => {
         const [x, z] = at(`canyon-rock-${i}`);
-        nodes.push(model(assets.diamondRock, {
-          name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit",
-          ...(gu47 ? {} : { materialOverrides: i % 2 ? rockOverrideAlt : rockOverride })
-        }).position(x, 0, z).rotate(0, r, 0));
+        nodes.push(createCanyonRockNode(`canyon-rock-${i}`, [x, 0, z], r, h, i));
       });
       for (const [tx, tz] of [[-108, -40], [110, -44], [-88, -20], [88, -16]] as const) {
-        nodes.push(model(assets.diamondRock, {
-          name: `canyon-pine-${tx}`, targetHeight: 8.5, role: "setDressing", scaleMode: "fit",
-          materialOverrides: rockOverride
-        }).position(tx, 0, tz));
+        nodes.push(createDesertJuniperNode(`canyon-pine-${tx}`, [tx, 0, tz], 8.5, Math.abs(tx)));
       }
       break;
     }
     case "ivy": {
       nodes.push(
-        model(assets.diamondStadium, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
+        createIvyGrandstandNode(),
         ...(gu47
           ? [
-              // GU47 phase 6 (draw budget): the seven vine panels as one instanced draw (-6 draws before the shadow pass).
-              // The trophy and statue stay separate: they stand on either side of home and cull on their own.
               ...ivyOriginalDressing(park).slice(0, 2),
-              instances.model(assets.diamondIvyWall, {
-                name: "ivy-vines", targetHeight: park.wallH + 1.2, role: "setDressing", scaleMode: "fit",
-                transforms: Array.from({ length: 7 }, (_, i) => {
+              createIvyVinesInstancedNode(
+                Array.from({ length: 7 }, (_, i) => {
                   const theta = -36 + i * 12;
                   const pm = fencePoint(park, theta, 0);
                   return { position: [pm[0] * 0.995, 0, pm[2] * 0.995] as Vec3, rotation: [0, (theta * Math.PI) / 180, 0] as Vec3 };
-                })
-              })
+                }),
+                park.wallH
+              )
             ]
           : ivyOriginalDressing(park))
       );
       break;
     }
     case "dome": {
-      // GU47 blind panel: the typhoon-dome GLB's UVs are broken (smeared multicolour field, torn roof, smeared walls; the
-      // same in 4.6.2), so GU47 draws the park's own field under the rafters, banners and truss panels instead.
-      if (!gu47) nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
+      if (!gu47) nodes.push(createTyphoonDomeShellNode());
       if (gu47) {
-        // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
-        // and the crowd's gold, tinting the emissive too.
         nodes.push(
-          instances.box({ name: "dome-rafters", size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }), transforms: Array.from({ length: 5 }, (_, i) => ({ position: [-60 + i * 30, 26, -50] as Vec3 })) }),
-          instances.box({
-            name: "dome-banners",
-            size: [3.2, 7, 0.2],
-            material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.7 }),
-            transforms: Array.from({ length: 4 }, (_, i) => ({ position: [-18 + i * 12, 14, 18] as Vec3 })),
-            colors: Array.from({ length: 4 }, (_, i) => (i % 2 ? lookRow.accent : lookRow.crowd[2] ?? lookRow.accent)),
-            instanceColorTarget: "both"
-          })
+          createDomeRaftersInstancedNode(Array.from({ length: 5 }, (_, i) => ({ position: [-60 + i * 30, 26, -50] as Vec3 }))),
+          createDomeBannersInstancedNode(
+            Array.from({ length: 4 }, (_, i) => ({ position: [-18 + i * 12, 14, 18] as Vec3 })),
+            Array.from({ length: 4 }, (_, i) => (i % 2 ? lookRow.accent : lookRow.crowd[2] ?? lookRow.accent))
+          )
         );
       } else {
         nodes.push(
-          ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
-          ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
+          ...Array.from({ length: 5 }, (_, i) => createDomeRafterSingleNode(`dome-rafter-${i}`, [-60 + i * 30, 26, -50])),
+          ...Array.from({ length: 4 }, (_, i) => createDomeBannerSingleNode(`dome-banner-${i}`, [-18 + i * 12, 14, 18], i % 2 ? "#35d6ff" : "#ffb03a"))
         );
       }
       break;
     }
     case "lunar": {
       nodes.push(
-        // Runtime id: DIA-N1 turns the Earth slowly (main.ts).
-        model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260).runtime(game.runtimeNode("lunar-earth")),
-        model(assets.diamondLunarRover, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
-        model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(at("lunar-comms")[0], 0, at("lunar-comms")[1]).rotate(0, -0.5, 0)
+        createLunarEarthNode([-30, 66, -260]),
+        createLunarRoverNode([-17, 0, 9], 0.8),
+        createLunarCommsDomeNode([at("lunar-comms")[0], 0, at("lunar-comms")[1]], -0.5)
       );
       if (gu47) {
-        // GU47 DIA-M2 / DIA-W2: grey regolith mounds (the park's regolith, not blue-grey) in one instanced draw (-5).
         nodes.push(
-          instances.cylinder({
-            name: "regolith-mounds",
-            size: [1, 0.5, 1],
-            material: material.pbr({ color: lookRow.turf.track, roughness: 1 }),
-            transforms: Array.from({ length: 6 }, (_, i) => ({ position: [at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1]] as Vec3, scale: [4 + i, 1, 4 + i * 0.7] as Vec3 }))
-          })
+          createRegolithMoundsInstancedNode(
+            Array.from({ length: 6 }, (_, i) => ({ position: [at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1]] as Vec3, scale: [4 + i, 1, 4 + i * 0.7] as Vec3 }))
+          )
         );
       } else {
-        nodes.push(...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1])));
+        nodes.push(
+          ...Array.from({ length: 6 }, (_, i) => createRegolithMoundSingleNode(`regolith-${i}`, [at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1]], [4 + i, 1, 4 + i * 0.7]))
+        );
       }
       break;
     }
@@ -953,22 +878,23 @@ export function harborWater(): any {
     .toJSON();
 }
 
-/** DIA-W1: one park's horizon band as one instanced draw (art/horizon.ts). */
+/** DIA-W1 + WP-08: one park's sculpted horizon band (`midtown-far-blocks` or `lunar-crater-rim`) as one instanced draw. */
 export function horizonNode(band: HorizonBand): any {
   const windows = band.windows ? windowTexture() : null;
   const mat = band.windows
     ? windows
-      ? material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveMap: windows as any, emissiveIntensity: band.windows.intensity, roughness: band.roughness })
-      : material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveIntensity: band.windows.intensity / 3, roughness: band.roughness })
-    : material.pbr({ color: band.color, roughness: band.roughness, metalness: 0 });
+      ? material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveMap: windows as any, emissiveIntensity: band.windows.intensity, roughness: band.roughness, clearcoat: 0, sheen: 0, practical: true })
+      : material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveIntensity: band.windows.intensity / 3, roughness: band.roughness, clearcoat: 0, sheen: 0, practical: true })
+    : material.pbr({ color: band.color, roughness: band.roughness, metalness: 0, clearcoat: 0, sheen: 0 });
   const options = {
     name: band.name,
-    size: [1, 1, 1] as Vec3,
     material: mat,
     transforms: band.instances.map((i) => ({ position: i.position, rotation: i.rotation, scale: i.scale })),
     ...(band.colors ? { colors: band.instances.map((_, i) => band.colors![i % band.colors!.length]!) } : {})
   };
-  return band.shape === "box" ? instances.box(options) : instances.cylinder(options);
+  if (band.shape === "stepped-tower") return instances.custom(getMidtownFarBlockSpec(), options);
+  if (band.shape === "crater-ridge") return instances.custom(getLunarCraterRimSpec(), options);
+  return band.shape === "box" ? instances.box({ ...options, size: [1, 1, 1] as Vec3 }) : instances.cylinder({ ...options, size: [1, 1, 1] as Vec3 });
 }
 
 /** An admitted 3D catalog athlete grounded cleanly with skeletal animation. */
@@ -1028,77 +954,33 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
       .rotate(0, Math.PI * 0.72, 0)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode("coach-3b")),
-    // Hidden dugout glove reference so route asset validation sees diamondGlove without floating mitts in front of fielders
-    model(assets.diamondGlove, { name: "dugout-glove-ref", targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit", visible: false })
-      .position(0, -80, 0)
-      .scale(HIDDEN_SCALE),
-    // Catcher's mitt — oiled saddle-leather physical finish socketed to the crouched catcher's left forearm at runtime
-    model(assets.diamondGlove, {
-      name: "catcher-mitt",
-      targetMaxDimension: 0.36,
-      role: "setDressing",
-      scaleMode: "fit",
-      ...(gu47 ? { materialOverrides: [{ color: "#784224", colorMode: "multiply", roughness: 0.36, metallic: 0.02 }] } : {})
-    })
-      .position(0.25, 0.55, 2.1)
-      .rotate(0, Math.PI, 0.3)
-      .runtime(game.runtimeNode("catcher-mitt"))
+    // Catcher's mitt — multi-material padded saddle-leather mitt socketed to the crouched catcher's left forearm at runtime
+    createCatcherMittNode([0.25, 0.55, 2.1]).rotate(0, Math.PI, 0.3)
   ];
 
-  // Fielder and pitcher gloves — each rides its owner's left forearm through the kit attach (no world-authored spot).
+  // Fielder and pitcher gloves — multi-material 5-stall webbed leather gloves socketed to each owner's left forearm.
   for (const id of GLOVE_OWNERS) {
-    nodes.push(
-      model(assets.diamondGlove, {
-        name: `glove-${id}`,
-        targetMaxDimension: 0.34,
-        role: "setDressing",
-        scaleMode: "fit",
-        ...(gu47 ? { materialOverrides: [{ color: "#7c4628", colorMode: "multiply", roughness: 0.38, metallic: 0.02 }] } : {})
-      })
-        .position(0, -80, 0)
-        .runtime(game.runtimeNode(`glove-${id}`))
-    );
+    nodes.push(createFielderGloveNode(`glove-${id}`, [0, -80, 0]));
   }
 
-  // Team cap and belt per athlete (C5): clearcoat batting helmets/caps and belts that ride Head and Hips bones at runtime.
+  // Team cap/helmet and belt per athlete (C5 + WP-08): contoured batting helmets/caps & buckle belts riding Head and Hips bones.
   for (const id of KIT_OWNERS) {
+    const capMat = gu47
+      ? material.clearcoatPaint({ color: "#eeeae0", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
+      : material.pbr({ color: "#eeeae0", roughness: CAP_ROUGHNESS });
+    const beltMat = material.physical({ color: "#eeeae0", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 });
     nodes.push(
-      primitives
-        .sphere({
-          name: `${id}-cap`,
-          size: [0.205, 0.11, 0.225],
-          material: gu47
-            ? material.clearcoatPaint({ color: "#f2eee3", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
-            : material.pbr({ color: "#f2eee3", roughness: CAP_ROUGHNESS })
-        })
-        .position(0, -80, 0)
-        .runtime(game.runtimeNode(`${id}-cap`)),
-      // GU47 phase 6 (draw budget): the 5 cm belt sits inside the torso's shadow, so GU47 drops its depth draw.
-      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.physical({ color: "#f2eee3", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 }), ...(gu47 ? { castShadow: false } : {}) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
+      createAthleteCapNode(id, capMat).position(0, -80, 0),
+      createAthleteBeltNode(id, beltMat, true, !gu47).position(0, -80, 0)
     );
   }
 
-  // Bat — lacquered ash barrel socketed to the batter's right forearm (knob at the palm).
+  // Bat — regulation 1.02 m lathed ash/maple barrel (`x in [-0.51, +0.51]`) socketed to the batter's right forearm.
   void batWoodTexture;
   nodes.push(
-    model(assets.diamondBat, {
-      name: "bat",
-      targetMaxDimension: 1.02,
-      scaleMode: "fit",
-      ...(gu47
-        ? {
-            materialOverrides: [{
-              color: "#e6cfac",
-              colorMode: "multiply",
-              roughness: 0.24,
-              metallic: 0.04
-            }]
-          }
-        : {})
-    })
+    createProceduralBatNode(gu47 ? DIAMOND_MATS.ashWood : material.pbr({ color: "#caa06a", roughness: 0.38 }))
       .position(-0.51, 1.52, 0.18)
-      .rotate(0, BATTER_YAW + 0.15, 1.0)
-      .runtime(game.runtimeNode("bat")),
+      .rotate(0, BATTER_YAW + 0.15, 1.0),
     // Hidden root-level probe pinned to the same bone to calibrate the
     // actor fit scale / normalization shift for world⇄actor conversions.
     primitives

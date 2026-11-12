@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-shape-shift-sprint/src/art/direction.ts",
-  "sourceSha256": "7efe8f121e55fdd75b9158e9b5380a66704b2661b807426e3e852eb3ad11c2bc",
+  "sourceSha256": "a34161ec4fa9131bf718e185df65acdd7aac84eb5e4997fd2406c5a166a98a7f",
   "id": "shape-shift-sprint",
   "genre": "platformer",
   "signatureEffect": "Candy primaries on cream: plasma morph burst and shape-confetti trail behind the multi-lobe player forms, with bevelled 3D hole rims glowing in the matching shape colour under a 6-world Toybox skyway.",
@@ -44,25 +44,25 @@
   "direction": {
     "id": "shape-shift-sprint",
     "genre": "platformer",
-    "fantasy": "Sprint a shape-shifting toy along a glossy candy sky bridge past floating islands, fitting through 3D gates across six Toybox Worlds.",
+    "fantasy": "Sprint a shape-shifting toy along a candy sky bridge past procedural castle islands, fitting through 3D gates across six Toybox Worlds.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: wooden and lacquered vinyl shape-sorter toys (sphere, cube, cone cut-outs in a bright board)",
+        "source": "generic reference: wooden and lacquered vinyl shape-sorter toys paired with architectural archway portals",
         "licence": "reference-only",
-        "why": "Molded 3D cutout wall blocks with bevelled rims read immediately: three outlined holes, one fits the active form"
+        "why": "Molded 3D cutout wall blocks with bevelled rims and overhead glowing shape-stencil portals read immediately at speed"
       },
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: candy-coloured clearcoat playground toys on warm cream skyway surfaces",
+        "source": "generic reference: multi-material clearcoat designer toys, storybook castle sky-islands, and kinetic brass gyroscopes",
         "licence": "reference-only",
-        "why": "Multi-lobe primaries (crimson carPaint sphere, solar clearcoatPaint cube, cobalt lacquer cone) stay readable at speed"
+        "why": "Multi-lobe primaries (crimson carPaint sphere, solar clearcoatPaint cube, cobalt lacquer glider-cone) contrast cleanly against ceramic & strata landmarks"
       },
       {
         "file": "evidence/shape-shift-sprint/README.md",
-        "source": "generic reference: plasma shockwaves and confetti bursts at party arcade games",
+        "source": "generic reference: plasma shockwaves, chevron boost pads, and confetti bursts at party arcade games",
         "licence": "reference-only",
         "why": "Plasma morph burst plus a shape-confetti trail and hole rims glowing in the matching colour reward every fit"
       }

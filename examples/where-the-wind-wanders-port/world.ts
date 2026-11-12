@@ -25,6 +25,7 @@ import { buildScenery } from "./scenery";
 import { NO_MOTION, bodyMotion, followDrive } from "./gait-motion";
 import { STRIDE_SPEED, footstepCell } from "./locomotion";
 import { KITE_FLIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
+import { createWindmillSailsNode } from "./art/proceduralModels";
 import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
@@ -592,7 +593,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
 
   /* ---- merged scenery ---- */
   builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("props") }));
-  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("sails") }));
+  if (set.cottage) {
+    builder.add(createWindmillSailsNode({ name: "windmill-sails", id: "sails", position: [sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z], castShadow: shadows, receiveShadow: shadows }));
+  } else {
+    builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("sails") }));
+  }
   builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("bell") }));
   if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("boat") }));
   addStaticModels(builder, sc, set, shadows, !original);
@@ -683,13 +688,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     if (options.quality !== "low") {
       builder.add(effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 16, intensity: 0.65, lights: "sun" }));
       builder.add(effects.ambientOcclusion({ name: "valley-ao", intensity: 0.42, radius: 0.72, multiBounce: true }));
-      builder.add(effects.screenSpaceReflections({ name: "tarn-ssr", intensity: 0.52, maxDistance: 32, roughness: 0.16, thickness: 0.25 }));
+      builder.add(effects.screenSpaceReflections({ name: "tarn-ssr", intensity: 0.12, maxDistance: 32, roughness: 0.16, thickness: 0.25 }));
       const bootShafts = shaftPatch(DAYLIGHT_KEYS[options.daylightKey ?? 0]?.godRays ?? 0);
       if (bootShafts) {
         builder.add(effects.godRays({ name: "meadow-shafts", source: "sun", intensity: bootShafts.intensity, decay: 0.94, samples: 48, color: "#ffe7bd", density: bootShafts.godRayDensity, medium: 0.16 }));
       }
       builder.add(effects.filmGrain({ name: "paper grain", intensity: post.grain }));
-      builder.add(effects.depthOfField({ name: "story-dof", ...STORY_DOF }));
     }
   }
 
@@ -805,24 +809,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // phase 3: dusk-ness of the shown light (post table and storybook framing), and the eased framing amount
       let shownDusk = isDuskKey(options.daylightKey ?? 0);
       let story = shownDusk ? 1 : 0;
-      const cinematicPost = !original && options.quality !== "low";
-      let dofOn: boolean | null = null, dofFocus: number | null = null;
-      // WW47-P4 (title/epilogue DOF only): the lens is on for the title card and the epilogue voyage, off in play.
-      const applyStoryPost = (eye: readonly number[], target: readonly number[]): void => {
-        if (!cinematicPost) return;
-        const active = options.titleVisible?.() === true || epilogue !== null;
-        if (dofOn !== active) {
-          dofOn = active;
-          app.post?.setEffectEnabled?.("depthOfField", active);
-        }
-        if (active) {
-          const focus = Math.max(2, Math.min(80, Math.hypot(target[0]! - eye[0]!, target[1]! - eye[1]!, target[2]! - eye[2]!)));
-          if (dofFocus === null || Math.abs(focus - dofFocus) > dofFocus * 0.08) {
-            dofFocus = focus;
-            app.post?.setEffect?.("depthOfField", { focusDistance: focus });
-          }
-        } else dofFocus = null;
-      };
+      // WP-27: depthOfField and motionBlur stay disabled across title, play, and epilogue for crisp sculpted silhouettes.
+      const applyStoryPost = (_eye: readonly number[], _target: readonly number[]): void => {};
       // WW47-P2: raking meadow shafts follow the daylight `godRays` level on High (off on the moonlit voyage)
       const shafts = SHAFTS_ENABLED && !original && options.quality !== "low";
       let shownShaft: string | null = null;

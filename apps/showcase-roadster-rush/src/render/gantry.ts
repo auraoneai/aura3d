@@ -1,3 +1,9 @@
+import type { AuraCustomGeometrySpec } from "@aura3d/engine";
+import {
+  buildGantryLuminaireTrimSpec,
+  buildGantrySignBoardSpec,
+  buildGantrySteelTrussSpec
+} from "../art/proceduralModels";
 import { SIGN_BAND } from "../native/world";
 
 /** One axis-aligned box of a sign gantry, relative to the gantry's road position (x across, y up, z along the road). */
@@ -31,4 +37,17 @@ export function gantryBoxes(): readonly GantryBox[] {
     out.push({ part: "trim", center: [side * x, SIGN_BAND.maxY - 0.5, 0.36], size: [width - 1.2, 0.18, 0.06] });
   }
   return out;
+}
+
+/** Unit-cube-normalized open 4-chord X-braced truss, framed sign panel & hooded luminaire specs scaled by `gantryBoxes()`. */
+export function gantryGeometrySpecs(): {
+  readonly steel: AuraCustomGeometrySpec;
+  readonly board: AuraCustomGeometrySpec;
+  readonly trim: AuraCustomGeometrySpec;
+} {
+  return {
+    steel: buildGantrySteelTrussSpec(),
+    board: buildGantrySignBoardSpec(),
+    trim: buildGantryLuminaireTrimSpec()
+  };
 }

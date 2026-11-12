@@ -13,13 +13,7 @@
     "nativeWebGPU": true,
     "productionRuntimeClaimed": true
   },
-  "primaryAssets": [
-    {
-      "typedRef": "assets.tennisFloodMast",
-      "quality": "production",
-      "role": "setDressing"
-    }
-  ],
+  "primaryAssets": [],
   "kind": "native-rebuild",
   "sourceExample": "examples/aura-slam/",
   "claimLabel": "Native rebuild (preview)",

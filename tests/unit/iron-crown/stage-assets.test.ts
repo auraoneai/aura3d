@@ -20,12 +20,10 @@ describe("iron crown loads a per-app stage manifest, not the shared catalog (RH-
     }
   });
 
-  it("every stage prop used in stages.ts is defined in the app manifest", () => {
-    const used = [...new Set([...stages.matchAll(/stageAssets\.(\w+)/g)].map((m) => m[1]!))];
-    // Phase 9 (4.7.8): 14 borrowed keys moved to Iron Crown-owned CC0 assets (src/aura-assets.ts); 13 shared entries remain.
-    expect(used.length).toBeGreaterThan(10);
-    for (const id of used) expect((stageAssets as Record<string, unknown>)[id], id).toBeDefined();
-    expect(Object.keys(stageAssets).sort()).toEqual([...used].sort());
+  it("stages.ts mounts procedural set-pieces with zero static GLB model() props (WP-05)", () => {
+    expect(stages).not.toMatch(/\bmodel\s*\(/);
+    expect(stages).not.toContain("stageAssets.");
+    expect(stages).toContain("../art/proceduralModels");
   });
 
   it("each entry matches the shared catalog (url and hash) and its file exists under public/aura-assets", () => {
@@ -45,12 +43,12 @@ describe("iron crown loads a per-app stage manifest, not the shared catalog (RH-
   });
 });
 
-describe("iron crown throne plinth (IC-16 / WP-09)", () => {
-  it("the pale gallery pedestal is gone and the throne sits atop the 0.34m stepped dais with the crown on the throne", () => {
+describe("iron crown throne plinth (IC-16 / WP-09 / WP-05)", () => {
+  it("the pale gallery pedestal is gone and the procedural throne sits atop the 0.34m stepped dais with the crown on the throne", () => {
     expect(stages).not.toContain("galleryShiftPedestal");
     expect(stages).toContain("buildThronePlinth()");
     expect(stages).toContain("export const PLINTH_TOP = 0.34;");
-    expect(stages).toContain('modelProp(assets.ironcrownThrone, "cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 2.1, 0)');
-    expect(stages).toMatch(/cr-iron-crown[\s\S]{0,140}\.position\(0, PLINTH_TOP \+ 0\.48, PLINTH_Z \+ 0\.14\)/);
+    expect(stages).toContain('buildSovereignThroneChair("cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 0)');
+    expect(stages).toContain('buildIronCrownRelic("cr-iron-crown", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0)');
   });
 });

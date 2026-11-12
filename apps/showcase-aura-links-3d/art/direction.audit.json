@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "b35afb46fe94168a43be20677234ee8f0cf55fee6cab0b56d8aecf543c53272a",
+  "sourceSha256": "16f15ea3dbee62f837cab9b25c7e7f66dd3bd52c854cb9619103338582d1af4d",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -54,48 +54,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "linksGolfCartMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksAlpineSnowPine",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksBurnFootbridge",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksCraterCrystal",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksGolfBall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksGolfCartMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "linksGolferAthleteMeshy",
         "triangles": 0,
         "textures": 0,
@@ -103,63 +61,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "linksHarbourFloodlight",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksHarbourTowerA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksHarbourTowerB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksHarbourTowerC",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksMareRelay",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksMareRover",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksPinFlagMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propPineTree",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockA",
+        "assetKey": "links_golfer_player",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -259,132 +161,6 @@
             "Idle_Loop"
           ]
         }
-      },
-      {
-        "role": "prop",
-        "assetKey": "linksGolfCartMeshy",
-        "maxTriangles": 16000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "linksPinFlagMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "linksGolfBall",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propPineTree",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propRockA",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksDunesBeaconTower",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksBurnFootbridge",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "linksCraterCrystal",
-        "maxTriangles": 1000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "linksAlpineSnowPine",
-        "maxTriangles": 1000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "linksHarbourFloodlight",
-        "maxTriangles": 1000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "linksHarbourTowerA",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "linksHarbourTowerB",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "linksHarbourTowerC",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksMareLander",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksMareRover",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "linksMareRelay",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "links_basalt_columns",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "links_cable_car_station",
-        "maxTriangles": 34000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

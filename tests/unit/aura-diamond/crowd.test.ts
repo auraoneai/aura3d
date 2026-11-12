@@ -57,14 +57,27 @@ describe("aura-diamond stands crowd (DIA-A2)", () => {
     expect(FAN_SKIN.filter((h) => hoops.has(h))).toEqual([]);
   });
 
-  it("draws the fans as two instanced draws of the WP-36 seated fans and keeps the 18 wavers", () => {
-    const nodes = (buildStandsNodes(PARKS.ivy, DEFAULT_SCENE_CONTEXT) as { toJSON(): { name?: string; asset?: { key?: string }; instances?: unknown; transforms?: readonly unknown[] } }[]).map((n) => n.toJSON());
+  it("draws the fans as two procedural instanced spectator batches (clearcoat: 0, sheen: 0) and keeps the 18 wavers", () => {
+    const nodes = (buildStandsNodes(PARKS.ivy, DEFAULT_SCENE_CONTEXT) as {
+      toJSON(): {
+        kind?: string;
+        name?: string;
+        material?: { clearcoat?: number; sheen?: number };
+        instances?: unknown;
+      };
+    }[]).map((n) => n.toJSON());
     const fans = nodes.filter((n) => n.name === "stand-fans" || n.name === "stand-fan-heads");
     expect(fans).toHaveLength(1);
-    expect(JSON.stringify(fans[0])).toContain("ballpark_fanA");
+    expect(fans[0]!.kind).toBe("primitive");
+    expect(fans[0]!.material?.clearcoat ?? 0).toBe(0);
+    expect(fans[0]!.material?.sheen ?? 0).toBe(0);
+    expect(JSON.stringify(fans[0])).not.toContain("ballpark_fanA");
     const fansB = nodes.filter((n) => n.name === "stand-fans-b");
     expect(fansB).toHaveLength(1);
-    expect(JSON.stringify(fansB[0])).toContain("ballpark_fanB");
+    expect(fansB[0]!.kind).toBe("primitive");
+    expect(fansB[0]!.material?.clearcoat ?? 0).toBe(0);
+    expect(fansB[0]!.material?.sheen ?? 0).toBe(0);
+    expect(JSON.stringify(fansB[0])).not.toContain("ballpark_fanB");
     expect(((fans[0]!.instances as unknown[]).length) + ((fansB[0]!.instances as unknown[]).length)).toBe(7 * 3 * FANS_PER_BENCH);
     expect(nodes.filter((n) => /^waver-\d+$/.test(String(n.name)))).toHaveLength(18);
     const original = (buildStandsNodes(PARKS.ivy, { ...DEFAULT_SCENE_CONTEXT, variant: "original" }) as { toJSON(): { name?: string } }[]).map((n) => n.toJSON());

@@ -17,7 +17,7 @@ const IDS = Object.keys(COURSES) as CourseId[];
 /** Model asset keys of the app's asset subset (`src/aura-assets.ts` types every entry). */
 function modelKeys(): Set<string> {
   const src = readFileSync(resolve(app, "src/aura-assets.ts"), "utf8");
-  return new Set([...src.matchAll(/readonly "([A-Za-z0-9]+)": AuraAssetDefinition & \{ readonly type: "model"/g)].map((m) => m[1]!));
+  return new Set([...src.matchAll(/readonly "([A-Za-z0-9_]+)": AuraAssetDefinition & \{ readonly type: "model"/g)].map((m) => m[1]!));
 }
 
 /** Every model asset the scene builders mount (main.ts dressing + rig.ts golfer group). */
@@ -26,7 +26,7 @@ function mountedModelKeys(): string[] {
   const used = new Set<string>();
   for (const file of ["src/main.ts", "src/game/rig.ts"]) {
     const src = readFileSync(resolve(app, file), "utf8");
-    for (const m of src.matchAll(/assets\.([A-Za-z0-9]+)/g)) if (models.has(m[1]!)) used.add(m[1]!);
+    for (const m of src.matchAll(/assets\.([A-Za-z0-9_]+)/g)) if (models.has(m[1]!)) used.add(m[1]!);
   }
   return [...used].sort();
 }
@@ -55,9 +55,11 @@ describe("Aura Links art direction (GU47 WP-20, PRD §3.2)", () => {
     expect(direction.palette.primary.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("names every mounted model asset and every Links VFX preset", () => {
-    const contracted = new Set(direction.assets.map((a) => a.assetKey));
-    for (const key of mountedModelKeys()) expect(contracted.has(key), key).toBe(true);
+  it("mounts ONLY the two rigged golfer GLBs and names every Links VFX preset (all static props procedural)", () => {
+    const mounted = mountedModelKeys();
+    expect(mounted).toEqual(["linksGolferAthleteMeshy", "links_golfer_player"]);
+    const contracted = direction.assets.map((a) => a.assetKey).sort();
+    expect(contracted).toEqual(["linksGolferAthleteMeshy", "links_golfer_player"]);
     const kinds = new Set(direction.vfx.map((v) => v.kind));
     for (const id of LINKS_VFX_IDS) expect(kinds.has(id), id).toBe(true);
   });

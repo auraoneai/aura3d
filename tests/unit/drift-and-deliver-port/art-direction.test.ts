@@ -5,13 +5,7 @@ import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direc
 import { PHASES } from "../../../examples/drift-and-deliver-port/phases";
 import { SODIUM_POOL } from "../../../examples/drift-and-deliver-port/lamps";
 
-// GU47 WP-28 GC-H3: the art direction audited against a literal mirror of the shift look's authored scene
-// (look.ts buildLook with look "shift" plus main.ts buildScene). Triangle counts are the GLBs' index counts / 3.
-const TRIANGLES: Record<string, number> = {
-  courier: 37470, sedan: 6920, hatch: 7065, van: 7055, truck: 8589, lamp: 5507, signal: 3941, tree: 1844, palm: 2695,
-  shelter: 5141, hydrant: 4150, clocktower: 19196, lighthouse: 19987, watertank: 5838
-};
-
+// WP-22 procedural overhaul: zero static single-mesh Meshy GLBs mounted in the shift scene (`models: []`).
 const snapshot: ArtDirectionSnapshot = {
   lights: [
     { type: "directional", shadow: true, intensity: PHASES[0]!.key.intensity },
@@ -20,7 +14,7 @@ const snapshot: ArtDirectionSnapshot = {
   ],
   hasAmbient: false,
   environment: { kind: "hdri", background: false },
-  models: Object.entries(TRIANGLES).map(([assetKey, triangles]) => ({ assetKey, triangles, textures: 2, unlit: false, overridesTextures: false })),
+  models: [],
   materials: [
     // lit windows and shopfronts are the town's practicals; the beacon, pad and pickups are light sources by design
     { node: "city-*-facade", emissiveIntensity: PHASES[2]!.windows, practical: true },

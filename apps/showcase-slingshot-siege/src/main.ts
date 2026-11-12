@@ -1705,7 +1705,7 @@ try {
   assignPieceVisuals();
   camState = "aim";
   syncVisuals();
-  BLOCK_POOL?.flush();
+  flushInstancePools();
   syncSling(0);
   updateCamera(0, 0);
   refreshVp();
@@ -1721,7 +1721,7 @@ gameApp.onFrame(({ dt }) => {
   frames += 1;
   elapsed += dt;
   // Level loads and resets while paused re-slot blocks outside syncVisuals: submit them here too (dirty families only).
-  BLOCK_POOL?.flush();
+  flushInstancePools();
   try {
     // createGameApp already updated the owned input for this frame; a second update() here
     // cleared the pressed edges before they were read, so R/P/M/Q never fired.
@@ -1797,7 +1797,7 @@ gameApp.onFrame(({ dt }) => {
     if (frames % 30 === 0 && pendingLooks.size > 0) flushPendingLooks();
     updateTweens(dt);
     syncVisuals();
-    BLOCK_POOL?.flush();
+    flushInstancePools();
     syncSling(dt);
     // SS47-AN1: move the existing pennant about its mast without another draw
     // or touching the simulation. The cloth asset/clip is still a separate need.

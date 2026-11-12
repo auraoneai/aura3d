@@ -137,11 +137,11 @@
         }
         #stats strong { font-size: 16px; }
         #progress {
-          top: calc(var(--a3d-bar-space, 0px) + max(96px, env(safe-area-inset-top) + 88px));
+          top: calc(var(--a3d-bar-space, 0px) + max(112px, env(safe-area-inset-top) + 104px));
           width: calc(100vw - 24px);
         }
         #progress > span { display: none; }
-        #announce { top: calc(var(--a3d-bar-space, 0px) + max(124px, env(safe-area-inset-top) + 116px)); }
+        #announce { top: calc(var(--a3d-bar-space, 0px) + max(136px, env(safe-area-inset-top) + 128px)); }
         #forms { display: none; }
         #abilities {
           left: max(8px, env(safe-area-inset-left));
@@ -214,6 +214,7 @@
       html.shot-bars::before, html.shot-bars::after { height: 9vh; }
       @media (pointer: coarse), (max-width: 760px) {
         .ink-scroll #district-banner { font-size: 20px; padding: 8px 26px; }
+        .ink-scroll #controls { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); }
       }
     </style>
   </head>

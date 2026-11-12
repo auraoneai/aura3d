@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/silt-and-signal-port/art/direction.ts",
-  "sourceSha256": "7e09b48b97537e346c2b4c93b3e61ad9933b448344bcedd7f64e95a439103ab9",
+  "sourceSha256": "1380deb3ff0308ac5cb8067a6b4b88bdcd44ebb9a0afac152612e848903a1f2d",
   "id": "showcase-silt-and-signal-port",
   "genre": "flight",
   "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
@@ -40,217 +40,7 @@
     },
     "models": [
       {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "canyonrocks",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "tree",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "canyonrocks",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "silt_and_signal_port_duneAdobeA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lantern",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ringclean",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoverboard",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "courier",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gatehouse",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aqueduct",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aqueduct",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ringgate",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "stall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "stall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "watchtower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "watchtower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "banner",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pillar",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -327,7 +117,27 @@
         "practical": false
       },
       {
+        "node": "dressing-drums",
+        "practical": false
+      },
+      {
+        "node": "dressing-ruins",
+        "practical": false
+      },
+      {
         "node": "silt-decals",
+        "practical": false
+      },
+      {
+        "node": "trees",
+        "practical": false
+      },
+      {
+        "node": "trees-trunks",
+        "practical": false
+      },
+      {
+        "node": "rocks",
         "practical": false
       },
       {
@@ -335,21 +145,30 @@
         "practical": false
       },
       {
+        "node": "houses",
+        "practical": false
+      },
+      {
+        "node": "houses-details",
+        "practical": false
+      },
+      {
+        "node": "lamps",
+        "practical": false
+      },
+      {
         "node": "piers",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "masts",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "signal-monoliths",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "signal-caps",
         "practical": false
       },
@@ -360,6 +179,10 @@
       },
       {
         "node": "route-sails",
+        "practical": false
+      },
+      {
+        "node": "rings",
         "practical": false
       },
       {
@@ -403,12 +226,20 @@
         "practical": true
       },
       {
-        "node": "tow-shell",
+        "node": "tow-shell material 0",
+        "practical": false
+      },
+      {
+        "node": "tow-shell material 1",
+        "practical": false
+      },
+      {
+        "node": "tow-shell material 2",
         "practical": false
       },
       {
         "node": "tow-glow",
-        "emissiveIntensity": 2.2,
+        "emissiveIntensity": 2.15,
         "practical": true
       },
       {
@@ -422,12 +253,23 @@
         "practical": true
       },
       {
-        "name": "brushed metal",
         "node": "board-trim",
         "practical": false
       },
       {
-        "node": "board-sail",
+        "node": "board-sail material 0",
+        "practical": false
+      },
+      {
+        "node": "board-sail material 1",
+        "practical": false
+      },
+      {
+        "node": "board-sail material 2",
+        "practical": false
+      },
+      {
+        "node": "board-sail material 3",
         "practical": false
       },
       {
@@ -440,7 +282,500 @@
         "practical": true
       },
       {
+        "node": "board material 0",
+        "practical": false
+      },
+      {
+        "node": "board material 1",
+        "practical": false
+      },
+      {
+        "node": "board material 2",
+        "practical": false
+      },
+      {
+        "node": "board material 3",
+        "practical": false
+      },
+      {
+        "node": "board material 4",
+        "practical": false
+      },
+      {
+        "node": "board material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
         "node": "rider-blob",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 0",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 1",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 3",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 8",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 10",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 11",
+        "practical": false
+      },
+      {
+        "node": "gatehouse-neri material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "aqueduct-east material 0",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-east material 1",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-east material 3",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-east material 5",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-west material 0",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-west material 1",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-west material 3",
+        "practical": false
+      },
+      {
+        "node": "aqueduct-west material 5",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 0",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 1",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 3",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 4",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 5",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 11",
+        "practical": false
+      },
+      {
+        "node": "canyon-gate material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "canyon-gate material 13",
+        "emissiveIntensity": 2.15,
+        "practical": true
+      },
+      {
+        "node": "stall-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "stall-0 material 5",
+        "practical": false
+      },
+      {
+        "node": "stall-0 material 6",
+        "practical": false
+      },
+      {
+        "node": "stall-0 material 7",
+        "practical": false
+      },
+      {
+        "node": "stall-0 material 8",
+        "practical": false
+      },
+      {
+        "node": "stall-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "stall-1 material 5",
+        "practical": false
+      },
+      {
+        "node": "stall-1 material 6",
+        "practical": false
+      },
+      {
+        "node": "stall-1 material 7",
+        "practical": false
+      },
+      {
+        "node": "stall-1 material 8",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 1",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 3",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 4",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 5",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 11",
+        "practical": false
+      },
+      {
+        "node": "watchtower-0 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "watchtower-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 3",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 4",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 5",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 11",
+        "practical": false
+      },
+      {
+        "node": "watchtower-1 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "watchtower-2 material 0",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 1",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 3",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 4",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 5",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 11",
+        "practical": false
+      },
+      {
+        "node": "watchtower-2 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "banner-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-0 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-0 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-0 material 8",
+        "practical": false
+      },
+      {
+        "node": "banner-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-1 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-1 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-1 material 9",
+        "practical": false
+      },
+      {
+        "node": "banner-2 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-2 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-2 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-2 material 10",
+        "practical": false
+      },
+      {
+        "node": "banner-3 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-3 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-3 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-3 material 8",
+        "practical": false
+      },
+      {
+        "node": "banner-4 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-4 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-4 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-4 material 9",
+        "practical": false
+      },
+      {
+        "node": "banner-5 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-5 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-5 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-5 material 10",
+        "practical": false
+      },
+      {
+        "node": "banner-6 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-6 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-6 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-6 material 8",
+        "practical": false
+      },
+      {
+        "node": "banner-7 material 0",
+        "practical": false
+      },
+      {
+        "node": "banner-7 material 3",
+        "practical": false
+      },
+      {
+        "node": "banner-7 material 7",
+        "practical": false
+      },
+      {
+        "node": "banner-7 material 9",
+        "practical": false
+      },
+      {
+        "node": "pillar-0 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-0 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-0 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-0 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-1 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-1 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "pillar-2 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-2 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-2 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-2 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "pillar-3 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-3 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-3 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-3 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "pillar-4 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-4 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-4 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-4 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "pillar-5 material 1",
+        "practical": false
+      },
+      {
+        "node": "pillar-5 material 2",
+        "practical": false
+      },
+      {
+        "node": "pillar-5 material 3",
+        "practical": false
+      },
+      {
+        "node": "pillar-5 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "node": "mesa-spire-0",
+        "practical": false
+      },
+      {
+        "node": "mesa-spire-1",
+        "practical": false
+      },
+      {
+        "node": "mesa-spire-2",
+        "practical": false
+      },
+      {
+        "node": "mesa-spire-3",
         "practical": false
       }
     ],
@@ -523,105 +858,6 @@
             "run"
           ]
         }
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "hoverboard",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "canyonrocks",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "aqueduct",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "gatehouse",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "ringgate",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "watchtower",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "ringclean",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "lantern",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "stall",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "banner",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "pillar",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "tree",
-        "maxTriangles": 5000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "house",
-        "maxTriangles": 5000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "silt_and_signal_port_duneAdobeA",
-        "maxTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
       }
     ],
     "vfx": [
@@ -689,14 +925,7 @@
       }
     ],
     "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
-    "standIns": [
-      {
-        "feature": "Kenney tree and house in the dressing",
-        "file": "examples/silt-and-signal-port/world.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 palms, tamarisk and adobe dwellings admitted"
-      }
-    ],
+    "standIns": [],
     "criticalCategories": [
       "lighting",
       "postprocessing",

@@ -5,6 +5,12 @@
  * streams), nothing collides, and only the new look mounts it (`?look=original` keeps the 4.6 bleachers empty).
  */
 import { instances, model, type AuraAssetRef, type AuraColor, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
+import {
+  getStandingSpectatorParts,
+  standingCrowdBottomsMaterial,
+  standingCrowdPbrMaterial,
+  standingCrowdSkinMaterial
+} from "./art/proceduralModels";
 import { BLEACHER_ROWS, BLEACHER_STANDS } from "./courtRigs";
 
 /** Fans per row across the 10 m riser (0.95 m apart), 3 stands x 5 rows = 150 slots. */
@@ -69,8 +75,17 @@ export function crowdLayout(seat: string, seed: number): CrowdLayout {
   const live = new Set(LIVE_FAN_SLOTS.map((l) => l.stand * BLEACHER_ROWS * CROWD_SLOTS_PER_ROW + l.slot));
   const empty = new Set<number>();
   while (empty.size < EMPTY_SLOTS) empty.add(Math.floor(rnd() * BLEACHER_STANDS.length * BLEACHER_ROWS * CROWD_SLOTS_PER_ROW));
-  const accent = softTint(seat, 0.45);
-  const neutrals: AuraColor[] = ["#ffffff", "#e6ecf5", "#f3e4d6", "#dfe9e0"];
+  const accent = softTint(seat, 0.86);
+  const streetWardrobe: AuraColor[] = [
+    "#e85d1a",
+    "#1f7ab8",
+    "#eab308",
+    "#d63649",
+    "#1f9d6b",
+    "#6d4aff",
+    "#f97316",
+    "#2a6f97"
+  ];
   const fanB: FanTransform[] = [], fanC: FanTransform[] = [], colorsB: AuraColor[] = [], colorsC: AuraColor[] = [];
   let slot = 0;
   for (const [x, z, yaw] of BLEACHER_STANDS) {
@@ -81,7 +96,7 @@ export function crowdLayout(seat: string, seed: number): CrowdLayout {
       const top = 0.45 * (r + 1) + 0.08;
       for (let i = 0; i < CROWD_SLOTS_PER_ROW; i++, slot++) {
         // every random draw is taken for every slot, so removing one slot never shifts the others
-        const jx = (rnd() - 0.5) * 0.2, jy = (rnd() - 0.5) * 0.5, pickC = rnd() < 0.5, scale = 0.94 + rnd() * 0.12, tint = rnd(), neutral = Math.floor(rnd() * neutrals.length);
+        const jx = (rnd() - 0.5) * 0.2, jy = (rnd() - 0.5) * 0.5, pickC = rnd() < 0.5, scale = 0.94 + rnd() * 0.12, tint = rnd(), wardrobeIdx = Math.floor(rnd() * streetWardrobe.length);
         if (empty.has(slot) || live.has(slot)) continue;
         const along = (i - (CROWD_SLOTS_PER_ROW - 1) / 2) * SLOT_PITCH + jx;
         const t: FanTransform = {
@@ -90,7 +105,7 @@ export function crowdLayout(seat: string, seed: number): CrowdLayout {
           rotation: [0, yaw + jy, 0],
           scale
         };
-        const color = tint < 0.2 ? accent : neutrals[neutral]!;
+        const color = tint < 0.22 ? accent : streetWardrobe[wardrobeIdx]!;
         (pickC ? fanC : fanB).push(t);
         (pickC ? colorsC : colorsB).push(color);
       }
@@ -100,8 +115,6 @@ export function crowdLayout(seat: string, seed: number): CrowdLayout {
 }
 
 export interface CrowdAssets {
-  readonly fanB: AuraAssetRef<"model">;
-  readonly fanC: AuraAssetRef<"model">;
   /** The three seated, animated fans (A, C, D poses), in `LIVE_FAN_SLOTS[].model` order. */
   readonly live: readonly [AuraAssetRef<"model">, AuraAssetRef<"model">, AuraAssetRef<"model">];
 }
@@ -121,25 +134,58 @@ export function liveFanTransforms(): FanTransform[] {
   });
 }
 
-/** The crowd of one court: two instanced draws (one per standing fan model) plus the six seated live fans. */
+const SKIN_TONES: readonly AuraColor[] = ["#ecc09c", "#d89c70", "#b6774d", "#8d5534", "#6b3d24"];
+const BOTTOM_TONES: readonly AuraColor[] = ["#1e293b", "#27272a", "#334155", "#1f2937", "#362f2c"];
+
+function pickPaletteColors(count: number, palette: readonly AuraColor[], salt: number): AuraColor[] {
+  const out: AuraColor[] = [];
+  for (let i = 0; i < count; i++) {
+    const h = Math.imul((i + 1) ^ salt, 2654435761) >>> 0;
+    out.push(palette[h % palette.length]!);
+  }
+  return out;
+}
+
+/** The crowd of one court: hardware-instanced `instances.custom` standing fan pools (`material.pbr`, `clearcoat: 0`) plus the six seated live fans. */
 export function courtCrowdNodes(courtId: string, seat: string, refs: CrowdAssets): AuraNodeBuilder<AuraSceneNode>[] {
-  const layout = crowdLayout(seat, 0x6f4a ^ [...courtId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7));
-  const group = (asset: AuraAssetRef<"model">, name: string, transforms: readonly FanTransform[], colors: readonly AuraColor[]) =>
-    instances.model(asset, {
+  const seed = 0x6f4a ^ [...courtId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const layout = crowdLayout(seat, seed);
+  const partsB = getStandingSpectatorParts("B");
+  const partsC = getStandingSpectatorParts("C");
+  const trsB = layout.fanB.map((t) => ({ position: t.position, rotation: t.rotation, scale: t.scale }));
+  const trsC = layout.fanC.map((t) => ({ position: t.position, rotation: t.rotation, scale: t.scale }));
+  const trsAll = [...trsB, ...trsC];
+
+  const batch = (
+    spec: ReturnType<typeof getStandingSpectatorParts>["wardrobe"],
+    name: string,
+    transforms: typeof trsB,
+    colors: readonly AuraColor[],
+    mat: ReturnType<typeof standingCrowdPbrMaterial>
+  ) =>
+    instances.custom(spec, {
       name,
-      targetHeight: FAN_HEIGHT,
-      scaleMode: "fit",
       role: "setDressing",
       castShadow: false,
       receiveShadow: true,
-      transforms: transforms.map((t) => ({ position: t.position, rotation: t.rotation, scale: t.scale })),
+      material: mat,
+      transforms,
       colors
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
+
   // Seated live fans: one skinned draw each, created visible at their seats (a skinned model created hidden may never draw).
   const live = liveFanTransforms().map((t, i) =>
     model(refs.live[LIVE_FAN_SLOTS[i]!.model], { name: LIVE_FAN_IDS[i]!, role: "setDressing", targetHeight: LIVE_FAN_REST_HEIGHT[LIVE_FAN_SLOTS[i]!.model]! * t.scale, scaleMode: "fit", castShadow: false, receiveShadow: true } as Parameters<typeof model>[1])
       .position(...t.position)
       .rotation(...t.rotation)
       .animate({ clip: LIVE_FAN_IDLE[i]!.clip, loop: true, speed: LIVE_FAN_IDLE[i]!.speed }) as unknown as AuraNodeBuilder<AuraSceneNode>);
-  return [group(refs.fanB, "crowd-fans-b", layout.fanB, layout.colorsB), group(refs.fanC, "crowd-fans-c", layout.fanC, layout.colorsC), ...live];
+
+  return [
+    batch(partsB.wardrobe, "crowd-fans-b", trsB, layout.colorsB, standingCrowdPbrMaterial()),
+    batch(partsC.wardrobe, "crowd-fans-c", trsC, layout.colorsC, standingCrowdPbrMaterial()),
+    batch(partsB.skin, "crowd-skin-b", trsB, pickPaletteColors(trsB.length, SKIN_TONES, seed ^ 0x1357), standingCrowdSkinMaterial()),
+    batch(partsC.skin, "crowd-skin-c", trsC, pickPaletteColors(trsC.length, SKIN_TONES, seed ^ 0x2468), standingCrowdSkinMaterial()),
+    batch(partsB.bottoms, "crowd-bottoms", trsAll, pickPaletteColors(trsAll.length, BOTTOM_TONES, seed ^ 0x9abc), standingCrowdBottomsMaterial()),
+    ...live
+  ];
 }

@@ -6,8 +6,7 @@
  */
 import type { AuraPhotometricProfile } from "@aura3d/engine";
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
-import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
-import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
+import { CAR_KINDS, buildCarShell, buildProceduralTrafficFleet, type CarKind, type CarShell } from "./vehicles";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
@@ -196,10 +195,12 @@ export interface TrafficRig {
 }
 
 export interface TrafficGroup {
-  /** runtime id of the instanced model node */
+  /** primary runtime id of the instanced vehicle class */
   id: string;
+  /** all multi-material instanced layer ids updated together per frame */
+  layerIds?: readonly string[];
   /** traffic indices drawn by this node, in instance order */
-  cars: number[];
+  cars: readonly number[];
   scale: number;
 }
 
@@ -446,35 +447,18 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // ---- street furniture, trees and pedestrians: one merged static mesh in palette colours ----
   b.add(geometry.custom(geo(props, "props"), { name: "props", material: material.pbr({ color: "#ffffff", roughness: 0.82, texture: asRef(paletteTex) }), castShadow: false, receiveShadow: true }));
 
-  // ---- generated prop models: near-field lamps, signals, trees, hydrants, shelters and the landmarks ----
+  // ---- procedural multi-material props: near-field lamps, signals, trees, hydrants, shelters, shopfronts & landmarks ----
   // GC-L2: in the shift look the near-field lamps, signals, shelters and landmarks cast into the raking sun
   if (propPlan) {
     for (const n of propNodes(propPlan, shift)) b.add(n);
-    const shelters = propPlan.placements.get("shelter");
-    if (shift && shelters && shelters.length > 0) {
-      b.add(
-        instances.box({
-          name: "storefront-glass",
-          size: [3.4, 2.05, 0.05],
-          material: material.studioGlass({ tint: "#dff4fa", roughness: 0.06 }),
-          transforms: shelters.map((t) => ({ position: [t.position[0], t.position[1] + 1.15, t.position[2]] as [number, number, number], rotation: t.rotation })),
-          castShadow: false,
-          receiveShadow: false
-        })
-      );
-    }
   }
 
-  // ---- traffic: paint + detail shells per kind, wheels and hubs ----
+  // ---- traffic: 6-class multi-material procedural city fleet (or `?models=0` low-poly fallback shells) ----
   const modelTraffic: TrafficGroup[] = [];
   if (opts.models) {
-    for (const kind of CAR_KINDS) {
-      const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
-      const key = TRAFFIC_MODEL[kind];
-      const id = `traffic-${kind}`;
-      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] })), shift, shift));
-      modelTraffic.push({ id, cars, scale: carScale(key) });
-    }
+    const fleet = buildProceduralTrafficFleet(world.traffic, shift);
+    for (const n of fleet.nodes) b.add(n);
+    modelTraffic.push(...fleet.groups);
   }
   const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
     const cars = world.traffic.map((_, i) => i).filter((i) => i % CAR_KINDS.length === CAR_KINDS.indexOf(kind));

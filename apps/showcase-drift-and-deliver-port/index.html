@@ -115,6 +115,479 @@
         body.dispatch #speed { font-size: 28px; }
       }
     </style>
+  <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f7f1e6;
+        --muted: rgba(239, 227, 207, 0.72);
+        --panel: rgba(20, 18, 22, 0.82);
+        --panel-strong: rgba(16, 15, 19, 0.9);
+        --line: rgba(247, 241, 230, 0.14);
+        --warm: #f5a623;
+        --teal: #22c3c9;
+        --danger: #ff6b57;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #181518;
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.45;
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      h1 { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+      .meta { font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+      button {
+        min-height: 44px;
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0.04em;
+        color: #181518;
+        background: linear-gradient(180deg, #ffbe4d, #f09819);
+        border: 1px solid rgba(255, 244, 214, 0.45);
+        border-radius: 8px;
+        padding: 12px 18px;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+      }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        padding: calc(var(--a3d-bar-space, 40px) + 12px) 16px 20px;
+        background: rgba(16, 14, 18, 0.56);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); height: 6px; border-radius: 999px; }
+      .panel {
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 20px;
+        width: min(430px, 92vw);
+        display: grid;
+        gap: 12px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48);
+      }
+      #hud { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+
+      /* Bottom-left boost / nitro pod */
+      #nitro {
+        position: absolute;
+        bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+        left: 22px;
+        width: 224px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #nitro .label, .chip-label {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      #nitro .label { margin-bottom: 6px; }
+      #nitro .track { height: 8px; border-radius: 999px; background: rgba(255, 246, 230, 0.12); overflow: hidden; }
+      #nitro-fill { height: 100%; width: 100%; border-radius: 999px; }
+
+      /* Speedometer pod: open bottom bezel cleanly separates needle hub from DIN Pro speed digits */
+      #speedbox {
+        position: absolute;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 8px 14px 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #speed {
+        font-family: var(--font-metric);
+        font-size: 36px;
+        font-weight: 500;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+      #speedbox .meta {
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        margin-top: 2px;
+      }
+
+      /* Top-right tips / score / drift combo pod — cleared below Aura3D top bar */
+      #score-box {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 10px);
+        right: 20px;
+        text-align: right;
+        padding: 8px 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #score-box .score-caption {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        line-height: 1;
+      }
+      #score {
+        font-family: var(--font-metric);
+        font-size: 28px;
+        font-weight: 500;
+        line-height: 1.08;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+      #streak {
+        transition: opacity 0.2s;
+        color: var(--warm);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+      }
+      #drift-row {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 5px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #drift {
+        font-family: var(--font-metric);
+        font-size: 15px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: #ffe08a;
+      }
+
+      /* Top-center shift countdown & dispatch ticket — cleared below Aura3D top bar */
+      #clock {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 5px 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-family: var(--font-metric);
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #job {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 48px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: #9cefff;
+        font-variant-numeric: tabular-nums;
+        white-space: pre;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+      }
+      #clock.low { color: var(--danger); border-color: rgba(255, 107, 87, 0.5); }
+      #job.low { color: var(--danger); }
+
+      #popups { position: absolute; left: 50%; top: 54%; width: 0; height: 0; }
+      .popup {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, 0);
+        white-space: pre;
+        font-family: var(--font-ui);
+        font-size: 17px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+        color: #ffe08a;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+        animation: rise 1.05s ease-out forwards;
+      }
+      .popup-job { color: #9cefff; font-size: 20px; }
+      .popup-miss { color: var(--danger); }
+      .popup-star { color: #fff4c2; }
+      .popup-heart { color: #ffb0c4; }
+      @keyframes rise { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -68px); } }
+      @keyframes fade { from { opacity: 1; } to { opacity: 0; } }
+      body.reduced-motion .popup { animation-name: fade; }
+      @media (prefers-reduced-motion: reduce) { .popup { animation-name: fade; } }
+
+      /* Bottom-right zoomed GPS radar */
+      #minimap {
+        position: absolute;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        right: 20px;
+        width: 164px;
+        height: 164px;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 0 1.5px rgba(247, 241, 230, 0.22);
+      }
+
+      .title {
+        background: linear-gradient(160deg, rgba(32, 26, 28, 0.92), rgba(18, 16, 20, 0.96));
+        width: min(510px, 92vw);
+        padding: 22px 24px;
+        gap: 14px;
+      }
+      .title h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
+      .title .tag {
+        color: var(--teal);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
+      }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; align-items: center; }
+      kbd {
+        display: inline-block;
+        min-width: 26px;
+        text-align: center;
+        padding: 2px 7px;
+        border: 1px solid var(--line);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: rgba(255, 246, 230, 0.08);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+      #mute {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 12px);
+        left: 20px;
+        padding: 5px 10px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .results dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; align-items: baseline; }
+      .results dt { color: var(--muted); font-size: 13px; font-weight: 500; }
+      .results dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
+      .results #r-score { font-family: var(--font-metric); font-size: 24px; font-weight: 500; color: var(--warm); }
+      .results #r-best, .results #r-time { font-family: var(--font-metric); font-size: 16px; font-weight: 500; }
+
+      /* Touch ergonomics (>= 48x48px targets) */
+      .touch-only { display: none; }
+      body.touch .touch-only { display: grid; }
+      body.touch .keys-only { display: none; }
+      #touch { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+      #touch[hidden] { display: none; }
+      .tbtn {
+        position: absolute;
+        min-width: 48px;
+        min-height: 48px;
+        pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(20, 18, 22, 0.72);
+        border: 1.5px solid rgba(247, 241, 230, 0.34);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.08em;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .tbtn.on { background: rgba(34, 195, 201, 0.78); border-color: #9ff3f5; color: #101619; }
+      #t-steer { left: 14px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 138px; height: 138px; }
+      #t-knob { width: 56px; height: 56px; border-radius: 50%; background: rgba(247, 241, 230, 0.32); border: 1px solid rgba(247, 241, 230, 0.5); pointer-events: none; }
+      #t-gas { right: 14px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 82px; height: 82px; }
+      #t-brake { right: 106px; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-nitro { right: 22px; bottom: calc(122px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-drift { right: 98px; bottom: calc(102px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; }
+      #t-pause, #t-mute {
+        top: calc(var(--a3d-bar-space, 40px) + 8px);
+        height: 48px;
+        border-radius: 10px;
+        padding: 0 12px;
+      }
+      #t-pause { left: 12px; width: 68px; }
+      #t-mute { left: 86px; width: 88px; }
+      body.touch #mute { display: none; }
+      body.touch #nitro { left: 14px; bottom: calc(180px + env(safe-area-inset-bottom, 0px)); width: 156px; padding: 8px 10px; }
+      body.touch #speedbox { left: auto; right: 14px; bottom: calc(196px + env(safe-area-inset-bottom, 0px)); transform: none; }
+      body.touch #minimap { top: calc(var(--a3d-bar-space, 40px) + 114px); bottom: auto; right: 12px; width: 104px; height: 104px; }
+
+      /* GU47 GC-H1 dispatch HUD (shift look: body.dispatch) */
+      #dial, #stamp { display: none; }
+      body.dispatch #speedbox {
+        width: 144px;
+        height: 138px;
+        padding: 4px 6px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      body.dispatch #dial {
+        display: block;
+        width: 128px;
+        height: 128px;
+        flex: 0 0 auto;
+        margin: 0 auto -46px;
+      }
+      body.dispatch:not(.touch) #speedbox { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+      @media (min-width: 761px) {
+        body.dispatch:not(.touch) #speedbox { left: 262px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: none; }
+      }
+      body.dispatch #speed { position: relative; font-size: 26px; line-height: 1; }
+      body.dispatch #speedbox .meta { position: relative; font-size: 12px; line-height: 1.05; margin-top: 1px; }
+      body.dispatch #job {
+        top: calc(var(--a3d-bar-space, 40px) + 50px);
+        padding: 6px 14px 7px;
+        min-width: 168px;
+        text-align: center;
+        color: #1f242b;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.32;
+        letter-spacing: 0.04em;
+        text-shadow: none;
+        border-radius: 4px;
+        background:
+          radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat,
+          radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38);
+        border-top: 2px dashed rgba(31, 36, 43, 0.34);
+      }
+      body.dispatch #job:empty { display: none; }
+      body.dispatch #job.low { color: #b2321f; }
+      body.dispatch #stamp {
+        position: absolute;
+        top: calc(var(--a3d-bar-space, 40px) + 46px);
+        left: 50%;
+        display: block;
+        opacity: 0;
+        transform: translateX(-50%) rotate(-8deg);
+        padding: 4px 12px;
+        border: 2.5px solid #d9765f;
+        border-radius: 4px;
+        color: #d9765f;
+        font-family: var(--font-ui);
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: 0.12em;
+        background: rgba(239, 227, 207, 0.94);
+      }
+      body.dispatch #stamp.on { animation: stamp 1.3s ease-out forwards; }
+      body.dispatch.reduced-motion #stamp.on { animation-name: stamp-fade; }
+      @media (prefers-reduced-motion: reduce) { body.dispatch #stamp.on { animation-name: stamp-fade; } }
+      @keyframes stamp {
+        0% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1.65); }
+        14% { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); }
+        75% { opacity: 1; }
+        100% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1); }
+      }
+      @keyframes stamp-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+      body.dispatch #minimap {
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(239, 227, 207, 0.52);
+      }
+
+      /* 390x844 mobile & coarse-pointer ergonomics */
+      @media (pointer: coarse), (max-width: 760px) {
+        button, .tbtn { min-width: 48px; min-height: 48px; }
+      }
+      @media (max-width: 760px) {
+        #score-box { top: calc(var(--a3d-bar-space, 40px) + 8px); right: 12px; padding: 6px 10px; }
+        #score { font-size: 22px; }
+        #mute { top: calc(var(--a3d-bar-space, 40px) + 8px); left: 12px; }
+        #clock { top: calc(var(--a3d-bar-space, 40px) + 62px); left: 12px; transform: none; font-size: 20px; padding: 4px 11px; }
+        #job, body.dispatch #job {
+          top: calc(var(--a3d-bar-space, 40px) + 100px);
+          left: 12px;
+          transform: none;
+          min-width: 0;
+          font-size: 12px;
+          padding: 5px 11px 6px;
+        }
+        body.dispatch #stamp { top: calc(var(--a3d-bar-space, 40px) + 98px); left: 12px; transform: rotate(-8deg); font-size: 16px; }
+        #minimap, body.touch #minimap {
+          top: calc(var(--a3d-bar-space, 40px) + 98px);
+          bottom: auto;
+          right: 12px;
+          width: 96px;
+          height: 96px;
+        }
+        #nitro { left: 12px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 152px; padding: 8px 10px; }
+        body.touch #nitro { left: 14px; bottom: calc(176px + env(safe-area-inset-bottom, 0px)); width: 146px; }
+        #speedbox, body.dispatch #speedbox {
+          left: auto;
+          right: 12px;
+          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          transform: none;
+          width: 112px;
+          height: 108px;
+          padding: 3px 4px 6px;
+        }
+        body.touch #speedbox, body.dispatch.touch #speedbox {
+          right: 12px;
+          bottom: calc(194px + env(safe-area-inset-bottom, 0px));
+        }
+        body.dispatch #dial { width: 98px; height: 98px; margin: 0 auto -35px; }
+        #speed, body.dispatch #speed { font-size: 22px; }
+      }
+    </style>
   <title>Gridlock Courier — Arcade City Drift</title>
     <meta name="description" content="Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -578,7 +1051,7 @@
         }
         body.dispatch #stamp { top: calc(var(--a3d-bar-space, 40px) + 98px); left: 12px; transform: rotate(-8deg); font-size: 16px; }
         #minimap, body.touch #minimap {
-          top: calc(var(--a3d-bar-space, 40px) + 98px);
+          top: calc(var(--a3d-bar-space, 40px) + 116px);
           bottom: auto;
           right: 12px;
           width: 96px;

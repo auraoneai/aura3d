@@ -33,6 +33,20 @@ export class MeshData {
     for (let k = 1; k < points.length - 1; k++) this.indices.push(base, base + k, base + k + 1);
   }
 
+  /** Appends a sculpted `RawMesh` (from `proceduralKernel`) into this `MeshData` buffer. */
+  appendRaw(raw: {
+    readonly positions: readonly number[];
+    readonly normals: readonly number[];
+    readonly uvs: readonly number[];
+    readonly indices: readonly number[];
+  }): void {
+    const base = this.vertexCount;
+    for (let i = 0; i < raw.positions.length; i++) this.positions.push(raw.positions[i]!);
+    for (let i = 0; i < raw.normals.length; i++) this.normals.push(raw.normals[i]!);
+    for (let i = 0; i < raw.uvs.length; i++) this.uvs.push(raw.uvs[i]!);
+    for (let i = 0; i < raw.indices.length; i++) this.indices.push(base + raw.indices[i]!);
+  }
+
   toGeometry() {
     return geometry.dynamic({ positions: Float32Array.from(this.positions), normals: Float32Array.from(this.normals), uvs: Float32Array.from(this.uvs), indices: Uint32Array.from(this.indices) });
   }

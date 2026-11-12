@@ -1,5 +1,32 @@
-import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, game, geometry, instances, lights, material, model, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
+import {
+  avGlazingMaterial,
+  beaconDiscGeometrySpec,
+  beaconRingGeometrySpec,
+  buildAvenueTrafficCarNode,
+  buildCoitTowerLandmarkNode,
+  buildFerryClocktowerNode,
+  buildPlayableFleetCarNode,
+  buildRivalFleetCarNode,
+  buildSkylineTowerNode,
+  buildStreetBuildingNode,
+  buildSuspensionBridgeSpanNode,
+  buildSuspensionBridgeTowerNode,
+  buildTransamericaSpireNode,
+  INSTANCED_STREET_MATERIALS,
+  parkedVehicleGeometrySpec,
+  passengerMaterialOverrides,
+  podSensorHousingGeometrySpec,
+  podSensorLaserGeometrySpec,
+  signalArmGeometrySpec,
+  signalLightGeometrySpec,
+  signalPoleGeometrySpec,
+  streetLampGlobeGeometrySpec,
+  streetLampPoleGeometrySpec,
+  streetTreeCrownGeometrySpec,
+  streetTreeTrunkGeometrySpec
+} from "./art/proceduralModels";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { MANHOLES, createBeaconRippleTexture } from "./vfx";
@@ -63,31 +90,18 @@ export function buildingLayout(spec: (typeof BUILDING_SPECS)[number], targetHeig
 export const buildingLayoutLeft = (i: number) => buildingLayout(BUILDING_SPECS[i % BUILDING_SPECS.length]!, 18 + ((i * 7) % 22));
 export const buildingLayoutRight = (i: number) => buildingLayout(BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!, 20 + ((i * 11) % 24));
 
-// A missing building GLB must never take the whole scene down: the production build only copies manifest-admitted assets, and
-// a 404 here rejects auraApp.ready() (4.3.0 shipped a black canvas that way). Unreachable models get a plain box instead.
-const buildingModelReachable: Record<string, boolean> = {};
-export async function probeBuildingModels(): Promise<void> {
-  await Promise.all(
-    BUILDING_SPECS.map(async (spec) => {
-      try {
-        const res = await fetch(assets[spec.key].url, { method: "HEAD", cache: "force-cache" });
-        buildingModelReachable[spec.key] = res.ok && !/text\/html/i.test(res.headers.get("content-type") ?? "");
-      } catch {
-        buildingModelReachable[spec.key] = false;
-      }
-    })
-  );
-  const missing = BUILDING_SPECS.filter((spec) => buildingModelReachable[spec.key] === false).map((spec) => spec.key);
-  if (missing.length) console.error(`[grid-dispatch] building models unreachable, using box fallbacks: ${missing.join(", ")}`);
-}
+// Procedural multi-material SF facades (`art/proceduralModels.ts`) need zero network GLB probes; kept as an async no-op for `main.ts`.
+export async function probeBuildingModels(): Promise<void> {}
 
-const buildingFallbackMat = material.pbr({ color: "#94a3b8", roughness: 0.82, metalness: 0.05 });
-function buildingNode(spec: (typeof BUILDING_SPECS)[number], name: string, lay: ReturnType<typeof buildingLayout>, x: number, z: number) {
-  if (buildingModelReachable[spec.key] === false) {
-    const k = lay.maxDim / Math.max(spec.x, spec.y, spec.z);
-    return primitives.box({ name, size: [spec.z * k, spec.y * k, spec.x * k], material: buildingFallbackMat }).position(x, (spec.y * k) / 2, z);
-  }
-  return model(assets[spec.key], { name, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim }).position(x, 0, z);
+function buildingNode(spec: (typeof BUILDING_SPECS)[number], name: string, lay: ReturnType<typeof buildingLayout>, look: SkyLook, x: number, z: number, seed: number) {
+  return buildStreetBuildingNode(
+    spec.key,
+    name,
+    { frontage: spec.x * lay.scale, height: lay.height, depth: spec.z * lay.scale },
+    look,
+    [x, 0, z],
+    seed
+  );
 }
 
 export const PLAYER_ASSET: Readonly<Record<PlayableCarId, GridAssetKey>> = {
@@ -526,33 +540,30 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     skyNode(look)
   ]);
 
-  // 2. Skyline landmarks (GU47 wave 2, GD-12): Meshy pyramid-spire and glass landmark towers and a suspension-bridge set-piece
-  // (two bridge towers whose own deck runs through them, plus a truss span closing the gap between them) on the bay. The
-  // box/cylinder/sphere stand-ins are gone. The tower deck sits at y ~ 36.7 m at 118 m tower height; the truss span is
-  // centred at the same level (its model centre is 0.187 of 1.9 above its base).
+  // 2. Skyline landmarks (WP-04 procedural multi-material SF bay panorama): tapered quartz spire, torqued diagrid tower,
+  // International-Orange suspension bridge towers + parabolic catenary span, Embarcadero Ferry clocktower, and Coit fluted tower.
   const BRIDGE_Z = -315;
   const BRIDGE_TOWER_X = 88;
   s.addMany([
-    model(assets.gridPyramidTower, { name: "sf-pyramid-tower", role: "setDressing", scaleMode: "fit", targetMaxDimension: 150, castShadow: false }).position(44, 0, -210),
-    model(assets.gridGlassTower, { name: "sf-glass-landmark", role: "setDressing", scaleMode: "fit", targetMaxDimension: 110, castShadow: false }).position(-70, 0, -235),
-    model(assets.gridBridgeTower, { name: "sf-bridge-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118, castShadow: false }).position(-BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, Math.PI / 2, 0),
-    model(assets.gridBridgeTower, { name: "sf-bridge-tower-r", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118, castShadow: false }).position(BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, -Math.PI / 2, 0),
-    model(assets.gridBridgeDeck, { name: "sf-bridge-span", role: "setDressing", scaleMode: "fit", targetMaxDimension: 66, castShadow: false }).position(0, 30.2, BRIDGE_Z)
+    buildTransamericaSpireNode(look, [44, 0, -210]),
+    buildSkylineTowerNode("glass", "sf-glass-landmark", look, [-70, 0, -235], 110),
+    buildSuspensionBridgeTowerNode("sf-bridge-tower-l", [-BRIDGE_TOWER_X, 0, BRIDGE_Z], Math.PI / 2),
+    buildSuspensionBridgeTowerNode("sf-bridge-tower-r", [BRIDGE_TOWER_X, 0, BRIDGE_Z], -Math.PI / 2),
+    buildSuspensionBridgeSpanNode([0, 30.2, BRIDGE_Z], BRIDGE_TOWER_X),
+    buildFerryClocktowerNode(look, [0, 0, -268]),
+    buildCoitTowerLandmarkNode(look, [-48, 0, -222])
   ]);
 
-  // 3. Skyline towers: this game's own glass and art-deco towers at skyline scale (GU47: the borrowed Heatsink towers
-  // and overpass are gone, D2). The marine layer swallows their tops.
+  // 3. Skyline towers: procedural diagrid glass and stepped terracotta Art Deco towers swallowed by the marine layer aloft.
   s.addMany([
-    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72, castShadow: false }).position(-58, 0, -145),
-    model(assets.gridBldgArtDeco, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68, castShadow: false }).position(58, 0, -135),
-    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74, castShadow: false }).position(-128, 0, -250)
+    buildSkylineTowerNode("glass", "sf-skyline-tower-l", look, [-58, 0, -145], 72),
+    buildSkylineTowerNode("artDeco", "sf-skyline-tower-t", look, [58, 0, -135], 68),
+    buildSkylineTowerNode("glass", "sf-skyline-tower-x", look, [-128, 0, -250], 74)
   ]);
 
-  // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, signal masts, lamps and sculpted multi-canopy trees.
-  // main.ts rewrites every instance transform each frame (setInstances), so the initial transforms only size the pools.
+  // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, fluted signal gantries, Path-of-Gold lamps, and multi-canopy trees.
   const dashMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 });
   const zebraMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.4 });
-  const signalPoleMat = material.pbr({ color: "#334155", metalness: 0.72, roughness: 0.32 });
   const signalHeadMat = material.emissive({ color: "#43d17a", emissive: "#43d17a", emissiveIntensity: 2.1 });
   // GD-02: lamp globes from the look table (night 3.0, dusk 2.5, fog 1.6, noon unlit 0.25).
   const lampMat = material.emissive({ color: "#fef3c7", emissive: SODIUM, emissiveIntensity: look.street.lampEmissive });
@@ -561,20 +572,25 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.box({ name: "sf-road-patches", size: ROAD_TILE.patch, material: roadTileMaterials(look).patch, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-patches")),
     instances.box({ name: "sf-road-joints", size: ROAD_TILE.joint, material: roadTileMaterials(look).joint, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-joints")),
     instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
-    instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
+    instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
     // GD-15: cast-iron manhole covers past each crossing (steam source); +1 draw.
-    instances.cylinder({ name: "sf-manholes", size: MANHOLES.size, material: material.pbr({ color: "#2b2f33", metalness: 0.6, roughness: look.street.drizzle ? 0.3 : 0.55 }), transforms: pool(INTERSECTION_COUNT * MANHOLES.offsets.length) }).runtime(game.runtimeNode("sf-manholes")),
+    instances.cylinder({ name: "sf-manholes", size: MANHOLES.size, material: material.pbr({ color: "#2b2f33", metalness: 0.6, roughness: look.street.drizzle ? 0.3 : 0.55, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT * MANHOLES.offsets.length) }).runtime(game.runtimeNode("sf-manholes")),
     instances.box({ name: "sf-crosswalks", size: [19.6, 0.035, 2.2], material: zebraMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-crosswalks")),
-    instances.cylinder({ name: "sf-signal-poles", size: [0.24, 6.8, 0.24], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-poles")),
-    instances.box({ name: "sf-signal-arms", size: [5.6, 0.16, 0.16], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-arms")),
-    instances.sphere({ name: "sf-signal-lights", size: [0.52, 0.52, 0.52], material: signalHeadMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
-    instances.cylinder({ name: "sf-lamp-poles", size: [0.16, 6.2, 0.16], material: signalPoleMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
-    instances.sphere({ name: "sf-lamp-globes", size: [0.42, 0.42, 0.42], material: lampMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
-    instances.cylinder({ name: "sf-tree-trunks", size: [0.24, 3.3, 0.24], material: material.pbr({ color: "#4e392d", roughness: 0.9 }), transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
-    instances.sphere({ name: "sf-tree-crowns", size: [2.2, 2.0, 2.2], material: material.pbr({ color: "#1e5f36", roughness: 0.84 }), transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length) }).runtime(game.runtimeNode("sf-tree-crowns"))
+    instances.custom(signalPoleGeometrySpec(), { name: "sf-signal-poles", material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-poles")),
+    instances.custom(signalArmGeometrySpec(), { name: "sf-signal-arms", material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-arms")),
+    instances.custom(signalLightGeometrySpec(), { name: "sf-signal-lights", material: signalHeadMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
+    instances.custom(streetLampPoleGeometrySpec(), { name: "sf-lamp-poles", material: INSTANCED_STREET_MATERIALS.castIronPole, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
+    instances.custom(streetLampGlobeGeometrySpec(), { name: "sf-lamp-globes", material: lampMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
+    instances.custom(streetTreeTrunkGeometrySpec(), { name: "sf-tree-trunks", material: INSTANCED_STREET_MATERIALS.treeBark, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
+    instances.custom(streetTreeCrownGeometrySpec(), {
+      name: "sf-tree-crowns",
+      material: INSTANCED_STREET_MATERIALS.treeFoliage,
+      ...(opts.motionOk === false ? {} : { wind: { strength: 0.2, assetHeight: 2.0 } }),
+      transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length)
+    }).runtime(game.runtimeNode("sf-tree-crowns"))
   ]);
 
-  // 5. Street-front buildings
+  // 5. Street-front buildings (Painted Lady Victorian bay-window rowhouses, Art Deco towers, Financial District glass & storefront midrises)
   for (let i = 0; i < BUILDING_PAIRS; i++) {
     const bz = -18 - i * BUILDING_STRIDE_Z;
     const spec = BUILDING_SPECS[i % BUILDING_SPECS.length]!;
@@ -582,21 +598,31 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     const lay = buildingLayoutLeft(i);
     const layR = buildingLayoutRight(i);
     s.addMany([
-      buildingNode(spec, `sf-bldg-l-${i}`, lay, -lay.centerX, bz).runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
-      buildingNode(specR, `sf-bldg-r-${i}`, layR, layR.centerX, bz).runtime(game.runtimeNode(`sf-bldg-r-${i}`))
+      buildingNode(spec, `sf-bldg-l-${i}`, lay, look, -lay.centerX, bz, i * 2),
+      buildingNode(specR, `sf-bldg-r-${i}`, layR, look, layR.centerX, bz, i * 2 + 1)
     ]);
   }
 
-  // 5b. GD-19 dressing: trolley catenary, parked cars on the cross streets, SDF street-name signs (text = HUD cross street).
-  const wireMat = material.pbr({ color: "#15181c", metalness: 0.4, roughness: 0.6 });
+  // 5b. GD-19 dressing: trolley catenary, procedural parked cars on the cross streets, SDF street-name signs (text = HUD cross street).
+  const wireMat = material.pbr({ color: "#15181c", metalness: 0.4, roughness: 0.6, clearcoat: 0, sheen: 0 });
+  const parkedPalette = ["#cbd5e1", "#64748b", "#93c5fd", "#d6d3d1", "#78909c", "#b0bec5"] as const;
   s.addMany([
     instances.box({ name: "sf-catenary-wires", size: CATENARY.wire, material: wireMat, transforms: pool(CATENARY.wiresX.length) }).runtime(game.runtimeNode("sf-catenary-wires")),
     instances.box({ name: "sf-catenary-spans", size: CATENARY.span, material: wireMat, transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-catenary-spans")),
-    ...PARKED.map((p, k) =>
-      instances.model(assets[p.asset], { name: `sf-parked-${k}`, transforms: pool(INTERSECTION_COUNT * p.slots.length), targetMaxDimension: p.maxDim, castShadow: true }).runtime(game.runtimeNode(`sf-parked-${k}`))
-    ),
-    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
-    instances.box({ name: "sf-sign-brackets", size: [0.08, 0.36, 0.08], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-brackets"))
+    ...PARKED.map((p, k) => {
+      const count = INTERSECTION_COUNT * p.slots.length;
+      return instances
+        .custom(parkedVehicleGeometrySpec(k === 0 ? "sedan" : "hatchback"), {
+          name: `sf-parked-${k}`,
+          material: INSTANCED_STREET_MATERIALS.parkedCoat,
+          castShadow: true,
+          transforms: pool(count),
+          colors: Array.from({ length: count }, (_, idx) => parkedPalette[(idx + k * 2) % parkedPalette.length]!)
+        })
+        .runtime(game.runtimeNode(`sf-parked-${k}`));
+    }),
+    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
+    instances.box({ name: "sf-sign-brackets", size: [0.08, 0.36, 0.08], material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-brackets"))
   ]);
   const signMat = material.emissive({ color: SIGN.textColor, emissive: SIGN.textColor, emissiveIntensity: look.street.headlights > 0 ? 0.65 : 0.22 });
   for (let d = 0; d < DISTRICTS.length; d++) {
@@ -606,47 +632,70 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     }
   }
 
-  // 6. Kerb beacon (ring, floor disc, holographic energy beam, core, ripple flipbook), waiting passenger and route ribbon
+  // 6. Kerb beacon (ring, floor disc, holographic energy beam, core, ripple flipbook), preserved rigged passenger and route ribbon
   const beaconTealMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 });
   const beaconDiscMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
   s.addMany([
     instances.box({ name: "route-ribbons", size: [1.35, 0.03, 3.2], material: beaconTealMat, transforms: pool(PATH_RIBBON_COUNT) }).runtime(game.runtimeNode("route-ribbons")),
-    primitives.torus({ name: "taxi-beacon-ring", size: [2.1, 2.1, 0.14], material: beaconTealMat }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
-    primitives.cylinder({ name: "taxi-beacon-disc", size: [1.85, 0.04, 1.85], material: beaconDiscMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
+    geometry.custom(beaconRingGeometrySpec(), { name: "taxi-beacon-ring", material: beaconTealMat }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
+    geometry.custom(beaconDiscGeometrySpec(), { name: "taxi-beacon-disc", material: beaconDiscMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
     primitives.plane({ name: "taxi-beacon-ripple", size: [3.6, 3.6], material: beaconRippleMaterial("pickup"), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.048, -38).rotate(-Math.PI * 0.5, 0, 0).runtime(game.runtimeNode("taxi-beacon-ripple")),
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
-    // meshy07 (GD-16): the waiting passenger is the Meshy rigged hooded commuter hailing with its `wave` loop (replaces the
-    // body/head/arm stand-in). Skinned, so it is created visible on screen and parked at HIDDEN_SCALE, never hidden.
-    model(assets.gridPassenger, { name: PASSENGER_NODE, role: "setDressing", scaleMode: "fit", targetHeight: PASSENGER_HEIGHT })
+    // meshy07 (GD-16): preserved rigged hooded commuter hailing with its `wave` loop, upgraded with physical sheen fabric overrides.
+    model(assets.gridPassenger, {
+      name: PASSENGER_NODE,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: PASSENGER_HEIGHT,
+      materialOverrides: passengerMaterialOverrides()
+    })
       .position(11.35, 0, -38)
       .rotation(0, PASSENGER_YAW, 0)
       .animate({ clip: PASSENGER_CLIP, loop: true, speed: opts.motionOk === false ? 0 : 1 })
       .runtime(game.runtimeNode(PASSENGER_NODE))
   ]);
 
-  // 7. Five playable cars (one shown at a time) + spinning 10 Hz roof LiDAR crown + conformal rear LED lightbars.
+  // 7. Five sculpted playable AV fleet cars + WebGPU-safe spinning 10 Hz roof LiDAR crown + conformal rear LED lightbars.
   s.addMany([
     ...PLAYABLE_IDS.map((id, i) =>
-      model(assets[PLAYER_ASSET[id]], { name: `player-car-${id}`, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: PLAYABLE_FLEET[id].maxDim })
-        .position(i === 0 ? 0 : HIDDEN_POS[0], i === 0 ? 0 : HIDDEN_POS[1], i === 0 ? -0.8 : HIDDEN_POS[2])
-        .scale(i === 0 ? [1, 1, 1] : HIDDEN_SCALE)
-        .runtime(game.runtimeNode(`player-car-${id}`, i === 0 ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
+      buildPlayableFleetCarNode(id, {
+        nodeId: `player-car-${id}`,
+        position: [i === 0 ? 0 : HIDDEN_POS[0], i === 0 ? 0 : HIDDEN_POS[1], i === 0 ? -0.8 : HIDDEN_POS[2]],
+        scale: i === 0 ? [1, 1, 1] : HIDDEN_SCALE,
+        tags: i === 0 ? ["primarySubject", "primaryVehicle", "player"] : undefined
+      })
     ),
-    primitives.cylinder({ name: "pod-sensor-housing", size: [0.3, 0.1, 0.3], material: material.studioGlass({ color: "#111b26", opacity: 0.82, ior: 1.52, roughness: 0.04 }), castShadow: false, receiveShadow: false }).position(0, 2.55, -0.85).runtime(game.runtimeNode("pod-sensor-housing")),
-    primitives.box({ name: "pod-sensor-laser", size: [0.32, 0.024, 0.06], material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.6 }), castShadow: false, receiveShadow: false }).position(0, 2.56, -0.85).runtime(game.runtimeNode("pod-sensor-laser")),
+    geometry
+      .custom(podSensorHousingGeometrySpec(), {
+        name: "pod-sensor-housing",
+        material: avGlazingMaterial("#cde6f5", 0.42),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, 2.55, -0.85)
+      .runtime(game.runtimeNode("pod-sensor-housing")),
+    geometry
+      .custom(podSensorLaserGeometrySpec(), {
+        name: "pod-sensor-laser",
+        material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.6, practical: true }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, 2.56, -0.85)
+      .runtime(game.runtimeNode("pod-sensor-laser")),
     ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
     instances.plane({ name: TAIL_TRAIL_ID, material: material.custom(tailTrailMaterial()), castShadow: false, receiveShadow: false, frustumCulled: false, transforms: pool(TAIL_TRAIL_CAPACITY) }).runtime(game.runtimeNode(TAIL_TRAIL_ID)),
     ...headlightNodes(look)
   ]);
 
-  // 8. Five AI rivals and ten traffic cars
+  // 8. Five sculpted AI rivals (including SF Powell-Mason Cable Car) and ten traffic cars across 6 SF traffic classes.
   RIVALS.forEach((r, k) => {
-    s.add(model(assets[r.asset], { name: `rival-car-${k}`, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: r.maxDim }).position(r.laneX, 0, r.z).runtime(game.runtimeNode(`rival-car-${k}`)));
+    s.add(buildRivalFleetCarNode(k, [r.laneX, 0, r.z]));
   });
   TRAFFIC_SPECS.forEach((t, i) => {
-    s.add(model(assets[t.asset], { name: `traffic-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: t.maxDim }).position(0, 0, -80).runtime(game.runtimeNode(`traffic-${i}`)));
+    s.add(buildAvenueTrafficCarNode(i, t.asset, [0, 0, -80]));
   });
   return s;
 }

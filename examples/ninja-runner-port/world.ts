@@ -14,8 +14,8 @@ import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, slashSpec, solidSpec, sparksSpec, threatRingSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
-import { LAYERS, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
-import { unitBox, unitCone, unitCrescentArc, unitCylinder, unitDisc, unitGable, unitHip, unitKanabo, unitKatana, unitRock, unitSphere, type Shape } from "./shapes";
+import { LAYERS, buildProceduralCourseAccents, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
+import { unitBox, unitCone, unitCrescentArc, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
 import type { CameraShake } from "@aura3d/engine/game";
 import { Batch, CORRIDOR_BOUNDS } from "../shared/runner-kit";
@@ -23,8 +23,21 @@ import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import type { ImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, PROP_ASSETS, SET_PIECE_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
 import { eveningSetPieces, shrineCentre } from "./setpieces";
+import {
+  buildBarrierHazardNodes,
+  buildKanaboWeaponNode,
+  buildKatanaWeaponNode,
+  buildPagodaSetpieceNode,
+  buildPickupPropNode,
+  buildProceduralDistrictBatches,
+  buildShrineGateSetpieceNode,
+  buildShurikenStarNode,
+  buildSpikedBeamHazardNode,
+  buildWaterWheelSetpieceGroup,
+  shinobiActorMaterialOverrides
+} from "./art/proceduralModels";
 import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
@@ -58,6 +71,7 @@ const SHURIKEN_POOL = 3;
 const THREAT_POOL = 1;
 const SLASH_POOL = 6;
 const FLIPBOOK_POOL = 4;
+const PICKUP_PROP_POOL = 12;
 const TOWN_FLOOR_Y = 3.2;
 
 /** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
@@ -441,35 +455,22 @@ export function buildWorld(options: WorldOptions): World {
   if (evening && modelSink.cliffB) modelSink.cliffB.push(...fallsCliff(groundFrame(COURSE_LENGTH - 90, 0, 0)));
   // GU47 wave 2 (NR-12): the evening's three set-pieces; the pines, bushes and rocks inside the shrine clearing step aside.
   const setPieces = evening ? eveningSetPieces() : null;
-  if (setPieces) {
-    const clearing = shrineCentre();
+  const clearing = setPieces ? shrineCentre() : undefined;
+  if (clearing) {
     for (const id of ["pine", "oak", "bush", "boulder"]) {
       if (modelSink[id]) modelSink[id] = modelSink[id]!.filter((p) => Math.hypot(p.position[0] - clearing.x, p.position[2] - clearing.z) > (id === "pine" || id === "oak" ? 10 : 8));
     }
   }
-  for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
-  for (const [id, list] of Object.entries(modelSink)) {
-    if (list.length === 0) continue;
-    // GU47 WP-36: the evening draws the admitted dusk retexture where one exists (presentation only, same bounds).
-    const duskId = evening && id in DUSK_PROP_ASSETS ? (id as keyof typeof DUSK_PROP_ASSETS) : null;
-    const asset = duskId ? DUSK_PROP_ASSETS[duskId] : PROP_ASSETS[id as keyof typeof PROP_ASSETS];
-    const k = duskId ? DUSK_PROP_SCALE[duskId] ?? 1 : 1;
-    builder.add(instances.model(asset, {
-      name: `model-${id}`,
-      castShadow: SUN_SHADOW,
-      transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: [p.scale[0] * k, p.scale[1] * k, p.scale[2] * k] as [number, number, number] })),
-      ...(list.some((p) => p.tint) ? { colors: list.map((p) => p.tint ?? "#ffffff") } : {})
-    }));
+  const courseAccents = buildProceduralCourseAccents(clearing);
+  for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 1.3, p.position[2]]);
+  for (const batchNode of buildProceduralDistrictBatches(modelSink, courseAccents, { castShadow: SUN_SHADOW })) {
+    builder.add(batchNode);
   }
 
   if (setPieces) {
-    for (const id of Object.keys(setPieces) as (keyof typeof setPieces)[]) {
-      builder.add(instances.model(SET_PIECE_ASSETS[id], {
-        name: `setpiece-${id}`,
-        castShadow: false,
-        transforms: setPieces[id].map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: p.scale }))
-      }));
-    }
+    for (const p of setPieces.shrineGate) builder.add(buildShrineGateSetpieceNode(p));
+    for (const p of setPieces.waterWheel) builder.add(buildWaterWheelSetpieceGroup(p));
+    for (const p of setPieces.pagoda) builder.add(buildPagodaSetpieceNode(p));
   }
 
   const water = buildWater();
@@ -484,14 +485,11 @@ export function buildWorld(options: WorldOptions): World {
 
   const crate = evening ? material.lacquer({ color: "#5e3622", roughness: 0.38, clearcoat: 0.72, clearcoatRoughness: 0.12 }) : material.pbr({ color: "#8a5a35", roughness: 0.86 });
   const strap = evening ? material.brushedMetal({ color: "#3d4654", roughness: 0.26, metallic: 0.92 }) : material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
-  const barrierTopMat = evening ? material.lacquer({ color: "#a83826", roughness: 0.3, clearcoat: 0.84, clearcoatRoughness: 0.08 }) : material.pbr({ color: "#c8a57b", roughness: 0.8 });
   const beam = hexLinear(evening ? "#485468" : "#c2603a"), glowOrange = hexLinear("#ff8a3a");
   for (let i = 0; i < BARRIER_POOL; i++) {
-    builder.add(primitives.box({ name: `barrier-${i}`, size: [2.0, 1.5, 0.55], material: crate, castShadow: true }).runtime({ id: `barrier-${i}` }));
-    builder.add(primitives.box({ name: `barrier-band-${i}`, size: [2.1, 0.2, 0.62], material: strap, castShadow: true }).runtime({ id: `barrier-band-${i}` }));
-    builder.add(primitives.box({ name: `barrier-top-${i}`, size: [2.2, 0.14, 0.7], material: barrierTopMat, castShadow: true }).runtime({ id: `barrier-top-${i}` }));
+    for (const barrierPart of buildBarrierHazardNodes(i)) builder.add(barrierPart);
   }
-  for (let i = 0; i < BEAM_POOL; i++) builder.add(primitives.box({ name: `beam-${i}`, size: [2.5, 0.34, 0.34], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })) }).runtime({ id: `beam-${i}` }));
+  for (let i = 0; i < BEAM_POOL; i++) builder.add(buildSpikedBeamHazardNode(i));
 
   for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false }).runtime({ id: `plank-${i}` }));
   for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
@@ -503,6 +501,7 @@ export function buildWorld(options: WorldOptions): World {
     topology: "points",
     attributes: { aAlive: { itemSize: 1, data: f32(pickups.map(() => 1)) }, aDistance: { itemSize: 1, data: f32(pickups.map((p) => p.s)) } }
   }), { name: "spirit-flames", material: material.custom(flameSpec(flameMap)) }).runtime({ id: "spirit-flames" }));
+  for (let i = 0; i < PICKUP_PROP_POOL; i++) builder.add(buildPickupPropNode(i, i % 3 === 0 ? "scroll" : "coin"));
 
   // The glow effects (orb, gale star, aura, caster orbs) are additive and transparent: they must not cast solid sun shadows.
   builder.add(primitives.sphere({ name: "spiralorb", size: 0.21, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "spiralorb" }));
@@ -513,19 +512,16 @@ export function buildWorld(options: WorldOptions): World {
     attributes: { seed: { itemSize: 3, data: f32(sparkSeeds) } }
   }), { name: "spiralorb-sparks", material: material.custom(sparksSpec()) }).runtime({ id: "spiralorb-sparks" }));
   for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `shuriken-${i}` }));
+  for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(buildShurikenStarNode(i));
   builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "aura" }));
 
-  const steel = evening ? material.brushedMetal({ color: "#dce6f2", roughness: 0.18, metallic: 0.96 }) : material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
-  const club = evening ? material.brushedMetal({ color: "#464b56", roughness: 0.34, metallic: 0.84 }) : material.pbr({ color: "#5a4332", roughness: 0.8 });
-  const katanaGeo = defineShape(unitKatana());
-  const kanaboGeo = defineShape(unitKanabo());
   const enemySlotCount = hasMeshy07Slots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
   for (let i = 0; i < enemySlotCount; i++) {
-    builder.add(geometry.custom(katanaGeo, { name: `blade-${i}`, material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
-    builder.add(geometry.custom(kanaboGeo, { name: `club-${i}`, material: club, castShadow: false }).runtime({ id: `club-${i}` }));
+    builder.add(buildKatanaWeaponNode(`blade-${i}`));
+    builder.add(buildKanaboWeaponNode(`club-${i}`));
     builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `orb-${i}` }));
   }
-  builder.add(geometry.custom(katanaGeo, { name: "hero-blade", material: steel, castShadow: false }).runtime({ id: "hero-blade" }));
+  builder.add(buildKatanaWeaponNode("hero-blade"));
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
@@ -826,7 +822,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const setTint = (slot: number, key: string, tint: Tint): void => {
     if (tints[slot] === key) return;
     tints[slot] = key;
-    actors[slot]!.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}), ...(tint.roughness !== undefined ? { roughness: tint.roughness } : {}), ...(tint.metallic !== undefined ? { metallic: tint.metallic } : {}) });
+    const actor = actors[slot]!;
+    if (typeof actor.setMaterialOverrides === "function") {
+      actor.setMaterialOverrides(shinobiActorMaterialOverrides(slotModels[slot]!, key, tint, evening));
+    } else {
+      actor.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}), ...(tint.roughness !== undefined ? { roughness: tint.roughness } : {}), ...(tint.metallic !== undefined ? { metallic: tint.metallic } : {}) });
+    }
   };
 
   const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, anim: Anim, dt: number, show: boolean): void => {
@@ -894,6 +895,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       node("sky").setPosition(sky.x, 0, sky.z);
       node("river").setUniform?.("waterTime", time);
       node("valley-falls").setUniform?.("fallsTime", time);
+      if (evening) node("setpiece-waterWheel").setRotation(time * 0.9, 0, 0);
       const flames = node("spirit-flames");
       flames.setUniform?.("flameTime", time);
       flames.setUniform?.("runnerS", s);
@@ -1178,7 +1180,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       for (let i = 0; i < SHURIKEN_POOL; i++) {
         const sh = state.shurikens[i];
         const h = node(`shuriken-${i}`);
+        const star = node(`shuriken-star-${i}`);
         h.setVisible(!!sh);
+        star.setVisible(!!sh);
         if (sh) {
           const f = groundFrame(sh.s, sh.x, 1.1);
           h.setPosition(f.x, f.y, f.z);
@@ -1186,7 +1190,28 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           h.setRotation(0, time * 18, 0);
           h.setUniform?.("ballTime", time);
           h.setUniform?.("ballOpacity", 0.9);
+          star.setPosition(f.x, f.y, f.z);
+          star.setScale([2.1, 2.1, 2.1]);
+          star.setRotation(0, time * 24, 0);
         }
+      }
+
+      /* spinning multi-material shinobi scrolls & imperial koban coins inside the nearest live spirit pickups */
+      {
+        let propSlot = 0;
+        for (let k = 0; k < pickupOrder.length && propSlot < PICKUP_PROP_POOL; k += 1) {
+          const entry = pickupOrder[k]!;
+          const d = entry.s - s;
+          if (d < -3) continue;
+          if (d > 68) break;
+          if (aliveFlags[entry.i] !== 1) continue;
+          const p = pickups[entry.i]!;
+          const ph = node(`pickup-prop-${propSlot++}`);
+          ph.setVisible(true);
+          ph.setPosition(p.position[0], p.position[1] + Math.sin(time * 3.4 + entry.i) * 0.08, p.position[2]);
+          ph.setRotation(0, time * 2.6 + entry.i * 0.7, 0);
+        }
+        for (let j = propSlot; j < PICKUP_PROP_POOL; j += 1) node(`pickup-prop-${j}`).setVisible(false);
       }
 
       /* form aura: shell around the runner plus rising embers, dust at the feet */

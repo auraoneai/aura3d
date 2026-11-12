@@ -50,6 +50,7 @@ describe("where-the-wind-wanders-port art direction", () => {
     writeArtDirectionAudit("examples/where-the-wind-wanders-port/art/direction.ts", { direction, snapshot, violations });
     expect(snapshot.lights.filter((l) => l.shadow)).toHaveLength(1);
     expect(snapshot.environment).toEqual({ kind: "hdri", background: false });
+    expect(snapshot.models.map((m) => m.assetKey)).toEqual(["hero"]);
     expect(violations).toEqual([]);
   });
 

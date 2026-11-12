@@ -45,19 +45,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.18, 0.22], fovDeg: [40, 52], mobile: "both" },
   assets: [
-    { role: "hero", assetKey: "hero", maxTriangles: 20000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["Idle", "Walk", "Run"] } },
-    { role: "world", assetKey: "belltower", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "bell", maxTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "cottage", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "boat", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "letter", maxTriangles: 24000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "oak", maxTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "pine", maxTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "shrub", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "stones", maxTriangles: 24000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // the 4.6 companion (`?look=original` only); the GU47 look flies the paper kite (WW47-A1, WP-36 bellKite)
-    { role: "prop", assetKey: "wisp", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "kite", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "hero", maxTriangles: 20000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["Idle", "Walk", "Run"] } }
   ],
   vfx: [
     { event: "wind-petals", kind: "wind-petals" },

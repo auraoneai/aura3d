@@ -1,14 +1,35 @@
 /**
- * Number Surge roadside dressing (presentation only): Meshy synthwave palms lining the elevated highway, giant neon
- * numeral-7 monuments standing on the grid floor and dark dice tumbling in the air beside the road.
+ * Number Surge procedural roadside dressing (presentation only): S-curved cyber-palms lining the elevated highway,
+ * monumental bevelled numeral-7 arches on the grid floor, chamfered casino dice with 21 recessed pips tumbling
+ * beside the road, lathe-turned highway milepost beacons, overhead lattice-truss math-gate gantries with translucent
+ * physical energy screens, and off-lane rotary-saw / hydraulic-crusher hazard rigs.
  *
- * Every piece stays outside the road (|x| >= 7.5, road half-width 3.7) and scrolls with the road at 1x on a fixed
- * cycle, growing in at the far end and out past the camera. Like `scenery.ts` it is a pure function of the shown
- * scroll distance and time: no simulation state, no gameplay random stream. Pieces are never hidden; outside their
- * window they are parked at scale 0.001.
+ * Every roadside piece stays clear of the gameplay lanes (`|x| >= 4.95`, road half-width `3.7`) and scrolls with the
+ * road at 1x on a fixed cycle, growing in at the far end and out past the camera: pure presentation, zero gameplay RNG.
  */
-import { instances, type AuraApp, type AuraTransformSpec, type scene } from "@aura3d/engine";
-import { assets } from "./aura-model-assets";
+import {
+  instances,
+  type AuraApp,
+  type AuraCustomGeometrySpec,
+  type AuraMaterialSpec,
+  type AuraTransformSpec,
+  type scene
+} from "@aura3d/engine";
+import {
+  SURGE_MATERIALS,
+  buildCyberPalmCrownSpec,
+  buildCyberPalmTrunkSpec,
+  buildFloatingDieBodySpec,
+  buildFloatingDiePipsSpec,
+  buildHighwayGantryScreensNode,
+  buildHighwayMathGantryFrameNode,
+  buildMilepostBeaconBodySpec,
+  buildMilepostBeaconLensSpec,
+  buildNumeralSevenBodySpec,
+  buildNumeralSevenPlinthSpec,
+  buildRoadsideHazardRigNode,
+  buildRotarySawBladeNode
+} from "./art/proceduralModels";
 import { SCENERY } from "./scenery";
 
 type Scene = ReturnType<typeof scene>;
@@ -67,7 +88,7 @@ const palm = (i: number, kind: "nsNeonPalm" | "nsPinkPalm", side: -1 | 1): Roads
   tint: kind === "nsNeonPalm" ? CYAN_PALM : PINK_PALM
 });
 
-/** Six palms (one every 30 m, alternating sides), two numeral sevens, three dice — batched into 4 GPU-instanced draws. */
+/** Six palms (one every 30 m, alternating sides), two numeral sevens, three dice — batched into procedural GPU-instanced draws. */
 export const ROADSIDE: readonly RoadsidePiece[] = [
   palm(0, "nsNeonPalm", -1), palm(1, "nsPinkPalm", 1), palm(2, "nsPinkPalm", -1),
   palm(3, "nsNeonPalm", 1), palm(4, "nsNeonPalm", -1), palm(5, "nsPinkPalm", 1),
@@ -78,20 +99,32 @@ export const ROADSIDE: readonly RoadsidePiece[] = [
   { id: "roadside-dice-2", kind: "nsFloatingDice", side: 1, x: 8.6, y: 8.6, z0: 138, height: 1.6, yaw: 4.0, color: "#fff1b8", tint: DICE_LACQUER }
 ];
 
+const MILEPOST_COUNT = 12;
+const GANTRY_Z0 = [32, 122] as const;
+const HAZARD_SPECS = [
+  { index: 0, side: -1 as const, x: -6.4, z0: 66, rotY: Math.PI },
+  { index: 1, side: 1 as const, x: 6.4, z0: 156, rotY: 0 }
+] as const;
+
 const smooth = (t: number): number => {
   const x = Math.min(1, Math.max(0, t));
   return x * x * (3 - 2 * x);
 };
 
+function cycleZ(z0: number, travelled: number): { readonly z: number; readonly scale: number } {
+  const z = ((((z0 + travelled) % ROADSIDE_SPAN) + ROADSIDE_SPAN) % ROADSIDE_SPAN) + FAR;
+  const fade = smooth((z - FAR) / 30) * smooth((NEAR - z) / 8);
+  return { z, scale: Math.max(0.001, fade) };
+}
+
 /** Pose at road speed: z cycles through [FAR, NEAR), grows in over the far 30 m and out over the last 8 m. */
 export function roadsidePose(p: RoadsidePiece, travelled: number, time: number) {
-  const z = ((((p.z0 + travelled) % ROADSIDE_SPAN) + ROADSIDE_SPAN) % ROADSIDE_SPAN) + FAR;
-  const fade = smooth((z - FAR) / 30) * smooth((NEAR - z) / 8);
+  const { z, scale } = cycleZ(p.z0, travelled);
   const dice = p.kind === "nsFloatingDice";
   const y = dice ? p.y + Math.sin(time * 0.9 + p.z0) * 0.45 : p.y;
   const yaw = dice ? p.yaw + time * 0.35 : p.yaw;
   const roll = dice ? Math.sin(time * 0.5 + p.z0) * 0.35 : 0;
-  return { x: p.side * p.x, y, z, yaw, roll, scale: Math.max(0.001, fade) };
+  return { x: p.side * p.x, y, z, yaw, roll, scale };
 }
 
 function transformFor(p: RoadsidePiece, travelled: number, time: number): AuraTransformSpec {
@@ -104,29 +137,160 @@ function transformFor(p: RoadsidePiece, travelled: number, time: number): AuraTr
   };
 }
 
+function kindSpecs(kind: RoadsideKind): {
+  readonly primarySpec: AuraCustomGeometrySpec;
+  readonly primaryMat: AuraMaterialSpec;
+  readonly accentSpec: AuraCustomGeometrySpec;
+  readonly accentMat: AuraMaterialSpec;
+} {
+  switch (kind) {
+    case "nsNeonPalm":
+      return {
+        primarySpec: buildCyberPalmCrownSpec(1),
+        primaryMat: SURGE_MATERIALS.palmCanopyPbr,
+        accentSpec: buildCyberPalmTrunkSpec(),
+        accentMat: SURGE_MATERIALS.instancedObsidianBatch
+      };
+    case "nsPinkPalm":
+      return {
+        primarySpec: buildCyberPalmCrownSpec(2),
+        primaryMat: SURGE_MATERIALS.pinkPalmCanopyPbr,
+        accentSpec: buildCyberPalmTrunkSpec(),
+        accentMat: SURGE_MATERIALS.instancedObsidianBatch
+      };
+    case "nsNumeralSeven":
+      return {
+        primarySpec: buildNumeralSevenBodySpec(),
+        primaryMat: SURGE_MATERIALS.ivoryLacquerBatch,
+        accentSpec: buildNumeralSevenPlinthSpec(),
+        accentMat: SURGE_MATERIALS.instancedAlloyBatch
+      };
+    case "nsFloatingDice":
+      return {
+        primarySpec: buildFloatingDieBodySpec(),
+        primaryMat: SURGE_MATERIALS.ivoryLacquerBatch,
+        accentSpec: buildFloatingDiePipsSpec(),
+        accentMat: SURGE_MATERIALS.instancedObsidianBatch
+      };
+  }
+}
+
+function milepostTransform(index: number, travelled: number): AuraTransformSpec {
+  const side = index % 2 === 0 ? -1 : 1;
+  const z0 = (index / MILEPOST_COUNT) * ROADSIDE_SPAN;
+  const { z, scale } = cycleZ(z0, travelled);
+  return {
+    position: [side * 4.95, 0, z],
+    rotation: [0, side < 0 ? 0.25 : -0.25, 0],
+    scale
+  };
+}
+
 export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHandle): { update(travelled: number, time: number): void } } {
   const groups = ROADSIDE_KINDS.map((kind) => {
     const id = `roadside-${kind}`;
+    const accentId = `roadside-${kind}-accent`;
     const members = ROADSIDE.filter((p) => p.kind === kind);
     const colors = members.map((p) => p.color);
+    const accentColors = members.map(() => "#ffffff");
+    const initial = members.map((p) => transformFor(p, 0, 0));
+    const { primarySpec, primaryMat, accentSpec, accentMat } = kindSpecs(kind);
+
     builder.add(
-      instances.model(assets[kind], {
-        name: id,
-        targetHeight: BASE_HEIGHT[kind],
-        role: "setDressing",
-        castShadow: false,
-        receiveShadow: false,
-        materialOverrides: members[0]!.tint,
-        transforms: members.map((p) => transformFor(p, 0, 0)),
-        colors
-      }).runtime({ id })
+      instances
+        .custom(primarySpec, {
+          name: id,
+          material: primaryMat,
+          transforms: initial,
+          colors,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id })
     );
-    return { id, members, colors, scratch: new Array<AuraTransformSpec>(members.length) };
+    builder.add(
+      instances
+        .custom(accentSpec, {
+          name: accentId,
+          material: accentMat,
+          transforms: initial,
+          colors: accentColors,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: accentId })
+    );
+
+    return {
+      id,
+      accentId,
+      members,
+      colors,
+      accentColors,
+      scratch: new Array<AuraTransformSpec>(members.length)
+    };
   });
+
+  // Lathe-turned highway milepost beacons outside road shoulders (|x| = 4.95).
+  const milepostColors = Array.from({ length: MILEPOST_COUNT }, (_, i) =>
+    i % 3 === 0 ? "#3ef2ff" : i % 3 === 1 ? "#ff4fd8" : "#ffd84d"
+  );
+  const initialMileposts = Array.from({ length: MILEPOST_COUNT }, (_, i) => milepostTransform(i, 0));
+  builder.add(
+    instances
+      .custom(buildMilepostBeaconBodySpec(), {
+        name: "roadside-mileposts",
+        material: SURGE_MATERIALS.instancedAlloyBatch,
+        transforms: initialMileposts,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .runtime({ id: "roadside-mileposts" })
+  );
+  builder.add(
+    instances
+      .custom(buildMilepostBeaconLensSpec(), {
+        name: "roadside-milepost-lenses",
+        material: SURGE_MATERIALS.palmCanopyPbr,
+        transforms: initialMileposts,
+        colors: milepostColors,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .runtime({ id: "roadside-milepost-lenses" })
+  );
+
+  // Full-span overhead lattice-truss math-gate gantries + physical energy screens.
+  for (let i = 0; i < GANTRY_Z0.length; i += 1) {
+    builder.add(buildHighwayMathGantryFrameNode(`roadside-gantry-${i}`));
+    builder.add(buildHighwayGantryScreensNode(`roadside-gantry-screens-${i}`));
+  }
+
+  // Off-lane rotary-saw + hydraulic crusher + barrier hazard rigs (|x| >= 6.4).
+  for (const h of HAZARD_SPECS) {
+    builder.add(buildRoadsideHazardRigNode(`roadside-hazard-rig-${h.index}`));
+    builder.add(buildRotarySawBladeNode(`roadside-hazard-saw-${h.index}`));
+  }
+
+  const milepostScratch = new Array<AuraTransformSpec>(MILEPOST_COUNT);
 
   return {
     bind(node) {
-      for (const g of groups) node(g.id);
+      for (const g of groups) {
+        node(g.id);
+        node(g.accentId);
+      }
+      node("roadside-mileposts");
+      node("roadside-milepost-lenses");
+      for (let i = 0; i < GANTRY_Z0.length; i += 1) {
+        node(`roadside-gantry-${i}`);
+        node(`roadside-gantry-screens-${i}`);
+      }
+      for (const h of HAZARD_SPECS) {
+        node(`roadside-hazard-rig-${h.index}`);
+        node(`roadside-hazard-saw-${h.index}`);
+      }
+
       return {
         update(travelled, time) {
           for (const g of groups) {
@@ -134,6 +298,35 @@ export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHa
               g.scratch[i] = transformFor(g.members[i]!, travelled, time);
             }
             node(g.id).setInstances(g.scratch, g.colors);
+            node(g.accentId).setInstances(g.scratch, g.accentColors);
+          }
+
+          for (let i = 0; i < MILEPOST_COUNT; i += 1) {
+            milepostScratch[i] = milepostTransform(i, travelled);
+          }
+          node("roadside-mileposts").setInstances(milepostScratch);
+          node("roadside-milepost-lenses").setInstances(milepostScratch, milepostColors);
+
+          for (let i = 0; i < GANTRY_Z0.length; i += 1) {
+            const { z, scale } = cycleZ(GANTRY_Z0[i]!, travelled);
+            const visible = scale > 0.02;
+            node(`roadside-gantry-${i}`).setVisible(visible).setPosition(0, 0, z).setScale(scale);
+            node(`roadside-gantry-screens-${i}`).setVisible(visible).setPosition(0, 0, z).setScale(scale);
+          }
+
+          for (const h of HAZARD_SPECS) {
+            const { z, scale } = cycleZ(h.z0, travelled);
+            const visible = scale > 0.02;
+            node(`roadside-hazard-rig-${h.index}`)
+              .setVisible(visible)
+              .setPosition(h.x, 0, z)
+              .setRotation(0, h.rotY, 0)
+              .setScale(scale);
+            node(`roadside-hazard-saw-${h.index}`)
+              .setVisible(visible)
+              .setPosition(h.x - h.side * 0.32 * scale, (2.15 + 0.25 * Math.sin(time * 2.8 + h.index)) * scale, z)
+              .setRotation(0, Math.PI * 0.5, time * 4.6 * h.side)
+              .setScale(scale);
           }
         }
       };

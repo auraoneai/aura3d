@@ -27,7 +27,40 @@ import {
   betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
   outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
-import { formatTacticalFeed, VIEWMODEL_ASSET, viewmodelFraming, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
+import {
+  buildPulseCarbineNode,
+  buildReflexOpticNode,
+  buildRocketLauncherNode,
+  buildServicePistolNode,
+  buildTacticalGloveNode,
+  buildTacticalSleeveNode,
+  buildTacticalWristCuffNode,
+  formatTacticalFeed,
+  VIEWMODEL_ASSET,
+  viewmodelFraming,
+  VIEWMODEL_YAW_OFFSET,
+  weaponHudLabel
+} from "./weapons-view";
+import {
+  buildBallisticArmorNode,
+  buildBallisticTracerNode,
+  buildBlastDoorBulkheadNode,
+  buildBulkheadRibInstances,
+  buildBullionCaseNode,
+  buildClearanceKeycardNode,
+  buildConduitPipeInstances,
+  buildEnemyOpticVisorNode,
+  buildFloorDrainInstances,
+  buildHazardDrumNode,
+  buildMilitaryCrateNode,
+  buildMunitionBoxNode,
+  buildMuzzleStarburstNode,
+  buildPilasterColumnInstances,
+  buildRocketWarheadNode,
+  buildSecretPushWallNode,
+  buildWorkLightInstances,
+  enemyMaterialOverrides
+} from "./art/proceduralModels";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
@@ -112,8 +145,8 @@ const BZ_BLOB = { y: 0.008, opacity: 0.3, rings: [{ scale: 1 }, { scale: 0.62 },
 /** GU47 phase 4: decal tints. Round g11p4-r1 drew the scorches as white shapes (alpha from the map, white from the tint),
  *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
 const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
-/** WP-10: real damp concrete screen-space reflections replacing the fake floor glint quads. */
-const BZ_SSR = { intensity: 0.34, maxDistance: 16, roughness: 0.24, thickness: 0.22 } as const;
+/** WP-10 / WP-11: real damp concrete screen-space reflections (`roughness: 0.26`). */
+const BZ_SSR = { intensity: 0.18, maxDistance: 16, roughness: 0.26, thickness: 0.22 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -127,11 +160,7 @@ const hash2 = (x: number, z: number) => {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
 };
 
-// BZ-14: hostiles read by light, not glow: no emissive lift and no eye spheres; a faint cool rim (E-D) separates the
-// silhouette from the walls between the lamp pools.
-const HOSTILE_OVERRIDES = [
-  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.66, metallic: 0.08, rim: { color: "#9fb4c8", power: 3.2, intensity: 0.6 } }
-];
+// BZ-14 / WP-11: hostiles read by light, armored metallic sheen (`enemyMaterialOverrides`) and sculpted `practical: true` optic visors.
 
 // Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
 /** GU47 phase 9 (D2) owned-prop placement: crack lamp on the push block's face, exit shutter and lamp, medkit span, columns. */
@@ -175,7 +204,7 @@ const SURFACES = createFloorSurfaceLoader<AuraNodeBuilder<AuraSceneNode>>(BOOT_S
 });
 type PbrOptions = NonNullable<Parameters<typeof material.pbr>[0]>;
 const pbrMaps = (options: PbrOptions, maps: boolean) => material.pbr(maps ? options : withoutMaps(options));
-function mappedSurface(slot: number, key: string, make: (maps: boolean) => ReturnType<typeof primitives.box>): AuraNodeBuilder<AuraSceneNode> {
+function mappedSurface(slot: number, key: string, make: (maps: boolean) => AuraNodeBuilder<AuraSceneNode>): AuraNodeBuilder<AuraSceneNode> {
   const mapped = make(true).runtime(staticNode(slot, key));
   if (slot === BOOT_SLOT || !DEFER_FLOOR_SURFACES) return mapped;
   SURFACES.defer(slot, mapped);
@@ -254,16 +283,16 @@ function buildScene() {
         floodSumX += wx; floodSumZ += wz; floodCount++;
       }
       if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P") {
-        // Ceiling work lights over open corridor cells.
+        // Ceiling work lights over open corridor cells (`instances.custom` louvered caged trough).
         if ((x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) {
-          ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
+          ceilInst.push({ position: [wx, wallH - 0.08, wz], scale: [1, 1, 1] });
         }
         // Gunmetal overhead structural I-beam ribs & grated floor drains (positive scales only).
         if ((x * 5 + z * 9) % 11 === 0 && !underHatch(def, x, z)) {
-          bulkheadInst.push({ position: [wx, wallH - 0.045, wz], scale: [CELL * 0.94, 0.09, 0.14] });
+          bulkheadInst.push({ position: [wx, wallH - 0.055, wz], scale: [CELL * 0.94, 0.11, 0.16] });
         }
         if (ch !== "," && ch !== "D" && ch !== "E" && (x * 11 + z * 5) % 13 === 0) {
-          drainInst.push({ position: [wx, 0.007, wz], scale: [0.58, 0.014, 0.58] });
+          drainInst.push({ position: [wx, 0.012, wz], scale: [1, 1, 1] });
         }
       }
     }
@@ -335,16 +364,16 @@ function buildScene() {
       ...wallShade(def, aoNear, aoFar, aoCeil, slot)
     );
     if (pipeInst.length) {
-      nodes.push(primitives.cylinder({
-        name: `f${slot} service pipes`, instances: pipeInst, receiveShadow: true,
-        material: material.brushedMetal({ color: def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR, roughness: 0.34, metallic: 0.86 })
-      }).runtime(staticNode(slot, "pipes")));
+      nodes.push(
+        buildConduitPipeInstances(`f${slot} service pipes`, pipeInst, def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR)
+          .runtime(staticNode(slot, "pipes"))
+      );
     }
     if (drainInst.length) {
-      nodes.push(primitives.box({
-        name: `f${slot} floor-drains`, instances: drainInst, castShadow: false, receiveShadow: true,
-        material: material.brushedMetal({ color: "#1e232a", roughness: 0.36, metallic: 0.88 })
-      }).runtime(staticNode(slot, "drains")));
+      nodes.push(
+        buildFloorDrainInstances(`f${slot} floor-drains`, drainInst)
+          .runtime(staticNode(slot, "drains"))
+      );
     }
     // BZ-10: the floor's stencilled name on the floor ahead of the spawn (SDF text, +1 draw on its floor)
     const stencil = floorStencil(def, def.id === 90 ? "KILL HOUSE" : `B-${def.id + 1} ${def.name}`);
@@ -381,14 +410,14 @@ function buildScene() {
       }).runtime(staticNode(slot, "damp-shimmer")));
     }
     if (ceilInst.length) {
-      nodes.push(primitives.box({
-        name: `f${slot} work-lights`,
-        // BZ-01/02: the fixtures glow in the floor's one lamp colour (a light only under the ones the rig's pool holds)
-        material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: look.fixtures.height === "grate" ? 0.6 : 2.4, roughness: 0.3 }),
-        instances: ceilInst,
-        castShadow: false,
-        receiveShadow: false
-      }).runtime(staticNode(slot, "work-lights")));
+      nodes.push(
+        buildWorkLightInstances(
+          `f${slot} work-lights`,
+          ceilInst,
+          look.lamp.color,
+          look.fixtures.height === "grate" ? 0.6 : 2.4
+        ).runtime(staticNode(slot, "work-lights"))
+      );
     }
     if (faltInst.length) {
       nodes.push(mappedSurface(slot, "floor-alt", (maps) => primitives.box({
@@ -420,36 +449,21 @@ function buildScene() {
             { position: [wx, wallH - 0.1, wz], scale: facesZ ? [CELL, 0.2, 0.36] : [0.36, 0.2, CELL] }
           );
           nodes.push(
-            // GU47 phase 4 (WP-36 bzBlastDoor): the game's own round blast door, hung on a hazard-accented clearcoat blast leaf
-            // with a studioGlass containment inspection visor; all three ride the same lateral slide.
-            model(assets.bzBlastDoor, { castShadow: cast, name: `f${slot} door ${dI}`, targetHeight: wallH * 0.9 })
+            buildBlastDoorBulkheadNode(wallH, cast, `f${slot} door ${dI}`)
               .position(wx, 0, wz).rotate(0, facesZ ? 0 : Math.PI / 2, 0)
-              .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"])),
-            primitives.box({
-              name: `f${slot} door leaf ${dI}`, castShadow: cast, size: facesZ ? [CELL * 0.98, wallH, 0.2] : [0.2, wallH, CELL * 0.98],
-              position: [wx, wallH / 2, wz],
-              material: material.clearcoatPaint({ color: "#c99718", roughness: 0.18, metallic: 0.22, clearcoat: 0.88, clearcoatRoughness: 0.08 })
-            }).runtime(slotNode(slot, `f${slot}-doorleaf-${x}-${z}`, ["door"])),
-            primitives.box({
-              name: `f${slot} door visor ${dI}`, castShadow: false, receiveShadow: false,
-              size: facesZ ? [0.88, 0.34, 0.24] : [0.24, 0.34, 0.88],
-              position: [wx, wallH * 0.62, wz],
-              material: material.studioGlass({ tint: "#9ad8eb", roughness: 0.04, thickness: 0.35, ior: 1.5 })
-            }).runtime(slotNode(slot, `f${slot}-doorvisor-${x}-${z}`, ["door"]))
+              .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"]))
           );
           dI++;
           break;
         }
         case "P": {
-          // push block — 3D Meshy reinforced bunker cover wall + glowing secret beacon
+          // WP-11: riveted steel-and-concrete false bulkhead with recessed pry seam + forged iron pull rings + caged crack lamp
           const side = pushFace(rows, x, z);
           CRACK_OFFSET.set(`f${slot}-crack-${x}-${z}`, [-side[0] * CELL * BZ_CRACK_LAMP.out, -side[1] * CELL * BZ_CRACK_LAMP.out]);
           nodes.push(
-            model(assets.fpsSciFiCoverCrateMeshy, { castShadow: cast, name: `f${slot} push ${pI}`, targetHeight: wallH * 0.92 })
+            buildSecretPushWallNode(wallH, cast, `f${slot} push ${pI}`)
               .position(wx, 0, wz)
               .runtime(slotNode(slot, `f${slot}-pw-${x}-${z}`, ["pushwall"])),
-            // GU47 phase 9 (D2): the game's own caged bulkhead lamp (Poly Haven industrial_wall_lamp, CC0) hung on the block's face
-            // replaces the borrowed pad beacon; presentation only (the push-wall cell and its slide are the sim's)
             model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} crack ${pI}`, targetHeight: BZ_CRACK_LAMP.height })
               .position(wx - side[0] * CELL * BZ_CRACK_LAMP.out, BZ_CRACK_LAMP.y, wz - side[1] * CELL * BZ_CRACK_LAMP.out)
               .rotate(0, Math.atan2(-side[0], -side[1]), 0)
@@ -506,18 +520,15 @@ function buildScene() {
         }
         case "K":
           nodes.push(
-            model(assets.bunkerKeyMeshy, { castShadow: cast, name: `f${slot} key`, materialOverrides: pickupGlow("#fff0b8", "#ff9d2a", 0.45, { metallic: 0.7, roughness: 0.35 }) })
-              .position(wx, 1.1, wz).scale(0.18)
+            buildClearanceKeycardNode(cast, `f${slot} key`)
+              .position(wx, 1.1, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "key"]))
           );
           break;
         case "t": case "T":
           nodes.push(
-            model(assets.bunkerTreasureMeshy, {
-              castShadow: cast, name: `f${slot} treasure ${kI}`,
-              materialOverrides: pickupGlow("#ffe9a0", "#ffd76a", ch === "T" ? 0.7 : 0.4, { metallic: 0.8, roughness: 0.3 })
-            })
-              .position(wx, 0.55, wz).scale(ch === "T" ? 0.38 : 0.28)
+            buildBullionCaseNode(ch === "T" ? "gold" : "silver", cast, `f${slot} treasure ${kI}`)
+              .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "treasure"]))
           );
           kI++;
@@ -531,51 +542,49 @@ function buildScene() {
           break;
         case "a":
           nodes.push(
-            model(assets.corridorFireAmmoCrateMeshy, { castShadow: cast, name: `f${slot} ammo`, materialOverrides: pickupGlow("#d8e6a8", "#5a6a2a", 0.18) })
-              .position(wx, 0.0, wz).scale(0.42)
+            buildMunitionBoxNode(cast, `f${slot} ammo`)
+              .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "ammo"]))
           );
           break;
         case "r":
           nodes.push(
-            model(assets.bzArmorMeshy, { castShadow: cast, name: `f${slot} armor`, materialOverrides: pickupGlow("#b8dcf2", "#3a8aaa", 0.3) })
-              .position(wx, 0.0, wz).scale(0.36)
+            buildBallisticArmorNode(cast, `f${slot} armor`)
+              .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "armor"]))
           );
           break;
         case "w":
           nodes.push(
-            model(assets.corridorPulseRifleMeshy, { castShadow: cast, name: `f${slot} mgpickup`, materialOverrides: pickupGlow("#e6f4f8", "#7dfcff", 0.25) })
-              .position(wx, 0.55, wz).rotate(0, 0.7, 0).scale(0.48)
+            buildPulseCarbineNode(`f${slot} mgpickup`, cast)
+              .position(wx, 0.55, wz).rotate(0, 0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "W":
           nodes.push(
-            model(assets.mechWeaponB, { castShadow: cast, name: `f${slot} rocketpickup`, targetHeight: 0.55, materialOverrides: pickupGlow("#ffe2cc", "#ff8a3a", 0.3) })
+            buildRocketLauncherNode(`f${slot} rocketpickup`, cast)
               .position(wx, 0.55, wz).rotate(0, -0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "b":
           nodes.push(
-            model(assets.bzBarrelMeshy, { castShadow: cast, name: `f${slot} barrel ${x}-${z}`, materialOverrides: pickupGlow("#ffc4a8", "#c44a22", 0.14, { roughness: 0.55 }) })
-              .position(wx, 0, wz).scale(0.88)
+            buildHazardDrumNode(cast, `f${slot} barrel ${x}-${z}`)
+              .position(wx, 0, wz)
               .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "barrel"]))
           );
           addBlob(slot, `f${slot}-prop-${x}-${z}`, wx, wz, 0.62);
           break;
         case "c":
           nodes.push(
-            model(assets.bzCrateMeshy, { castShadow: cast, name: `f${slot} crate ${x}-${z}` })
-              .position(wx, 0, wz).scale(0.72)
+            buildMilitaryCrateNode(cast, `f${slot} crate ${x}-${z}`)
+              .position(wx, 0, wz)
               .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "crate"]))
           );
           addBlob(slot, `f${slot}-prop-${x}-${z}`, wx, wz, 0.78);
           break;
         case "o":
-          // GU47 phase 9 (D2): board-formed concrete columns in the floor's own wall material, one instanced draw per floor
-          // (after the loop), replace the borrowed reactor pylon; footprint inside the pylon's, collision is the sim's column cell
           columnInst.push({ position: [wx, wallH / 2, wz], scale: [BZ_COLUMN.side, wallH, BZ_COLUMN.side] });
           for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
             columnStrip.push({
@@ -586,10 +595,13 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
+            model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: enemyMaterialOverrides("guard") })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"])),
+            buildEnemyOpticVisorNode("guard", `f${slot} guard visor ${eI}`)
+              .position(wx, 1.66, wz)
+              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.5);
           eI++;
@@ -597,11 +609,14 @@ function buildScene() {
         case "d":
           nodes.push(
             model(assets.bzHoundMeshy, {
-              name: `f${slot} hound ${eI}`, targetHeight: 1.05, materialOverrides: HOSTILE_OVERRIDES
+              name: `f${slot} hound ${eI}`, targetHeight: 1.05, materialOverrides: enemyMaterialOverrides("dog")
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"])),
+            buildEnemyOpticVisorNode("dog", `f${slot} hound visor ${eI}`)
+              .position(wx, 0.8, wz)
+              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.45);
           eI++;
@@ -609,11 +624,14 @@ function buildScene() {
         case "G":
           nodes.push(
             model(assets.bzGunnerMeshy, {
-              name: `f${slot} gunner ${eI}`, targetHeight: 2.0, materialOverrides: HOSTILE_OVERRIDES
+              name: `f${slot} gunner ${eI}`, targetHeight: 2.0, materialOverrides: enemyMaterialOverrides("gunner")
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"])),
+            buildEnemyOpticVisorNode("gunner", `f${slot} gunner visor ${eI}`)
+              .position(wx, 1.76, wz)
+              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.55);
           eI++;
@@ -621,11 +639,14 @@ function buildScene() {
         case "B":
           nodes.push(
             model(assets.bzWardenMeshy, {
-              name: `f${slot} boss ${eI}`, targetHeight: 3.1, materialOverrides: HOSTILE_OVERRIDES
+              name: `f${slot} boss ${eI}`, targetHeight: 3.1, materialOverrides: enemyMaterialOverrides("boss")
             })
               .position(wx, 0, wz)
               .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"])),
+            buildEnemyOpticVisorNode("boss", `f${slot} boss visor ${eI}`)
+              .position(wx, 2.62, wz)
+              .runtime(slotNode(slot, `f${slot}-visor-en-${x}-${z}`, ["enemy", "visor"]))
           );
           addBlob(slot, `f${slot}-en-${x}-${z}`, wx, wz, 0.85);
           eI++;
@@ -636,23 +657,26 @@ function buildScene() {
     if (rows.some((r) => r.includes("B"))) {
       for (let i = 0; i < MAX_SUMMONS; i++) {
         nodes.push(
-          model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
+          model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: enemyMaterialOverrides("guard") })
             .position(slot * FLOOR_SPAN, -50, 0)
             .animate({ clip: "Run", loop: true, speed: 1.3 })
-            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"]))
+            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"])),
+          buildEnemyOpticVisorNode("guard", `f${slot} summon visor ${i}`)
+            .position(slot * FLOOR_SPAN, -50, 0)
+            .runtime(slotNode(slot, `f${slot}-visor-summon-${i}`, ["enemy", "visor", "summon"]))
         );
         addBlob(slot, `f${slot}-summon-${i}`, slot * FLOOR_SPAN, 0, 0.5, false);
       }
     }
     if (bulkheadInst.length) {
-      nodes.push(primitives.box({
-        name: `f${slot} bulkhead-ribs`, castShadow: false, receiveShadow: true, instances: bulkheadInst,
-        material: material.brushedMetal({ color: "#2d333b", roughness: 0.3, metallic: 0.9 })
-      }).runtime(staticNode(slot, "bulkhead-ribs")));
+      nodes.push(
+        buildBulkheadRibInstances(`f${slot} bulkhead-ribs`, bulkheadInst)
+          .runtime(staticNode(slot, "bulkhead-ribs"))
+      );
     }
     if (columnInst.length) {
       nodes.push(
-        mappedSurface(slot, "columns", (maps) => primitives.box({ name: `f${slot} columns`, castShadow: true, material: wallMat(maps), instances: columnInst })),
+        mappedSurface(slot, "columns", (maps) => buildPilasterColumnInstances(`f${slot} columns`, columnInst, wallMat(maps))),
         primitives.box({ name: `f${slot} column strips`, castShadow: false, material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }), instances: columnStrip }).runtime(staticNode(slot, "column-strips"))
       );
     }
@@ -665,46 +689,34 @@ function buildScene() {
     }
   }
 
-  // ---- player rig: 3D Meshy viewmodels + gloved tactical hands + muzzle flipbook + pooled FX ---------
-  const sleeveMat = material.fabric({ color: "#3b4228", roughness: 0.88, sheen: 0.28, sheenColor: "#78825a" });
-  const gloveMat = material.blackRubber({ color: "#191c20", roughness: 0.72 });
-  const cuffMat = material.brushedMetal({ color: "#2d333b", roughness: 0.28, metallic: 0.9 });
+  // ---- player rig: WP-11 sculpted multi-material viewmodels + tactical sleeves/gloves + muzzle starburst ---------
   nodes.push(
-    model(assets[VIEWMODEL_ASSET.knife], { castShadow: false, name: "vm knife", targetMaxDimension: BZ_KNIFE_LENGTH })
+    model(assets.bzMachete, { castShadow: false, name: "vm knife", targetMaxDimension: BZ_KNIFE_LENGTH })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
-    model(assets[VIEWMODEL_ASSET.pistol], { castShadow: false, name: "vm pistol" })
-      // GU47 phase 4: 0.2 read as a small detached gun (rubric camera)
-      .position(0, 0, 0).scale(0.25)
+    buildServicePistolNode("vm pistol")
+      .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
-    // GU47 phase 4: the rifle GLB carries emissiveFactor 1 with its colour map as emissive, so in hand it bloomed into a
-    // yellow ghost at the bottom of every HUD frame (r3 1280-03); the viewmodel drops the self-glow and reads by the lamp.
-    // GU47 phase 6: any material override on the in-hand rifle left it undrawn (r4, r5, vmprobe g11p6-r1), so the viewmodel
-    // loads bzMgViewmodel, the same rifle with the self-glow removed in the file (it bloomed into a ghost, r3), and no override
-    model(assets[VIEWMODEL_ASSET.mg], { castShadow: false, name: "vm mg" })
-      .position(0, 0, 0).scale(0.45)
+    buildPulseCarbineNode("vm mg")
+      .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-mg", { tags: ["viewmodel"] })),
-    model(assets[VIEWMODEL_ASSET.rocket], { castShadow: false, name: "vm rocket", targetHeight: 0.48 })
+    buildRocketLauncherNode("vm rocket")
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-rocket", { tags: ["viewmodel"] })),
-    // WP-10: olive combat sleeves, gunmetal wrist cuff, armored rubber gloves, and studioGlass reflex optic
-    primitives.capsule({ name: "vm sleeve right", castShadow: false, receiveShadow: false, size: [0.072, 0.24, 0.072], material: sleeveMat })
+    buildTacticalSleeveNode("right", "vm sleeve right")
       .position(-500, -60, -500).runtime(game.runtimeNode("vm-sleeve-r", { tags: ["viewmodel", "hand"] })),
-    primitives.cylinder({ name: "vm wrist cuff right", castShadow: false, receiveShadow: false, size: [0.076, 0.032, 0.076], material: cuffMat })
+    buildTacticalWristCuffNode("vm wrist cuff right")
       .position(-500, -60, -500).runtime(game.runtimeNode("vm-cuff-r", { tags: ["viewmodel", "hand"] })),
-    primitives.box({ name: "vm glove right", castShadow: false, receiveShadow: false, size: [0.066, 0.056, 0.088], material: gloveMat })
+    buildTacticalGloveNode("right", "vm glove right")
       .position(-500, -60, -500).runtime(game.runtimeNode("vm-glove-r", { tags: ["viewmodel", "hand"] })),
-    primitives.capsule({ name: "vm sleeve left", castShadow: false, receiveShadow: false, size: [0.068, 0.24, 0.068], material: sleeveMat })
+    buildTacticalSleeveNode("left", "vm sleeve left")
       .position(-500, -60, -500).runtime(game.runtimeNode("vm-sleeve-l", { tags: ["viewmodel", "hand"] })),
-    primitives.box({ name: "vm glove left", castShadow: false, receiveShadow: false, size: [0.064, 0.054, 0.084], material: gloveMat })
+    buildTacticalGloveNode("left", "vm glove left")
       .position(-500, -60, -500).runtime(game.runtimeNode("vm-glove-l", { tags: ["viewmodel", "hand"] })),
-    primitives.box({
-      name: "vm reflex optic", castShadow: false, receiveShadow: false, size: [0.034, 0.028, 0.008],
-      material: material.studioGlass({ tint: "#8fe6ff", roughness: 0.03, thickness: 0.18, ior: 1.52 })
-    }).position(-500, -60, -500).runtime(game.runtimeNode("vm-optic", { tags: ["viewmodel", "optic"] })),
-    model(assets.corridorMuzzleFlameBurstMeshy, {
-      name: "muzzle flash", material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 2.2, roughness: 0.3 })
-    }).position(0, -50, 0).scale(0.14)
+    buildReflexOpticNode("vm reflex optic")
+      .position(-500, -60, -500).runtime(game.runtimeNode("vm-optic", { tags: ["viewmodel", "optic"] })),
+    buildMuzzleStarburstNode("muzzle flash")
+      .position(0, -50, 0)
       .runtime(game.runtimeNode("muzzle-flash", { tags: ["vfx"] })),
     primitives.box({
       name: "muzzle flipbook card", castShadow: false, receiveShadow: false, size: [0.34, 0.34, 0.012],
@@ -751,33 +763,30 @@ function buildScene() {
       size: 0.16, position: [0, -50, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(bulletHoleId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
-  // C8: enemy gunshots get a tracer, misses included; the muzzle flash at the shooter is the bz-enemy-muzzle preset (BZ-03)
+  // C8: enemy gunshots get a sculpted supersonic dart tracer; the muzzle flash at the shooter is bz-enemy-muzzle (BZ-03)
   for (let i = 0; i < ENEMY_TRACERS; i++)
     nodes.push(
-      primitives.sphere({
-        name: `enemy tracer ${i}`, size: [1, 1, 1], position: [0, -50, 0], castShadow: false, receiveShadow: false,
-        material: material.emissive({ color: "#ffe2a8", emissive: "#ff8a2a", emissiveIntensity: 5.2, roughness: 0.2 })
-      }).runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] }))
+      buildBallisticTracerNode(`enemy tracer ${i}`, true)
+        .runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] }))
     );
-  // BZ-03 / WP-10: elongated ballistic tracer streaks (`size: [1, 1, 1]` scaled to `[0.05..0.09, ..., 0.42..0.52]`, never 1.25 m beach-balls) + supersonic ribbon trails
+  // WP-11: fin-stabilized ogive rocket warheads (`0.55 m` + `practical: true` thruster) + supersonic dart tracers + trails
   for (let i = 0; i < MAX_ROCKETS; i++)
     nodes.push(
-      model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 6.5 }) })
-        .position(0, -50, 0).scale(0.28)
+      buildRocketWarheadNode(`rocket ${i}`)
+        .position(0, -50, 0)
         .runtime(game.runtimeNode(`rocket-${i}`, { tags: ["vfx"] })),
-      primitives.sphere({
-        name: `tracer ${i}`,
-        size: [1, 1, 1],
-        position: [0, -50, 0],
-        castShadow: false,
-        receiveShadow: false,
-        material: material.emissive({ color: "#fff4b8", emissive: "#ffaa2a", emissiveIntensity: 4.2, roughness: 0.2 })
-      }).runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
+      buildBallisticTracerNode(`tracer ${i}`, false)
+        .runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
     );
   for (let i = 0; i < 4; i++) {
-    nodes.push(effects.trail({
-      name: `projectile trail ${i}`, target: `tracer-${i}`, color: "#ffb85c", intensity: 1.45, width: 0.085, maxPoints: 16, life: 0.16
-    }) as unknown as AuraNodeBuilder<AuraSceneNode>);
+    nodes.push(
+      effects.trail({
+        name: `rocket smoke trail ${i}`, target: `rocket-${i}`, color: "#ff8a3a", intensity: 1.55, width: 0.11, maxPoints: 18, life: 0.24
+      }) as unknown as AuraNodeBuilder<AuraSceneNode>,
+      effects.trail({
+        name: `projectile trail ${i}`, target: `tracer-${i}`, color: "#ffb85c", intensity: 1.45, width: 0.085, maxPoints: 16, life: 0.16
+      }) as unknown as AuraNodeBuilder<AuraSceneNode>
+    );
   }
 
   return b.addMany(nodes)
@@ -1186,7 +1195,10 @@ let lastPoseTime = -1;
 let poseDt = 1 / 60;
 let qaFrozen = false;
 const activeSlot = () => (sim.state.mode === "killhouse" ? 6 : floorIdx);
-const enemyIds = (slot: number, e: Enemy) => { const st = enemyNodeStem(e); return { body: `f${slot}-${st.body}`, eye: `f${slot}-${st.eye}` }; };
+const enemyIds = (slot: number, e: Enemy) => {
+  const st = enemyNodeStem(e);
+  return { body: `f${slot}-${st.body}`, eye: `f${slot}-${st.eye}`, visor: `f${slot}-visor-${st.body}` };
+};
 
 // ---------------------------------------------------------------------------
 // run state: the loadout and score carry floor to floor in a descent run (C14); the results panel totals the run (C3)
@@ -1612,12 +1624,13 @@ function syncScenePose(inp: SimInput) {
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
     // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
-    const flashScale = 0.11 + fxRng() * 0.05;
+    const flashJitter = fxRng();
+    const flashScale = 0.78 + flashJitter * 0.34;
     muzzleFlash.setScale(flashScale);
     muzzleFlash.setVisible(true);
     muzzleCard.setPosition(mx + fx * 0.04, my, mz + fz * 0.04);
     muzzleCard.setRotation(0, -p.yaw, sim.state.time * 19);
-    muzzleCard.setScale(0.85 + flashScale * 2.4);
+    muzzleCard.setScale(0.85 + (0.11 + flashJitter * 0.05) * 2.4);
     muzzleCard.setVisible(true);
     muzzleSprite.setPosition(mx, my, mz);
     muzzleSprite.setVisible(true);
@@ -1640,7 +1653,7 @@ function syncScenePose(inp: SimInput) {
   for (const e of sim.state.enemies) {
     const ids = enemyIds(slot, e);
     const node = opt(ids.body);
-    const eye = opt(ids.eye);
+    const eye = opt(ids.visor) ?? opt(ids.eye);
     if (!node) continue;
     if (e.state === "dead") {
       eye?.setVisible(false);
@@ -1693,10 +1706,11 @@ function syncScenePose(inp: SimInput) {
     if (e.kind === "boss" && e.vulnerableT > 0) vulnerable = e;
     if (eye) {
       eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
+      eye.setRotation(0, yaw, strideRoll);
       // C27: the Warden's eyes flare while its vent is open
       if (e.kind === "boss") {
-        const flare = e.vulnerableT > 0 ? 2.1 + Math.sin(sim.state.time * 14) * 0.35 : 1;
-        eye.setScale([0.26 * flare, 0.075 * flare, 0.26 * flare]);
+        const flare = e.vulnerableT > 0 ? 1.35 + Math.sin(sim.state.time * 14) * 0.2 : 1;
+        eye.setScale(flare);
       }
       eye.setVisible(true);
     }
@@ -1781,7 +1795,7 @@ function syncScenePose(inp: SimInput) {
       const isRocket = r.kind === "rocket" || r.fromEnemy;
       rocketNodes[i]!.setPosition(r.x + ox, ry, r.z);
       rocketNodes[i]!.setRotation(0, projYaw, r.t * 16);
-      rocketNodes[i]!.setScale(isRocket ? 0.34 : 0.22);
+      rocketNodes[i]!.setScale(isRocket ? 1 : 0.62);
       rocketNodes[i]!.setVisible(true);
       tracerNodes[i]!.setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
       tracerNodes[i]!.setRotation(0, projYaw, 0);

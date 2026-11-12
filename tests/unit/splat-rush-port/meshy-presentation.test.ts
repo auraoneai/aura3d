@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 import { scene } from "@aura3d/engine";
 import { createProductionRuntimeEnvironment } from "../../../packages/engine/src/agent-api/compiler/environment";
 import { BACKDROP_ENVIRONMENT_INTENSITY, PIECES, addBackdrop, updateBackdrop } from "../../../examples/splat-rush-port/backdrop";
-import { haloId, pickupId, updatePickups } from "../../../examples/splat-rush-port/pickups";
+import { LOOKS } from "../../../examples/splat-rush-port/look";
+import { addPickups, haloId, pickupId, pickupNodeIds, updatePickups } from "../../../examples/splat-rush-port/pickups";
 import { MODELS } from "../../../examples/splat-rush-port/models";
 import type { Powerup } from "../../../examples/splat-rush-port/sim";
 
@@ -94,5 +95,81 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
       total += statSync(file).size;
     }
     expect(total).toBeLessThan(10 * 1024 * 1024);
+  });
+
+  it("mounts zero static GLB model nodes and builds normalized multi-material procedural studio backdrop and pickup groups", () => {
+    const collectAll = (nodes: readonly Record<string, unknown>[]): Record<string, unknown>[] => {
+      const out: Record<string, unknown>[] = [];
+      const visit = (n: Record<string, unknown>): void => {
+        out.push(n);
+        if (Array.isArray(n.children)) {
+          for (const child of n.children as Record<string, unknown>[]) visit(child);
+        }
+      };
+      for (const n of nodes) visit(n);
+      return out;
+    };
+
+    const maxSpanOfGroup = (groupNode: Record<string, unknown>): number => {
+      const prims = collectAll([groupNode]).filter((n) => n.kind === "primitive");
+      expect(prims.length).toBeGreaterThanOrEqual(2);
+      let minX = Infinity, minY = Infinity, minZ = Infinity;
+      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+      let allFinite = true;
+      const seen = new Set<ArrayLike<number>>();
+      for (const p of prims) {
+        const geom = p.geometry as { positions: ArrayLike<number> };
+        const pos = geom.positions;
+        if (seen.has(pos)) continue;
+        seen.add(pos);
+        for (let i = 0; i < pos.length; i += 3) {
+          const x = Number(pos[i]), y = Number(pos[i + 1]), z = Number(pos[i + 2]);
+          if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+            allFinite = false;
+            break;
+          }
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (z < minZ) minZ = z;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+          if (z > maxZ) maxZ = z;
+        }
+      }
+      expect(allFinite).toBe(true);
+      return Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+    };
+
+    for (const look of [LOOKS.original, LOOKS.carnival]) {
+      const builder = scene();
+      addBackdrop(builder, look);
+      addPickups(builder);
+      const roots = builder.toJSON().nodes as unknown as Record<string, unknown>[];
+      const all = collectAll(roots);
+      expect(all.filter((n) => n.kind === "model")).toHaveLength(0);
+
+      for (const p of PIECES) {
+        const node = roots.find((n) => (n.runtime as { id?: string } | undefined)?.id === p.id)!;
+        expect(node?.kind).toBe("group");
+        expect(maxSpanOfGroup(node)).toBeCloseTo(p.size, 3);
+      }
+
+      const declaredIds = new Set(roots.map((n) => (n.runtime as { id?: string } | undefined)?.id).filter(Boolean));
+      for (const id of pickupNodeIds()) {
+        expect(declaredIds.has(id)).toBe(true);
+        if (!id.startsWith("pickup-halo-")) {
+          const node = roots.find((n) => (n.runtime as { id?: string } | undefined)?.id === id)!;
+          expect(node?.kind).toBe("group");
+          expect(maxSpanOfGroup(node)).toBeCloseTo(2.1, 3);
+        }
+      }
+
+      const glassPrims = all.filter((n) => n.kind === "primitive" && String(n.name ?? "").endsWith("-glass"));
+      expect(glassPrims.length).toBeGreaterThan(0);
+      for (const gp of glassPrims) {
+        expect(gp.castShadow).toBe(false);
+        expect(gp.receiveShadow).toBe(false);
+      }
+    }
   });
 });

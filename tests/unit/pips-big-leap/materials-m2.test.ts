@@ -70,22 +70,28 @@ describe("pips-big-leap materials (PBL-M2)", () => {
     expect(lavaPools).toBeGreaterThan(0);
   });
 
-  it("gives the crystal-shard instances the iridescent rim, and no other prop draw", () => {
-    let shardDraws = 0;
+  it("gives the procedural quartz crystal clusters an iridescent clearcoat finish in the diorama", () => {
+    let crystalMeshes = 0;
     for (const id of WORLD_IDS) {
-      for (const n of sceneOf(id).filter((x) => (x.name ?? "").startsWith("pbl-props:"))) {
-        const shard = /crystalShard/i.test(n.asset?.id ?? "");
-        if (shard) shardDraws += 1;
-        expect(n.materialOverrides, n.name).toEqual(shard ? CRYSTAL_OVERRIDES : undefined);
+      for (const n of sceneOf(id)) {
+        if (n.material?.name === "faceted quartz crystal") {
+          crystalMeshes += 1;
+          expect(n.material.clearcoat).toBeGreaterThan(0.5);
+          expect(n.material.iridescence).toBeGreaterThan(0.5);
+          expect(n.material.practical).toBe(true);
+        }
       }
     }
-    expect(shardDraws).toBeGreaterThan(0);
+    expect(crystalMeshes).toBeGreaterThan(0);
+    expect(CRYSTAL_OVERRIDES[0]?.iridescence).toBe(1);
   });
 
-  it("lifts the seeds to sun-seed gold in the diorama only", () => {
+  it("sculpts the seeds with sun-seed gold studioMetal + practical solar ribs in the diorama only", () => {
     for (const id of WORLD_IDS) {
       for (const s of worldSpec(id).seeds) {
-        expect(sceneOf(id).find((n) => n.name === nodeName.seed(s.id))?.materialOverrides).toEqual(SEED_OVERRIDES);
+        const dSeed = sceneOf(id).find((n) => n.name === nodeName.seed(s.id));
+        expect(dSeed?.kind).toBe("group");
+        expect(JSON.stringify(dSeed?.children)).toContain("#ffc23d");
         expect(sceneOf(id, { look: "original" }).find((n) => n.name === nodeName.seed(s.id))?.materialOverrides).toBeUndefined();
       }
     }

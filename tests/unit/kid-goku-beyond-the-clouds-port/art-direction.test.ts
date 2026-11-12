@@ -3,6 +3,24 @@ import { auditArtDirection, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import direction from "../../../examples/kid-goku-beyond-the-clouds-port/art/direction";
 import { ACTIVE_LOOK, CUMULUS_LOOK, CUMULUS_PALETTE, lookIdFrom, lookRow } from "../../../examples/kid-goku-beyond-the-clouds-port/art/look";
 import { CUMULUS_VFX_EVENTS, CUMULUS_VFX_KINDS, CUMULUS_VFX_LIVE_CAP, cumulusVfxFor, cumulusVfxPresets, registerCumulusVfx } from "../../../examples/kid-goku-beyond-the-clouds-port/art/vfx";
+import {
+  INSTANCED_MATERIALS,
+  buildCarvedBoulderNode,
+  buildGoldenSkyCloudNode,
+  buildHoneyRoastPickupNode,
+  buildInstancedBonsaiPines,
+  buildInstancedCanopyTrees,
+  buildInstancedKarstMesas,
+  buildInstancedShoulderRocks,
+  buildInstancedStormTowers,
+  buildSanctuaryToriiNode,
+  buildSkyCoinNode,
+  buildSkyHermitCottageNode,
+  buildSkyPterosaurNode,
+  buildSkyStaffNode,
+  buildStarSphereNode,
+  buildStormTyrantNode
+} from "../../../examples/kid-goku-beyond-the-clouds-port/art/proceduralModels";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
@@ -21,7 +39,7 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
     ],
     hasAmbient: row.hemisphere !== null,
     environment: { kind: "hdri", background: false },
-    models: ["hero", "cloud", "boulder", "ptero", "rex", "treeRound", "treePine", "mesa"].map(model),
+    models: ["hero"].map(model),
     materials: [
       { node: "ball", emissiveIntensity: 1.6, lightSource: true },
       { node: "orbs", emissiveIntensity: 1.2, lightSource: true }
@@ -111,6 +129,64 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     const presets = cumulusVfxPresets(false);
     for (const kind of ["speed-lines", "landing-dust"] as const) {
       expect(presets[kind].layers.some((l) => l.type === "camera" || l.type === "light")).toBe(false); // no shake, no flash
+    }
+  });
+
+  it("WP-29: prunes static GLBs to hero only and preserves procedural node IDs, boulder y=0 pivot, and cottage clearance", () => {
+    expect(direction.assets.map((a) => a.assetKey)).toEqual(["hero"]);
+
+    const cloudJson = buildGoldenSkyCloudNode().toJSON() as unknown as Record<string, unknown>;
+    expect(cloudJson.name).toBe("sky-cloud");
+    expect((cloudJson.runtime as { id?: string } | undefined)?.id).toBe("sky-cloud");
+
+    const boulderJson = buildCarvedBoulderNode(0).toJSON() as unknown as {
+      name: string;
+      runtime?: { id?: string };
+      children?: readonly { customGeometry?: { bounds?: { min: number[]; max: number[] } } }[];
+      customGeometry?: { bounds?: { min: number[]; max: number[] } };
+    };
+    expect(boulderJson.name).toBe("boulder-0");
+    expect(boulderJson.runtime?.id).toBe("boulder-0");
+    const bBounds = boulderJson.customGeometry?.bounds ?? boulderJson.children?.[0]?.customGeometry?.bounds;
+    if (bBounds) {
+      expect(bBounds.min[1]).toBeGreaterThanOrEqual(-0.02);
+      expect(bBounds.min[1]).toBeLessThanOrEqual(0.08);
+      expect(bBounds.max[1]).toBeGreaterThan(1.88);
+      expect(bBounds.max[1]).toBeLessThanOrEqual(2.05);
+    }
+
+    const hutJson = buildSkyHermitCottageNode([0, 0, 0], 0).toJSON() as unknown as {
+      name: string;
+      castShadow?: boolean;
+      children?: readonly { customGeometry?: { bounds?: { min: number[]; max: number[] } } }[];
+      customGeometry?: { bounds?: { min: number[]; max: number[] } };
+    };
+    expect(hutJson.name).toBe("home-hut");
+    const hBounds = hutJson.customGeometry?.bounds ?? hutJson.children?.[0]?.customGeometry?.bounds;
+    if (hBounds) {
+      expect(Math.max(Math.abs(hBounds.min[0]), Math.abs(hBounds.max[0]), Math.abs(hBounds.min[2]), Math.abs(hBounds.max[2]))).toBeLessThan(3.9);
+      expect(hBounds.max[1]).toBeLessThan(6.4);
+    }
+
+    expect(buildSkyStaffNode().toJSON().name).toBe("staff");
+    expect(buildSkyPterosaurNode(0).toJSON().name).toBe("ptera-body-0");
+    expect(buildStormTyrantNode().toJSON().name).toBe("rex-body");
+    expect(buildStarSphereNode(4).toJSON().name).toBe("ball-4");
+    expect(buildHoneyRoastPickupNode(0).toJSON().name).toBe("meat-0");
+    expect(buildSkyCoinNode(0).toJSON().name).toBe("sky-coin-0");
+    expect(buildSanctuaryToriiNode("sanctuary-torii-0", [0, 0, 0], 0).toJSON().name).toBe("sanctuary-torii-0");
+
+    const sampleTransforms = [{ position: [0, 0, 0] as const, scale: 1 }];
+    expect(buildInstancedCanopyTrees(sampleTransforms).length).toBeGreaterThanOrEqual(2);
+    expect(buildInstancedBonsaiPines(sampleTransforms).length).toBeGreaterThanOrEqual(2);
+    expect(buildInstancedShoulderRocks(sampleTransforms).length).toBeGreaterThanOrEqual(2);
+    expect(buildInstancedKarstMesas(sampleTransforms).length).toBeGreaterThanOrEqual(2);
+    expect(buildInstancedStormTowers("storm-towers", sampleTransforms).length).toBeGreaterThanOrEqual(2);
+
+    for (const mat of Object.values(INSTANCED_MATERIALS)) {
+      const m = mat as unknown as { clearcoat?: number; sheen?: number };
+      expect(m.clearcoat ?? 0).toBe(0);
+      expect(m.sheen ?? 0).toBe(0);
     }
   });
 });

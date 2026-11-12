@@ -28,6 +28,16 @@ import {
 import { dualAnimatedWaterSpec } from "../../../showcase-port-shared/dual-shaders.js";
 import { WGSL_CLIP, WGSL_COLOR, WGSL_ENVIRONMENT_FOG, WGSL_MATH, wgslStage } from "../../../showcase-port-shared/wgsl-twins.js";
 import {
+  BOSS_BRAMBLE_OVERRIDES,
+  PIP_PLUSH_OVERRIDES,
+  buildStorybookBaseClayNode,
+  buildStorybookBaseFeltNode,
+  buildStorybookBaseSkirtNode,
+  buildStorybookIslandTilesNode,
+  millpondCausticsMaterial,
+  storybookFloraGeometries
+} from "../art/proceduralModels.js";
+import {
   MINIATURE_LENS,
   PIP_PALETTE,
   focusDistanceFor,
@@ -323,9 +333,8 @@ export const SEED_OVERRIDES: readonly AuraModelMaterialOverride[] = [
  * so a soft clearcoat and a stronger environment term make the cap and body pick up the sky;
  * the rubric judges saw "almost no environment reflection" on the hero.
  */
-export const PIP_GLOSS: readonly AuraModelMaterialOverride[] = [
-  { clearcoat: 0.6, clearcoatRoughness: 0.2, envMapIntensity: 1.35 }
-];
+export const PIP_GLOSS: readonly AuraModelMaterialOverride[] = PIP_PLUSH_OVERRIDES;
+export const BOSS_GLOSS: readonly AuraModelMaterialOverride[] = BOSS_BRAMBLE_OVERRIDES;
 
 /** Contact shadows under Pip and the props (phase 4: stronger and longer so the hero grounds). */
 export const CONTACT_SHADOWS = { intensity: 1.0, length: 0.42 } as const;
@@ -355,8 +364,8 @@ export interface DioramaBase {
  * scale) and squashed in Y so its toadstools and reeds stay below the course floor.
  */
 export interface BaseTile {
-  readonly asset: Parameters<typeof instances.model>[0];
-  /** The GLB's own extents (x, y, z) in model units. */
+  readonly asset?: Parameters<typeof instances.model>[0];
+  /** The island tile's extents (x, y, z) in unit-local space. */
   readonly size: readonly [number, number, number];
   /** Height fraction (0-1) at which the walkable surface of the island sits. */
   readonly surface: number;
@@ -420,20 +429,20 @@ export function dioramaBase(spec: WorldSpec, look: WorldLook, depth: number, til
     mounds.push({ position: [edge, top - 0.1, z], scale: [r * 1.4, r * 0.55, r] });
   }
   const last: DioramaNode = tile
-    ? instances.model(tile.asset, {
-        name: dioramaName.baseTiles,
-        targetMaxDimension: 1,
-        castShadow: false,
-        receiveShadow: true,
-        transforms: baseTileTransforms(spec, tile, depth).transforms
-      })
-    : instances.sphere({ name: dioramaName.baseMounds, transforms: mounds, material: instancedFelt(look.base.mound), castShadow: false, receiveShadow: true });
+    ? buildStorybookIslandTilesNode(
+        dioramaName.baseTiles,
+        baseTileTransforms(spec, tile, depth).transforms,
+        baseTileTransforms(spec, tile, depth).height,
+        look.base,
+        4700 + spec.order * 97
+      )
+    : buildStorybookIslandTilesNode(dioramaName.baseMounds, mounds, 1.8, look.base, 5300 + spec.order * 97);
   return {
     top,
     nodes: [
-      primitives.roundedBox({ name: dioramaName.baseFelt, size: [w, 0.6, d], position: [cx, top - 0.3, cz], params: { radius: 0.25 }, material: felt(look.base.felt), castShadow: false, receiveShadow: true }),
-      primitives.box({ name: dioramaName.baseClay, size: [w + 0.5, plinth, d + 0.5], position: [cx, top - 0.6 - plinth / 2, cz], material: clay(look.base.clay), castShadow: false, receiveShadow: false }),
-      primitives.box({ name: dioramaName.baseSkirt, size: [w + 0.9, 0.5, d + 0.9], position: [cx, top - 0.6 - plinth - 0.25, cz], material: clay(look.base.skirt), castShadow: false, receiveShadow: false }),
+      buildStorybookBaseFeltNode(dioramaName.baseFelt, [w, 0.6, d], [cx, top - 0.3, cz], look.base.felt),
+      buildStorybookBaseClayNode(dioramaName.baseClay, [w + 0.5, plinth, d + 0.5], [cx, top - 0.6 - plinth / 2, cz], look.base.clay),
+      buildStorybookBaseSkirtNode(dioramaName.baseSkirt, [w + 0.9, 0.5, d + 0.9], [cx, top - 0.6 - plinth - 0.25, cz], look.base, 6100 + spec.order * 43),
       last
     ]
   };
@@ -624,12 +633,12 @@ export function auroraNode(spec: WorldSpec, look: WorldLook, scale: Presentation
   }).position((b.minX + b.maxX) / 2, b.topY + 7, b.minZ - 16);
 }
 
-/** Screen-space reflections for glossy pond water, honey ceramic palace stone and crystal slabs. */
+/** Screen-space reflections capped at <= 0.10 so outdoor turf never smears on rough terrain. */
 export function ssrNode(look: WorldLook): DioramaNode | null {
   if (!look.ssr) return null;
   return effects.screenSpaceReflections({
     name: dioramaName.ssr,
-    intensity: 0.52,
+    intensity: 0.1,
     maxDistance: 14,
     roughness: 0.22,
     thickness: 0.25
@@ -717,6 +726,26 @@ export function millpondNodes(spec: WorldSpec, look: WorldLook, motion = 1): rea
     })
   );
   for (const w of spec.waters) {
+    const depth = w.depth ?? 2.2;
+    out.push(
+      primitives.plane({
+        name: `water:${w.id}:caustics`,
+        size: [w.w * 0.96, 1, w.d * 0.96],
+        position: [w.x, w.y - depth + 0.04, w.z],
+        rotation: [-Math.PI / 2, 0, 0],
+        material: millpondCausticsMaterial({
+          color: "#9a8a68",
+          causticColor: "#fff2c6",
+          strength: 0.95,
+          scale: 4.5,
+          speed: 0.85 * motion,
+          surfaceY: w.y,
+          depthFade: 0.18
+        }),
+        castShadow: false,
+        receiveShadow: true
+      })
+    );
     out.push(surfaces.mirror({ name: `${dioramaName.millpondMirror}:${w.id}`, position: [w.x, w.y - 0.02, w.z], size: [w.w * 0.98, w.d * 0.98], resolution: look.millpond.resolution, tint: look.millpond.tint }));
     out.push(
       primitives.plane({
@@ -740,10 +769,10 @@ export function millpondNodes(spec: WorldSpec, look: WorldLook, motion = 1): rea
       else if ((u -= w.d) < w.w) { x = w.x + w.w / 2 - u; z = w.z + w.d / 2; }
       else { u -= w.w; x = w.x - w.w / 2; z = w.z + w.d / 2 - u; }
       const s = 0.8 + 0.4 * ((i * 7919) % 13) / 12;
-      foam.push({ position: [x, w.y + 0.01, z], scale: [0.16 * s, 0.035, 0.16 * s] });
+      foam.push({ position: [x, w.y + 0.01, z], scale: [0.16 * s, 0.045, 0.16 * s] });
     }
   }
-  out.push(instances.sphere({ name: dioramaName.millpondFoam, transforms: foam, material: instancedFelt(look.millpond.foam, 0.9), castShadow: false, receiveShadow: true }));
+  out.push(instances.custom(storybookFloraGeometries().foam, { name: dioramaName.millpondFoam, transforms: foam, material: instancedFelt(look.millpond.foam, 0.9), castShadow: false, receiveShadow: true }));
   return out;
 }
 
@@ -751,6 +780,7 @@ export function millpondNodes(spec: WorldSpec, look: WorldLook, motion = 1): rea
 
 export interface FloraLayer {
   readonly name: string;
+  readonly kind: "clover" | "grass" | "fern" | "pebble" | "leaf";
   readonly primitive: "sphere" | "cone" | "cylinder" | "box";
   readonly transforms: readonly AuraTransformSpec[];
   readonly material: AuraMaterialSpec;
@@ -803,11 +833,11 @@ export function floraLayers(spec: WorldSpec, look: WorldLook, seed: number): rea
     }
   }
   return [
-    { name: dioramaName.flora("clover"), primitive: "sphere", transforms: buckets.clover, material: instancedFelt(colors.clover), wind: false },
-    { name: dioramaName.flora("grass"), primitive: "cone", transforms: buckets.grass, material: instancedFelt(colors.grass), wind: true },
-    { name: dioramaName.flora("fern"), primitive: "cone", transforms: buckets.fern, material: instancedFelt(colors.fern), wind: true },
-    { name: dioramaName.flora("pebble"), primitive: "sphere", transforms: buckets.pebble, material: instancedClay(colors.pebble), wind: false },
-    { name: dioramaName.flora("leaf"), primitive: "box", transforms: buckets.leaf, material: instancedFelt(colors.leaf), wind: false }
+    { name: dioramaName.flora("clover"), kind: "clover", primitive: "sphere", transforms: buckets.clover, material: instancedFelt(colors.clover), wind: false },
+    { name: dioramaName.flora("grass"), kind: "grass", primitive: "cone", transforms: buckets.grass, material: instancedFelt(colors.grass), wind: true },
+    { name: dioramaName.flora("fern"), kind: "fern", primitive: "cone", transforms: buckets.fern, material: instancedFelt(colors.fern), wind: true },
+    { name: dioramaName.flora("pebble"), kind: "pebble", primitive: "sphere", transforms: buckets.pebble, material: instancedClay(colors.pebble), wind: false },
+    { name: dioramaName.flora("leaf"), kind: "leaf", primitive: "box", transforms: buckets.leaf, material: instancedFelt(colors.leaf), wind: false }
   ];
 }
 
@@ -1002,24 +1032,19 @@ export function heroCapeMaterial(color: string, motion = 1): AuraMaterialSpec {
   });
 }
 
-/** Lower the flora layers to instanced nodes (one draw each, no shadow casting). */
+/** Lower the flora layers to hardware-instanced custom flora meshes (`instances.custom`, clearcoat: 0, no shadow casting). */
 export function floraNodes(layers: readonly FloraLayer[], motion: number): readonly DioramaNode[] {
+  const geos = storybookFloraGeometries();
   return layers
     .filter((layer) => layer.transforms.length > 0)
-    .map((layer) => {
-      const options = {
+    .map((layer) =>
+      instances.custom(geos[layer.kind], {
         name: layer.name,
         transforms: layer.transforms,
         material: layer.material,
         castShadow: false,
         receiveShadow: true,
         ...(layer.wind && motion > 0 ? { wind: { strength: 0.6 * motion, assetHeight: 1 } } : {})
-      };
-      switch (layer.primitive) {
-        case "sphere": return instances.sphere(options);
-        case "cone": return instances.cone(options);
-        case "cylinder": return instances.cylinder(options);
-        case "box": return instances.box(options);
-      }
-    });
+      })
+    );
 }

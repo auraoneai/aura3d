@@ -1,5 +1,6 @@
-// Splat Turf art direction (WP-17). Fantasy: sunlit urban skate-arena / paint-world carnival causeway —
-// a warm gesso deck you coat in glossy clearcoat acrylic ink at speed.
+// Splat Turf art direction (WP-16 procedural multi-material Street-Sport Ink Arena).
+// Fantasy: sunlit urban street-sport ink arena & skate-park causeway — a warm gesso deck flanked by
+// pressurized chromed ink reservoirs, sun-sail bleachers, truss floodlight towers, and aerosol monuments.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({

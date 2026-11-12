@@ -506,7 +506,7 @@ export function resolveProductionPrimitiveRuntimeState(
     if (resource.material instanceof PortableShaderMaterial) syncCustomTextureRefs(resource.material);
   }
   const runtimeId = entry.node.runtime?.id;
-  if (!runtimeId) return { node: entry.node, visible: true };
+  if (!runtimeId) return { node: entry.node, visible: (entry.node as { readonly visible?: boolean }).visible !== false };
   const runtimeHandle = runtimeNodes?.get(runtimeId) as (NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>> & {
     // threejs-parity L2 (SG-05): set inside `region parity:L2` on the handle —
     // `setGeometry` stores the normalized spec, `updateAttribute` queues
@@ -533,7 +533,7 @@ export function resolveProductionPrimitiveRuntimeState(
       }
     }
   }
-  if (!runtimeSnapshot) return { node: entry.node, visible: true };
+  if (!runtimeSnapshot) return { node: entry.node, visible: (entry.node as { readonly visible?: boolean }).visible !== false };
   // L2: drain the queued attribute writes so they apply exactly once.
   const pendingAttributes = runtimeHandle?.__parityL2AttributeUpdates;
   if (runtimeHandle && pendingAttributes && pendingAttributes.length > 0) {
@@ -1175,11 +1175,38 @@ export function createProductionPrimitiveGeometry(node: AuraPrimitiveNode): Geom
   return createProductionGeometryFromPrimitiveMesh(createProductionPrimitiveMesh(node.primitive, node));
 }
 
+const builtinPrimitiveBoundsCache = new Map<AuraBuiltinPrimitive, GltfBounds>();
+const nodePrimitiveBoundsCache = new WeakMap<AuraPrimitiveNode, {
+  primitive: AuraBuiltinPrimitive;
+  size: AuraPrimitiveNode["size"];
+  params: AuraPrimitiveNode["params"];
+  bounds: GltfBounds;
+}>();
+
 export function primitiveGeometryBounds(nodeOrPrimitive: AuraPrimitiveNode | AuraBuiltinPrimitive): GltfBounds {
   if (typeof nodeOrPrimitive === "object" && nodeOrPrimitive.geometry) return customGeometryBounds(nodeOrPrimitive.geometry);
   const primitive = typeof nodeOrPrimitive === "string" ? nodeOrPrimitive : nodeOrPrimitive.primitive;
   if (primitive === "custom") throw new Error("Aura3D custom primitive requires geometry.");
-  return createProductionPrimitiveMesh(primitive, typeof nodeOrPrimitive === "object" ? nodeOrPrimitive : undefined).bounds;
+  if (typeof nodeOrPrimitive === "string") {
+    let cached = builtinPrimitiveBoundsCache.get(primitive);
+    if (!cached) {
+      cached = createProductionPrimitiveMesh(primitive, undefined).bounds;
+      builtinPrimitiveBoundsCache.set(primitive, cached);
+    }
+    return cached;
+  }
+  const hit = nodePrimitiveBoundsCache.get(nodeOrPrimitive);
+  if (hit && hit.primitive === primitive && hit.size === nodeOrPrimitive.size && hit.params === nodeOrPrimitive.params) {
+    return hit.bounds;
+  }
+  const bounds = createProductionPrimitiveMesh(primitive, nodeOrPrimitive).bounds;
+  nodePrimitiveBoundsCache.set(nodeOrPrimitive, {
+    primitive,
+    size: nodeOrPrimitive.size,
+    params: nodeOrPrimitive.params,
+    bounds
+  });
+  return bounds;
 }
 
 /**
@@ -1299,10 +1326,17 @@ function resolveSpecNormals(spec: AuraCustomGeometrySpec, normalized: ReturnType
   return computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
 }
 
+const customGeometryBoundsCache = new WeakMap<AuraCustomGeometrySpec, GltfBounds>();
+
 function customGeometryBounds(spec: AuraCustomGeometrySpec): GltfBounds {
   if (spec.bounds) return { min: spec.bounds.min, max: spec.bounds.max };
-  const computed = computeAuraGeometryBounds({ positions: spec.positions });
-  return { min: computed.min, max: computed.max };
+  let cached = customGeometryBoundsCache.get(spec);
+  if (!cached) {
+    const computed = computeAuraGeometryBounds({ positions: spec.positions });
+    cached = { min: computed.min, max: computed.max };
+    customGeometryBoundsCache.set(spec, cached);
+  }
+  return cached;
 }
 
 function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh): Geometry {

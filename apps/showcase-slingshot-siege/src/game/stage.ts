@@ -237,26 +237,19 @@ export function seaGloss(color: AuraColor, envMapIntensity: number): AuraMateria
  *  - `obsidian`: high-gloss volcanic `lacquer` with violet grazing rim
  */
 export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMaterialSpec>> = {
-  wood: material.physical({
+  wood: material.pbr({
     name: "timber beam",
     color: "#b47740",
-    roughness: 0.68,
+    roughness: 0.62,
     metallic: 0,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.24,
-    normal: material.proceduralTextures.fabric({ scale: 14, strength: 0.36, contrast: 0.66 }),
-    roughnessMap: material.proceduralTextures.rubber({ scale: 16, strength: 0.56, contrast: 0.72 }),
-    envMapIntensity: 1.24,
-    rim: { color: "#ffe4ba", power: 3, intensity: 0.12 }
+    envMapIntensity: 1.24
   }),
-  stone: material.ceramic({
+  stone: material.pbr({
     name: "chiseled limestone",
     color: "#d4cec0",
-    roughness: 0.74,
-    clearcoat: 0.22,
-    clearcoatRoughness: 0.38,
-    envMapIntensity: 1.15,
-    rim: { color: "#fff7e8", power: 3, intensity: 0.1 }
+    roughness: 0.72,
+    metallic: 0,
+    envMapIntensity: 1.15
   }),
   glass: material.studioGlass({
     name: "fortress glass pane",
@@ -272,29 +265,23 @@ export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMateria
     envMapIntensity: 1.48,
     rim: { color: "#eafcff", power: 3, intensity: 0.6 }
   }),
-  ice: material.physical({
+  ice: material.pbr({
     name: "glacial ice block",
     color: "#d6f0ff",
-    roughness: 0.18,
-    metallic: 0,
+    roughness: 0.16,
+    metallic: 0.04,
     opacity: 0.85,
-    clearcoat: 0.88,
-    clearcoatRoughness: 0.08,
-    transmission: 0.36,
     emissive: "#bfe6ff",
     emissiveIntensity: 0.3,
     practical: true,
-    rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
+    envMapIntensity: 1.38
   }),
-  obsidian: material.lacquer({
+  obsidian: material.pbr({
     name: "obsidian block",
     color: "#2a2338",
     roughness: 0.12,
-    metallic: 0.15,
-    clearcoat: 1,
-    clearcoatRoughness: 0.03,
-    envMapIntensity: 1.38,
-    rim: { color: "#a874ff", power: 4, intensity: 0.36 }
+    metallic: 0.22,
+    envMapIntensity: 1.38
   })
 };
 
@@ -303,13 +290,11 @@ export function solidBlockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
 }
 
 /** Explosive powder-keg crimson lacquer + dark forged-iron collar band material. */
-export const KEG_BAND_MATERIAL: AuraMaterialSpec = material.lacquer({
+export const KEG_BAND_MATERIAL: AuraMaterialSpec = material.pbr({
   name: "explosive keg band",
   color: "#8f201a",
-  roughness: 0.22,
-  metallic: 0.38,
-  clearcoat: 1,
-  clearcoatRoughness: 0.04,
+  roughness: 0.24,
+  metallic: 0.42,
   envMapIntensity: 1.35
 });
 
@@ -447,15 +432,14 @@ export function chapterPracticals(row: ChapterLook): StageNode[] {
 export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[] {
   const out: StageNode[] = [
     effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.54, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
-    effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: 0.85, lights: "sun" }),
-    effects.screenSpaceReflections({ intensity: 0.12, maxDistance: 16, roughness: 0.14, thickness: 0.2 }),
+    effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 8, intensity: 0.85, lights: "sun" }),
     { ...effects.cinematicBloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
   ];
   if (row.chapter === 2 && !options.reducedMotion) {
     out.push(effects.godRays({ name: "siege greenhouse sunbeams", intensity: 0.24, decay: 0.93, samples: 32, color: "#fff5dc", medium: 0.14 }));
   }
   if (options.ambientOcclusion !== false) {
-    out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.48, intensity: 0.72, density: 0.74, multiBounce: true }));
+    out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.48, intensity: 0.72, density: 0.62, multiBounce: false }));
   }
   if (!options.reducedMotion) out.push(effects.vignette({ intensity: row.vignette }));
   out.push(effects.antiAlias({ mode: "fxaa" }));
@@ -501,12 +485,11 @@ export function chapterWeather(row: ChapterLook, options: StageOptions): StageNo
 
 export function cliffRockMaterial(row: ChapterLook): AuraMaterialSpec {
   const isNight = row.chapter === 5;
-  return material.ceramic({
+  return material.pbr({
     name: "faceted coastal chalk cliff",
     color: isNight ? "#3a465c" : row.terrain.chalk,
-    roughness: 0.8,
-    clearcoat: 0.15,
-    clearcoatRoughness: 0.44,
+    roughness: 0.78,
+    metallic: 0,
     envMapIntensity: isNight ? 0.95 : 1.15
   });
 }
@@ -522,13 +505,13 @@ export function beachDressingNodes(row: ChapterLook, options: StageOptions): Sta
       material: pbr("#ffffff", { roughness: 0.84 }),
       transforms: d.grass,
       colors: tone(mixHex(t.turf, "#b9ca72", 0.25), d.grass.length, "#3f6a34", 0.2),
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true,
       ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.8 } })
     }),
     instances.custom(buildScallopShellSpec(), {
       name: "dressing-shells",
-      material: material.ceramic({ color: "#ffffff", roughness: 0.38, clearcoat: 0.45 }),
+      material: pbr("#ffffff", { roughness: 0.34 }),
       transforms: d.shell,
       colors: tone("#f6ead9", d.shell.length, "#eb9d82", 0.24),
       castShadow: false,
@@ -539,12 +522,12 @@ export function beachDressingNodes(row: ChapterLook, options: StageOptions): Sta
       material: pbr("#ffffff", { roughness: 0.88 }),
       transforms: d.driftwood,
       colors: tone(t.driftwood, d.driftwood.length, "#dfd2ba", 0.22),
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     }),
     instances.custom(buildQuayBollardSpec(), {
       name: "dressing-rope-posts",
-      material: CRAFT_MATS.darkWalnut,
+      material: pbr("#583924", { roughness: 0.72 }),
       transforms: d.ropePost,
       castShadow: true,
       receiveShadow: true
@@ -644,7 +627,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       material: pbr("#ffffff", { roughness: 0.86 }),
       transforms: tuftInst.map((t) => ({ position: t.position, rotation: t.rotation, scale: [t.scale[0] * 2.2, t.scale[1] * 1.15, t.scale[2] * 2.2] as [number, number, number] })),
       colors: tuftColors,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: false
     }),
     // Sculpted coastal sea-stack + striped lighthouse & chapter horizon landmarks (zero Meshy blobs).
@@ -686,12 +669,11 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     }).runtime({ id: PROP_IDS.cliffs, tags: ["dressing"] }),
     instances.custom(buildCliffTurfCapSpec(), {
       name: "coastal-cliff-turf-caps",
-      material: material.physical({
+      material: material.pbr({
         name: "cliff headland meadow",
         color: mixHex(groundColor, "#6a994e", 0.35),
-        roughness: 0.8,
-        sheen: 0.28,
-        sheenColor: "#b8d982"
+        roughness: 0.78,
+        metallic: 0
       }),
       transforms: cliffTransforms,
       castShadow: true,
@@ -755,14 +737,14 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   nodes.push(
     instances.custom(crateSpec, {
       name: propPoolNodeId("crate"),
-      material: CRAFT_MATS.cratePine,
+      material: pbr("#c89b66", { roughness: 0.66 }),
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.crates }, () => PARKED_BLOCK)
     }).runtime({ id: propPoolNodeId("crate"), tags: ["piece"] }),
     instances.custom(barrelSpec, {
       name: propPoolNodeId("barrel"),
-      material: CRAFT_MATS.seasonedOak,
+      material: pbr("#8c5832", { roughness: 0.64 }),
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)

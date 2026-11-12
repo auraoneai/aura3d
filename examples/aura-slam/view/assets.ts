@@ -2,23 +2,11 @@ import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetMap } from "@
 
 type ModelAsset = AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number] };
 
-const glb = (file: string, hash: string, bounds: readonly [number, number, number], sizeBytes: number, source: string): ModelAsset =>
-  ({
-    type: "model", format: "glb", url: `/aura-assets/${file}`, hash: `sha256-${hash}`, bounds, sizeBytes,
-    metadata: { materials: [], animations: [], provenance: { sourcePath: `public/aura-assets/${file}`, origin: source } }
-  }) as unknown as ModelAsset;
-
 /**
- * Owned Aura Slam stadium dressing asset (`tennisFloodMast`). Standalone definition (same file and hash as the typed manifest)
- * so the example does not depend on the repository-root `src/aura-assets.ts`.
+ * World Tour stadium set-pieces (`WP-01`) are sculpted procedurally in `examples/aura-slam/art/proceduralModels.ts`
+ * with zero static GLB dependencies; `stadiumAssets` and `STADIUM_PUBLIC_FILES` remain exported empty maps for compatibility.
  */
-const definitions = {
-  // GU47 wave 10 (TT-A2): generated lattice floodlight tower, 26,506 triangles, three 1024 px maps; bounds are the rendered box.
-  // The full URL is a string literal on purpose: the site build copies a root `public/aura-assets` file only when its
-  // `/aura-assets/<name>` URL appears verbatim in the built bundle (the `glb()` template above does not), and 4.7.17 shipped
-  // without this file, so the default Aura Slam court died with "Unexpected token '<'" (an HTML 404 parsed as a model).
-  tennisFloodMast: { ...glb("tennisFloodMast.4a0d9dee.glb", "4a0d9dee36a47919eeee0d58fcfad0ab372da1022e8b7aa9ec11de61f5a4b97a", [1.2168, 1.904, 0.3523], 1892376, "meshy via kiro prism"), url: "/aura-assets/tennisFloodMast.4a0d9dee.glb" } as ModelAsset
-} as const;
+const definitions: Record<string, ModelAsset> = {};
 
 export const stadiumAssets: AuraAssetMap<typeof definitions> = defineAuraAssets(definitions as never) as AuraAssetMap<typeof definitions>;
 

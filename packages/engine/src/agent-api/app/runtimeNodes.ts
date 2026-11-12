@@ -850,6 +850,36 @@ export function runtimeNodeParentedTransform(handle: AuraRuntimeNodeHandle): {
   return { localNode: copyLocalTransform(state.localNode), parentWorldMatrix, worldMatrix, hasPivot, hasLookAt };
 }
 
+/** Lightweight pivot & lookAt query for frame validation without allocating snapshots or 4x4 world matrices. */
+export function runtimeNodePivotMetadata(handle: AuraRuntimeNodeHandle): {
+  readonly isParented: boolean;
+  readonly hasPivot: boolean;
+  readonly hasLookAt: boolean;
+  readonly localPivot?: AuraVec3;
+  readonly instances?: readonly import("../nodes/types.js").AuraTransformSpec[];
+} | undefined {
+  if (disposedQueryHandles.has(handle)) return undefined;
+  const state = runtimeParentedNodes.get(handle);
+  const parent = parityL7Parents.get(handle);
+  const spec = parityL7NodeSpecs.get(handle) as {
+    readonly pivot?: AuraVec3;
+    readonly instances?: readonly import("../nodes/types.js").AuraTransformSpec[];
+  } | undefined;
+  if (state && parent) {
+    let hasPivot = false;
+    let hasLookAt = false;
+    for (let cursor: AuraRuntimeNodeHandle | undefined = handle; cursor; cursor = parityL7Parents.get(cursor)) {
+      const node = runtimeParentedNodes.get(cursor)?.localNode ?? parityL7NodeSpecs.get(cursor);
+      if (!node) continue;
+      assertValidPivot(node.pivot);
+      hasPivot ||= hasNonzeroPivot(node.pivot);
+      hasLookAt ||= "lookAt" in node && node.lookAt !== undefined;
+    }
+    return { isParented: true, hasPivot, hasLookAt, localPivot: state.localNode.pivot, instances: spec?.instances };
+  }
+  return { isParented: false, hasPivot: false, hasLookAt: false, localPivot: spec?.pivot, instances: spec?.instances };
+}
+
 function authoredSubtreeHasPhysics(node: AuraSceneNode): boolean {
   if ((node.kind === "primitive" || node.kind === "model") && node.physics) return true;
   return node.kind === "group" && node.children.some(authoredSubtreeHasPhysics);
@@ -1457,30 +1487,62 @@ function updatedQueryGeometry(spec: AuraCustomGeometrySpec, name: string, update
   return { ...spec, attributes: { ...spec.attributes, [name]: { ...attribute, data } } };
 }
 
-function runtimeGeometryBounds(handle: AuraRuntimeNodeHandle, node: MutableAuraRuntimeSceneNode, geometry: AuraCustomGeometrySpec, dense?: Float32Array) {
-  const positions = normalizeGeometryAttributes(geometry).positions;
-  const world = parityL7WorldMatrix(handle, new Float32Array(16));
+const runtimeGeometryPositionsCache = new WeakMap<AuraCustomGeometrySpec, Float32Array>();
+
+function getNormalizedGeometryPositions(geometry: AuraCustomGeometrySpec): Float32Array {
+  let positions = runtimeGeometryPositionsCache.get(geometry);
+  if (!positions) {
+    positions = normalizeGeometryAttributes(geometry).positions;
+    runtimeGeometryPositionsCache.set(geometry, positions);
+  }
+  return positions;
+}
+
+function runtimeGeometryBounds(handle: AuraRuntimeNodeHandle, node: MutableAuraRuntimeSceneNode, geometry: AuraCustomGeometrySpec, dense?: Float32Array, precomputedWorld?: Float32Array) {
+  const positions = getNormalizedGeometryPositions(geometry);
+  const world = precomputedWorld ?? parityL7WorldMatrix(handle, new Float32Array(16));
   const size = node.kind === "primitive" ? node.size ?? 1 : 1;
-  const dimensions = typeof size === "number" ? [size, size, size] : size;
+  const dx = typeof size === "number" ? size : size[0]!;
+  const dy = typeof size === "number" ? size : size[1]!;
+  const dz = typeof size === "number" ? size : size[2]!;
   const matrices: Float32Array[] = [];
   if (dense !== undefined || node.instances !== undefined) {
     const count = dense ? dense.length / 16 : node.instances!.length;
+    const localScratch = new Float32Array(16);
     for (let i = 0; i < count; i += 1) {
-      const local = dense ? dense.slice(i * 16, i * 16 + 16) : localMatrixOf(node.instances![i]!, new Float32Array(16));
+      const local = dense ? dense.subarray(i * 16, i * 16 + 16) : localMatrixOf(node.instances![i]!, localScratch);
       const matrix = new Float32Array(16);
       multiplyMat4Into(matrix, world, local);
       matrices.push(matrix);
     }
   } else matrices.push(world);
   if (matrices.length === 0) return undefined;
-  const min: [number, number, number] = [Infinity, Infinity, Infinity], max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
-  for (const matrix of matrices) for (let i = 0; i < positions.length; i += 3) {
-    const x = positions[i]! * dimensions[0]!, y = positions[i + 1]! * dimensions[1]!, z = positions[i + 2]! * dimensions[2]!;
-    const point = [matrix[0]! * x + matrix[4]! * y + matrix[8]! * z + matrix[12]!, matrix[1]! * x + matrix[5]! * y + matrix[9]! * z + matrix[13]!, matrix[2]! * x + matrix[6]! * y + matrix[10]! * z + matrix[14]!];
-    for (let axis = 0; axis < 3; axis += 1) { min[axis] = Math.min(min[axis]!, point[axis]!); max[axis] = Math.max(max[axis]!, point[axis]!); }
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  const posLen = positions.length;
+  for (let mIdx = 0; mIdx < matrices.length; mIdx += 1) {
+    const m = matrices[mIdx]!;
+    const m0 = m[0]! * dx, m1 = m[1]! * dx, m2 = m[2]! * dx;
+    const m4 = m[4]! * dy, m5 = m[5]! * dy, m6 = m[6]! * dy;
+    const m8 = m[8]! * dz, m9 = m[9]! * dz, m10 = m[10]! * dz;
+    const m12 = m[12]!, m13 = m[13]!, m14 = m[14]!;
+    for (let i = 0; i < posLen; i += 3) {
+      const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+      const px = m0 * x + m4 * y + m8 * z + m12;
+      const py = m1 * x + m5 * y + m9 * z + m13;
+      const pz = m2 * x + m6 * y + m10 * z + m14;
+      if (px < minX) minX = px;
+      if (px > maxX) maxX = px;
+      if (py < minY) minY = py;
+      if (py > maxY) maxY = py;
+      if (pz < minZ) minZ = pz;
+      if (pz > maxZ) maxZ = pz;
+    }
   }
-  const center: RuntimeNodeVec3 = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
-  const boundsSize: RuntimeNodeVec3 = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+  const min: [number, number, number] = [minX, minY, minZ];
+  const max: [number, number, number] = [maxX, maxY, maxZ];
+  const center: RuntimeNodeVec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+  const boundsSize: RuntimeNodeVec3 = [maxX - minX, maxY - minY, maxZ - minZ];
   return { kind: "aura-runtime-node-bounds" as const, min, max, center, size: boundsSize, radius: Math.hypot(...boundsSize) / 2 };
 }
 
@@ -1677,11 +1739,39 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     return true;
   };
   const getVisible = () => node.kind === "model" ? node.visible !== false : node.visible !== false;
+  let cachedGeomBounds: ReturnType<typeof runtimeGeometryBounds> | undefined;
+  let cachedGeomBoundsVersion = -1;
+  let cachedGeomSpec: AuraCustomGeometrySpec | undefined;
+  let cachedGeomInstancesRef: readonly unknown[] | undefined;
+  let cachedGeomSize: unknown;
+  const cachedGeomWorld = new Float32Array(16);
+  const scratchGeomWorld = new Float32Array(16);
   const getBounds = () => {
     const queryGeometry = runtimeQueryGeometry.get(handle) ?? (node.kind === "primitive" ? node.geometry : undefined);
     if (queryGeometry) {
-      const bounds = runtimeGeometryBounds(handle, node, queryGeometry, denseInstanceMatrices);
-      if (bounds) return bounds;
+      const world = parityL7WorldMatrix(handle, scratchGeomWorld);
+      const curSize = node.kind === "primitive" ? node.size : undefined;
+      let worldMatch = cachedGeomBounds !== undefined
+        && cachedGeomBoundsVersion === nodeVersion
+        && cachedGeomSpec === queryGeometry
+        && cachedGeomInstancesRef === node.instances
+        && cachedGeomSize === curSize;
+      if (worldMatch) {
+        for (let k = 0; k < 16; k += 1) {
+          if (cachedGeomWorld[k] !== world[k]) { worldMatch = false; break; }
+        }
+      }
+      if (worldMatch) return cachedGeomBounds!;
+      const bounds = runtimeGeometryBounds(handle, node, queryGeometry, denseInstanceMatrices, world);
+      if (bounds) {
+        cachedGeomBounds = bounds;
+        cachedGeomBoundsVersion = nodeVersion;
+        cachedGeomSpec = queryGeometry;
+        cachedGeomInstancesRef = node.instances;
+        cachedGeomSize = curSize;
+        cachedGeomWorld.set(world);
+        return bounds;
+      }
     }
     const parentedWorld = runtimeParentedNodes.has(handle)
       ? decomposeMatrix(parityL7WorldMatrix(handle, new Float32Array(16)))
@@ -2319,7 +2409,9 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         animationPoseBinding,
         importedAssetEvidence: importedAssetEvidence ? cloneRuntimeImportedAssetEvidence(importedAssetEvidence) : undefined,
         morphTargets: Object.fromEntries(morphTargetWeights.entries()),
-        bounds: getBounds(),
+        get bounds() {
+          return getBounds();
+        },
         effects: [...attachedEffects]
       };
     }

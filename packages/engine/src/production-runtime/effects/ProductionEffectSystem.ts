@@ -626,41 +626,72 @@ export class ProductionEffectSystem {
     this.syncFrameSubscription();
   }
 
+  #subtreeHasAtmosphereCache = new WeakMap<readonly EffectNodeLike[], boolean>();
+
+  #childrenContainAtmosphere(nodes: readonly EffectNodeLike[]): boolean {
+    const cached = this.#subtreeHasAtmosphereCache.get(nodes);
+    if (cached !== undefined) return cached;
+    let found = false;
+    for (const node of nodes) {
+      if (node.kind === "sky") {
+        found = true;
+        break;
+      }
+      if (
+        node.kind === "effect" &&
+        (node.effect === "fogVolume" || node.effect === "fog" || node.effect === "volumetric-fog" || node.effect === "height-fog")
+      ) {
+        found = true;
+        break;
+      }
+      if (node.children && this.#childrenContainAtmosphere(node.children)) {
+        found = true;
+        break;
+      }
+    }
+    this.#subtreeHasAtmosphereCache.set(nodes, found);
+    return found;
+  }
+
   /** Read the registry's committed topology and effective handle state at ingestion time. */
   #refreshManagedAtmosphereScene(): void {
     const registry = this.#app.nodes;
     const scene = registry?.sceneWithRuntimeAdditions?.() ?? this.#app.scene;
     const fogNodes: EffectNodeLike[] = [], volumes: EffectNodeLike[] = [];
     let sky: object | null = null;
-    const visit = (nodes: readonly EffectNodeLike[], parentVisible: boolean, transformedAncestor: boolean): void => {
-      for (const node of nodes) {
-        const runtime = registry?.atmosphereNodeState?.(node);
-        const visible = parentVisible && (runtime ? runtime.visible : node.visible !== false);
-        if (visible && node.kind === "effect") {
-          if (node.effect === "fogVolume") {
-            // The renderer packet only describes axis-aligned, unscaled
-            // volumes. Position alone cannot certify the shape under parents.
-            const fields = node as unknown as Record<string, unknown>;
-            if (runtime ? !isTranslationOnly(runtime.worldMatrix) : transformedAncestor ||
-                ["rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => fields[key] !== undefined)) {
-              throw new Error("PRD07_FOG_VOLUME_TRANSFORM_UNSUPPORTED");
+    if (this.#childrenContainAtmosphere(scene.nodes)) {
+      const visit = (nodes: readonly EffectNodeLike[], parentVisible: boolean, transformedAncestor: boolean): void => {
+        for (const node of nodes) {
+          const hasAtmoChildren = Boolean(node.children && this.#childrenContainAtmosphere(node.children));
+          if (node.kind !== "effect" && node.kind !== "sky" && !hasAtmoChildren) continue;
+          const runtime = registry?.atmosphereNodeState?.(node);
+          const visible = parentVisible && (runtime ? runtime.visible : node.visible !== false);
+          if (visible && node.kind === "effect") {
+            if (node.effect === "fogVolume") {
+              // The renderer packet only describes axis-aligned, unscaled
+              // volumes. Position alone cannot certify the shape under parents.
+              const fields = node as unknown as Record<string, unknown>;
+              if (runtime ? !isTranslationOnly(runtime.worldMatrix) : transformedAncestor ||
+                  ["rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => fields[key] !== undefined)) {
+                throw new Error("PRD07_FOG_VOLUME_TRANSFORM_UNSUPPORTED");
+              }
+              volumes.push(node);
             }
-            volumes.push(node);
+            else if (node.effect === "fog" || node.effect === "volumetric-fog" || node.effect === "height-fog") fogNodes.push(node);
           }
-          else if (node.effect === "fog" || node.effect === "volumetric-fog" || node.effect === "height-fog") fogNodes.push(node);
+          if (visible && node.kind === "sky") {
+            const spec = (node as { spec?: unknown }).spec;
+            if (spec && typeof spec === "object") sky = spec;
+          }
+          if (hasAtmoChildren && node.children) {
+            const n = node as unknown as Record<string, unknown>;
+            const hasTransform = ["position", "rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => n[key] !== undefined);
+            visit(node.children, visible, transformedAncestor || hasTransform);
+          }
         }
-        if (visible && node.kind === "sky") {
-          const spec = (node as { spec?: unknown }).spec;
-          if (spec && typeof spec === "object") sky = spec;
-        }
-        if (node.children) {
-          const n = node as unknown as Record<string, unknown>;
-          const hasTransform = ["position", "rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => n[key] !== undefined);
-          visit(node.children, visible, transformedAncestor || hasTransform);
-        }
-      }
-    };
-    visit(scene.nodes, true, false);
+      };
+      visit(scene.nodes, true, false);
+    }
     this.#atmosphere.batchRenderUpdates(() => {
       if (sky !== this.sceneSky) {
         if (sky) this.#setSceneSky(sky);

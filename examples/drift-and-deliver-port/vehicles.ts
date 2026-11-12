@@ -185,3 +185,19 @@ export function wheelOffsets(kind: CarKind): V3[] {
   for (const wz of wheelZ(kind)) for (const side of [-1, 1]) out.push([side * (s.w / 2 - 0.12), s.wheelR, wz]);
   return out;
 }
+
+export {
+  HERO_COURIER_WHEEL_POSES,
+  HERO_COURIER_WHEEL_RADIUS,
+  HERO_COURIER_WHEEL_WIDTH,
+  TRAFFIC_FLEET_KINDS,
+  buildHeroCourierBodySlots,
+  buildHeroCourierGlazingSpec,
+  buildHeroCourierRigNode,
+  buildHeroCourierWheelNode,
+  buildHeroCourierWheelSlots,
+  buildProceduralTrafficFleet,
+  buildTrafficClassSpecs,
+  type ProceduralTrafficGroup,
+  type TrafficFleetKind
+} from "./art/proceduralModels";

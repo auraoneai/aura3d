@@ -1,9 +1,12 @@
 import { game, instances, material, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { buildSeatedSpectatorSpec } from "../art/proceduralModels";
 import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 import { SPECTATOR_COUNT } from "./constants";
+import { CROWD_SEAT_COUNT } from "./crowd";
 import { VENUE_PALETTES } from "./venues";
 
+export { CROWD_SEAT_COUNT };
 export const SPECTATOR_COLORS = ["#e06348", "#f2c14e", "#4ea8de", "#52b788", "#f3f0dc", "#c77dff"] as const;
 
 /** Seat position of spectator `i`: two rear rows of six, then two side stands of six. */
@@ -13,26 +16,34 @@ export function spectatorSeat(i: number): Vec3 {
   return [9.15, 1.35, -7.5 + (i - 18) * 2.75];
 }
 
-/** Bleacher tiers are static: they are stamped into the shared static-box groups instead of being four draw calls. */
+/** Bleacher tiers are static: stepped architectural risers, treads, aisles & side stands stamped into the shared static-box group. */
 export function buildBleacherNodes(statics: { box(key: string, material: AuraMaterialSpec, size: Vec3, position: Vec3): void }): NodeInput[] {
-  const bleacherMat = material.pbr({ color: VENUE_PALETTES.hard.seat, roughness: 0.85 });
-  statics.box("bleachers", bleacherMat, [18.5, 0.9, 1.4], [0, 0.45, -12.4]);
-  statics.box("bleachers", bleacherMat, [19.4, 1.65, 1.4], [0, 0.825, -13.6]);
-  statics.box("bleachers", bleacherMat, [1.5, 1.1, 18.0], [-9.2, 0.55, -0.8]);
-  statics.box("bleachers", bleacherMat, [1.5, 1.1, 18.0], [9.2, 0.55, -0.8]);
+  const bleacherMat = material.pbr({ color: VENUE_PALETTES.hard.seat, roughness: 0.85, clearcoat: 0, sheen: 0 });
+  // Rear lower & upper stepped seating bowl (preserving exact 0.90 m and 1.65 m seat tread tops for 240-seat World Tour crowd)
+  statics.box("bleachers", bleacherMat, [18.6, 0.44, 0.36], [0, 0.22, -11.55]);
+  statics.box("bleachers", bleacherMat, [18.8, 0.9, 1.44], [0, 0.45, -12.4]);
+  statics.box("bleachers", bleacherMat, [19.4, 1.28, 0.44], [0, 0.64, -13.02]);
+  statics.box("bleachers", bleacherMat, [19.8, 1.65, 1.48], [0, 0.825, -13.6]);
+  statics.box("bleachers", bleacherMat, [20.4, 2.24, 0.46], [0, 1.12, -14.52]);
+  // Side court stands (lower entry step + 1.10 m seating tier + rear safety parapet)
+  for (const sx of [-1, 1] as const) {
+    statics.box("bleachers", bleacherMat, [0.36, 0.56, 18.0], [sx * 8.32, 0.28, -0.8]);
+    statics.box("bleachers", bleacherMat, [1.52, 1.1, 18.2], [sx * 9.2, 0.55, -0.8]);
+    statics.box("bleachers", bleacherMat, [0.28, 1.58, 18.4], [sx * 10.05, 0.79, -0.8]);
+  }
   return [];
 }
 
-/** All spectators are one instanced capsule (one draw, per-instance colours) instead of 24 nodes. */
+/** All spectators are one instanced sculpted seated figure (`<= 240` tris, `clearcoat: 0, sheen: 0`, per-instance colours). */
 export function buildSpectatorNodes(): NodeInput[] {
   const transforms = Array.from({ length: SPECTATOR_COUNT }, (_, i) => ({ position: spectatorSeat(i), scale: [1, 1, 1] as Vec3 }));
   const colors = Array.from({ length: SPECTATOR_COUNT }, (_, i) => SPECTATOR_COLORS[i % SPECTATOR_COLORS.length]!);
   return [
     instances
-      .capsule({
-        castShadow: false, name: "spectators",
-        size: [0.32, 0.6, 0.32],
-        material: material.pbr({ color: "#ffffff", roughness: 0.78 }),
+      .custom(buildSeatedSpectatorSpec(), {
+        castShadow: false,
+        name: "spectators",
+        material: material.pbr({ color: "#ffffff", roughness: 0.78, clearcoat: 0, sheen: 0 }),
         transforms,
         colors
       })

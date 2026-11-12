@@ -1037,30 +1037,53 @@
           top: calc(var(--a3d-bar-space) + 6px);
           left: max(10px, env(safe-area-inset-left, 0px));
           max-width: calc(100vw - 82px);
-          gap: 5px;
+          gap: 4px;
+        }
+        .hud-mode-tag {
+          display: none;
         }
         .sb-team {
-          min-width: 58px;
-          padding: 5px 8px 4px;
+          min-width: 54px;
+          padding: 4px 7px 3px;
         }
         .sb-team .sb-score,
         body[data-look="tour"] .sb-team .sb-score {
-          font-size: 28px;
+          font-size: 24px;
         }
         .sb-mid {
-          padding: 4px 8px;
+          padding: 3px 7px;
         }
         .sb-mid .sb-venue {
-          max-width: 106px;
+          max-width: 98px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
         .jam-meter-wrap {
-          padding: 5px 8px;
+          padding: 4px 8px;
         }
         .jam-meter-wrap .bar {
-          width: 112px;
+          width: 104px;
+        }
+        .hud-ticker {
+          top: calc(var(--a3d-bar-space) + 102px);
+          left: max(10px, env(safe-area-inset-left, 0px));
+          right: auto;
+          transform: none;
+          align-items: flex-start;
+          max-width: calc(100vw - 20px);
+          gap: 3px;
+        }
+        .hud-ticker .tick {
+          font-size: 11px;
+          padding: 2px 9px;
+          max-width: calc(100vw - 24px);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .hud-ticker .tick:nth-child(n + 3) {
+          display: none;
         }
         .shot-meter {
           bottom: calc(158px + env(safe-area-inset-bottom, 0px));
@@ -1070,15 +1093,17 @@
           bottom: calc(212px + env(safe-area-inset-bottom, 0px));
         }
         .banner {
-          top: calc(var(--a3d-bar-space) + 150px);
+          top: calc(var(--a3d-bar-space) + 154px);
         }
         .center-msg {
-          top: calc(var(--a3d-bar-space) + 206px);
+          top: auto;
+          bottom: calc(250px + env(safe-area-inset-bottom, 0px));
+          transform: translateX(-50%);
           width: max-content;
           max-width: calc(100vw - 24px);
         }
         .center-msg .big {
-          font-size: 26px;
+          font-size: 24px;
           white-space: nowrap;
         }
         .center-msg .small {

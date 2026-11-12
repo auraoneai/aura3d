@@ -413,10 +413,10 @@ function reportError(error: unknown): void {
   console.error(error);
 }
 
-/** Load progress on the loading card: the models are the bulk of the first load, so count them as they arrive. */
+/** Load progress on the loading card: only the rigged hero.glb remains as an external GLB asset; all scenery/props are sculpted in code. */
 function watchModelLoads(): () => void {
   const status = $("loading-status");
-  const urls = new Set(Object.values(MODEL_ASSETS).map((ref) => new URL((ref as unknown as { url: string }).url, location.href).pathname));
+  const urls = new Set([new URL((MODEL_ASSETS.hero as unknown as { url: string }).url, location.href).pathname]);
   const done = new Map<string, number>();
   const show = (): void => {
     const mb = [...done.values()].reduce((a, b) => a + b, 0) / 1e6;

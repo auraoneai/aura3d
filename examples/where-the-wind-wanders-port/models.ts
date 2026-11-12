@@ -2,13 +2,18 @@
  * Meshy-generated model layer (text prompts only; prompts and task ids in assets/ATTRIBUTION.md).
  * Replaces the procedural cottages, trees, traveller, wisp and boat when the matching GLB is present.
  */
-import { createAnimationController, instances, model, type AuraApp, type scene } from "@aura3d/engine";
+import { createAnimationController, model, type AuraApp, type scene } from "@aura3d/engine";
 import { createLocomotion } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
 import { MODEL_ASSETS, hasModel } from "./model-assets";
 import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
-import type { ModelPlacement, Scenery } from "./scenery";
+import type { Scenery } from "./scenery";
+import {
+  HERO_SHEEN_OVERRIDES,
+  mountProceduralAnimatedActors,
+  mountProceduralStaticScenery
+} from "./art/proceduralModels";
 
 export interface ModelSet { letter: boolean; bell: boolean; bellModel?: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; kite?: boolean; boat: boolean; stones: boolean; shrubs: boolean }
 
@@ -40,14 +45,7 @@ type MaterialOverrides = NonNullable<Parameters<typeof model>[1]>["materialOverr
  * in 4.6. Every GLB has one material, so the overrides target all of it.
  */
 export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
-  cottage: [{ roughness: 0.92, metallic: 0, envMapIntensity: 0.76 }],
-  belltower: [{ roughness: 0.88, metallic: 0, envMapIntensity: 0.78, rim: { color: "#dce8c6", power: 3.2, intensity: 0.22 } }],
-  bell: [{ color: "#f3d598", colorMode: "multiply", metallic: 0.9, roughness: 0.27, envMapIntensity: 1.55, rim: { color: "#ffe09c", power: 2.8, intensity: 0.68 } }],
-  letter: [{ roughness: 0.58, metallic: 0, rim: { color: "#fff2dc", power: 2.4, intensity: 0.42 } }],
-  boat: [{ roughness: 0.88, metallic: 0, envMapIntensity: 0.8 }],
-  stones: [{ roughness: 0.93, metallic: 0, envMapIntensity: 0.68, rim: { color: "#d8e4c2", power: 3.4, intensity: 0.18 } }],
-  hero: [{ roughness: 0.82, rim: { color: "#ffebd0", power: 2.5, intensity: 0.72 } }],
-  kite: [{ roughness: 0.74, metallic: 0, rim: { color: "#fff4dc", power: 2.3, intensity: 0.52 } }]
+  hero: HERO_SHEEN_OVERRIDES
 };
 
 /** WW47-A1 kite: height of the placed kite (m), and where it flies relative to the traveller (downwind, up). */
@@ -56,59 +54,34 @@ export const KITE_FLIGHT = { downwind: 4.6, up: 5.2, hand: [0.35, 1.55, 0.1] as 
 
 export function availableModels(): ModelSet {
   return {
-    letter: hasModel("letter"),
-    bell: hasModel("belltower"),
-    bellModel: hasModel("belltower") && hasModel("bell"),
-    cottage: hasModel("cottage"),
-    trees: hasModel("pine") && hasModel("oak"),
+    letter: true,
+    bell: true,
+    bellModel: true,
+    cottage: true,
+    trees: true,
     hero: hasModel("hero"),
-    wisp: hasModel("wisp"),
-    kite: hasModel("kite"),
-    boat: hasModel("boat"),
-    stones: hasModel("stones"),
-    shrubs: hasModel("shrub")
+    wisp: true,
+    kite: true,
+    boat: true,
+    stones: true,
+    shrubs: true
   };
 }
 
-const xf = (p: ModelPlacement, scale: number, yawOffset = 0, lift = 0) => ({ position: [p.x, p.y + lift, p.z] as [number, number, number], rotation: [0, p.yaw + yawOffset, 0] as [number, number, number], scale: [scale, scale, scale] as [number, number, number] });
-
 /**
- * Static dressing: cottages, the bell frame (and its swinging bell), trees, shrubs, stones. The animated pieces (hero,
- * wisp, boat) are added by `addAnimatedModels`. GU47 WW47-L2: with `shadows` (High, GU47 look) every GLB casts and
- * receives the engine sun's shadow; without it (Low, `?look=original`) nothing does, as in 4.6. Trees cast from their
- * own mesh (the GLBs are 0.5k-1.3k triangles, so a shadow LOD buys nothing); foliage cards never cast (PF1).
+ * Static dressing: procedural multi-material Highland cottages, stone-and-timber belfry + resonant bronze bell,
+ * windmill, packhorse bridge, wayside shrine, dry-stone walls, rune cairns, brass/glass lanterns, and wind-bent flora.
  */
-export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shadows = false, painted = false): void {
+export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shadows = false, _painted = false): void {
   const castShadow = shadows, receiveShadow = shadows;
-  const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
-  if (set.cottage) {
-    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { ...mo("cottage"), name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
-  }
-  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { ...mo("belltower"), name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow, receiveShadow, collider: false })));
-  if (set.bellModel) sc.placements.bell.slice(0, 1).forEach((p) => {
-    const pose = bellModelPose(p);
-    builder.add(model(MODEL_ASSETS.bell, { ...mo("bell"), name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow, receiveShadow, collider: false }).runtime({ id: "bell-model" }));
-  });
-  if (set.trees) {
-    if (sc.placements.pines.length > 0) builder.add(instances.model(MODEL_ASSETS.pine, { name: "pines", targetHeight: 6, transforms: sc.placements.pines.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
-    if (sc.placements.oaks.length > 0) builder.add(instances.model(MODEL_ASSETS.oak, { name: "oaks", targetHeight: 6, transforms: sc.placements.oaks.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
-  }
-  if (set.shrubs && sc.placements.shrubs.length > 0) builder.add(instances.model(MODEL_ASSETS.shrub, { name: "shrubs", targetHeight: 1.2, transforms: sc.placements.shrubs.map((p) => xf(p, p.s)), castShadow, receiveShadow, collider: false }));
-  if (set.stones && sc.placements.stones.length > 0) sc.placements.stones.forEach((p, i) => builder.add(model(MODEL_ASSETS.stones, { ...mo("stones"), name: `stones-${i}`, targetHeight: 3.2 * p.s, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
+  mountProceduralStaticScenery(builder, sc, set, castShadow, receiveShadow, bellModelPose);
 }
 
 export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false, painted = false): void {
   const castShadow = shadows, receiveShadow = shadows;
   const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
-  if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { ...mo("letter"), name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
   if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", rotationOrder: "YXZ", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
-  if (set.kite) {
-    // WW47-A1: the paper kite (WP-36 bellKite) riding the wind above the traveller; posed every frame by world.ts. It has no
-    // string: the 2.8 cm cream box from a world-fixed hand offset to the kite read as a stray white line from the walker to
-    // whatever roof the kite flew over (owner report, 2026-11-09), so it was removed.
-    builder.add(model(MODEL_ASSETS.kite, { ...mo("kite"), name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false }).runtime({ id: "kite" }));
-  } else if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
-  if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
+  mountProceduralAnimatedActors(builder, set, letterCount, castShadow, receiveShadow);
 }
 
 /** Seconds over which the measured ground speed is low-passed, and the time a new dominant gait must hold before the pose switches. */

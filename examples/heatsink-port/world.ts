@@ -18,7 +18,7 @@ import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
-import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
+import { barrelModel, droneCanopy, droneFlap, droneHull, droneNozzle, droneRotor, droneTrim, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { stepCraftArticulation, type CraftArticulationState } from "./presentation";
 import { seededRandom } from "./rng";
@@ -53,14 +53,17 @@ interface PartSpec {
   readonly glow: string;
   readonly glowAmt: number;
   readonly additive?: boolean;
-  /** the Meshy hull model instead of a primitive */
+  /** procedural hull assembly instead of a primitive */
   readonly model?: boolean;
+  readonly procedural?: "hull" | "trim" | "canopy";
 }
 /** the generated hull's camera gimbal (its nose) must point along the track's +X; a +90 degree yaw rendered it backwards, so -90 */
 const HULL_YAW = -Math.PI / 2;
 /** Quad-rotor drone in the track frame (x forward, y up, z side): copper body, cyan accents, twin thrusters with plumes. */
 const DRONE_PARTS: readonly PartSpec[] = [
-  { id: "drone-hull", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, model: true }
+  { id: "drone-hull", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, model: true, procedural: "hull" },
+  { id: "drone-trim", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, procedural: "trim" },
+  { id: "drone-canopy", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, procedural: "canopy" }
 ];
 
 const STREAKS = 110;
@@ -280,8 +283,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
   b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds }), { name: "drone-blob", material: material.custom(blobSpec()), castShadow: false }).runtime({ id: "drone-blob" }));
 
-  /* player drone + twilight carPaint vector airbrakes, brushedMetal counter-rotating rotors & twin ion nozzles */
+  /* player drone + procedural multi-material trim/canopy, vector airbrakes, counter-rotating rotors & twin ion nozzles */
   for (const part of DRONE_PARTS) {
+    if (part.procedural === "trim") { b.add(droneTrim(models).runtime({ id: part.id })); continue; }
+    if (part.procedural === "canopy") { b.add(droneCanopy(models).runtime({ id: part.id })); continue; }
     if (part.model) { b.add(droneHull(models, look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
     const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
@@ -293,15 +298,12 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(handle.runtime({ id: fogTracked(part.id, part.id) }));
   }
   if (look.wake.enabled) {
-    const flapPaint = material.carPaint({ color: "#c86228", roughness: 0.2, metallic: 0.72, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.65 });
-    const rotorMetal = material.brushedMetal({ color: "#d6e2ee", roughness: 0.2, anisotropy: 0.88, envMapIntensity: 1.65 });
-    const nozzleGlow = material.neon({ color: "#0a1826", emissive: "#40e0ff", emissiveIntensity: 2.6, practical: true });
     for (let i = 0; i < 2; i++) {
-      b.add(primitives.box({ name: `drone-flap-${i}`, size: [0.84, 0.052, 0.42], material: flapPaint, castShadow: false }).runtime({ id: `drone-flap-${i}` }));
-      b.add(primitives.cylinder({ name: `drone-nozzle-${i}`, size: [0.15, 0.17, 0.26], material: nozzleGlow, castShadow: false }).runtime({ id: `drone-nozzle-${i}` }));
+      b.add(droneFlap(i, models).runtime({ id: `drone-flap-${i}` }));
+      b.add(droneNozzle(i, models).runtime({ id: `drone-nozzle-${i}` }));
     }
     for (let i = 0; i < 4; i++) {
-      b.add(primitives.box({ name: `drone-rotor-${i}`, size: [1.04, 0.026, 0.14], material: rotorMetal, castShadow: false }).runtime({ id: `drone-rotor-${i}` }));
+      b.add(droneRotor(i, models).runtime({ id: `drone-rotor-${i}` }));
     }
     const billboardGeo = () => geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds });
     for (let i = 0; i < 2; i++) {
@@ -548,9 +550,17 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       if (part.model) {
         /* IC-12: heat glows on the hull in 8 steps (one setEmissive per step change, so no per-frame material churn) */
         const step = heatStep(row, heatGlow);
-        if (step !== heatShown) { heatShown = step; const [hex, k] = step === 0 && row.wake.enabled ? ION_IDLE : HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
+        if (step !== heatShown) {
+          heatShown = step;
+          const [hex, k] = step === 0 && row.wake.enabled ? ION_IDLE : HEAT_STEPS[step]!;
+          try {
+            if (typeof h.setEmissive === "function") h.setEmissive(hex, k);
+            else (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k);
+          } catch { /* materials runtime off */ }
+        }
         continue;
       }
+      if (part.procedural) continue;
       h.setUniform?.("heat", heatGlow);
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }

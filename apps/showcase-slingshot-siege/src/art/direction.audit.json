@@ -214,7 +214,6 @@
         "practical": false
       },
       {
-        "name": "glazed ceramic",
         "node": "dressing-shells",
         "practical": false
       },
@@ -223,7 +222,6 @@
         "practical": false
       },
       {
-        "name": "aged dark walnut",
         "node": "dressing-rope-posts",
         "practical": false
       },
@@ -471,12 +469,10 @@
         "practical": false
       },
       {
-        "name": "chamfered crate pine",
         "node": "v-crates-pool",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
         "node": "v-barrels-pool",
         "practical": false
       },

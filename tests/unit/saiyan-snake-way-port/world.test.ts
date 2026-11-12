@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap.js";
 import { HERO_PARTS } from "../../../examples/saiyan-snake-way-port/hero";
 import { POOLS, buildWorld } from "../../../examples/saiyan-snake-way-port/world";
 import { RUNNER_STYLES } from "../../../examples/saiyan-snake-way-port/styles";
@@ -8,6 +9,24 @@ describe("saiyan-snake-way-port world", () => {
     const world = buildWorld();
     expect(world.scene).toBeDefined();
     expect(typeof world.bind).toBe("function");
+  });
+  it("mounts sculpted multi-material landmarks, zero static Meshy model nodes, and zero WebGPU custom-shader gaps", () => {
+    for (const mode of ["script", "original"] as const) {
+      const json = (buildWorld({ look: { mode, pinnedStage: null } }).scene as unknown as {
+        toJSON(): { nodes: { kind?: string; name?: string }[]; effects?: { kind?: string; name?: string }[] };
+      }).toJSON();
+      expect(json.nodes.filter((n) => n.kind === "model")).toEqual([]);
+      expect(webgpuCustomShaderGap(json as never)).toBeUndefined();
+      if (mode === "script") {
+        const names = new Set(json.nodes.map((n) => n.name));
+        for (const id of ["serpent-head", "serpent-gatehouse", "serpent-tail-monument", "sanctuary-planetlet", "viaduct-dorsal-spines", "island-0", "lantern-0", "ent-arch-0-0", "ent-barrier-0-0", "ent-oni-0-0", "ent-sweeper-0-0", "ent-feast-0-0"]) {
+          expect(names.has(id), id).toBe(true);
+        }
+        const postNames = (json.effects ?? []).map((e) => e.name);
+        expect(postNames).not.toContain("motion blur");
+        expect(postNames).not.toContain("outro focus");
+      }
+    }
   });
   it("pools every entity type the simulation spawns", () => {
     for (const type of ["orb", "soul", "barrier", "arch", "oni", "sweeper", "power", "feast"]) expect(POOLS[type], type).toBeGreaterThan(0);

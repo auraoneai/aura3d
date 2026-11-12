@@ -528,15 +528,20 @@ function pixels(): { width: number; height: number; litFraction: number; mean: n
   return { width: canvas.width, height: canvas.height, litFraction: lit / (px.length / 4), mean: sum / (px.length / 4) };
 }
 
-/** Model nodes (the two landmark towers) and how many have decoded into the scene yet. */
-function assetStatus(): { total: number; loaded: number } {
-  if (!app) return { total: 0, loaded: 0 };
+/** Scene landmark & procedural multi-material nodes (CC0 towers + sculpted streetcar/town/rider kit) and their readiness. */
+function assetStatus(): { total: number; loaded: number; ok: boolean } {
+  if (!app) return { total: 0, loaded: 0, ok: false };
   const ids = app.nodes.ids().filter((id) => /^(landmark|house|clock-tower|lighthouse|crates|lamp-post|folk|tram-body)-?/.test(id));
-  const loaded = ids.filter((id) => (app!.nodes.require(id) as unknown as { importedAssetEvidence?: () => { bounds?: unknown } | undefined }).importedAssetEvidence?.()?.bounds).length;
-  return { total: ids.length, loaded };
+  const loaded = ids.filter((id) => {
+    const h = app!.nodes.require(id);
+    const kind = (h as { kind?: string }).kind ?? h.snapshot?.().kind;
+    if (kind !== undefined && kind !== "model") return true;
+    return Boolean(h.importedAssetEvidence?.()?.bounds);
+  }).length;
+  return { total: ids.length, loaded, ok: ids.length > 0 && loaded === ids.length };
 }
 
-function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number }; errors: number; renderPath: unknown; post: unknown; warnings: string[] } {
+function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number; ok: boolean }; errors: number; renderPath: unknown; post: unknown; warnings: string[] } {
   const info = app?.info;
   const d = app?.diagnostics();
   const warnings = (d?.warnings ?? []).slice(0, 40);

@@ -4258,6 +4258,27 @@ function hasInstanceVertexStreams(geometry: Geometry): boolean {
   return geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance");
 }
 
+function isCollapsed3x3Transform(source: ArrayLike<number>, offset: number): boolean {
+  const m0 = Math.abs(source[offset] ?? 0);
+  const m1 = Math.abs(source[offset + 1] ?? 0);
+  const m2 = Math.abs(source[offset + 2] ?? 0);
+  const m4 = Math.abs(source[offset + 4] ?? 0);
+  const m5 = Math.abs(source[offset + 5] ?? 0);
+  const m6 = Math.abs(source[offset + 6] ?? 0);
+  const m8 = Math.abs(source[offset + 8] ?? 0);
+  const m9 = Math.abs(source[offset + 9] ?? 0);
+  const m10 = Math.abs(source[offset + 10] ?? 0);
+  const m3 = Math.abs(source[offset + 3] ?? 0);
+  const m7 = Math.abs(source[offset + 7] ?? 0);
+  const m11 = Math.abs(source[offset + 11] ?? 0);
+  if (m3 > 1e-8 || m7 > 1e-8 || m11 > 1e-8) return false;
+  const max3 = Math.max(m0, m1, m2, m4, m5, m6, m8, m9, m10);
+  if (max3 <= 1e-8) return true;
+  // Sub-millimeter parked pool instances far underground (e.g. PARKED_BLOCK at y=-120, scale=1e-4)
+  if (max3 <= 2e-4 && (source[offset + 13] ?? 0) <= -80) return true;
+  return false;
+}
+
 function expandInstancedRenderItem(item: RenderItem, cameraViewProjection?: Float32Array | readonly number[]): readonly RenderItem[] {
   const source = validateInstanceTransformSource(item);
   const baseModel = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
@@ -4265,8 +4286,10 @@ function expandInstancedRenderItem(item: RenderItem, cameraViewProjection?: Floa
     ? toMat4Values(item.modelViewProjectionMatrix, "modelViewProjectionMatrix", item.label)
     : multiplyMat4(toMat4Values(cameraViewProjection ?? identityMatrix(), "cameraViewProjectionMatrix"), baseModel);
   const { instanceTransforms: _instanceTransforms, instanceCount: _instanceCount, normalMatrix: _normalMatrix, ...baseItem } = item;
+  const skipCollapsed = item.geometry.topology !== "points";
   const expanded: RenderItem[] = [];
   for (let offset = 0; offset < source.length; offset += 16) {
+    if (skipCollapsed && isCollapsed3x3Transform(source, offset)) continue;
     const index = offset / 16;
     const instanceMatrix = mat4FromArrayLike(source, offset);
     const modelMatrix = multiplyMat4(baseModel, instanceMatrix);
@@ -4296,12 +4319,8 @@ function multiplyMat4(left: Mat4, right: Mat4): Mat4 {
 }
 
 export function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
-  let matrix: Mat4;
-  try {
-    matrix = transposeMat4(invertMat4(modelMatrix));
-  } catch {
-    matrix = [...identityMatrix()] as Mat4;
-  }
+  const inverted = invertMat4OrNull(modelMatrix);
+  const matrix: Mat4 = inverted ? transposeMat4(inverted) : ([...identityMatrix()] as Mat4);
   // WebGL's front-face winding remains CCW when Aura represents a mirrored
   // draw by swapping front/back culling (and double-sided draws do not cull at
   // all). The PBR shaders use gl_FrontFacing to orient double-sided normals, so
@@ -4334,7 +4353,7 @@ function transposeMat4(matrix: Mat4): Mat4 {
   ];
 }
 
-function invertMat4(matrix: Mat4): Mat4 {
+function invertMat4OrNull(matrix: Mat4): Mat4 | null {
   const [
     a00, a01, a02, a03,
     a10, a11, a12, a13,
@@ -4355,7 +4374,7 @@ function invertMat4(matrix: Mat4): Mat4 {
   const b11 = a22 * a33 - a23 * a32;
   const det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
   if (Math.abs(det) <= 1e-12 || !Number.isFinite(det)) {
-    throw new RenderDeviceError("Instance transform fallback requires invertible model matrices", "INSTANCING_CONTRACT");
+    return null;
   }
   const invDet = 1 / det;
   return [
@@ -4376,6 +4395,14 @@ function invertMat4(matrix: Mat4): Mat4 {
     (a31 * b01 - a30 * b03 - a32 * b00) * invDet,
     (a20 * b03 - a21 * b01 + a22 * b00) * invDet
   ];
+}
+
+function invertMat4(matrix: Mat4): Mat4 {
+  const inv = invertMat4OrNull(matrix);
+  if (!inv) {
+    throw new RenderDeviceError("Instance transform fallback requires invertible model matrices", "INSTANCING_CONTRACT");
+  }
+  return inv;
 }
 
 export { selectForwardShadowMap } from "./forward/Lighting.js";

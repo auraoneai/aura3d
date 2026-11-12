@@ -1,5 +1,15 @@
-import { effects, environments, game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
-import { stadiumAssets as assets, venueHdriAssets } from "./assets";
+import { effects, environments, game, material, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import {
+  buildCenterStrapAnchorNode,
+  buildFloodlightTowerNode,
+  buildPlayerSidelineNodes,
+  buildScoreboardGantryNode,
+  buildStadiumBowlNodes,
+  buildTournamentNetPostNode,
+  buildUmpireHighChairNodes,
+  buildUmpireOfficialNodes
+} from "../art/proceduralModels";
+import { venueHdriAssets } from "./assets";
 import { buildBallNodes } from "./ball";
 import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
 import { CAMERA_CLASSIC, CAMERA_V2, cameraNode, type BroadcastCameraRig } from "./camera";
@@ -178,21 +188,29 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   addLine([0.055, 0.008, 0.28], 0, BASELINE_Z - 0.14);
 
   // Net posts + pulsing red fault LED strips + parabolic sagging net & top tape
+  if (original) {
+    s.addMany([
+      primitives
+        .cylinder({
+          name: "net-post-left",
+          size: [0.14, NET_POST_H, 0.14],
+          material: netPostMat
+        })
+        .position(-NET_POST_X, NET_POST_H * 0.5, 0),
+      primitives
+        .cylinder({
+          name: "net-post-right",
+          size: [0.14, NET_POST_H, 0.14],
+          material: netPostMat
+        })
+        .position(NET_POST_X, NET_POST_H * 0.5, 0)
+    ]);
+  } else {
+    s.add(buildTournamentNetPostNode(-1));
+    s.add(buildTournamentNetPostNode(1));
+    s.add(buildCenterStrapAnchorNode());
+  }
   s.addMany([
-    primitives
-      .cylinder({
-        name: "net-post-left",
-        size: [0.14, NET_POST_H, 0.14],
-        material: netPostMat
-      })
-      .position(-NET_POST_X, NET_POST_H * 0.5, 0),
-    primitives
-      .cylinder({
-        name: "net-post-right",
-        size: [0.14, NET_POST_H, 0.14],
-        material: netPostMat
-      })
-      .position(NET_POST_X, NET_POST_H * 0.5, 0),
     primitives
       .box({
         name: "net-fault-left",
@@ -238,107 +256,67 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     statics.box("wood", chairWood, [0.74, 0.12, 0.72], [-6.76, 1.92, 0]);
     statics.box("wood", chairWood, [0.12, 0.68, 0.72], [-7.08, 2.28, 0]);
     statics.box("canopy", canopyMat, [1.18, 0.08, 1.18], [-6.76, 2.95, 0]);
+    s.addMany([
+      primitives
+        .capsule({
+          name: "umpire-torso",
+          size: [0.34, 0.68, 0.34],
+          material: material.pbr({ color: "#214b3e", roughness: 0.78 })
+        })
+        .position(-6.72, 2.26, 0),
+      primitives
+        .sphere({
+          name: "umpire-head",
+          size: [0.27, 0.27, 0.27],
+          material: material.pbr({ color: "#c58e69", roughness: 0.74 })
+        })
+        .position(-6.68, 2.62, 0)
+        .runtime(game.runtimeNode("umpire-head"))
+    ]);
   } else {
-    // WP-01: Centre net-strap anchor buckle + sculpted multi-strut umpire tower (merged into static draws: 0 extra draw calls)
-    statics.box("chairFrame", chairFrame, [0.075, 0.09, 0.048], [0, 0.065, 0]);
-    for (const lz of [-0.4, 0.4]) {
-      statics.box("chairFrame", chairFrame, [0.065, 1.92, 0.065], [-7.1, 0.96, lz]);
-      statics.box("chairFrame", chairFrame, [0.065, 1.76, 0.065], [-6.42, 0.88, lz]);
-      statics.box("chairFrame", chairFrame, [0.74, 0.045, 0.045], [-6.76, 0.48, lz]);
-      statics.box("chairFrame", chairFrame, [0.74, 0.045, 0.045], [-6.76, 1.12, lz]);
-      statics.box("chairFrame", chairFrame, [0.74, 0.05, 0.05], [-6.76, 1.82, lz]);
-      statics.box("chairFrame", chairFrame, [0.68, 0.045, 0.045], [-6.76, 2.18, lz * 0.95]);
-      statics.box("chairFrame", chairFrame, [0.05, 1.08, 0.05], [-7.1, 2.44, lz * 0.95]);
-      statics.box("chairFrame", chairFrame, [1.16, 0.04, 0.04], [-6.76, 2.94, lz * 1.1]);
-    }
-    for (const by of [0.48, 1.12, 1.82]) {
-      statics.box("chairFrame", chairFrame, [0.045, 0.045, 0.84], [-7.1, by, 0]);
-    }
-    for (let step = 0; step < 5; step++) {
-      statics.box("chairFrame", chairFrame, [0.11, 0.038, 0.72], [-6.39, 0.34 + step * 0.34, 0]);
-    }
-    statics.box("chairFrame", chairFrame, [0.32, 0.042, 0.74], [-6.48, 1.54, 0]);
-    statics.box("chairFrame", chairFrame, [0.24, 0.026, 0.22], [-6.46, 2.21, 0.36]);
-    for (let sIdx = 0; sIdx < 4; sIdx++) {
-      statics.box("wood", chairWood, [0.11, 0.055, 0.72], [-6.96 + sIdx * 0.14, 1.92, 0]);
-      statics.box("wood", chairWood, [0.055, 0.095, 0.72], [-7.08, 2.06 + sIdx * 0.13, 0]);
-    }
-    statics.box("canopy", canopyMat, [1.22, 0.055, 1.22], [-6.76, 2.97, 0]);
-    statics.box("canopy", canopyMat, [0.04, 0.11, 1.22], [-6.16, 2.92, 0]);
-    for (const cz of [-0.6, 0.6]) statics.box("canopy", canopyMat, [1.22, 0.09, 0.04], [-6.76, 2.93, cz]);
+    // Grounding plinths keep the merged static court-furniture groups active while curved multi-material models carry the hero forms
+    statics.box("chairFrame", chairFrame, [0.96, 0.024, 1.04], [-6.76, 0.012, 0]);
+    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, -3.4]);
+    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, 3.4]);
+    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, -1.85]);
+    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, 1.85]);
+    s.addMany(buildUmpireHighChairNodes());
+    s.addMany(buildUmpireOfficialNodes(false));
   }
-  s.addMany([
-    primitives
-      .capsule({
-        name: "umpire-torso",
-        size: [0.34, 0.68, 0.34],
-        material: original ? material.pbr({ color: "#214b3e", roughness: 0.78 }) : material.fabric({ color: "#214b3e", roughness: 0.82, sheen: 0.42, sheenColor: "#356c5a" })
-      })
-      .position(-6.72, 2.26, 0),
-    primitives
-      .sphere({
-        name: "umpire-head",
-        size: [0.27, 0.27, 0.27],
-        material: material.pbr({ color: "#c58e69", roughness: 0.74 })
-      })
-      .position(-6.68, 2.62, 0)
-      .runtime(game.runtimeNode("umpire-head"))
-  ]);
 
-  // Sponsor A-frame boards at z = -10.85, x = ±4.3, slatted side player benches & courtside coolers
-  const sponsorBoardMat = material.pbr({ color: "#1d3d33", roughness: 0.68 });
+  // Sponsor A-frame perimeter boards at z = -10.85, x = ±4.3 + LED ribbon trim + sculpted sideline player zones
+  const sponsorBoardMat = original ? material.pbr({ color: "#1d3d33", roughness: 0.68 }) : material.clearcoatPaint({ color: "#17372e", roughness: 0.3, clearcoat: 0.78 });
   const sponsorTrimMat = material.pbr({ color: VENUE_PALETTES.hard.trim, roughness: 0.48 });
   for (const bx of [-4.3, 4.3]) {
-    statics.box("sponsorBoard", sponsorBoardMat, [3.2, 0.78, 0.34], [bx, 0.39, -10.85]);
-    statics.box("sponsorTrim", sponsorTrimMat, [2.85, 0.18, 0.36], [bx, 0.42, -10.85]);
+    statics.box("sponsorBoard", sponsorBoardMat, [3.24, 0.78, 0.34], [bx, 0.39, -10.85]);
+    statics.box("sponsorTrim", sponsorTrimMat, [2.88, 0.18, 0.36], [bx, 0.42, -10.85]);
+    if (!original) {
+      statics.box("chairFrame", chairFrame, [3.3, 0.055, 0.42], [bx, 0.028, -10.85]);
+    }
   }
   if (original) {
     for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
   } else {
-    for (const bz of [-3.4, 3.4]) {
-      for (const lz of [bz - 0.82, bz, bz + 0.82]) {
-        statics.box("chairFrame", chairFrame, [0.54, 0.42, 0.06], [-7.35, 0.21, lz]);
-        statics.box("chairFrame", chairFrame, [0.055, 0.68, 0.06], [-7.6, 0.52, lz]);
-      }
-      for (const sx of [-7.18, -7.35, -7.52]) statics.box("wood", chairWood, [0.14, 0.045, 1.96], [sx, 0.44, bz]);
-      for (const sy of [0.64, 0.81]) statics.box("wood", chairWood, [0.045, 0.125, 1.96], [-7.58, sy, bz]);
-    }
-    for (const cz of [-1.85, 1.85]) {
-      statics.box("sponsorBoard", sponsorBoardMat, [0.46, 0.42, 0.62], [-7.35, 0.21, cz]);
-      statics.box("canopy", canopyMat, [0.49, 0.06, 0.65], [-7.35, 0.45, cz]);
-    }
+    s.addMany(buildPlayerSidelineNodes());
     if (boot !== "moon") {
-      // Rear grandstand architectural upper fascia & scoreboard gantry support pylons
-      statics.box("chairFrame", chairFrame, [24.6, 0.32, 4.4], [0, 5.52, -19.5]);
-      statics.box("chairFrame", chairFrame, [24.6, 0.95, 0.26], [0, 6.08, -21.5]);
-      for (const gx of [-2.6, 2.6]) statics.box("chairFrame", chairFrame, [0.18, 2.4, 0.22], [gx, 1.2, GANTRY_POSITION[2]]);
+      s.addMany(buildStadiumBowlNodes());
     }
   }
   // TT-H2 / TT-A2: "AURA SLAM" / "WORLD TOUR" on the sponsor boards and the live venue + score line on the stand (3 draws).
   if (!original) s.addMany(buildBoardNodes(standLineText(look.city, null)));
 
-  // Owned Aura Slam lattice floodlight towers (`tennisFloodMast`) + procedural stadium grandstand & scoreboard gantry (0 borrowed assets).
+  // WP-01: Procedural multi-material Grand Slam lattice floodlight towers, grandstand & trussed LED scoreboard gantry (0 static GLBs).
   const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.brushedMetal({ color: "#5d6a70", roughness: 0.22 });
   if (!original) {
-    for (const side of [-1, 1]) {
-      s.add(
-        model(assets.tennisFloodMast, {
-          name: `stadium-floodlight-${side < 0 ? "left" : "right"}`,
-          role: "setDressing",
-          castShadow: false,
-          scaleMode: "fit",
-          targetHeight: FLOODLIGHT_MAST_H + 0.5
-        })
-          .position(side * 12.5, 0, -13.2)
-          .rotate(0, side * -0.2, 0)
-      );
-    }
+    s.add(buildFloodlightTowerNode(-1));
+    s.add(buildFloodlightTowerNode(1));
   }
   for (const side of original ? [-1, 1] : []) {
     s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
       .position(side * 12.5, FLOODLIGHT_MAST_H * 0.5, -13.2));
   }
-  s.addMany([
+  const gantryPos: Vec3 = !original && boot === "moon" ? [GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] : GANTRY_POSITION;
+  s.add(
     primitives
       .box({
         name: "stadium-grandstand-rear",
@@ -348,37 +326,39 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       })
       .position(0, 2.7, -19.5)
       .rotate(0, Math.PI * 0.5, 0)
-      .runtime(game.runtimeNode("stadium-grandstand-rear")),
-    primitives
-      .box({
-        name: "stadium-scoreboard-gantry",
-        size: [6.2, 1.85, 0.42],
-        castShadow: false,
-        material: original ? material.pbr({ color: "#182832", roughness: 0.55 }) : material.brushedMetal({ color: "#182832", roughness: 0.3, anisotropy: 0.55 })
-      })
-      .position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION))
-      .runtime(game.runtimeNode("stadium-scoreboard-gantry")),
-    ...(original
-      ? [
-          primitives
-            .box({
-              name: "stadium-floodlight-left",
-              size: [2.2, 0.9, 1.1],
-              castShadow: false,
-              material: material.emissive({ color: "#fff4d2", emissive: "#fff4d2", emissiveIntensity: 0.9 })
-            })
-            .position(-12.5, FLOODLIGHT_MAST_H, -13.2),
-          primitives
-            .box({
-              name: "stadium-floodlight-right",
-              size: [2.2, 0.9, 1.1],
-              castShadow: false,
-              material: material.emissive({ color: "#fff4d2", emissive: "#fff4d2", emissiveIntensity: 0.9 })
-            })
-            .position(12.5, FLOODLIGHT_MAST_H, -13.2)
-        ]
-      : [])
-  ]);
+      .runtime(game.runtimeNode("stadium-grandstand-rear"))
+  );
+  if (original) {
+    s.addMany([
+      primitives
+        .box({
+          name: "stadium-scoreboard-gantry",
+          size: [6.2, 1.85, 0.42],
+          castShadow: false,
+          material: material.pbr({ color: "#182832", roughness: 0.55 })
+        })
+        .position(...GANTRY_POSITION)
+        .runtime(game.runtimeNode("stadium-scoreboard-gantry")),
+      primitives
+        .box({
+          name: "stadium-floodlight-left",
+          size: [2.2, 0.9, 1.1],
+          castShadow: false,
+          material: material.emissive({ color: "#fff4d2", emissive: "#fff4d2", emissiveIntensity: 0.9 })
+        })
+        .position(-12.5, FLOODLIGHT_MAST_H, -13.2),
+      primitives
+        .box({
+          name: "stadium-floodlight-right",
+          size: [2.2, 0.9, 1.1],
+          castShadow: false,
+          material: material.emissive({ color: "#fff4d2", emissive: "#fff4d2", emissiveIntensity: 0.9 })
+        })
+        .position(12.5, FLOODLIGHT_MAST_H, -13.2)
+    ]);
+  } else {
+    s.add(buildScoreboardGantryNode(gantryPos));
+  }
 
   // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed
   // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground. GU47 TT-E1: the World

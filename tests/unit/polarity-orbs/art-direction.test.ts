@@ -1,20 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { auditArtDirection, type ArtDirectionSnapshot } from "@aura3d/game/art";
+import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap.js";
 import direction from "../../../apps/showcase-polarity-orbs/src/art/direction";
 import { PolarityOrbsSim } from "../../../apps/showcase-polarity-orbs/src/sim";
-import { buildWorld } from "../../../apps/showcase-polarity-orbs/src/world";
+import { NODE_IDS, buildWorld } from "../../../apps/showcase-polarity-orbs/src/world";
+import {
+  arenaBezelRailMesh,
+  crownPrismGemMesh,
+  dipoleCollectorOrbMesh
+} from "../../../apps/showcase-polarity-orbs/src/art/proceduralModels";
 import { LOOK } from "../../../apps/showcase-polarity-orbs/src/look";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
- * Expected in-play draws: sky, cloud sea, 4 scenery layers, ball, shadow, shield, shockwave + 9 merged batches, plus the
- * 12 Meshy backdrop pieces (one primitive each).
+ * Expected in-play draws: sky, cloud sea, 4 scenery layers, hero 5-node orb assembly, shadow, shield, shockwave +
+ * merged gameplay batches + multi-material procedural Tokamak / Magnetic Lab backdrop assemblies (zero `.glb` models).
  */
-const DRAWS_ESTIMATE = 31;
-/** Meshy backdrop models (triangles after the Meshy-07 admission decimation; three maps each: BC, ORM, N). */
-const BACKDROP_TRIANGLES: Record<string, number> = {
-  poChargeCoil: 6242, poCrystalRed: 5388, poCrystalIslandB: 5906, poCrystalBlue: 7420, poCrystalIsland: 6824, poMagnet: 6782
-};
+const DRAWS_ESTIMATE = 42;
 
 describe("polarity orbs art direction", () => {
   it("the mounted scene passes auditArtDirection and the audit record is written", () => {
@@ -25,11 +27,13 @@ describe("polarity orbs art direction", () => {
       .filter((n) => n.kind === "light")
       .map((n) => ({ type: String(n.light), shadow: Boolean(n.shadow), intensity: Number(n.intensity ?? 1) }));
     const env = nodes.find((n) => n.kind === "environment");
+    expect(nodes.filter((n) => n.kind === "model")).toHaveLength(0);
+    expect(webgpuCustomShaderGap(world.scene.toJSON())).toBeUndefined();
     const snapshot: ArtDirectionSnapshot = {
       lights,
       hasAmbient: lights.some((l) => l.type === "ambient"),
       environment: { kind: env?.environment === "hdri" ? "hdri" : env ? "preset" : "none", background: env?.background === true },
-      models: Object.entries(BACKDROP_TRIANGLES).map(([assetKey, triangles]) => ({ assetKey, triangles, textures: 3, unlit: false, overridesTextures: false })),
+      models: [],
       drawCalls: DRAWS_ESTIMATE
     };
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
@@ -48,5 +52,16 @@ describe("polarity orbs art direction", () => {
     expect(direction.palette.accent).toBe(LOOK.gold);
     expect(direction.palette.reservedObjective).toBe(LOOK.mint);
     expect(direction.lighting.environment.background).toBe("sky");
+  });
+
+  it("preserves all 30 runtime NODE_IDS and builds finite procedural Tokamak & gameplay meshes", () => {
+    expect(NODE_IDS).toHaveLength(30);
+    expect(direction.assets).toEqual([]);
+    for (const mesh of [arenaBezelRailMesh(2), dipoleCollectorOrbMesh(0.45), crownPrismGemMesh(0.4)]) {
+      expect(mesh.positions.length).toBeGreaterThan(24);
+      expect(mesh.normals.length).toBe(mesh.positions.length);
+      expect(mesh.indices.length).toBeGreaterThan(12);
+      expect(mesh.positions.every((v) => Number.isFinite(v))).toBe(true);
+    }
   });
 });

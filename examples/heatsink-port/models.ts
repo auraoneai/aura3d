@@ -1,12 +1,28 @@
 /**
- * Meshy-generated models for Ion Circuit (own text prompts; see assets/ATTRIBUTION.md and PORTING-NOTES.md).
- * Loaded through the production-safe path: same-origin pathname + sha256 hash, never an http(s) URL.
+ * Procedural multi-material models for Ion Circuit (`WP-23`), replacing static `.glb` mounts
+ * while preserving `MODELS` / `MODELS_LITE` tier descriptors and deterministic track placement.
  */
-import { defineModelAssets, instances, model } from "@aura3d/engine";
+import { defineModelAssets } from "@aura3d/engine";
+import {
+  buildBarrelNode,
+  buildDroneCanopyNode,
+  buildDroneFlapNode,
+  buildDroneHullNode,
+  buildDroneNozzleNode,
+  buildDroneRotorNode,
+  buildDroneTrimNode,
+  buildGatePylonInstancedNodes,
+  buildHeavyTargetNode,
+  buildPickupNode,
+  buildSceneryInstancedNodes,
+  buildSentryTargetNode,
+  type ProceduralNodeBuilder,
+  type ScenerySpot
+} from "./art/proceduralModels";
 import { seededRandom } from "./rng";
 import type { Frame, Track } from "./track";
 
-type NodeB = ReturnType<typeof model>;
+type NodeB = ProceduralNodeBuilder;
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
 const glb = (name: string): string => new URL(`./assets/models/${name}.glb`, import.meta.url).pathname;
 const entry = (name: string, sha256: string) => ({ url: glb(name), sha256 });
@@ -54,30 +70,47 @@ export const modelSet = (quality: "high" | "low"): ModelSet => (quality === "low
 /** the quad-rotor drone's largest dimension in metres (the old primitive craft was ~4.6 m across the arms) */
 export const DRONE_LENGTH = 4.2;
 
-/** `casts` (IC-03, twilight look): the drone is the one model shadow caster under the key; `?look=original` keeps the blob only */
+const isLiteSet = (set: ModelSet): boolean => set === MODELS_LITE;
+
+/** `casts` (IC-03, twilight look): the drone hull is the root shadow caster under the key; `?look=original` keeps the blob only */
 export const droneHull = (set: ModelSet = MODELS, casts = false): NodeB =>
-  model(set.drone, { name: "drone-hull", targetMaxDimension: DRONE_LENGTH, castShadow: casts, receiveShadow: false });
+  buildDroneHullNode(isLiteSet(set), casts);
 
-/** GU47 WP-36 IC-13: the Meshy sentry drone as a strike target's core (twilight; presentation only, the hit radius is unchanged) */
+export const droneTrim = (set: ModelSet = MODELS): NodeB =>
+  buildDroneTrimNode(isLiteSet(set));
+
+export const droneCanopy = (set: ModelSet = MODELS): NodeB =>
+  buildDroneCanopyNode(isLiteSet(set));
+
+export const droneFlap = (index: number, set: ModelSet = MODELS): NodeB =>
+  buildDroneFlapNode(index, isLiteSet(set));
+
+export const droneNozzle = (index: number, set: ModelSet = MODELS): NodeB =>
+  buildDroneNozzleNode(index, isLiteSet(set));
+
+export const droneRotor = (index: number, set: ModelSet = MODELS): NodeB =>
+  buildDroneRotorNode(index, isLiteSet(set));
+
+/** Procedural rotary interceptor sentry drone as a strike target's core (twilight; presentation only, hit radius unchanged) */
 export const sentryModel = (id: number, size: number, set: ModelSet = MODELS, casts = false): NodeB =>
-  model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: casts, receiveShadow: false });
+  buildSentryTargetNode(id, size, isLiteSet(set), casts);
 
-/** GU47 wave 2 IC-13: the Meshy heavy drone as the heavy strike target's core (twilight; presentation only, the hit radius is unchanged) */
+/** Procedural twin-nacelle heavy gunship as the heavy strike target's core (twilight; presentation only, hit radius unchanged) */
 export const heavyModel = (id: number, size: number, set: ModelSet = MODELS, casts = false): NodeB =>
-  model(set.ionHeavyDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: casts, receiveShadow: false });
+  buildHeavyTargetNode(id, size, isLiteSet(set), casts);
 
 export const barrelModel = (i: number, set: ModelSet = MODELS, casts = false): NodeB =>
-  model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: casts, receiveShadow: false });
+  buildBarrelNode(i, isLiteSet(set), casts);
 
 export const pickupModel = (i: number, shield: boolean, set: ModelSet = MODELS): NodeB =>
-  model(shield ? set.pickupShield : set.pickupRepair, { name: `pickup-${i}`, targetHeight: shield ? 2.4 : 2.0, castShadow: false, receiveShadow: false });
+  buildPickupNode(i, shield, isLiteSet(set));
 
-type Spot = { position: [number, number, number]; rotation: [number, number, number]; scale: number };
+type Spot = ScenerySpot;
 
 const SHOULDER_OFFSETS = [0, 3, 10, 24, 50, 100] as const;
 const SHOULDER_DROPS = [-0.55, -0.75, -1.5, -3.2, -7.5, -17] as const;
 
-/** Exact shoulder height offset matching `buildShoulders` so flora sits flush on banked shoulders instead of floating. */
+/** Exact shoulder height offset matching `buildShoulders` so canyon architecture sits flush on banked shoulders. */
 function shoulderDrop(offset: number, s: number): number {
   for (let j = 0; j < SHOULDER_OFFSETS.length - 1; j++) {
     const a = SHOULDER_OFFSETS[j]!, b = SHOULDER_OFFSETS[j + 1]!;
@@ -91,7 +124,7 @@ function shoulderDrop(offset: number, s: number): number {
   return SHOULDER_DROPS[SHOULDER_DROPS.length - 1]!;
 }
 
-/** Static scenery scattered beyond the guard rails: alien flora and ruin pieces. Deterministic (seeded), sim-independent. */
+/** Static canyon & reactor scenery beyond the guard rails: basalt mesas, cryo-vents, coolant towers & boost arches. */
 export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, casts = false): NodeB[] {
   const rng = seededRandom(seed);
   const f: Partial<Frame> = {};
@@ -108,9 +141,9 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, c
       const y = edgeY + shoulderDrop(offset, s) - 0.55;
       const slopeTilt = side * Math.atan2(shoulderDrop(offset + 2, s) - shoulderDrop(offset - 2, s), 4) * 0.28;
       const yaw = rng() * Math.PI * 2;
-      const spot = {
-        position: [x, y, z] as [number, number, number],
-        rotation: [Math.sin(yaw) * slopeTilt, yaw, -Math.cos(yaw) * slopeTilt] as [number, number, number],
+      const spot: Spot = {
+        position: [x, y, z],
+        rotation: [Math.sin(yaw) * slopeTilt, yaw, -Math.cos(yaw) * slopeTilt],
         scale: 0.8 + rng() * 0.5
       };
       if (pick < 0.3) caps.push(spot);
@@ -119,24 +152,10 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, c
       else ruins.push(spot);
     }
   }
-  const nodes: NodeB[] = [];
-  const add = (name: string, asset: ModelSet[keyof ModelSet], spots: Spot[], height: number): void => {
-    if (spots.length === 0) return;
-    nodes.push(instances.model(asset, {
-      name,
-      transforms: spots.map((p) => ({ position: p.position, rotation: p.rotation, scale: [p.scale, p.scale, p.scale] as [number, number, number] })),
-      targetHeight: height,
-      castShadow: casts
-    }));
-  };
-  add("scenery-caps", set.plantCap, caps, 9);
-  add("scenery-corals", set.plantCoral, corals, 4.5);
-  add("scenery-ruins", set.ruinMonolith, ruins, 14);
-  add("scenery-arches", set.ruinArch, arches, 11);
-  return nodes;
+  return buildSceneryInstancedNodes({ caps, corals, ruins, arches }, isLiteSet(set), casts);
 }
 
-/** two pylons per checkpoint gate, standing on the road edge (static transforms, one instanced draw class) */
+/** Two electromagnetic pylons with holographic chevron gantries per checkpoint gate, standing on the road edge. */
 export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly [number, number, number], set: ModelSet = MODELS, casts = false): NodeB[] {
   const transforms: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
   const f: Partial<Frame> = {};
@@ -148,6 +167,5 @@ export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly
       transforms.push({ position: [fr.x + fr.rx * lat, fr.y + track.latY(s, side * fr.hw) - 0.25, fr.z + fr.rz * lat], rotation: [rot[0], rot[1], rot[2]] });
     }
   }
-  if (transforms.length === 0) return [];
-  return [instances.model(set.pylon, { name: "gate-pylons", transforms, targetHeight: 22, castShadow: casts })];
+  return buildGatePylonInstancedNodes(transforms, isLiteSet(set), casts);
 }

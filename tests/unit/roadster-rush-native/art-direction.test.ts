@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { auditArtDirection, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import direction from "../../../apps/showcase-roadster-rush/src/art/direction";
@@ -15,6 +17,18 @@ import {
   mixHex
 } from "../../../apps/showcase-roadster-rush/src/art/look";
 import { APEX_VFX_KINDS, apexVfxPresets, registerApexVfx } from "../../../apps/showcase-roadster-rush/src/art/vfx";
+import {
+  APEX_PROCEDURAL_MATERIALS,
+  buildBayRidgeMountainSpec,
+  buildBayRidgeStrataMaterial,
+  buildHeroCanopyVisorNode,
+  buildHeroSupercarNode,
+  buildSkycarGeometries,
+  buildTrafficClassGeometries
+} from "../../../apps/showcase-roadster-rush/src/art/proceduralModels";
+import { PLAYER_BOX, SKY_SPEC, VEHICLE_SPECS, type VehicleType } from "../../../apps/showcase-roadster-rush/src/native/constants";
+import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap";
+import { checkWgslTwin } from "../apps/wgslTwinChecks";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
@@ -31,18 +45,11 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
   ];
   for (let i = 0; i < APEX_PRACTICALS.sodiumSpots; i++) lights.push({ type: "spot", shadow: false, intensity: 0 });
   for (let i = 0; i < APEX_PRACTICALS.headlights; i++) lights.push({ type: "spot", shadow: false, intensity: 0 });
-  const vehicle = (assetKey: string) => ({ assetKey, triangles: 0, textures: 4, unlit: false, overridesTextures: false });
   return {
     lights,
     hasAmbient: false,
     environment: { kind: "hdri", background: false },
-    models: [
-      vehicle("hero"),
-      vehicle("roadsterRushSkyCar"),
-      { ...vehicle("skycar-far"), textures: 1 },
-      ...["sedan", "hatch", "suv", "taxi", "van", "pickup", "boxtruck", "bus", "carrier"].map(vehicle),
-      { ...vehicle("traffic-far-lod"), textures: 1 }
-    ],
+    models: [],
     materials: [
       { node: "light-lamps", emissiveIntensity: 1.65, practical: true },
       { node: "traffic-brake-lights", emissiveIntensity: 2.1, lightSource: true },
@@ -135,5 +142,101 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
     }
     expect(total).toBeLessThanOrEqual(96);
     expect(registerApexVfx(undefined)).toEqual([]);
+  });
+
+  it("sculpts exact-collider procedural vehicles, pairs WebGPU strata WGSL, and enforces clearcoat:0 on >20-slot pools", () => {
+    const heroJson = buildHeroSupercarNode().toJSON();
+    expect(heroJson.kind).toBe("group");
+    expect(heroJson.children.length).toBe(6);
+
+    for (const vType of Object.keys(VEHICLE_SPECS) as VehicleType[]) {
+      const spec = VEHICLE_SPECS[vType];
+      const bundle = buildTrafficClassGeometries(vType);
+      expect(bundle.nearBody.bounds).toBeDefined();
+      expect(bundle.nearGlass.bounds).toBeDefined();
+      expect(bundle.nearTrim.bounds).toBeDefined();
+      expect(bundle.farLod.bounds).toBeDefined();
+      const bMin = bundle.farLod.bounds!.min;
+      const bMax = bundle.farLod.bounds!.max;
+      expect(bMin[1]).toBeGreaterThanOrEqual(-0.02);
+      expect(bMin[1]).toBeLessThanOrEqual(0.05);
+      expect(bMax[0] - bMin[0]).toBeLessThanOrEqual(spec.w * 1.12);
+      expect(bMax[1] - bMin[1]).toBeLessThanOrEqual(spec.h * 1.06);
+      expect(bMax[2] - bMin[2]).toBeCloseTo(spec.l, 0);
+    }
+
+    const skycar = buildSkycarGeometries();
+    expect(skycar.nearSpec.bounds!.min[1]).toBeCloseTo(0, 2);
+    expect(skycar.nearSpec.bounds!.max[0] - skycar.nearSpec.bounds!.min[0]).toBeCloseTo(SKY_SPEC.w, 1);
+    expect(skycar.nearSpec.bounds!.max[2] - skycar.nearSpec.bounds!.min[2]).toBeCloseTo(SKY_SPEC.l, 1);
+    expect(PLAYER_BOX.l).toBe(4.3);
+
+    // >20-instance hardware instancing contract: clearcoat === 0, zero sheen/iridescence/transmission
+    for (const mat of [
+      APEX_PROCEDURAL_MATERIALS.trafficFarHardwarePbr(),
+      APEX_PROCEDURAL_MATERIALS.skycarNearHardwareMetal(),
+      APEX_PROCEDURAL_MATERIALS.skycarFarHardwarePbr(),
+      APEX_PROCEDURAL_MATERIALS.boltCrystalHardwarePbr(),
+      APEX_PROCEDURAL_MATERIALS.pylonColumnConcrete(),
+      APEX_PROCEDURAL_MATERIALS.lightPoleSteel()
+    ]) {
+      expect((mat as { clearcoat?: number }).clearcoat ?? 0).toBe(0);
+      expect((mat as { sheen?: number }).sheen).toBeUndefined();
+      expect((mat as { iridescence?: number }).iridescence).toBeUndefined();
+      expect((mat as { transmission?: number }).transmission).toBeUndefined();
+    }
+
+    // Coastal bay ridge stratified mountain + paired WebGPU WGSL twin
+    const ridgeSpec = buildBayRidgeMountainSpec();
+    expect(ridgeSpec.bounds!.max[0] - ridgeSpec.bounds!.min[0]).toBeCloseTo(1, 3);
+    const strataMat = buildBayRidgeStrataMaterial();
+    expect(strataMat.kind).toBe("custom");
+    if (strataMat.kind === "custom") {
+      checkWgslTwin("coastal-bay-ridge", strataMat.custom, true);
+    }
+    expect(webgpuCustomShaderGap(strataMat)).toBeUndefined();
+  });
+
+  it("uses smooth shared-vertex automotive normals, +Z rear taillight/shutter detail, and mounts /hdri in vite.config.ts", () => {
+    const canopyJson = buildHeroCanopyVisorNode().toJSON();
+    expect(canopyJson.kind).toBe("primitive");
+    expect(canopyJson.geometry.kind).toBe("aura-custom-geometry");
+    const canopyGeo = canopyJson.geometry as unknown as { positions: ArrayLike<number>; indices?: ArrayLike<number> };
+    // Smooth-indexed loft shares ~6 indices per vertex (vs exactly 1 index/vertex on flat-shaded triangle soup)
+    expect(canopyGeo.indices!.length).toBeGreaterThan((canopyGeo.positions.length / 3) * 3);
+
+    const cobaltChild = buildHeroSupercarNode().toJSON().children[0]!;
+    const cobaltIndices = Array.from(
+      (cobaltChild as unknown as { geometry: { indices: ArrayLike<number> } }).geometry.indices
+    );
+    const uniqueCobaltVerts = new Set(cobaltIndices).size;
+    // Smooth-shaded cobalt bodywork shares ~4.5-5.5 indices per unique vertex (vs 1.0 on flat-shaded triangle soup)
+    expect(cobaltIndices.length).toBeGreaterThan(uniqueCobaltVerts * 4);
+
+    const sedan = buildTrafficClassGeometries("sedan");
+    expect(sedan.nearBody.indices!.length).toBeGreaterThan((sedan.nearBody.positions.length / 3) * 3);
+
+    const hasRearCrimsonLamps = (spec: { positions: ArrayLike<number>; colors?: ArrayLike<number> }, minRearZ: number): boolean => {
+      if (!spec.colors) return false;
+      for (let v = 0; v < spec.positions.length / 3; v += 1) {
+        const z = spec.positions[v * 3 + 2]!;
+        const r = spec.colors[v * 4]!, g = spec.colors[v * 4 + 1]!, b = spec.colors[v * 4 + 2]!;
+        if (z >= minRearZ && r > 0.9 && g < 0.2 && b < 0.25) return true;
+      }
+      return false;
+    };
+    expect(hasRearCrimsonLamps(sedan.nearTrim, 2.2)).toBe(true);
+    expect(hasRearCrimsonLamps(sedan.farLod, 2.2)).toBe(true);
+
+    const boxtruck = buildTrafficClassGeometries("boxtruck");
+    expect(hasRearCrimsonLamps(boxtruck.nearTrim, 3.9)).toBe(true);
+    expect(hasRearCrimsonLamps(boxtruck.farLod, 3.9)).toBe(true);
+
+    const viteCfg = fs.readFileSync(
+      path.resolve(process.cwd(), "apps/showcase-roadster-rush/vite.config.ts"),
+      "utf8"
+    );
+    expect(viteCfg).toContain('mountSharedPrefix(server.middlewares, "/hdri")');
+    expect(fs.existsSync(path.resolve(process.cwd(), "public/hdri", `${APEX_IBL_HDRI}_1k.hdr`))).toBe(true);
   });
 });

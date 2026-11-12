@@ -47,22 +47,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.2], fovDeg: [58, 72], mobile: "both" },
-  assets: [
-    { role: "vehicle", assetKey: "courier", maxTriangles: 60000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "sedan", maxTriangles: 12000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "hatch", maxTriangles: 12000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "van", maxTriangles: 12000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "truck", maxTriangles: 14000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "lamp", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "signal", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "tree", maxTriangles: 6000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "palm", maxTriangles: 6000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "shelter", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "hydrant", maxTriangles: 6000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "clocktower", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "lighthouse", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "watertank", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
-  ],
+  assets: [],
   vfx: [
     { event: "drift", kind: "courier-tyre-smoke" },
     { event: "drift-skid", kind: "skid-ribbon" },

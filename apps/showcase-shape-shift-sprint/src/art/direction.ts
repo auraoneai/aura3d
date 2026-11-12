@@ -1,29 +1,29 @@
-// Shape Shift Sprint art direction (SplatSiblings WP-2 + WP-15 visual overhaul). Fantasy: a candy-primary
-// kinetic morph-runner on a glossy cream sky bridge over a cloud sea with floating toy islands and 6 Toybox Worlds.
+// Shape Shift Sprint art direction (WP-14 sculpted multi-material procedural overhaul). Fantasy: a candy-primary
+// kinetic morph-runner on a glossy cream sky bridge over a cloud sea with sculpted portals, castle sky-islands, and 6 Toybox Worlds.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "shape-shift-sprint",
   genre: "platformer",
-  fantasy: "Sprint a shape-shifting toy along a glossy candy sky bridge past floating islands, fitting through 3D gates across six Toybox Worlds.",
+  fantasy: "Sprint a shape-shifting toy along a candy sky bridge past procedural castle islands, fitting through 3D gates across six Toybox Worlds.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [
     {
       file: "evidence/shape-shift-sprint/README.md",
-      source: "generic reference: wooden and lacquered vinyl shape-sorter toys (sphere, cube, cone cut-outs in a bright board)",
+      source: "generic reference: wooden and lacquered vinyl shape-sorter toys paired with architectural archway portals",
       licence: "reference-only",
-      why: "Molded 3D cutout wall blocks with bevelled rims read immediately: three outlined holes, one fits the active form"
+      why: "Molded 3D cutout wall blocks with bevelled rims and overhead glowing shape-stencil portals read immediately at speed"
     },
     {
       file: "evidence/shape-shift-sprint/README.md",
-      source: "generic reference: candy-coloured clearcoat playground toys on warm cream skyway surfaces",
+      source: "generic reference: multi-material clearcoat designer toys, storybook castle sky-islands, and kinetic brass gyroscopes",
       licence: "reference-only",
-      why: "Multi-lobe primaries (crimson carPaint sphere, solar clearcoatPaint cube, cobalt lacquer cone) stay readable at speed"
+      why: "Multi-lobe primaries (crimson carPaint sphere, solar clearcoatPaint cube, cobalt lacquer glider-cone) contrast cleanly against ceramic & strata landmarks"
     },
     {
       file: "evidence/shape-shift-sprint/README.md",
-      source: "generic reference: plasma shockwaves and confetti bursts at party arcade games",
+      source: "generic reference: plasma shockwaves, chevron boost pads, and confetti bursts at party arcade games",
       licence: "reference-only",
       why: "Plasma morph burst plus a shape-confetti trail and hole rims glowing in the matching colour reward every fit"
     }

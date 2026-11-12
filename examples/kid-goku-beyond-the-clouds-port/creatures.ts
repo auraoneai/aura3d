@@ -1,10 +1,25 @@
 /**
- * Stylised procedural creatures and set pieces for the Cloud Runner: a diving pterosaur, a stomping tyrant lizard
- * (body, head, jaw pivot), a boulder, the staff, the sky cloud and the meat. Original shapes, merged with vertex colours.
+ * Procedural creatures and set pieces for Cumulus Dash: articulated multi-material sky-pterosaurs, storm-tyrant
+ * lizards, carved rune boulders, the golden cumulus steed, and honey-peach roast pickups (see `./art/proceduralModels`).
  */
 import { Mesh, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { seeded } from "./sim";
 import type { V3 } from "./course";
+import {
+  buildCarvedBoulderNode,
+  buildGoldenSkyCloudNode,
+  buildHoneyRoastPickupNode,
+  buildSkyPterosaurNode,
+  buildStormTyrantNode
+} from "./art/proceduralModels";
+
+export {
+  buildCarvedBoulderNode,
+  buildGoldenSkyCloudNode,
+  buildHoneyRoastPickupNode,
+  buildSkyPterosaurNode,
+  buildStormTyrantNode
+};
 
 const ell = (c: readonly [number, number, number], sx: number, sy: number, sz: number, jitter = 0.04, seed = 1): Mesh => {
   const m = icosphere(2, c, jitter, seeded(seed));
@@ -81,10 +96,11 @@ export function boulder(): Mesh {
     const c = mix3(hex("#a58a66"), hex("#cdb48a"), t);
     m.colors[i * 4] = c[0]; m.colors[i * 4 + 1] = c[1]; m.colors[i * 4 + 2] = c[2];
   }
+  m.computeNormals();
   return m;
 }
 
-/** A fluffy golden-white cloud to ride: a cluster of lumps. */
+/** A fluffy golden-white cloud to ride: a cluster of smooth cumulus lobes. */
 export function skyCloud(): Mesh {
   const m = new Mesh();
   const top = hex("#fffbe8"), under = hex("#f2cf7c");
@@ -99,6 +115,7 @@ export function skyCloud(): Mesh {
     }
     m.append(b, p, s);
   }
+  m.computeNormals();
   return m;
 }
 

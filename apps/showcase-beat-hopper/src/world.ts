@@ -31,6 +31,11 @@ import { poseScale, type CameraPose, type Shown } from "./presentation";
 import { addStage } from "./stage";
 import { addDressing, bindDressing } from "./dressing";
 import {
+  createJudgementThresholdGateNode,
+  sculptBeatPadFrameMesh,
+  sculptBeatPadGlassMesh
+} from "./art/proceduralModels";
+import {
   deckRunwaySpec, flipbookBurstSpec, gapChasmSpec, glowSpec, heroSpec, ringShockwaveSpec,
   stageLitSpec, stageSkySpec, type Haze
 } from "./stage-shaders";
@@ -263,8 +268,9 @@ export function buildWorld(_options: WorldOptions): World {
   }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
   for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
-  /* GPU-instanced Meshy club dressing: 3 `instances.model` groups (`bhSpeakerStack`, `bhSpeakerStackB`, `bhTurntable`) */
+  /* GPU-instanced procedural concert stage dressing (`grp-dress-stacks`, `grp-dress-decks`) + hero multi-material z=0 judgement gate */
   addDressing(builder);
+  builder.add(createJudgementThresholdGateNode(ROAD_WIDTH / 2 + 0.58));
 
   /* Elevated track girder + cyan under-glow strip */
   const trackLen = CONFIG.POOL_SEGMENTS * SEGMENT_LENGTH;
@@ -289,12 +295,9 @@ export function buildWorld(_options: WorldOptions): World {
     envMapIntensity: 1.5
   }), false);
 
-  /* `studioGlass` + anodized `lacquer` 3-lane beat-judgement threshold pads at z = 0 pulsing on quantized 132 BPM phase */
-  addPbrMesh("beat-pad-glass", mergeMeshes([
-    translateBox3(1.76, 0.032, 0.86, laneX(-1), 0.016, 0),
-    translateBox3(1.76, 0.032, 0.86, laneX(0), 0.016, 0),
-    translateBox3(1.76, 0.032, 0.86, laneX(1), 0.016, 0)
-  ]), material.studioGlass({
+  /* Sculpted octagonal `studioGlass` + anodized `lacquer` 3-lane beat-judgement threshold pads at z = 0 pulsing on quantized 132 BPM phase */
+  const lanesCoords = [laneX(-1), laneX(0), laneX(1)] as const;
+  addPbrMesh("beat-pad-glass", sculptBeatPadGlassMesh(lanesCoords), material.studioGlass({
     name: "beat-pad-studio-glass",
     tint: "#7df9ff",
     roughness: 0.03,
@@ -305,14 +308,7 @@ export function buildWorld(_options: WorldOptions): World {
     envMapIntensity: 1.75
   }), false);
 
-  addPbrMesh("beat-pad-lacquer", mergeMeshes([
-    translateBox3(1.90, 0.022, 0.12, laneX(-1), 0.014, -0.45),
-    translateBox3(1.90, 0.022, 0.12, laneX(0), 0.014, -0.45),
-    translateBox3(1.90, 0.022, 0.12, laneX(1), 0.014, -0.45),
-    translateBox3(1.90, 0.022, 0.12, laneX(-1), 0.014, 0.45),
-    translateBox3(1.90, 0.022, 0.12, laneX(0), 0.014, 0.45),
-    translateBox3(1.90, 0.022, 0.12, laneX(1), 0.014, 0.45)
-  ]), material.lacquer({
+  addPbrMesh("beat-pad-lacquer", sculptBeatPadFrameMesh(lanesCoords), material.lacquer({
     name: "beat-pad-lacquer",
     color: "#23e6ff",
     emissive: "#23e6ff",
@@ -352,11 +348,19 @@ export function buildWorld(_options: WorldOptions): World {
     clearcoatRoughness: 0.06,
     envMapIntensity: 1.5
   });
-  const botChromeMat = material.chrome({
-    name: "bot-visor-chrome",
-    color: "#eaf6ff",
+  const botVisorGlassMat = material.studioGlass({
+    name: "bot-visor-studio-glass",
+    tint: "#7df9ff",
+    color: "#caf8ff",
+    emissive: "#23e6ff",
+    emissiveIntensity: 0.68,
+    practical: true,
     roughness: 0.025,
-    envMapIntensity: 2.1
+    ior: 1.54,
+    thickness: 0.36,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.95
   });
   const botEarGlowMat = material.glowingEmissive({
     name: "bot-ear-glow",
@@ -376,26 +380,29 @@ export function buildWorld(_options: WorldOptions): World {
   const partNode = (id: string, m: MeshData, mat: AuraMaterialSpec, cast = true) =>
     geometry.custom(dynamicFrom(m, CORRIDOR_BOUNDS), { name: id, material: mat, castShadow: cast, receiveShadow: false });
 
+  builder.add(group("player", []).runtime({ id: "player" }));
+  builder.add(partNode("bot-torso", bot.torso, botChassisMat).position(0, 0.62, 0).runtime({ id: "bot-torso" }));
   builder.add(
-    group("player", [
-      partNode("bot-torso", bot.torso, botChassisMat).position(0, 0.62, 0).runtime({ id: "bot-torso" }),
-      group("bot-head", [
-        partNode("bot-head-shell", bot.head, botChassisMat),
-        partNode("bot-visor", bot.visor, botChromeMat, false),
-        partNode("bot-headband", bot.headband, botDuckAccentMat, false),
-        partNode("bot-earcups", bot.earCups, botEarGlowMat, false)
-      ]).position(0, 1.07, 0).runtime({ id: "bot-head" }),
-      partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.31, 0.78, 0).runtime({ id: "bot-arm-l" }),
-      partNode("bot-arm-r", bot.arm, botChassisMat).position(0.31, 0.78, 0).runtime({ id: "bot-arm-r" }),
-      group("bot-skate-l", [
-        partNode("bot-boot-l", bot.skate, botDuckAccentMat),
-        partNode("bot-blade-l", bot.skateBlade, botBladeGlowMat, false)
-      ]).position(-0.16, 0, 0).runtime({ id: "bot-skate-l" }),
-      group("bot-skate-r", [
-        partNode("bot-boot-r", bot.skate, botDuckAccentMat),
-        partNode("bot-blade-r", bot.skateBlade, botBladeGlowMat, false)
-      ]).position(0.16, 0, 0).runtime({ id: "bot-skate-r" })
-    ]).runtime({ id: "player" })
+    group("bot-head", [
+      partNode("bot-head-shell", bot.head, botChassisMat),
+      partNode("bot-visor", bot.visor, botVisorGlassMat, false),
+      partNode("bot-headband", bot.headband, botDuckAccentMat, false),
+      partNode("bot-earcups", bot.earCups, botEarGlowMat, false)
+    ]).position(0, 1.07, 0).runtime({ id: "bot-head" })
+  );
+  builder.add(partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.31, 0.78, 0).runtime({ id: "bot-arm-l" }));
+  builder.add(partNode("bot-arm-r", bot.arm, botChassisMat).position(0.31, 0.78, 0).runtime({ id: "bot-arm-r" }));
+  builder.add(
+    group("bot-skate-l", [
+      partNode("bot-boot-l", bot.skate, botDuckAccentMat),
+      partNode("bot-blade-l", bot.skateBlade, botBladeGlowMat, false)
+    ]).position(-0.16, 0, 0).runtime({ id: "bot-skate-l" })
+  );
+  builder.add(
+    group("bot-skate-r", [
+      partNode("bot-boot-r", bot.skate, botDuckAccentMat),
+      partNode("bot-blade-r", bot.skateBlade, botBladeGlowMat, false)
+    ]).position(0.16, 0, 0).runtime({ id: "bot-skate-r" })
   );
   addCustom("player-shadow", boxMesh(1.65, 0.002, 1.65), shadowSpec());
 
@@ -417,10 +424,11 @@ export function buildWorld(_options: WorldOptions): World {
     clearcoatRoughness: 0.10,
     envMapIntensity: 1.45
   }), true);
-  addBatchPbr("bar-posts", barPosts, material.chrome({
-    name: "bar-stanchion-chrome",
+  addBatchPbr("bar-posts", barPosts, material.studioMetal({
+    name: "bar-stanchion-studio-metal",
     color: "#e6f2ff",
-    roughness: 0.05,
+    roughness: 0.14,
+    metalness: 1,
     envMapIntensity: 1.85
   }), true);
   addBatchPbr("bars", bars, material.lacquer({
@@ -482,7 +490,7 @@ export function buildWorld(_options: WorldOptions): World {
     .add(looks.fogForExtent({ name: "stage-fog", extent: 260, color: "#2d0c4e", haze: 0.58, mode: "exp2" }))
     .add(effects.contactShadows({ length: 0.25, thickness: 0.18, steps: 12, intensity: 0.6 }))
     .add(effects.ambientOcclusion({ name: "ao", intensity: 0.4, radius: 0.6 }))
-    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.68, roughness: 0.18, maxDistance: 32 }))
+    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.34, roughness: 0.18, maxDistance: 32 }))
     .add(effects.cinematicBloom({ name: "bloom", intensity: 0.62, threshold: 0.72, radius: 0.44, color: "#ffd8ff" }))
     .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.10, temperature: -0.04, tint: 0.06, gain: 1.03 }))
     .add(effects.vignette({ name: "vignette", intensity: 0.28, color: "#0b0620" }));
@@ -649,6 +657,7 @@ export function buildWorld(_options: WorldOptions): World {
         node("deck").setUniform?.("emissive", [0.015 * gain, 0.045 * gain, 0.085 * gain]);
         node("beat-pad-glass").setScale([1, 1 + 0.35 * pulse, 1 + 0.06 * pulse]);
         node("beat-pad-lacquer").setScale([1 + 0.02 * pulse, 1 + 0.45 * pulse, 1]);
+        node("beat-threshold-gate").setScale([1, 1 + 0.032 * pulse, 1]);
 
         /* Beat-grid stripes */
         const beatNow = Math.floor(t / CONFIG.BEAT + 1e-9);
@@ -672,7 +681,7 @@ export function buildWorld(_options: WorldOptions): World {
         }
         dashes.flush(node("lane-dashes"), false);
 
-        /* Stage scenery + Meshy GPU-instanced speaker stacks & DJ decks */
+        /* Stage scenery + GPU-instanced concert line-array speaker towers & DJ consoles */
         const wall = typeof performance !== "undefined" ? performance.now() / 1000 : t;
         clock += lastWall < 0 ? 0 : Math.min(0.1, Math.max(0, wall - lastWall));
         lastWall = wall;
@@ -693,30 +702,54 @@ export function buildWorld(_options: WorldOptions): World {
         const bankRoll = reduced ? 0 : Math.max(-0.28, Math.min(0.28, -vx * 0.042));
         const bodyPitch = pose === "duck" ? 0.34 : pose === "air" ? Math.max(-0.26, Math.min(0.26, -sim.o.vy * 0.032)) : -0.06;
 
+        const cp = Math.cos(bodyPitch), sp = Math.sin(bodyPitch);
+        const cr = Math.cos(bankRoll), sr = Math.sin(bankRoll);
+        const placeBotPart = (
+          id: string,
+          lx: number,
+          ly: number,
+          lz: number,
+          rx: number,
+          ry: number,
+          rz: number,
+          partScale: [number, number, number] = [scale.sx, scale.sy, scale.sz]
+        ) => {
+          const sx = lx * scale.sx;
+          const sy = ly * scale.sy;
+          const sz = lz * scale.sz;
+          // Roll around Z then pitch around X around `(px, y, 0)`
+          const x1 = sx * cr - sy * sr;
+          const y1 = sx * sr + sy * cr;
+          const y2 = y1 * cp - sz * sp;
+          const z2 = y1 * sp + sz * cp;
+          node(id)
+            .setPosition(px + x1, y + y2, z2)
+            .setRotation(bodyPitch + rx, ry, bankRoll + rz)
+            .setScale(partScale);
+        };
+
         node("player")
           .setPosition(px, y, 0)
           .setRotation(bodyPitch, 0, bankRoll)
           .setScale([scale.sx, scale.sy, scale.sz]);
-        node("bot-torso").setPosition(0, 0.62 + (reduced ? 0 : 0.035 * pulse), 0);
-        node("bot-head")
-          .setPosition(0, 1.07 + (reduced ? 0 : 0.03 * pulse), 0)
-          .setRotation(headNod + (pose === "duck" ? -0.22 : 0), 0, -bankRoll * 0.35);
+        placeBotPart("bot-torso", 0, 0.62 + (reduced ? 0 : 0.035 * pulse), 0, 0, 0, 0);
+        placeBotPart("bot-head", 0, 1.07 + (reduced ? 0 : 0.03 * pulse), 0, headNod + (pose === "duck" ? -0.22 : 0), 0, -bankRoll * 0.35);
 
         if (pose === "duck") {
-          node("bot-arm-l").setPosition(-0.33, 0.72, 0.04).setRotation(0.75, 0, 0.24);
-          node("bot-arm-r").setPosition(0.33, 0.72, 0.04).setRotation(0.75, 0, -0.24);
-          node("bot-skate-l").setPosition(-0.22, 0.02, -0.08).setRotation(0, 0.14, 0.12);
-          node("bot-skate-r").setPosition(0.22, 0.02, 0.08).setRotation(0, -0.14, -0.12);
+          placeBotPart("bot-arm-l", -0.33, 0.72, 0.04, 0.75, 0, 0.24);
+          placeBotPart("bot-arm-r", 0.33, 0.72, 0.04, 0.75, 0, -0.24);
+          placeBotPart("bot-skate-l", -0.22, 0.02, -0.08, 0, 0.14, 0.12);
+          placeBotPart("bot-skate-r", 0.22, 0.02, 0.08, 0, -0.14, -0.12);
         } else if (pose === "air") {
-          node("bot-arm-l").setPosition(-0.32, 0.84, -0.04).setRotation(-0.85, 0, 0.38);
-          node("bot-arm-r").setPosition(0.32, 0.84, -0.04).setRotation(-0.85, 0, -0.38);
-          node("bot-skate-l").setPosition(-0.17, 0.12, -0.06).setRotation(-0.32, 0.08, 0.10);
-          node("bot-skate-r").setPosition(0.17, 0.10, 0.06).setRotation(0.24, -0.08, -0.10);
+          placeBotPart("bot-arm-l", -0.32, 0.84, -0.04, -0.85, 0, 0.38);
+          placeBotPart("bot-arm-r", 0.32, 0.84, -0.04, -0.85, 0, -0.38);
+          placeBotPart("bot-skate-l", -0.17, 0.12, -0.06, -0.32, 0.08, 0.10);
+          placeBotPart("bot-skate-r", 0.17, 0.10, 0.06, 0.24, -0.08, -0.10);
         } else {
-          node("bot-arm-l").setPosition(-0.31, 0.78, 0).setRotation(stride * 0.46, 0, 0.10);
-          node("bot-arm-r").setPosition(0.31, 0.78, 0).setRotation(-stride * 0.46, 0, -0.10);
-          node("bot-skate-l").setPosition(-0.16, Math.max(0, stride) * 0.05, -stride * 0.14).setRotation(stride * 0.12, 0, 0);
-          node("bot-skate-r").setPosition(0.16, Math.max(0, -stride) * 0.05, stride * 0.14).setRotation(-stride * 0.12, 0, 0);
+          placeBotPart("bot-arm-l", -0.31, 0.78, 0, stride * 0.46, 0, 0.10);
+          placeBotPart("bot-arm-r", 0.31, 0.78, 0, -stride * 0.46, 0, -0.10);
+          placeBotPart("bot-skate-l", -0.16, Math.max(0, stride) * 0.05, -stride * 0.14, stride * 0.12, 0, 0);
+          placeBotPart("bot-skate-r", 0.16, Math.max(0, -stride) * 0.05, stride * 0.14, -stride * 0.12, 0, 0);
         }
 
         if (lastPose === "air" && pose !== "air" && o.phase === "playing") {

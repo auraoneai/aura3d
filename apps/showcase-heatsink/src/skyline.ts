@@ -9,6 +9,7 @@
  * (phase 2).
  */
 import { game, instances, material, type AuraNodeBuilder, type AuraSceneNode, type AuraTransformSpec } from "@aura3d/engine";
+import { buildSkylineBeaconSeamSpec, buildSkylineComplexSpec, buildSkylineSpireSpec } from "./art/proceduralModels";
 import type { CircuitSpec, SkylineLayerSpec } from "./data";
 import type { CircuitLook } from "./look";
 import { skylineFacadeMaterial } from "./shaders";
@@ -88,16 +89,55 @@ export function skylineTransforms(pieces: readonly SkylinePiece[]): { readonly b
   return { bodies, seams };
 }
 
-/** The skyline nodes of a circuit: per layer one silhouette node and one seam node (6 draws, unshadowed). */
+/** The skyline nodes of a circuit: per layer sculpted complex + spire silhouettes and beacon seams (9 draws <= 9, unshadowed). */
 export function skylineNodes(circuit: CircuitSpec, look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [];
+  const seamSpec = buildSkylineBeaconSeamSpec();
   circuit.skyline.forEach((layer, index) => {
-    const { bodies, seams } = skylineTransforms(skylineLayout(layer, index === 0));
+    const layout = skylineLayout(layer, index === 0);
+    const { seams } = skylineTransforms(layout);
+    const spirePieces = layout.filter((p, i) => (i === 0 ? true : i === layout.length - 1 ? false : p.spire));
+    const complexPieces = layout.filter((p, i) => !(i === 0 ? true : i === layout.length - 1 ? false : p.spire));
+    const facadeMat = skylineFacadeMaterial({
+      body: look.skyline.color,
+      skySheen: look.skyline.skySheen,
+      foot: look.skyline.foot,
+      window: look.skyline.windows[0],
+      window2: look.skyline.windows[1],
+      cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!,
+      lit: look.skyline.lit,
+      glow: look.skyline.windowGlow - index * 0.5
+    });
     const flat = { castShadow: false, receiveShadow: false, frustumCulled: false } as const;
     out.push(
-      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: skylineFacadeMaterial({ body: look.skyline.color, skySheen: look.skyline.skySheen, foot: look.skyline.foot, window: look.skyline.windows[0], window2: look.skyline.windows[1], cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!, lit: look.skyline.lit, glow: look.skyline.windowGlow - index * 0.5 }), transforms: bodies, ...flat })
+      instances
+        .custom(buildSkylineComplexSpec(index), {
+          name: `td skyline ${index} bodies`,
+          material: facadeMat,
+          transforms: skylineTransforms(complexPieces).bodies,
+          ...flat
+        })
         .runtime(game.runtimeNode(`td-skyline-${index}-bodies`)),
-      instances.box({ name: `td skyline ${index} seams`, size: [1, 1, 1], material: material.emissive({ color: look.skyline.glow, emissive: look.skyline.glow, emissiveIntensity: 1.3 - index * 0.25 }), transforms: seams, ...flat })
+      instances
+        .custom(buildSkylineSpireSpec(index), {
+          name: `td skyline ${index} spires`,
+          material: facadeMat,
+          transforms: skylineTransforms(spirePieces).bodies,
+          ...flat
+        })
+        .runtime(game.runtimeNode(`td-skyline-${index}-spires`)),
+      instances
+        .custom(seamSpec, {
+          name: `td skyline ${index} seams`,
+          material: material.emissive({
+            color: look.skyline.glow,
+            emissive: look.skyline.glow,
+            emissiveIntensity: 1.3 - index * 0.25,
+            practical: true
+          }),
+          transforms: seams,
+          ...flat
+        })
         .runtime(game.runtimeNode(`td-skyline-${index}-seams`))
     );
   });

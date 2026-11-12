@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "4c497f54d26a836856566f827da3d43e5d9b5b59e156324cf3e48b0c1ce953fc",
+  "sourceSha256": "fc3f1289cb6d74ffd1ae96d23cacb2e3abc96cfc963805e4d8f89aedf7d0bad6",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -40,48 +40,6 @@
     },
     "models": [
       {
-        "assetKey": "diamondBase",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondFoulPole",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondDugout",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondStadium",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ballpark_fanA",
-        "triangles": 625,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ballpark_fanB",
-        "triangles": 555,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "diamondCrowdAthlete",
         "triangles": 3809,
         "textures": 0,
@@ -203,48 +161,6 @@
       {
         "assetKey": "diamondCrowdAthlete",
         "triangles": 3809,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondScoreboard",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondHarborPier",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondFloodlight",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_diamond_3d_ballparkLighthouse",
-        "triangles": 12000,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
@@ -350,83 +266,6 @@
       {
         "assetKey": "diamondAthlete",
         "triangles": 31758,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondGlove",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondBat",
-        "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
@@ -454,6 +293,10 @@
         "practical": false
       },
       {
+        "node": "base-bags",
+        "practical": false
+      },
+      {
         "node": "field-plates",
         "practical": false
       },
@@ -466,6 +309,10 @@
         "node": "foul-pole-glows",
         "emissiveIntensity": 0.25,
         "practical": true
+      },
+      {
+        "node": "foul-poles",
+        "practical": false
       },
       {
         "node": "outfield-wall",
@@ -489,6 +336,14 @@
         "practical": false
       },
       {
+        "node": "dugouts",
+        "practical": false
+      },
+      {
+        "node": "stadium-shells",
+        "practical": false
+      },
+      {
         "node": "bleacher-risers",
         "practical": false
       },
@@ -505,34 +360,264 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
+        "node": "scoreboard-rig material 0",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "scoreboard-rig material 1",
+        "practical": false
+      },
+      {
+        "node": "scoreboard-rig material 2",
+        "practical": false
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "scoreboard-rig material 3",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "scoreboard-rig material 4",
+        "practical": false
+      },
+      {
+        "node": "scoreboard-rig material 5",
+        "emissiveIntensity": 1.55,
+        "practical": true
+      },
+      {
         "node": "scoreboard-screen",
         "emissiveIntensity": 0.9,
         "practical": true
+      },
+      {
+        "node": "harbor-pier material 0",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "harbor-pier material 1",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "harbor-pier material 2",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "harbor-pier material 3",
+        "practical": false
       },
       {
         "node": "harbor-water",
         "practical": false
       },
       {
-        "node": "sandlot-brick-arcade",
+        "node": "sandlot-windmill material 0",
         "practical": false
       },
       {
-        "node": "sandlot-arcade-coping",
+        "name": "matte clay",
+        "node": "sandlot-windmill material 1",
         "practical": false
       },
       {
         "name": "brushed metal",
-        "node": "sandlot-bay-bridge",
+        "node": "sandlot-windmill material 2",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "sandlot-windmill material 3",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "sandlot-brick-arcade material 0",
+        "practical": false
+      },
+      {
+        "node": "sandlot-brick-arcade material 1",
         "practical": false
       },
       {
         "name": "clearcoat paint",
+        "node": "sandlot-bay-bridge material 0",
+        "practical": false
+      },
+      {
+        "node": "sandlot-bay-bridge material 1",
+        "practical": false
+      },
+      {
         "node": "sandlot-sailboats-hulls",
         "practical": false
       },
       {
         "node": "sandlot-sailboats-sails",
+        "practical": false
+      },
+      {
+        "node": "harbor-rocks",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "sandlot-lamp material 0",
+        "practical": false
+      },
+      {
+        "node": "sandlot-lamp material 1",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "harbor-lighthouse-body material 0",
+        "practical": false
+      },
+      {
+        "node": "harbor-lighthouse-body material 1",
+        "practical": false
+      },
+      {
+        "name": "matte clay",
+        "node": "harbor-lighthouse-body material 2",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "harbor-lighthouse-body material 3",
+        "practical": false
+      },
+      {
+        "node": "harbor-lighthouse-body material 4",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "harbor-lighthouse-glass",
+        "practical": false
+      },
+      {
+        "node": "catcher-mitt material 0",
+        "practical": false
+      },
+      {
+        "node": "catcher-mitt material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "catcher-mitt material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-pitcher material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-pitcher material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-pitcher material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-1b material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-1b material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-1b material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-2b material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-2b material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-2b material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-ss material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-ss material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-ss material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-3b material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-3b material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-3b material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-lf material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-lf material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-lf material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-cf material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-cf material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-cf material 2",
+        "practical": false
+      },
+      {
+        "node": "glove-f-rf material 0",
+        "practical": false
+      },
+      {
+        "node": "glove-f-rf material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "glove-f-rf material 2",
         "practical": false
       },
       {
@@ -650,6 +735,11 @@
       },
       {
         "node": "runner-2-belt",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "bat",
         "practical": false
       },
       {
@@ -776,188 +866,6 @@
             "Idle_Loop"
           ]
         }
-      },
-      {
-        "role": "prop",
-        "assetKey": "diamondBat",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "diamondGlove",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "diamondBase",
-        "maxTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "diamondFoulPole",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "diamondDugout",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "diamondStadium",
-        "maxTriangles": 120000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "diamondScoreboard",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "diamondFloodlight",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "ballpark_fanA",
-        "maxTriangles": 1000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "ballpark_fanB",
-        "maxTriangles": 1000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkLighthouse",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkMesa",
-        "maxTriangles": 10000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkWaterTower",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkRowhouseRoof",
-        "maxTriangles": 16000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkHabitat",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_diamond_3d_ballparkHoodooR2",
-        "maxTriangles": 10000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondHarborPier",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondTower",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondCanyonArch",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondRock",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondIvyWall",
-        "maxTriangles": 120000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondTrophy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "diamondTyphoonDome",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "diamondEarthRise",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondLunarRover",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "diamondMoonDome",
-        "maxTriangles": 120000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
       }
     ],
     "vfx": [

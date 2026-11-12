@@ -13,19 +13,35 @@ const effectsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
   return out;
 };
 
-const modelsOf = (options: Parameters<typeof buildWorld>[0]): { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number }[] }[] => {
-  const out: { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number }[] }[] = [];
+const modelsOf = (options: Parameters<typeof buildWorld>[0]): { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number; sheen?: number }[] }[] => {
+  const out: { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number; sheen?: number }[] }[] = [];
   const walk = (n: Node & { name?: string }): void => { if (n.kind === "model") out.push(n as never); (n.children ?? []).forEach(walk); };
   (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly Node[] }).nodes.forEach(walk);
   return out;
 };
 
-describe("where-the-wind-wanders-port painted GLB materials (WW47-M1)", () => {
-  it("the bell is brass and no override replaces a GLB's textures", () => {
+const findNamedNode = (options: Parameters<typeof buildWorld>[0], targetName: string): (Node & { name?: string; material?: { metallic?: number } }) | undefined => {
+  let hit: (Node & { name?: string; material?: { metallic?: number } }) | undefined;
+  const walk = (n: Node & { name?: string; material?: { metallic?: number } }): void => {
+    if (n.name === targetName) hit = n;
+    (n.children ?? []).forEach(walk);
+  };
+  (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly (Node & { name?: string })[] }).nodes.forEach(walk);
+  return hit;
+};
+
+describe("where-the-wind-wanders-port procedural bronze bell & rigged hero sheen (WW47-M1 / WP-27)", () => {
+  it("keeps only the rigged hero GLB with wool-sheen overrides (no texture replacement) and sculpts a metallic bronze bell", () => {
     const models = modelsOf({});
-    expect(models.find((m) => m.name === "belltower-bell")?.materialOverrides?.[0]?.metallic).toBe(0.9);
+    expect(models.map((m) => m.name)).toEqual(["hero"]);
+    expect(models[0]?.materialOverrides?.[0]?.sheen).toBeGreaterThan(0.4);
     for (const m of models) for (const o of m.materialOverrides ?? []) expect(o.replaceTextures).not.toBe(true);
     expect(modelsOf({ look: "original" }).every((m) => m.materialOverrides === undefined)).toBe(true);
+
+    const bellGroup = findNamedNode({}, "belltower-bell");
+    expect(bellGroup?.kind).toBe("group");
+    const bellChildMetals = (bellGroup?.children ?? []).map((c) => (c as { material?: { metallic?: number } }).material?.metallic ?? 0);
+    expect(Math.max(...bellChildMetals)).toBeGreaterThanOrEqual(0.9);
   });
 });
 
@@ -63,6 +79,7 @@ describe("where-the-wind-wanders-port post (WW47-P1..P3)", () => {
     expect(fx.find((e) => e.effect === "vignette")!.intensity).toBe(0.12);
     expect(fx.find((e) => e.effect === "bloom")!.postAuthored).not.toContain("radius");
     expect(fx.some((e) => e.effect === "volumetric-fog")).toBe(false); // phase 2: the stage turned the GLBs cream
+    expect(fx.some((e) => e.effect === "depth-of-field" || e.effect === "motion-blur")).toBe(false);
     expect(fx.some((e) => e.effect === "film-grain")).toBe(true);
   });
 

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/strange-orbit-port/art/direction.ts",
-  "sourceSha256": "05241925af17ac16c3d95ee0ecc090a0c83f50a03940a4d0b58b0c52919b9606",
+  "sourceSha256": "83cd54f8607390107aaef71bba7da18bbdfeee0fb7a88324ee8ae00f3e5d95ee",
   "id": "strange-orbit-port",
   "genre": "racing",
   "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
@@ -63,316 +63,7 @@
       "kind": "preset",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pylon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulderB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lander",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "observatory",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "observatory",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "craterlineMoonRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bikeRider",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rivalBike",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bikeRider",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rivalBike",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "bikeRider",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rivalBike",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "track",
@@ -419,61 +110,311 @@
         "practical": false
       },
       {
+        "node": "start-finish-gantry-frame material 0",
+        "practical": false
+      },
+      {
+        "node": "start-finish-gantry-frame material 1",
+        "practical": false
+      },
+      {
+        "node": "start-finish-gantry-frame material 2",
+        "practical": false
+      },
+      {
+        "node": "start-finish-gantry-frame material 3",
+        "practical": false
+      },
+      {
+        "node": "start-finish-gantry-frame material 4",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
+        "node": "start-finish-gantry-frame material 5",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "node": "start-finish-gantry-lenses",
+        "practical": false
+      },
+      {
         "node": "gate-veil-0",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "gate-0-lintel",
+        "node": "gate-0-pillar--1 material 0",
         "practical": false
+      },
+      {
+        "node": "gate-0-pillar--1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-0-pillar--1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-0-pillar--1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-0-pillar-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-0-pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-0-pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-0-pillar-1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-0-lintel material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-0-lintel material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-0-lintel material 2",
+        "emissiveIntensity": 2.5,
+        "practical": true
       },
       {
         "node": "gate-veil-1",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "gate-1-lintel",
+        "node": "gate-1-pillar--1 material 0",
         "practical": false
+      },
+      {
+        "node": "gate-1-pillar--1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-1-pillar--1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-1-pillar--1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-1-pillar-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-1-pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-1-pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-1-pillar-1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-1-lintel material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-1-lintel material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-1-lintel material 2",
+        "emissiveIntensity": 2.5,
+        "practical": true
       },
       {
         "node": "gate-veil-2",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "gate-2-lintel",
+        "node": "gate-2-pillar--1 material 0",
         "practical": false
+      },
+      {
+        "node": "gate-2-pillar--1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-2-pillar--1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-2-pillar--1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-2-pillar-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-2-pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-2-pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-2-pillar-1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-2-lintel material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-2-lintel material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-2-lintel material 2",
+        "emissiveIntensity": 2.5,
+        "practical": true
       },
       {
         "node": "gate-veil-3",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "gate-3-lintel",
+        "node": "gate-3-pillar--1 material 0",
         "practical": false
+      },
+      {
+        "node": "gate-3-pillar--1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-3-pillar--1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-3-pillar--1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-3-pillar-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-3-pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-3-pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-3-pillar-1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-3-lintel material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-3-lintel material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-3-lintel material 2",
+        "emissiveIntensity": 2.5,
+        "practical": true
       },
       {
         "node": "gate-veil-4",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "gate-4-lintel",
+        "node": "gate-4-pillar--1 material 0",
         "practical": false
+      },
+      {
+        "node": "gate-4-pillar--1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-4-pillar--1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-4-pillar--1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-4-pillar-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-4-pillar-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-4-pillar-1 material 2",
+        "practical": false
+      },
+      {
+        "node": "gate-4-pillar-1 material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-4-lintel material 0",
+        "practical": false
+      },
+      {
+        "node": "gate-4-lintel material 1",
+        "practical": false
+      },
+      {
+        "node": "gate-4-lintel material 2",
+        "emissiveIntensity": 2.5,
+        "practical": true
       },
       {
         "node": "crater-rim",
         "practical": false
       },
       {
-        "name": "brushed metal",
+        "node": "rim-rocks",
+        "practical": false
+      },
+      {
+        "node": "rim-spires",
+        "practical": false
+      },
+      {
+        "node": "rim-moon-rocks",
+        "practical": false
+      },
+      {
         "node": "beacon-posts",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "beacon-hoods",
         "practical": false
       },
@@ -484,76 +425,635 @@
         "practical": true
       },
       {
-        "node": "crystal-0-0",
+        "node": "crystal-0-0 material 0",
         "practical": false
       },
       {
-        "node": "crystal-0-1",
+        "node": "crystal-0-0 material 1",
         "practical": false
       },
       {
-        "node": "crystal-0-2",
+        "node": "crystal-0-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-0-1 material 0",
         "practical": false
       },
       {
-        "node": "crystal-1-0",
+        "node": "crystal-0-1 material 1",
         "practical": false
       },
       {
-        "node": "crystal-1-1",
+        "node": "crystal-0-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-0-2 material 0",
         "practical": false
       },
       {
-        "node": "crystal-1-2",
+        "node": "crystal-0-2 material 1",
         "practical": false
       },
       {
-        "node": "crystal-2-0",
+        "node": "crystal-0-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-1-0 material 0",
         "practical": false
       },
       {
-        "node": "crystal-2-1",
+        "node": "crystal-1-0 material 1",
         "practical": false
       },
       {
-        "node": "crystal-2-2",
+        "node": "crystal-1-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-1-1 material 0",
         "practical": false
       },
       {
-        "node": "crystal-3-0",
+        "node": "crystal-1-1 material 1",
         "practical": false
       },
       {
-        "node": "crystal-3-1",
+        "node": "crystal-1-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-1-2 material 0",
         "practical": false
       },
       {
-        "node": "crystal-3-2",
+        "node": "crystal-1-2 material 1",
         "practical": false
       },
       {
-        "node": "crystal-4-0",
+        "node": "crystal-1-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-2-0 material 0",
         "practical": false
       },
       {
-        "node": "crystal-4-1",
+        "node": "crystal-2-0 material 1",
         "practical": false
       },
       {
-        "node": "crystal-4-2",
+        "node": "crystal-2-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-2-1 material 0",
         "practical": false
       },
       {
-        "node": "crystal-5-0",
+        "node": "crystal-2-1 material 1",
         "practical": false
       },
       {
-        "node": "crystal-5-1",
+        "node": "crystal-2-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-2-2 material 0",
         "practical": false
       },
       {
-        "node": "crystal-5-2",
+        "node": "crystal-2-2 material 1",
         "practical": false
+      },
+      {
+        "node": "crystal-2-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-3-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-0 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-3-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-3-2 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-2 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-4-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-0 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-4-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-4-2 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-2 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-5-0 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-0 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-0 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-5-1 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-1 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-1 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "crystal-5-2 material 0",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-2 material 1",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-2 material 2",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "dress-boulder-0",
+        "practical": false
+      },
+      {
+        "node": "dress-spire-1",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-2",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-3",
+        "practical": false
+      },
+      {
+        "node": "dress-spire-4",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-5",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-6",
+        "practical": false
+      },
+      {
+        "node": "dress-spire-7",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-8",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-9",
+        "practical": false
+      },
+      {
+        "node": "dress-spire-10",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-11",
+        "practical": false
+      },
+      {
+        "node": "dress-boulder-12",
+        "practical": false
+      },
+      {
+        "node": "dress-spire-13",
+        "practical": false
+      },
+      {
+        "node": "dress-lander-body material 0",
+        "practical": false
+      },
+      {
+        "node": "dress-lander-body material 1",
+        "practical": false
+      },
+      {
+        "node": "dress-lander-body material 2",
+        "practical": false
+      },
+      {
+        "node": "dress-lander-body material 3",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "node": "dress-lander-windows",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-structure material 0",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-structure material 1",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-structure material 2",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-structure material 3",
+        "emissiveIntensity": 2.7,
+        "practical": true
+      },
+      {
+        "node": "dress-observatory-lens",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-far-structure material 0",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-far-structure material 1",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-far-structure material 2",
+        "practical": false
+      },
+      {
+        "node": "dress-observatory-far-structure material 3",
+        "emissiveIntensity": 2.7,
+        "practical": true
+      },
+      {
+        "node": "dress-observatory-far-lens",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-grid-shell material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-grid-shell material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-grid-shell material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-grid-shell material 3",
+        "emissiveIntensity": 2.7,
+        "practical": true
+      },
+      {
+        "node": "colony-habitat-grid-skylight",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-grid material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-grid material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-grid material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-grid material 3",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-grid material 4",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "colony-dish-grid material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-grid material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-grid material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-grid material 3",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "node": "colony-fuel-grid material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-grid material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-grid material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-grid material 3",
+        "practical": false
+      },
+      {
+        "node": "colony-solar-grid material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-solar-grid material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-solar-grid material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-violet-shell material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-violet-shell material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-violet-shell material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-violet-shell material 3",
+        "emissiveIntensity": 2.7,
+        "practical": true
+      },
+      {
+        "node": "colony-habitat-violet-skylight",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-ridge material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-ridge material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-ridge material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-dish-ridge material 3",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "node": "colony-solar-ridge material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-solar-ridge material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-solar-ridge material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-jade material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-jade material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-jade material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-fuel-jade material 3",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-opal material 0",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-opal material 1",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-opal material 2",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-opal material 3",
+        "practical": false
+      },
+      {
+        "node": "colony-trailer-opal material 4",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "rock-8 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-8 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-8 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-17 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-17 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-17 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-29 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-29 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-29 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-37 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-37 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-37 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-50 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-50 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-50 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-63 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-63 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-63 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-76 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-76 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-76 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
+      },
+      {
+        "node": "rock-89 material 0",
+        "practical": false
+      },
+      {
+        "node": "rock-89 material 1",
+        "practical": false
+      },
+      {
+        "node": "rock-89 material 2",
+        "emissiveIntensity": 1.9,
+        "practical": true
       },
       {
         "node": "stardust",
@@ -564,279 +1064,771 @@
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-0-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-0-model material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
         "node": "rider-0-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-0-wheelF",
+        "node": "rider-0-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-0-wheelR",
+        "node": "rider-0-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-0-nozzleL",
+        "node": "rider-0-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-0-nozzleR",
+        "node": "rider-0-wheelF material 3",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-0-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-0-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-0-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-0-wheelR material 3",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "rider-0-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-0-nozzleL material 1",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
+        "node": "rider-0-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-0-nozzleR material 1",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
         "node": "rider-0-coneL",
         "emissiveIntensity": 3.2,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-0-coneR",
         "emissiveIntensity": 3.2,
         "practical": true
       },
       {
-        "node": "rider-0-torso",
+        "node": "rider-0-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-0-visor",
+        "node": "rider-0-torso material 1",
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-0-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-0-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-0-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-0-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-0-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-0-visor material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-1-model material 6",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "rider-1-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-1-wheelF",
+        "node": "rider-1-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-1-wheelR",
+        "node": "rider-1-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-1-nozzleL",
+        "node": "rider-1-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-1-nozzleR",
+        "node": "rider-1-wheelF material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-1-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-1-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-1-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-1-wheelR material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-1-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-1-nozzleL material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "rider-1-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-1-nozzleR material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
         "node": "rider-1-coneL",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-1-coneR",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "node": "rider-1-torso",
+        "node": "rider-1-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-1-visor",
+        "node": "rider-1-torso material 1",
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-1-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-1-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-1-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-1-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-1-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-1-visor material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-2-model material 6",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "rider-2-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-2-wheelF",
+        "node": "rider-2-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-2-wheelR",
+        "node": "rider-2-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-2-nozzleL",
+        "node": "rider-2-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-2-nozzleR",
+        "node": "rider-2-wheelF material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-2-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-2-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-2-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-2-wheelR material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-2-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-2-nozzleL material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "rider-2-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-2-nozzleR material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
         "node": "rider-2-coneL",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-2-coneR",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "node": "rider-2-torso",
+        "node": "rider-2-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-2-visor",
+        "node": "rider-2-torso material 1",
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-2-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-2-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-2-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-2-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-2-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-2-visor material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-3-model material 6",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "rider-3-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-3-wheelF",
+        "node": "rider-3-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-3-wheelR",
+        "node": "rider-3-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-3-nozzleL",
+        "node": "rider-3-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-3-nozzleR",
+        "node": "rider-3-wheelF material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-3-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-3-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-3-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-3-wheelR material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-3-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-3-nozzleL material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "rider-3-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-3-nozzleR material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
         "node": "rider-3-coneL",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-3-coneR",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "node": "rider-3-torso",
+        "node": "rider-3-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-3-visor",
+        "node": "rider-3-torso material 1",
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-3-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-3-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-3-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-3-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-3-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-3-visor material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-4-model material 6",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "rider-4-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-4-wheelF",
+        "node": "rider-4-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-4-wheelR",
+        "node": "rider-4-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-4-nozzleL",
+        "node": "rider-4-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-4-nozzleR",
+        "node": "rider-4-wheelF material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-4-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-4-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-4-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-4-wheelR material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-4-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-4-nozzleL material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "rider-4-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-4-nozzleR material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
         "node": "rider-4-coneL",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-4-coneR",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "node": "rider-4-torso",
+        "node": "rider-4-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-4-visor",
+        "node": "rider-4-torso material 1",
         "practical": false
       },
       {
-        "name": "car paint",
+        "node": "rider-4-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-4-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-4-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-4-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-4-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-4-visor material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-5-model material 6",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "rider-5-fairing",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-5-wheelF",
+        "node": "rider-5-wheelF material 0",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-5-wheelR",
+        "node": "rider-5-wheelF material 1",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-5-nozzleL",
+        "node": "rider-5-wheelF material 2",
         "practical": false
       },
       {
-        "name": "chrome",
-        "node": "rider-5-nozzleR",
+        "node": "rider-5-wheelF material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-5-wheelR material 0",
         "practical": false
       },
       {
-        "name": "glowing emissive",
+        "node": "rider-5-wheelR material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-5-wheelR material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-5-wheelR material 3",
+        "emissiveIntensity": 1.8,
+        "practical": true
+      },
+      {
+        "node": "rider-5-nozzleL material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-5-nozzleL material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
+        "node": "rider-5-nozzleR material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-5-nozzleR material 1",
+        "emissiveIntensity": 2.3,
+        "practical": true
+      },
+      {
         "node": "rider-5-coneL",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "name": "glowing emissive",
         "node": "rider-5-coneR",
         "emissiveIntensity": 2.4,
         "practical": true
       },
       {
-        "node": "rider-5-torso",
+        "node": "rider-5-torso material 0",
         "practical": false
       },
       {
-        "name": "studio glass",
-        "node": "rider-5-visor",
+        "node": "rider-5-torso material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-5-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-5-torso material 3",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "rider-5-visor material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-5-visor material 1",
+        "practical": false
+      },
+      {
+        "node": "rider-5-visor material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-5-visor material 3",
         "practical": false
       },
       {
@@ -908,74 +1900,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "vehicle",
-        "assetKey": "bikeRider",
-        "maxTriangles": 120000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "rivalBike",
-        "maxTriangles": 120000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "skateRider",
-        "maxTriangles": 120000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "pylon",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "boulderA",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "boulderB",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "lander",
-        "maxTriangles": 80000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "observatory",
-        "maxTriangles": 80000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "craterlineMoonRock",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "land",

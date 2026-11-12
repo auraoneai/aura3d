@@ -512,3 +512,78 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   if (models) clearCameraPath(models);
   return [...layers.values()].filter((l) => l.placements.length > 0);
 }
+
+/**
+ * WP-24 procedural Sengoku course accents (bamboo groves, battered `ishigaki` stone ramparts,
+ * and `archwayVoussoirSlots` stone bridge arches) placed deterministically outside `CAMERA_CLEARANCE`.
+ */
+export interface CourseAccents {
+  readonly bambooGroves: ModelPlacement[];
+  readonly ishigakiRamparts: ModelPlacement[];
+  readonly stoneBridgeArches: ModelPlacement[];
+}
+
+export function buildProceduralCourseAccents(clearing?: { readonly x: number; readonly z: number }): CourseAccents {
+  const grid = cameraEyeGrid();
+  const bambooGroves: ModelPlacement[] = [];
+  const ishigakiRamparts: ModelPlacement[] = [];
+  const stoneBridgeArches: ModelPlacement[] = [];
+  const at = (d: number, lat: number) => {
+    const f = groundFrame(d, lat);
+    return { x: f.x, y: surfaceY(d, lat), z: f.z, yaw: Math.atan2(f.dx, f.dz) };
+  };
+
+  // Bamboo groves framing forest entry/shrine & riverside verges
+  const bambooRng = seededRandom(2401);
+  for (const [from, to] of [[1080, 1230], [1400, 1680], [1730, 2230]] as const) {
+    for (let d = from; d < to; d += 18 + bambooRng() * 14) {
+      if (gapAt(d)) continue;
+      for (const side of [-1, 1] as const) {
+        if (bambooRng() < 0.32) continue;
+        const lat = side * (pathWidth(d) / 2 + 4.2 + bambooRng() * 9.5);
+        const c = at(d, lat);
+        if (clearing && Math.hypot(c.x - clearing.x, c.z - clearing.z) < 11) continue;
+        const sc = 0.9 + bambooRng() * 0.55;
+        const p: ModelPlacement = {
+          position: [c.x, c.y - 0.12, c.z],
+          yaw: bambooRng() * Math.PI * 2,
+          scale: [sc, sc * (1.05 + bambooRng() * 0.35), sc],
+          tint: bambooRng() < 0.4 ? "#88b878" : "#6da462"
+        };
+        if (cameraGap(p, [1.4, 3.8, 1.4], grid).gap >= CAMERA_CLEARANCE) bambooGroves.push(p);
+      }
+    }
+  }
+
+  // Battered `ishigaki` stone castle ramparts bordering village alleys, stairs & descent
+  const wallRng = seededRandom(2402);
+  for (const [from, to] of [[180, 535], [1010, 1215]] as const) {
+    for (let d = from; d < to; d += 28 + wallRng() * 14) {
+      if (gapAt(d)) continue;
+      for (const side of [-1, 1] as const) {
+        if (wallRng() < 0.35) continue;
+        const lat = side * (pathWidth(d) / 2 + 4.8 + wallRng() * 2.4);
+        const c = at(d, lat);
+        const p: ModelPlacement = {
+          position: [c.x, c.y - 0.35, c.z],
+          yaw: c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2),
+          scale: [1.0, 0.95 + wallRng() * 0.35, 1.0],
+          tint: wallRng() < 0.5 ? "#949792" : "#838884"
+        };
+        if (cameraGap(p, [4.6, 2.7, 1.4], grid).gap >= CAMERA_CLEARANCE) ishigakiRamparts.push(p);
+      }
+    }
+  }
+
+  // Arched stone bridge spans (`archwayVoussoirSlots`) carrying the river crossing (`1250..1380`)
+  for (let d = 1254; d <= 1374; d += 24) {
+    const c = at(d, 0);
+    stoneBridgeArches.push({
+      position: [c.x, -3.2, c.z],
+      yaw: c.yaw + Math.PI / 2,
+      scale: [1.35, 1.05, Math.max(1.0, (pathWidth(d) + 0.6) / 1.6)]
+    });
+  }
+
+  return { bambooGroves, ishigakiRamparts, stoneBridgeArches };
+}

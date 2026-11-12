@@ -3,9 +3,9 @@
  * maps each live pickup to a pooled model node of its type, wobbles it, and sets a soft coloured halo under it so the pale
  * models read against the white road. Types: rainbow, shield, x2 (score multiplier), switch (colour swap).
  */
-import { geometry, material, model, scene, type AuraApp } from "@aura3d/engine";
+import { geometry, material, scene, type AuraApp } from "@aura3d/engine";
+import { buildPickupModelNode } from "./art/proceduralModels";
 import { cylinderMesh } from "./meshes";
-import { MODELS } from "./models";
 import type { Powerup } from "./sim";
 import { FLAT_FRAGMENT, FLAT_VERTEX } from "./shaders";
 import { FLAT_FRAGMENT_WGSL, FLAT_VERTEX_WGSL } from "./shaders-wgsl";
@@ -15,7 +15,6 @@ type Scene = ReturnType<typeof scene>;
 
 const PER_TYPE = 4;
 const TYPES = ["rainbow", "shield", "x2", "switch"] as const;
-const ASSET = { rainbow: "gemRainbow", shield: "gemShield", x2: "gemDouble", switch: "gemSwitch" } as const;
 const HALO_HEX = { rainbow: "#b868e8", shield: "#5ecaf0", x2: "#f9c647", switch: "#5fd0c0" } as const;
 /** Largest model dimension in world units (the original pickup is a 0.8 sphere on a 0.8 cone). */
 const SIZE = 2.1;
@@ -37,7 +36,7 @@ const haloGeometry = (() => {
 export function addPickups(builder: Scene): void {
   for (const type of TYPES) {
     for (let k = 0; k < PER_TYPE; k++) {
-      builder.add(model(MODELS[ASSET[type]], { name: pickupId(type, k), targetMaxDimension: SIZE, castShadow: false, receiveShadow: false }).runtime({ id: pickupId(type, k) }));
+      builder.add(buildPickupModelNode(type, { id: pickupId(type, k), size: SIZE }));
       builder.add(geometry.custom(haloGeometry(), {
         name: haloId(type, k),
         material: material.custom({

@@ -41,13 +41,26 @@ const sharedAuraAssets = (req: Connect.IncomingMessage, res: import("node:http")
   fs.createReadStream(sharedFile).pipe(res);
 };
 
+const mountSharedPrefix = (
+  middlewares: Connect.Server,
+  prefix: string
+): void => {
+  middlewares.use(prefix, (req, res, next) => {
+    const raw = req.url ?? "";
+    req.url = raw.startsWith(prefix) ? raw : `${prefix}${raw.startsWith("/") ? raw : `/${raw}`}`;
+    sharedAuraAssets(req, res, next);
+  });
+};
+
 const serveSharedAuraAssets: Plugin = {
   name: "a3d-serve-shared-aura-assets",
   configureServer(server) {
-    server.middlewares.use("/aura-assets", sharedAuraAssets);
+    mountSharedPrefix(server.middlewares, "/aura-assets");
+    mountSharedPrefix(server.middlewares, "/hdri");
   },
   configurePreviewServer(server) {
-    server.middlewares.use("/aura-assets", sharedAuraAssets);
+    mountSharedPrefix(server.middlewares, "/aura-assets");
+    mountSharedPrefix(server.middlewares, "/hdri");
   }
 };
 

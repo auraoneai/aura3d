@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "dad18e80b3c26ffaa723e4a449115a2125bd2dff9ed6048f0b40691047e9a7cc",
+  "sourceSha256": "f1752d4d542b284bd6156fd694e2dc7f6a6886c3b94136a0b7e483e0b5617bfd",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -53,22 +53,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "tennisFloodMast",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "tennisFloodMast",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "moon-earth",
@@ -106,12 +91,49 @@
       },
       {
         "name": "brushed metal",
-        "node": "net-post-left",
+        "node": "net-post-left material 0",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "net-post-left material 1",
+        "practical": false
+      },
+      {
+        "node": "net-post-left material 2",
+        "practical": false
+      },
+      {
+        "name": "black rubber",
+        "node": "net-post-left material 3",
         "practical": false
       },
       {
         "name": "brushed metal",
-        "node": "net-post-right",
+        "node": "net-post-right material 0",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "net-post-right material 1",
+        "practical": false
+      },
+      {
+        "node": "net-post-right material 2",
+        "practical": false
+      },
+      {
+        "name": "black rubber",
+        "node": "net-post-right material 3",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "wt-center-strap-anchor material 0",
+        "practical": false
+      },
+      {
+        "node": "wt-center-strap-anchor material 1",
         "practical": false
       },
       {
@@ -129,11 +151,176 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
+        "node": "wt-umpire-stand material 0",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "wt-umpire-stand material 1",
+        "practical": false
+      },
+      {
+        "node": "wt-umpire-stand material 2",
+        "practical": false
+      },
+      {
+        "node": "wt-umpire-stand material 3",
+        "practical": false
+      },
+      {
+        "name": "black rubber",
+        "node": "wt-umpire-stand material 4",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "wt-umpire-stand material 5",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-umpire-stand material 6",
+        "practical": false
+      },
+      {
+        "node": "wt-umpire-tablet-glass",
+        "practical": false
+      },
+      {
         "node": "umpire-torso",
         "practical": false
       },
       {
         "node": "umpire-head",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "wt-sideline-kit-north material 0",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "wt-sideline-kit-north material 1",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-sideline-kit-north material 2",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-north material 3",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "wt-sideline-kit-north material 4",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-north material 5",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-north material 6",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-sideline-kit-north material 7",
+        "practical": false
+      },
+      {
+        "node": "wt-cooler-glass-north",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "wt-sideline-kit-south material 0",
+        "practical": false
+      },
+      {
+        "name": "lacquer",
+        "node": "wt-sideline-kit-south material 1",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-sideline-kit-south material 2",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-south material 3",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "wt-sideline-kit-south material 4",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-south material 5",
+        "practical": false
+      },
+      {
+        "node": "wt-sideline-kit-south material 6",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-sideline-kit-south material 7",
+        "practical": false
+      },
+      {
+        "node": "wt-cooler-glass-south",
+        "practical": false
+      },
+      {
+        "node": "wt-stadium-bowl material 0",
+        "practical": false
+      },
+      {
+        "node": "wt-stadium-bowl material 1",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "wt-stadium-bowl material 2",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "wt-stadium-bowl material 3",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "wt-stadium-bowl material 4",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-stadium-bowl material 5",
+        "practical": false
+      },
+      {
+        "name": "glazed ceramic",
+        "node": "wt-stadium-bowl material 6",
+        "practical": false
+      },
+      {
+        "node": "wt-stadium-bowl material 7",
+        "practical": false
+      },
+      {
+        "node": "wt-stadium-bowl material 8",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "wt-camera-lens-glass",
         "practical": false
       },
       {
@@ -152,13 +339,81 @@
         "practical": true
       },
       {
+        "node": "stadium-floodlight-left material 0",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "stadium-floodlight-left material 1",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "stadium-floodlight-left material 2",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "stadium-floodlight-left material 3",
+        "practical": false
+      },
+      {
+        "node": "stadium-floodlight-left material 4",
+        "emissiveIntensity": 1.35,
+        "practical": true
+      },
+      {
+        "node": "stadium-floodlight-right material 0",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "stadium-floodlight-right material 1",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "stadium-floodlight-right material 2",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "stadium-floodlight-right material 3",
+        "practical": false
+      },
+      {
+        "node": "stadium-floodlight-right material 4",
+        "emissiveIntensity": 1.35,
+        "practical": true
+      },
+      {
         "node": "stadium-grandstand-rear",
         "practical": false
       },
       {
         "name": "brushed metal",
-        "node": "stadium-scoreboard-gantry",
+        "node": "stadium-scoreboard-gantry material 0",
         "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "stadium-scoreboard-gantry material 1",
+        "practical": false
+      },
+      {
+        "name": "brushed metal",
+        "node": "stadium-scoreboard-gantry material 2",
+        "practical": false
+      },
+      {
+        "name": "studio metal",
+        "node": "stadium-scoreboard-gantry material 3",
+        "practical": false
+      },
+      {
+        "node": "stadium-scoreboard-gantry material 4",
+        "emissiveIntensity": 0.85,
+        "practical": true
       },
       {
         "node": "static-lines",
@@ -183,6 +438,7 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "static-sponsorBoard",
         "practical": false
       },
@@ -269,10 +525,12 @@
         "practical": false
       },
       {
+        "name": "studio metal",
         "node": "player-apollo-helmet",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "player-apollo-pack",
         "practical": false
       },
@@ -289,6 +547,7 @@
         "practical": false
       },
       {
+        "name": "sneaker mesh",
         "node": "player-left-shoe",
         "practical": false
       },
@@ -305,6 +564,7 @@
         "practical": false
       },
       {
+        "name": "sneaker mesh",
         "node": "player-right-shoe",
         "practical": false
       },
@@ -337,14 +597,17 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "player-racket-throat-left",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "player-racket-throat-right",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "player-racket-hoop",
         "practical": false
       },
@@ -381,10 +644,12 @@
         "practical": false
       },
       {
+        "name": "studio metal",
         "node": "rival-apollo-helmet",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "rival-apollo-pack",
         "practical": false
       },
@@ -401,6 +666,7 @@
         "practical": false
       },
       {
+        "name": "sneaker mesh",
         "node": "rival-left-shoe",
         "practical": false
       },
@@ -417,6 +683,7 @@
         "practical": false
       },
       {
+        "name": "sneaker mesh",
         "node": "rival-right-shoe",
         "practical": false
       },
@@ -449,14 +716,17 @@
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "rival-racket-throat-left",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "rival-racket-throat-right",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
         "node": "rival-racket-hoop",
         "practical": false
       },
@@ -535,15 +805,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "prop",
-        "assetKey": "tennisFloodMast",
-        "maxTriangles": 26506,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "ball-bounce-clay",

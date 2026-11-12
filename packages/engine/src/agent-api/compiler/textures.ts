@@ -946,6 +946,44 @@ export async function upgradeProductionPrimitiveTextures(
   }
 }
 
+const sharedProceduralTextures = new Map<string, { texture: Texture; refs: number }>();
+const bitmapSourceIds = new WeakMap<object, number>();
+let nextBitmapSourceId = 1;
+
+function getBitmapSourceId(source: object | undefined): string {
+  if (!source) return "-";
+  let id = bitmapSourceIds.get(source);
+  if (id === undefined) {
+    id = nextBitmapSourceId++;
+    bitmapSourceIds.set(source, id);
+  }
+  return String(id);
+}
+
+function acquireSharedProceduralTexture(key: string, build: () => Texture): { texture: Texture; release: () => void } {
+  let entry = sharedProceduralTextures.get(key);
+  if (!entry || entry.texture.disposed) {
+    entry = { texture: build(), refs: 0 };
+    sharedProceduralTextures.set(key, entry);
+  }
+  entry.refs += 1;
+  let released = false;
+  return {
+    texture: entry.texture,
+    release: () => {
+      if (released) return;
+      released = true;
+      const cur = sharedProceduralTextures.get(key);
+      if (!cur || cur !== entry) return;
+      cur.refs -= 1;
+      if (cur.refs <= 0) {
+        sharedProceduralTextures.delete(key);
+        cur.texture.dispose();
+      }
+    }
+  };
+}
+
 export async function upgradeProductionPrimitiveResource(
   resource: ProductionRuntimePrimitiveResource,
   node: AuraPrimitiveNode,
@@ -996,6 +1034,7 @@ export async function upgradeProductionPrimitiveResource(
   // Held decoded maps (shared or private); each is given back with the resource's textures.
   const ownedImages: HeldProductionTextureImage[] = [];
   const ownedTextures: Texture[] = [];
+  const ownedSharedReleases: Array<() => void> = [];
   const ownedNativeHandles = new Set<TextureHandle>();
   let retired = false;
   const bitmapLoads = new Map<string, Promise<ProductionTextureImage>>();
@@ -1077,11 +1116,18 @@ export async function upgradeProductionPrimitiveResource(
     ownedTextures.push(texture);
     return texture;
   };
+  const ownShared = (key: string, build: () => Texture): Texture => {
+    const lease = acquireSharedProceduralTexture(key, build);
+    if (retired || signal?.aborted) { lease.release(); throwIfTextureAborted(signal); throw fail("texture work was retired"); }
+    ownedSharedReleases.push(lease.release);
+    return lease.texture;
+  };
   const disposeTextures = (): void => {
     if (retired) return;
     retired = true;
     const failures: unknown[] = [];
     const cleanup = (action: () => void): void => { try { action(); } catch (error) { failures.push(error); } };
+    for (const release of ownedSharedReleases.splice(0)) cleanup(release);
     for (const texture of ownedTextures.splice(0)) cleanup(() => texture.dispose());
     for (const held of ownedImages.splice(0)) {
       try { held.release(); }
@@ -1178,7 +1224,10 @@ export async function upgradeProductionPrimitiveResource(
       if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         Object.assign(atlasPixels, { [slot]: bitmapRgbaPixels(source) });
       }
-      extensionOptions[`${extensionMaterialSlot(slot)}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
+      extensionOptions[`${extensionMaterialSlot(slot)}Texture`] = ownShared(
+        `bmp-ext:${getBitmapSourceId(source)}:${map.colorSpace}`,
+        () => new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` })
+      );
       if (map.transform) extensionOptions[`${extensionMaterialSlot(slot)}TextureTransform`] = { ...map.transform };
       slots.push(slot);
     }
@@ -1209,12 +1258,18 @@ export async function upgradeProductionPrimitiveResource(
     }
     const baseColorRefBinding = refBindingFor("baseColor", intent.baseColorRef ?? nativeHandles.baseColor);
     const baseColorTexture = baseColorRefBinding?.texture ?? (baseColorSource
-      ? own(new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` }))
+      ? ownShared(
+        `bmp-base:${getBitmapSourceId(baseColorSource)}`,
+        () => new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` })
+      )
       : undefined);
     if (baseColorTexture) slots.push("baseColor");
     const normalRefBinding = refBindingFor("normal", intent.normalRef ?? nativeHandles.normal);
     let normalTexture = normalRefBinding?.texture ?? (normalSource
-      ? own(new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` }))
+      ? ownShared(
+        `bmp-norm:${getBitmapSourceId(normalSource)}`,
+        () => new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` })
+      )
       : undefined);
     if (normalTexture) slots.push("normal");
     let metallicRoughnessTexture: Texture | undefined;
@@ -1233,41 +1288,57 @@ export async function upgradeProductionPrimitiveResource(
       const base = roughnessSource ?? metalnessSource;
       const refSize = roughnessRefPixels ?? metalnessRefPixels;
       const size = base ? { width: base.width, height: base.height } : { width: refSize!.width, height: refSize!.height };
-      const readPixels = (bitmap: ProductionTextureImage | undefined): Uint8Array | undefined => {
-        if (!bitmap) return undefined;
-        const decoded = bitmapRgbaPixels(bitmap);
-        if (decoded.width !== size.width || decoded.height !== size.height) {
-          const context = textureReadbackContext(size.width, size.height);
-          context.drawImage(bitmap, 0, 0, size.width, size.height);
-          return new Uint8Array(context.getImageData(0, 0, size.width, size.height).data);
-        }
-        return decoded.data;
+      const rScalar = spec?.roughness ?? 0.58;
+      const mScalar = spec?.metallic ?? spec?.metalness ?? 0;
+      const buildCompositedTexture = (): Texture => {
+        const readPixels = (bitmap: ProductionTextureImage | undefined): Uint8Array | undefined => {
+          if (!bitmap) return undefined;
+          const decoded = bitmapRgbaPixels(bitmap);
+          if (decoded.width !== size.width || decoded.height !== size.height) {
+            const context = textureReadbackContext(size.width, size.height);
+            context.drawImage(bitmap, 0, 0, size.width, size.height);
+            return new Uint8Array(context.getImageData(0, 0, size.width, size.height).data);
+          }
+          return decoded.data;
+        };
+        const readRefPixels = (pixels: typeof roughnessRefPixels): Uint8Array | undefined => {
+          if (!pixels) return undefined;
+          if (pixels.width !== size.width || pixels.height !== size.height) {
+            throw fail(`"${resource.name}" roughness/metalness texture handles must match the composite size ${size.width}x${size.height} (got ${pixels.width}x${pixels.height})`);
+          }
+          return pixels.data instanceof Uint8Array ? pixels.data : new Uint8Array(pixels.data.buffer, pixels.data.byteOffset, pixels.data.byteLength);
+        };
+        const composited = compositeMetallicRoughnessPixels(
+          readPixels(roughnessSource) ?? readRefPixels(roughnessRefPixels),
+          readPixels(metalnessSource) ?? readRefPixels(metalnessRefPixels),
+          size.width * size.height,
+          rScalar,
+          mScalar
+        );
+        return new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` });
       };
-      const readRefPixels = (pixels: typeof roughnessRefPixels): Uint8Array | undefined => {
-        if (!pixels) return undefined;
-        if (pixels.width !== size.width || pixels.height !== size.height) {
-          throw fail(`"${resource.name}" roughness/metalness texture handles must match the composite size ${size.width}x${size.height} (got ${pixels.width}x${pixels.height})`);
-        }
-        return pixels.data instanceof Uint8Array ? pixels.data : new Uint8Array(pixels.data.buffer, pixels.data.byteOffset, pixels.data.byteLength);
-      };
-      const composited = compositeMetallicRoughnessPixels(
-        readPixels(roughnessSource) ?? readRefPixels(roughnessRefPixels),
-        readPixels(metalnessSource) ?? readRefPixels(metalnessRefPixels),
-        size.width * size.height,
-        spec?.roughness ?? 0.58,
-        spec?.metallic ?? spec?.metalness ?? 0
-      );
-      metallicRoughnessTexture = own(new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` }));
+      metallicRoughnessTexture = (!roughnessRefBinding && !metalnessRefBinding)
+        ? ownShared(
+          `bmp-mr:${getBitmapSourceId(roughnessSource)}:${getBitmapSourceId(metalnessSource)}:${size.width}x${size.height}:${Math.round(rScalar * 1000)}:${Math.round(mScalar * 1000)}`,
+          buildCompositedTexture
+        )
+        : own(buildCompositedTexture());
       slots.push("metallicRoughness");
     }
     const occlusionRefBinding = refBindingFor("occlusion", intent.occlusionRef ?? nativeHandles.occlusion);
     let occlusionTexture = occlusionRefBinding?.texture ?? (occlusionSource
-      ? own(new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` }))
+      ? ownShared(
+        `bmp-occ:${getBitmapSourceId(occlusionSource)}`,
+        () => new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` })
+      )
       : undefined);
     if (occlusionTexture) slots.push("occlusion");
     const emissiveRefBinding = refBindingFor("emissive", intent.emissiveRef ?? nativeHandles.emissive);
     let emissiveTexture = emissiveRefBinding?.texture ?? (emissiveSource
-      ? own(new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` }))
+      ? ownShared(
+        `bmp-em:${getBitmapSourceId(emissiveSource)}`,
+        () => new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` })
+      )
       : undefined);
     if (emissiveTexture) slots.push("emissive");
     // PRD-04 P2-9 (A3D_QR_MATERIALS on): authored procedural specs rasterize via
@@ -1276,10 +1347,12 @@ export async function upgradeProductionPrimitiveResource(
     if (qrMaterials) {
       const proceduralApplied: string[] = [];
       const proceduralSources: Partial<Record<(typeof PRD04_PROCEDURAL_FIELDS)[number], ProceduralMaterialTexture>> = {};
+      const proceduralKeys: Partial<Record<(typeof PRD04_PROCEDURAL_FIELDS)[number], string>> = {};
       for (const field of PRD04_PROCEDURAL_FIELDS) {
         const procSpec = prd04ProceduralSpec(spec, field);
         if (!procSpec) continue;
         try {
+          proceduralKeys[field] = `${procSpec.texture}:${procSpec.scale}:${procSpec.strength}:${procSpec.contrast ?? ""}:${procSpec.direction?.join(",") ?? ""}`;
           proceduralSources[field] = generateProceduralMaterialTexture(procSpec.texture, {
             scale: procSpec.scale,
             strength: procSpec.strength,
@@ -1297,7 +1370,7 @@ export async function upgradeProductionPrimitiveResource(
       };
       const proceduralNormal = proceduralSources.normal;
       if (!normalTexture && proceduralNormal) {
-        normalTexture = own(new Texture({ width: proceduralNormal.width, height: proceduralNormal.height, data: proceduralNormal.data, colorSpace: "linear", label: `${resource.name}-procedural-normal` }));
+        normalTexture = ownShared(`normal:${proceduralKeys.normal}`, () => new Texture({ width: proceduralNormal.width, height: proceduralNormal.height, data: proceduralNormal.data, colorSpace: "linear", label: "shared-procedural-normal" }));
         slots.push("normal");
         noteApplied("normal", "normal");
       }
@@ -1305,27 +1378,32 @@ export async function upgradeProductionPrimitiveResource(
       const proceduralMetalness = proceduralSources.metalnessMap;
       if (!metallicRoughnessTexture && (proceduralRoughness ?? proceduralMetalness)) {
         const gen = proceduralRoughness ?? proceduralMetalness!;
-        const composited = compositeMetallicRoughnessPixels(
-          proceduralRoughness?.data,
-          proceduralMetalness?.data,
-          gen.width * gen.height,
-          spec?.roughness ?? 0.58,
-          spec?.metallic ?? spec?.metalness ?? 0
-        );
-        metallicRoughnessTexture = own(new Texture({ width: gen.width, height: gen.height, data: composited, colorSpace: "linear", label: `${resource.name}-procedural-metallicroughness` }));
+        const rScalar = spec?.roughness ?? 0.58;
+        const mScalar = spec?.metallic ?? spec?.metalness ?? 0;
+        const mrKey = `mr:${proceduralKeys.roughnessMap ?? "-"}:${proceduralKeys.metalnessMap ?? "-"}:${Math.round(rScalar * 1000)}:${Math.round(mScalar * 1000)}`;
+        metallicRoughnessTexture = ownShared(mrKey, () => {
+          const composited = compositeMetallicRoughnessPixels(
+            proceduralRoughness?.data,
+            proceduralMetalness?.data,
+            gen.width * gen.height,
+            rScalar,
+            mScalar
+          );
+          return new Texture({ width: gen.width, height: gen.height, data: composited, colorSpace: "linear", label: "shared-procedural-metallicroughness" });
+        });
         slots.push("metallicRoughness");
         if (proceduralRoughness) noteApplied("roughnessMap", "metallicRoughness");
         if (proceduralMetalness) noteApplied("metalnessMap", "metallicRoughness");
       }
       const proceduralOcclusion = proceduralSources.occlusionMap;
       if (!occlusionTexture && proceduralOcclusion) {
-        occlusionTexture = own(new Texture({ width: proceduralOcclusion.width, height: proceduralOcclusion.height, data: proceduralOcclusion.data, colorSpace: "linear", label: `${resource.name}-procedural-occlusion` }));
+        occlusionTexture = ownShared(`occ:${proceduralKeys.occlusionMap}`, () => new Texture({ width: proceduralOcclusion.width, height: proceduralOcclusion.height, data: proceduralOcclusion.data, colorSpace: "linear", label: "shared-procedural-occlusion" }));
         slots.push("occlusion");
         noteApplied("occlusionMap", "occlusion");
       }
       const proceduralEmissive = proceduralSources.emissiveMap;
       if (!emissiveTexture && proceduralEmissive) {
-        emissiveTexture = own(new Texture({ width: proceduralEmissive.width, height: proceduralEmissive.height, data: proceduralEmissive.data, colorSpace: "linear", label: `${resource.name}-procedural-emissive` }));
+        emissiveTexture = ownShared(`em:${proceduralKeys.emissiveMap}`, () => new Texture({ width: proceduralEmissive.width, height: proceduralEmissive.height, data: proceduralEmissive.data, colorSpace: "linear", label: "shared-procedural-emissive" }));
         slots.push("emissive");
         noteApplied("emissiveMap", "emissive");
       }

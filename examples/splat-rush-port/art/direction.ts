@@ -42,18 +42,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [55, 83], mobile: "both" },
-  assets: [
-    { role: "backdrop", assetKey: "islandTree", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "islandTower", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "paintPotIsland", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "easelIsland", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "paletteIsland", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "balloon", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "gemRainbow", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "gemShield", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "gemDouble", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "gemSwitch", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 }
-  ],
+  assets: [],
   vfx: [
     { event: "gate-match", kind: "burst" },
     { event: "perfect", kind: "burst" },

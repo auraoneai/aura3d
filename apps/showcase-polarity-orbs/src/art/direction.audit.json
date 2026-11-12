@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-polarity-orbs/src/art/direction.ts",
-  "sourceSha256": "4304b17a27cedcb9b75cdad2d8ad934c4411f0adc85cfb104fd83bdfeb93ad52",
+  "sourceSha256": "83dfd0ca88ef414f66494a22d3db9703cf0df719f22d1be339c0b0507a69a528",
   "id": "polarity-orbs",
   "genre": "maze-arcade",
   "signatureEffect": "Dual-tone world halves (warm red / cool blue) that shift dominance on every polarity flip, with a flip shockwave ring and magnet attraction streams.",
@@ -37,51 +37,8 @@
       "kind": "preset",
       "background": false
     },
-    "models": [
-      {
-        "assetKey": "poChargeCoil",
-        "triangles": 6242,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "poCrystalRed",
-        "triangles": 5388,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "poCrystalIslandB",
-        "triangles": 5906,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "poCrystalBlue",
-        "triangles": 7420,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "poCrystalIsland",
-        "triangles": 6824,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "poMagnet",
-        "triangles": 6782,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
-    "drawCalls": 31
+    "models": [],
+    "drawCalls": 42
   },
   "direction": {
     "id": "polarity-orbs",
@@ -144,78 +101,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "world",
-        "assetKey": "deckHalves",
-        "maxTriangles": 6000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "polarityBall",
-        "maxTriangles": 1000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "polarityOrbs",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "assetKey": "powerupGems",
-        "maxTriangles": 500,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poChargeCoil",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poCrystalRed",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poCrystalIslandB",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poCrystalBlue",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poCrystalIsland",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "poMagnet",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "flip",

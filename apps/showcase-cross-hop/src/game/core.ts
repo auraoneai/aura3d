@@ -13,7 +13,24 @@ import { loadProfile, saveProfile, type Profile } from "./persistence";
 import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
-import { critterNodeTransforms, critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
+import { critterNodeTransforms, critterOverrides } from "./critterLook";
+import {
+  CROSS_HOP_PROCEDURAL_MATERIALS,
+  buildHollowRiverLogSpec,
+  buildHorizonRidgeSpec,
+  buildLogEndGrainSpec,
+  buildMossySteppingBoulderSpec,
+  buildNotchedLilyPadSpec,
+  buildProceduralVehicleSpec,
+  buildRescuePodNode,
+  buildStarCoinStandingSpec,
+  buildStarCoinUnitSpec,
+  buildStoopingHawkNode,
+  buildTimberRaftSpec,
+  buildVergeArchitectureSpec,
+  buildWoodlandCanopySpec,
+  buildWoodlandTrunkSpec
+} from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { shadeMaterial } from "./shade";
 import { broadcastCrispLutAsset, flipbookQuadMaterial, lavaMagmaMaterial, riverWaterMaterial } from "./surfaceShaders";
@@ -487,7 +504,7 @@ export function probeScene(level: number): unknown {
     s.add(instances.box({ name: "p2-pool", size: [1, 1, 1], material: material.pbr({ color: "#3a3f46" }), transforms: [{ position: [-2, 0.5, 0], scale: [1, 1, 1] }, { position: [2, 0.5, 0], scale: [1, 1, 1] }] }));
   }
   if (level >= 3) {
-    s.add(instances.model(assets.trafficSedan, { name: "p3-cars", transforms: [{ position: [-4, 0, -3], scale: [1, 1, 1] }, { position: [4, 0, -3], scale: [1, 1, 1] }], targetLength: 2.1 }));
+    s.add(instances.custom(buildProceduralVehicleSpec("car", { targetMaxDimension: MOVER_LENGTH.car }), { name: "p3-cars", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: [{ position: [-4, 0, -3], scale: [1, 1, 1] }, { position: [4, 0, -3], scale: [1, 1, 1] }] }));
   }
   if (level >= 4) {
     s.add(model(assets.hop, { name: "p4-critter", targetHeight: 1.05, castShadow: true }).position(0, 0.17, 2).rotate(0, Math.PI, 0).animate({ clip: "Idle", loop: true }));
@@ -800,11 +817,11 @@ function ambientNode(ti: number): AuraSceneNode | null {
 function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   const th0 = THEMES[0];
   const rich = diorama || lookMode === "vivid";
-  const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04 });
-  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.62, metalness: 0.06, clearcoat: rich ? 0.25 : 0, clearcoatRoughness: 0.24 });
+  const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04, clearcoat: 0, sheen: 0 });
+  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.62, metalness: 0.06, clearcoat: 0, sheen: 0 });
   // Signals, lamp heads, neon strips and the coin are practicals in the diorama look (art direction: no emissive fill).
   const practical = diorama ? { practical: true } : {};
-  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.05, roughness: 0.38, ...practical });
+  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.05, roughness: 0.38, clearcoat: 0, sheen: 0, ...practical });
   const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
 
   const out = [
@@ -819,38 +836,39 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
     instances.box({ name: "scenery-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glowS), castShadow: false }).runtime(game.runtimeNode("pool-glowS")),
-    instances.roundedBox({ name: "horizon-ridge", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.94, metalness: 0 }), transforms: pad(CAP.horizon), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-horizon")),
-    // Full fleet of 3D Meshy traffic vehicles (length is along X in GLB local space)
-    // Drawn lengths come from MOVER_LENGTH, the same table the hitboxes use (CH-5).
-    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetMaxDimension: MOVER_LENGTH.car, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-car")),
-    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetMaxDimension: MOVER_LENGTH.hatch, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-hatch")),
-    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetMaxDimension: MOVER_LENGTH.suv, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-suv")),
-    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetMaxDimension: MOVER_LENGTH.taxi, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-taxi")),
-    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetMaxDimension: MOVER_LENGTH.van, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-van")),
-    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetMaxDimension: MOVER_LENGTH.pickup, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-pickup")),
-    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetMaxDimension: MOVER_LENGTH.truck, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-truck")),
-    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetMaxDimension: MOVER_LENGTH.tram, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-tram")),
-    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetMaxDimension: TRAIN_CAR_LENGTH, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-train")),
-    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetMaxDimension: MOVER_LENGTH.hover, castShadow: true, ...vehicleMaterial(rich) }).runtime(game.runtimeNode("pool-hover")),
-    // Round bark logs lying across the river, half sunk, with pale cut ends (CH-E4).
-    instances.cylinder({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
-    instances.cylinder({ name: "m-log-ends", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
-    instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
-    instances.cylinder({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.85 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
+    instances.custom(buildHorizonRidgeSpec(), { name: "horizon-ridge", material: material.pbr({ color: "#ffffff", roughness: 0.94, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.horizon), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-horizon")),
+    // Full fleet of sculpted smooth-normal procedural traffic vehicles & express trains (length along +X, CH-5).
+    instances.custom(buildProceduralVehicleSpec("car", { targetMaxDimension: MOVER_LENGTH.car }), { name: "m-cars", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.car), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-car")),
+    instances.custom(buildProceduralVehicleSpec("hatch", { targetMaxDimension: MOVER_LENGTH.hatch }), { name: "m-hatch", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.hatch), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-hatch")),
+    instances.custom(buildProceduralVehicleSpec("suv", { targetMaxDimension: MOVER_LENGTH.suv }), { name: "m-suv", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.suv), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-suv")),
+    instances.custom(buildProceduralVehicleSpec("taxi", { targetMaxDimension: MOVER_LENGTH.taxi }), { name: "m-taxi", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.taxi), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-taxi")),
+    instances.custom(buildProceduralVehicleSpec("van", { targetMaxDimension: MOVER_LENGTH.van }), { name: "m-van", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.van), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-van")),
+    instances.custom(buildProceduralVehicleSpec("pickup", { targetMaxDimension: MOVER_LENGTH.pickup }), { name: "m-pickup", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.pickup), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pickup")),
+    instances.custom(buildProceduralVehicleSpec("truck", { targetMaxDimension: MOVER_LENGTH.truck }), { name: "m-trucks", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.truck), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-truck")),
+    instances.custom(buildProceduralVehicleSpec("tram", { targetMaxDimension: MOVER_LENGTH.tram }), { name: "m-trams", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.tram), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-tram")),
+    instances.custom(buildProceduralVehicleSpec("train", { targetMaxDimension: TRAIN_CAR_LENGTH }), { name: "m-trains", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.train), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-train")),
+    instances.custom(buildProceduralVehicleSpec("hover", { targetMaxDimension: MOVER_LENGTH.hover }), { name: "m-hover", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.hover), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-hover")),
+    // Bark-textured hollow river logs, concentric heartwood end-grain rings, notched lily pads & mossy boulders.
+    instances.custom(buildHollowRiverLogSpec(), { name: "m-logs", material: material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
+    instances.custom(buildLogEndGrainSpec(), { name: "m-log-ends", material: material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
+    instances.custom(buildNotchedLilyPadSpec(), { name: "m-pads", material: material.pbr({ color: "#ffffff", roughness: 0.76, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
+    instances.custom(buildMossySteppingBoulderSpec(), { name: "m-stones", material: material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.04, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
     p4Dress && !diorama
-      ? instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin"))
-      : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
-    instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-trunk")),
-    instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
-    instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
+      ? instances.custom(buildStarCoinStandingSpec(COIN_DIAMETER), { name: "m-coins", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedCoinGold, transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin"))
+      : diorama
+        ? instances.custom(buildStarCoinUnitSpec(), { name: "m-coins", material: material.pbr({ color: "#ffffff", metalness: 0.62, roughness: 0.26, emissive: "#ffb21f", emissiveIntensity: 0.32, clearcoat: 0, sheen: 0, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin"))
+        : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
+    instances.custom(buildWoodlandTrunkSpec(), { name: "d-trunks", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedWoodBark, transforms: pad(CAP.trunk), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-trunk")),
+    instances.custom(buildWoodlandCanopySpec(), { name: "d-canopy", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.canopy), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
+    instances.custom(buildVergeArchitectureSpec(), { name: "d-b", material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
     model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", rich) })
       .position(0, 0.17, 0).rotate(0, Math.PI, 0)
       .animate({ clip: "Idle", loop: true })
       .runtime(game.runtimeNode("player")),
-    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true, ...critterMaterial("hawk", rich) })
+    buildStoopingHawkNode()
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
-    model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true, ...(rich ? { materialOverrides: critterOverrides("rescuePod") } : {}) })
+    buildRescuePodNode()
       .position(0, -999, 0)
       .runtime(game.runtimeNode("pod")),
     // 3D Meshy spectator critters cheering along the outer meadow banks! The diorama look mounts them after the
@@ -869,25 +887,25 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   }
   if (!diorama && p4Dress) {
     // Damp wet-bark timber rafters & rope lashings (kept named `m-rafts` for GU47 phase-4 parity).
-    out.push(instances.roundedBox({ name: "m-rafts", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.56, metalness: 0, clearcoat: 0.62, clearcoatRoughness: 0.22 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
+    out.push(instances.custom(buildTimberRaftSpec(), { name: "m-rafts", material: material.pbr({ color: "#ffffff", roughness: 0.56, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
   }
   if (!diorama && lookMode === "vivid") {
     out.push(
-      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.14, envMapIntensity: 0.36 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
-      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.02 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.02, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
       instances.box({ name: "v-water", size: [1, 1, 1], material: riverWaterMaterial(), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
-      instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.95, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
+      instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.95, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
       instances.box({ name: "s-lava", size: [1, 1, 1], material: lavaMagmaMaterial(), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false }).runtime(game.runtimeNode("pool-lava"))
     );
   }
   if (diorama) {
     const L0 = THEME_LOOKS[0]!;
     out.push(
-      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.08, envMapIntensity: 0.3 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
-      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.93, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
       instances.box({ name: "s-water", size: [1, 1, 1], material: riverWaterMaterial(), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
-      instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.97, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
-      instances.box({ name: "s-lava", size: [1, 1, 1], material: material.emissive({ color: "#ffffff", emissive: "#ff6a2a", emissiveIntensity: L0.surfaces.lavaEmissive, roughness: 0.6 }), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false, instanceColorTarget: "both" }).runtime(game.runtimeNode("pool-lava"))
+      instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.97, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
+      instances.box({ name: "s-lava", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", emissive: "#ff6a2a", emissiveIntensity: L0.surfaces.lavaEmissive, roughness: 0.6, clearcoat: 0, sheen: 0, practical: true }), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false, instanceColorTarget: "both" }).runtime(game.runtimeNode("pool-lava"))
     );
   }
   return out;
@@ -936,10 +954,6 @@ function shade(x: number, groundY: number, z: number, len: number, dep: number, 
   const sun = lookMode === "vivid" ? VIVID_LOOKS[appliedLook]!.sun : ORIGINAL_SUN;
   const f = sunShadowFootprint(x, z, len, dep, height, sun);
   inst("shade", f.x, groundY + 0.008, f.z, f.len, 1, f.dep, "#000000");
-}
-
-function vehicleMaterial(rich: boolean): { materialOverrides?: typeof VEHICLE_OVERRIDES } {
-  return rich ? { materialOverrides: VEHICLE_OVERRIDES } : {};
 }
 
 // -------------------- per-frame --------------------
@@ -1933,9 +1947,14 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
         inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
         inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
         for (let x = -16; x < 17; x += 1.6) inst("detail", x, 0.09, z, 0.24, 0.03, 0.88, "#241f1a");
-        // Crossing posts & crossbuck sign housing at both signals (CH-E5).
-        inst("trunk", -8, 0.44, z - LANE_D * 0.42, 0.11, 0.88, 0.11, "#3a3d44");
-        inst("trunk", 8, 0.44, z + LANE_D * 0.42, 0.11, 0.88, 0.11, "#3a3d44");
+        // Crossing posts, porcelain crossbuck X blades & brass signal bell crown at both signals (CH-E5, WP-13).
+        for (const side of [-1, 1] as const) {
+          const sz = z + side * LANE_D * 0.42;
+          inst("trunk", side * 8, 0.48, sz, 0.11, 0.96, 0.11, "#3a3d44");
+          inst("detail", side * 8, 0.98, sz, 0.16, 0.11, 0.16, "#e8c252");
+          inst("detail", side * 8, 0.76, sz + side * 0.03, 0.56, 0.075, 0.03, "#f7f4ec", 0, 0.62);
+          inst("detail", side * 8, 0.76, sz + side * 0.035, 0.56, 0.075, 0.03, "#f7f4ec", 0, -0.62);
+        }
       }
       // Smooth hinged crossing arms & dual alternating crossbuck strobes (CH-4, CH-E5, WP-14).
       const cyc = railCycle(l);

@@ -12,6 +12,13 @@
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { Batch, CORRIDOR_BOUNDS, type BatchBounds, type MeshData } from "../../../examples/shared/runner-kit/index";
 import { boxMesh, mergeMeshes, sphereMesh, translateMesh } from "./meshes";
+import {
+  sculptCyberPalmMesh,
+  sculptEqVisualizerColumnMesh,
+  sculptIslandSpeakerStackMesh,
+  sculptTrackTrestlePylonMesh,
+  sculptTrussBeatArchMesh
+} from "./art/proceduralModels";
 import { floorSpec, glowSpec, ridgeSpec, stageLitSpec, type Haze } from "./stage-shaders";
 import { linear } from "./look";
 
@@ -91,62 +98,14 @@ function islandMesh(sides: number, depth: number, rand: () => number): MeshData 
   return m;
 }
 
-/** One palm leaf: two flat-shaded triangles folded along the midrib (6 vertices), pointing along -Z. */
-function leafMesh(halfWidth: number, length: number): MeshData {
-  const m = empty();
-  const base = [0, 0, 0], tip = [0, -0.04, -length];
-  const tris = [[base, [-halfWidth, -0.025, -length * 0.42], tip], [base, tip, [halfWidth, -0.025, -length * 0.42]]];
-  for (const [a, b, c] of tris) {
-    const ux = b![0]! - a![0]!, uy = b![1]! - a![1]!, uz = b![2]! - a![2]!;
-    const wx = c![0]! - a![0]!, wy = c![1]! - a![1]!, wz = c![2]! - a![2]!;
-    let nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
-    const l = Math.hypot(nx, ny, nz) || 1;
-    nx /= l; ny /= l; nz /= l;
-    const i0 = m.positions.length / 3;
-    for (const [k, p] of [a!, b!, c!].entries()) {
-      m.positions.push(p[0]!, p[1]!, p[2]!);
-      m.normals.push(nx, ny, nz);
-      m.uvs.push(k === 2 ? 1 : 0, 0.5);
-    }
-    m.indices.push(i0, i0 + 1, i0 + 2);
-  }
-  return m;
-}
-
-/** Neon palm: a curved segmented trunk and drooping fronds (base at y = 0, about 1 unit tall). */
+/** Curved `tubeSweepMesh` synthwave cyber-palm with `loftSectionsMesh` pleated fronds (base at y = 0, ~1 unit tall). */
 function palmMesh(): MeshData {
-  const parts: MeshData[] = [];
-  const segs = 3;
-  let x = 0, y = 0;
-  for (let i = 0; i < segs; i++) {
-    const h = 0.34;
-    const w = 0.07 - i * 0.012;
-    const lean = 0.05 + i * 0.07;
-    parts.push(transformMesh(boxMesh(w, h, w), 0, 0, x, y + h / 2, 0, -lean));
-    x += Math.sin(lean) * h;
-    y += Math.cos(lean) * h * 0.98;
-  }
-  const fronds = 7;
-  for (let k = 0; k < fronds; k++) {
-    const yaw = (k / fronds) * Math.PI * 2 + 0.3;
-    const frond = leafMesh(0.09, 0.5);
-    parts.push(transformMesh(frond, -0.42 - (k % 2) * 0.18, yaw, x, y, 0));
-  }
-  return mergeMeshes(parts);
+  return sculptCyberPalmMesh();
 }
 
-/** Raised stadium beat arch (`top = 12.6 m`, chamfered upper corners) so `390x844` portrait FOV never clips the sky/HUD. */
+/** Open `latticeTrussMesh` stadium beat arch (`top = 12.6 m`, chamfered upper corners) + underslung spot cans. */
 function archMesh(): MeshData {
-  const shoulderY = 10.6;
-  const top = 12.6;
-  const legH = shoulderY - FLOOR_Y;
-  return mergeMeshes([
-    translateMesh(boxMesh(0.54, legH, 0.54), -7.9, FLOOR_Y + legH / 2, 0),
-    translateMesh(boxMesh(0.54, legH, 0.54), 7.9, FLOOR_Y + legH / 2, 0),
-    transformMesh(boxMesh(0.5, 2.85, 0.5), 0, 0, -6.9, 11.6, 0, -Math.PI / 4),
-    transformMesh(boxMesh(0.5, 2.85, 0.5), 0, 0, 6.9, 11.6, 0, Math.PI / 4),
-    translateMesh(boxMesh(12.2, 0.52, 0.54), 0, top, 0)
-  ]);
+  return sculptTrussBeatArchMesh(FLOOR_Y);
 }
 
 /** Thin neon light-tube frame inside the raised stadium arch (drawn additively). */
@@ -163,12 +122,9 @@ function archGlowMesh(): MeshData {
   ]);
 }
 
-/** Speaker stack on floating islands: two cabinets. */
+/** Horn-loaded dual speaker stack on floating islands (`latheMesh` woofer + lofted waveguide head). */
 function speakerMesh(): MeshData {
-  return mergeMeshes([
-    translateMesh(boxMesh(1, 1.1, 0.8), 0, 0.55, 0),
-    translateMesh(boxMesh(0.9, 0.9, 0.75), 0, 1.55, 0)
-  ]);
+  return sculptIslandSpeakerStackMesh();
 }
 
 /** Smooth 18-segment open volumetric cone frustum along +Y, pre-tilted forward for silky Fresnel laser beams. */
@@ -335,15 +291,12 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     layers.push({ id: "grp-city", period: CITY_P, parallax: 1 });
   }
 
-  /* pylons + crossbeams under the elevated track, every 12 m */
+  /* V-braced architectural trestle pylons + saddle girders under the elevated track, every 12 m */
   const PYLON_P = 12;
   {
     const s = span(PYLON_P);
     const copies = Math.ceil((s.near - s.far) / PYLON_P);
-    const pylon = mergeMeshes([
-      translateMesh(boxMesh(0.9, -FLOOR_Y - 0.6, 0.9), 0, (FLOOR_Y - 0.6) / 2, 0),
-      translateMesh(boxMesh(5.2, 0.5, 0.7), 0, -0.85, 0)
-    ]);
+    const pylon = sculptTrackTrestlePylonMesh(FLOOR_Y);
     const pylons = new Batch(pylon, copies, [1, 1, 1], CORRIDOR_BOUNDS);
     for (let c = 0; c < copies; c++) {
       pylons.place(c, 0, 0, s.near - c * PYLON_P, 0, 1, 1, 1);
@@ -470,11 +423,11 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   beamBase.forEach((b, k) => beams.setTone(k, [b.tone[0] * 0.16, b.tone[1] * 0.16, b.tone[2] * 0.16]));
   add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), "live");
 
-  /* equalizer meters beside the track (heights dance on the beat) */
+  /* equalizer meters beside the track (chamfered octagonal prisms whose heights dance on the beat) */
   const EQ_P = 64;
   const eqPer = 10;
   const eqCopies = Math.ceil((NEAR_Z - (FAR_Z - EQ_P)) / EQ_P);
-  const eq = new Batch(boxMesh(1, 1, 1), eqPer * eqCopies, [1, 1, 1], CORRIDOR_BOUNDS);
+  const eq = new Batch(sculptEqVisualizerColumnMesh(), eqPer * eqCopies, [1, 1, 1], CORRIDOR_BOUNDS);
   const eqRand = lcg(0xbea7);
   const eqTpl = Array.from({ length: eqPer }, (_, k) => {
     const side = k % 2 === 0 ? -1 : 1;

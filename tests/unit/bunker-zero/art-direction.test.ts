@@ -32,10 +32,10 @@ function modelKeys(): Set<string> {
   return new Set([...src.matchAll(/readonly "([A-Za-z0-9]+)": AuraAssetDefinition & \{ readonly type: "model"/g)].map((m) => m[1]!));
 }
 
-/** Every model asset main.ts mounts (`assets.<key>` reads plus the viewmodels). */
+/** Every model asset main.ts mounts (`assets.<key>` reads plus GLB viewmodels; procedural viewmodel descriptors are excluded). */
 function mountedModelKeys(): string[] {
   const models = modelKeys();
-  const used = new Set<string>(Object.values(VIEWMODEL_ASSET));
+  const used = new Set<string>(Object.values(VIEWMODEL_ASSET).filter((k) => models.has(k)));
   for (const m of MAIN.matchAll(/assets\.([A-Za-z0-9]+)/g)) if (models.has(m[1]!)) used.add(m[1]!);
   return [...used].sort();
 }
@@ -276,6 +276,58 @@ describe("Bunker Zero atmosphere (BZ-09)", () => {
       const full = atmosphereParticleCap(atmosphereEmitters(look, 3));
       const reduced = atmosphereParticleCap(atmosphereEmitters(look, 3, { reducedMotion: true }));
       expect(reduced, look.variant).toBeLessThanOrEqual(Math.ceil(full / 2) + 3);
+    }
+  });
+});
+
+describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
+  it("builds multi-material viewmodels, doors, pickups, props and clearcoat:0 corridor pools with practical emissives", async () => {
+    const proc = await import("../../../apps/showcase-bunker-zero/src/art/proceduralModels");
+    for (const [key, spec] of Object.entries(proc.BZ_PROC_MATERIALS)) {
+      if ((spec as { emissiveIntensity?: number }).emissiveIntensity && (spec as { emissiveIntensity?: number }).emissiveIntensity! > 0) {
+        expect((spec as { practical?: boolean }).practical, key).toBe(true);
+      }
+    }
+    const assemblies = [
+      proc.buildServicePistolNode("test-pistol"),
+      proc.buildPulseCarbineNode("test-carbine"),
+      proc.buildRocketLauncherNode("test-rocket"),
+      proc.buildReflexOpticNode("test-optic"),
+      proc.buildTacticalSleeveNode("right", "test-sleeve"),
+      proc.buildTacticalWristCuffNode("test-cuff"),
+      proc.buildTacticalGloveNode("right", "test-glove"),
+      proc.buildBlastDoorBulkheadNode(3, false, "test-door"),
+      proc.buildSecretPushWallNode(3, false, "test-pw"),
+      proc.buildClearanceKeycardNode("test-key"),
+      proc.buildBullionCaseNode("test-treasure"),
+      proc.buildMunitionBoxNode("test-ammo"),
+      proc.buildBallisticArmorNode("test-armor"),
+      proc.buildHazardDrumNode(false, "test-drum"),
+      proc.buildMilitaryCrateNode(false, "test-crate"),
+      proc.buildRocketWarheadNode("test-warhead"),
+      proc.buildMuzzleStarburstNode("test-muzzle"),
+      proc.buildEnemyOpticVisorNode("boss", "test-visor")
+    ];
+    for (const builder of assemblies) {
+      const json = builder.toJSON() as { kind: string; children: { material?: unknown; geometry?: { positions?: ArrayLike<number> } }[] };
+      expect(json.kind).toBe("group");
+      expect(json.children.length).toBeGreaterThanOrEqual(2);
+      const child = json.children[0]!;
+      expect(child.material).toBeDefined();
+      expect(child.geometry?.positions?.length ?? 0).toBeGreaterThanOrEqual(9);
+    }
+    const tr = [{ position: [0, 0, 0] as [number, number, number] }];
+    const pools = [
+      proc.buildWorkLightInstances("pool-lights", tr, "#ffad5c", 1.8),
+      proc.buildFloorDrainInstances("pool-drains", tr),
+      proc.buildBulkheadRibInstances("pool-ribs", tr),
+      proc.buildConduitPipeInstances("pool-pipes", tr, "#3a4048"),
+      proc.buildPilasterColumnInstances("pool-cols", tr, proc.BZ_PROC_MATERIALS.concreteSlab)
+    ];
+    for (const pool of pools) {
+      const json = pool.toJSON() as { material?: { clearcoat?: number }; parameters?: { geometry?: { bounds?: unknown } }; geometry?: { bounds?: unknown } };
+      expect(json.material?.clearcoat).toBe(0);
+      expect(json.parameters?.geometry?.bounds ?? json.geometry?.bounds).toBeDefined();
     }
   });
 });

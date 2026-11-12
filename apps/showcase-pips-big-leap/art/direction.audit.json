@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "88f6c54c13dbc512ed011f3441998b48e01cee6937042f05e750c092bbd98c93",
+  "sourceSha256": "f4577df53616541ffd3a1debadd668e6a111985d883f92cda58521c443c4a068",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -46,202 +46,6 @@
         },
         "models": [
           {
-            "assetKey": "leapBaseGarden",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propBoulder",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "leapBeetleAnim",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "leapHedgehog",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -251,18 +55,31 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
+            "practical": false
+          },
+          {
+            "node": "pbl-base-tiles material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-tiles material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -331,14 +148,427 @@
             "practical": false
           },
           {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorns-a:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorns-a:mesh material 1",
+            "practical": false
+          },
+          {
             "name": "felt",
             "node": "hazard:thorns-b",
             "practical": false
           },
           {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorns-b:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorns-b:mesh material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:ac-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:ac-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:ac-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:ac-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:ac-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:ac-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:ac-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:ac-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-academy:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-academy:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-academy:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-academy material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-academy material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:ac-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:ac-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:ac-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:ac-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:ac-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:ac-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:ac-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:ac-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:ac-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:ac-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:ac-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:ac-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "ac-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "ac-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "ac-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "scalloped pine bough",
+            "node": "pbl-diorama-decor-cast material 2",
+            "practical": false
+          },
+          {
+            "name": "meadow blossom petal",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "pbl-diorama-decor-cast material 5",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "pbl-diorama-decor-cast material 6",
+            "practical": false
+          },
+          {
+            "name": "soaring hawk plumage",
+            "node": "pbl-diorama-decor-cast material 7",
+            "practical": false
+          },
+          {
+            "name": "hedgehog cream snout",
+            "node": "pbl-diorama-decor-cast material 8",
+            "practical": false
+          },
+          {
+            "name": "hedgehog cream snout",
+            "node": "pbl-villager:ac-npc material 0",
+            "practical": false
+          },
+          {
+            "name": "hedgehog quill coat",
+            "node": "pbl-villager:ac-npc material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pbl-villager:ac-npc material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "pbl-villager:ac-npc material 3",
+            "practical": false
           },
           {
             "node": "pip:cape",
@@ -397,223 +627,6 @@
         },
         "models": [
           {
-            "assetKey": "leapBaseCanopy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "leapBeetleAnim",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propBoulder",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
@@ -630,18 +643,31 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
+            "practical": false
+          },
+          {
+            "node": "pbl-base-tiles material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-tiles material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -700,8 +726,28 @@
             "practical": false
           },
           {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorns-1:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorns-1:mesh material 1",
+            "practical": false
+          },
+          {
             "name": "felt",
             "node": "hazard:thorns-2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorns-2:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorns-2:mesh material 1",
             "practical": false
           },
           {
@@ -710,9 +756,452 @@
             "practical": false
           },
           {
+            "name": "gnarled woodland bark",
+            "node": "hazard:bog:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:bog:mesh material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w1-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w1-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w1-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w1-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w1-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w1-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w1-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w1-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w1:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w1:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w1:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w1 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w1 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w1-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w1-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w1-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w1-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w1-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w1-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w1-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w1-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w1-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w1-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w1-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w1-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w1-start-flag:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w1-start-flag:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w1-start-flag:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w1-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w1-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w1-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "scalloped pine bough",
+            "node": "pbl-diorama-decor-cast material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "pbl-diorama-decor-cast material 5",
+            "practical": false
+          },
+          {
+            "name": "soaring hawk plumage",
+            "node": "pbl-diorama-decor-cast material 6",
+            "practical": false
+          },
+          {
+            "name": "hedgehog cream snout",
+            "node": "pbl-diorama-decor-cast material 7",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-cast material 8",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "pbl-diorama-decor-cast material 9",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "pbl-diorama-decor-cast material 10",
+            "practical": false
+          },
+          {
+            "name": "meadow blossom petal",
+            "node": "pbl-diorama-decor-cast material 11",
+            "practical": false
           },
           {
             "node": "pip:cape",
@@ -771,223 +1260,6 @@
         },
         "models": [
           {
-            "assetKey": "leapBaseMillpond",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeWindmillMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeWatchtowerMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeCrateMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeBarrelMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "leapHedgehog",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -996,6 +1268,10 @@
           }
         ],
         "materials": [
+          {
+            "node": "water:pond:caustics",
+            "practical": false
+          },
           {
             "node": "pbl-millpond-ripple:pond",
             "practical": false
@@ -1006,18 +1282,31 @@
             "practical": false
           },
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
+            "practical": false
+          },
+          {
+            "node": "pbl-base-tiles material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-tiles material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -1075,8 +1364,29 @@
             "practical": false
           },
           {
+            "name": "faceted quartz crystal",
+            "node": "hazard:millpond-1:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:millpond-1:mesh material 1",
+            "practical": false
+          },
+          {
             "name": "felt",
             "node": "hazard:splinters",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "hazard:splinters:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:splinters:mesh material 1",
             "practical": false
           },
           {
@@ -1084,9 +1394,423 @@
             "practical": false
           },
           {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w2-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w2-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w2-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w2-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w2-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w2-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w2-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w2-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w2:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w2:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w2:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w2 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w2 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w2-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w2-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w2-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w2-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w2-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w2-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w2-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w2-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w2-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w2-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w2-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w2-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w2-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w2-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w2-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "conical roof slate",
+            "node": "pbl-diorama-decor-cast material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "windmill linen sail",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "wrought iron",
+            "node": "pbl-diorama-decor-cast material 5",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "pbl-diorama-decor-cast material 6",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "hedgehog cream snout",
+            "node": "pbl-villager:w2-npc material 0",
+            "practical": false
+          },
+          {
+            "name": "hedgehog quill coat",
+            "node": "pbl-villager:w2-npc material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pbl-villager:w2-npc material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "pbl-villager:w2-npc material 3",
+            "practical": false
           },
           {
             "node": "pip:cape",
@@ -1145,216 +1869,6 @@
         },
         "models": [
           {
-            "assetKey": "leapBaseMeadow",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "reactorFusionTurbineMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "reactorFusionTurbineMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propRockB",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeWatchtowerMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
@@ -1371,18 +1885,31 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
+            "practical": false
+          },
+          {
+            "node": "pbl-base-tiles material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-tiles material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -1440,13 +1967,459 @@
             "practical": false
           },
           {
+            "name": "faceted quartz crystal",
+            "node": "hazard:storm-1:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:storm-1:mesh material 1",
+            "practical": false
+          },
+          {
             "node": "hazard:hail",
             "practical": false
+          },
+          {
+            "name": "faceted quartz crystal",
+            "node": "hazard:hail:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:hail:mesh material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w3-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w3-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w3-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w3-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w3-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w3-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w3-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w3-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w3:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w3:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w3:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w3 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w3 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w3-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w3-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w3-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w3-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w3-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w3-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w3-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w3-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w3-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w3-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w3-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w3-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
           },
           {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "carved limestone",
+            "node": "w3-fan-1:fan material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w3-fan-1:fan material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "w3-fan-1:fan material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "w3-fan-2:fan material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w3-fan-2:fan material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "w3-fan-2:fan material 2",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w3-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w3-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w3-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "conical roof slate",
+            "node": "pbl-diorama-decor-cast material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "wrought iron",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "pbl-diorama-decor-cast material 5",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "storybook cloud puff",
+            "node": "pbl-diorama-decor-sky material 0",
+            "practical": false
           },
           {
             "node": "pip:cape",
@@ -1525,209 +2498,6 @@
         },
         "models": [
           {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkArch",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "leapHedgehog",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -1737,23 +2507,31 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
             "practical": false
           },
           {
-            "name": "instanced felt",
-            "node": "pbl-base-mounds",
+            "node": "pbl-base-mounds material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-mounds material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -1811,7 +2589,29 @@
             "practical": true
           },
           {
+            "name": "charred basalt",
+            "node": "hazard:lava-1:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "vent ember throat",
+            "node": "hazard:lava-1:mesh material 1",
+            "emissiveIntensity": 1.25,
+            "practical": true
+          },
+          {
             "node": "hazard:lava-2",
+            "practical": true
+          },
+          {
+            "name": "charred basalt",
+            "node": "hazard:lava-2:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "vent ember throat",
+            "node": "hazard:lava-2:mesh material 1",
+            "emissiveIntensity": 1.25,
             "practical": true
           },
           {
@@ -1820,8 +2620,30 @@
             "practical": true
           },
           {
+            "name": "charred basalt",
+            "node": "hazard:ember-1:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "vent ember throat",
+            "node": "hazard:ember-1:mesh material 1",
+            "emissiveIntensity": 1.25,
+            "practical": true
+          },
+          {
             "node": "hazard:ember-2",
             "emissiveIntensity": 1.1,
+            "practical": true
+          },
+          {
+            "name": "charred basalt",
+            "node": "hazard:ember-2:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "vent ember throat",
+            "node": "hazard:ember-2:mesh material 1",
+            "emissiveIntensity": 1.25,
             "practical": true
           },
           {
@@ -1829,9 +2651,430 @@
             "practical": false
           },
           {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w4-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w4-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w4-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w4-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w4-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w4-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w4-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w4-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w4:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w4:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w4:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w4 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w4 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w4-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w4-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w4-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w4-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w4-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w4-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w4-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w4-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w4-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w4-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w4-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w4-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w4-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w4-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w4-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "pbl-diorama-decor-cast material 2",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "charred basalt",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "vent ember throat",
+            "node": "pbl-diorama-decor-cast material 5",
+            "emissiveIntensity": 1.25,
+            "practical": true
+          },
+          {
+            "name": "wrought iron",
+            "node": "pbl-diorama-decor-cast material 6",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "pbl-diorama-decor-cast material 7",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "hedgehog cream snout",
+            "node": "pbl-villager:w4-npc material 0",
+            "practical": false
+          },
+          {
+            "name": "hedgehog quill coat",
+            "node": "pbl-villager:w4-npc material 1",
+            "practical": false
+          },
+          {
+            "name": "critter bead eye",
+            "node": "pbl-villager:w4-npc material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "pbl-villager:w4-npc material 3",
+            "practical": false
           },
           {
             "node": "pip:cape",
@@ -1905,202 +3148,6 @@
         },
         "models": [
           {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkArch",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -2113,69 +3160,35 @@
             "textures": 1,
             "unlit": false,
             "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
           }
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
             "practical": false
           },
           {
-            "name": "instanced felt",
-            "node": "pbl-base-mounds",
+            "node": "pbl-base-mounds material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-mounds material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -2228,8 +3241,28 @@
             "practical": false
           },
           {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorn-1:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorn-1:mesh material 1",
+            "practical": false
+          },
+          {
             "name": "felt",
             "node": "hazard:thorn-2",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "hazard:thorn-2:mesh material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "hazard:thorn-2:mesh material 1",
             "practical": false
           },
           {
@@ -2237,12 +3270,488 @@
             "practical": false
           },
           {
+            "name": "faceted quartz crystal",
+            "node": "hazard:moat:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:moat:mesh material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w5-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w5-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w5-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w5-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w5-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w5-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w5-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w5-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w5:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w5:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w5:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w5 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w5 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w5-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w5-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w5-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w5-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w5-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w5-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w5-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w5-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w5-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w5-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w5-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w5-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
             "practical": true
           },
           {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w5-banner-1:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w5-banner-1:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w5-banner-1:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w5-banner-2:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w5-banner-2:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w5-banner-2:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "pbl-diorama-decor-cast material 2",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "wrought iron",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "pbl-diorama-decor-cast material 5",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
             "node": "pip:cape",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:0 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:0 material 1",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:1 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:1 material 1",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:2 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:2 material 1",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:3 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:3 material 1",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:4 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:4 material 1",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "bramble-spike:5 material 0",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "bramble-spike:5 material 1",
             "practical": false
           },
           {
@@ -2313,195 +3822,6 @@
         },
         "models": [
           {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsGoldenAcorn",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkBoostPad",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSungate",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propBoulder",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
@@ -2518,23 +3838,31 @@
         ],
         "materials": [
           {
-            "name": "felt",
+            "name": "island turf lip",
             "node": "pbl-base-felt",
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "island soil bevel",
             "node": "pbl-base-clay",
             "practical": false
           },
           {
-            "name": "matte clay",
             "node": "pbl-base-skirt",
             "practical": false
           },
           {
-            "name": "instanced felt",
-            "node": "pbl-base-mounds",
+            "node": "pbl-base-mounds material 0",
+            "practical": false
+          },
+          {
+            "name": "bluff soil bevel",
+            "node": "pbl-base-mounds material 1",
+            "practical": false
+          },
+          {
+            "name": "bluff emerald turf",
+            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -2592,12 +3920,435 @@
             "practical": false
           },
           {
+            "name": "faceted quartz crystal",
+            "node": "hazard:void-1:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:void-1:mesh material 1",
+            "practical": false
+          },
+          {
             "node": "hazard:void-2",
             "practical": false
           },
           {
+            "name": "faceted quartz crystal",
+            "node": "hazard:void-2:mesh material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "hazard:void-2:mesh material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-1 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-2 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-3 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-4 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-5 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "seed:w6-seed-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "seed:w6-seed-6 material 1",
+            "emissiveIntensity": 0.88,
+            "practical": true
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "seed:w6-seed-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-1 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-1 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-1 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-2 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-2 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-2 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-3 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-3 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-3 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-4 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-4 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-4 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-5 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-5 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-5 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-6 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-6 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-6 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-7 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-7 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-7 material 2",
+            "practical": false
+          },
+          {
+            "name": "golden acorn shell",
+            "node": "acorn:w6-coin-8 material 0",
+            "practical": false
+          },
+          {
+            "name": "oak cupule bark",
+            "node": "acorn:w6-coin-8 material 1",
+            "practical": false
+          },
+          {
+            "name": "gnarled woodland bark",
+            "node": "acorn:w6-coin-8 material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "heart:w6-heart material 0",
+            "practical": false
+          },
+          {
+            "name": "woodland canopy leaf",
+            "node": "heart:w6-heart material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "spring:spring-w6:base material 0",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "spring:spring-w6:base material 1",
+            "practical": false
+          },
+          {
+            "name": "coiled spring copper",
+            "node": "spring:spring-w6:base material 2",
+            "practical": false
+          },
+          {
+            "name": "amanita crimson cap",
+            "node": "spring:spring-w6 material 0",
+            "practical": false
+          },
+          {
+            "name": "amanita cream veil",
+            "node": "spring:spring-w6 material 1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w6-cp-1:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w6-cp-1:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w6-cp-1:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w6-cp-1",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w6-cp-2:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w6-cp-2:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w6-cp-2:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w6-cp-2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "cp:w6-cp-3:pad material 0",
+            "practical": false
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "cp:w6-cp-3:pad material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "cp:w6-cp-3:pad material 2",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "cp-flag:w6-cp-3",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "sun-gate material 0",
+            "practical": false
+          },
+          {
+            "name": "weathered granite",
+            "node": "sun-gate material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "sun-gate material 2",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate material 3",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
             "node": "sun-gate-ring",
             "emissiveIntensity": 0.9,
+            "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "sun-gate-lock material 0",
+            "practical": false
+          },
+          {
+            "name": "sungate cyan rune",
+            "node": "sun-gate-lock material 1",
+            "emissiveIntensity": 0.95,
+            "practical": true
+          },
+          {
+            "name": "dressed oak timber",
+            "node": "w6-banner:banner material 0",
+            "practical": false
+          },
+          {
+            "name": "checkpoint pennant",
+            "node": "w6-banner:banner material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "w6-banner:banner material 2",
+            "practical": false
+          },
+          {
+            "name": "faceted quartz crystal",
+            "node": "pbl-diorama-decor-cast material 0",
+            "emissiveIntensity": 0.24,
+            "practical": true
+          },
+          {
+            "name": "weathered granite",
+            "node": "pbl-diorama-decor-cast material 1",
+            "practical": false
+          },
+          {
+            "name": "velvet woodland moss",
+            "node": "pbl-diorama-decor-cast material 2",
+            "practical": false
+          },
+          {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-cast material 3",
+            "practical": false
+          },
+          {
+            "name": "wrought iron",
+            "node": "pbl-diorama-decor-cast material 4",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "pbl-diorama-decor-cast material 5",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-sky material 0",
+            "practical": false
+          },
+          {
+            "name": "sunseed solar rib",
+            "node": "pbl-diorama-decor-sky material 1",
+            "emissiveIntensity": 0.88,
             "practical": true
           },
           {
@@ -2734,40 +4485,6 @@
       },
       {
         "role": "character",
-        "assetKey": "showcaseSidekickRunner",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "idle"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "helperChar",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024,
-        "animated": {
-          "clips": [
-            "idle"
-          ]
-        }
-      },
-      {
-        "role": "character",
-        "assetKey": "leapHedgehog",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "character",
         "assetKey": "leapBeetleAnim",
         "maxTriangles": 30000,
         "minTriangles": 2000,
@@ -2778,178 +4495,6 @@
             "idle"
           ]
         }
-      },
-      {
-        "role": "world",
-        "assetKey": "leapBaseGarden",
-        "maxTriangles": 32000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "leapBaseCanopy",
-        "maxTriangles": 24000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "leapBaseMillpond",
-        "maxTriangles": 24000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "leapBaseMeadow",
-        "maxTriangles": 24000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "pipsSunseed",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "pipsGoldenAcorn",
-        "maxTriangles": 4000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "pipsCheckpointFlag",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "pipsSungate",
-        "maxTriangles": 10000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propConifer",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propBoulder",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propRockB",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeWindmillMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeWatchtowerMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeCrateMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeBarrelMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "skylineCrystalShardMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "fpsEnergyCorePickupMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "auraClashCornerBrazierPylonMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "neonStreetLampProp",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkBoostPad",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkArch",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "galleryShiftPedestal",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "reactorFusionTurbineMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "blockfallReactorContainmentPylonMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

@@ -8,6 +8,7 @@ import { assets } from "../../../apps/showcase-aura-hoops-3d/src/aura-assets.rou
 import {
   COURT_IDS,
   COURT_RIGS,
+  courtBackdropNodes,
   courtLampNodes,
   courtLensFlareNodes,
   courtLookNodes,
@@ -16,6 +17,7 @@ import {
   courtWeatherNodes,
   type CourtId
 } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
+import { courtCrowdNodes, crowdLayout } from "../../../apps/showcase-aura-hoops-3d/src/crowd";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
@@ -26,7 +28,7 @@ import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direc
  */
 const ROOT = path.resolve(__dirname, "../../..");
 const APP_SRC = path.join(ROOT, "apps/showcase-aura-hoops-3d/src");
-const SCENE_SOURCES = ["main.ts", "courtRigs.ts", "fxPack.ts"];
+const SCENE_SOURCES = ["main.ts", "courtRigs.ts", "fxPack.ts", "setPieces.ts", "crowd.ts", "art/proceduralModels.ts"];
 const manifest = JSON.parse(readFileSync(path.join(ROOT, "aura.assets.json"), "utf8")) as unknown;
 
 const assetTable = assets as unknown as Readonly<Record<string, { readonly type?: string }>>;
@@ -78,7 +80,8 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
   it("mounts only contracted models (every scene model key is in the direction)", () => {
     const contracted = new Set(direction.assets.map((asset) => asset.assetKey));
     const keys = mountedModelKeys();
-    expect(keys.length).toBeGreaterThan(10);
+    expect(keys).toHaveLength(5);
+    expect(contracted.size).toBe(5);
     expect(keys.filter((key) => !contracted.has(key))).toEqual([]);
   });
 
@@ -97,5 +100,33 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
     const violations = auditArtDirection(direction, snapshot);
     writeArtDirectionAudit("apps/showcase-aura-hoops-3d/art/direction.ts", { direction, snapshot, violations });
     expect(violations).toEqual([]);
+  });
+
+  it("strips depth-of-field, motion-blur and chromatic-aberration from courtLookNodes and keeps high-count instancing on clearcoat: 0", () => {
+    for (const id of COURT_IDS) {
+      const effects = courtLookNodes(COURT_RIGS[id]).map((n) => (n.toJSON() as { effect?: string }).effect);
+      expect(effects).not.toContain("depth-of-field");
+      expect(effects).not.toContain("motion-blur");
+      expect(effects).not.toContain("chromatic-aberration");
+    }
+    for (const id of ["rucker", "athens"] as const) {
+      for (const node of courtBackdropNodes(COURT_RIGS[id])) {
+        const mat = (node.toJSON() as { material?: { clearcoat?: number; sheen?: number } }).material;
+        expect(mat?.clearcoat ?? 0).toBe(0);
+        expect(mat?.sheen ?? 0).toBe(0);
+      }
+    }
+    const layout = crowdLayout("#c2662d", 1234);
+    expect([...layout.colorsB, ...layout.colorsC]).not.toContain("#ffffff");
+    const crowdNodes = courtCrowdNodes("rucker", "#c2662d", {
+      live: [assets.aura_hoops_3d_blacktopFanAPoses, assets.aura_hoops_3d_blacktopFanCPoses, assets.aura_hoops_3d_blacktopFanDPoses]
+    });
+    const instancedCrowd = crowdNodes.filter((n) => (n.toJSON() as { kind?: string }).kind === "primitive");
+    expect(instancedCrowd.length).toBe(5);
+    for (const n of instancedCrowd) {
+      const mat = (n.toJSON() as { material?: { clearcoat?: number; sheen?: number } }).material;
+      expect(mat?.clearcoat ?? 0).toBe(0);
+      expect(mat?.sheen ?? 0).toBe(0);
+    }
   });
 });

@@ -32,6 +32,38 @@ import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
+import {
+  DESERT_INST_MAT,
+  billowingRoutePennantSpec,
+  canyonYardangRockSpec,
+  collaredBronzeMastSpec,
+  createBazaarStall,
+  createBoardSailNode,
+  createBoardTrimNode,
+  createCanyonResonanceGate,
+  createCourierMaterialOverrides,
+  createDesertViaduct,
+  createFlutedObeliskPillar,
+  createGatehouseNeri,
+  createSandSkiffNode,
+  createSignalRelayTower,
+  createStratifiedMesaSpire,
+  createTowRelicNodes,
+  createWindBannerMast,
+  desertLanternPostSpec,
+  desertScreeBoulderSpec,
+  desertTamariskCanopySpec,
+  desertTamariskTrunkSpec,
+  duneAdobeDetailsSpec,
+  duneAdobeWallsSpec,
+  flutedColumnDrumSpec,
+  flutedStonePierSpec,
+  halfBuriedRuinArchSpec,
+  resonatorDishCapSpec,
+  ringGateSpec,
+  unnamed,
+  windCarvedMonolithSpec
+} from "./art/proceduralModels";
 import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
@@ -709,13 +741,36 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }).runtime({ id: "far-dunes" }));
   }
 
-  // GU47 DG-W1 (inked look): seeded column drums and broken ruins off the ring route, two instanced nodes (+2 draws)
+  // GU47 DG-W1 + WP-28 (inked look): seeded fluted column drums and half-buried voussoir ruin arches off the ring route (+2 draws)
   if (inked) {
     const dressing = dressingFor(chapter, terrain, props.walls);
     const drums = dressing.filter((d) => d.kind === "drum"), ruins = dressing.filter((d) => d.kind === "ruin");
-    // pillar.glb is 1.9 m tall with its origin at the centre: squat drums, sunk a little
-    if (drums.length) builder.add(instances.model(assets.pillar, { name: "dressing-drums", castShadow: true, receiveShadow: true, transforms: drums.map((d) => ({ position: [d.x, d.y + 0.35 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.45, d.scale] as [number, number, number] })) }));
-    if (ruins.length) builder.add(instances.model(assets.canyonrocks, { name: "dressing-ruins", castShadow: false, receiveShadow: true, transforms: ruins.map((d) => ({ position: [d.x, d.y + 0.3 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.7, d.scale] as [number, number, number] })) }));
+    if (drums.length) {
+      builder.add(instances.custom(flutedColumnDrumSpec(), {
+        name: "dressing-drums",
+        castShadow: true,
+        receiveShadow: true,
+        material: DESERT_INST_MAT.sandstone,
+        transforms: drums.map((d) => ({
+          position: [d.x, d.y + 0.35 * d.scale, d.z] as [number, number, number],
+          rotation: [0, d.yaw, 0] as [number, number, number],
+          scale: [d.scale, d.scale * 0.45, d.scale] as [number, number, number]
+        }))
+      }));
+    }
+    if (ruins.length) {
+      builder.add(instances.custom(halfBuriedRuinArchSpec(), {
+        name: "dressing-ruins",
+        castShadow: false,
+        receiveShadow: true,
+        material: DESERT_INST_MAT.ruinWeathered,
+        transforms: ruins.map((d) => ({
+          position: [d.x, d.y + 0.3 * d.scale, d.z] as [number, number, number],
+          rotation: [0, d.yaw, 0] as [number, number, number],
+          scale: [d.scale, d.scale * 0.7, d.scale] as [number, number, number]
+        }))
+      }));
+    }
   }
   // GU47 DG-W2 (inked look, not Low): sand drifts, aqueduct water stains and lamp soot, merged into one soft-edged
   // transparent mesh (+1 draw) instead of one root-decal draw each; <= 24 decals, inside the engine's 32-decal budget
@@ -728,22 +783,32 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       }).runtime({ id: "silt-decals" }));
     }
   }
-  // GU47 DG-AN2 + WP-29 desert tamarisk/olive-gold flora tints in the inked look (reduced motion keeps 30% sway)
+  // GU47 DG-AN2 + WP-28 procedural wind-sheared desert tamarisk canopies & gnarled trunks
   if (props.trees.length) {
-    builder.add(instances.model(assets.tree, {
+    const treeTransforms = placements(props.trees);
+    builder.add(instances.custom(desertTamariskCanopySpec(), {
       name: "trees",
-      transforms: placements(props.trees),
+      transforms: treeTransforms,
       castShadow: true,
       receiveShadow: true,
+      material: DESERT_INST_MAT.tamariskFoliage,
       ...(inked ? { colors: props.trees.map((_, i) => floraTint(i, orchard)), wind: treeWind(!!buildOptions.reducedMotion) } : {})
     }));
+    builder.add(instances.custom(desertTamariskTrunkSpec(), {
+      name: "trees-trunks",
+      transforms: treeTransforms,
+      castShadow: true,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.tamariskTrunk
+    }));
   }
-  // boulders: Meshy canyon-rock cluster (1.9 m wide, origin at its centre), sunk slightly so it sits on the ground
+  // WP-28 stratified canyon yardang outcrops & wind-abraded desert scree boulders
   if (props.rocks.length) {
-    builder.add(instances.model(assets.canyonrocks, {
+    builder.add(instances.custom(canyonYardangRockSpec(), {
       name: "rocks",
       castShadow: false,
       receiveShadow: true,
+      material: DESERT_INST_MAT.yardangRock,
       transforms: [...props.rocks].sort((a, b) => b.scale - a.scale).slice(0, 48).map((p) => {
         const s = (p.scale * 1.15) / 1.9;
         return { position: [p.x, p.y + 0.38 * s, p.z] as [number, number, number], rotation: [0, p.yaw, 0] as [number, number, number], scale: [s, s * 0.8, s] as [number, number, number] };
@@ -752,12 +817,11 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   }
   if (props.rocks.length > 48) {
     const rest = [...props.rocks].sort((a, b) => b.scale - a.scale).slice(48);
-    builder.add(instances.polyhedron({
+    builder.add(instances.custom(desertScreeBoulderSpec(), {
       name: "rocks-small",
-      size: [1, 1, 1],
       castShadow: false,
       receiveShadow: true,
-      material: pbr({ color: "#b3aea6", texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }),
+      material: unnamed(pbr({ color: "#c9b399", texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1, clearcoat: 0, sheen: 0 })),
       transforms: rest.map((p) => ({
         position: [p.x, p.y + 0.28 * p.scale, p.z] as [number, number, number],
         rotation: [0, p.yaw, 0] as [number, number, number],
@@ -765,45 +829,58 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       }))
     }));
   }
-  // GU47 WP-36 DG-A2 (wave 10): the inked look's village houses are the Meshy adobe dwelling baked to house.glb's box (same
-  // slot, placement offset and colliders, 1 draw); `?look=original` keeps the Kenney house.
-  if (props.houses.length) builder.add(instances.model(inked ? assets.silt_and_signal_port_duneAdobeA : assets.house, { name: "houses", transforms: placements(props.houses, { x: 0, y: 0, z: -0.064 }), castShadow: true, receiveShadow: true }));
-  // lamp.glb keeps its source offset: centre (2.038, 0, 7), height -0.3..0.3
+  // WP-28 procedural sun-baked desert adobe dwellings + cedar roof vigas & terracotta awnings (exact collider box)
+  if (props.houses.length) {
+    const houseTransforms = placements(props.houses, { x: 0, y: 0, z: -0.064 });
+    builder.add(instances.custom(duneAdobeWallsSpec(), {
+      name: "houses",
+      transforms: houseTransforms,
+      castShadow: true,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.adobePlaster
+    }));
+    builder.add(instances.custom(duneAdobeDetailsSpec(), {
+      name: "houses-details",
+      transforms: houseTransforms,
+      castShadow: false,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.adobeTimberTerracotta
+    }));
+  }
+  // WP-28 gooseneck bronze desert route lantern standards (exact 1.9 m height centered on [-0.95, +0.95])
   if (props.lamps.length) {
-    builder.add(instances.model(assets.lantern, {
+    builder.add(instances.custom(desertLanternPostSpec(), {
       name: "lamps",
-      // every lamp the sim collides with is drawn (one instanced node)
       transforms: props.lamps.map((p) => {
         const s = Math.max(2.2, p.scale);
         return { position: [p.x, p.y + 0.95 * s, p.z] as [number, number, number], rotation: [0, p.yaw, 0] as [number, number, number], scale: s };
       }),
-      castShadow: false
+      castShadow: false,
+      material: DESERT_INST_MAT.lanternBronze
     }));
   }
   if (props.stone.length) {
-    builder.add(instances.cylinder({
+    builder.add(instances.custom(flutedStonePierSpec(), {
       name: "piers",
-      size: [1, 1, 1],
       transforms: columnTransforms(props.stone),
       castShadow: true,
       receiveShadow: true,
-      material: pbr({ color: "#f0e3c9", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, texTransforms: { baseColor: { scale: [3, 12] }, normal: { scale: [3, 12] }, metallicRoughness: { scale: [3, 12] } } })
+      material: unnamed(pbr({ color: "#f0e3c9", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, clearcoat: 0, sheen: 0, texTransforms: { baseColor: { scale: [3, 12] }, normal: { scale: [3, 12] }, metallicRoughness: { scale: [3, 12] } } }))
     }));
   }
   if (props.brass.length) {
-    builder.add(instances.cylinder({
+    builder.add(instances.custom(collaredBronzeMastSpec(), {
       name: "masts",
-      size: [1, 1, 1],
       transforms: columnTransforms(props.brass),
       castShadow: true,
-      // GU47 DG-M4 + WP-29 (inked): anisotropic brushed bronze with seeded verdigris patina
+      // GU47 DG-M4 + WP-28 (inked): collared bronze relay masts with seeded verdigris patina
       ...(inked ? { colors: props.brass.map((_, i) => mastTint(i)) } : {}),
       material: inked
-        ? material.brushedMetal({ color: MAST_BRONZE.color, roughness: MAST_BRONZE.roughness, anisotropy: 0.86, envMapIntensity: 1.15 })
-        : pbr({ color: "#b99455", roughness: 0.38, metallic: 0.85, envMapIntensity: 1.1 })
+        ? unnamed(material.metal({ color: MAST_BRONZE.color, roughness: MAST_BRONZE.roughness, metalness: MAST_BRONZE.metallic, clearcoat: 0, sheen: 0, envMapIntensity: 1.15 }))
+        : unnamed(material.metal({ color: "#b99455", roughness: 0.38, metalness: 0.85, clearcoat: 0, sheen: 0, envMapIntensity: 1.1 }))
     }));
   }
-  // WP-29 weathered obsidian & brushed-brass signal monoliths + emissive signal-jade glyphs + woven cloth route sails
+  // WP-28 wind-carved signal monoliths + lathed resonator caps + emissive signal-jade glyphs + billowing route pennants
   if (inked) {
     const monolithBodies: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
     const monolithCaps: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -827,24 +904,23 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           const gy = terrain.heightAt(mx, mz);
           const h = 11.5 + (idx % 3) * 2.2;
           monolithBodies.push({ position: [mx, gy + h * 0.48, mz], rotation: [side * 0.04, yaw, 0], scale: [1.55, h, 1.15] });
-          monolithCaps.push({ position: [mx, gy + h - 0.15, mz], rotation: [side * 0.04, yaw, 0], scale: [1.88, 0.55, 1.42] });
+          monolithCaps.push({ position: [mx, gy + h - 0.15, mz], rotation: [side * 0.04, yaw, 0], scale: [1.88, 0.72, 1.42] });
           monolithGlyphs.push({ position: [mx - nx * side * 0.62, gy + h * 0.56, mz - nz * side * 0.62], rotation: [side * 0.04, yaw, 0], scale: [0.16, h * 0.58, 0.22] });
-          monolithSails.push({ position: [mx - nx * side * 1.45, gy + h * 0.72, mz - nz * side * 1.45], rotation: [0, yaw, 0], scale: [1.9, 3.4, 0.06] });
+          monolithSails.push({ position: [mx - nx * side * 1.45, gy + h * 0.72, mz - nz * side * 1.45], rotation: [0, yaw, 0], scale: [1.9, 3.4, 0.24] });
           idx++;
         }
       }
     }
     if (monolithBodies.length) {
-      builder.add(instances.box({ name: "signal-monoliths", size: [1, 1, 1], castShadow: true, receiveShadow: true, transforms: monolithBodies, material: material.brushedMetal({ color: "#2b2520", roughness: 0.3, anisotropy: 0.88, envMapIntensity: 1.25 }) }));
-      builder.add(instances.box({ name: "signal-caps", size: [1, 1, 1], castShadow: false, receiveShadow: true, transforms: monolithCaps, material: material.brushedMetal({ color: "#c2924f", roughness: 0.24, anisotropy: 0.9, envMapIntensity: 1.4 }) }));
-      builder.add(instances.box({ name: "signal-glyphs", size: [1, 1, 1], castShadow: false, transforms: monolithGlyphs, material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.3, practical: true }) }));
-      builder.add(instances.box({ name: "route-sails", size: [1, 1, 1], castShadow: false, receiveShadow: true, transforms: monolithSails, wind: treeWind(!!buildOptions.reducedMotion), material: material.fabric({ color: SILT_PALETTE.terracotta, sheen: 0.62, sheenRoughness: 0.68, roughness: 0.88 }) }));
+      builder.add(instances.custom(windCarvedMonolithSpec(), { name: "signal-monoliths", castShadow: true, receiveShadow: true, transforms: monolithBodies, material: DESERT_INST_MAT.monolithObsidian }));
+      builder.add(instances.custom(resonatorDishCapSpec(), { name: "signal-caps", castShadow: false, receiveShadow: true, transforms: monolithCaps, material: DESERT_INST_MAT.monolithBrassCap }));
+      builder.add(instances.box({ name: "signal-glyphs", size: [1, 1, 1], castShadow: false, transforms: monolithGlyphs, material: DESERT_INST_MAT.monolithJadeGlyph }));
+      builder.add(instances.custom(billowingRoutePennantSpec(), { name: "route-sails", castShadow: false, receiveShadow: true, transforms: monolithSails, wind: treeWind(!!buildOptions.reducedMotion), material: DESERT_INST_MAT.routePennantCloth }));
     }
   }
 
-  // Waiting rings are Meshy stone rings with ember runes (lit PBR, no blending), drawn as one instanced pool of MAX_RINGS; the
-  // active ring is the bright emissive beacon below.
-  builder.add(instances.model(assets.ringclean, { name: "rings", transforms: Array.from({ length: MAX_RINGS }, () => PARKED), castShadow: false }).runtime({ id: "rings" }));
+  // Waiting rings are sculpted sandstone-and-brass ring gates, drawn as one instanced pool of MAX_RINGS.
+  builder.add(instances.custom(ringGateSpec(), { name: "rings", transforms: Array.from({ length: MAX_RINGS }, () => PARKED), castShadow: false, material: DESERT_INST_MAT.ringSandstoneBrass }).runtime({ id: "rings" }));
   // Active-ring beacon: the library objective marker (dark-teal ring body, cyan rim, expanding halo, light column), sized to the 66 m rings.
   // GU47 DG-M4/H1: the inked look reserves jade for the signal (no #19e6ff cyan); `?look=original` keeps the library colours
   // GU47 phase 4 (inked): the marker matches the 24 m capture radius (48 m, not the original 66 m)
@@ -852,9 +928,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: beaconDiameter, hiddenPosition: [...FAR], ...(inked ? SIGNAL_JADE : {}) }));
   // The same marker in red, shown instead while a timed gate is shut.
   builder.addMany(prefabs.objectiveMarker({ id: "gate", diameter: beaconDiameter, hiddenPosition: [...FAR], ...GATE_SHUT }));
-  // The shell a tow objective drags behind the board (parked until the rider latches on).
-  builder.add(primitives.sphere({ name: "tow-shell", position: [...FAR], size: [3.2, 1.9, 3.2], castShadow: true, material: pbr({ color: "#e6d3ad", roughness: 0.55 }) }).runtime({ id: "tow-shell" }));
-  builder.add(primitives.sphere({ name: "tow-glow", position: [...FAR], size: [1.1, 0.5, 1.1], material: material.emissive({ color: "#ffd38a", emissiveIntensity: 2.2 }) }).runtime({ id: "tow-glow" }));
+  // Sculpted ancient brass-and-ceramic resonance vessel towed behind the sand-skiff (parked until the rider latches on).
+  for (const towNode of createTowRelicNodes([...FAR])) builder.add(towNode);
 
   for (const side of ["l", "r"]) {
     // GU47 DG-A3 (part): the inked look swaps the two cyan thruster spheres for flat jade strips under the deck (same 2 draws)
@@ -864,20 +939,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     ).runtime({ id: `thruster-${side}` }));
   }
   if (inked) {
-    builder.add(primitives.box({
-      name: "board-trim",
-      position: [0, 4, 0],
-      size: [0.14, 0.04, 1.72],
-      castShadow: false,
-      material: material.brushedMetal({ color: "#c69652", roughness: 0.26, anisotropy: 0.88, envMapIntensity: 1.35 })
-    }).runtime({ id: "board-trim" }));
-    builder.add(primitives.box({
-      name: "board-sail",
-      position: [0, 4, 0],
-      size: [0.46, 0.024, 1.32],
-      castShadow: true,
-      material: material.fabric({ color: SILT_PALETTE.terracotta, sheen: 0.68, sheenRoughness: 0.64, roughness: 0.86 })
-    }).runtime({ id: "board-sail" }));
+    builder.add(createBoardTrimNode());
+    builder.add(createBoardSailNode());
   }
   const flipbooksOn = inked && !buildOptions.low;
   if (flipbooksOn) {
@@ -929,27 +992,30 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       })
     }).runtime({ id: "signal-ripple" }));
   }
-  builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
-  builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
+  builder.add(createSandSkiffNode({ inked, scale: BOARD_SCALE }));
+  builder.add(model(assets.courier, {
+    name: "rider",
+    position: [0, 4, 0],
+    targetHeight: RIDER_HEIGHT,
+    castShadow: true,
+    ...(inked ? { materialOverrides: createCourierMaterialOverrides(inked) } : {})
+  }).runtime({ id: "rider" }));
   // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
   // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
   const blob = inked && !buildOptions.low;
   if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
 
+  const groundAt = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
   if (usesOriginalTerrain(chapter) && chapter === 0) {
-    const ground = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
-    const landmark = (asset: Parameters<typeof model>[0], name: string, x: number, z: number, scale: number, yaw: number, lift: number): void => {
-      builder.add(model(asset, { name, position: [x, ground(x, z) + lift * scale, z], rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }));
-    };
-    landmark(assets.gatehouse, "gatehouse-neri", -34, -262, 15, 0.35, 0.7);
-    landmark(assets.aqueduct, "aqueduct-east", 150, -520, 34, Math.PI / 2, 0.62);
-    landmark(assets.aqueduct, "aqueduct-west", -170, -720, 34, Math.PI / 2, 0.62);
-    landmark(assets.ringgate, "canyon-gate", 0, -1295, 30, 0, 0.62);
+    builder.add(createGatehouseNeri("gatehouse-neri", [-34, groundAt(-34, -262), -262], 0.35));
+    builder.add(createDesertViaduct("aqueduct-east", [150, groundAt(150, -520), -520], Math.PI / 2));
+    builder.add(createDesertViaduct("aqueduct-west", [-170, groundAt(-170, -720), -720], Math.PI / 2));
+    builder.add(createCanyonResonanceGate("canyon-gate", [0, groundAt(0, -1295), -1295], 0));
     for (const [i, [x, z, yaw]] of ([[85, -12, 0.4], [172, -42, -0.5]] as const).entries()) {
-      builder.add(model(assets.stall, { name: `stall-${i}`, position: [x, ground(x, z) + 0.72 * 5, z], rotation: [0, yaw, 0], scale: 5, castShadow: false, receiveShadow: true }));
+      builder.add(createBazaarStall(`stall-${i}`, [x, groundAt(x, z), z], yaw));
     }
-    for (const [i, [x, z, yaw]] of ([[-120, -640, 0.5], [135, -870, -0.8]] as const).entries()) {
-      builder.add(model(assets.watchtower, { name: `watchtower-${i}`, position: [x, ground(x, z) + 0.95 * 15, z], rotation: [0, yaw, 0], scale: 15, castShadow: false, receiveShadow: true }));
+    for (const [i, [x, z, yaw]] of ([[196, -108, -0.65], [-120, -640, 0.5], [135, -870, -0.8]] as const).entries()) {
+      builder.add(createSignalRelayTower(`watchtower-${i}`, [x, groundAt(x, z), z], yaw, inked));
     }
     let banners = 0;
     for (const objective of ch.objectives) {
@@ -957,13 +1023,20 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         if (i % 2 !== 0 || banners >= 8) return;
         const side = banners % 2 === 0 ? 1 : -1;
         const x = pt.x + side * 42, z = pt.z;
-        builder.add(model(assets.banner, { name: `banner-${banners}`, position: [x, ground(x, z) + 0.95 * 11, z], rotation: [0, side * 0.6, 0], scale: 11, castShadow: false }));
+        builder.add(createWindBannerMast(`banner-${banners}`, [x, groundAt(x, z), z], side * 0.6, banners));
         banners += 1;
       });
     }
     for (const [i, [x, z, s]] of ([[-85, -930, 24], [92, -980, 28], [-110, -1060, 26], [105, -1120, 22], [-78, -1180, 30], [88, -1230, 25]] as const).entries()) {
-      builder.add(model(assets.pillar, { name: `pillar-${i}`, position: [x, ground(x, z) + 0.9 * s, z], rotation: [0, i * 1.7, 0], scale: s, castShadow: false, receiveShadow: true }));
+      builder.add(createFlutedObeliskPillar(`pillar-${i}`, [x, groundAt(x, z), z], i * 1.7, s));
     }
+    for (const [i, [x, z, s, yaw]] of ([[235, -185, 22, 0.4], [-225, -430, 26, -0.5], [228, -790, 24, 1.1], [-210, -1160, 28, -1.2]] as const).entries()) {
+      builder.add(createStratifiedMesaSpire(`mesa-spire-${i}`, [x, groundAt(x, z), z], yaw, s, inked ? look.night : rig.night));
+    }
+  } else {
+    const midZ = -terrain.length * 0.44;
+    builder.add(createStratifiedMesaSpire("mesa-spire-east", [360, groundAt(360, midZ), midZ], 0.55, 26, inked ? look.night : rig.night));
+    builder.add(createStratifiedMesaSpire("mesa-spire-west", [-360, groundAt(-360, midZ - 180), midZ - 180], -0.7, 28, inked ? look.night : rig.night));
   }
 
   const stats: WorldStats = {

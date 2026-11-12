@@ -20,18 +20,30 @@ import {
   instances,
   lights,
   material,
-  model,
   primitives,
   scene,
   sky,
-  type AuraAssetRef,
   type AuraLutAssetRef,
   type AuraMaterialSpec,
   type AuraModelMaterialOverride,
   type AuraNodeBuilder,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, luts, textures } from "./aura-assets";
+import {
+  buildBatchedSceneryNode,
+  buildCombatDroneNode,
+  buildHeatsinkFinSpec,
+  buildLaserBoltSpec,
+  buildProximityMineNode,
+  buildSeekerMissileNode,
+  buildShockwaveRingNode,
+  buildSingleSceneryNode,
+  buildTrackWallSpec,
+  MAT_INSTANCED_FIN_ARRAY,
+  MAT_INSTANCED_WALL_ARMOR,
+  MAT_LASER_BOLT
+} from "./art/proceduralModels";
+import { ASPHALT_ROUGHNESS_MEAN, HDRI_BY_ID, luts, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec, type SceneryAnchor } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
 import {
@@ -222,17 +234,12 @@ export const LAVA_POOL_SCALE: readonly [number, number, number] = [
 /** Wall chevron emissive intensity, before the HS-15 heat gain. */
 export const CHEVRON_INTENSITY = 1.65;
 
-const asset = (key: string): AuraAssetRef<"model"> => {
-  const ref = (assets as unknown as Record<string, AuraAssetRef<"model">>)[key];
-  if (!ref) throw new Error(`thermal-drift: asset ${key} is not in apps/showcase-heatsink/src/aura-assets.ts`);
-  return ref;
-};
-
 /** Initial transforms spread along the road, so every instanced node starts with honest bounds. */
 const along = (count: number, x: number, y: number, spacing: number) =>
   Array.from({ length: count }, (_, i) => ({ position: [x, y, 8 - i * spacing] as [number, number, number] }));
 
-export const emissive = (color: string, intensity: number) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
+export const emissive = (color: string, intensity: number) =>
+  material.emissive({ color, emissive: color, emissiveIntensity: intensity, practical: true });
 export const spineMaterial = (color: string) => emissive(color, 1.45);
 
 export interface SceneOptions {
@@ -446,9 +453,9 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.spineB)),
     instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive(look.accents.lanes, 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.lanes)),
-    instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.brushedMetal({ name: "td barrier brushed metal", color: "#283244", roughness: 0.28, anisotropy: 0.86, envMapIntensity: 1.55 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
+    instances.custom(buildTrackWallSpec(), { name: IDS.walls, material: MAT_INSTANCED_WALL_ARMOR, transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
-    instances.box({ name: IDS.fins, size: HEATSINK_FIN.size, material: material.brushedMetal({ name: "td heatsink cooling fins", color: "#1c2536", roughness: 0.24, anisotropy: 0.92, envMapIntensity: 1.75 }), transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), frustumCulled: false })
+    instances.custom(buildHeatsinkFinSpec(), { name: IDS.fins, material: MAT_INSTANCED_FIN_ARRAY, transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.fins)),
     instances.box({ name: IDS.vents, size: THERMAL_VENT.size, material: chevronHeatMaterial(look.accents.primary, 2.2, reducedMotion), transforms: along(INSTANCE_COUNTS.vents, THERMAL_VENT.lateral, THERMAL_VENT.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.vents)),
@@ -460,7 +467,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.gutters)),
     instances.box({ name: IDS.shadows, size: [CONTACT_SHADOW.size, 0.01, CONTACT_SHADOW.size], material: contactShadowMaterial(CONTACT_SHADOW.opacity, CONTACT_SHADOW.size / 2), transforms: along(INSTANCE_COUNTS.shadows, 0, -60, 4), ...unshadowed })
       .runtime(game.runtimeNode(IDS.shadows)),
-    instances.box({ name: IDS.bolts, size: [0.14, 0.14, 2.8], material: emissive("#ff4d1f", 2.6), transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
+    instances.custom(buildLaserBoltSpec(), { name: IDS.bolts, material: MAT_LASER_BOLT, transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
       .runtime(game.runtimeNode(IDS.bolts)),
     instances.cone({ name: IDS.thrusters, size: [THRUSTER_PLUME.radius, THRUSTER_PLUME.length, THRUSTER_PLUME.radius], material: thrusterPlumeMaterial(THRUSTER_PLUME.length / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.thrusters, 0, -60, 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.thrusters)),
@@ -468,61 +475,30 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.rotors))
   ]);
 
-  // Shockwave ring, active missiles, and procedural 8x4 plasma / sparks flipbook burst quads.
+  // Sculpted shockwave ring, multi-material lathed seeker missiles, and procedural 8x4 plasma / sparks flipbook burst quads.
   s.addMany([
-    primitives.torus({ name: IDS.ring, size: [2.2, 2.2, 0.14], material: emissive("#35d6ff", 2.4), castShadow: false })
-      .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.ring)),
-    primitives.cylinder({ name: IDS.missile, size: [0.26, 1.9, 0.26], material: emissive("#ff4d1f", 2.4), castShadow: false })
-      .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.missile)),
-    primitives.cylinder({ name: IDS.incoming, size: [0.3, 2.1, 0.3], material: emissive("#ff2952", 2.6), castShadow: false })
-      .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.incoming)),
+    buildShockwaveRingNode(IDS.ring),
+    buildSeekerMissileNode(IDS.missile, false),
+    buildSeekerMissileNode(IDS.incoming, true),
     primitives.plane({ name: IDS.plasmaBurst, size: [3.2, 3.2, 0.02], material: flipbookBurstMaterial(getPlasmaFlipbookAtlas().texture), castShadow: false })
       .position(0, -60, 0).runtime(game.runtimeNode(IDS.plasmaBurst)),
     primitives.plane({ name: IDS.sparksBurst, size: [2.2, 2.2, 0.02], material: flipbookBurstMaterial(getSparksFlipbookAtlas().texture), castShadow: false })
       .position(0, -60, 0).runtime(game.runtimeNode(IDS.sparksBurst))
   ]);
 
-  // 1-7: playable & rival drones under multi-lobe metallic `carPaint` clearcoat lacquer + molten heat rim.
+  // 1-7: sculpted multi-material playable & rival hover-drones with tinted canopies (`castShadow: false`) and `+Z` afterburner rings.
   for (const id of DRONE_ORDER) {
-    const spec = DRONE_SPECS[id];
-    s.add(
-      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim, materialOverrides: [id === "orion" ? playerFoundryLivery(spec.color) : droneLivery(spec.color)] })
-        .position(0, 1.45, id === "orion" ? -0.4 : -24)
-        .runtime(game.runtimeNode(spec.nodeId, id === "orion" ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
-    );
+    s.add(buildCombatDroneNode(id, DRONE_SPECS[id]));
   }
-  // 8: dropped proximity mine.
-  s.add(
-    model(assets.heatsinkWeaponMine, { name: IDS.mine, role: "setDressing", scaleMode: "fit", targetMaxDimension: 1.45 })
-      .position(0, 0.35, -28).runtime(game.runtimeNode(IDS.mine))
-  );
-  // 9-24: unique single track-side anchors.
+  // 8: sculpted multi-material dropped proximity mine.
+  s.add(buildProximityMineNode(IDS.mine));
+  // 9-24: sculpted multi-material foundry megastructures, hazards, and track pickups.
   for (const anchor of SINGLE_SCENERY_ANCHORS) {
-    s.add(
-      model(asset(anchor.assetKey), { name: anchor.id, role: "setDressing", scaleMode: "fit", targetMaxDimension: anchor.maxDim, ...(UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey) ? { castShadow: false } : {}) })
-        .position(anchor.lateralX, anchor.baseY, -anchor.s).rotate(0, anchor.yaw, 0).runtime(game.runtimeNode(anchor.id))
-    );
+    s.add(buildSingleSceneryNode(anchor, !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey)));
   }
-  // 25-28: repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.model` pools.
+  // 25-28: repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.custom` pools.
   for (const batch of SCENERY_BATCHES) {
-    s.add(
-      instances.model(asset(batch.assetKey), {
-        name: batch.id,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: batch.baseMaxDim,
-        frustumCulled: false,
-        ...(!batch.castShadow ? { castShadow: false } : {}),
-        transforms: batch.anchors.map((anchor) => {
-          const uniformScale = Math.max(0.01, anchor.maxDim / batch.baseMaxDim);
-          return {
-            position: [anchor.lateralX, anchor.baseY, -anchor.s] as [number, number, number],
-            rotation: [0, anchor.yaw, 0] as [number, number, number],
-            scale: [uniformScale, uniformScale, uniformScale] as [number, number, number]
-          };
-        })
-      }).runtime(game.runtimeNode(batch.id))
-    );
+    s.add(buildBatchedSceneryNode(batch));
   }
   return s;
 }
@@ -552,5 +528,5 @@ export function droneLivery(color: string): AuraModelMaterialOverride {
   return { color: lifted, colorMode: "multiply", clearcoat: paint.clearcoat ?? 0.88, clearcoatRoughness: paint.clearcoatRoughness ?? 0.08, metallic: paint.metallic ?? 0.52, roughness: paint.roughness ?? 0.28, envMapIntensity: paint.envMapIntensity ?? 1.8, rim: DRONE_HEAT_RIM };
 }
 
-/** Model nodes in the scene (route-health budget: 32; consolidated to 28 via `instances.model`). */
-export const MODEL_NODE_COUNT = DRONE_ORDER.length + 1 + SINGLE_SCENERY_ANCHORS.length + SCENERY_BATCHES.length;
+/** Static GLB model nodes in the scene (`0`: 100% procedural multi-material meshes in WP-03). */
+export const MODEL_NODE_COUNT = 0;

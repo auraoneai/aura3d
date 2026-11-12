@@ -8,11 +8,9 @@ import {
   lights,
   looks,
   material,
-  model,
   primitives,
   scene,
   text3D,
-  type AuraAssetRef,
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
 } from "@aura3d/engine";
@@ -39,8 +37,7 @@ import { CONTACT_SIZE, DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, con
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
-import { gantryBoxes } from "./render/gantry";
-import { assets } from "./assets";
+import { gantryBoxes, gantryGeometrySpecs } from "./render/gantry";
 import { installBlackFrameGuard } from "@aura3d/debug";
 // A2: `?diag=1` shows the shared GPU diagnostics panel (draw calls, backend, tier); inert without the query parameter.
 import "../../showcase-port-shared/diag";
@@ -49,27 +46,40 @@ import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-po
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, asphaltRutSpec, concreteMaterial } from "./art/surfaces";
-import { apexBrushedAlloyMaterial, apexCanopyGlassMaterial, apexHeroPaint, apexRampDeckMaterial, apexRivalPaint, apexTrafficPaint } from "./art/paint";
+import { apexBrushedAlloyMaterial, apexRampDeckMaterial } from "./art/paint";
+import {
+  APEX_PROCEDURAL_MATERIALS,
+  buildBayRidgeMountainSpec,
+  buildBayRidgeStrataMaterial,
+  buildBoltCrystalSpec,
+  buildCarrierRampChevronSpec,
+  buildCarrierRampDeckSpec,
+  buildCarrierRampRailSpec,
+  buildHeroAeroSplitterNode,
+  buildHeroCanopyVisorNode,
+  buildHeroHeadlightNode,
+  buildHeroSupercarNode,
+  buildHeroTaillightBarNode,
+  buildPowerupEmblemSpec,
+  buildSkycarGeometries,
+  buildTrafficClassGeometries
+} from "./art/proceduralModels";
 import { createImpactRig } from "../../showcase-port-shared/feel";
 import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
-import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
+import { PYLON_ROWS, pylonGeometrySpecs, pylonLayout } from "./render/pylons";
 import {
   BILLBOARD_FACE_SIZE,
-  BILLBOARD_FRAME_SIZE,
   BILLBOARD_SLOTS,
   GANTRY_LABELS,
   GANTRY_LABEL_OFFSET,
   RING_ROWS,
-  RING_SIZE,
-  SPAN_DECK_SIZE,
-  SPAN_PIER_SIZE,
   SPAN_SLOTS,
   billboardLayout,
   ringLayout,
+  skywayDressingSpecs,
   spanLayout
 } from "./render/dressing";
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_CROWN_CAPACITY, TOWER_VARIANTS, bayRidgeTransforms, towerCrownLayout, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
-import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, displayRoll, viewOf } from "./native/presentation";
@@ -144,30 +154,8 @@ const SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1");
  */
 const APEX_LUT_URL = new URL("./assets/luts/apex-bluehour.cube", import.meta.url).pathname;
 
-/** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
-const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
-  meshyVehicles.enabled && key in meshyVehicles.refs ? ((meshyVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : fallback;
-
-/** Far-LOD Meshy model for a traffic type (drawn beyond 90 m); the `?models=0` fallbacks have no far LOD. */
-const pickFarVehicleAsset = (key: VehicleType, near: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
-  meshyVehicles.enabled && key in meshyFarVehicles.refs ? ((meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : near;
-
-const VEHICLE_ASSET: Record<VehicleType, { maxDim: number; role: "primaryVehicle" | "setDressing"; asset: AuraAssetRef<"model"> }> = {
-  sedan: { maxDim: 4.64, role: "setDressing", asset: pickVehicleAsset("sedan", assets.roadsterRushSedan) },
-  hatch: { maxDim: 4.04, role: "setDressing", asset: pickVehicleAsset("hatch", assets.roadsterRushHatch) },
-  suv: { maxDim: 4.94, role: "setDressing", asset: pickVehicleAsset("suv", assets.roadsterRushSuv) },
-  taxi: { maxDim: 4.74, role: "setDressing", asset: pickVehicleAsset("taxi", assets.roadsterRushTaxi) },
-  van: { maxDim: 5.34, role: "setDressing", asset: pickVehicleAsset("van", assets.roadsterRushVan) },
-  pickup: { maxDim: 5.58, role: "setDressing", asset: pickVehicleAsset("pickup", assets.roadsterRushPickup) },
-  boxtruck: { maxDim: 8.14, role: "setDressing", asset: pickVehicleAsset("boxtruck", assets.roadsterRushBoxtruck) },
-  bus: { maxDim: 12.22, role: "setDressing", asset: pickVehicleAsset("bus", assets.roadsterRushBus) },
-  carrier: { maxDim: 16.12, role: "primaryVehicle", asset: pickVehicleAsset("carrier", assets.roadsterRushCarrier) }
-};
-
-/** Measured from the baked Meshy GLBs at fit size: visual width over sim width. Only the two wildly wide models need a lateral squash; the rest stay within 1.3x. */
-const MODEL_WIDTH_OVER_SPEC: Partial<Record<VehicleType, number>> = { boxtruck: 1.72, carrier: 3.0 };
-const MODEL_WIDTH_FIT = 1.25;
-const TRAFFIC_YAW = trafficYawOffset(meshyVehicles.enabled);
+/** Procedural vehicles are authored facing `-Z` (`VEHICLE_SPECS` exact dimensions), so yaw offset is 0. */
+const TRAFFIC_YAW = trafficYawOffset(true);
 
 /** AO-L3 practical intensities at full night (phase 2 calibrates against the night bottom-centre cell). */
 const SODIUM_INTENSITY = 26;
@@ -201,13 +189,13 @@ const TRIM_Y = 1.07;
 /** Overhead gantry geometry, built from the collision band so what crashes the car is what is drawn (audit RR-6). */
 const GANTRY_BOXES = gantryBoxes();
 
-/** Power-ups: each kind has its own shape (audit RR-E3) and the colour its HUD timer bar uses. */
-const POWERUP_LOOK: Record<PowerupKind, { color: string; shape: "capsule" | "cone" | "sphere" | "torus" | "box"; size: Vec3 }> = {
-  air: { color: "#2f7dff", shape: "capsule", size: [0.62, 1.15, 0.62] },
-  rocket: { color: "#ff6a3d", shape: "cone", size: [0.8, 1.2, 0.8] },
-  shield: { color: "#5fe6ff", shape: "sphere", size: [1.0, 1.0, 1.0] },
-  magnet: { color: "#c8d2e0", shape: "torus", size: [1.0, 1.0, 0.34] },
-  multiplier: { color: "#ffd24d", shape: "box", size: [0.78, 0.78, 0.78] }
+/** Power-ups: each kind has its own sculpted multi-tone emblem (art/proceduralModels.ts) and HUD timer bar colour. */
+const POWERUP_LOOK: Record<PowerupKind, { color: string }> = {
+  air: { color: "#2f7dff" },
+  rocket: { color: "#ff6a3d" },
+  shield: { color: "#5fe6ff" },
+  magnet: { color: "#c8d2e0" },
+  multiplier: { color: "#ffd24d" }
 };
 
 function clamp(v: number, min: number, max: number): number {
@@ -383,8 +371,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero (GU47 phase 4: 0.3 -> 0.7 m rays,
     // so the tyres and sills sit in the shadow instead of on it)
     .add(effects.contactShadows({ length: 0.7, thickness: 0.08, steps: 16, intensity: 1, lights: "sun" }))
-    // WP-06 Eevee wet-shoulder & clearcoat screen-space reflections (roughness 0.24 <= 0.35 full-strength threshold)
-    .add(effects.screenSpaceReflections({ intensity: 0.42, maxDistance: 36, roughness: 0.24, thickness: 0.3 }))
+    // WP-06 / WP-02 Eevee wet-shoulder & clearcoat screen-space reflections
+    .add(effects.screenSpaceReflections({ intensity: 0.34, maxDistance: 36, roughness: 0.24, thickness: 0.3 }))
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
@@ -471,14 +459,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-shoulder-left",
         size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45 }), castShadow: false })
+        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45, practical: true }), castShadow: false })
       .position(-9.0, 0.012, -150)
       .runtime(game.runtimeNode("freeway-shoulder-left")),
     primitives
       .box({
         name: "freeway-shoulder-right",
         size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38 }), castShadow: false })
+        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38, practical: true }), castShadow: false })
       .position(9.0, 0.012, -150)
       .runtime(game.runtimeNode("freeway-shoulder-right")),
     primitives
@@ -524,14 +512,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         // AO-M2: LED trims on the barrier tops: tangerine on the sky-lane side, sodium amber on the other; no magenta anywhere.
         // GU47 phase 3: the left trim was cyan, the cue the sibling judge matched with another racer's glowing edge lines;
         // cyan is now only the player's own wake (identity accent).
-        material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.1 }), castShadow: false })
+        material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.1, practical: true }), castShadow: false })
       .position(-TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
       .box({
         name: "freeway-neon-trim-right",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.1 }), castShadow: false })
+        material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.1, practical: true }), castShadow: false })
       .position(TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-right")),
     // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
@@ -547,61 +535,61 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .runtime(game.runtimeNode("horizon-sky-wall"))
   ]);
 
-  // 2. Lane dashes, light poles, gantries and skyline: one instanced node each (audit RR-E1: these were 150+ separate nodes)
+  // 2. Lane dashes, cantilevered light poles, lattice gantries, Y-pier pylons, skyline and stratified coastal bay ridge
+  const gantrySpecs = gantryGeometrySpecs();
+  const pylonSpecs = pylonGeometrySpecs();
+  const dressingSpecs = skywayDressingSpecs();
   s.addMany([
     // AO-W2: recycled skid marks, oil stains and lane arrows, procedural, one instanced plane (1 draw, <= 32 live)
     instances
       .plane({ name: "apex-road-decals", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(DECAL_CAPACITY) })
       .runtime(game.runtimeNode(poolId("road-decals"))),
     instances
-      // GU47 phase 3 (distinctness): tangerine light-line dashes, the identity colour on the deck; the sibling judge matched the
-      // generic white dashes with another racer's highway
+      // GU47 phase 3 (distinctness): tangerine light-line dashes, the identity colour on the deck
       .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#ffb27a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
     instances
-      .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
+      .custom(gantrySpecs.steel, { name: "gantry-steel", material: APEX_PROCEDURAL_MATERIALS.gantryTrussSteel(), transforms: parked(GANTRY_COUNT * 3) })
       .runtime(game.runtimeNode(poolId("gantry-steel"))),
     instances
-      .box({ name: "gantry-boards", size: [1, 1, 1], material: material.pbr({ color: "#1a2a5c", roughness: 0.48, metalness: 0.18 }), transforms: parked(GANTRY_COUNT * 2) })
+      .custom(gantrySpecs.board, { name: "gantry-boards", material: APEX_PROCEDURAL_MATERIALS.gantrySignBoard(), transforms: parked(GANTRY_COUNT * 2) })
       .runtime(game.runtimeNode(poolId("gantry-boards"))),
     instances
-      .box({ name: "gantry-trims", size: [1, 1, 1], material: material.emissive({ color: "#ffe9cf", emissive: "#ffb46b", emissiveIntensity: 0.55 }), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
+      .custom(gantrySpecs.trim, { name: "gantry-trims", material: APEX_PROCEDURAL_MATERIALS.gantryLuminaireTrim(), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
       .runtime(game.runtimeNode(poolId("gantry-trims"))),
     instances
-      .cylinder({ name: "light-poles", size: [0.18, 7.6, 0.18], material: material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 }), transforms: parked(POLE_ROWS * 2) })
+      .custom(dressingSpecs.lightPole, { name: "light-poles", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("poles"))),
     instances
-      .box({ name: "light-arms", size: [1.8, 0.12, 0.12], material: material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
+      .custom(dressingSpecs.lightArm, { name: "light-arms", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pole-arms"))),
     instances
-      .sphere({ name: "light-lamps", size: [0.36, 0.18, 0.48], material: material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
+      .custom(dressingSpecs.lightLamp, { name: "light-lamps", material: APEX_PROCEDURAL_MATERIALS.lightLampEmitter(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pole-lamps"))),
-    // AO-E2: hammerhead deck piers every 40 m (render/pylons.ts): columns + cap beams, two instanced nodes
+    // AO-E2 / WP-02: sculpted fluted Y-pier columns + haunched hammerhead cap beams every 40 m (render/pylons.ts)
     instances
-      .box({ name: "deck-pylon-columns", size: [...PYLON_KIT.column.size], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS * 2) })
+      .custom(pylonSpecs.column, { name: "deck-pylon-columns", material: APEX_PROCEDURAL_MATERIALS.pylonColumnConcrete(), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pylon-columns"))),
     instances
-      .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
+      .custom(pylonSpecs.cap, { name: "deck-pylon-caps", material: APEX_PROCEDURAL_MATERIALS.pylonCapConcrete(), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
       .runtime(game.runtimeNode(poolId("pylon-caps"))),
-    // AO-W1: sodium beacon rings (GU47 phase 3: were cyan) over the piers (sky-lane edges), interchange spans every 600 m above the flight ceiling and
-    // shadowless billboard frames beside the deck (render/dressing.ts); 5 instanced nodes
+    // AO-W1 / WP-02: segmented sodium aero beacon rings, truss-braced interchange spans & space-frame billboards
     instances
-      .torus({ name: "beacon-rings", size: [...RING_SIZE], material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
+      .custom(dressingSpecs.beaconRing, { name: "beacon-rings", material: APEX_PROCEDURAL_MATERIALS.beaconAeroRing(), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("beacon-rings"))),
     instances
-      .box({ name: "interchange-span-decks", size: [...SPAN_DECK_SIZE], material: material.pbr({ color: "#2c2e36", roughness: 0.78, metalness: 0.1 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS) })
+      .custom(dressingSpecs.spanDeck, { name: "interchange-span-decks", material: APEX_PROCEDURAL_MATERIALS.spanViaductGirder(), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS) })
       .runtime(game.runtimeNode(poolId("span-decks"))),
     instances
-      .box({ name: "interchange-span-piers", size: [...SPAN_PIER_SIZE], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS * 2) })
+      .custom(dressingSpecs.spanPier, { name: "interchange-span-piers", material: APEX_PROCEDURAL_MATERIALS.pylonColumnConcrete(), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS * 2) })
       .runtime(game.runtimeNode(poolId("span-piers"))),
     instances
-      .box({ name: "billboard-frames", size: [...BILLBOARD_FRAME_SIZE], material: material.pbr({ color: "#3a3d46", roughness: 0.5, metalness: 0.6 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .custom(dressingSpecs.billboardFrame, { name: "billboard-frames", material: APEX_PROCEDURAL_MATERIALS.billboardSpaceFrame(), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-frames"))),
     instances
-      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.9 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.9, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-faces"))),
-    // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws; it replaces the
-    // borrowed 75-mesh townhouse model). No shadows: the nearest tower stands 40 m off the road.
+    // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws). No shadows.
     ...TOWER_VARIANTS.map((variant) =>
       instances
         .box({ name: `skyline-tower-${variant}`, size: [1, 1, 1], material: material.custom(towerGlassSpec(variant)), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CAPACITY_PER_VARIANT) })
@@ -614,16 +602,16 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({ name: "skyline-tower-spires", size: [1, 1, 1], material: apexBrushedAlloyMaterial("#94a3b8"), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
       .runtime(game.runtimeNode(poolId("tower-spires"))),
     instances
-      .sphere({ name: "skyline-aviation-beacons", size: [0.55, 0.55, 0.55], material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.9 }), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
+      .sphere({ name: "skyline-aviation-beacons", size: [0.55, 0.55, 0.55], material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.9, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
       .runtime(game.runtimeNode(poolId("tower-beacons"))),
     instances
-      .box({ name: "coastal-bay-ridge", size: [1, 1, 1], material: material.pbr({ color: "#191c2b", roughness: 0.92, metalness: 0.02 }), castShadow: false, receiveShadow: false, transforms: bayRidgeTransforms() })
+      .custom(buildBayRidgeMountainSpec(), { name: "coastal-bay-ridge", material: buildBayRidgeStrataMaterial(), castShadow: false, receiveShadow: false, transforms: bayRidgeTransforms() })
   ]);
 
   // AO-W1: SDF gantry labels, one per gantry slot (positioned by the frame loop)
   GANTRY_LABELS.slice(0, GANTRY_COUNT).forEach((label, i) => {
     s.add(
-      text3D(label, { backend: "sdf", size: 0.85, name: `gantry-label-${i}`, material: material.emissive({ color: "#f4f6fb", emissive: "#e8eef8", emissiveIntensity: 0.6 }), castShadow: false })
+      text3D(label, { backend: "sdf", size: 0.85, name: `gantry-label-${i}`, material: material.emissive({ color: "#f4f6fb", emissive: "#e8eef8", emissiveIntensity: 0.6, practical: true }), castShadow: false })
         .position(GANTRY_LABEL_OFFSET[0], GANTRY_LABEL_OFFSET[1], -200 - i * 155)
         .runtime(game.runtimeNode(`gantry-label-${i}`))
     );
@@ -636,61 +624,12 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   const sidePlumeMat = material.custom(plumeSpec(APEX_PLUMES.side, REDUCED_MOTION));
 
   s.addMany([
-    model(pickVehicleAsset("hero", assets.roadsterRushPlayerCar), {
-      name: "player-roadster-car",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 4.35,
-      // AO-M1: cobalt metallic clearcoat (material.carPaint values) with a warm tangerine rim (E-D); same model, same bounds
-      materialOverrides: apexHeroPaint(meshyVehicles.enabled)
-    })
-      .position(0, 0, 0)
-      .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
-
-    primitives
-      .sphere({
-        name: "player-canopy-visor",
-        size: [1.14, 0.24, 1.38],
-        material: apexCanopyGlassMaterial(),
-        castShadow: false,
-        receiveShadow: false
-      })
-      .position(0, 0.96, -0.08)
-      .runtime(game.runtimeNode("player-canopy-visor")),
-
-    primitives
-      .box({
-        name: "player-aero-splitter",
-        size: [1.74, 0.045, 0.34],
-        material: apexBrushedAlloyMaterial("#cfd8e3"),
-        castShadow: false
-      })
-      .position(0, 0.22, -2.06)
-      .runtime(game.runtimeNode("player-aero-splitter")),
-
-    primitives
-      .box({
-        name: "player-lightbar",
-        size: [1.6, 0.05, 0.06], // GU47 phase 3: a thin LED tail strip (the 4.7.0 bar read as a flat placeholder wing)
-        material: material.emissive({ color: "#ff1830", emissive: "#ff1830", emissiveIntensity: 1.85 }), castShadow: false })
-      .position(0, 0.72, 2.12)
-      .runtime(game.runtimeNode("player-lightbar")),
-
-    primitives
-      .sphere({
-        name: "player-headlight-l",
-        size: [0.26, 0.1, 0.16],
-        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 }), castShadow: false })
-      .position(-0.74, 0.56, -2.08)
-      .runtime(game.runtimeNode("player-headlight-l")),
-
-    primitives
-      .sphere({
-        name: "player-headlight-r",
-        size: [0.26, 0.1, 0.16],
-        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 }), castShadow: false })
-      .position(0.74, 0.56, -2.08)
-      .runtime(game.runtimeNode("player-headlight-r")),
+    buildHeroSupercarNode(),
+    buildHeroCanopyVisorNode(),
+    buildHeroAeroSplitterNode(),
+    buildHeroTaillightBarNode(),
+    buildHeroHeadlightNode("l"),
+    buildHeroHeadlightNode("r"),
 
     // 2 Rear Thruster Plumes
     primitives
@@ -730,7 +669,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .torus({
         name: "player-power-magnet",
         size: [1.65, 1.65, 0.08],
-        material: material.emissive({ color: "#c8d2e0", emissive: "#dfe7f2", emissiveIntensity: 1.5 }), castShadow: false })
+        material: material.emissive({ color: "#c8d2e0", emissive: "#dfe7f2", emissiveIntensity: 1.5, practical: true }), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-magnet"))
   ]);
@@ -769,37 +708,59 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     ]);
   }
 
-  // 4. Ground traffic: per type, a shadow-casting full-detail pool for the first 90 m and a shadowless far-LOD pool beyond,
-  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals. GU47 phase 4: the
-//    ramps are lit tangerine painted steel with a faint glow (the flat emissive slab read as a placeholder in every judge round).
+  // 4. Ground traffic: per type, sculpted multi-material near pools (<= 19 slots: carPaint body + studioGlass cabin + forged 5-spoke wheels)
+  //    for the first 90 m and a single-draw hardware-instanced far-LOD pool (clearcoat: 0) beyond, plus sculpted carrier ramps, brake bars and blinkers.
   for (const vType of VEHICLE_TYPES) {
-    const spec = VEHICLE_ASSET[vType];
-    const paintOverrides = apexTrafficPaint(vType);
-    for (const part of ["near", "far"] as const) {
-      s.add(
-        instances
-          .model(part === "near" ? spec.asset : pickFarVehicleAsset(vType, spec.asset), {
-            name: `traffic-${vType}-${part}`,
-            role: spec.role,
-            scaleMode: "fit",
-            targetMaxDimension: spec.maxDim,
-            materialOverrides: paintOverrides,
-            castShadow: part === "near",
-            transforms: parked(part === "near" ? NEAR_CAPACITY[vType] : POOL_CAPACITY[vType])
-          })
-          .runtime(game.runtimeNode(poolId(`traffic-${vType}-${part}`)))
-      );
-    }
+    const vGeom = buildTrafficClassGeometries(vType);
+    s.addMany([
+      instances
+        .custom(vGeom.nearBody, {
+          name: `traffic-${vType}-near`,
+          material: APEX_PROCEDURAL_MATERIALS.trafficNearBodyPaint(vType),
+          castShadow: true,
+          receiveShadow: true,
+          transforms: parked(NEAR_CAPACITY[vType])
+        })
+        .runtime(game.runtimeNode(poolId(`traffic-${vType}-near`))),
+      instances
+        .custom(vGeom.nearGlass, {
+          name: `traffic-${vType}-glass`,
+          material: APEX_PROCEDURAL_MATERIALS.trafficNearGlass(),
+          castShadow: false,
+          receiveShadow: false,
+          transforms: parked(NEAR_CAPACITY[vType])
+        })
+        .runtime(game.runtimeNode(poolId(`traffic-${vType}-glass`))),
+      instances
+        .custom(vGeom.nearTrim, {
+          name: `traffic-${vType}-trim`,
+          material: APEX_PROCEDURAL_MATERIALS.trafficNearWheelTrim(),
+          castShadow: false,
+          receiveShadow: true,
+          transforms: parked(NEAR_CAPACITY[vType])
+        })
+        .runtime(game.runtimeNode(poolId(`traffic-${vType}-trim`))),
+      instances
+        .custom(vGeom.farLod, {
+          name: `traffic-${vType}-far`,
+          material: APEX_PROCEDURAL_MATERIALS.trafficFarHardwarePbr(),
+          castShadow: false,
+          receiveShadow: false,
+          transforms: parked(POOL_CAPACITY[vType])
+        })
+        .runtime(game.runtimeNode(poolId(`traffic-${vType}-far`)))
+    ]);
   }
+  const skycarSpecs = buildSkycarGeometries();
   s.addMany([
     instances
-      .box({ name: "carrier-ramps", size: [2.38, 0.16, 6.6], material: apexRampDeckMaterial(), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
+      .custom(buildCarrierRampDeckSpec(), { name: "carrier-ramps", material: apexRampDeckMaterial(), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
       .runtime(game.runtimeNode(poolId("carrier-ramps"))),
     instances
-      .box({ name: "carrier-ramp-rails", size: [0.14, 0.28, 6.6], material: apexBrushedAlloyMaterial("#cbd5e1"), castShadow: false, transforms: parked(POOL_CAPACITY.carrier * 2) })
+      .custom(buildCarrierRampRailSpec(), { name: "carrier-ramp-rails", material: APEX_PROCEDURAL_MATERIALS.forgedAlloyMetal(), castShadow: false, transforms: parked(POOL_CAPACITY.carrier * 2) })
       .runtime(game.runtimeNode(poolId("carrier-ramp-rails"))),
     instances
-      .box({ name: "carrier-ramp-chevrons", size: [1.85, 0.04, 0.26], material: material.emissive({ color: "#ffd28a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.5 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier * 3) })
+      .custom(buildCarrierRampChevronSpec(), { name: "carrier-ramp-chevrons", material: material.emissive({ color: "#ffd28a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.5, practical: true }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier * 3) })
       .runtime(game.runtimeNode(poolId("carrier-ramp-chevrons"))),
     // GU47 phase 3 (rubric shadows: traffic read as floating): soft contact occlusion under the near traffic, the decal
     // shader's contact ellipse on its own instanced plane (+1 draw, <= TRAFFIC_CONTACT_CAPACITY live, fades by 160 m)
@@ -807,28 +768,27 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .plane({ name: "traffic-contact", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(TRAFFIC_CONTACT_CAPACITY) })
       .runtime(game.runtimeNode(poolId("traffic-contact"))),
     instances
-      .box({ name: "traffic-brake-lights", size: [1.58, 0.16, 0.09], material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 }), castShadow: false, transforms: parked(BRAKE_BAR_CAPACITY) })
+      .box({ name: "traffic-brake-lights", size: [1.58, 0.16, 0.09], material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1, practical: true }), castShadow: false, transforms: parked(BRAKE_BAR_CAPACITY) })
       .runtime(game.runtimeNode(poolId("brake-lights"))),
     instances
-      .sphere({ name: "traffic-blinkers", size: [0.28, 0.2, 0.34], material: material.emissive({ color: "#ffaa1d", emissive: "#ff9900", emissiveIntensity: 2.2 }), castShadow: false, transforms: parked(BLINKER_CAPACITY) })
+      .sphere({ name: "traffic-blinkers", size: [0.28, 0.2, 0.34], material: material.emissive({ color: "#ffaa1d", emissive: "#ff9900", emissiveIntensity: 2.2, practical: true }), castShadow: false, transforms: parked(BLINKER_CAPACITY) })
       .runtime(game.runtimeNode(poolId("blinkers")))
   ]);
 
-  // 5. Sky-lane traffic: lethal, so every sky car in the window gets a slot (audit RR-1)
+  // 5. Sky-lane traffic: sculpted aero-interceptors with ducted fans, swept winglets & canted rival-red V-tailfins
   s.addMany([
     instances
-      // AO-A2 interim: graphite paint with the rival-red rim until the WP-36 interceptor (ducted fans, far LOD) replaces the asset
-      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, materialOverrides: apexRivalPaint(), transforms: parked(POOL_CAPACITY.skyCar) })
+      .custom(skycarSpecs.nearSpec, { name: "sky-cars", material: APEX_PROCEDURAL_MATERIALS.skycarNearHardwareMetal(), castShadow: true, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
-    // sky cars beyond 90 m: the far LOD, no shadow
+    // sky cars beyond 90 m: hardware-instanced far LOD, no shadow
     instances
-      .model(meshyVehicles.enabled ? (meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>).skycar! : assets.roadsterRushSkyCar, { name: "sky-cars-far", role: "setDressing", scaleMode: "fit", targetMaxDimension: 4.3, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .custom(skycarSpecs.farSpec, { name: "sky-cars-far", material: APEX_PROCEDURAL_MATERIALS.skycarFarHardwarePbr(), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
       .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION, true)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
     instances
-      .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65, practical: true }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-halos"))),
     // AO-V1: wakes drawn game-side (render/wakes.ts): the cyan twin-thruster wake of the player (world-anchored points, so it
     // streams back past the camera and bends with lane changes) and one red streak behind each drawn rival. 2 draws.
@@ -854,22 +814,23 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .runtime(game.runtimeNode("vfx-smoke-burst"))
   ]);
 
-  // 6. Pickups: glossy metallic-crystal bolts and faceted power-ups catching sunset speculars + warm/cyan inner glow
+  // 6. Pickups: hardware-instanced faceted crystal bolts (clearcoat: 0) and sculpted multi-tone power-up emblems
   s.add(
     instances
-      .torus({ name: "pickup-bolts", size: [0.48, 0.48, 0.14], material: material.pbr({ color: "#ffd447", metalness: 0.78, roughness: 0.16, clearcoat: 1, emissive: "#ffae00", emissiveIntensity: 1.35 }), castShadow: false, transforms: parked(POOL_CAPACITY.bolt) })
+      .custom(buildBoltCrystalSpec(), { name: "pickup-bolts", material: APEX_PROCEDURAL_MATERIALS.boltCrystalHardwarePbr(), castShadow: false, transforms: parked(POOL_CAPACITY.bolt) })
       .runtime(game.runtimeNode(poolId("bolts")))
   );
   for (const kind of POWERUP_KINDS) {
     const look = POWERUP_LOOK[kind];
     s.add(
-      instances[look.shape]({
-        name: `pickup-${kind}`,
-        size: look.size,
-        material: material.pbr({ color: look.color, metalness: 0.62, roughness: 0.14, clearcoat: 1, emissive: look.color, emissiveIntensity: 1.55 }),
-        castShadow: false,
-        transforms: parked(POOL_CAPACITY.powerup[kind])
-      }).runtime(game.runtimeNode(poolId(`power-${kind}`)))
+      instances
+        .custom(buildPowerupEmblemSpec(kind), {
+          name: `pickup-${kind}`,
+          material: APEX_PROCEDURAL_MATERIALS.powerupEmblemMaterial(look.color),
+          castShadow: false,
+          transforms: parked(POOL_CAPACITY.powerup[kind])
+        })
+        .runtime(game.runtimeNode(poolId(`power-${kind}`)))
     );
   }
 
@@ -1097,9 +1058,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const pylonCaps = pool("pylon-caps", PYLON_ROWS);
 
   const trafficNear = {} as Record<VehicleType, InstancePool>;
+  const trafficNearGlass = {} as Record<VehicleType, InstancePool>;
+  const trafficNearTrim = {} as Record<VehicleType, InstancePool>;
   const trafficFar = {} as Record<VehicleType, InstancePool>;
   for (const vType of VEHICLE_TYPES) {
     trafficNear[vType] = pool(`traffic-${vType}-near`, NEAR_CAPACITY[vType]);
+    trafficNearGlass[vType] = pool(`traffic-${vType}-glass`, NEAR_CAPACITY[vType]);
+    trafficNearTrim[vType] = pool(`traffic-${vType}-trim`, NEAR_CAPACITY[vType]);
     trafficFar[vType] = pool(`traffic-${vType}-far`, POOL_CAPACITY[vType]);
   }
   const rampPool = pool("carrier-ramps", POOL_CAPACITY.carrier);
@@ -1799,13 +1764,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const isHotTail = Boolean((p._brake ?? 0) > 0.15 || (p.boostVisual ?? p.boosting) || (p.rocketTimer ?? 0) > 0);
     if (isHotTail !== lastLightbarHot) {
       lastLightbarHot = isHotTail;
-      playerHandles.lightbar.setMaterial(
-        material.emissive({
-          color: "#ff1830",
-          emissive: isHotTail ? "#ff384c" : "#ff1830",
-          emissiveIntensity: isHotTail ? 2.8 : 1.75
-        })
-      );
+      playerHandles.lightbar.setMaterial(APEX_PROCEDURAL_MATERIALS.heroTailLightbarMaterial(isHotTail));
     }
 
     const hlLeftW = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.74, 0.56, -2.08]);
@@ -2069,11 +2028,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     let groundDrawn = 0;
     for (const vType of VEHICLE_TYPES) {
       const near = trafficNear[vType];
+      const nearGlass = trafficNearGlass[vType];
+      const nearTrim = trafficNearTrim[vType];
       const far = trafficFar[vType];
       near.begin();
+      nearGlass.begin();
+      nearTrim.begin();
       far.begin();
       splitNearFar(groundSlots[vType], pz, NEAR_CAPACITY[vType], nearScratch, farScratch);
-      const widthScale = Math.min(1, MODEL_WIDTH_FIT / ((meshyVehicles.enabled ? MODEL_WIDTH_OVER_SPEC[vType] : undefined) ?? 1));
+      const widthScale = 1;
       for (let part = 0; part < 2; part++) {
         const list = part === 0 ? nearScratch : farScratch;
         const target = part === 0 ? near : far;
@@ -2099,6 +2062,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
           const vpitch = isBraking ? -0.012 * damp : 0;
 
           if (!target.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1)) continue;
+          if (part === 0) {
+            nearGlass.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1);
+            nearTrim.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1);
+          }
           groundDrawn++;
           if (part === 0) trafficContactPool.add(vx, ry(DECAL_Y + 0.003), vz, 0, vyaw, 0, vw * 1.3, contactScaleY(0), vl * 1.12);
 
@@ -2136,6 +2103,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         }
       }
       near.commit();
+      nearGlass.commit();
+      nearTrim.commit();
       far.commit();
     }
     rampPool.commit();

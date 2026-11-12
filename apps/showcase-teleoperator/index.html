@@ -1240,10 +1240,10 @@
       @media (max-width: 760px) {
         #where { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; }
         #where .coords, #where #wX { display: none; }
-        #topRightCluster { left: 8px; right: 8px; top: calc(62px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
+        #topRightCluster { left: 8px; right: 8px; top: calc(70px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
         /* Fare card and active trip: a compact sheet (18% of height), tap the title to collapse it to one line. */
         /* Fare card and trip sit under the earnings row, clear of the dial and the touch pads (C15). */
-        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
+        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(122px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
         #taxiCard.on, #taxiTrip.on { transform: none; }
         #taxiCard.min, #taxiTrip.min { max-height: 36px; }
         .tx .tx-head { margin-bottom: 4px; }
@@ -1253,8 +1253,12 @@
         .tx .who small, .tx .leg small, .tx .dst small, .tx .row small, .tx .cf small { display: none; }
         .tx .who { gap: 8px; }
         .tx .leg, .tx .dst { padding: 2px 0; }
-        #taxiPen { top: calc(108px + 18vh + 10px + env(safe-area-inset-top, 0px)); }
-        #taxiHint { top: calc(108px + 18vh + 60px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
+        #taxiPen { top: calc(122px + 18vh + 10px + env(safe-area-inset-top, 0px)); }
+        #taxiHint { top: calc(122px + 18vh + 52px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
+        #toast { top: calc(122px + 18vh + 94px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px; align-items: flex-start; }
+        #opBezel { display: none; }
+        #mpTags { clip-path: inset(290px 0 0 0); }
+        .mpTag.chip { display: none; }
         #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
         #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #menu { flex: 0 0 auto; gap: 4px; }

@@ -786,4 +786,5 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .slam-serve-strip{position:absolute;left:0;right:0;bottom:0;min-height:27px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#d7f55b;color:#0d2032;font-size:8px;font-weight:700;letter-spacing:.1em;transform:translateY(100%);transition:transform 160ms ease-out;pointer-events:none}
 .slam-serve-strip.shown{transform:none}
 .slam-serve-strip-speed{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.slam-serve-strip{min-height:20px;padding:0 8px}.slam-serve-strip-speed{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.slam-serve-strip{transition:none}}

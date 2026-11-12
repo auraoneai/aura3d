@@ -32,7 +32,13 @@ import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
-import { carModel } from "./models";
+import {
+  HERO_COURIER_WHEEL_POSES,
+  HERO_COURIER_WHEEL_RADIUS,
+  buildHeroCourierRigNode,
+  buildHeroCourierWheelNode
+} from "./vehicles";
+import { buildDropoffParcelKioskNode, dropoffKioskPose } from "./art/proceduralModels";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
 import { beamGeometry, beamSpec } from "./headlights";
@@ -202,12 +208,9 @@ function buildScene() {
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
-    s.add(carModel("car-rig", "courier", true, look.shift ? "YXZ" : undefined));
-    if (look.shift) {
-      const wheelMat = material.brushedMetal({ color: "#d6dce4", roughness: 0.24, anisotropy: 0.65 });
-      for (const id of ["courier-wheel-fl", "courier-wheel-fr", "courier-wheel-rl", "courier-wheel-rr"] as const) {
-        s.add(primitives.cylinder({ name: id, size: [0.36, 0.06, 0.36], position: [car.x, -60, car.z], rotation: [0, 0, Math.PI / 2], material: wheelMat, castShadow: false, receiveShadow: false }).runtime({ id }));
-      }
+    s.add(buildHeroCourierRigNode("car-rig", true, look.shift ? "YXZ" : undefined));
+    for (const w of HERO_COURIER_WHEEL_POSES) {
+      s.add(buildHeroCourierWheelNode(w.id, w.side, look.shift));
     }
   } else {
     s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#f2ac24", roughness: 0.22, metallic: 0.18, clearcoat: 0.95, clearcoatRoughness: 0.05, envMapIntensity: 1.4 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
@@ -216,8 +219,9 @@ function buildScene() {
     s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
   }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
-  // delivery drop-off: a glowing pad and a tall paired GLSL+WGSL energy-field beacon + objective ring in courier teal
+  // delivery drop-off: a glowing pad, sculpted parcel locker kiosk, and tall paired GLSL+WGSL energy-field beacon + objective ring in courier teal
   s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: look.shift ? padMaterial() : material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
+  s.add(buildDropoffParcelKioskNode("dropoff-kiosk"));
   s.add(primitives.cylinder({ name: "dropoff-beacon", size: look.shift ? [1.6, 70, 1.6] : [0.9, 70, 0.9], position: [car.x, -60, car.z], material: look.shift ? beaconMaterial(row.beacon) : material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
   if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: ringMaterial(), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
   // GC-H2: three SDF district banners over the avenues (static, +6 draws)
@@ -389,7 +393,9 @@ function placeTraffic(shown: Float64Array): void {
       t.position[2] = shown[3 * i + 1]!;
       t.rotation[1] = shown[3 * i + 2]!;
     });
-    node(group.id).setInstances?.(list);
+    for (const layerId of group.layerIds ?? [group.id]) {
+      node(layerId).setInstances?.(list);
+    }
   }
 }
 const trafficTransforms = new Map<string, { position: [number, number, number]; rotation: [number, number, number]; scale: number }[]>();
@@ -413,6 +419,8 @@ function placeDropoff(): void {
   const job = shift.job;
   const y = job ? 0.03 : -60;
   node("dropoff-pad").setPosition(job?.x ?? 0, y, job?.z ?? 0);
+  const kioskPose = dropoffKioskPose(job);
+  node("dropoff-kiosk").setPosition(kioskPose.x, kioskPose.y, kioskPose.z).setRotation(0, kioskPose.yaw, 0);
   node("dropoff-beacon").setPosition(job?.x ?? 0, job ? 35 : -60, job?.z ?? 0);
   if (look.shift) node("dropoff-ring").setPosition(job?.x ?? 0, job ? 0.35 : -60, job?.z ?? 0);
 }
@@ -432,7 +440,7 @@ function placeNodes(dt: number, shown: Presented): void {
   const roll = -Math.max(-0.16, Math.min(0.16, view.steer * Math.min(1, Math.abs(view.speed) / 34) * 0.09 + 0.1 * view.lean));
   // GU47 WP-28 GC-AN1 (shift look): nose dips under braking, lifts under throttle, from the presented speed only
   const pitch = look.shift ? stepPitch(pitchState, view.speed, dt, document.body.classList.contains("reduced-motion")) : 0;
-  wheelSpin = (wheelSpin + (view.speed * dt) / 0.33) % (Math.PI * 2);
+  wheelSpin = (wheelSpin + (view.speed * dt) / HERO_COURIER_WHEEL_RADIUS) % (Math.PI * 2);
   const place = (id: string, ox: number, oy: number, oz: number, extra: [number, number, number] = [0, 0, 0]) => {
     const s = Math.sin(yaw);
     const c = Math.cos(yaw);
@@ -442,12 +450,13 @@ function placeNodes(dt: number, shown: Presented): void {
   };
   if (config.models) {
     place("car-rig", 0, 0, 0);
-    if (look.shift) {
-      const steerYaw = view.steer * 0.38;
-      place("courier-wheel-fl", -0.85, 0.33, 1.34, [wheelSpin, steerYaw, Math.PI / 2]);
-      place("courier-wheel-fr", 0.85, 0.33, 1.34, [wheelSpin, steerYaw, Math.PI / 2]);
-      place("courier-wheel-rl", -0.85, 0.33, -1.32, [wheelSpin, 0, Math.PI / 2]);
-      place("courier-wheel-rr", 0.85, 0.33, -1.32, [wheelSpin, 0, Math.PI / 2]);
+    const steerYaw = view.steer * 0.38;
+    const sy = Math.sin(yaw);
+    const cy = Math.cos(yaw);
+    for (const w of HERO_COURIER_WHEEL_POSES) {
+      node(w.id)
+        .setPosition(view.x + w.ox * cy + w.oz * sy, w.oy, view.z - w.ox * sy + w.oz * cy)
+        .setRotation(pitch + wheelSpin, yaw + (w.front ? steerYaw : 0), 0);
     }
   } else {
     place("car-paint", 0, 0, 0);

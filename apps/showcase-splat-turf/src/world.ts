@@ -33,21 +33,24 @@ import { LOOK, hexToRgba8, linear, paintColorFor } from "./look";
 import {
   BALL_RADIUS,
   ballMesh,
-  botMesh,
-  boxMesh,
-  canMesh,
-  cylinderMesh,
   edgeMesh,
-  finishMesh,
-  merge,
-  propMesh,
   quadMesh,
   roadMesh,
   sphereMesh,
   stripMesh,
-  translateMesh,
   type MeshData
 } from "./meshes";
+import {
+  assembleTurfScoreboardGantryNode,
+  turfAerosolCanBodyMesh,
+  turfAerosolCanNozzleMesh,
+  turfEraserBotBeaconMesh,
+  turfEraserBotBodyMesh,
+  turfEraserBotScrubberMesh,
+  turfRoadsidePropMesh,
+  turfRollerCapsMesh,
+  turfRollerYokeMesh
+} from "./art/proceduralModels";
 import type { CameraPose, Shown } from "./presentation";
 import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
 import { addScenery } from "./scenery";
@@ -89,48 +92,7 @@ function propHash(row: number, side: number): number {
   return h - Math.floor(h);
 }
 
-/* ------------------------------------------------------------------ articulated PBR detail meshes */
-
-/** Gimbaled chrome paint-roller yoke straddling the 0.45 m roller ball (origin at ball centre). */
-function rollerYokeMesh(): MeshData {
-  return merge([
-    translateMesh(boxMesh(0.055, 0.055, 0.56), -0.52, 0.04, 0.24),
-    translateMesh(boxMesh(0.055, 0.055, 0.56), 0.52, 0.04, 0.24),
-    translateMesh(boxMesh(1.1, 0.06, 0.065), 0, 0.08, 0.52),
-    translateMesh(cylinderMesh(0.042, 0.42, 10), 0, 0.22, 0.66)
-  ]);
-}
-
-/** Clearcoat bearing endcaps clamping both ends of the paint roller. */
-function rollerCapsMesh(): MeshData {
-  return merge([
-    translateMesh(boxMesh(0.09, 0.18, 0.18), -0.49, 0, 0),
-    translateMesh(boxMesh(0.09, 0.18, 0.18), 0.49, 0, 0),
-    translateMesh(sphereMesh(0.075, 10, 8, 0, 0.42, 0.66), 0, 0, 0)
-  ]);
-}
-
-/** Chrome aerosol spray valve & collar atop each paint canister (`canMesh` lid sits at y = 0.56). */
-function canNozzleMesh(): MeshData {
-  return merge([
-    translateMesh(cylinderMesh(0.18, 0.05, 12), 0, 0.585, 0),
-    translateMesh(cylinderMesh(0.065, 0.09, 10), 0, 0.645, 0)
-  ]);
-}
-
-/** Counter-rotating notched floor-scrubber foam ring around each eraser bot base. */
-function botScrubberMesh(): MeshData {
-  return merge([
-    translateMesh(cylinderMesh(0.56, 0.09, 14), 0, 0.055, 0),
-    translateMesh(boxMesh(1.16, 0.07, 0.12), 0, 0.06, 0),
-    translateMesh(boxMesh(0.12, 0.07, 0.88), 0, 0.06, 0)
-  ]);
-}
-
-/** Glowing hazard strobe beacon mounted on top of each eraser bot dome (`y = 0.62`). */
-function botBeaconMesh(): MeshData {
-  return sphereMesh(0.11, 10, 8, 0, 0.62, 0);
-}
+/* ------------------------------------------------------------------ ink-burst billboard quad */
 
 /** Vertical XY quad facing +Z for camera-facing 32-frame ink-droplet flipbook bursts. */
 function billboardQuadMesh(size = 1): MeshData {
@@ -341,23 +303,18 @@ export function buildWorld(options: WorldOptions): World {
   addMesh("ball", ballMesh(), material.custom(PROGRAMS.ball()), { cast: true, receive: true });
   addMesh(
     "roller-yoke",
-    rollerYokeMesh(),
-    material.chrome({ color: "#f6faff", roughness: 0.024, envMapIntensity: 2.1 }),
+    turfRollerYokeMesh(),
+    material.brushedMetal({ color: "#eaf2fc", roughness: 0.15, anisotropy: 0.86, anisotropyRotation: 0.38 }),
     { cast: true, receive: true }
   );
   addMesh(
     "roller-caps",
-    rollerCapsMesh(),
+    turfRollerCapsMesh(),
     material.clearcoatPaint({ color: LOOK.roadEdge, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.4 }),
     { cast: true, receive: true }
   );
   addMesh("ball-shadow", quadMesh(1.18, 1.18), material.custom(contactShadowSpec()));
-  addMesh(
-    "finish",
-    finishMesh(),
-    material.clearcoatPaint({ color: LOOK.finish, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.55 }),
-    { cast: true, receive: true }
-  );
+  builder.add(assembleTurfScoreboardGantryNode());
 
   // Static 1,200 m wet-ink splat ribbon: 1 draw call, 0 CPU vertex rewrites!
   addMesh(
@@ -381,13 +338,13 @@ export function buildWorld(options: WorldOptions): World {
 
   const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS, null, CORRIDOR_BOUNDS);
   const edges = new Batch(edgeMesh(), CONFIG.POOL_SEGMENTS * 2, null, CORRIDOR_BOUNDS);
-  const props = new Batch(propMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1], CORRIDOR_BOUNDS);
+  const props = new Batch(turfRoadsidePropMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1], CORRIDOR_BOUNDS);
   const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS, null, CORRIDOR_BOUNDS);
-  const cans = new Batch(canMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
-  const canNozzles = new Batch(canNozzleMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
-  const bots = new Batch(botMesh(), CONFIG.POOL_BOTS, linear(LOOK.eraser), CORRIDOR_BOUNDS);
-  const botScrubbers = new Batch(botScrubberMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
-  const botBeacons = new Batch(botBeaconMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
+  const cans = new Batch(turfAerosolCanBodyMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
+  const canNozzles = new Batch(turfAerosolCanNozzleMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
+  const bots = new Batch(turfEraserBotBodyMesh(), CONFIG.POOL_BOTS, linear(LOOK.eraser), CORRIDOR_BOUNDS);
+  const botScrubbers = new Batch(turfEraserBotScrubberMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
+  const botBeacons = new Batch(turfEraserBotBeaconMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
   const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
   const inkBursts = new Batch(billboardQuadMesh(1), INK_BURST_POOL, [1, 1, 1], {
     min: [-16, -8, -48],

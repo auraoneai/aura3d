@@ -30,6 +30,7 @@ import {
   type AuraSceneNode,
   type AuraVec3
 } from "@aura3d/engine";
+import { buildManilaFestoonLampNodes, buildProceduralBleacherNodes } from "./art/proceduralModels";
 
 export type CourtId = "rucker" | "venice" | "athens" | "manila" | "shanghai" | "orbit";
 export const COURT_IDS: readonly CourtId[] = ["rucker", "venice", "athens", "manila", "shanghai", "orbit"];
@@ -437,12 +438,11 @@ export const KEY_MIN_ELEVATION_DEG = 12;
  * (below the S3 0.5 cutoff): Manila's polished concrete, Shanghai's wet asphalt, Orbit's composite deck.
  */
 export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: number; readonly paintRoughness: number; readonly ssr: number }>> = {
-  rucker: { roughness: 0.34, paintRoughness: 0.28, ssr: 0.24 },
+  rucker: { roughness: 0.32, paintRoughness: 0.26, ssr: 0.32 },
   venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
   athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
-  // phase 7: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3); phase 4's 0.45 / 0.42 / 0.5 ran at
-  // 26 % (roughness 0.45 was read as a cutoff, e6 SSR_ROUGHNESS_GATED), i.e. about 0.11-0.13 effective.
-  manila: { roughness: 0.3, paintRoughness: 0.26, ssr: 0.3 },
+  // phase 7 + WP-07: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3): 0.32 hardwood/asphalt SSR.
+  manila: { roughness: 0.3, paintRoughness: 0.26, ssr: 0.32 },
   // WP-02: Voronoi wet asphalt + SSR (replaces deprecated weather.wetGround)
   shanghai: { roughness: 0.14, paintRoughness: 0.18, ssr: 0.52 },
   orbit: { roughness: 0.22, paintRoughness: 0.2, ssr: 0.34 }
@@ -495,8 +495,16 @@ export const LOOK_BLOOM_NODE = "look bloom";
 export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const nodes = looks.nodes(rig.look, courtLookOverrides(rig)).filter((node) => {
     // effects.bloom does not keep its `name`, so the look's bloom is matched by effect kind (the court adds its own).
+    // Also strip preset depth-of-field, motion-blur and chromatic-aberration so court lines, jerseys and glass stay razor-crisp.
     const json = node.toJSON() as { name?: string; effect?: string };
-    return json.name !== LOOK_AO_NODE && json.name !== LOOK_BLOOM_NODE && json.effect !== "bloom";
+    return (
+      json.name !== LOOK_AO_NODE &&
+      json.name !== LOOK_BLOOM_NODE &&
+      json.effect !== "bloom" &&
+      json.effect !== "depth-of-field" &&
+      json.effect !== "motion-blur" &&
+      json.effect !== "chromatic-aberration"
+    );
   }) as AuraNodeBuilder<AuraSceneNode>[];
   if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
@@ -547,15 +555,10 @@ export function courtLampNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] 
       rotation: [0, Math.atan2(-p.position[0], COURT_CENTRE[2] - p.position[2]), 0] as AuraVec3,
       scale: [1.5, 0.22, 0.5] as AuraVec3
     }));
-    return [instances.box({ name: "rucker-flood-heads", transforms: panels, castShadow: false, material: material.emissive({ color: "#3a2a12", emissive: SODIUM, emissiveIntensity: LAMP_EMISSIVE, bloom: 2 }) }) as AuraNodeBuilder<AuraSceneNode>];
+    return [instances.box({ name: "rucker-flood-heads", transforms: panels, castShadow: false, material: material.emissive({ color: "#3a2a12", emissive: SODIUM, emissiveIntensity: LAMP_EMISSIVE, bloom: 2, practical: true }) }) as AuraNodeBuilder<AuraSceneNode>];
   }
   if (rig.id === "manila") {
-    const bulbs = MANILA_BULBS.map((p) => ({ position: p, scale: [0.16, 0.2, 0.16] as AuraVec3 }));
-    const strings = [-6.4, 6.4].map((x) => ({ position: [x, 5.82, 2.25] as AuraVec3, rotation: [Math.PI / 2, 0, 0] as AuraVec3, scale: [0.025, 23.5, 0.025] as AuraVec3 }));
-    return [
-      instances.sphere({ name: "manila-bulbs", transforms: bulbs, castShadow: false, material: material.emissive({ color: "#5a3a18", emissive: TUNGSTEN, emissiveIntensity: LAMP_EMISSIVE, bloom: 2 }) }) as AuraNodeBuilder<AuraSceneNode>,
-      instances.cylinder({ name: "manila-bulb-strings", transforms: strings, castShadow: false, material: material.pbr({ color: "#1b1a18", roughness: 0.7 }) }) as AuraNodeBuilder<AuraSceneNode>
-    ];
+    return buildManilaFestoonLampNodes(MANILA_BULBS, LAMP_EMISSIVE);
   }
   return [];
 }
@@ -790,22 +793,7 @@ export const BLEACHER_ROWS = 5;
  */
 export function courtBleacherNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   if (!rig.bleachers) return [];
-  const risers: { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 }[] = [];
-  const planks: { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 }[] = [];
-  for (const [x, z, yaw] of BLEACHER_STANDS) {
-    // the stand's "back" points away from the court centre (0, 4)
-    const bx = -Math.sin(yaw), bz = -Math.cos(yaw);
-    for (let r = 0; r < BLEACHER_ROWS; r++) {
-      const h = 0.45 * (r + 1);
-      const d = 0.8 * r;
-      risers.push({ position: [x + bx * d, h / 2, z + bz * d], rotation: [0, yaw, 0], scale: [10, h, 0.8] });
-      planks.push({ position: [x + bx * (d + 0.12), h + 0.04, z + bz * (d + 0.12)], rotation: [0, yaw, 0], scale: [9.6, 0.08, 0.34] });
-    }
-  }
-  return [
-    instances.box({ name: "bleacher-risers", transforms: risers, castShadow: true, receiveShadow: true, material: material.brushedMetal({ color: rig.bleachers.color, roughness: 0.38 }) } as Parameters<typeof instances.box>[0]) as unknown as AuraNodeBuilder<AuraSceneNode>,
-    instances.box({ name: "bleacher-planks", transforms: planks, castShadow: false, material: material.lacquer({ color: rig.bleachers.seat, roughness: 0.34 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>
-  ];
+  return buildProceduralBleacherNodes(BLEACHER_STANDS, BLEACHER_ROWS, rig.bleachers);
 }
 
 /**
@@ -893,9 +881,11 @@ export function courtBackdropNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode
   const spec = COURT_BACKDROP[rig.id];
   if (!spec) return [];
   const { blocks, windows, darkWindows } = courtBackdropLayout(rig.id);
-  const glass = material.physical({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.08, metalness: 0.35, clearcoat: 0.72, clearcoatRoughness: 0.1 });
+  // Keep >20-instance backdrop pools on material.pbr with clearcoat: 0 so they submit as single-draw hardware instancing.
+  const wallMat = material.pbr({ color: spec.wall, roughness: 0.88, metalness: 0, clearcoat: 0 });
+  const glass = material.pbr({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.1, metalness: 0.52, envMapIntensity: 1.35, clearcoat: 0 });
   const nodes = [
-    instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: material.physical({ color: spec.wall, roughness: 0.88, metalness: 0, sheen: 0.08 }) }) as AuraNodeBuilder<AuraSceneNode>,
+    instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: wallMat }) as AuraNodeBuilder<AuraSceneNode>,
     instances.box({ name: `${rig.id}-walkup-glass`, transforms: spec.lit ? darkWindows : [...windows, ...darkWindows], castShadow: false, material: glass }) as AuraNodeBuilder<AuraSceneNode>
   ];
   if (spec.lit) nodes.push(instances.box({ name: `${rig.id}-walkup-lit`, transforms: windows, castShadow: false, material: material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.15 }) }) as AuraNodeBuilder<AuraSceneNode>);

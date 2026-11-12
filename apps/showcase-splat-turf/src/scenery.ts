@@ -1,19 +1,31 @@
 /**
- * Splat Turf world dressing (WP-17, presentation only): the primed gesso road is a sunlit skate-park &
- * art-park causeway over a fair-weather cloud sea. Everything here is a pure function of the shown distance,
- * elapsed time, and road row, so it never reads or advances the simulation's random stream.
+ * Splat Turf world dressing (WP-16 procedural multi-material Street-Sport Ink Arena, presentation only):
+ * the primed gesso road runs through a sunlit street-sport ink arena boulevard over a fair-weather cloud sea.
+ * Everything here is a pure function of the shown distance, elapsed time, and road row, so it never reads or
+ * advances the simulation's random stream.
  *
  * Performance & draw-call consolidation:
  * - Corridor dressing batches (`keel`, `drips`, `posts`, `bulbs`, `pennants`, `islets`) carry tight `CORRIDOR_BOUNDS`
  *   with `castShadow: false, receiveShadow: false` (zero shadow-pass vertex leak).
- * - The 14 Meshy floating islands and balloons are consolidated into 6 `instances.model(...)` nodes (one per unique
- *   admitted GLB asset key) tiled across 2 seamless `SPAN` belts and scrolled via `setPosition`.
+ * - Multi-material Street-Sport Ink Arena sideline architecture (pressurized chromed ink-reservoir tanks with
+ *   translucent `material.physical` sight-glasses, skatepark bleachers with sun-sail canopies, truss speaker &
+ *   floodlight towers, aerosol monuments, inflatable turf barriers, and potted street palms) is consolidated into
+ *   2 seamless scrolling `ARENA_BELT_SPAN` belts (`assembleMultiMaterialNode` + `castShadow: false` sight-glass pass).
+ * - The 14 sky-studio islands and hot-air balloons are consolidated into 6 procedural `instances.custom` nodes
+ *   (`clearcoat: 0, sheen: 0`, zero static `.glb` assets).
  */
-import { instances, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
+import { type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
 import { Batch, CORRIDOR_BOUNDS, hexToLinear, type BatchBounds, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
-import { assets } from "./aura-model-assets";
 import { boxMesh, cylinderMesh, merge, sphereMesh, translateMesh } from "./meshes";
 import { LOOK, paintColorFor } from "./look";
+import {
+  ARENA_BELT_SPAN,
+  createTurfArenaSidelineBelts,
+  createTurfBackdropIslandNodes,
+  turfGooseneckPostMesh,
+  turfLampBulbMesh,
+  type TurfBackdropKind
+} from "./art/proceduralModels";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
@@ -81,9 +93,9 @@ function isletParts(): { mesh: MeshData; tone: number[] } {
 
 /** Paint drip hanging from y = 0: a stem and a round bead at the end (scaled per instance on y). */
 const dripMesh = (): MeshData => merge([translateMesh(cylinderMesh(0.09, 1, 6), 0, -0.5, 0), sphereMesh(0.15, 6, 4, 0, -1, 0)]);
-/** Skate-park lamp post (base at y = 0, 2.4 tall) with a cap ring; the bulb is a separate glow batch. */
-const postMesh = (): MeshData => merge([translateMesh(cylinderMesh(0.05, 2.4, 8), 0, 1.2, 0), translateMesh(cylinderMesh(0.14, 0.08, 10), 0, 2.4, 0)]);
-const bulbMesh = (): MeshData => sphereMesh(0.2, 8, 6, 0, 2.62, 0);
+/** Curved skate-arena gooseneck lamp post (`base y = 0`, reflector hood overhanging track); bulb is a separate glow batch. */
+const postMesh = (): MeshData => turfGooseneckPostMesh();
+const bulbMesh = (): MeshData => turfLampBulbMesh();
 /** Pennant: a downward triangle hanging from y = 0, 0.5 wide, facing the road. */
 function pennantMesh(): MeshData {
   const flag: MeshData = { positions: [-0.25, 0, 0, 0.25, 0, 0, 0, -0.5, 0], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1], uvs: [0, 0, 1, 0, 0.5, 1], indices: [0, 2, 1] };
@@ -119,7 +131,7 @@ class RowPool {
 
 const WINDOW_BACK = 30;
 
-export type BackdropAssetKind = keyof typeof assets;
+export type BackdropAssetKind = TurfBackdropKind;
 
 export interface Piece {
   readonly id: string;
@@ -234,36 +246,17 @@ export function addScenery(
   addBatch("pennants", pennants, programs.toonTone);
   addBatch("islets", islets, programs.toonTone);
 
-  // Consolidate all 14 backdrop islands & balloons into 6 single-draw GPU-instanced GLB nodes (2 repeating SPAN belts).
-  const instancedKinds: { readonly nodeId: string; readonly kind: BackdropAssetKind; readonly phase: number }[] = [];
-  for (let kIdx = 0; kIdx < ASSET_KINDS.length; kIdx += 1) {
-    const kind = ASSET_KINDS[kIdx]!;
-    const groupPieces = PIECES.filter((p) => p.kind === kind);
-    if (groupPieces.length === 0) continue;
-    const nodeId = `isle-group-${kind}`;
-    const transforms = [];
-    for (let tile = 0; tile < 2; tile += 1) {
-      const tileOffsetZ = -tile * SPAN;
-      for (const p of groupPieces) {
-        transforms.push({
-          position: [p.side * p.offset, p.y, NEAR - p.z0 + tileOffsetZ] as const,
-          rotation: [0, p.z0 * 0.45, 0] as const,
-          scale: 1
-        });
-      }
-    }
-    builder.add(
-      instances
-        .model(assets[kind], {
-          name: nodeId,
-          targetMaxDimension: groupPieces[0]!.size,
-          transforms,
-          castShadow: false,
-          receiveShadow: false
-        })
-        .runtime({ id: nodeId })
-    );
-    instancedKinds.push({ nodeId, kind, phase: kIdx * 1.15 });
+  // Multi-material Street-Sport Ink Arena sideline boulevard belts + translucent physical sight-glasses.
+  const arenaBelts = createTurfArenaSidelineBelts();
+  for (const belt of arenaBelts) {
+    builder.add(belt.opaqueNode);
+    builder.add(belt.glassNode);
+  }
+
+  // Consolidate all 14 backdrop islands & balloons into 6 procedural GPU-instanced nodes (zero `.glb` assets).
+  const instancedKinds = createTurfBackdropIslandNodes(PIECES, ASSET_KINDS, SPAN, NEAR);
+  for (const item of instancedKinds) {
+    builder.add(item.node);
   }
 
   /* static sunlit cloud layers: written once */
@@ -321,10 +314,11 @@ export function addScenery(
       }
       if (row % LAMP_SPACING === 0) {
         const lamp = lampPool.slot(row, side);
+        const lampYaw = sx < 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
         lampPool.rows[lamp] = row;
-        posts.place(lamp, sx * (edgeX + 0.05), 0.06, z, 0, 1, 1, 1);
+        posts.place(lamp, sx * (edgeX + 0.05), 0.06, z, lampYaw, 1, 1, 1);
         posts.setTone(lamp, hexToLinear(LOOK.roadEdge));
-        bulbs.place(lamp, sx * (edgeX + 0.05), 0.06, z, 0, 1, 1, 1);
+        bulbs.place(lamp, sx * (edgeX + 0.05), 0.06, z, lampYaw, 1, 1, 1);
         bulbs.setTone(lamp, hexToLinear(LOOK.paintColors[(row / LAMP_SPACING + side) % LOOK.paintColors.length] as string));
         for (let k = 0; k < PENNANTS_PER_SPAN; k++) {
           const t = (k + 0.5) / PENNANTS_PER_SPAN;
@@ -371,6 +365,12 @@ export function addScenery(
     retire(distance);
     for (const id of SCENERY_BATCH_IDS) node(id).setPosition(0, 0, roadZ);
     node("clouds").setPosition(0, 0, ((roadZ % CLOUD_TILE) + CLOUD_TILE) % CLOUD_TILE);
+    const arenaBaseZ = (((roadZ - 24) % ARENA_BELT_SPAN) + ARENA_BELT_SPAN) % ARENA_BELT_SPAN + 24;
+    for (const belt of arenaBelts) {
+      const bz = arenaBaseZ - belt.tileIndex * ARENA_BELT_SPAN;
+      node(belt.opaqueId).setPosition(0, 0, bz);
+      node(belt.glassId).setPosition(0, 0, bz);
+    }
     const beltZ = (((distance * 0.55) % SPAN) + SPAN) % SPAN;
     const t = reduced ? 0 : elapsed;
     for (const item of instancedKinds) {

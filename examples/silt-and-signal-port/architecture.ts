@@ -173,6 +173,13 @@ function archRelief(m: ColoredMesh, centre: V3, u: V3, n: V3, w: number, h: numb
   };
   arch(r + 0.62, lift, FRAME, r);
   arch(r, lift + 0.035, WINDOW_DARK);
+  // Proud chamfered keystone block & impost blocks at the arch springings (within <= 0.14 m relief)
+  const keyO: V3 = pt(-0.42, spring + r - 0.12, lift + 0.055);
+  gridFace(m, { o: keyO, u, v: [0, 1, 0], w: 0.84, h: 0.88, n, uSeg: 1, vSeg: 1, tile: 3, uvOffset: [0.1, 0.2], color: () => scale(FRAME, 1.04) });
+  for (const sx of [-1, 1] as const) {
+    const impO: V3 = pt(sx * (r + 0.31) - 0.38, Math.max(0, spring - 0.22), lift + 0.045);
+    gridFace(m, { o: impO, u, v: [0, 1, 0], w: 0.76, h: 0.36, n, uSeg: 1, vSeg: 1, tile: 3, uvOffset: [0.2, 0.1], color: () => scale(FRAME, 0.98) });
+  }
 }
 
 export const isAqueduct = (w: Wall): boolean => {
@@ -267,7 +274,11 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
     });
     if (h >= 6) {
       const trim = scale(hue, 1.06);
-      boxFaces(stone, w.x, w.z, w.halfX + 0.3, w.halfZ + 0.3, w.top - 0.8, w.top + 0.0, { tile: 3, seg: 12, seed: seed + 1, top: null, color: () => trim });
+      boxFaces(stone, w.x, w.z, w.halfX + 0.32, w.halfZ + 0.32, w.top - 0.8, w.top + 0.0, { tile: 3, seg: 12, seed: seed + 1, top: null, color: () => trim });
+      if (aqueduct && h >= 12) {
+        // Stepped aqueduct stringcourse & parapet coping (strictly <= 0.42 m of collider faces)
+        boxFaces(stone, w.x, w.z, w.halfX + 0.4, w.halfZ + 0.4, w.top - 0.36, w.top + 0.0, { tile: 2.5, seg: 12, seed: seed + 4, top: scale(trim, 1.03), color: () => scale(trim, 1.03) });
+      }
       boxFaces(stone, w.x, w.z, w.halfX + 0.25, w.halfZ + 0.25, w.bottom, w.bottom + plinthH, { tile: 3, seg: 12, seed: seed + 2, top: null, color: () => scale(hue, 0.7) });
     }
     if (h < 8) continue;

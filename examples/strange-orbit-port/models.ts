@@ -19,8 +19,8 @@ export const MESHY = defineModelAssets({
   pylon: meshyAsset("pylon.glb", "65a69d017ee7cbf583041f1a473ab3d74ef4a9c55b79c29a74ae2481522cec30", 1072016)
 }, { license: LICENSE, queryParam: null }).refs;
 
-/** `?meshy=0` falls back to the earlier primitive riders and props (bisecting a render problem). */
-export const MESHY_ENABLED = typeof location === "undefined" || new URLSearchParams(location.search).get("meshy") !== "0";
+/** Static Meshy `.glb` mounts retired in WP-19 in favor of multi-material procedural assemblies (`art/proceduralModels.ts`). */
+export const MESHY_ENABLED = false;
 
 /** World size (largest bounds dimension) for the riders; `model()` grounds each model at its bounds' bottom centre. */
 export const MESHY_SIZE = { bike: { target: 2.5 }, skate: { target: 1.7 } } as const;

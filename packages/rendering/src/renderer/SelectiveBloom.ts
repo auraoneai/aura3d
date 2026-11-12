@@ -322,22 +322,9 @@ export function selectiveBloomDecline(
   if (!selectiveDeviceIsBuiltin(device)) return "custom-device";
   const host = webgl2DeviceHost(device);
   if (!host) return "backend-or-v2-unavailable";
-  const mask = host.gl.getParameter(host.gl.COLOR_WRITEMASK) as boolean[] | null;
-  const viewport = host.gl.getParameter(host.gl.VIEWPORT) as Int32Array | null;
-  if (!mask || mask.length !== 4 || !Array.from(mask).every(Boolean) || host.gl.isEnabled(host.gl.SCISSOR_TEST) ||
-      !viewport || viewport.length !== 4 || viewport[0] !== 0 || viewport[1] !== 0 ||
-      viewport[2] !== target.width || viewport[3] !== target.height) return "partial-clear-or-viewport";
   if (typeof target.sampleCount !== "number" || !Number.isInteger(target.sampleCount) || target.sampleCount < 1) return "invalid-sample-count";
   if (target.colorTexture.format !== "rgba16f" && target.colorTexture.format !== "rgba32f") return "hdr-required";
   if (hasBackground) return "background";
-  const contributors = frameContributors(flags);
-  const unaudited = contributors.find((c) => !selectiveContributorContract(c, device));
-  if (unaudited) return `frame-contributor:${selectiveContributorTag(unaudited)}`;
-  if (contributors.some((c) => isStockPrd02ShadowsContributor(c) || isStockPrd02ContactShadowsContributor(c)) &&
-      depthVariantFeaturesFor(flags).some((feature) =>
-        !isStockPrd02DepthFeature(feature) && !isStockDepthVariantFeature(feature))) return "depth-feature";
-  const sourceReason = selectiveBloomSourceDecline(source);
-  if (sourceReason) return sourceReason;
   const p = post.pipeline as PostPipelineOptions | undefined;
   if (!p || typeof p !== "object" || !p.bloom || typeof p.bloom !== "object" || Array.isArray(p.bloom)) return "material-source";
   if ((p.bloom as BloomRequest).selectiveUnsupportedSource === true ||
@@ -362,5 +349,18 @@ export function selectiveBloomDecline(
   // bloom. Earlier anchors transform color without a signal contract.
   const early = blockingEarlyPass(registeredPostPasses(), p.customPasses ?? []);
   if (early) return `pre-bloom-custom-pass:${typeof early.insertAt === "string" ? early.insertAt : "unknown"}`;
+  const contributors = frameContributors(flags);
+  const unaudited = contributors.find((c) => !selectiveContributorContract(c, device));
+  if (unaudited) return `frame-contributor:${selectiveContributorTag(unaudited)}`;
+  if (contributors.some((c) => isStockPrd02ShadowsContributor(c) || isStockPrd02ContactShadowsContributor(c)) &&
+      depthVariantFeaturesFor(flags).some((feature) =>
+        !isStockPrd02DepthFeature(feature) && !isStockDepthVariantFeature(feature))) return "depth-feature";
+  const sourceReason = selectiveBloomSourceDecline(source);
+  if (sourceReason) return sourceReason;
+  const mask = host.gl.getParameter(host.gl.COLOR_WRITEMASK) as boolean[] | null;
+  const viewport = host.gl.getParameter(host.gl.VIEWPORT) as Int32Array | null;
+  if (!mask || mask.length !== 4 || !Array.from(mask).every(Boolean) || host.gl.isEnabled(host.gl.SCISSOR_TEST) ||
+      !viewport || viewport.length !== 4 || viewport[0] !== 0 || viewport[1] !== 0 ||
+      viewport[2] !== target.width || viewport[3] !== target.height) return "partial-clear-or-viewport";
   return null;
 }

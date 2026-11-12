@@ -10,8 +10,6 @@
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const FIGHTER = { role: "character", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 2048 } as const;
-const MESHY_PROP = { role: "prop", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 } as const;
-const MESHY_PROP_E = { role: "prop", maxTriangles: 20000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 } as const;
 
 export default defineArtDirection({
   id: "showcase-iron-crown",
@@ -62,54 +60,7 @@ export default defineArtDirection({
     { ...FIGHTER, assetKey: "ironcrownBoulder", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
     { ...FIGHTER, assetKey: "ironcrownSeraph", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
     { ...FIGHTER, assetKey: "ironcrownJinx", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { ...FIGHTER, assetKey: "ironcrownSovereign", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
-    { role: "prop", assetKey: "ironcrownCrown", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 2048 },
-    // WP-36 (IC47-A1): the Iron Crown brazier pillar replaces the borrowed aura-clash brazier on the Dock, Monastery and Crown.
-    { role: "prop", assetKey: "ironcrownBrazierPylon", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // Phase 9 (4.7.8): Iron Crown-owned Poly Haven CC0 props (1k glTF, BC+N+ORM) replace 14 borrowed keys; source ids in
-    // aura.assets.json provenance and the lane report.
-    { role: "prop", assetKey: "ironcrownThrone", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownKingStatue", maxTriangles: 28000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "ironcrownSearchlight", maxTriangles: 19000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownRooftopAircon", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownRooftopPowerBox", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "ironcrownStreetLamp", maxTriangles: 31000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownDockVendorCart", maxTriangles: 28000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownDockCrate", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownDockBarrel", maxTriangles: 11000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownColosseumBust", maxTriangles: 18000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 2 (2026-11-03): Meshy venue dressing (WP-36 rows crownHarbourCrane .. crownSkylineBlockB), one single-material draw each;
-    // triangle caps are the decimated counts (meshopt, 1k textures). Replaces the borrowed tea house, watchtower and jet keys.
-    { role: "backdrop", assetKey: "ironcrownHarbourCrane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "ironcrownFishingBoat", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "ironcrownHangarPlane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 3 (2026-11-04): the re-rolled pavilion (crownHallR2, sloppy-decimated 146,414 -> 26,724 tris) replaces the temple gate at the Monastery centre.
-    { role: "world", assetKey: "ironcrownHall", maxTriangles: 27000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "ironcrownShrine", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "ironcrownTowerA", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "ironcrownTowerB", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "ironcrownBackdropRidge", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "ironcrownSkylineBlockA", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "ironcrownSkylineBlockB", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 3: the re-rolled waterfront warehouse row (crownSkylineBlockCR2, 27,070 -> 21,992 tris), Dock far bank.
-    { role: "backdrop", assetKey: "ironcrownSkylineBlockC", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // Still borrowed: no CC0 catalog asset fits these without degrading the venue (lane report, Phase 9).
-    // Phase 9b: the Airstrip and Monastery keep their 4.7.7 props (the CC0 swaps lost a blind panel against 4.7.7).
-    { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
-    { role: "set-dressing", assetKey: "auroraPadBeacon", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { ...MESHY_PROP, assetKey: "bunkerBarrelMeshy" },
-    { ...MESHY_PROP, assetKey: "bunkerCrateMeshy" },
-    { ...MESHY_PROP_E, assetKey: "clashDragonStatueMeshy" },
-    { ...MESHY_PROP_E, assetKey: "courierNeonStorefrontMeshy" },
-    { ...MESHY_PROP, role: "world", assetKey: "gullsiegeGatehouseMeshy" },
-    { role: "world", assetKey: "heatsinkArch", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "heatsinkHoloBillboard", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { ...MESHY_PROP, role: "world", assetKey: "patrolCoastalRadarTowerMeshy" },
-    { role: "set-dressing", assetKey: "propBoulder", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 50000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "propRockA", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "backdrop", assetKey: "showcaseModernBuildingOne", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "showcaseModernOfficeBuilding", maxTriangles: 230000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 }
+    { ...FIGHTER, assetKey: "ironcrownSovereign", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } }
   ],
   vfx: [
     { event: "hit", kind: "ic-forge-spark" },

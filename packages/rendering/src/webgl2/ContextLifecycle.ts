@@ -381,6 +381,13 @@ export class WebGL2ContextLifecycle {
       || this.framesEnded % WebGL2ContextLifecycle.ERROR_SAMPLE_INTERVAL === 0;
   }
 
+  shouldSamplePostError(): boolean {
+    if (this.host.errorCheckMode !== "sampled") return true;
+    return this.lastError !== null
+      || this.framesEnded <= WebGL2ContextLifecycle.ERROR_WARMUP_FRAMES
+      || this.framesEnded % WebGL2ContextLifecycle.ERROR_SAMPLE_INTERVAL === 0;
+  }
+
   captureTextureUnit0(): WebGL2TextureUnit0Snapshot {
     const activeTexture = this.host.gl.getParameter(this.host.gl.ACTIVE_TEXTURE) as GLenum;
     this.host.gl.activeTexture(this.host.gl.TEXTURE0);

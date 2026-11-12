@@ -12,7 +12,16 @@ type Node = AuraSceneNode & { name?: string; role?: string; instances?: unknown[
 
 const isDraw = (node: Node) => node.kind === "primitive" || node.kind === "model";
 
-describe("iron-crown venue dressing (GU47 WP-15)", () => {
+const STAGE_PREFIX: Record<string, string> = {
+  "neo-tokyo-rooftop": "nt-",
+  "bangkok-dock": "bk-",
+  "colosseum-ruins": "co-",
+  "desert-airbase": "ab-",
+  "himalayan-monastery": "mo-",
+  "crown-arena": "cr-"
+};
+
+describe("iron-crown venue dressing (GU47 WP-15 / WP-05)", () => {
   for (const stage of STAGES) {
     const deck = (stage.dressing as Node[]).filter((node) => node.name?.startsWith(`${stage.id}-`));
     const finish = stageLook(stage.id).floor;
@@ -33,10 +42,22 @@ describe("iron-crown venue dressing (GU47 WP-15)", () => {
       expect(courses?.instances?.length).toBe(12);
     });
 
-    it(`${stage.id}: every static GLB prop consolidates its meshes per material (role primaryWorld)`, () => {
-      const props = (stage.dressing as Node[]).filter((node) => node.kind === "model" && node.name !== "cr-iron-crown");
-      expect(props.length).toBeGreaterThan(0);
-      for (const prop of props) expect(prop.role, prop.name).toBe("primaryWorld");
+    it(`${stage.id}: mounts bespoke procedural set-pieces with canonical prefix behind the fight lane (z <= -1.1) and zero static GLB props`, () => {
+      const models = (stage.dressing as Node[]).filter((node) => node.kind === "model");
+      expect(models).toHaveLength(0);
+      const prefix = STAGE_PREFIX[stage.id]!;
+      const props = (stage.dressing as (Node & { position?: readonly number[]; instances?: { position: readonly number[] }[] })[]).filter((node) =>
+        node.name?.startsWith(prefix)
+      );
+      expect(props.length).toBeGreaterThanOrEqual(8);
+      for (const prop of props) {
+        if (prop.position) {
+          expect(prop.position[2], prop.name).toBeLessThanOrEqual(-1.1);
+        }
+        for (const inst of prop.instances ?? []) {
+          expect(inst.position[2], prop.name).toBeLessThanOrEqual(-1.1);
+        }
+      }
     });
   }
 });

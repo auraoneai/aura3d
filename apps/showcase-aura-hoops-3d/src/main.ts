@@ -88,10 +88,30 @@ import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLa
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
-import { dualCourtSurfaceSpec, dualFlipbookBurstSpec, dualSwishNetSpec } from "./hoopsShaders";
+import { dualCourtSurfaceSpec, dualFlipbookBurstSpec } from "./hoopsShaders";
 import { SprayTags } from "./sprayTags";
 import { LIVE_FAN_IDLE, LIVE_FAN_IDS, courtCrowdNodes } from "./crowd";
-import { backboardTrimNodes, courtEnclosureNodes, courtSetPieceNodes, courtsideTableNodes } from "./setPieces";
+import { courtEnclosureNodes, courtSetPieceNodes, courtsideTableNodes } from "./setPieces";
+import {
+  buildAthleteRestyleOverrides,
+  buildAthensVenueShellNode,
+  buildBreakawayRimNode,
+  buildChampionshipTrophyNode,
+  buildHoopStanchionNode,
+  buildManilaBarangayCanopyNode,
+  buildOrbitPlanetEarthNode,
+  buildOrbitStationHaloNodes,
+  buildPebbledBasketballNode,
+  buildRuckerFloodlightTowerNodes,
+  buildScoreboardGantryNode,
+  buildShanghaiBundSkylineNodes,
+  buildShanghaiNeonLampNodes,
+  buildTautNetSkirtNode,
+  buildTautNetTopNode,
+  buildTemperedBackboardNode,
+  buildTubularBallCartNode,
+  buildVenicePalmTreeNodes
+} from "./art/proceduralModels";
 import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
@@ -640,14 +660,19 @@ const eventLog = game.eventLog({ label: "aura-hoops-3d events", maxEvents: 48 })
 function pushEvent(type: string, label: string, severity: "info" | "success" | "warning" = "info", value?: number): void {
   const rec = eventLog.push({ type, label, severity, value, time: game_.time, frame: framesRendered });
   if (hudTicker) {
+    const narrowMobile = typeof window !== "undefined" && window.innerWidth <= 760;
+    // Skip redundant pre-frame boot status pills on narrow portrait viewports so gameplay toasts stay crisp and compact.
+    if (narrowMobile && framesRendered === 0 && severity === "info" && (type === "mode" || type === "check")) return;
     const item = document.createElement("span");
     item.className = `tick ${severity === "success" ? "tick-success" : severity === "warning" ? "tick-warning" : ""}`;
     item.textContent = rec.label;
     hudTicker.prepend(item);
-    while (hudTicker.children.length > 4) hudTicker.lastElementChild?.remove();
+    const maxItems = narrowMobile ? 2 : 4;
+    while (hudTicker.children.length > maxItems) hudTicker.lastElementChild?.remove();
     requestAnimationFrame(() => item.classList.add("show"));
-    window.setTimeout(() => { item.classList.remove("show"); }, 3600);
-    window.setTimeout(() => { item.remove(); }, 4200);
+    const holdMs = narrowMobile ? 2200 : 3400;
+    window.setTimeout(() => { item.classList.remove("show"); }, holdMs);
+    window.setTimeout(() => { item.remove(); }, holdMs + 450);
   }
 }
 
@@ -658,11 +683,10 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
   const nodes: any[] = [];
   // GU47 phase 4 + WP-02: multi-lobe physical & custom GLSL+WGSL court floor finishes; ?look=original keeps 4.6.
   const finish = LOOK_ORIGINAL ? { roughness: 0.86, paintRoughness: 0.8 } : COURT_FLOOR_FINISH[v.id];
+  // Keep court-lines + arc/FT ticks on instancing-compatible material.pbr (clearcoat: 0) so all 58 segments submit in 1 draw!
   const lineMat = LOOK_ORIGINAL
-    ? material.pbr({ color: v.line, roughness: 0.6, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 })
-    : material.lacquer({ color: v.line, roughness: 0.3, ...(v.night ? { emissive: v.line, emissiveIntensity: 0.46 } : {}) } as any);
-  const line = (name: string, w: number, l: number, x: number, z: number) =>
-    primitives.box({ name, size: [w, 0.02, l], material: lineMat }).position(x, 0.012, z);
+    ? material.pbr({ color: v.line, roughness: 0.6, clearcoat: 0, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 })
+    : material.pbr({ color: v.line, roughness: 0.28, metalness: 0.04, clearcoat: 0, ...(v.night ? { emissive: v.line, emissiveIntensity: 0.46 } : {}) } as any);
 
   const rig = COURT_RIGS[v.id];
   const elRad = (Math.max(rig.sun.elevationDeg, 12) * Math.PI) / 180;
@@ -691,18 +715,17 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
     primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: LOOK_ORIGINAL ? material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) : material.lacquer({ color: v.paint, roughness: 0.34, opacity: 0.9 }) }).position(0, 0.006, 6.4)
   );
 
-  // Lines: boundaries, key edges, free-throw circle, 2pt arc
-  nodes.push(
-    line("line-base", COURT_X * 2, 0.12, 0, COURT_Z0),
-    line("line-far", COURT_X * 2, 0.12, 0, COURT_Z1),
-    line("line-left", 0.12, COURT_Z1 - COURT_Z0, -COURT_X, (COURT_Z0 + COURT_Z1) / 2),
-    line("line-right", 0.12, COURT_Z1 - COURT_Z0, COURT_X, (COURT_Z0 + COURT_Z1) / 2),
-    line("line-key-l", 0.1, 5.8, -2.45, 1.05),
-    line("line-key-r", 0.1, 5.8, 2.45, 1.05),
-    line("line-ft", 4.9, 0.1, 0, 3.95)
-  );
-  // Free-throw circle + 2-point arc — painted dashes along the rings, one instanced draw for all 50 (they were 50 boxes)
-  const ticks: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+  // Boundaries, key edges, free-throw line, check hash + 50 FT/2pt arc dashes batched into 1 hardware-instanced draw
+  const ticks: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [
+    { position: [0, 0.012, COURT_Z0], rotation: [0, 0, 0], scale: [COURT_X * 2, 0.02, 0.12] },
+    { position: [0, 0.012, COURT_Z1], rotation: [0, 0, 0], scale: [COURT_X * 2, 0.02, 0.12] },
+    { position: [-COURT_X, 0.012, (COURT_Z0 + COURT_Z1) / 2], rotation: [0, 0, 0], scale: [0.12, 0.02, COURT_Z1 - COURT_Z0] },
+    { position: [COURT_X, 0.012, (COURT_Z0 + COURT_Z1) / 2], rotation: [0, 0, 0], scale: [0.12, 0.02, COURT_Z1 - COURT_Z0] },
+    { position: [-2.45, 0.012, 1.05], rotation: [0, 0, 0], scale: [0.1, 0.02, 5.8] },
+    { position: [2.45, 0.012, 1.05], rotation: [0, 0, 0], scale: [0.1, 0.02, 5.8] },
+    { position: [0, 0.012, 3.95], rotation: [0, 0, 0], scale: [4.9, 0.02, 0.1] },
+    { position: [0, 0.012, CHECK_SPOT[2]], rotation: [0, 0, 0], scale: [0.6, 0.02, 0.14] }
+  ];
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2;
     ticks.push({ position: [Math.cos(a) * 1.8, 0.012, 3.95 + Math.sin(a) * 1.8], rotation: [0, -a, 0], scale: [0.09, 0.02, 0.55] });
@@ -712,63 +735,34 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
     ticks.push({ position: [Math.cos(a) * ARC_R, 0.014, Math.sin(a) * ARC_R], rotation: [0, -a, 0], scale: [0.1, 0.02, 1.15] });
   }
   nodes.push((instances as any).box({ name: "court-ticks", transforms: ticks, material: lineMat, castShadow: false }));
-  // Check hash mark
-  nodes.push(line("check-hash", 0.6, 0.14, 0, CHECK_SPOT[2]));
   return nodes;
 }
 
 function buildHoopNodes(): any[] {
   return [
-    // Admitted 3D Meshy hoop stanchion rig + backboard + rim. The source GLBs
-    // carry AI-generated camo base-colour/MR maps; override them with clean,
-    // venue-neutral hardware materials so the rim assembly reads as equipment
-    // instead of an overexposed orange smear.
-    // y 1.98 is the 4.6 placement, unchanged; the fit-grounding check only sees it now that the overrides moved to
-    // hoopMaterials.ts. Phase 2 checks the stanchion foot against the floor in a capture (lane report g07).
-    model(assets.hoopsHoopRig, { // fit-grounding: ok
-      name: "hoop-rig",
-      targetHeight: 3.95,
-      scaleMode: "fit",
-      castShadow: true,
-      receiveShadow: true,
-      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rig
-    })
-      .position(0, 1.98, -1.08)
-      .rotate(0, Math.PI, 0),
-    model(assets.hoopsBackboard, {
-      name: "hoop-backboard",
-      scaleMode: "world",
-      castShadow: true,
-      receiveShadow: true,
-      materialOverrides: hoopMaterials(LOOK_ORIGINAL).backboard
-    })
-      .position(0, 3.35, BOARD_Z)
-      .runtime(game.runtimeNode("backboard-assembly")),
-    model(assets.hoopsRim, {
-      name: "hoop-rim",
-      scaleMode: "world",
-      castShadow: true,
-      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rim
-    })
-      .position(RIM[0], RIM[1], RIM[2])
-      .runtime(game.runtimeNode("rim-assembly")),
-    ...(!LOOK_ORIGINAL ? backboardTrimNodes(BOARD_Z, RIM[1]) : []),
-    // Net: braided collar + paired GLSL+WGSL vertex-whipping diamond swish net on new look (?look=original keeps 4.6 primitives)
-    primitives.torus({
-      name: "net-top",
-      size: [0.47, 0.47, LOOK_ORIGINAL ? 0.35 : 0.22],
-      material: LOOK_ORIGINAL ? material.pbr({ color: "#e8e8e0", roughness: 0.7 }) : material.brushedMetal({ color: "#cfd5dc", roughness: 0.34 })
-    }).position(0, RIM[1] - (LOOK_ORIGINAL ? 0.1 : 0.03), 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-top")),
+    buildHoopStanchionNode(hoopMaterials(LOOK_ORIGINAL).rig, LOOK_ORIGINAL),
+    buildTemperedBackboardNode({
+      overrides: hoopMaterials(LOOK_ORIGINAL).backboard,
+      boardZ: BOARD_Z,
+      boardHalfW: BOARD_HALF_W,
+      boardY0: BOARD_Y0,
+      boardY1: BOARD_Y1,
+      rimY: RIM[1],
+      lookOriginal: LOOK_ORIGINAL
+    }).runtime(game.runtimeNode("backboard-assembly")),
+    buildBreakawayRimNode({
+      overrides: hoopMaterials(LOOK_ORIGINAL).rim,
+      rim: RIM,
+      rimR: RIM_R,
+      boardZ: BOARD_Z,
+      lookOriginal: LOOK_ORIGINAL
+    }).runtime(game.runtimeNode("rim-assembly")),
+    // Net: scalloped cord collar + paired GLSL+WGSL vertex-whipping diamond swish net
+    buildTautNetTopNode(RIM[1], LOOK_ORIGINAL).runtime(game.runtimeNode("net-top")),
     ...(LOOK_ORIGINAL
       ? [primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom"))]
       : []),
-    primitives.cylinder({
-      name: "net-skirt",
-      size: LOOK_ORIGINAL ? [0.34, 0.34, 0.34] : [0.45, 0.44, 0.45],
-      material: LOOK_ORIGINAL
-        ? material.pbr({ color: "#e8e8e0", roughness: 0.7, opacity: 0.22 })
-        : material.custom(dualSwishNetSpec(venue.id === "rucker"))
-    }).position(0, RIM[1] - 0.24, 0).runtime(game.runtimeNode("net-skirt")),
+    buildTautNetSkirtNode(RIM[1], venue.id === "rucker", LOOK_ORIGINAL).runtime(game.runtimeNode("net-skirt")),
     ...(!LOOK_ORIGINAL
       ? [
         primitives.plane({
@@ -785,9 +779,12 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true, ...(LOOK_ORIGINAL ? {} : { materialOverrides: hoopMaterials(false).ball }) })
-      .position(0, 0.98, CHECK_SPOT[2])
-      .runtime(game.runtimeNode("ball-live")),
+    buildPebbledBasketballNode({
+      overrides: LOOK_ORIGINAL ? hoopMaterials(true).ball : hoopMaterials(false).ball,
+      radius: BALL_R,
+      checkSpotZ: CHECK_SPOT[2],
+      lookOriginal: LOOK_ORIGINAL
+    }).runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
   // H47-V1 / H47-PF1: the 14 emissive trail spheres stay only on ?look=original; the new look draws one ribbon trail.
@@ -829,20 +826,13 @@ function teamKit(team: TeamId): Kit {
 }
 
 function athleteOverrides(kit: Kit): any[] {
-  const micromesh = (target: RegExp, color: string, roughness: number) => ({
-    target,
-    color,
-    colorMode: "replace",
-    replaceTextures: true,
-    roughness,
-    metallic: 0,
-    ...(LOOK_ORIGINAL ? {} : { sheen: 0.42, sheenColor: "#f7f5ef", sheenRoughness: 0.54 })
-  });
-  // -kit carries breathable micromesh jersey & socks, -shorts the shorts; -body keeps skin/face/sneaker palette maps with subtle satin sheen
+  const restyled = buildAthleteRestyleOverrides(kit, LOOK_ORIGINAL);
+  const regionTint = (target: RegExp, color: string, fallback: any) =>
+    restyled.find((entry) => String(entry.target) === String(target)) ?? { target, color, ...fallback };
   return [
-    micromesh(/-kit$/, kit.jersey, 0.66),
-    micromesh(/-shorts$/, kit.shorts, 0.7),
-    ...(LOOK_ORIGINAL ? [] : [{ target: /-body$/, roughness: 0.52, metallic: 0, clearcoat: 0.14, clearcoatRoughness: 0.38 }])
+    regionTint(/-kit$/, kit.jersey, { colorMode: "replace", replaceTextures: true }),
+    regionTint(/-shorts$/, kit.shorts, { colorMode: "replace", replaceTextures: true }),
+    ...restyled.filter((entry) => String(entry.target) !== "/-kit$/" && String(entry.target) !== "/-shorts$/")
   ];
 }
 
@@ -891,16 +881,11 @@ function buildAthlete(id: string, team: TeamId): any[] {
 }
 
 function buildCrowd(v: VenueSpec): any[] {
-  // GU47 phase 3: grounded bleachers (courtRigs.ts) replaced the borrowed seat GLB on the new look. Phase 9 (D2): the
-  // `?look=original` switch draws the same game-owned bleachers, so no court draws the showcase library's seat GLB.
   const rig = COURT_RIGS[v.id];
-  // GU47 wave 2 (H47-A1): standing Meshy fans on those bleachers, two instanced draws, new look only.
   const fans = LOOK_ORIGINAL || !rig.bleachers
     ? []
     : courtCrowdNodes(v.id, rig.bleachers.seat, {
-      fanB: assets.aura_hoops_3d_blacktopFanB,
-      fanC: assets.aura_hoops_3d_blacktopFanC,
-      // Meshy-07: six seated, animated fans in the front rows the live cameras face.
+      // Six seated, animated fans in the front rows + two sculpted `instances.custom` standing spectator pools.
       live: [assets.aura_hoops_3d_blacktopFanAPoses, assets.aura_hoops_3d_blacktopFanCPoses, assets.aura_hoops_3d_blacktopFanDPoses]
     });
   return [...courtBleacherNodes(rig), ...fans];
@@ -911,26 +896,15 @@ function buildVenueDressing(v: VenueSpec): any[] {
   const vrng = makeRng(0x9e3779 + VENUE_ORDER.indexOf(v.id) * 77);
 
   if (v.glbVenue) {
-    nodes.push(
-      model(assets.hoopsCourtShell, { name: "venue-shell", targetMaxDimension: 24, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 0.2, -22),
-    );
+    nodes.push(buildAthensVenueShellNode());
   }
 
   // Skyline ring — tall silhouettes behind play, per-venue density/tint
-  // GU47 phase 4: on the new look Rucker and Athens stand inside a ring of walk-up blocks (courtBackdropNodes); the
-  // skyline GLB (never visible in a capture) would sit inside it, so only Shanghai and ?look=original keep it.
   if (!LOOK_ORIGINAL) nodes.push(...courtBackdropNodes(COURT_RIGS[v.id]));
   if (v.id === "shanghai" || (LOOK_ORIGINAL && (v.id === "rucker" || v.id === "athens"))) {
-    nodes.push(
-      model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: 26, scaleMode: "fit", castShadow: false, receiveShadow: false })
-        .position(0, -0.5, -56)
-    );
-    if (v.id === "shanghai") {
+    nodes.push(...buildShanghaiBundSkylineNodes(v.id === "shanghai"));
+    if (v.id === "shanghai" && !realWater()) {
       nodes.push(
-        model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
-        model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
-      );
-      if (!realWater()) nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
     }
@@ -939,22 +913,18 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "venice") {
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      ...(!realWater() ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
+      ...(!realWater() ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : []),
+      ...buildVenicePalmTreeNodes()
     );
-    for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
-      nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
-    }
   }
 
   if (v.id === "manila") {
-    nodes.push(
-      model(assets.hoopsCanopy, { name: "manila-canopy", targetMaxDimension: 36, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 9.2, 4)
-    );
-    // H47-L2: under the roof the court is lit by 12 tungsten bulbs on two strings (courtRigs.ts), not floodlights.
+    nodes.push(buildManilaBarangayCanopyNode());
+    // H47-L2: under the roof the court is lit by 12 tungsten bulbs on two festoon strings (courtRigs.ts).
     if (LOOK_ORIGINAL) {
+      nodes.push(...buildRuckerFloodlightTowerNodes(true));
       for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
         nodes.push(
-          model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
           lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
         );
       }
@@ -962,9 +932,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "shanghai") {
-    for (const [x, z] of [[-9, -3.2], [9, -3.2], [-9, 11.5], [9, 11.5], [-12, 4], [12, 4]] as const) {
-      nodes.push(model(assets.hoopsLamp, { name: `neon-lamp-${x}-${z}`, targetHeight: 4.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
-    }
+    nodes.push(...buildShanghaiNeonLampNodes());
     // H47-L3: sign rect lights (courtRigs.ts) replace the two neon point fills.
     if (LOOK_ORIGINAL) {
       nodes.push(
@@ -975,15 +943,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "orbit") {
-    // GU47 phase 3: the dome GLB wraps the court in crumpled geometry (the chase eye sat inside it on both looks:
-    // stretched texture streaks, no players; blind panel). The new look draws the deck disc and rib strips instead.
-    if (LOOK_ORIGINAL) nodes.push(model(assets.hoopsOrbitArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4));
-    else nodes.push(...courtRibNodes(COURT_RIGS.orbit));
     nodes.push(
-      model(assets.hoopsCanopy, { name: "orbit-halo", targetMaxDimension: 46, castShadow: false, receiveShadow: false }).position(0, 14, -20),
-      model(assets.hoopsEarth, { name: "planet-earth", targetMaxDimension: 210, castShadow: false, receiveShadow: false })
-        .position(-60, 130, -300)
-        .runtime(game.runtimeNode("planet-earth"))
+      ...courtRibNodes(COURT_RIGS.orbit),
+      ...buildOrbitStationHaloNodes(),
+      buildOrbitPlanetEarthNode().runtime(game.runtimeNode("planet-earth"))
     );
     const starT: any[] = [];
     for (let i = 0; i < 140; i++) {
@@ -992,22 +955,20 @@ function buildVenueDressing(v: VenueSpec): any[] {
       const r = 120 + vrng() * 60;
       starT.push({ position: [Math.cos(a) * Math.cos(ph) * r, 20 + Math.sin(ph) * r, Math.sin(a) * Math.cos(ph) * r], scale: [0.5 + vrng(), 0.5 + vrng(), 0.5 + vrng()] });
     }
-    // H47-L1: the starfield HDRI is the sky now; the 140 emissive star spheres stay only on ?look=original.
     if (LOOK_ORIGINAL) nodes.push((instances as any).sphere({ name: "starfield", transforms: starT, material: material.emissive({ color: "#cfe8ff", emissive: "#cfe8ff", emissiveIntensity: 1.4 }) }));
-    // H47-L3: station rib rect lights (courtRigs.ts) replace the orbit point fill.
     if (LOOK_ORIGINAL) nodes.push(lights.point({ name: "orbit-fill", position: [0, 12, 4], color: "#7dfcff", intensity: 2.0, distance: 60 }));
     nodes.push(effects.lightCone({ name: "orbit-cone", position: [0, 10, -6], direction: [0, -1, 0.2], color: "#7dfcff", intensity: 0.25, length: 12, coneAngle: 0.5, softness: 0.6 } as any));
   }
 
   if (v.id === "rucker") {
-    for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
-      // GU47 phase 4 (WP-36 blacktopFloodlightRig): the Meshy galvanised-steel retexture on the new look, same fitted height.
-      nodes.push(model(LOOK_ORIGINAL ? assets.hoopsFloodlight : assets.hoops_blacktopFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
-      // H47-L2: four sodium spots, two shadowed, from courtRigs.ts; the 4.6 warm-white spots stay on ?look=original.
-      if (LOOK_ORIGINAL) nodes.push(lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 }));
+    nodes.push(...buildRuckerFloodlightTowerNodes(LOOK_ORIGINAL));
+    if (LOOK_ORIGINAL) {
+      for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
+        nodes.push(lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 }));
+      }
     }
     nodes.push(
-      model(assets.hoopsScoreboard, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
+      buildScoreboardGantryNode(),
       primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
     );
     // H47-H1: SDF score on the scoreboard rig, rebuilt by syncHud when the score changes.
@@ -1017,28 +978,21 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }
   }
 
-  // H47-H1: the court name painted on the apron in the court's tag colour. GU47 phase 3: on the grounded courts it moves
-  // to the far apron behind the baseline (on the near apron the chase frame cut it off in the bottom-left corner).
+  // H47-H1: the court name painted on the apron in the court's tag colour.
   if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_RIGS[v.id].surround ? COURT_Z0 - 3.2 : COURT_Z1 + 1.3));
-  // GU47 phase 3: ground to the horizon (a deck disc on Orbit) under the grounded courts.
+  // Ground to the horizon (a deck disc on Orbit) under the grounded courts.
   if (!LOOK_ORIGINAL) nodes.push(...courtSurroundNodes(COURT_RIGS[v.id]));
-  // GU47 wave 2 (H47-A2) + WP-02: 360° streetball enclosures, courtside scorer's table, benches & Meshy set-pieces.
+  // WP-07: 360° streetball enclosures, courtside scorer's table, benches & procedural venue set-pieces.
   if (!LOOK_ORIGINAL) {
     nodes.push(...courtEnclosureNodes(v.id));
     nodes.push(...courtsideTableNodes());
-    nodes.push(...courtSetPieceNodes(v.id, {
-      mural: assets.aura_hoops_3d_blacktopMuralWall,
-      lifeguardTower: assets.aura_hoops_3d_blacktopLifeguardTower,
-      corrugatedRoof: assets.aura_hoops_3d_blacktopCorrugatedRoof,
-      container: assets.aura_hoops_3d_blacktopContainer,
-      bleacher: assets.aura_hoops_3d_blacktopBleacherR2
-    }));
+    nodes.push(...courtSetPieceNodes(v.id));
   }
 
-  // Courtside dressing shared by all courts: ball rack and championship trophy (elevated on the 0.78 m scorer's table on new look)
+  // Courtside dressing shared by all courts: tubular chrome ball rack and championship trophy (elevated on the 0.78 m scorer's table)
   nodes.push(
-    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
-    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, LOOK_ORIGINAL ? 0 : 0.78, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")) // fit-grounding: ok (rests on the 0.78 m scorer's table)
+    buildTubularBallCartNode(),
+    buildChampionshipTrophyNode(LOOK_ORIGINAL).runtime(game.runtimeNode("trophy-case"))
   );
 
   // Court wear decals
@@ -1136,11 +1090,15 @@ const IES_LAB = readIesLabFlag();
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
-  const baseLookOpts = looks.appOptions(venue.look) as { renderer?: object; output?: object };
+  const baseLookOpts = looks.appOptions(venue.look) as { renderer?: object; output?: object; pixelRatio?: number };
+  const rigPost = COURT_RIGS[venue.id].post;
+  // Swap "cinematic-film" -> "arena-fight" on output.preset because "cinematic-film" injects depth-of-field + chromatic-aberration blur.
+  const crispPostPreset = rigPost === "cinematic-film" ? "arena-fight" : rigPost;
+  const nativeDpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 2;
   const defaultHoopsOutput = LOOK_ORIGINAL
     ? baseLookOpts.output
     : {
-      preset: COURT_RIGS[venue.id].post,
+      preset: crispPostPreset,
       toneMapping: "agx" as const,
       exposure: 1.02,
       dither: true,
@@ -1149,6 +1107,7 @@ try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...baseLookOpts,
+    pixelRatio: nativeDpr,
     renderer: { ...(baseLookOpts.renderer ?? {}), photometricProfiles: true, ...(labRenderer ?? {}) },
     output: { ...(defaultHoopsOutput ?? {}), ...(labOutput ?? {}) },
     ...(labWorker ? { worker: labWorker } : {}),
@@ -1788,18 +1747,36 @@ function showBanner(text: string, dur = 1.5): void {
   game_.bannerT = dur;
 }
 let msgUntil = 0;
-function showMsg(big: string, sub: string, dur = 2.1): void {
+let msgHideTimer: number | undefined;
+function showMsg(big: string, sub: string, dur = 1.2): void {
   if (msgText) msgText.textContent = big;
   if (msgSub) msgSub.textContent = sub;
   if (msgBox) msgBox.classList.add("show");
   game_.msgT = dur;
-  msgUntil = performance.now() / 1000 + dur + 0.5;
+  msgUntil = performance.now() / 1000 + dur + 0.15;
+  if (typeof window !== "undefined") {
+    if (msgHideTimer !== undefined) window.clearTimeout(msgHideTimer);
+    msgHideTimer = window.setTimeout(() => {
+      game_.msgT = 0;
+      msgBox?.classList.remove("show");
+    }, Math.max(250, Math.round(dur * 1000)));
+  }
 }
 function showPrompt(text: string, dur = 0.2): void {
   if (promptEl) { promptEl.textContent = text; promptEl.classList.add("show"); }
   game_.promptT = Math.max(game_.promptT, dur);
 }
 function flashJam(alpha = 0.85): void { if (!reducedFlash) jamFlashT = alpha; }
+
+function disableBlurPostEffects(): void {
+  const post = (auraApp as any)?.post;
+  if (!post?.setEffectEnabled) return;
+  try {
+    post.setEffectEnabled("depthOfField", false);
+    post.setEffectEnabled("motionBlur", false);
+    post.setEffectEnabled("chromaticAberration", false);
+  } catch { /* best-effort */ }
+}
 
 /** The menu overlay is a modal: when closed it is inert and hidden from assistive tech, when open it pauses play. */
 function menuIsOpen(): boolean { return Boolean(menuOverlay?.classList.contains("open")); }
@@ -1821,6 +1798,7 @@ function rebuildScene(): void {
   if (!auraApp) return;
   try {
     auraApp.setScene(buildScene(venue));
+    disableBlurPostEffects();
     resolveHandles();
     mountCourtFx();
   } catch (e) {
@@ -1961,10 +1939,21 @@ function enterLive(): void {
   game_.liveSince = game_.time;
   const h = holderAthlete();
   if (h) ball.state = "held";
-  // the ball is live: the check prompt goes away
+  // the ball is live: the check prompt goes away and any boot title card fades out promptly
   promptEl?.classList.remove("show");
   game_.promptT = 0;
-  showBanner("LIVE");
+  if (game_.msgT > 0.85) {
+    game_.msgT = 0.85;
+    msgUntil = performance.now() / 1000 + 0.9;
+    if (typeof window !== "undefined") {
+      if (msgHideTimer !== undefined) window.clearTimeout(msgHideTimer);
+      msgHideTimer = window.setTimeout(() => {
+        game_.msgT = 0;
+        msgBox?.classList.remove("show");
+      }, 850);
+    }
+  }
+  showBanner("LIVE", 1.0);
   pushEvent("phase", "ball is live", "info");
 }
 
@@ -2047,7 +2036,8 @@ function startMatch(mode: ModeId): void {
   jamDunkPending = false;
   replayRing.clear();
   sprayTags.clear();
-  broadcast.startIntro(venue.id);
+  if (!game_.autopilot) broadcast.startIntro(venue.id);
+  else broadcast.skip();
   game_.scoreHome = 0;
   game_.scoreAway = 0;
   game_.matchT = 0;
@@ -2109,7 +2099,7 @@ function startMatch(mode: ModeId): void {
   }
   const modeLabel = { quick: "QUICK PLAY", dunklab: "DUNK LAB", handleslab: "HANDLES LAB", tour: "STREET TOUR", blacktop: "BLACKTOP", studio: "PLAYER STUDIO" }[mode];
   if (hudMode) hudMode.textContent = modeLabel;
-  showMsg(modeLabel, mode === "tour" ? `ROUND OF 32 · VS ${game_.awaySquad.name}` : `${venue.label} · FIRST TO ${game_.target}`, 2.2);
+  showMsg(modeLabel, mode === "tour" ? `ROUND OF 32 · VS ${game_.awaySquad.name}` : `${venue.label} · FIRST TO ${game_.target}`, game_.autopilot ? 0.9 : 1.15);
   pushEvent("mode", `started ${modeLabel.toLowerCase()}`, "info");
 }
 
@@ -3388,8 +3378,8 @@ function syncHeadLook(a: AthleteState, anim: any, holdsBall: boolean, dt: number
   const wants = !LOOK_ORIGINAL && !holdsBall && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
     a.stumble <= 0 && a.actionUntil <= 0;
   const head = wants ? anim.socket?.("Head") : undefined;
-  const neck = wants ? anim.socket?.("Neck") : undefined;
-  const parent = neck?.valid === true ? neck : wants ? anim.socket?.("Chest") : undefined;
+  // The 15-joint streetball rig parents Head directly under Chest (no "Neck" bone).
+  const parent = wants ? anim.socket?.("Chest") : undefined;
   if (!wants || head?.valid !== true || parent?.valid !== true) {
     if (headLookOn.delete(a.nodeId)) pose.clear?.("Head");
     return;
@@ -3752,7 +3742,11 @@ function publishEvidence(force = false): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight", "aura_hoops_3d_blacktopFanB", "aura_hoops_3d_blacktopFanC", "aura_hoops_3d_blacktopMuralWall", "aura_hoops_3d_blacktopLifeguardTower", "aura_hoops_3d_blacktopCorrugatedRoof", "aura_hoops_3d_blacktopContainer"
+      "hoopsAthleteGuardKit",
+      "hoopsAthleteBigKit",
+      "aura_hoops_3d_blacktopFanAPoses",
+      "aura_hoops_3d_blacktopFanCPoses",
+      "aura_hoops_3d_blacktopFanDPoses"
     ]
   };
   publishBeacon(evidence);
@@ -3969,9 +3963,9 @@ function frame(dtRaw: number): void {
   netTop?.setScale([netS, netS, netS]);
   netBottom?.setScale([1 + Math.max(0, netPulse) * 0.8, 1 + Math.max(0, netPulse) * 0.8, 1]);
   if (LOOK_ORIGINAL) {
-    netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
+    netSkirt?.setScale([0.34 * (1 + netPulse * 0.3), 0.34 * (1 + netPulse * 0.55), 0.34 * (1 + netPulse * 0.3)]);
   } else {
-    netSkirt?.setScale([1, 1, 1]);
+    netSkirt?.setScale([0.47, 0.44, 0.47]);
     try { (netSkirt as any)?.setUniform?.("swishState", [Math.max(0, netPulse), game_.time]); } catch { /* custom uniform best-effort */ }
   }
   if (rimSparksCard) {
@@ -4113,19 +4107,11 @@ function drawReplayFrame(t: number): BroadcastV3 | null {
   placeBall(f.ball[0], f.ball[1], f.ball[2]);
   return f.ball;
 }
-/** DOF (focused on the subject) and motion blur only while a broadcast shot runs (H47-P2, E-C runtime toggles). */
+/** Keep court lines, glass backboard, bleachers and jerseys razor-crisp on both live cameras and broadcast rails. */
 function setBroadcastPost(on: boolean, eye?: BroadcastV3, focus?: BroadcastV3): void {
-  const post = (auraApp as any)?.post;
-  if (!post?.setEffectEnabled) return;
-  try {
-    const want = broadcast.post(eye, focus);
-    if (on && want.focusDistance !== undefined) post.setEffect("depthOfField", { focusDistance: want.focusDistance, aperture: 0.5, maxBlur: 4 });
-    if (on !== broadcastPostOn) {
-      post.setEffectEnabled("depthOfField", on && want.depthOfField);
-      post.setEffectEnabled("motionBlur", on && want.motionBlur);
-      broadcastPostOn = on;
-    }
-  } catch { /* post toggles best-effort */ }
+  void broadcast.post(eye, focus);
+  broadcastPostOn = on;
+  disableBlurPostEffects();
 }
 /**
  * H47-C1: run the intro rail or the Jam-dunk replay this frame. The sim is held (no steps) while a shot runs; returns false
@@ -4213,6 +4199,7 @@ function setVenue(vId: VenueId, silent = false): void {
     try {
       sprayTags.clear();
       auraApp.setScene(buildScene(venue));
+      disableBlurPostEffects();
       resolveHandles();
       mountCourtFx();
     } catch (e) {
@@ -4220,7 +4207,7 @@ function setVenue(vId: VenueId, silent = false): void {
     }
   }
   if (!silent) {
-    showMsg(venue.label, venue.lookLabel, 1.8);
+    showMsg(venue.label, venue.lookLabel, 1.1);
     pushEvent("venue", `court: ${venue.label.toLowerCase()}`, "info");
   }
 }
@@ -4422,6 +4409,7 @@ void Promise.resolve(auraApp.ready()).then(() => {
   // B2: report which backend is active and the first-frame readiness on the QA hook (tolerates apps without `readiness()`).
   const qaHook = ((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ??= {});
   void publishBackendReport(auraApp as unknown as Parameters<typeof publishBackendReport>[0], qaHook);
+  disableBlurPostEffects();
   resolveHandles();
   for (const a of athletes) syncAthlete(a, 0);
   updateCamera(0.016);

@@ -6,7 +6,7 @@
 // venue's post nodes. applyVenue still re-tints and toggles the dressing handles (null-safe) after a rebuild.
 
 import {
-  camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
+  camera, decals, effects, game, geometry, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
   type AuraAssetRef, type AuraLookOverrides
 } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
@@ -20,6 +20,33 @@ import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
+import {
+  buildBallTrolleyNode,
+  buildBroadcastCraneNode,
+  buildChampionshipTrophyNode,
+  buildCornerPennantGeometry,
+  buildCornerPoleGeometry,
+  buildFifaGoalFrameNode,
+  buildFloodlightTowerNode,
+  buildGlacierArchDomeNode,
+  buildGoalNetBackGeometry,
+  buildGoalNetRoofGeometry,
+  buildGoalNetSideGeometry,
+  buildHoardingCabinetGeometry,
+  buildMatchBallNode,
+  buildPlayerTunnelNode,
+  buildRoofTrussGeometry,
+  buildScoreboardGantryNode,
+  buildStadiumBowlUpperNode,
+  buildStandTierGeometry,
+  buildSupporterHeadGeometry,
+  buildSupporterScarfGeometry,
+  buildSupporterTorsoGeometry,
+  buildTechnicalDugoutNode,
+  buildTrophyPlinthCollarNode,
+  buildVenueBackdropNodes,
+  buildWaverSupporterGeometry
+} from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { createFlipbookAtlas } from "../../../showcase-port-shared/vfx-pack";
 import { WGSL_CLIP, WGSL_INSTANCE_INPUTS, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
@@ -76,10 +103,6 @@ export function fcEngineGates(search: string = typeof location === "undefined" ?
 }
 
 const HIDDEN = 0.0001;
-/** GU47 phase 9: the team bench repainted storm navy (base-colour map dropped; the wood normal map stays). */
-const TEAM_BENCH_PAINT = { color: "#22344e", colorMode: "replace", replaceTextures: true, roughness: 0.72, metallic: 0 } as const;
-/** GU47 phase 9: the ball crate's grey plastic tinted toward the lime game accent (the scuffs in the map stay). */
-const BALL_CRATE_TINT = { color: "#c8f04a", colorMode: "multiply", roughness: 0.6 } as const;
 
 /** `?dome=off` hides the Glacier dome on any look path (QA A/B). */
 function domeOn(search: string = typeof location === "undefined" ? "" : location.search): boolean {
@@ -293,14 +316,12 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 /** Night venues: intensity of the three secondary tower spots relative to the main-stand flood. */
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
-/** The 4.6.2 floods: a pylon, an unshadowed spot and a 0.3 cone on each of the four towers (hybrid: spots x `scale`). */
+/** The 4.6.2 floods: a procedural lattice tower, an unshadowed spot and a 0.3 cone on each of the four towers (hybrid: spots x `scale`). */
 function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
-      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
-        .position(x, 0, z)
-        .rotate(0, Math.atan2(-x, -z), 0),
+      buildFloodlightTowerNode(i, x, z, v.floodColor, FLOOD_HEAD_Y),
       lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
         ...(i === shadowTower ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {}) } as any),
       effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: coneIntensity, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
@@ -333,11 +354,7 @@ function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
-    nodes.push(
-      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
-        .position(x, 0, z)
-        .rotate(0, Math.atan2(-x, -z), 0)
-    );
+    nodes.push(buildFloodlightTowerNode(i, x, z, vl.floodColor, FLOOD_HEAD_Y));
     if (vl.cones > 0) {
       nodes.push(
         effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: vl.floodColor, intensity: vl.cones, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
@@ -696,7 +713,7 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   }
 
   // corner flags + arc quarter-marks
-  const flagMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.9 });
+  const flagMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.9, practical: true });
   if (m === "original") {
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       nodes.push(
@@ -709,26 +726,20 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   } else {
     const corners = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => [sx * (PITCH_HX - 0.15), sz * (PITCH_HZ - 0.15)] as const));
     nodes.push(
-      (instances as any).cylinder({
-        name: "fc-corner-poles", size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }),
+      instances.custom(buildCornerPoleGeometry(), {
+        name: "fc-corner-poles",
+        material: material.pbr({ color: "#f2f0e2", roughness: 0.36, metalness: 0.08, clearcoat: 0, sheen: 0 }),
         transforms: corners.map(([x, z]) => ({ position: [x, 0.65, z] }))
       }),
-      (instances as any).box({
-        name: "fc-corner-flags", size: [0.22, 0.16, 0.02], material: flagMat,
-        transforms: corners.map(([x, z]) => ({ position: [x, 1.28, z] }))
+      instances.custom(buildCornerPennantGeometry(), {
+        name: "fc-corner-flags",
+        material: flagMat,
+        transforms: corners.map(([x, z]) => ({ position: [x, 1.22, z], rotation: [0, x > 0 ? Math.PI : 0, 0] }))
       })
     );
   }
   return nodes;
 }
-
-const MATCH_BALL_FINISH = {
-  color: "#ffffff",
-  colorMode: "multiply",
-  roughness: 0.16,
-  metallic: 0.02,
-  rim: { color: "#eef6ff", power: 4.5, intensity: 0.34 }
-} as const;
 
 let turfDustAtlasCache: ReturnType<typeof createFlipbookAtlas> | null = null;
 let goalSparksAtlasCache: ReturnType<typeof createFlipbookAtlas> | null = null;
@@ -743,53 +754,38 @@ function goalSparksAtlas() {
 
 function goalNodes(sx: -1 | 1, hybrid = false, accentHex = "#d8ff3e"): any[] {
   const gx = sx * PITCH_HX;
-  // Painted posts and the net catch the floods; a faint self-glow only (<= 0.1, the art-direction emissive-fill limit).
-  // WP-04 hybrid: powder-coated white aluminium posts (clearcoatPaint) + derivative-AA hexagonal woven nylon net.
-  const postMat = hybrid
-    ? material.clearcoatPaint({ color: "#f6f8fc", roughness: 0.12, clearcoat: 0.92, clearcoatRoughness: 0.08, envMapIntensity: 1.35 })
-    : material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
   const netMat = hybrid
     ? material.custom(goalNetShaderSpec(accentHex))
     : material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.08, roughness: 0.85, opacity: 0.42 });
   const backX = gx + sx * GOAL_DEPTH;
-  const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
-  const goalScaleY = GOAL_H / 1.282;
-  const goalScaleZ = GOAL_DEPTH / 0.8;
   return [
-    // FC-05: one scale only. The fit target equals the GLB's own largest side (1.897 m), so the fit is 1x and the
-    // model stays centred and base-at-origin; the per-axis scale then stretches it to the 7.6 x 2.85 x 2.6 m frame.
-    // The old targetMaxDimension 8.8 multiplied in a second 4.64x and drew a 35 m net.
-    model(assets.fcSoccerGoalNetMeshy, { name: `fc-goal-mesh-${sx}`, targetMaxDimension: GOAL_NET_GLB_MAX } as any)
-      .position(gx + sx * (GOAL_DEPTH * 0.48), 0, 0)
-      .rotate(0, -sx * (Math.PI / 2), 0)
-      .scale([goalScaleX, goalScaleY, goalScaleZ])
-      .runtime(gameRuntime(`fc-goal-mesh-${sx}`)),
-    primitives.cylinder({ name: `post-${sx}-n`, size: [0.24, GOAL_H + 0.18, 0.24], material: postMat })
-      .position(gx, GOAL_H / 2, -GOAL_HALF_W),
-    primitives.cylinder({ name: `post-${sx}-s`, size: [0.24, GOAL_H + 0.18, 0.24], material: postMat })
-      .position(gx, GOAL_H / 2, GOAL_HALF_W),
-    primitives.cylinder({ name: `bar-${sx}`, size: [0.24, GOAL_HALF_W * 2 + 0.36, 0.24], material: postMat })
-      .position(gx, GOAL_H + 0.04, 0).rotate(Math.PI / 2, 0, 0),
-    // back frame stays
-    primitives.cylinder({ name: `stay-${sx}-n`, size: [0.14, GOAL_H + 0.4, 0.14], material: postMat })
-      .position(backX, (GOAL_H + 0.4) / 2, -GOAL_HALF_W).rotate(0, 0, sx * 0.22),
-    primitives.cylinder({ name: `stay-${sx}-s`, size: [0.14, GOAL_H + 0.4, 0.14], material: postMat })
-      .position(backX, (GOAL_H + 0.4) / 2, GOAL_HALF_W).rotate(0, 0, sx * 0.22),
-    primitives.box({ name: `base-back-${sx}`, size: [0.18, 0.14, GOAL_HALF_W * 2 + 0.24], material: postMat })
-      .position(backX, 0.07, 0),
-    // net: back panel + roof + side panels (thin boxes for 3D net enclosure)
-    primitives.box({ name: `net-back-${sx}`, size: [0.05, GOAL_H, GOAL_HALF_W * 2 + 0.2], material: netMat })
-      .position(backX, GOAL_H / 2, 0)
-      .runtime(gameRuntime(`net-back-${sx}`)),
-    primitives.box({ name: `net-roof-${sx}`, size: [GOAL_DEPTH, 0.05, GOAL_HALF_W * 2 + 0.2], material: netMat })
-      .position(gx + sx * GOAL_DEPTH / 2, GOAL_H + 0.01, 0)
-      .runtime(gameRuntime(`net-roof-${sx}`)),
-    primitives.box({ name: `net-n-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.05], material: netMat })
-      .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, -GOAL_HALF_W)
-      .runtime(gameRuntime(`net-n-${sx}`)),
-    primitives.box({ name: `net-s-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.05], material: netMat })
-      .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, GOAL_HALF_W)
-      .runtime(gameRuntime(`net-s-${sx}`))
+    // WP-09 / FC-05: procedural multi-material FIFA goalframe built directly at exact [2.6, 2.85, 7.6] m bounds (scale 1x).
+    buildFifaGoalFrameNode(sx, accentHex).runtime(gameRuntime(`fc-goal-mesh-${sx}`)),
+    // Contoured subdivided 3D goal-net enclosure panels driven by `goalNetShaderSpec` + `goalRipple`
+    geometry.custom(buildGoalNetBackGeometry(sx), {
+      name: `net-back-${sx}`,
+      material: netMat,
+      position: [backX, GOAL_H / 2, 0],
+      castShadow: false
+    }).runtime(gameRuntime(`net-back-${sx}`)),
+    geometry.custom(buildGoalNetRoofGeometry(sx), {
+      name: `net-roof-${sx}`,
+      material: netMat,
+      position: [gx + sx * GOAL_DEPTH / 2, GOAL_H - 0.02, 0],
+      castShadow: false
+    }).runtime(gameRuntime(`net-roof-${sx}`)),
+    geometry.custom(buildGoalNetSideGeometry(sx, -1), {
+      name: `net-n-${sx}`,
+      material: netMat,
+      position: [gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, -GOAL_HALF_W + 0.06],
+      castShadow: false
+    }).runtime(gameRuntime(`net-n-${sx}`)),
+    geometry.custom(buildGoalNetSideGeometry(sx, 1), {
+      name: `net-s-${sx}`,
+      material: netMat,
+      position: [gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, GOAL_HALF_W - 0.06],
+      castShadow: false
+    }).runtime(gameRuntime(`net-s-${sx}`))
   ];
 }
 
@@ -909,7 +905,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
 
   /* ---- Favela cage walls (ball bounces off these) ---- */
   const wallMat = cageWallMaterial(v);
-  const railMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 });
+  const railMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5, practical: true });
   // End walls stop at the posts (FC-10): each goal line has two wall pieces, from the corner to GOAL_HALF_W + 0.2,
   // so the goal mouth stays open; sim.ts exempts the same gap from the cage bounce.
   const endLen = PITCH_HZ + 0.3 - CAGE_GAP_HALF;
@@ -931,28 +927,26 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     );
   }
 
-  /* ---- Perimeter LED hoarding ribbon: one instanced box batch (4 perimeter boards in 1 draw call) ---- */
+  /* ---- Perimeter LED hoarding ribbon: one instanced sculpted cabinet batch (4 perimeter boards in 1 draw call) ---- */
   const hoardingMat = isHybrid
     ? material.custom(hoardingLedShaderSpec(v.hoarding, v.accent))
-    : material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 });
+    : material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38, practical: true });
   nodes.push(
-    (instances as any).box({ name: "fc-hoardings", size: [1, 1, 1], transforms: hoardingTransforms(), material: hoardingMat })
+    instances.custom(buildHoardingCabinetGeometry(), { name: "fc-hoardings", transforms: hoardingTransforms(), material: hoardingMat })
       .runtime(gameRuntime("fc-hoardings"))
   );
 
-  /* ---- Bleacher bowl: the venue's tiers as one instanced box batch (FC47-PF1, was 14 boxes; the scene is rebuilt
-     per venue, so only the tiers this venue shows are in the batch) ---- */
+  /* ---- Bleacher bowl: the venue's stepped tiers as one instanced batch (preserves exact venue tier counts) ---- */
   const MAX_TIERS = 4;
   const standT = standTransforms(v);
   if (standT.length > 0) {
     nodes.push(
-      (instances as any).box({
+      instances.custom(buildStandTierGeometry(), {
         name: "fc-stands",
-        size: [1, 1, 1],
         transforms: standT,
         material: isHybrid
-          ? material.pbr({ color: "#151d28", roughness: 0.78, metalness: 0.14 })
-          : material.pbr({ color: "#18202c", roughness: 0.9 })
+          ? material.pbr({ color: "#151d28", roughness: 0.78, metalness: 0.14, clearcoat: 0, sheen: 0 })
+          : material.pbr({ color: "#18202c", roughness: 0.9, clearcoat: 0, sheen: 0 })
       }).runtime(gameRuntime("fc-stands"))
     );
   }
@@ -1011,21 +1005,50 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     }
   }
   if (!isHybrid || v.standCount > 0) {
-    nodes.push((instances as any).capsule({ name: "fc-crowd", transforms: crowdT, colors: crowdC, material: material.pbr({ color: "#ffffff", roughness: 0.88 }), castShadow: false }).runtime(gameRuntime("fc-crowd")));
+    nodes.push(
+      instances.custom(buildSupporterTorsoGeometry(), {
+        name: "fc-crowd",
+        transforms: crowdT,
+        colors: crowdC,
+        material: material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0, sheen: 0 }),
+        castShadow: false
+      }).runtime(gameRuntime("fc-crowd"))
+    );
     if (isHybrid && headT.length > 0) {
-      nodes.push((instances as any).sphere({ name: "fc-crowd-heads", transforms: headT, colors: headC, material: material.pbr({ color: "#ffffff", roughness: 0.68 }), castShadow: false }).runtime(gameRuntime("fc-crowd-heads")));
+      nodes.push(
+        instances.custom(buildSupporterHeadGeometry(), {
+          name: "fc-crowd-heads",
+          transforms: headT,
+          colors: headC,
+          material: material.pbr({ color: "#ffffff", roughness: 0.68, clearcoat: 0, sheen: 0 }),
+          castShadow: false
+        }).runtime(gameRuntime("fc-crowd-heads"))
+      );
     }
     if (isHybrid && scarfT.length > 0) {
-      nodes.push((instances as any).box({ name: "fc-crowd-scarves", size: [1, 1, 1], transforms: scarfT, colors: scarfC, material: material.pbr({ color: "#ffffff", roughness: 0.72 }), castShadow: false }).runtime(gameRuntime("fc-crowd-scarves")));
+      nodes.push(
+        instances.custom(buildSupporterScarfGeometry(), {
+          name: "fc-crowd-scarves",
+          transforms: scarfT,
+          colors: scarfC,
+          material: material.pbr({ color: "#ffffff", roughness: 0.72, clearcoat: 0, sheen: 0 }),
+          castShadow: false
+        }).runtime(gameRuntime("fc-crowd-scarves"))
+      );
     }
   }
 
-  /* ---- Front-row wavers (animated): one instanced capsule batch, moved with setInstances (was 26 nodes, FC-E1) ---- */
+  /* ---- Front-row wavers (animated): one instanced sculpted supporter batch, moved with setInstances ---- */
   if (v.standCount > 0) {
-    nodes.push((instances as any).capsule({
-      name: "fc-wavers", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.85 }),
-      transforms: waverTransforms(0, false), colors: Array.from({ length: WAVERS }, (_, i) => cols[i % cols.length])
-    }).runtime(gameRuntime("fc-wavers")));
+    nodes.push(
+      instances.custom(buildWaverSupporterGeometry(), {
+        name: "fc-wavers",
+        material: material.pbr({ color: "#ffffff", roughness: 0.85, clearcoat: 0, sheen: 0 }),
+        transforms: waverTransforms(0, false),
+        colors: Array.from({ length: WAVERS }, (_, i) => cols[i % cols.length]),
+        castShadow: false
+      }).runtime(gameRuntime("fc-wavers"))
+    );
   }
 
   /* ---- Meshy-07 (FC47-AN1): rigged front-row fans at the far rail (bowl venues; the original look keeps 4.6.2) ---- */
@@ -1035,59 +1058,42 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
   nodes.push(...floodNodes(v, gates, mode));
   nodes.push(...floodFlareNodes(v.id, mode));
 
-  /* ---- Scoreboard gantry + emissive screen ---- */
+  /* ---- Scoreboard lattice gantry + emissive screen ---- */
   nodes.push(
-    model(assets.fcScoreboardGantryMeshy, { name: "fc-gantry", targetHeight: 7.5 })
-      .position(0, 5.4, -(PITCH_HZ + 9.5)),
-    primitives.box({ name: "fc-scoreboard-screen", size: [9.5, 3.1, 0.3], material: material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.35 }) })
+    buildScoreboardGantryNode([0, 5.4, -(PITCH_HZ + 9.5)], v.accent),
+    primitives.box({
+      name: "fc-scoreboard-screen",
+      size: [9.5, 3.1, 0.3],
+      material: material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.35, practical: true })
+    })
       .position(0, 7.2, -(PITCH_HZ + 9.2))
       .runtime(gameRuntime("fc-scoreboard-screen"))
   );
   // FC47-H1: SDF in-world score on the screen (a digit reel toggled by main.ts; text3D has no runtime setText)
   nodes.push(...scoreboardTextNodes("#f3f0dc"));
 
-  /* ---- Glacier dome + aurora ribbons (dome lowered to y=-6.5 when active so floor stays below turf) ---- */
-  nodes.push(
-    model(assets.fcGlacierDomeMeshy, { name: "fc-dome", targetHeight: 26 })
-      .position(0, -90, 0)
-      .scale([HIDDEN, HIDDEN, HIDDEN])
-      .runtime(gameRuntime("fc-dome"))
-  );
+  /* ---- Glacier timber-and-steel arch dome + aurora ribbons (lowered to y=-6.5 when active) ---- */
+  nodes.push(buildGlacierArchDomeNode(HIDDEN).runtime(gameRuntime("fc-dome")));
 
-  /* ---- team benches, stadium bowl, ball crate & touchline referee ---- */
-  // The benches used to sit between the camera and the near touchline, filling
-  // the bottom HUD with brown boxes. Park them outside the goal lines so the
-  // broadcast view keeps a clean run-up to the pitch.
-  // GU47 phase 9 (D2): the game's own CC0 team bench (Poly Haven painted_wooden_bench, repainted storm navy) and ball
-  // crate (Poly Haven plastic_crate_02, tinted to the lime accent) replace the borrowed diamond dugout and hoops ball
-  // cart, inside the old footprints (presentation only; nothing collides with them).
+  /* ---- Technical-area dugouts, broadcast camera cranes, stadium bowl, tunnel, trophy & referee ---- */
   nodes.push(
-    model(assets.fcTeamBench, { name: "dugout-home", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
-      .position(-35.5, 0, -8)
-      .rotate(0, Math.PI / 2, 0),
-    model(assets.fcTeamBench, { name: "dugout-away", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
-      .position(35.5, 0, -8)
-      .rotate(0, -Math.PI / 2, 0),
-    model(assets.fcBallCrate, { name: "fc-ball-cart", targetMaxDimension: 0.9, materialOverrides: [BALL_CRATE_TINT] } as any)
-      .position(34.5, 0, -14.5),
-    // GU47 phase 4 (WP-36 FC47-A1): the game's own football stand module, four instances in one draw as the upper
-    // deck behind the far stand, grounded by continuous steel columns & concourse fascia on hybrid.
-    (instances as any).model(assets.fcStandModuleMeshy, { name: "fc-stadium-bowl", transforms: standModuleTransforms(v) })
-      .runtime(gameRuntime("fc-stadium-bowl")),
-    ...(isHybrid ? [
-      (instances as any).box({
-        name: "fc-roof-trusses",
-        size: [1, 1, 1],
-        transforms: roofTrussTransforms(v),
-        material: material.brushedMetal({ color: "#1d2734", roughness: 0.36 }),
-        castShadow: false
-      }).runtime(gameRuntime("fc-roof-trusses"))
+    buildTechnicalDugoutNode("dugout-home", [-35.5, 0, -8], Math.PI / 2, v.accent),
+    buildTechnicalDugoutNode("dugout-away", [35.5, 0, -8], -Math.PI / 2, v.accent),
+    buildBallTrolleyNode([34.5, 0, -14.5], v.accent),
+    buildBroadcastCraneNode("fc-camera-crane-w", [-PITCH_HX - 5.2, 0, 7.8], Math.PI * 0.42),
+    buildBroadcastCraneNode("fc-camera-crane-e", [PITCH_HX + 5.2, 0, -7.8], -Math.PI * 0.58),
+    ...(v.standCount > 0 ? [
+      buildStadiumBowlUpperNode(v.standCount, v.accent).runtime(gameRuntime("fc-stadium-bowl")),
+      ...(isHybrid ? [
+        instances.custom(buildRoofTrussGeometry(), {
+          name: "fc-roof-trusses",
+          transforms: roofTrussTransforms(v),
+          material: material.brushedMetal({ color: "#1d2734", roughness: 0.36 }),
+          castShadow: false
+        }).runtime(gameRuntime("fc-roof-trusses"))
+      ] : [])
     ] : []),
-    // GU47 wave 2 (FC47-A1): the game's own inflatable players' tunnel, on the far side where the broadcast frame sees
-    // it (mouth toward the pitch, set behind the hoarding line so it replaces a stretch of boards and sinks into the
-    // first stand tier). 5.1 m deep, 4.5 m wide, 2.2 m high; presentation only, nothing collides with it.
-    model(assets.fcPlayerTunnelMeshy, { name: "fc-player-tunnel", targetMaxDimension: PLAYER_TUNNEL_DEPTH })
-      .position(PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)),
+    buildPlayerTunnelNode([PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)], v.accent),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: REFEREE_TARGET_HEIGHT,
@@ -1102,17 +1108,16 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       // model() has no `animation` option; the walk is declared here and phase-locked to the patrol in tickWorld.
       .animate({ clip: "Walk_Loop", loop: true })
       .runtime(gameRuntime("fc-referee")),
-    // trophy cabinet by the tunnel (catalog dressing)
-    // FC-19: fitted models sit base-at-origin, so the trophy stands on a 0.9 m plinth and the spare ball on the grass
+    // FC-19: ceremonial trophy plinth + stepped granite/brass collar + sculpted silver championship cup (minY = 0 -> y = 0.9)
     primitives.box({ name: "fc-trophy-plinth", size: [1.3, 0.9, 1.3], material: material.pbr({ color: "#1c232b", roughness: 0.45, metalness: 0.32 }) })
       .position(-PITCH_HX - 4.5, 0.45, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
-    model(assets.fcHeroTrophyMeshy, { name: "fc-trophy-case", targetHeight: 2.2 })
-      .position(-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5))
-      .rotate(0, 0.8, 0),
-    // spare match ball, tucked behind the away dugout, resting on the grass
-    model(assets.fcMatchBallMeshy, { name: "fc-spare-ball", targetHeight: BALL_VIS_R * 2, ...(isHybrid ? { materialOverrides: [MATCH_BALL_FINISH] } : {}) } as any)
-      .position(34.0, 0, -15.5)
+    buildTrophyPlinthCollarNode([-PITCH_HX - 4.5, 0, -(PITCH_HZ + 3.5)], 0.8),
+    buildChampionshipTrophyNode([-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5)], 0.8, v.accent),
+    // spare match ball, tucked behind the away dugout, resting tangent on the grass (`position[1] === 0`)
+    buildMatchBallNode("fc-spare-ball", [34.0, 0, -15.5]),
+    // Bespoke multi-material architectural backdrop per venue (Munich ETFE, Glacier ski-jump/peaks, Kyoto kawara/pagoda, Lagos louvres/palms, Favela hillside/Corcovado, Uyuni cordillera)
+    ...buildVenueBackdropNodes(v.id, v.accent)
   );
 
   /* ---- Pitch scuff decals (4.6.2 and GU47 paths; the hybrid frame read them as stray dark rectangles) ---- */
@@ -1130,24 +1135,19 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
 }
 
 function ballNodes(hybrid = false): any[] {
-  // One admitted GLB at regulation size, upgraded with thermally bonded glossy clearcoat finish on hybrid.
+  // Procedural thermally-bonded match ball centered at local `[0, BALL_VIS_R, 0]` (`minY = 0`).
   const nodes: any[] = [
-    model(assets.fcMatchBallMeshy, {
-      name: "fc-ball-mesh",
-      targetHeight: BALL_VIS_R * 2,
-      ...(hybrid ? { materialOverrides: [MATCH_BALL_FINISH] } : {})
-    } as any)
-      .position(0, BALL_VIS_R, 0)
+    buildMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0], "fc-ball-mesh")
       .runtime(gameRuntime("fc-ball-mesh")),
     primitives.cylinder({ name: "fc-ball-shadow", size: [BALL_VIS_R * 2.3, 0.01, BALL_VIS_R * 2.3], material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
     effects.trail({ name: "fc-ball-trail", target: "fc-ball-mesh", color: "#d8ff3e", width: 0.08, maxPoints: 40, intensity: 0.85 } as any),
-    primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3 }) })
+    primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3, practical: true }) })
       .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
     // authored goal feedback (FC-E2): a ring that sweeps out of the goal mouth after a goal
-    primitives.torus({ name: "fc-goal-ring", size: [1, 0.06, 0.06], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.6, opacity: 0.85 }) })
+    primitives.torus({ name: "fc-goal-ring", size: [1, 0.06, 0.06], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.6, opacity: 0.85, practical: true }) })
       .scale(HIDDEN).runtime(gameRuntime("fc-goal-ring")),
-    primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) })
+    primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15, practical: true }) })
       .rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-lab-ring"))
   ];
   if (hybrid) {
@@ -1227,8 +1227,8 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
   // phase 4 hybrid: the wet / glazed / ice pitch reflects the floods, hoardings and stands at grazing angles (S3, High+)
   const ssr = hybrid ? hl.ssr : null;
   if (ssr) s.add(effects.screenSpaceReflections({ name: "fc-pitch-ssr", intensity: ssr.intensity, roughness: ssr.roughness, maxDistance: ssr.maxDistance } as any));
-  // PRD 6.3: no motion blur under reduced motion
-  if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
+  // PRD 6.3 & WP-09: keep default hybrid gameplay free of motionBlur smear; gu47 contract retains reducedMotion toggle
+  if (!hybrid && opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s
     .add(hybrid
       ? effects.cinematicBloom({ intensity: bloom.intensity, threshold: bloom.threshold, color: v.accent, antiBlowout: true })

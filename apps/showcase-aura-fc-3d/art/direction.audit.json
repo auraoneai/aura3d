@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "85966c818330271cad1c7ed5cbfd241fe6bc9d63c23ffbc0c300190dc407cc8f",
+  "sourceSha256": "c8482b32cc15afe35caabc73639fc9a1ac5580129bd69ee05e68dd7c811d3487",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -60,20 +60,6 @@
     },
     "models": [
       {
-        "assetKey": "fcSoccerGoalNetMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcSoccerGoalNetMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "fcPitchFanAMeshy",
         "triangles": 0,
         "textures": 0,
@@ -110,83 +96,6 @@
       },
       {
         "assetKey": "fcPitchFanBMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcFloodlightPylonMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcFloodlightPylonMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcFloodlightPylonMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcFloodlightPylonMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcScoreboardGantryMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcGlacierDomeMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcTeamBench",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcTeamBench",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcBallCrate",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcStandModuleMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcPlayerTunnelMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -194,27 +103,6 @@
       },
       {
         "assetKey": "fcSoccerStrikerMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcHeroTrophyMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcMatchBallMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "fcMatchBallMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -343,33 +231,33 @@
         "practical": true
       },
       {
-        "node": "post--1-n",
-        "emissiveIntensity": 0.08,
+        "name": "fifa powder-coat white",
+        "node": "fc-goal-mesh--1 material 0",
         "practical": false
       },
       {
-        "node": "post--1-s",
-        "emissiveIntensity": 0.08,
+        "name": "anodized stadium aluminium",
+        "node": "fc-goal-mesh--1 material 1",
         "practical": false
       },
       {
-        "node": "bar--1",
-        "emissiveIntensity": 0.08,
+        "name": "galvanized structural steel",
+        "node": "fc-goal-mesh--1 material 2",
         "practical": false
       },
       {
-        "node": "stay--1-n",
-        "emissiveIntensity": 0.08,
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-goal-mesh--1 material 3",
         "practical": false
       },
       {
-        "node": "stay--1-s",
-        "emissiveIntensity": 0.08,
+        "name": "goal anchor accent",
+        "node": "fc-goal-mesh--1 material 4",
         "practical": false
       },
       {
-        "node": "base-back--1",
-        "emissiveIntensity": 0.08,
+        "name": "braided goal tension cord",
+        "node": "fc-goal-mesh--1 material 5",
         "practical": false
       },
       {
@@ -393,33 +281,33 @@
         "practical": false
       },
       {
-        "node": "post-1-n",
-        "emissiveIntensity": 0.08,
+        "name": "fifa powder-coat white",
+        "node": "fc-goal-mesh-1 material 0",
         "practical": false
       },
       {
-        "node": "post-1-s",
-        "emissiveIntensity": 0.08,
+        "name": "anodized stadium aluminium",
+        "node": "fc-goal-mesh-1 material 1",
         "practical": false
       },
       {
-        "node": "bar-1",
-        "emissiveIntensity": 0.08,
+        "name": "galvanized structural steel",
+        "node": "fc-goal-mesh-1 material 2",
         "practical": false
       },
       {
-        "node": "stay-1-n",
-        "emissiveIntensity": 0.08,
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-goal-mesh-1 material 3",
         "practical": false
       },
       {
-        "node": "stay-1-s",
-        "emissiveIntensity": 0.08,
+        "name": "goal anchor accent",
+        "node": "fc-goal-mesh-1 material 4",
         "practical": false
       },
       {
-        "node": "base-back-1",
-        "emissiveIntensity": 0.08,
+        "name": "braided goal tension cord",
+        "node": "fc-goal-mesh-1 material 5",
         "practical": false
       },
       {
@@ -514,8 +402,113 @@
         "practical": false
       },
       {
+        "name": "architectural precast concrete",
+        "node": "flood-0 material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "flood-0 material 1",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "flood-0 material 2",
+        "practical": false
+      },
+      {
+        "name": "flood-0-lamps",
+        "node": "flood-0 material 3",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "architectural precast concrete",
+        "node": "flood-1 material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "flood-1 material 1",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "flood-1 material 2",
+        "practical": false
+      },
+      {
+        "name": "flood-1-lamps",
+        "node": "flood-1 material 3",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "architectural precast concrete",
+        "node": "flood-2 material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "flood-2 material 1",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "flood-2 material 2",
+        "practical": false
+      },
+      {
+        "name": "flood-2-lamps",
+        "node": "flood-2 material 3",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "architectural precast concrete",
+        "node": "flood-3 material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "flood-3 material 1",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "flood-3 material 2",
+        "practical": false
+      },
+      {
+        "name": "flood-3-lamps",
+        "node": "flood-3 material 3",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
         "node": "fc-flood-pools",
         "practical": false
+      },
+      {
+        "name": "architectural precast concrete",
+        "node": "fc-gantry material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-gantry material 1",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "fc-gantry material 2",
+        "practical": false
+      },
+      {
+        "name": "gantry crest strip",
+        "node": "fc-gantry material 3",
+        "emissiveIntensity": 1.2,
+        "practical": true
       },
       {
         "node": "fc-scoreboard-screen",
@@ -757,8 +750,294 @@
         "practical": true
       },
       {
+        "name": "nordic glulam timber",
+        "node": "fc-dome material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-dome material 1",
+        "practical": false
+      },
+      {
+        "name": "curved dugout polycarbonate",
+        "node": "fc-dome material 2",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "dugout-home material 0",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "dugout-home material 1",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "dugout-home material 2",
+        "practical": false
+      },
+      {
+        "name": "storm navy dugout shell",
+        "node": "dugout-home material 3",
+        "practical": false
+      },
+      {
+        "name": "quilted technical seat upholstery",
+        "node": "dugout-home material 4",
+        "practical": false
+      },
+      {
+        "name": "dugout-home-accent",
+        "node": "dugout-home material 5",
+        "practical": false
+      },
+      {
+        "name": "curved dugout polycarbonate",
+        "node": "dugout-home material 6",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "dugout-away material 0",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "dugout-away material 1",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "dugout-away material 2",
+        "practical": false
+      },
+      {
+        "name": "storm navy dugout shell",
+        "node": "dugout-away material 3",
+        "practical": false
+      },
+      {
+        "name": "quilted technical seat upholstery",
+        "node": "dugout-away material 4",
+        "practical": false
+      },
+      {
+        "name": "dugout-away-accent",
+        "node": "dugout-away material 5",
+        "practical": false
+      },
+      {
+        "name": "curved dugout polycarbonate",
+        "node": "dugout-away material 6",
+        "practical": false
+      },
+      {
+        "name": "ball trolley frame",
+        "node": "fc-ball-cart material 0",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-ball-cart material 1",
+        "practical": false
+      },
+      {
+        "name": "thermally bonded match pearl",
+        "node": "fc-ball-cart material 2",
+        "practical": false
+      },
+      {
+        "name": "match ball star panel",
+        "node": "fc-ball-cart material 3",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-camera-crane-w material 0",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "fc-camera-crane-w material 1",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-camera-crane-w material 2",
+        "practical": false
+      },
+      {
+        "name": "storm navy dugout shell",
+        "node": "fc-camera-crane-w material 3",
+        "practical": false
+      },
+      {
+        "name": "fc-camera-crane-w-tally",
+        "node": "fc-camera-crane-w material 4",
+        "emissiveIntensity": 1.5,
+        "practical": true
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-camera-crane-e material 0",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "fc-camera-crane-e material 1",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-camera-crane-e material 2",
+        "practical": false
+      },
+      {
+        "name": "storm navy dugout shell",
+        "node": "fc-camera-crane-e material 3",
+        "practical": false
+      },
+      {
+        "name": "fc-camera-crane-e-tally",
+        "node": "fc-camera-crane-e material 4",
+        "emissiveIntensity": 1.5,
+        "practical": true
+      },
+      {
+        "name": "architectural precast concrete",
+        "node": "fc-stadium-bowl material 0",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-stadium-bowl material 1",
+        "practical": false
+      },
+      {
+        "name": "curved dugout polycarbonate",
+        "node": "fc-stadium-bowl material 2",
+        "practical": false
+      },
+      {
+        "name": "vip lounge warm",
+        "node": "fc-stadium-bowl material 3",
+        "emissiveIntensity": 0.95,
+        "practical": true
+      },
+      {
+        "name": "bowl roof fascia",
+        "node": "fc-stadium-bowl material 4",
+        "practical": false
+      },
+      {
+        "name": "telescopic tunnel canvas",
+        "node": "fc-player-tunnel material 0",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "fc-player-tunnel material 1",
+        "practical": false
+      },
+      {
+        "name": "non-slip vulcanized rubber",
+        "node": "fc-player-tunnel material 2",
+        "practical": false
+      },
+      {
+        "name": "storm navy dugout shell",
+        "node": "fc-player-tunnel material 3",
+        "practical": false
+      },
+      {
+        "name": "tunnel portal led",
+        "node": "fc-player-tunnel material 4",
+        "emissiveIntensity": 1.25,
+        "practical": true
+      },
+      {
         "node": "fc-trophy-plinth",
         "practical": false
+      },
+      {
+        "name": "honed obsidian granite",
+        "node": "fc-trophy-plinth-collar material 0",
+        "practical": false
+      },
+      {
+        "name": "championship 24k gold trim",
+        "node": "fc-trophy-plinth-collar material 1",
+        "practical": false
+      },
+      {
+        "name": "honed obsidian granite",
+        "node": "fc-trophy-case material 0",
+        "practical": false
+      },
+      {
+        "name": "championship sterling silver",
+        "node": "fc-trophy-case material 1",
+        "practical": false
+      },
+      {
+        "name": "championship 24k gold trim",
+        "node": "fc-trophy-case material 2",
+        "practical": false
+      },
+      {
+        "name": "championship sterling silver",
+        "node": "fc-trophy-case material 3",
+        "practical": false
+      },
+      {
+        "name": "trophy ribbon",
+        "node": "fc-trophy-case material 4",
+        "practical": false
+      },
+      {
+        "name": "thermally bonded match pearl",
+        "node": "fc-spare-ball material 0",
+        "practical": false
+      },
+      {
+        "name": "match ball star panel",
+        "node": "fc-spare-ball material 1",
+        "practical": false
+      },
+      {
+        "name": "match ball speed seam",
+        "node": "fc-spare-ball material 2",
+        "practical": false
+      },
+      {
+        "name": "anodized stadium aluminium",
+        "node": "fc-venue-munich-etfe-bowl material 0",
+        "practical": false
+      },
+      {
+        "name": "munich etfe ring",
+        "node": "fc-venue-munich-etfe-bowl material 1",
+        "emissiveIntensity": 1.15,
+        "practical": true
+      },
+      {
+        "name": "inflated etfe stadium cushion",
+        "node": "fc-venue-munich-etfe-bowl material 2",
+        "practical": false
+      },
+      {
+        "name": "galvanized structural steel",
+        "node": "fc-venue-munich-pylons material 0",
+        "practical": false
+      },
+      {
+        "name": "munich crest beacon",
+        "node": "fc-venue-munich-pylons material 1",
+        "emissiveIntensity": 1.2,
+        "practical": true
       },
       {
         "node": "fc-scuff--19--3",
@@ -782,6 +1061,21 @@
       },
       {
         "node": "fc-scuff-23--5",
+        "practical": false
+      },
+      {
+        "name": "thermally bonded match pearl",
+        "node": "fc-ball-mesh material 0",
+        "practical": false
+      },
+      {
+        "name": "match ball star panel",
+        "node": "fc-ball-mesh material 1",
+        "practical": false
+      },
+      {
+        "name": "match ball speed seam",
+        "node": "fc-ball-mesh material 2",
         "practical": false
       },
       {
@@ -991,70 +1285,6 @@
         }
       },
       {
-        "role": "hero",
-        "assetKey": "fcMatchBallMeshy",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "fcSoccerGoalNetMeshy",
-        "maxTriangles": 10000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "fcFloodlightPylonMeshy",
-        "maxTriangles": 12000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "fcScoreboardGantryMeshy",
-        "maxTriangles": 12000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "fcGlacierDomeMeshy",
-        "maxTriangles": 14000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "fcHeroTrophyMeshy",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "fcStandModuleMeshy",
-        "maxTriangles": 46000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "fcTeamBench",
-        "maxTriangles": 16000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "fcPlayerTunnelMeshy",
-        "maxTriangles": 14000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
         "role": "set-dressing",
         "assetKey": "fcPitchFanAMeshy",
         "maxTriangles": 5200,
@@ -1095,13 +1325,6 @@
             "pump"
           ]
         }
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "fcBallCrate",
-        "maxTriangles": 14000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [
@@ -1172,16 +1395,10 @@
     "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
     "standIns": [
       {
-        "feature": "box stands and capsule crowd",
-        "file": "src/game/scene.ts",
-        "request": "R-14-07",
-        "removeWhen": "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted"
-      },
-      {
-        "feature": "colour-only athlete kit materials and a base-colour-only match ball",
+        "feature": "colour-only athlete kit material overrides on rigged athletes",
         "file": "src/game/rig.ts",
         "request": "R-14-07",
-        "removeWhen": "WP-36 textured kits (BC+N, number sheet) and a BC+N ball admitted"
+        "removeWhen": "WP-36 textured kits (BC+N, number sheet) admitted"
       },
       {
         "feature": "instanced light pools for the three unshadowed towers",

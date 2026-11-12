@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/drift-and-deliver-port/art/direction.ts",
-  "sourceSha256": "3bffc6d1ef7bc38d4bf8710344eca028a305cc7ff43985fd916ad3986c38ff29",
+  "sourceSha256": "1c1b873e905157e5e30c78601907d059c0a9209c83fed5c7ec4bed9647c772fb",
   "id": "drift-and-deliver-port",
   "genre": "vehicle-delivery",
   "signatureEffect": "delivery-beacon",
@@ -63,106 +63,7 @@
       "kind": "hdri",
       "background": false
     },
-    "models": [
-      {
-        "assetKey": "courier",
-        "triangles": 37470,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "sedan",
-        "triangles": 6920,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hatch",
-        "triangles": 7065,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "van",
-        "triangles": 7055,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "truck",
-        "triangles": 8589,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lamp",
-        "triangles": 5507,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "signal",
-        "triangles": 3941,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "tree",
-        "triangles": 1844,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "palm",
-        "triangles": 2695,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "shelter",
-        "triangles": 5141,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hydrant",
-        "triangles": 4150,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "clocktower",
-        "triangles": 19196,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lighthouse",
-        "triangles": 19987,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "watertank",
-        "triangles": 5838,
-        "textures": 2,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "city-*-facade",
@@ -263,111 +164,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "vehicle",
-        "assetKey": "courier",
-        "maxTriangles": 60000,
-        "minTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "sedan",
-        "maxTriangles": 12000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "hatch",
-        "maxTriangles": 12000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "van",
-        "maxTriangles": 12000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "truck",
-        "maxTriangles": 14000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "lamp",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "signal",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "tree",
-        "maxTriangles": 6000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "palm",
-        "maxTriangles": 6000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "shelter",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "hydrant",
-        "maxTriangles": 6000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "clocktower",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "lighthouse",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "watertank",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "drift",

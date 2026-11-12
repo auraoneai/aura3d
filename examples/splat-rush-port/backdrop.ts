@@ -3,9 +3,9 @@
  * road at the road's own scroll speed, following its curve. Placement is a pure function of the simulation's distance and
  * elapsed time, so it never touches the simulation or its random stream.
  */
-import { defineAuraAssets, environments, lights, model, scene, type AuraApp, type AuraAssetRef, type AuraHdriId } from "@aura3d/engine";
+import { defineAuraAssets, environments, lights, scene, type AuraApp, type AuraAssetRef, type AuraHdriId } from "@aura3d/engine";
+import { buildBackdropPieceNode, type BackdropPieceVariant } from "./art/proceduralModels";
 import { LOOKS, sunDirection, type SplatLook } from "./look";
-import { MODELS } from "./models";
 import { curve } from "./sim";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -108,7 +108,7 @@ export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): v
   const shadows = look.backdropLights === "from-toon";
   for (const p of PIECES) {
     const island = p.kind !== "balloon";
-    builder.add(model(MODELS[pieceModel(look, p)], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
+    builder.add(buildBackdropPieceNode(pieceModel(look, p), { id: p.id, size: p.size, castShadow: shadows && island, receiveShadow: shadows }));
   }
 }
 
@@ -120,7 +120,7 @@ export const PALETTE_PIECES: readonly number[] = [9];
 /** GU47 wave 2 CR-A1: in the carnival look the left-hand tower island in slot 4 is the easel island (same slot, size 12,
  *  motion, sway and shadow flags; the GLB's 1.90 x 1.51 x 1.01 bounds are normalised to the same max dimension). */
 export const EASEL_PIECES: readonly number[] = [4];
-export function pieceModel(look: SplatLook, piece: Piece): keyof typeof MODELS {
+export function pieceModel(look: SplatLook, piece: Piece): BackdropPieceVariant {
   if (look.id === "carnival" && PAINT_POT_PIECES.includes(PIECES.indexOf(piece))) return "paintPotIsland";
   if (look.id === "carnival" && PALETTE_PIECES.includes(PIECES.indexOf(piece))) return "paletteIsland";
   if (look.id === "carnival" && EASEL_PIECES.includes(PIECES.indexOf(piece))) return "easelIsland";

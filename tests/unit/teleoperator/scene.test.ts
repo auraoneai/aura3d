@@ -49,10 +49,36 @@ describe("grid dispatch scene", () => {
     for (const id of ["player-lidar-dome", "player-tailbar", "player-contact-shadow", "peer-waymo-lidar-ring"]) expect(app.nodes.has(id)).toBe(false);
     app.dispose?.();
   });
+  it("mounts only the rigged passenger GLB; all vehicles, buildings, and SF landmarks are procedural multi-material with WebGPU-safe glazing", () => {
+    const app = createAuraApp(undefined, { scene: buildGridDispatchScene("golden"), autoStart: false });
+    const modelNames: string[] = [];
+    const groupNames = new Set<string>();
+    const walk = (nodes: readonly unknown[]): void => {
+      for (const n of nodes as Array<{ kind?: string; name?: string; material?: Record<string, unknown>; instances?: unknown[]; children?: unknown[] }>) {
+        if (n.kind === "model") modelNames.push(n.name ?? "");
+        if (n.kind === "group" && n.name) groupNames.add(n.name);
+        if (n.material && typeof n.material.transmission === "number" && n.material.transmission > 0 && typeof n.material.opacity === "number") {
+          expect(n.material.opacity, n.name).toBe(1);
+        }
+        if (Array.isArray(n.instances) && n.instances.length > 16 && n.material) {
+          expect(n.material.clearcoat ?? 0, `${n.name} clearcoat`).toBe(0);
+          expect(n.material.sheen ?? 0, `${n.name} sheen`).toBe(0);
+        }
+        if (n.children) walk(n.children);
+      }
+    };
+    walk((app.scene as unknown as { nodes: unknown[] }).nodes);
+    expect(modelNames).toEqual(["taxi-passenger"]);
+    for (const landmark of ["sf-pyramid-tower", "sf-bridge-tower-l", "sf-bridge-tower-r", "sf-bridge-span", "sf-ferry-clocktower", "sf-coit-tower"]) {
+      expect(groupNames.has(landmark), landmark).toBe(true);
+    }
+    app.dispose?.();
+  });
   it("only the sky preset changes the lights: four distinct look and light sets", () => {
+    const replacer = (_k: string, v: unknown) => (ArrayBuffer.isView(v) ? v.byteLength : v);
     const sigs = (["noon", "golden", "fog", "night"] as const).map((w) => {
       const snap = buildGridDispatchScene(w).toJSON?.() ?? buildGridDispatchScene(w);
-      return JSON.stringify(snap).match(/"kind":"light"[^}]*\}/g)?.join("|") ?? JSON.stringify(snap).length.toString();
+      return JSON.stringify(snap, replacer).match(/"kind":"light"[^}]*\}/g)?.join("|") ?? JSON.stringify(snap, replacer).length.toString();
     });
     expect(new Set(sigs).size).toBe(4);
   });

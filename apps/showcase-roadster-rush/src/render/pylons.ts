@@ -1,10 +1,11 @@
 /**
- * GU47 AO-E2: deck pylons. Hammerhead piers every 40 m: one column each side just outside the deck edge, dropping from the deck
- * into the haze floor, under a cap beam that spans the deck. Two instanced nodes (columns, caps), so at most 2 draws. World
- * anchored like the light poles (recycled only after a row has passed the camera). The Meshy deck pylon (WP-36) replaces the
- * primitive pier through `PYLON_KIT` once admitted.
+ * GU47 AO-E2 / WP-02: sculpted architectural deck pylons. Fluted Y-pier columns every 40 m drop from the deck into the haze
+ * floor under a haunched prestressed hammerhead cap beam that spans the deck. Two instanced nodes (columns, caps), at most
+ * 2 draws, world-anchored and recycled only after a row passes the camera.
  */
+import type { AuraCustomGeometrySpec } from "@aura3d/engine";
 import { HAZE_FLOOR_Y } from "../art/ground";
+import { buildDeckPylonCapSpec, buildDeckPylonColumnSpec } from "../art/proceduralModels";
 
 export const PYLON_STRIDE_Z = 40;
 /** Rows from one behind the camera to about 400 m ahead. */
@@ -37,4 +38,15 @@ export function pylonLayout(pz: number): { readonly columns: PylonTransform[]; r
     caps.push({ x: 0, y: capY, z });
   }
   return { columns, caps };
+}
+
+/** Procedural fluted Y-pier column & haunched hammerhead cap-beam geometry specs sized to `PYLON_KIT`. */
+export function pylonGeometrySpecs(): {
+  readonly column: AuraCustomGeometrySpec;
+  readonly cap: AuraCustomGeometrySpec;
+} {
+  return {
+    column: buildDeckPylonColumnSpec(PYLON_KIT.column.size),
+    cap: buildDeckPylonCapSpec(PYLON_KIT.cap.size)
+  };
 }

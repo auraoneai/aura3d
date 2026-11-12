@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   BAR_SIZE, BLOCK_SIZE, GAP_SIZE, LANE_WIDTH, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH, WALL_SIZE,
-  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, playerMesh, ringMesh, sphereMesh, translateMesh, wallMesh
+  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, monolithWallMesh, plasmaCrossbarMesh, playerMesh, ringMesh,
+  skaterBotMeshes, speakerBlockMesh, sphereMesh, stanchionPostsMesh, translateMesh, wallMesh
 } from "../../../apps/showcase-beat-hopper/src/meshes";
 import { CONFIG } from "../../../apps/showcase-beat-hopper/src/sim";
 
@@ -128,5 +129,33 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(maxY).toBeCloseTo(WALL_SIZE.h + WALL_SIZE.capH, 9);
     expect(WALL_SIZE.h).toBeGreaterThan(2);
     expect(extent(m, 0)[1]).toBeLessThan(LANE_WIDTH / 2);
+  });
+
+  it("sculpted corridor obstacles and synth-skater bot preserve grounded bases and exact 0.97 m duck clearance", () => {
+    const cross = plasmaCrossbarMesh();
+    const [crossMinY, crossMaxY] = extent(cross, 1);
+    expect(crossMinY).toBeCloseTo(BAR_SIZE.y - BAR_SIZE.h / 2, 6);
+    expect(crossMaxY).toBeCloseTo(BAR_SIZE.y + BAR_SIZE.h / 2, 6);
+    expect(cross.positions.length / 3).toBeGreaterThan(100);
+
+    const posts = stanchionPostsMesh();
+    expect(extent(posts, 1)[0]).toBeCloseTo(0, 6);
+    expect(posts.positions.length / 3).toBeGreaterThan(200);
+
+    const speaker = speakerBlockMesh();
+    expect(extent(speaker, 1)[0]).toBeCloseTo(0, 6);
+    expect(extent(speaker, 1)[1]).toBeCloseTo(BLOCK_SIZE.h, 6);
+    expect(speaker.positions.length / 3).toBeGreaterThan(200);
+
+    const monolith = monolithWallMesh();
+    expect(extent(monolith, 1)[0]).toBeCloseTo(0, 6);
+    expect(extent(monolith, 1)[1]).toBeCloseTo(WALL_SIZE.h + WALL_SIZE.capH, 6);
+    expect(monolith.positions.length / 3).toBeGreaterThan(100);
+
+    const bot = skaterBotMeshes();
+    for (const part of [bot.torso, bot.head, bot.visor, bot.headband, bot.earCups, bot.arm, bot.skate, bot.skateBlade]) {
+      expect(part.positions.length / 3).toBeGreaterThan(24);
+      expect(part.indices.length).toBeGreaterThan(36);
+    }
   });
 });

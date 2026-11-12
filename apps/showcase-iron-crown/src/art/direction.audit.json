@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "628fcddfeef7aadb337c337a9216d6f937cdf31d33c23c5ce5b30ba164b01968",
+  "sourceSha256": "fe4a946bef6bbcba53dff71c30bf4c56d0d63b83c016cf6a53d766ce893400a7",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -53,62 +53,6 @@
       "background": true
     },
     "models": [
-      {
-        "assetKey": "ironcrownThrone",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownCrown",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownKingStatue",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownKingStatue",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownBrazierPylon",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownBrazierPylon",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownSearchlight",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownSearchlight",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
       {
         "assetKey": "ironcrownKenji",
         "triangles": 0,
@@ -456,7 +400,141 @@
         "practical": false
       },
       {
-        "name": "lacquer",
+        "name": "ic-forged-black-iron",
+        "node": "cr-throne-chair material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-throne-chair material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-royal-crimson-velvet",
+        "node": "cr-throne-chair material 2",
+        "practical": false
+      },
+      {
+        "name": "cr-throne-chair-crest-gem",
+        "node": "cr-throne-chair material 3",
+        "emissiveIntensity": 1.35,
+        "practical": true
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-iron-crown material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-iron-crown material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-royal-crimson-velvet",
+        "node": "cr-iron-crown material 2",
+        "practical": false
+      },
+      {
+        "name": "cr-iron-crown-rubies",
+        "node": "cr-iron-crown material 3",
+        "emissiveIntensity": 1.5,
+        "practical": true
+      },
+      {
+        "name": "ic-sanctum-dark-marble",
+        "node": "cr-colonnade-l material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-colonnade-l material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-royal-crimson-velvet",
+        "node": "cr-colonnade-l material 2",
+        "practical": false
+      },
+      {
+        "name": "ic-sanctum-dark-marble",
+        "node": "cr-colonnade-r material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-colonnade-r material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-royal-crimson-velvet",
+        "node": "cr-colonnade-r material 2",
+        "practical": false
+      },
+      {
+        "name": "ic-sanctum-dark-marble",
+        "node": "cr-dragon-l material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-dragon-l material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-dragon-l material 2",
+        "practical": false
+      },
+      {
+        "name": "ic-sanctum-dark-marble",
+        "node": "cr-dragon-r material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-dragon-r material 1",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-dragon-r material 2",
+        "practical": false
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-brazier-l material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-brazier-l material 1",
+        "practical": false
+      },
+      {
+        "name": "cr-brazier-l-embers",
+        "node": "cr-brazier-l material 2",
+        "emissiveIntensity": 1.55,
+        "practical": true
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-brazier-r material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-brazier-r material 1",
+        "practical": false
+      },
+      {
+        "name": "cr-brazier-r-embers",
+        "node": "cr-brazier-r material 2",
+        "emissiveIntensity": 1.55,
+        "practical": true
+      },
+      {
+        "name": "ic-rosewood-lacquer",
         "node": "cr-cabinet-frame",
         "practical": false
       },
@@ -469,33 +547,63 @@
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "cr-cabinet-trim",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "cr-cabinet-cups",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "cr-cabinet-silver",
         "practical": false
       },
       {
-        "name": "brushed metal",
+        "name": "ic-gilded-crown-gold",
         "node": "cr-cabinet-banner-border",
         "practical": false
       },
       {
+        "name": "ic-royal-crimson-velvet",
         "node": "cr-cabinet-banner",
         "practical": false
       },
       {
-        "name": "clear glass",
+        "name": "ic-display-glass",
         "node": "cr-cabinet-glass",
         "practical": false
+      },
+      {
+        "name": "ic-weathered-gantry-steel",
+        "node": "cr-speaker-l material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-speaker-l material 1",
+        "practical": false
+      },
+      {
+        "name": "cr-speaker-l-beam",
+        "node": "cr-speaker-l material 2",
+        "emissiveIntensity": 1.5,
+        "practical": true
+      },
+      {
+        "name": "ic-weathered-gantry-steel",
+        "node": "cr-speaker-r material 0",
+        "practical": false
+      },
+      {
+        "name": "ic-forged-black-iron",
+        "node": "cr-speaker-r material 1",
+        "practical": false
+      },
+      {
+        "name": "cr-speaker-r-beam",
+        "node": "cr-speaker-r material 2",
+        "emissiveIntensity": 1.5,
+        "practical": true
       },
       {
         "node": "iron crown rune ward",
@@ -681,272 +789,6 @@
             "Dead"
           ]
         }
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownCrown",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownBrazierPylon",
-        "maxTriangles": 32000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownThrone",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownKingStatue",
-        "maxTriangles": 28000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "ironcrownSearchlight",
-        "maxTriangles": 19000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownRooftopAircon",
-        "maxTriangles": 10000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownRooftopPowerBox",
-        "maxTriangles": 7000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "ironcrownStreetLamp",
-        "maxTriangles": 31000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownDockVendorCart",
-        "maxTriangles": 28000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownDockCrate",
-        "maxTriangles": 7000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownDockBarrel",
-        "maxTriangles": 11000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "ironcrownColosseumBust",
-        "maxTriangles": 18000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownHarbourCrane",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownFishingBoat",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "ironcrownHangarPlane",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "ironcrownHall",
-        "maxTriangles": 27000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "ironcrownShrine",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "ironcrownTowerA",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "ironcrownTowerB",
-        "maxTriangles": 14000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownBackdropRidge",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownSkylineBlockA",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownSkylineBlockB",
-        "maxTriangles": 22000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "ironcrownSkylineBlockC",
-        "maxTriangles": 22000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "auroraFuelDepotTankMeshy"
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "auroraPadBeacon",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "bunkerBarrelMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "bunkerCrateMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048,
-        "assetKey": "clashDragonStatueMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048,
-        "assetKey": "courierNeonStorefrontMeshy"
-      },
-      {
-        "role": "world",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "gullsiegeGatehouseMeshy"
-      },
-      {
-        "role": "world",
-        "assetKey": "heatsinkArch",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkHoloBillboard",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "world",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "patrolCoastalRadarTowerMeshy"
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propBoulder",
-        "maxTriangles": 12000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propPineTree",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "propRockA",
-        "maxTriangles": 32000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "showcaseModernBuildingOne",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "showcaseModernOfficeBuilding",
-        "maxTriangles": 230000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048
       }
     ],
     "vfx": [

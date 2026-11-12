@@ -1,15 +1,15 @@
 /**
- * Shape Shift Sprint world on `@aura3d/engine` 5.5.1 (WP-15 kinetic morph-runner overhaul):
+ * Shape Shift Sprint world on `@aura3d/engine` 5.5.1 (WP-14 procedural multi-material overhaul):
  * - Studio hero IBL + 2-cascade 2048 shadowed sun key + cool sky rim fill (zero `lights.ambient`),
- * - Distinct multi-lobe PBR materials across morph states (`carPaint` flake sphere, `clearcoatPaint` cube +
- *   hydro-glow hover cushion, `lacquer` anodized glider-cone),
+ * - Sculpted multi-material morph forms (`player-0..2`) + shape-gate portals (`gate-portal-0..9`),
+ * - Procedural storybook castle sky-islands, toy-block gyro spires, fluted viaduct monolith stations & boost pads,
  * - Molded 3D cutout gates + bevelled collars + 4 sculpted 3D pickup medallions in `CORRIDOR_BOUNDS` batches,
  * - Iridescent thin-film Fresnel shield bubble + `createFlipbookAtlas("plasma")` morph/perfect shockwave +
  *   `effects.auroraRibbon`,
- * - `contactShadows` + `ambientOcclusion` + track `screenSpaceReflections` + `cinematicBloom` + `godRays` + `depthOfField`,
+ * - Crisp studio post-processing (`contactShadows` + `ambientOcclusion` + `screenSpaceReflections` + `cinematicBloom` + `godRays`, zero `depthOfField`),
  * - 6 Milestone Toybox Worlds smoothly blended via dual-backend GLSL + WGSL uniforms.
  */
-import { camera, effects, environments, geometry, group, lights, material, model, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch,
@@ -49,7 +49,6 @@ import {
   layerGeometry,
   meshyPose,
   morphPlasmaSpec,
-  pillarMesh,
   ringSpec,
   sceneryProgramSpecs,
   skirtMesh,
@@ -72,7 +71,15 @@ import {
   wallCellMesh
 } from "./meshes";
 import { shakeOffset, type CameraPose, type Shown } from "./presentation";
-import { assets as modelAssets } from "./aura-model-assets";
+import {
+  buildBridgeViaductStationNode,
+  buildFloatingPrismClustersNode,
+  buildHorizonStadiumPylonsNode,
+  buildMorphPlayerNode,
+  buildShapeGatePortalNode,
+  buildToyBlockTowerNode,
+  buildToyCastleIslandNode
+} from "./art/proceduralModels";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -235,49 +242,15 @@ export function buildWorld(options: WorldOptions): World {
   const tokens = new Batch(tokenMeshes[0], POOL.tokens, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("tokens", tokens, toyToonSpec([1, 1, 1], { tone: true, rim: 0.36, clearcoat: 0.68, fogStart: GAME_FOG_START }), true, false);
 
-  // Distinct multi-lobe hero materials across the 3 morph forms:
-  // 0: Crimson metallic-flake carPaint sphere
-  // 1: Solar clearcoatPaint hover-cube
-  // 2: Cobalt anodized lacquer glider-cone
-  const playerMaterials = [
-    material.carPaint({
-      name: "sphere-car-paint",
-      color: LOOK.shapes[0],
-      roughness: 0.24,
-      metallic: 0.52,
-      clearcoat: 1,
-      clearcoatRoughness: 0.02,
-      envMapIntensity: 1.48
-    }),
-    material.clearcoatPaint({
-      name: "cube-clearcoat-paint",
-      color: LOOK.shapes[1],
-      roughness: 0.08,
-      metallic: 0.06,
-      clearcoat: 1,
-      clearcoatRoughness: 0.018,
-      envMapIntensity: 1.56
-    }),
-    material.lacquer({
-      name: "cone-anodized-lacquer",
-      color: LOOK.shapes[2],
-      roughness: 0.22,
-      metallic: 0.28,
-      clearcoat: 1,
-      clearcoatRoughness: 0.024,
-      envMapIntensity: 1.42
-    })
-  ] as const;
+  // Sculpted multi-material morph forms (`player-0` carPaint sphere + gyro band,
+  // `player-1` clearcoat cube + octagonal frames + prism lenses, `player-2` lacquer glider + winglets)
+  for (const i of [0, 1, 2] as const) {
+    builder.add(buildMorphPlayerNode(i, playerMesh(i)));
+  }
 
-  for (let i = 0; i < 3; i++) {
-    builder.add(
-      geometry.custom(dyn(playerMesh(i)), {
-        name: `player-${i}`,
-        material: playerMaterials[i]!,
-        castShadow: true,
-        receiveShadow: true
-      }).runtime({ id: `player-${i}` })
-    );
+  // Sculpted multi-material shape-gate portals (`archwayVoussoirSlots` + `latticeTrussMesh` + 4 glowing shape stencils)
+  for (let slot = 0; slot < POOL.rows; slot++) {
+    builder.add(buildShapeGatePortalNode(`gate-portal-${slot}`, slot).position(0, -60, -80));
   }
 
   add("ball-shadow", groundQuad(2, 2), shadowSpec());
@@ -307,7 +280,7 @@ export function buildWorld(options: WorldOptions): World {
   const clouds = new Batch(puff, CLOUD_MAX, null, CORRIDOR_BOUNDS);
   addBatch("clouds", clouds, toyToonSpec(hexToLinear(LOOK.cloud), { rim: 0.35, clearcoat: 0.18 }));
 
-  /* Toybox Skyway scenery: cloud sea, bridge pillars, floating toy islands, Meshy castles & block towers. */
+  /* Toybox Skyway scenery: cloud sea, fluted viaduct monolith stations, parallax islands, procedural castle islands, block towers & horizon pylons. */
   const seaTile = cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3);
   for (let i = 0; i < SEA_TILE.count; i++) {
     builder.add(
@@ -317,39 +290,36 @@ export function buildWorld(options: WorldOptions): World {
       }).position(0, SEA_TILE.y, SEA_TILE.d * 0.6 - (i + 0.5) * SEA_TILE.d)
     );
   }
-  const pillar = pillarMesh();
   for (let i = 0; i < PILLAR_COUNT; i++) {
-    builder.add(
-      group(`pillar-${i}`, [
-        geometry.custom(tonedGeometry(pillar), {
-          name: `pillar-${i}-mesh`,
-          material: material.custom(toyToonSpec([1, 1, 1], { tone: true, rim: 0.15, clearcoat: 0.32 })),
-          receiveShadow: true
-        })
-      ]).runtime({ id: `pillar-${i}` })
-    );
+    builder.add(buildBridgeViaductStationNode(`pillar-${i}`, i));
   }
   for (const layer of [0, 1, 2] as const) {
     builder.add(geometry.custom(layerGeometry(layer), { name: `isles-${layer}`, material: material.custom(driftSpec(0.2)) }));
   }
-  for (const p of MESHY_PIECES) {
+  MESHY_PIECES.forEach((p, idx) => {
     const pose = meshyPose(p, 0, false);
+    const landmark = p.kind === "toyCastleIsland"
+      ? buildToyCastleIslandNode(p.id, p.size, idx)
+      : buildToyBlockTowerNode(p.id, p.size, idx);
     builder.add(
-      model(modelAssets[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: true, receiveShadow: true })
-        .position(pose.x, pose.y, pose.z).rotation(0, pose.yaw, 0).scale(pose.scale).runtime({ id: p.id })
+      landmark
+        .position(pose.x, pose.y, pose.z)
+        .rotation(0, pose.yaw, 0)
+        .scale(pose.scale)
     );
-  }
+  });
+  builder.add(buildHorizonStadiumPylonsNode());
+  builder.add(buildFloatingPrismClustersNode());
 
-  /* Post-processing stack: full skyway studio pipeline by default, ?post=lite|bloom|off supported. */
+  /* Post-processing stack: crisp studio skyway pipeline (zero depthOfField / motionBlur), ?post=lite|bloom|off supported. */
   const post = options.post ?? "full";
   if (post === "full") {
     builder
       .add(effects.contactShadows({ length: 0.24, thickness: 0.05, steps: 16, intensity: 0.6, lights: "sun" }))
       .add(effects.ambientOcclusion({ name: "toybox ao", intensity: 0.44, radius: 0.38 }))
-      .add(effects.screenSpaceReflections({ name: "track ssr", intensity: 0.45, maxDistance: 16, roughness: 0.2, thickness: 0.25 }))
+      .add(effects.screenSpaceReflections({ name: "track ssr", intensity: 0.34, maxDistance: 16, roughness: 0.2, thickness: 0.25 }))
       .add(effects.cinematicBloom({ name: "bloom", threshold: 1.08, intensity: 0.24, radius: 0.38 }))
       .add(effects.godRays({ name: "sun shafts", source: "sun", intensity: 0.16, decay: 0.92, samples: 32, color: "#ffe7bf", medium: 0.1 }))
-      .add(effects.depthOfField({ name: "island dof", focusDistance: 26, fStop: 6.4, focalLength: 32, maxBlur: 1.5 }))
       .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.12 }))
       .add(effects.vignette({ name: "vignette", intensity: 0.18, color: "#2d2346" }));
   } else if (post === "bloom") {
@@ -498,9 +468,11 @@ export function buildWorld(options: WorldOptions): World {
         node("road-skirt").setPosition(0, 0, ((scroll % SKIRT_DIMS.period) + SKIRT_DIMS.period) % SKIRT_DIMS.period);
         road.flush(node("road"), false);
 
-        /* molded 3D cutout wall cells + 3D bevelled shape collars (scrolling frame) */
+        /* molded 3D cutout wall cells + 3D bevelled shape collars + sculpted gate portals (scrolling frame) */
         let nearestGateDist = 99;
+        const activePortalSlots = new Set<number>();
         rowSlots.retain(simNow.rows, (slot) => {
+          node(`gate-portal-${slot}`).setVisible(false);
           for (let i = 0; i < 3; i++) {
             walls.collapse(slot * 3 + i);
             contact.collapse(slot * 3 + i);
@@ -513,6 +485,8 @@ export function buildWorld(options: WorldOptions): World {
           if (dGate < nearestGateDist) nearestGateDist = dGate;
           const { slot, fresh } = rowSlots.use(row);
           if (slot < 0) continue;
+          activePortalSlots.add(slot);
+          node(`gate-portal-${slot}`).setVisible(true).setPosition(0, 0, row.z);
           const z = scrollFrameZ(row.z, scroll);
           row.holes.forEach((hole, i) => {
             const idx = slot * 3 + i;
@@ -531,6 +505,9 @@ export function buildWorld(options: WorldOptions): World {
               rimKey[idx] = key;
             }
           });
+        }
+        for (let slot = 0; slot < POOL.rows; slot++) {
+          if (!activePortalSlots.has(slot)) node(`gate-portal-${slot}`).setVisible(false);
         }
         node("walls").setPosition(0, 0, scroll);
         node("wall-contact").setPosition(0, 0, scroll);
@@ -713,12 +690,15 @@ export function buildWorld(options: WorldOptions): World {
       }
 
       const batches = [road, walls, rims, tokens, particles, clouds, contact];
-      const warmIds = ["shield", "wildcard-ring", "hydro-glow", "morph-plasma", "morph-ribbon", ...PLAYER_IDS];
+      const warmIds = ["shield", "wildcard-ring", "hydro-glow", "morph-plasma", "morph-ribbon", "gate-portal-0", "gate-portal-1", ...PLAYER_IDS];
       function warm(on: boolean): void {
         const parkY = -50, parkZ = -60;
         for (const id of warmIds) {
           const h = node(id).setVisible(on);
           if (on) h.setPosition(0, parkY, parkZ);
+        }
+        if (!on) {
+          for (let slot = 0; slot < POOL.rows; slot++) node(`gate-portal-${slot}`).setVisible(false);
         }
         if (on) {
           road.place(0, 0, parkY, parkZ, 0, 1, 1, 1);

@@ -13,6 +13,11 @@ import type { FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
 import { sampleToyboxWorld } from "./look";
 import { boxMesh, coneMesh, groundQuad, mergeMeshes, sphereMesh, ROAD_DIMS } from "./meshes";
 import {
+  hexPrismClusterRaw,
+  sculptedParallaxTreeParts,
+  sculptedParallaxTurretParts
+} from "./art/proceduralModels";
+import {
   CONTACT_FRAGMENT_WGSL,
   CONTACT_VERTEX_WGSL,
   DRIFT_VERTEX_WGSL,
@@ -560,18 +565,21 @@ function grassCap(radius: number, seed: number): ToneMesh {
   return mergeToned([toned(dome, grass), toned(lip, grass), toned(earth, SCENERY.rockTop)]);
 }
 
-function lollipopTree(x: number, z: number, h: number, crown: string, scale = 1): ToneMesh {
-  const trunk = xform(frustumMesh(0.16, 0.11, 0, h, 8), { tx: x, tz: z, sx: scale, sy: scale, sz: scale });
-  const ball = xform(sphereMesh(0.75, 12, 8), { tx: x, ty: (h + 0.45) * scale, tz: z, sx: scale, sy: scale * 0.92, sz: scale });
-  return mergeToned([toned(trunk, SCENERY.trunk), toned(ball, crown)]);
+function sculptedTree(x: number, z: number, h: number, crown: string, scale = 1, conifer = false, seed = 11): ToneMesh {
+  const parts = sculptedParallaxTreeParts(x, z, h, scale, conifer, seed);
+  return mergeToned([toned(parts.trunk as MeshData, SCENERY.trunk), toned(parts.crown as MeshData, crown)]);
 }
 
 function turret(x: number, z: number, h: number, wall: string, roof: string): ToneMesh {
-  const body = xform(frustumMesh(0.75, 0.68, 0, h, 16), { tx: x, tz: z });
-  const band = xform(frustumMesh(0.84, 0.84, h - 0.05, h + 0.25, 16), { tx: x, tz: z });
-  const cone = xform(coneMesh(0.95, 1.5, 16, 0), { tx: x, ty: h + 0.25 + 0.75, tz: z });
-  const door = xform(boxMesh(0.36, 0.6, 0.1), { tx: x, ty: 0.3, tz: z + 0.7 });
-  return mergeToned([toned(body, wall), toned(band, SCENERY.cream), toned(cone, roof), toned(door, "#6a4a5a")]);
+  const parts = sculptedParallaxTurretParts(x, z, h);
+  const door = xform(boxMesh(0.36, 0.6, 0.1), { tx: x, ty: 0.3, tz: z + 0.72 });
+  return mergeToned([
+    toned(parts.wall as MeshData, wall),
+    toned(parts.band as MeshData, SCENERY.cream),
+    toned(parts.roof as MeshData, roof),
+    toned(parts.finial as MeshData, "#f6cf7a"),
+    toned(door, "#6a4a5a")
+  ]);
 }
 
 export type IslandVariant = "monument" | "grove" | "arch" | "turret" | "islet";
@@ -587,30 +595,30 @@ export function islandMesh(variant: IslandVariant, seed: number): ToneMesh {
     parts.push(toned(xform(boxMesh(1.7, 1.7, 1.7), { ty: 0.95, ry: 0.5 }), toy(1)));
     parts.push(toned(sphereMesh(0.9, 14, 10, 0, 2.7, 0), toy(0)));
     parts.push(toned(xform(coneMesh(0.75, 1.4, 4, 0), { tx: 1.7, ty: 0.75, tz: 0.8, ry: 0.3 }), toy(2)));
-    parts.push(toned(sphereMesh(0.32, 10, 8, 0.9, 0.35, -1.6), pastel(1)));
-    parts.push(lollipopTree(-1.8, 0.6, 1.3, crown(0)));
-    parts.push(lollipopTree(-1.0, -1.7, 1.0, crown(1), 0.8));
+    parts.push(toned(xform(hexPrismClusterRaw(0.55, seed + 7) as MeshData, { tx: 0.95, ty: 0.12, tz: -1.55 }), pastel(1)));
+    parts.push(sculptedTree(-1.8, 0.6, 1.45, crown(0), 1, true, seed + 3));
+    parts.push(sculptedTree(-1.0, -1.7, 1.15, crown(1), 0.85, false, seed + 9));
   } else if (variant === "grove") {
-    parts.push(lollipopTree(0, 0, 1.7, crown(0), 1.2));
-    parts.push(lollipopTree(1.6, 0.9, 1.2, crown(1)));
-    parts.push(lollipopTree(-1.5, 1.0, 1.0, crown(2), 0.85));
-    parts.push(lollipopTree(-0.6, -1.7, 1.3, crown(3), 0.95));
-    parts.push(toned(sphereMesh(0.45, 12, 8, 1.4, 0.4, -1.2), toy(0)));
+    parts.push(sculptedTree(0, 0, 1.85, crown(0), 1.2, true, seed + 5));
+    parts.push(sculptedTree(1.6, 0.9, 1.35, crown(1), 1, false, seed + 11));
+    parts.push(sculptedTree(-1.5, 1.0, 1.15, crown(2), 0.88, true, seed + 17));
+    parts.push(sculptedTree(-0.6, -1.7, 1.4, crown(3), 0.95, false, seed + 23));
+    parts.push(toned(xform(hexPrismClusterRaw(0.5, seed + 13) as MeshData, { tx: 1.4, ty: 0.14, tz: -1.2 }), toy(0)));
     parts.push(toned(xform(boxMesh(0.7, 0.7, 0.7), { tx: 2.0, ty: 0.45, tz: -0.2, ry: 0.7 }), toy(1)));
   } else if (variant === "arch") {
     parts.push(toned(xform(torusMesh(1.6, 0.42, 8, 24), { ty: 0.3 }), pastel(0)));
     parts.push(toned(xform(boxMesh(1.0, 1.0, 1.0), { tx: 1.9, ty: 0.6, tz: 1.0, ry: 0.4 }), toy(1)));
-    parts.push(toned(sphereMesh(0.55, 14, 10, -2.0, 0.65, 0.9), toy(0)));
+    parts.push(toned(xform(hexPrismClusterRaw(0.62, seed + 19) as MeshData, { tx: -2.0, ty: 0.16, tz: 0.9 }), toy(0)));
     parts.push(toned(xform(coneMesh(0.6, 1.2, 4, 0), { tx: -1.2, ty: 0.7, tz: -1.6 }), toy(2)));
-    parts.push(lollipopTree(1.2, -1.6, 1.1, crown(2), 0.9));
+    parts.push(sculptedTree(1.2, -1.6, 1.25, crown(2), 0.92, true, seed + 29));
   } else if (variant === "turret") {
     parts.push(turret(0, -0.3, 2.6, SCENERY.cream, toy(2)));
     parts.push(turret(1.6, 1.0, 1.5, pastel(1), toy(0)));
-    parts.push(lollipopTree(-1.7, 0.9, 1.2, crown(1)));
+    parts.push(sculptedTree(-1.7, 0.9, 1.35, crown(1), 1, false, seed + 31));
     parts.push(toned(xform(boxMesh(0.8, 0.8, 0.8), { tx: -1.2, ty: 0.5, tz: -1.6, ry: 0.3 }), toy(1)));
   } else {
-    parts.push(lollipopTree(0.2, 0.1, 1.0, crown(0), 0.9));
-    parts.push(toned(sphereMesh(0.38, 10, 8, -0.8, 0.35, 0.5), toy(seed)));
+    parts.push(sculptedTree(0.2, 0.1, 1.15, crown(0), 0.92, true, seed + 37));
+    parts.push(toned(xform(hexPrismClusterRaw(0.45, seed + 41) as MeshData, { tx: -0.8, ty: 0.12, tz: 0.5 }), toy(seed)));
   }
   return mergeToned(parts);
 }

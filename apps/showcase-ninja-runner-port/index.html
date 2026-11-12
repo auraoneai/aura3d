@@ -139,22 +139,7 @@
         .ink-scroll #district-banner { font-size: 22px; padding: 8px 28px; }
       }
     </style>
-  <title>Shadowstep Gauntlet — Lane-Running Combat</title>
-    <meta name="description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://aura3d.auraone.ai/apps/shadowstep-gauntlet/" />
-    <meta property="og:site_name" content="Aura3D" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Shadowstep Gauntlet — Lane-Running Combat" />
-    <meta property="og:description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
-    <meta property="og:url" content="https://aura3d.auraone.ai/apps/shadowstep-gauntlet/" />
-    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Shadowstep Gauntlet — Lane-Running Combat" />
-    <meta name="twitter:description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
-    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Shadowstep Gauntlet","url":"https://aura3d.auraone.ai/apps/shadowstep-gauntlet/","description":"Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. four generated…","genre":"Action and combat","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
-    <style>
+  <style>
       :root {
         color-scheme: dark;
         --ink: #f4ecdc;
@@ -320,6 +305,230 @@
         #controls button { min-width: 48px; min-height: 48px; padding: 0 12px; }
       }
     </style>
+  <style>
+      /* GU47 NR-19 ink-scroll HUD (E-J theme "ink-scroll"): mist-paper panels, indigo ink text, vermilion seals, brush
+         district card, paired with AuraOne Whitney UI + DIN Pro tabular metrics (WP-23). Scoped to html.ink-scroll. */
+      .ink-scroll { --a3g-font: "A3G Suisse Works Italic", "Suisse Works", Georgia, serif; --a3g-font-display: "A3G Domaine Display", "Domaine Display", Georgia, serif;
+        --ink: #1f1d24; --muted: #524f5b; --panel: rgba(237, 230, 214, 0.93); --panel-solid: #ede6d6; --line: rgba(31, 29, 36, 0.42); --warm: #c23b22; --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: #9e1b1b; --indigo: #2b3550; }
+      .ink-scroll body { font-family: var(--font-ui); }
+      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 4px 16px rgba(17, 22, 36, 0.24); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--ink); }
+      .ink-scroll h1, .ink-scroll h2 { font-family: var(--font-ui); font-weight: 600; }
+      .ink-scroll #stats strong, .ink-scroll #countdown, .ink-scroll #spirit, .ink-scroll #combo { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; }
+      .ink-scroll button { font-family: var(--font-ui); font-weight: 500; color: var(--ink); background: rgba(31, 29, 36, 0.06); border-color: var(--line); border-radius: 5px; min-height: 44px; }
+      .ink-scroll button:hover:not(:disabled) { background: rgba(31, 29, 36, 0.12); }
+      .ink-scroll button.primary, .ink-scroll #forms button.selected { background: var(--warm); color: #f6efe0; font-weight: 600; border-color: var(--warm-deep); }
+      .ink-scroll #forms button.selected small { color: #f6efe0; }
+      .ink-scroll #abilities button::after { background: var(--indigo); }
+      .ink-scroll #abilities button.live { border-color: var(--warm); box-shadow: 0 0 0 2px rgba(194, 59, 34, 0.42); }
+      .ink-scroll .bar { background: rgba(31, 29, 36, 0.14); border-radius: 2px; }
+      .ink-scroll .bar > i { background: linear-gradient(90deg, #2f7f9a, #51dfff); }
+      .ink-scroll #combo { color: var(--warm); }
+      /* the paper progress scroll: rolled ends, a vermilion ink fill and one seal per district */
+      .ink-scroll #progress { height: 8px; border-radius: 2px; background: #ede6d6; border: 1px solid var(--line); box-shadow: -5px 0 0 -1px var(--indigo), 5px 0 0 -1px var(--indigo); }
+      .ink-scroll #progress > i { border-radius: 0; background: linear-gradient(90deg, #e07a4e, var(--warm)); }
+      .ink-scroll #progress > b { background: var(--indigo); top: -4px; height: 14px; }
+      .ink-scroll #progress > span { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 4px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      #progress > em { display: none; }
+      .ink-scroll #progress > em { display: grid; place-items: center; position: absolute; top: -20px; width: 16px; height: 16px; transform: translateX(-50%); font: 600 12px/1 var(--font-ui); font-style: normal; color: var(--warm); border: 1px solid var(--warm); background: #ede6d6; border-radius: 2px; }
+      .ink-scroll #progress > em.passed { color: #f6efe0; background: var(--warm); }
+      /* the brush district card */
+      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 600 28px/1.15 var(--font-ui); letter-spacing: 0.16em; color: #1b2236; text-shadow: none;
+        background: linear-gradient(90deg, rgba(237, 230, 214, 0), rgba(237, 230, 214, 0.92) 14%, rgba(237, 230, 214, 0.92) 86%, rgba(237, 230, 214, 0)); border-top: 2px solid rgba(27, 34, 54, 0.75); border-bottom: 2px solid rgba(27, 34, 54, 0.75); }
+      .ink-scroll #announce { text-shadow: 0 1px 0 rgba(237, 230, 214, 0.9); color: #1b2236; }
+      .ink-scroll #announce strong { font-family: var(--font-ui); font-weight: 600; }
+      .ink-scroll #countdown { color: #ede6d6; text-shadow: 0 0 0 #1b2236, 0 3px 0 #1b2236; }
+      .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(20, 28, 48, 0.28), rgba(14, 20, 36, 0.74)); }
+      .ink-scroll .keys dt { color: var(--warm); }
+      .ink-scroll #intro-card a { color: var(--indigo); }
+      /* NR-18 shot bars on the title-to-chase blend and the win shots (set by world.ts; never with reduced motion) */
+      html::before, html::after { content: ""; position: fixed; left: 0; right: 0; height: 0; background: #0d1328; z-index: 1; pointer-events: none; transition: height 0.5s ease; }
+      html::before { top: 0; } html::after { bottom: 0; }
+      html.shot-bars::before, html.shot-bars::after { height: 9vh; }
+      @media (pointer: coarse), (max-width: 760px) {
+        .ink-scroll #district-banner { font-size: 20px; padding: 8px 26px; }
+      }
+    </style>
+  <title>Shadowstep Gauntlet — Lane-Running Combat</title>
+    <meta name="description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/shadowstep-gauntlet/" />
+    <meta property="og:site_name" content="Aura3D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Shadowstep Gauntlet — Lane-Running Combat" />
+    <meta property="og:description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/shadowstep-gauntlet/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Shadowstep Gauntlet — Lane-Running Combat" />
+    <meta name="twitter:description" content="Lane-running combat with a dozen skinned clones, form changes and a full course finish." />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Shadowstep Gauntlet","url":"https://aura3d.auraone.ai/apps/shadowstep-gauntlet/","description":"Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. four generated…","genre":"Action and combat","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/ninja-runner-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f4ecdc;
+        --muted: rgba(232, 226, 212, 0.72);
+        --panel: rgba(14, 22, 36, 0.76);
+        --panel-solid: #111a2c;
+        --line: rgba(244, 236, 220, 0.18);
+        --warm: #ffb45e;
+        --warm-deep: #d4553a;
+        --cyan: #51dfff;
+        --danger: #ff5a4a;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0e1626;
+        color: var(--ink);
+        font: 400 13px/1.4 var(--font-ui);
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+      .metric { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; letter-spacing: -0.015em; }
+      .unit { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      kbd.desk-key { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
+      .aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; overflow: hidden; border-radius: 2px; background: rgba(128, 128, 128, 0.28); color: var(--warm); }
+      .aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 120ms linear; }
+      .aura3d-loading[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 200ms; }
+      @media (prefers-reduced-motion: reduce) { .aura3d-loading::after, .aura3d-loading[data-complete="true"] { transition: none; } }
+      .meta { font-family: var(--font-ui); font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; color: var(--muted); letter-spacing: 0.05em; }
+      h1, h2 { margin: 0; font-family: var(--font-ui); line-height: 1.15; font-weight: 600; }
+      h1 { font-size: 28px; letter-spacing: 0.08em; }
+      h2 { font-size: 20px; letter-spacing: 0.02em; }
+      button {
+        font: 500 13px/1.15 var(--font-ui);
+        color: var(--ink);
+        background: rgba(244, 236, 220, 0.08);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        min-height: 44px;
+        padding: 9px 14px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      button:hover:not(:disabled) { background: rgba(244, 236, 220, 0.16); }
+      button.primary { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #191512; font-weight: 600; border-color: transparent; padding: 11px 20px; }
+      button:disabled { opacity: 0.45; cursor: default; }
+      .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+      #progress { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 16px); left: 50%; transform: translateX(-50%); width: min(44vw, 540px); height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.18); overflow: visible; }
+      #progress > i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #ffd27a, var(--warm-deep)); }
+      #progress > b { position: absolute; top: -3px; width: 2px; height: 12px; background: rgba(244, 236, 220, 0.7); }
+      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 12px; font-weight: 500; color: var(--ink); white-space: nowrap; padding: 1px 6px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+      #stats { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 12px); right: 14px; min-width: 172px; display: grid; gap: 5px; padding: 9px 13px; }
+      #stats > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      #stats strong { font-family: var(--font-metric); font-size: 21px; font-weight: 500; line-height: 1.05; font-variant-numeric: tabular-nums; }
+      #combo { justify-content: flex-end; font-family: var(--font-metric); color: var(--warm); font-size: 14px; font-weight: 500; min-height: 16px; }
+      #combo:empty { display: none; }
+      #vitals { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 12px); left: 14px; width: 206px; padding: 9px 12px; }
+      .vital-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+      #spirit { font-family: var(--font-metric); font-size: 13px; font-weight: 500; color: var(--ink); }
+      .bar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); overflow: hidden; margin: 5px 0 7px; }
+      .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #3fb8e8, var(--cyan)); }
+      .vital-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      #hearts { letter-spacing: 2px; color: var(--danger); font-size: 15px; line-height: 1; }
+      #district { margin-top: 5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #forms { position: fixed; left: 14px; bottom: 14px; display: flex; gap: 6px; padding: 7px; }
+      #forms button { min-width: 94px; text-align: left; display: grid; gap: 2px; }
+      #forms button small { font-size: 12px; font-weight: 400; color: var(--muted); }
+      #forms button.selected { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #191512; font-weight: 600; border-color: transparent; }
+      #forms button.selected small { color: #342314; }
+      #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 7px; }
+      #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 2px; }
+      #abilities button small { font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--muted); }
+      #abilities button.phone-only { display: none; }
+      #abilities .short { display: none; }
+      #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
+      #abilities button.poor { opacity: 0.55; }
+      #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(81, 223, 255, 0.42); }
+      #announce { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 74px); left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
+      #announce strong { display: block; font-size: 22px; font-weight: 600; letter-spacing: 0.08em; }
+      #district-banner { position: fixed; left: 0; right: 0; top: 34%; text-align: center; pointer-events: none; font-size: 28px; letter-spacing: 0.18em; font-weight: 600; text-shadow: 0 2px 14px #000b; opacity: 0; transition: opacity 0.6s; }
+      #district-banner.show { opacity: 0.95; }
+      #hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 30px rgba(255, 60, 40, 0.75); opacity: 0; transition: opacity 0.5s ease-out; }
+      #hurt.on { opacity: 1; transition: none; }
+      .reduced-motion #hurt { transition: opacity 0.2s ease-out; }
+      .reduced-motion #hurt.on { opacity: 0.4; }
+      .reduced-motion #district-banner { transition: none; }
+      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-family: var(--font-metric); font-size: 112px; font-weight: 500; font-variant-numeric: tabular-nums; text-shadow: 0 4px 24px #000c; }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.35), rgba(10, 16, 28, 0.78)); }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 26px; max-width: 452px; width: 100%; display: grid; gap: 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 12px; }
+      .keys dt { color: var(--warm); font-weight: 600; white-space: nowrap; }
+      .keys dd { margin: 0; color: var(--muted); }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; }
+      #controls { position: fixed; z-index: 5; top: calc(var(--a3d-bar-space, 0px) + 10px); left: calc(50% + min(22vw, 270px) + 14px); display: flex; gap: 6px; }
+      #controls button { min-width: 44px; min-height: 44px; padding: 0 12px; font-size: 13px; }
+      #intro-card .goal { color: var(--ink); font-size: 14px; margin: 0; }
+      #intro-card p { margin: 0; }
+      #intro-card a { color: var(--cyan); text-decoration: none; }
+      #intro-card a:hover { text-decoration: underline; }
+      #result-best:empty, #best:empty { display: none; }
+
+      @media (pointer: coarse), (max-width: 760px) {
+        kbd.desk-key { display: none; }
+        .keys { display: none; }
+        #vitals {
+          top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
+          left: max(8px, env(safe-area-inset-left));
+          width: 168px;
+          padding: 6px 9px;
+        }
+        .vital-label-health { display: none; }
+        #district { margin-top: 3px; }
+        #stats {
+          top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
+          right: max(8px, env(safe-area-inset-right));
+          min-width: 148px;
+          padding: 6px 9px;
+          gap: 2px;
+        }
+        #stats strong { font-size: 16px; }
+        #progress {
+          top: calc(var(--a3d-bar-space, 0px) + max(112px, env(safe-area-inset-top) + 104px));
+          width: calc(100vw - 24px);
+        }
+        #progress > span { display: none; }
+        #announce { top: calc(var(--a3d-bar-space, 0px) + max(136px, env(safe-area-inset-top) + 128px)); }
+        #forms { display: none; }
+        #abilities {
+          left: max(8px, env(safe-area-inset-left));
+          right: max(8px, env(safe-area-inset-right));
+          bottom: max(8px, env(safe-area-inset-bottom));
+          grid-template-columns: repeat(5, 1fr);
+          gap: 5px;
+          padding: 5px;
+        }
+        #abilities button {
+          min-width: 48px;
+          min-height: 48px;
+          padding: 5px 6px;
+          font-size: 12px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        #abilities button small { font-size: 12px; }
+        #abilities button.phone-only { display: grid; }
+        #abilities .full { display: none; }
+        #abilities .short { display: inline; }
+        #controls {
+          top: auto;
+          left: auto;
+          right: max(8px, env(safe-area-inset-right));
+          bottom: calc(70px + env(safe-area-inset-bottom));
+        }
+        #controls button { min-width: 48px; min-height: 48px; padding: 0 12px; }
+      }
+    </style>
     <style>
       /* GU47 NR-19 ink-scroll HUD (E-J theme "ink-scroll"): mist-paper panels, indigo ink text, vermilion seals, brush
          district card, paired with AuraOne Whitney UI + DIN Pro tabular metrics (WP-23). Scoped to html.ink-scroll. */
@@ -361,6 +570,7 @@
       html.shot-bars::before, html.shot-bars::after { height: 9vh; }
       @media (pointer: coarse), (max-width: 760px) {
         .ink-scroll #district-banner { font-size: 20px; padding: 8px 26px; }
+        .ink-scroll #controls { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); }
       }
     </style>
   </head>

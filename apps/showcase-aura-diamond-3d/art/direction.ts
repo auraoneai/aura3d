@@ -52,38 +52,9 @@ export default defineArtDirection({
   framing: { rig: "static", subjectHeightFraction: [0.18, 0.45], fovDeg: [40, 48], mobile: "both" },
   assets: [
     // Triangle counts from the GLB index buffers (route-health.json): athlete 31,758, crowd athlete 3,809.
+    // WP-08: all 26 static ballpark, equipment, spectator, and venue-horizon assets are sculpted procedurally.
     { role: "character", assetKey: "diamondAthlete", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["Idle_Loop", "Crouch_Idle_Loop", "Ready"] } },
-    { role: "set-dressing", assetKey: "diamondCrowdAthlete", maxTriangles: 4000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle_Loop"] } },
-    { role: "prop", assetKey: "diamondBat", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "diamondGlove", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "diamondBase", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "diamondFoulPole", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "diamondDugout", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "diamondStadium", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "diamondScoreboard", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "diamondFloodlight", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 WP-36: the Meshy seated stand fan, 625 triangles after the sloppy simplify (scripts/optimize-fan.mjs), 256 px maps.
-    { role: "set-dressing", assetKey: "ballpark_fanA", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    // GU47 wave 1: the second Meshy seated fan, 555 triangles after the same sloppy simplify, 256 px maps.
-    { role: "set-dressing", assetKey: "ballpark_fanB", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    // GU47 wave 2 (DIA-A1): five Meshy far set pieces, decimated to 10-16k triangles with 512 px maps (art/direction notes in lanes/g08.md).
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkLighthouse", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkMesa", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkWaterTower", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkRowhouseRoof", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHabitat", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    // GU47 wave 3 (DIA-A1): the re-rolled Meshy sandstone hoodoo, 10,000 triangles after the meshopt pass, 512 px maps.
-    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHoodooR2", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "diamondHarborPier", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondTower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondCanyonArch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondRock", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "diamondIvyWall", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondTrophy", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "backdrop", assetKey: "diamondTyphoonDome", maxTriangles: 150000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "backdrop", assetKey: "diamondEarthRise", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondLunarRover", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "diamondMoonDome", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "set-dressing", assetKey: "diamondCrowdAthlete", maxTriangles: 4000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle_Loop"] } }
   ],
   vfx: [
     { event: "bat-contact", kind: "diamond-bat-crack", flipbook: "debris-chips" },

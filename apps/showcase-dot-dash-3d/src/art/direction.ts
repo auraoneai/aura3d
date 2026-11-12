@@ -51,19 +51,8 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "topDown", subjectHeightFraction: [0.025, 0.08], fovDeg: [45, 52], mobile: "both" },
-  assets: [
-    // WP-36 generations. Phase 4 (4.7.2): the courier pod is admitted as `dotdashCourierPod` (the WP-36 key,
-    // simplified to 10.5k triangles); the sentries and dressing stay procedural (Meshy keys refuse API calls).
-    { role: "hero", assetKey: "dotdashCourierPod", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentryHunter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentryAmbusher", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentryDrifter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentrySkittish", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "world", assetKey: "dotDashBoardSet", maxTriangles: 4000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "dotDashComponentKit", maxTriangles: 24000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "dotDashBenchProps", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "dotDashWalnutBench", maxTriangles: 200, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
-  ],
+  // WP-12: 100% native @aura3d/engine multi-material procedural assemblies in src/art/proceduralModels.ts (zero static .glb mounts).
+  assets: [],
   vfx: [
     { event: "shard-pickup", kind: "trace-light" },
     { event: "surge-cell", kind: "surge-ring" },

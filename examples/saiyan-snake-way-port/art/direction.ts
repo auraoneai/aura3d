@@ -43,20 +43,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.24], fovDeg: [62, 84], mobile: "both" },
   assets: [
-    { role: "character", assetKey: "runner", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Run_Loop", "Jump_Loop", "Flight_Loop", "Dive_Loop", "Slide_Loop", "Idle_Loop", "Hit_React"] } },
-    { role: "prop", assetKey: "gate", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "barrier", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "ogre", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "cart", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "feast", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "lantern", maxTriangles: 12000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "island", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
-    // GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent landmark
-    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
-    // GU47 wave 2 (SSR-10): near-island variants, 42.6k and 28.3k triangles, 1024 px textures
-    { role: "backdrop", assetKey: "spireB", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "spireC", maxTriangles: 45000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "spireA", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "character", assetKey: "runner", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Run_Loop", "Jump_Loop", "Flight_Loop", "Dive_Loop", "Slide_Loop", "Idle_Loop", "Hit_React"] } }
   ],
   vfx: [
     { event: "orb-pickup", kind: "serpent-orb" },

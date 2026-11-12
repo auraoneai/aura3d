@@ -1,7 +1,6 @@
-// apps/showcase-polarity-orbs/src/art/direction.ts — WP-5 (lane G5) art direction for Polarity Orbs.
-// Fantasy: roll a charged ball through a split warm/cool dusk world, flipping polarity to match the orbs ahead.
-// The look table is `../look.ts`; the road, orbs and world are procedural. Meshy-07 adds six backdrop models drifting
-// beyond the road edges (`../backdrop.ts`): red-pole pieces on the left, blue-tinted pieces on the right.
+// apps/showcase-polarity-orbs/src/art/direction.ts — WP-17 procedural multi-material art direction for Polarity Orbs.
+// Fantasy: roll a charged ball through a split warm/cool dusk magnetosphere laboratory, flipping polarity to match the orbs ahead.
+// The look table is `../look.ts`; the road, orbs, powerups, and Tokamak / dipole resonator lab backdrop (`./proceduralModels.ts`) are 100% procedural.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
@@ -43,18 +42,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.1, 0.28], fovDeg: [60, 70], mobile: "both" },
-  assets: [
-    { role: "world", assetKey: "deckHalves", maxTriangles: 6000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "polarityBall", maxTriangles: 1000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "polarityOrbs", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "powerupGems", maxTriangles: 500, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poChargeCoil", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poCrystalRed", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poCrystalIslandB", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poCrystalBlue", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poCrystalIsland", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "poMagnet", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
-  ],
+  assets: [],
   vfx: [
     { event: "flip", kind: "shockwave-ring" },
     { event: "collect", kind: "burst" },

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-hoops-3d/art/direction.ts",
-  "sourceSha256": "a26b5224b096aa168f541a52e5abbd971fcadca6a84a965807ad65cb5a349c73",
+  "sourceSha256": "371ef4dee1a7c5ea28ee757065eff7ea80148bea57450c8ec6049cab60de979a",
   "id": "showcase-aura-hoops-3d",
   "genre": "basketball",
   "signatureEffect": "Spray-tag decal stencilled on the blacktop under the rim after a Jam dunk, fading over 20 s, at most 8 live, on every tier.",
@@ -54,42 +54,7 @@
     },
     "models": [
       {
-        "assetKey": "aura_hoops_3d_blacktopBleacherR2",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopContainer",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopCorrugatedRoof",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "aura_hoops_3d_blacktopFanAPoses",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopFanB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopFanC",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -110,20 +75,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "aura_hoops_3d_blacktopLifeguardTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "aura_hoops_3d_blacktopMuralWall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "hoopsAthleteBigKit",
         "triangles": 0,
         "textures": 0,
@@ -132,125 +83,6 @@
       },
       {
         "assetKey": "hoopsAthleteGuardKit",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsBackboard",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsBall",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsBallCart",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsCanopy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsCourtShell",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsEarth",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsFloodlight",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsHoopRig",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsLamp",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsOrbitArena",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsPalm",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsRim",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsScoreboard",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsSkyline",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsTower",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoopsTrophy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "hoops_blacktopFloodlight",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -365,112 +197,6 @@
         }
       },
       {
-        "role": "hero",
-        "assetKey": "hoopsBall",
-        "maxTriangles": 20000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "hoopsHoopRig",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "hoopsBackboard",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "hoopsRim",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "hoopsCourtShell",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsScoreboard",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsFloodlight",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoops_blacktopFloodlight",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopFanB",
-        "maxTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopFanC",
-        "maxTriangles": 4000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopMuralWall",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopLifeguardTower",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopCorrugatedRoof",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopContainer",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "aura_hoops_3d_blacktopBleacherR2",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
         "role": "set-dressing",
         "assetKey": "aura_hoops_3d_blacktopFanAPoses",
         "maxTriangles": 5000,
@@ -490,69 +216,6 @@
         "maxTriangles": 5000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsBallCart",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsTrophy",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsLamp",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsPalm",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "hoopsCanopy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "hoopsSkyline",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "hoopsTower",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "hoopsEarth",
-        "maxTriangles": 25000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "hoopsOrbitArena",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

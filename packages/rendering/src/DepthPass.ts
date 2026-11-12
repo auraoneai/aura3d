@@ -1654,7 +1654,28 @@ export class DepthPass extends BaseRenderPass {
         return;
       }
       for (let index = 0; index < instanceTotal; index += 1) {
-        const instance = Array.from(transforms.subarray(index * 16, index * 16 + 16)) as unknown as Mat4;
+        const off = index * 16;
+        if (caster.geometry.topology !== "points") {
+          const max3 = Math.max(
+            Math.abs(transforms[off] ?? 0),
+            Math.abs(transforms[off + 1] ?? 0),
+            Math.abs(transforms[off + 2] ?? 0),
+            Math.abs(transforms[off + 4] ?? 0),
+            Math.abs(transforms[off + 5] ?? 0),
+            Math.abs(transforms[off + 6] ?? 0),
+            Math.abs(transforms[off + 8] ?? 0),
+            Math.abs(transforms[off + 9] ?? 0),
+            Math.abs(transforms[off + 10] ?? 0)
+          );
+          const persp =
+            Math.abs(transforms[off + 3] ?? 0) <= 1e-8 &&
+            Math.abs(transforms[off + 7] ?? 0) <= 1e-8 &&
+            Math.abs(transforms[off + 11] ?? 0) <= 1e-8;
+          if (persp && (max3 <= 1e-8 || (max3 <= 2e-4 && (transforms[off + 13] ?? 0) <= -80))) {
+            continue;
+          }
+        }
+        const instance = Array.from(transforms.subarray(off, off + 16)) as unknown as Mat4;
         draw(multiplyMat4(modelMatrix, instance), `${label}:${index}`, false, false);
       }
     } finally { transientPalette?.texture?.dispose(); }

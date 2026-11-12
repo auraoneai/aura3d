@@ -4,7 +4,7 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { createCameraClearance } from "@aura3d/engine/game";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { gapAhead } from "./hud";
@@ -16,7 +16,27 @@ import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFra
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
 import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
-import { ENTITY_MODELS, ISLAND_COUNT, ISLAND_VARIANTS, LANTERN_COUNT, MESHY, runnerModelForLook } from "./models";
+import { ENTITY_MODELS, ISLAND_COUNT, ISLAND_VARIANTS, LANTERN_COUNT, runnerModelForLook } from "./models";
+import {
+  MAT_INSTANCED_DORSAL_SPINE,
+  buildCoiledTailMonumentNode,
+  buildColossalSerpentHeadNode,
+  buildEntityModelNode,
+  buildPalaceLanternNode,
+  buildSanctuaryPlanetletNode,
+  buildSerpentGatehouseNode,
+  buildSkyIslandVariantNode,
+  cumulusBillowSculptedSpec,
+  dorsalSpineFinSpec,
+  hangingVergeLanternSpec,
+  orbSculptedSpec,
+  powerCrystalSculptedSpec,
+  powerHaloSculptedSpec,
+  soulCoreSculptedSpec,
+  soulTailSculptedSpec,
+  type PooledEntityModelType,
+  type SkyIslandVariantKey
+} from "./art/proceduralModels";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookMode, type LookParams, type ResolvedLook } from "./art/colorScript";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
@@ -117,6 +137,9 @@ export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
 const GATE_RING_SLOTS = 6;
 export const CLOUD_BILLOW_COUNT = 192;
 const CLOUD_BILLOW_SPACING = 2.6;
+export const DORSAL_SPINE_SPACING = 6;
+export const DORSAL_SPINE_PAIRS = 58;
+export const DORSAL_SPINE_SLOTS = DORSAL_SPINE_PAIRS * 2;
 const VFX_PLASMA_SLOTS = 6;
 const VFX_DUST_SLOTS = 4;
 /** Temple-craft palette (identity row): deep red lacquer posts, an indigo lacquer lintel under a gold-leaf ridge, a gold tie. */
@@ -428,16 +451,21 @@ export function buildWorld(options: WorldOptions = {}): World {
   };
 
   /*
-   * Meshy roadside lanterns and floating islands, recycled along the road. GU47 phase 6 (draw budget, PRD D7): under the colour
-   * script neither casts the sun shadow. Each copy was one depth draw per cascade (2 at High), 32 draws for the 16 nodes, and
-   * the islands' shadows fell only on the unlit cloud sea; the lanterns stand outside the road top. They still write contact depth.
+   * Sculpted multi-material roadside palace lanterns, floating sky islands, colossal dragon head, gatehouse, coiled tail
+   * monument, and distant sanctuary planetlet (`art/proceduralModels.ts`). Under the colour script neither the lanterns nor
+   * the sky islands cast sun shadows so cascade depth draws stay lean while retaining contact depth.
    */
-  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
+  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(buildPalaceLanternNode(`lantern-${i}`, `lantern-${i}`, !script));
   for (let i = 0; i < ISLAND_COUNT; i++) {
     const variant = script ? ISLAND_VARIANTS[i % ISLAND_VARIANTS.length]! : { key: "island" as const, targetHeight: 15 };
-    builder.add(model(MESHY[variant.key], { name: `island-${i}`, targetHeight: variant.targetHeight, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+    builder.add(buildSkyIslandVariantNode(variant.key as SkyIslandVariantKey, variant.targetHeight, `island-${i}`, `island-${i}`, !script));
   }
-  if (script) builder.add(model(MESHY.serpentHead, { name: "serpent-head", targetHeight: SERPENT_HEAD.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-head" }));
+  if (script) {
+    builder.add(buildColossalSerpentHeadNode("serpent-head", "serpent-head"));
+    builder.add(buildSerpentGatehouseNode("serpent-gatehouse", "serpent-gatehouse"));
+    builder.add(buildCoiledTailMonumentNode("serpent-tail-monument", "serpent-tail-monument"));
+    builder.add(buildSanctuaryPlanetletNode("sanctuary-planetlet", "sanctuary-planetlet"));
+  }
 
   /* the runner and the aura shell */
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
@@ -454,7 +482,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   // GU47 SSR-13: under the colour script runtime cloud wisps (art/ambientFx.ts) replace the box streaks
   if (!script) for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
 
-  /* GU47 SSR-18/SSR-09: orbs, souls and power-ups as instanced glow nodes (HDR cores, fresnel shells) */
+  /* GU47 SSR-18/SSR-09 + WP-21: sculpted orbs, spirit wisps and power-ups as instanced glow nodes */
   const instancedMaterials: Readonly<Record<string, CustomSpec>> = {
     orb: glowInstancedSpec(hexLinear(0xf2fff8), hexLinear(0x7fe0c4)),
     soul: glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.95, 1, 0, 1.4),
@@ -462,6 +490,10 @@ export function buildWorld(options: WorldOptions = {}): World {
     powerHalo: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 0.8, 1, 1, 1.6)
   };
   if (script) {
+    const pickupSpec = (type: string, partIndex: number) =>
+      type === "orb" ? orbSculptedSpec()
+      : type === "soul" ? (partIndex === 0 ? soulCoreSculptedSpec() : soulTailSculptedSpec())
+      : partIndex === 0 ? powerCrystalSculptedSpec() : powerHaloSculptedSpec();
     for (const type of INSTANCED_TYPES) {
       const count = POOLS[type] ?? 0;
       (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
@@ -469,20 +501,16 @@ export function buildWorld(options: WorldOptions = {}): World {
         const transforms = Array.from({ length: count }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
         const colors = Array.from({ length: count }, () => "#ffffff");
         const mat = material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
-        const size = part.size ?? 1;
-        const node =
-          part.shape === "cone" ? instances.cone({ name: id, transforms, colors, params: { radius: part.cone?.radius ?? 0.2, height: part.cone?.height ?? 0.6, radialSegments: 8 }, material: mat })
-          : part.shape === "octahedron" ? instances.polyhedron({ name: id, transforms, colors, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat })
-          : instances.sphere({ name: id, transforms, colors, size: size as number, material: mat });
-        builder.add(node.runtime({ id }));
+        builder.add(instances.custom(pickupSpec(type, j), { name: id, transforms, colors, material: mat }).runtime({ id }));
       });
     }
   }
 
-  /* GU47 SSR-11: prayer-flag lines and hanging lanterns every 18 m along both verges (2 instanced draws) */
+  /* GU47 SSR-11 + WP-21: prayer-flag lines, hanging lanterns, balustrade dorsal spines & multi-lobe cumulus billows */
   if (script) {
     const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
     builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(FLAG_DRAW_SLOTS), colors: Array.from({ length: FLAG_DRAW_SLOTS }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    builder.add(instances.custom(dorsalSpineFinSpec(), { name: "viaduct-dorsal-spines", transforms: hidden(DORSAL_SPINE_SLOTS), material: MAT_INSTANCED_DORSAL_SPINE, castShadow: false, receiveShadow: true }).runtime({ id: "viaduct-dorsal-spines" }));
     // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
     for (const board of STAGE_BOARDS) {
       const bf = frameAt(samples, Math.min(board.s, ROAD_LENGTH));
@@ -494,12 +522,12 @@ export function buildWorld(options: WorldOptions = {}): World {
       builder.add(primitives.box({ name: board.id, size: [width, 3.2, 0.3], material: material.custom(solidSpec(hexLinear(0x1c1640), hexLinear(0xf2b33d), 0.08)) }).position(at[0], at[1], at[2]).rotate(e[0], e[1], e[2]).runtime({ id: board.id }));
       builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
     }
-    builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), colors: Array.from({ length: SOUL_COLUMN.count }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
+    builder.add(instances.custom(soulCoreSculptedSpec(), { name: "soul-column", transforms: hidden(SOUL_COLUMN.count), colors: Array.from({ length: SOUL_COLUMN.count }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
     for (const band of SPIRE_BANDS_SHOWN ? ISLAND_BANDS : []) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
-    builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), colors: Array.from({ length: VERGE_POSTS }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
-    builder.add(instances.sphere({ name: "cloud-billows", size: 1, transforms: hidden(CLOUD_BILLOW_COUNT), colors: Array.from({ length: CLOUD_BILLOW_COUNT }, () => "#ffffff"), material: material.custom(cloudBillowInstancedSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "cloud-billows" }));
+    builder.add(instances.custom(hangingVergeLanternSpec(), { name: "verge-lanterns", transforms: hidden(VERGE_POSTS), colors: Array.from({ length: VERGE_POSTS }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+    builder.add(instances.custom(cumulusBillowSculptedSpec(), { name: "cloud-billows", transforms: hidden(CLOUD_BILLOW_COUNT), colors: Array.from({ length: CLOUD_BILLOW_COUNT }, () => "#ffffff"), material: material.custom(cloudBillowInstancedSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "cloud-billows" }));
     for (let i = 0; i < GATE_RING_SLOTS; i++) {
       builder.add(primitives.torus({ name: `gate-ring-${i}`, size: 9.6, params: { tube: 0.032, radialSegments: 12, tubularSegments: 36 }, material: material.custom(boostGateSpec()), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `gate-ring-${i}` }));
     }
@@ -512,15 +540,14 @@ export function buildWorld(options: WorldOptions = {}): World {
     builder.add(effects.auroraRibbon({ name: "celestial-ribbon", color: "#7fe0c4", colorTop: "#ffd36e", intensity: 0.78, width: 210, height: 28, segments: 64, sway: 0.65, shimmer: 0.65 }).position(0, -500, 0).runtime({ id: "celestial-ribbon" }));
   }
 
-  /* entity pools: every slot is a small multi-part prop */
+  /* entity pools: sculpted multi-material assemblies for obstacles, guardians & hospitality feasts */
   for (const [type, count] of Object.entries(POOLS)) {
     if (script && INSTANCED_TYPES.has(type)) continue;
     (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
       for (let i = 0; i < count; i++) {
         if (part.shape === "model") {
-          const spec = ENTITY_MODELS[type] as NonNullable<(typeof ENTITY_MODELS)[string]>;
           const id = `ent-${type}-${i}-${j}`;
-          builder.add(model(MESHY[spec.key], { name: id, targetHeight: spec.height }).position(0, -500, 0).runtime({ id }));
+          builder.add(buildEntityModelNode(type as PooledEntityModelType, id, id));
         } else addPart(`ent-${type}-${i}-${j}`, part, propMaterials[part.mat] as CustomSpec, true);
       }
     });
@@ -532,8 +559,8 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
-    // GU47 SSR-05/06 + WP-27: SSAO crevice grounding, cinematic bloom, warm golden sun shafts, per-stage grade, vignette 0.22,
-    // and the god-ray volumetric pass (enabled at runtime on High / Ultra tiers and low-sun stages only).
+    // GU47 SSR-05/06 + WP-27 + WP-21: SSAO crevice grounding, cinematic bloom, warm golden sun shafts, per-stage grade,
+    // vignette 0.22, god-ray volumetric pass, subtle chromatic aberration pulse, and FXAA (never depthOfField / motionBlur).
     builder
       .add(effects.ambientOcclusion({ name: "ao", intensity: 0.36, radius: 0.68, density: 0.56 }))
       .add(effects.cinematicBloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, color: "#fff0d8", radius: 0.48, softKnee: 0.55 }))
@@ -541,11 +568,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
       .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
-      // GU47 SSR-07: motion blur above 60 m/s (High only), aberration pulses, outro DOF; art/cinePost.ts disables them
-      // on the first frame and enables each only when its moment comes.
-      .add(effects.motionBlur({ name: "motion blur", intensity: 0.25, shutter: 0.5, maxBlur: 12 }))
       .add(effects.chromaticAberration({ name: "aberration", intensity: 0.003 }))
-      .add(effects.depthOfField({ name: "outro focus", focusDistance: 9, fStop: 2.8, maxBlur: 6 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
 
@@ -603,6 +626,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-11: verge buffers + WP-27 cloud billows, boost-gate rings, flipbook bursts, camera clearance & impact rig */
       const flagBuf = script ? { data: new Float32Array(FLAG_DRAW_SLOTS * 16), rgba: new Float32Array(FLAG_DRAW_SLOTS * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
+      const spineBuf = script ? new Float32Array(DORSAL_SPINE_SLOTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
       const cloudBuf = script ? { data: new Float32Array(CLOUD_BILLOW_COUNT * 16), rgba: new Float32Array(CLOUD_BILLOW_COUNT * 4) } : null;
       const islandBufs = script && SPIRE_BANDS_SHOWN ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
@@ -863,7 +887,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
         }
 
-        /* GU47 phase 4 (WP-36 serpSerpentHead) + WP-27 title hero lighting: colossal serpent rising out of the cloud sea */
+        /* GU47 phase 4 + WP-21: colossal sculpted dragon head, check-in gatehouse, coiled tail, sanctuary planetlet & balustrade spines */
         if (script) {
           if (lookDriver) lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           const lap = Math.floor((S.s + SERPENT_HEAD.cycle - SERPENT_HEAD.ahead) / SERPENT_HEAD.cycle);
@@ -875,6 +899,46 @@ export function buildWorld(options: WorldOptions = {}): World {
           const hp = onRoad(hf, side * lateral, riseBase + (reducedMotion ? 0 : Math.sin(time * 0.25) * 2));
           const he = matrixEuler(frameBasis(hf, (-side * (title ? 34 : SERPENT_HEAD.yawDeg) * Math.PI) / 180));
           show("serpent-head", true).setPosition(hp[0], hp[1], hp[2]).setRotation(he[0], he[1], he[2]).setScale(title ? 0.72 : 1);
+          const showGatehouse = S.s < 460 || title;
+          const ghHandle = show("serpent-gatehouse", showGatehouse);
+          if (showGatehouse) {
+            const gf0 = frameAt(samples, 28);
+            const gp0 = onRoad(gf0, 0, -0.35);
+            const ge0 = matrixEuler(frameBasis(gf0));
+            ghHandle.setPosition(gp0[0], gp0[1], gp0[2]).setRotation(ge0[0], ge0[1], ge0[2]);
+          }
+          const showTail = S.s > ROAD_LENGTH - 720;
+          const tailHandle = show("serpent-tail-monument", showTail);
+          if (showTail) {
+            const tf0 = frameAt(samples, ROAD_LENGTH + 18);
+            const tp0 = onRoad(tf0, 0, -0.4);
+            const te0 = matrixEuler(frameBasis(tf0));
+            tailHandle.setPosition(tp0[0], tp0[1], tp0[2]).setRotation(te0[0], te0[1], te0[2]);
+          }
+          const showPlanet = S.s > ROAD_LENGTH - 980;
+          const planetHandle = show("sanctuary-planetlet", showPlanet);
+          if (showPlanet) {
+            const pf0 = frameAt(samples, ROAD_LENGTH + 36);
+            const pp0: V3 = [pf0.p[0] + pf0.F[0] * 92 + pf0.U[0] * 28, pf0.p[1] + pf0.F[1] * 92 + pf0.U[1] * 28, pf0.p[2] + pf0.F[2] * 92 + pf0.U[2] * 28];
+            const pe0 = matrixEuler(frameBasis(pf0, reducedMotion ? 0 : time * 0.04));
+            planetHandle.setPosition(pp0[0], pp0[1], pp0[2]).setRotation(pe0[0], pe0[1], pe0[2]);
+          }
+          if (spineBuf) {
+            let si = 0;
+            const sBase = Math.floor((S.s - 18) / DORSAL_SPINE_SPACING);
+            for (let k = 0; k < DORSAL_SPINE_PAIRS; k++) {
+              const ss = (sBase + k) * DORSAL_SPINE_SPACING;
+              if (ss < -30 || ss > ROAD_LENGTH + 12) continue;
+              const sf0 = frameAt(samples, ss);
+              if (sf0.gap) continue;
+              const sb = frameBasis(sf0);
+              for (const bSide of [-1, 1] as const) {
+                const spAt = onRoad(sf0, bSide * 4.55 * sf0.girth, 0.76 * sf0.girth);
+                writeMatrix(spineBuf, si++ * 16, sb, spAt, sf0.girth);
+              }
+            }
+            (node("viaduct-dorsal-spines") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(spineBuf, si);
+          }
           if (title) {
             const keyAt = onRoad(hf, side * (lateral - 36), riseBase + 68);
             const rimAt = onRoad(hf, side * (lateral + 28), riseBase + 54);
@@ -933,7 +997,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           for (let k = 0; k < VERGE_POSTS / 2; k++) {
             if (mod(first + k, GATE_EVERY) !== 0) continue;
             const s0 = (first + k) * VERGE_SPACING;
-            if (s0 < 0 || s0 > ROAD_LENGTH || STAGE_BOARDS.some((b) => Math.abs(b.s - s0) < GATE_BOARD_CLEAR)) continue;
+            if (s0 < 54 || s0 > ROAD_LENGTH || STAGE_BOARDS.some((b) => Math.abs(b.s - s0) < GATE_BOARD_CLEAR)) continue;
             const gf = frameAt(samples, s0);
             const gb = frameBasis(gf);
             const box = (at: V3, sx: number, sy: number, sz: number, tint: V3): void => {
@@ -1276,7 +1340,22 @@ export function buildWorld(options: WorldOptions = {}): World {
             h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
           }
           if (!script) for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
-          runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
+          if (script && typeof runner?.actor.setMaterialOverrides === "function") {
+            const sheen = hexLinear(style.gi);
+            runner.actor.setMaterialOverrides([
+              {
+                baseColorMultiply: [style.tint[0], style.tint[1], style.tint[2], 1],
+                emissiveColor: [style.wash[0], style.wash[1], style.wash[2]],
+                emissiveStrength: 0.12,
+                roughness: 0.68,
+                sheenColor: [sheen[0] * 0.45, sheen[1] * 0.45, sheen[2] * 0.45],
+                sheenRoughness: 0.36,
+                rim: { color: [1.0, 0.82, 0.56], power: 3.2, intensity: 0.28 }
+              }
+            ]);
+          } else {
+            runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
+          }
         },
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; },

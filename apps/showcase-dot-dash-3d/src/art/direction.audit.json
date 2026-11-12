@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-dot-dash-3d/src/art/direction.ts",
-  "sourceSha256": "91cf6134a25ded4f075ed3c5f26c5c4ab7fd00cc49c20fcabea84d21e303a68f",
+  "sourceSha256": "215b34a7d2126a86c2eabfd8d0084e0cad45fc96bfd0b53b06e3bb25d243c01c",
   "id": "dot-dash-3d",
   "genre": "maze-arcade",
   "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
@@ -62,22 +62,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "dotdashCourierPod",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "dotdashCourierPod",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "walnut bench",
@@ -92,7 +77,6 @@
         "practical": false
       },
       {
-        "name": "lacquer",
         "node": "walls",
         "practical": false
       },
@@ -102,12 +86,10 @@
         "practical": true
       },
       {
-        "name": "brushed metal",
         "node": "pins",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "traces",
         "practical": false
       },
@@ -141,7 +123,7 @@
       },
       {
         "node": "eyes",
-        "emissiveIntensity": 1.4,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -149,7 +131,6 @@
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "capacitors",
         "practical": false
       },
@@ -169,22 +150,22 @@
         "practical": true
       },
       {
-        "name": "lacquer",
+        "name": "clearcoat paint",
         "node": "sentry-hunter",
         "practical": false
       },
       {
-        "name": "lacquer",
+        "name": "clearcoat paint",
         "node": "sentry-ambusher",
         "practical": false
       },
       {
-        "name": "lacquer",
+        "name": "clearcoat paint",
         "node": "sentry-drifter",
         "practical": false
       },
       {
-        "name": "lacquer",
+        "name": "clearcoat paint",
         "node": "sentry-skittish",
         "practical": false
       },
@@ -204,18 +185,191 @@
       },
       {
         "node": "cache-gem",
-        "emissiveIntensity": 0.28,
+        "emissiveIntensity": 0.3,
         "practical": true
       },
       {
+        "name": "courier cyan plasma",
         "node": "byte",
         "emissiveIntensity": 2.35,
         "practical": true
       },
       {
+        "name": "courier cyan plasma",
         "node": "byte-echo",
         "emissiveIntensity": 2.35,
         "practical": true
+      },
+      {
+        "name": "courier clearcoat shell",
+        "node": "courier-pod-chassis material 0",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "courier-pod-chassis material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "courier-pod-chassis material 2",
+        "practical": false
+      },
+      {
+        "name": "courier ceramic cowl",
+        "node": "courier-pod-chassis material 3",
+        "practical": false
+      },
+      {
+        "name": "braided stator damper",
+        "node": "courier-pod-chassis material 4",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "courier-pod-chassis material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "optical visor glass",
+        "node": "courier-pod-visor-dome",
+        "practical": false
+      },
+      {
+        "name": "courier clearcoat shell",
+        "node": "courier-pod-echo-chassis material 0",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "courier-pod-echo-chassis material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "courier-pod-echo-chassis material 2",
+        "practical": false
+      },
+      {
+        "name": "courier ceramic cowl",
+        "node": "courier-pod-echo-chassis material 3",
+        "practical": false
+      },
+      {
+        "name": "braided stator damper",
+        "node": "courier-pod-echo-chassis material 4",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "courier-pod-echo-chassis material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "optical visor glass",
+        "node": "courier-pod-echo-visor-dome",
+        "practical": false
+      },
+      {
+        "name": "arcade cherry ruby",
+        "node": "bonus-relic-cherry material 0",
+        "practical": false
+      },
+      {
+        "name": "arcade emerald glaze",
+        "node": "bonus-relic-cherry material 1",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-cherry material 2",
+        "practical": false
+      },
+      {
+        "name": "arcade emerald glaze",
+        "node": "bonus-relic-strawberry material 1",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-strawberry material 2",
+        "practical": false
+      },
+      {
+        "name": "arcade rose glaze",
+        "node": "bonus-relic-strawberry material 4",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-orange material 2",
+        "practical": false
+      },
+      {
+        "name": "amber beacon plasma",
+        "node": "bonus-relic-orange material 6",
+        "emissiveIntensity": 2.05,
+        "practical": true
+      },
+      {
+        "name": "arcade emerald glaze",
+        "node": "bonus-relic-apple material 1",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-apple material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "bonus-relic-apple material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "arcade emerald glaze",
+        "node": "bonus-relic-melon material 1",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-melon material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "bonus-relic-melon material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "arcade cherry ruby",
+        "node": "bonus-relic-star-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "bonus-relic-star-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "galaxian starfighter paint",
+        "node": "bonus-relic-star-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "bonus-relic-star-hull material 5",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "optical visor glass",
+        "node": "bonus-relic-star-canopy",
+        "practical": false
       },
       {
         "node": "hub-pad",
@@ -244,6 +398,90 @@
       {
         "node": "wrap-portal-3",
         "practical": false
+      },
+      {
+        "name": "portal slate ceramic",
+        "node": "warp-arch-0 material 0",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "warp-arch-0 material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic inductor copper",
+        "node": "warp-arch-0 material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "warp-arch-0 material 3",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "portal slate ceramic",
+        "node": "warp-arch-1 material 0",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "warp-arch-1 material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic inductor copper",
+        "node": "warp-arch-1 material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "warp-arch-1 material 3",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "portal slate ceramic",
+        "node": "warp-arch-2 material 0",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "warp-arch-2 material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic inductor copper",
+        "node": "warp-arch-2 material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "warp-arch-2 material 3",
+        "emissiveIntensity": 2.35,
+        "practical": true
+      },
+      {
+        "name": "portal slate ceramic",
+        "node": "warp-arch-3 material 0",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "warp-arch-3 material 1",
+        "practical": false
+      },
+      {
+        "name": "anisotropic inductor copper",
+        "node": "warp-arch-3 material 2",
+        "practical": false
+      },
+      {
+        "name": "courier cyan plasma",
+        "node": "warp-arch-3 material 3",
+        "emissiveIntensity": 2.35,
+        "practical": true
       },
       {
         "node": "spark-burst-0",
@@ -284,6 +522,32 @@
       {
         "node": "mat grid",
         "practical": false
+      },
+      {
+        "name": "workbench lamp enamel",
+        "node": "desk-lamp-rig material 0",
+        "practical": false
+      },
+      {
+        "name": "anisotropic titanium",
+        "node": "desk-lamp-rig material 1",
+        "practical": false
+      },
+      {
+        "name": "forged gimbal brass",
+        "node": "desk-lamp-rig material 2",
+        "practical": false
+      },
+      {
+        "name": "braided stator damper",
+        "node": "desk-lamp-rig material 3",
+        "practical": false
+      },
+      {
+        "name": "amber beacon plasma",
+        "node": "desk-lamp-rig material 4",
+        "emissiveIntensity": 2.05,
+        "practical": true
       },
       {
         "node": "lamp shaft 0",
@@ -390,76 +654,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "dotdashCourierPod",
-        "maxTriangles": 12000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "enemy",
-        "assetKey": "dotDashSentryHunter",
-        "maxTriangles": 8000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "enemy",
-        "assetKey": "dotDashSentryAmbusher",
-        "maxTriangles": 8000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "enemy",
-        "assetKey": "dotDashSentryDrifter",
-        "maxTriangles": 8000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "enemy",
-        "assetKey": "dotDashSentrySkittish",
-        "maxTriangles": 8000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "dotDashBoardSet",
-        "maxTriangles": 4000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "dotDashComponentKit",
-        "maxTriangles": 24000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "dotDashBenchProps",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "dotDashWalnutBench",
-        "maxTriangles": 200,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "shard-pickup",

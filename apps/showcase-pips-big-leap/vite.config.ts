@@ -43,13 +43,27 @@ const sharedAuraAssets = (req: Connect.IncomingMessage, res: import("node:http")
   res.setHeader("content-length", String(fs.statSync(sharedFile).size));
   fs.createReadStream(sharedFile).pipe(res);
 };
+const sharedHdriDir = path.join(sharedPublicDir, "hdri");
+const serveSharedHdri = (req: Connect.IncomingMessage, res: import("node:http").ServerResponse, next: () => void) => {
+  const urlPath = decodeURIComponent((req.url ?? "").split("?")[0]).replace(/^\/+/, "");
+  const hdriFile = path.resolve(sharedHdriDir, urlPath);
+  if (!hdriFile.startsWith(sharedHdriDir + path.sep) || !fs.existsSync(hdriFile) || !fs.statSync(hdriFile).isFile()) {
+    next();
+    return;
+  }
+  res.setHeader("content-type", contentTypes[path.extname(hdriFile)] ?? "application/octet-stream");
+  res.setHeader("content-length", String(fs.statSync(hdriFile).size));
+  fs.createReadStream(hdriFile).pipe(res);
+};
 const serveSharedAuraAssets: Plugin = {
   name: "a3d-serve-shared-aura-assets",
   configureServer(server) {
     server.middlewares.use("/aura-assets", sharedAuraAssets);
+    server.middlewares.use("/hdri", serveSharedHdri);
   },
   configurePreviewServer(server) {
     server.middlewares.use("/aura-assets", sharedAuraAssets);
+    server.middlewares.use("/hdri", serveSharedHdri);
   }
 };
 

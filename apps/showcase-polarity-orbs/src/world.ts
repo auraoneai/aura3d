@@ -4,7 +4,7 @@
  *   under-ball `lights.point` snapping cleanly between crimson `+` and cyan `−` (zero `lights.ambient`).
  * - Eevee post & atmosphere stack: `contactShadows`, `ambientOcclusion`, `screenSpaceReflections` on the ferrofluid
  *   dipole slate board, overhead `auroraRibbon`, hero `trail`, `cinematicBloom`, `colorGrade`, and `vignette`.
- * - Refractive `studioGlass` outer shell + `brushedMetal` equatorial collar + paired GLSL/WGSL `plasmaOrbSpec` dipole
+ * - Clearcoat `material.physical` borosilicate outer shell + `brushedMetal` equatorial collar + paired GLSL/WGSL `plasmaOrbSpec` dipole
  *   core (`180°` gyroscopic hemisphere flip + `0.18 m` micro-hop, zero muddy lavender blend), feathered `fluxRingSpec`
  *   shockwave & grounded reticle, sinusoidal `fluxArcSpec` magnet streams, `dualEnergyFieldSpec` shield, and 32-frame
  *   `createFlipbookAtlas("plasma")` + `createGradingLut("cyber-neon")` polarity-discharge bursts.
@@ -37,6 +37,8 @@ import {
 import {
   BALL_RADIUS,
   DECK_WIDTH,
+  GEM_RADIUS,
+  ORB_RADIUS,
   SEG_LEN,
   ballMesh,
   dashMesh,
@@ -47,13 +49,12 @@ import {
   orbMesh,
   particleMesh,
   plasmaQuadMesh,
-  powerupMesh,
-  railMesh,
   reticleRingMesh,
   shadowMesh,
   symbolMesh,
   translateMesh
 } from "./meshes";
+import { arenaBezelRailMesh, crownPrismGemMesh, dipoleCollectorOrbMesh } from "./art/proceduralModels";
 import { CAMERA_FAR, chaseFov, type Shown } from "./presentation";
 import { BACKDROP_GROUPS, addBackdrop, updateBackdrop } from "./backdrop";
 
@@ -358,21 +359,20 @@ export function buildWorld(_options: WorldOptions): World {
   }
   addBackdrop(builder);
 
-  /* Hero magnetic orb assembly: swirling split-hemisphere plasma core + refractive `studioGlass` shell + `brushedMetal` collar */
+  /* Hero magnetic orb assembly: swirling split-hemisphere plasma core + `material.physical` quartz shell + `brushedMetal` collar */
   add("ball", ballMesh(), plasmaOrbSpec({ baseColor: LINEAR.red, poleSouthColor: LINEAR.blue, splitPole: 1, iridescence: 1 }), true, false);
   builder.add(
     geometry
       .custom(dynamicFrom(ballMesh()), {
         name: "ball-glass",
-        material: material.studioGlass({
-          tint: "#e6f6ff",
-          roughness: 0.025,
-          thickness: 0.65,
-          ior: 1.52,
+        material: material.physical({
+          color: "#e6f6ff",
+          roughness: 0.03,
+          opacity: 0.28,
           clearcoat: 1,
           clearcoatRoughness: 0.04,
-          opacity: 0.32,
-          envMapIntensity: 1.9
+          ior: 1.52,
+          envMapIntensity: 1.85
         }),
         castShadow: false,
         receiveShadow: false
@@ -403,16 +403,16 @@ export function buildWorld(_options: WorldOptions): World {
   /* Scrolling road & entity batches with tight CORRIDOR_BOUNDS; road receives shadows without inflating shadow cascades */
   const deckWarm = new Batch(translateMesh(deckHalfMesh(), -DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckWarm, CORRIDOR_BOUNDS);
   const deckCool = new Batch(translateMesh(deckHalfMesh(), DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckCoolDim, CORRIDOR_BOUNDS);
-  const rails = new Batch(railMesh(), CONFIG.POOL_SEGMENTS * 2, LINEAR.railWarm, CORRIDOR_BOUNDS);
+  const rails = new Batch(arenaBezelRailMesh(SEG_LEN), CONFIG.POOL_SEGMENTS * 2, LINEAR.railWarm, CORRIDOR_BOUNDS);
   const dashes = new Batch(dashMesh(), 60, LINEAR.dash, CORRIDOR_BOUNDS);
   addBatch("deck-warm", deckWarm, deckSpec(), false, true);
   addBatch("deck-cool", deckCool, deckSpec(), false, true);
   addBatch("rails", rails, toonSpec([1, 1, 1], undefined, [0, 0, 0], true), false, true);
   addBatch("dashes", dashes, toonSpec([1, 1, 1], undefined, [0, 0, 0], true), false, false);
 
-  const orbs = new Batch(orbMesh(), CONFIG.POOL_ORBS, LINEAR.red, CORRIDOR_BOUNDS);
+  const orbs = new Batch(dipoleCollectorOrbMesh(ORB_RADIUS), CONFIG.POOL_ORBS, LINEAR.red, CORRIDOR_BOUNDS);
   addBatch("orbs", orbs, plasmaOrbSpec({ withTone: true, iridescence: 1 }), true, false);
-  const powerups = new Batch(powerupMesh(), CONFIG.POOL_POWERUPS, LINEAR.gold, CORRIDOR_BOUNDS);
+  const powerups = new Batch(crownPrismGemMesh(GEM_RADIUS), CONFIG.POOL_POWERUPS, LINEAR.gold, CORRIDOR_BOUNDS);
   addBatch("powerups", powerups, plasmaOrbSpec({ withTone: true, iridescence: 1.2 }), true, false);
   const particles = new Batch(particleMesh(), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true), false, false);

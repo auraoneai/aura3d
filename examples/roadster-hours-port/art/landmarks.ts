@@ -19,12 +19,24 @@ export interface LandmarkPlacement {
   readonly yaw: number;
 }
 
-export type LandmarkKind = "turbine" | "sea-stack" | "mesa" | "hoodoo" | "arch" | "uplink-mast" | "antenna" | "tube-ring" | "arcology";
+export type LandmarkKind =
+  | "turbine"
+  | "sea-stack"
+  | "mesa"
+  | "hoodoo"
+  | "arch"
+  | "uplink-mast"
+  | "antenna"
+  | "tube-ring"
+  | "arcology"
+  | "coastal-viaduct"
+  | "roadside-diner"
+  | "suspension-tower";
 
 export const LANDMARK_KINDS: Readonly<Record<"sunbreak" | "redline" | "halo", readonly string[]>> = {
-  sunbreak: ["lighthouse", "town", "turbine", "sea-stack"],
-  redline: ["mesa", "hoodoo", "arch", "uplink-mast"],
-  halo: ["towers", "antenna", "tube-ring", "city-carpet"]
+  sunbreak: ["lighthouse", "town", "turbine", "sea-stack", "coastal-viaduct", "roadside-diner", "suspension-tower"],
+  redline: ["mesa", "hoodoo", "arch", "uplink-mast", "roadside-diner"],
+  halo: ["towers", "antenna", "tube-ring", "city-carpet", "suspension-tower"]
 };
 
 /** Rotor speed of the turbines (radians per second); reduced motion runs them at 30% (PRD §6.3). */
@@ -92,6 +104,27 @@ export function landmarkPlacements(kind: LandmarkKind, length: number, halfWidth
     case "tube-ring":
       // the maglev tube act (Halo s 880-1540): a ring over the road every 36 m
       for (let s = 900; s < Math.min(length, 1520); s += 36) out.push({ s, l: 0, y: 0, size: [2 * halfWidth + 6, 2 * halfWidth + 6, 1.2], yaw: 0 });
+      break;
+    case "coastal-viaduct":
+      // Multi-span Romanesque stone viaduct arcades perched along the cliffside ravines
+      for (const frac of [0.24, 0.64]) {
+        const s = Math.min(length - 240, Math.max(220, length * frac));
+        out.push({ s, l: land * (halfWidth + 32), y: -2.5, size: [1.15, 1.15, 1.15], yaw: Math.PI * 0.5 });
+      }
+      break;
+    case "roadside-diner":
+      // Streamline Art-Deco roadside diner + neon pylon sign at scenic turnouts outside the guardrails
+      for (const frac of [0.16, 0.54]) {
+        const s = Math.min(length - 260, Math.max(180, length * frac));
+        out.push({ s, l: land * (halfWidth + 19), y: -0.2, size: [1.0, 1.0, 1.0], yaw: 0 });
+      }
+      break;
+    case "suspension-tower":
+      // Twin-leg steel lattice suspension towers flanking coastal & skyway crossings
+      for (const frac of [0.38, 0.78]) {
+        const s = Math.min(length - 220, Math.max(260, length * frac));
+        out.push({ s, l: seaSide * (halfWidth + 28), y: -6, size: [1.1, 1.1, 1.1], yaw: 0 });
+      }
       break;
   }
   return out;

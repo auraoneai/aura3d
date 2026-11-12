@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { auditArtDirection, snapshotForAudit } from "@aura3d/game/art";
 import type { AuraApp } from "@aura3d/engine";
@@ -52,9 +54,11 @@ describe("strange-orbit-port art direction", () => {
     const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
     const dist = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]!));
     for (const [a, b] of [[0, 1], [0, 2], [1, 2]] as const) expect(dist(riderSuitTint(a), riderSuitTint(b))).toBeGreaterThanOrEqual(40);
+    type RiderGroup = { name?: string; children?: readonly { material?: { color?: string } }[] };
     for (const rider of [0, 1, 2]) {
-      const nodes = buildWorld({ vehicle: "skate", rider, quality: "high" }).scene.toJSON().nodes as readonly { name?: string; materialOverrides?: readonly { color?: string }[] }[];
-      expect(nodes.find((n) => n.name === "rider-0-model")!.materialOverrides![0]!.color).toBe(riderSuitTint(rider));
+      const nodes = buildWorld({ vehicle: "skate", rider, quality: "high" }).scene.toJSON().nodes as readonly RiderGroup[];
+      const hero = nodes.find((n) => n.name === "rider-0-model")!;
+      expect(hero.children?.[0]?.material?.color).toBe(riderSuitTint(rider));
     }
   });
 
@@ -67,10 +71,58 @@ describe("strange-orbit-port art direction", () => {
       expect(dist(GOUACHE_LIVERIES[i]!, direction.palette.accent)).toBeGreaterThanOrEqual(35);
       expect(dist(GOUACHE_LIVERIES[i]!, direction.palette.reservedObjective!)).toBeGreaterThanOrEqual(35);
     }
-    const nodes = buildWorld({ vehicle: "bike", rider: 0, quality: "high" }).scene.toJSON().nodes as readonly { name?: string; materialOverrides?: readonly { rim?: unknown; clearcoat?: number }[] }[];
+    type RiderGroup = { name?: string; children?: readonly { material?: { rim?: unknown; clearcoat?: number } }[] };
+    const json = buildWorld({ vehicle: "bike", rider: 0, quality: "high" }).scene.toJSON();
+    const nodes = json.nodes as readonly RiderGroup[];
+    expect(nodes.filter((n) => (n as { kind?: string }).kind === "model")).toHaveLength(0);
     const riders = nodes.filter((n) => /^rider-\d-model$/.test(n.name ?? ""));
     expect(riders).toHaveLength(6);
-    for (const r of riders) expect(r.materialOverrides?.[0]?.rim).toBeDefined();
-    expect(riders.find((r) => r.name === "rider-0-model")!.materialOverrides![0]!.clearcoat).toBeGreaterThanOrEqual(0.6);
+    for (const r of riders) expect(r.children?.[0]?.material?.rim).toBeDefined();
+    expect(riders.find((r) => r.name === "rider-0-model")!.children![0]!.material!.clearcoat).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it("mounts 100% procedural multi-material vehicles, gantry & lunar colony props with WebGPU-safe materials", () => {
+    const src = readFileSync(resolve(__dirname, "../../../examples/strange-orbit-port/art/proceduralModels.ts"), "utf8");
+    expect(src.split(/\r?\n/).length).toBeGreaterThanOrEqual(550);
+    expect(src).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']|\bTHREE\./);
+    expect(src).not.toMatch(/material\.studioGlass\s*\(/);
+    const presets = new Set([...src.matchAll(/\bmaterial\.([a-zA-Z0-9_]+)\s*\(/g)].map((m) => m[1]!));
+    expect(presets.size).toBeGreaterThanOrEqual(5);
+
+    type AnyNode = {
+      kind?: string;
+      name?: string;
+      effect?: string;
+      transforms?: readonly unknown[];
+      material?: { clearcoat?: number; sheen?: number };
+    };
+    for (const vehicle of ["bike", "skate"] as const) {
+      const nodes = buildWorld({ vehicle, rider: 0, quality: "high", ghost: true }).scene.toJSON().nodes as readonly AnyNode[];
+      const names = new Set(nodes.map((n) => n.name));
+      expect(nodes.filter((n) => n.kind === "model")).toHaveLength(0);
+      expect(nodes.filter((n) => n.effect === "motion-blur" || n.effect === "depth-of-field")).toHaveLength(0);
+      for (let i = 0; i < 6; i++) {
+        for (const sub of ["model", "fairing", "wheelF", "wheelR", "nozzleL", "nozzleR", "coneL", "coneR", "torso", "visor"]) {
+          expect(names.has(`rider-${i}-${sub}`)).toBe(true);
+        }
+      }
+      for (const prop of [
+        "ghost-rider",
+        "start-finish-gantry",
+        "dress-lander",
+        "dress-observatory",
+        "colony-habitat-grid",
+        "colony-dish-grid",
+        "colony-solar-grid",
+        "colony-trailer-grid",
+        "colony-fuel-grid"
+      ]) {
+        expect(names.has(prop)).toBe(true);
+      }
+      for (const inst of nodes.filter((n) => (n.transforms?.length ?? 0) > 16)) {
+        expect(inst.material?.clearcoat ?? 0, `${inst.name} clearcoat`).toBe(0);
+        expect(inst.material?.sheen ?? 0, `${inst.name} sheen`).toBe(0);
+      }
+    }
   });
 });

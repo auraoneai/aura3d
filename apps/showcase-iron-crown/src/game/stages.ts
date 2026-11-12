@@ -1,6 +1,43 @@
-import { games, material, model, primitives, type AuraLookId, type AuraSceneNode } from "@aura3d/engine";
-import { stageAssets } from "./stage-assets";
-import { assets } from "../aura-assets";
+import { games, geometry, instances, material, primitives, type AuraLookId, type AuraMaterialSpec, type AuraSceneNode } from "@aura3d/engine";
+import {
+  IC_MATERIALS,
+  buildAirbaseFuelDepot,
+  buildAirbaseRadarTower,
+  buildAirbaseTacticalJetNodes,
+  buildBarrelCrateCluster,
+  buildChainedPadBeacon,
+  buildColosseumCorinthianColumn,
+  buildColosseumGladiatorBust,
+  buildColosseumImperialStandard,
+  buildColosseumVoussoirArch,
+  buildDockCruciblePavilion,
+  buildDockGantryCrane,
+  buildDockGirderStack,
+  buildDockVendorCart,
+  buildForgedBrazierNode,
+  buildIronCrownRelic,
+  buildMonasteryBellPavilion,
+  buildMonasteryBonsaiPine,
+  buildMonasteryGuardianStatue,
+  buildMonasteryStoneLantern,
+  buildMonasteryTempleHall,
+  buildMonasteryToriiGate,
+  buildNeoTokyoArcadeCabinet,
+  buildNeoTokyoHvacTower,
+  buildNeoTokyoNeonPylon,
+  buildNeoTokyoPagodaTower,
+  buildNeoTokyoStreetLamp,
+  buildNeoTokyoVendingBank,
+  buildObsidianRunicSpire,
+  buildSanctumKingStatue,
+  buildSanctumMarbleColonnade,
+  buildSearchlightPylon,
+  buildSovereignThroneChair,
+  concertTrussSpec,
+  crowdBodySpec,
+  crowdHeadSpec,
+  trophyGobletSpec
+} from "../art/proceduralModels";
 import { stageLook } from "./look";
 import { venueBackdrop } from "./backdrop";
 import { floorDetailFields } from "./surfaces";
@@ -14,8 +51,8 @@ import { buildOriginalFloorDeck } from "./originalLook";
  *  1. its own look row (look.ts STAGE_LOOKS: HDRI, time of day, key, fog, post, grade; GU47 WP-15)
  *  2. a `games.fighting.stagePreset` build (fight lane, floor, combat bounds)
  *     re-paletted per venue
- *  3. bespoke 3D GLB dressing nodes — all parked behind the fight plane (z <= -1.1)
- *     or overhead so silhouettes stay readable.
+ *  3. bespoke multi-material procedural 3D set-pieces (`../art/proceduralModels`) — all parked behind
+ *     the fight plane (z <= -1.1) or overhead so fighter silhouettes stay readable.
  */
 
 export type StageId =
@@ -53,25 +90,6 @@ export interface IronStage {
   readonly dressing: readonly AuraSceneNode[];
   /** The 4.6.2 dressing (its floor deck, the same props, no far backdrop) for the 4.6.2 look (originalLook.ts). */
   readonly originalDressing: readonly AuraSceneNode[];
-}
-
-/**
- * A static dressing prop. `role: "primaryWorld"` consolidates the GLB's static meshes per material at load (engine
- * `consolidateStaticMeshes`; animated, skinned or morphing GLBs are left as they are), so a many-mesh prop such as the
- * tea house or the office tower costs a handful of draws instead of thousands (IC47-PF1 / IC47-A2 interim until the
- * WP-36 single-material remeshes land).
- */
-function modelProp(
-  asset: Parameters<typeof model>[0],
-  name: string,
-  pos: readonly [number, number, number],
-  targetMaxDimension: number,
-  rotY = 0
-): AuraSceneNode {
-  return model(asset, { name, targetMaxDimension, role: "primaryWorld" })
-    .position(pos[0], pos[1], pos[2])
-    .rotate(0, rotY, 0)
-    .toJSON();
 }
 
 type FloorPart = { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
@@ -330,22 +348,23 @@ const NEO_TOKYO = makeStage(
   "rooftop-city",
   { floor: "#0d1119", lane: "#ff5cbe", aura: "#6ee7ff", warning: "#ffd166", skyline: "#141c33", fog: "#060a14" },
   [
-    modelProp(stageAssets.showcaseModernBuildingOne, "nt-tower-l", [-4.6, 0, -3.4], 5.6, 0.2),
-    modelProp(stageAssets.showcaseModernOfficeBuilding, "nt-tower-r", [4.8, 0, -3.6], 6.0, -0.2),
-    modelProp(stageAssets.heatsinkHoloBillboard, "nt-holo-sign-l", [-2.9, 1.8, -2.5], 2.2, 0.15),
-    modelProp(stageAssets.heatsinkHoloBillboard, "nt-holo-sign-r", [2.9, 1.9, -2.5], 2.2, -0.15),
-    modelProp(assets.ironcrownRooftopPowerBox, "nt-pylon-l", [-3.8, 0, -1.8], 2.4, 0.3),
-    modelProp(assets.ironcrownRooftopPowerBox, "nt-pylon-r", [3.8, 0, -1.8], 2.4, -0.3),
-    modelProp(assets.ironcrownRooftopAircon, "nt-vent-1", [-1.9, 0, -1.8], 1.3, 0.4),
-    modelProp(assets.ironcrownRooftopAircon, "nt-vent-2", [1.9, 0, -1.8], 1.3, -0.4),
-    modelProp(assets.ironcrownStreetLamp, "nt-lamp-l", [-3.2, 0, -1.4], 2.2, 0),
-    modelProp(assets.ironcrownStreetLamp, "nt-lamp-r", [3.2, 0, -1.4], 2.2, Math.PI),
-    modelProp(assets.ironcrownSearchlight, "nt-speaker-c", [0, 0, -2.9], 2.5, 0)
+    buildNeoTokyoPagodaTower("nt-tower-l", [-4.6, 0, -3.5], 0.22, "#ff3fa4"),
+    buildNeoTokyoPagodaTower("nt-tower-r", [4.8, 0, -3.6], -0.22, "#3fe0ff"),
+    buildNeoTokyoNeonPylon("nt-pylon-l", [-3.7, 0, -2.2], 0.24, "#ff3fa4", "#3fe0ff"),
+    buildNeoTokyoNeonPylon("nt-pylon-r", [3.7, 0, -2.2], -0.24, "#3fe0ff", "#ff3fa4"),
+    buildNeoTokyoVendingBank("nt-vending-l", [-2.7, 0, -2.0], 0.18),
+    buildNeoTokyoArcadeCabinet("nt-arcade-r", [2.6, 0, -1.95], -0.22, "#3fe0ff"),
+    buildNeoTokyoArcadeCabinet("nt-arcade-c", [1.65, 0, -2.15], -0.14, "#ff4fb2"),
+    buildNeoTokyoHvacTower("nt-vent-1", [-1.75, 0, -1.9], 0.35),
+    buildNeoTokyoHvacTower("nt-vent-2", [3.95, 0, -1.75], -0.35),
+    buildNeoTokyoStreetLamp("nt-lamp-l", [-3.2, 0, -1.4], 0.15, "#ffad5c"),
+    buildNeoTokyoStreetLamp("nt-lamp-r", [3.2, 0, -1.4], -0.15, "#6ee7ff"),
+    buildSearchlightPylon("nt-speaker-c", [0, 0, -3.0], 0, "#ffe3ad")
   ]
 );
 
 /* ------------------------------------------------------------------ */
-/* 2 · Bangkok dock market — warm dusk, stalls, lanterns, shrine.      */
+/* 2 · Bangkok dock market — foundry cranes, crucible, carts, drums.   */
 /* ------------------------------------------------------------------ */
 const BANGKOK = makeStage(
   "bangkok-dock",
@@ -354,20 +373,21 @@ const BANGKOK = makeStage(
   "training-grid",
   { floor: "#241a12", lane: "#ffab4d", aura: "#ffe08a", warning: "#ff6b4a", skyline: "#3a2418", fog: "#1c1008" },
   [
-    modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-l", [-3.5, 0, -2.2], 2.8, 0.22),
-    modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-r", [3.5, 0, -2.2], 2.8, -0.22),
-    modelProp(assets.ironcrownShrine, "bk-shrine", [0, 0, -3.5], 4.0, 0),
-    modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-l", [-2.1, 0, -1.8], 1.7, 0.3),
-    modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-r", [2.1, 0, -1.8], 1.7, -0.3),
-    modelProp(assets.ironcrownBrazierPylon, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
-    modelProp(assets.ironcrownBrazierPylon, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
-    modelProp(assets.ironcrownDockCrate, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
-    modelProp(assets.ironcrownDockBarrel, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
+    buildDockCruciblePavilion("bk-shrine", [0, 0, -3.5], 0),
+    buildDockGantryCrane("bk-crane-l", [-4.1, 0, -2.9], 0.22),
+    buildDockGantryCrane("bk-crane-r", [4.1, 0, -2.9], -0.22),
+    buildDockVendorCart("bk-kiosk-l", [-2.35, 0, -1.95], 0.28),
+    buildDockVendorCart("bk-kiosk-r", [2.35, 0, -1.95], -0.28),
+    buildDockGirderStack("bk-girders-l", [-3.5, 0, -1.9], 0.2),
+    buildBarrelCrateCluster("bk-drums-r", [3.5, 0, -1.85], -0.24),
+    buildForgedBrazierNode("bk-lan-l", [-3.05, 0, -1.4], 1.9, "#ff8c2b", 0.1, IC_MATERIALS.castTempleBronze),
+    buildForgedBrazierNode("bk-lan-r", [3.05, 0, -1.4], 1.9, "#ff8c2b", -0.1, IC_MATERIALS.castTempleBronze),
+    buildBarrelCrateCluster("bk-crate-l", [-1.45, 0, -1.5], 0.35)
   ]
 );
 
 /* ------------------------------------------------------------------ */
-/* 3 · Roman colosseum ruins — bright dust, colonnade, statues.        */
+/* 3 · Roman colosseum ruins — voussoir arches, columns, braziers.     */
 /* ------------------------------------------------------------------ */
 const COLOSSEUM = makeStage(
   "colosseum-ruins",
@@ -376,20 +396,22 @@ const COLOSSEUM = makeStage(
   "industrial-arena",
   { floor: "#3a2f22", lane: "#e8c98a", aura: "#ffe9b0", warning: "#c86a3a", skyline: "#6b5636", fog: "#caa66a" },
   [
-    modelProp(stageAssets.gullsiegeGatehouseMeshy, "co-gate-center", [0, 0, -3.4], 3.8, 0),
-    modelProp(assets.ironcrownTowerA, "co-tower-l", [-3.9, 0, -2.5], 4.6, 0.2),
-    modelProp(assets.ironcrownTowerA, "co-tower-r", [3.9, 0, -2.5], 4.6, -0.2),
-    modelProp(stageAssets.heatsinkArch, "co-arch-l", [-2.4, 0, -2.2], 2.6, 0.1),
-    modelProp(stageAssets.heatsinkArch, "co-arch-r", [2.4, 0, -2.2], 2.6, -0.1),
-    modelProp(assets.ironcrownColosseumBust, "co-bust-l", [-1.6, 0, -1.55], 1.45, 0.35),
-    modelProp(assets.ironcrownColosseumBust, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
-    modelProp(stageAssets.propBoulder, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
-    modelProp(stageAssets.propRockA, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
+    buildColosseumVoussoirArch("co-gate-center", [0, 0, -3.45], 1.12, 0),
+    buildColosseumVoussoirArch("co-arch-l", [-2.95, 0, -2.55], 0.82, 0.18),
+    buildColosseumVoussoirArch("co-arch-r", [2.95, 0, -2.55], 0.82, -0.18),
+    buildColosseumCorinthianColumn("co-tower-l", [-4.3, 0, -2.7], 4.4, 0.2, false),
+    buildColosseumCorinthianColumn("co-tower-r", [4.3, 0, -2.7], 4.2, -0.2, true),
+    buildColosseumGladiatorBust("co-bust-l", [-1.65, 0, -1.55], 0.35),
+    buildColosseumGladiatorBust("co-bust-r", [1.65, 0, -1.55], -0.35),
+    buildForgedBrazierNode("co-brazier-l", [-2.75, 0, -1.45], 1.85, "#ff7b29", 0.2, IC_MATERIALS.castTempleBronze),
+    buildForgedBrazierNode("co-brazier-r", [2.75, 0, -1.45], 1.85, "#ff7b29", -0.2, IC_MATERIALS.castTempleBronze),
+    buildColosseumImperialStandard("co-standard-l", [-3.7, 0, -1.9], 0.22),
+    buildColosseumImperialStandard("co-standard-r", [3.7, 0, -1.9], -0.22)
   ]
 );
 
 /* ------------------------------------------------------------------ */
-/* 4 · Nevada desert airbase — hangar, radar tower, parked fighter jet. */
+/* 4 · Desert airbase — stealth jet, radar, obsidian runic spires.     */
 /* ------------------------------------------------------------------ */
 const AIRBASE = makeStage(
   "desert-airbase",
@@ -398,20 +420,21 @@ const AIRBASE = makeStage(
   "industrial-arena",
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
   [
-    // The parked plane (the name keeps the 4.6.2 "jet" id: refinedLook.ts GROUNDED_PROPS and its test key on it).
-    modelProp(assets.ironcrownHangarPlane, "ab-jet-center", [0.4, 0, -3.0], 4.6, -0.12),
-    modelProp(stageAssets.patrolCoastalRadarTowerMeshy, "ab-tower-l", [-4.0, 0, -2.8], 3.5, 0.25),
-    modelProp(stageAssets.auroraFuelDepotTankMeshy, "ab-fuel-r", [3.8, 0, -2.6], 2.6, -0.2),
-    modelProp(stageAssets.bunkerBarrelMeshy, "ab-drum-1", [-2.6, 0, -1.5], 0.85, 0.2),
-    modelProp(stageAssets.bunkerBarrelMeshy, "ab-drum-2", [-2.1, 0, -1.45], 0.85, -0.4),
-    modelProp(stageAssets.bunkerCrateMeshy, "ab-crate-1", [2.5, 0, -1.5], 0.95, 0.3),
-    modelProp(stageAssets.auroraPadBeacon, "ab-light-l", [-3.5, 0, -1.25], 0.9, 0),
-    modelProp(stageAssets.auroraPadBeacon, "ab-light-r", [3.5, 0, -1.25], 0.9, 0)
+    // Grounded stealth fighter ("ab-jet-center" at y = 0 satisfies refinedLook.ts GROUNDED_PROPS).
+    ...buildAirbaseTacticalJetNodes([0.4, 0, -3.0], -0.12),
+    buildAirbaseRadarTower("ab-tower-l", [-4.1, 0, -2.85], 0.25),
+    buildAirbaseFuelDepot("ab-fuel-r", [3.9, 0, -2.65], -0.22),
+    buildObsidianRunicSpire("ab-spire-l", [-2.85, 0, -2.35], 3.7, 0.28),
+    buildObsidianRunicSpire("ab-spire-r", [2.95, 0, -2.4], 3.5, -0.32),
+    buildBarrelCrateCluster("ab-drum-1", [-2.25, 0, -1.55], 0.24),
+    buildBarrelCrateCluster("ab-crate-1", [2.35, 0, -1.55], -0.28),
+    buildChainedPadBeacon("ab-light-l", [-3.5, 0, -1.3], 0.15, "#ffb03c"),
+    buildChainedPadBeacon("ab-light-r", [3.5, 0, -1.3], -0.15, "#ffb03c")
   ]
 );
 
 /* ------------------------------------------------------------------ */
-/* 5 · Himalayan monastery — cold air, temple, dragon guardians.       */
+/* 5 · Himalayan monastery — temple, torii, bronze bell, bonsai pines. */
 /* ------------------------------------------------------------------ */
 const MONASTERY = makeStage(
   "himalayan-monastery",
@@ -420,24 +443,24 @@ const MONASTERY = makeStage(
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
-    modelProp(assets.ironcrownHall, "mo-monastery", [0, 0, -3.4], 4.6, 0),
-    modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
-    modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
-    modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
-    modelProp(assets.ironcrownBrazierPylon, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
-    modelProp(stageAssets.propPineTree, "mo-pine-l", [-4.3, 0, -2.6], 3.2, 0.2),
-    modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
-    modelProp(assets.ironcrownTowerB, "mo-pagoda-l", [-4.9, 0, -4.2], 6.2, 0.3),
-    modelProp(assets.ironcrownTowerB, "mo-pagoda-r", [4.9, 0, -4.2], 6.2, -0.3)
+    buildMonasteryTempleHall("mo-monastery", [0, 0, -3.55], 0),
+    buildMonasteryToriiGate("mo-torii-l", [-4.8, 0, -3.8], 0.28),
+    buildMonasteryBellPavilion("mo-bell-r", [4.75, 0, -3.7], -0.28),
+    buildMonasteryBonsaiPine("mo-pine-l", [-3.95, 0, -2.45], 0.2, 41),
+    buildMonasteryBonsaiPine("mo-pine-r", [3.95, 0, -2.45], -0.2, 73),
+    buildMonasteryGuardianStatue("mo-dragon-l", [-2.75, 0, -1.65], 0.42),
+    buildMonasteryGuardianStatue("mo-dragon-r", [2.75, 0, -1.65], -0.42),
+    buildMonasteryStoneLantern("mo-lantern-l", [-1.55, 0, -1.45], 0.12),
+    buildMonasteryStoneLantern("mo-lantern-r", [1.55, 0, -1.45], -0.12),
+    buildForgedBrazierNode("mo-braz-l", [-3.3, 0, -1.5], 1.7, "#ffad4d", 0, IC_MATERIALS.castTempleBronze),
+    buildForgedBrazierNode("mo-braz-r", [3.3, 0, -1.5], 1.7, "#ffad4d", 0, IC_MATERIALS.castTempleBronze)
   ]
 );
 
-
 /**
- * Trophy cabinets at the arena wings, built from primitives: wood frame, shelves with gold cups, and flat crimson banners
- * with gold borders on the back panel. They replace a scanned cabinet whose texture atlas held framed photographs of real
- * people (see tests/unit/likeness-audit/iron-crown-stage-props.test.ts). Two cabinets share one instanced node per part,
- * so the whole set is eight draws.
+ * Trophy cabinets at the arena wings: lacquered rosewood frames, velvet backing, glass fronts (`IC_MATERIALS.displayGlass`,
+ * `castShadow: false`), crimson championship banners, and lathed gold/silver goblets (`trophyGobletSpec()`). Replaces a
+ * scanned cabinet whose texture atlas held framed photographs of real people (tests/unit/likeness-audit/iron-crown-stage-props.test.ts).
  */
 type Part = { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
 function buildTrophyCabinets(): readonly AuraSceneNode[] {
@@ -459,10 +482,10 @@ function buildTrophyCabinets(): readonly AuraSceneNode[] {
       shelves.push(part([cx, y, CZ + 0.02], [W - 0.28, 0.05, D - 0.18]));
       for (let i = 0; i < 5; i += 1) {
         const x = cx - 0.95 + i * 0.475;
-        const h = 0.2 + ((i + Math.round(y * 10)) % 3) * 0.07;
+        const h = 0.22 + ((i + Math.round(y * 10)) % 3) * 0.07;
         const target = (i + Math.round(y * 5)) % 2 === 0 ? cups : silver;
-        target.push(part([x, y + 0.025 + h / 2, CZ + 0.04], [0.14, h, 0.14]));
-        gold.push(part([x, y + 0.025 + h + 0.05, CZ + 0.04], [0.19, 0.08, 0.19]));
+        target.push(part([x, y + 0.045 + h / 2, CZ + 0.04], [0.2, h, 0.2]));
+        gold.push(part([x, y + 0.035, CZ + 0.04], [0.18, 0.024, 0.18]));
       }
     }
     for (const bx of [-0.62, 0.62]) {
@@ -470,21 +493,21 @@ function buildTrophyCabinets(): readonly AuraSceneNode[] {
       banner.push(part([cx + bx, 1.37, CZ - D / 2 + 0.115], [0.5, 0.96, 0.02]));
     }
   }
-  const box = (name: string, mat: ReturnType<typeof material.pbr>, instances: Part[]) =>
-    primitives.box({ name, material: mat, instances, castShadow: false, receiveShadow: true }).toJSON();
-  const wood = material.lacquer({ color: "#2b160d", roughness: 0.26 });
-  const goldMat = material.brushedMetal({ color: "#d9a441", roughness: 0.22 });
-  const silverMat = material.brushedMetal({ color: "#cbd5e1", roughness: 0.26 });
+  const box = (name: string, mat: AuraMaterialSpec, inst: Part[]) =>
+    primitives.box({ name, material: mat, instances: inst, castShadow: false, receiveShadow: true }).toJSON();
+  const gobletSpec = trophyGobletSpec();
+  const goldBatchMat = material.metal({ color: "#d9a441", roughness: 0.22, clearcoat: 0, sheen: 0 });
+  const silverBatchMat = material.metal({ color: "#cbd5e1", roughness: 0.26, clearcoat: 0, sheen: 0 });
   return [
-    box("cr-cabinet-frame", wood, frame),
+    box("cr-cabinet-frame", IC_MATERIALS.rosewoodLacquer, frame),
     box("cr-cabinet-back", material.fabric({ color: "#2a0f16", roughness: 0.88 }), back),
     box("cr-cabinet-shelves", material.physical({ color: "#4e2d1b", roughness: 0.42, metallic: 0.08, clearcoat: 0.22 }), shelves),
-    box("cr-cabinet-trim", goldMat, gold),
-    primitives.cylinder({ name: "cr-cabinet-cups", material: goldMat, instances: cups, castShadow: false, receiveShadow: true }).toJSON(),
-    primitives.cylinder({ name: "cr-cabinet-silver", material: silverMat, instances: silver, castShadow: false, receiveShadow: true }).toJSON(),
-    box("cr-cabinet-banner-border", goldMat, border),
-    box("cr-cabinet-banner", material.fabric({ color: "#7a1620", roughness: 0.84 }), banner),
-    primitives.box({ name: "cr-cabinet-glass", material: material.clearGlass({ color: "#dce8f5", opacity: 0.16, roughness: 0.08 }), instances: glass, castShadow: false, receiveShadow: false }).toJSON()
+    box("cr-cabinet-trim", goldBatchMat, gold),
+    instances.custom(gobletSpec, { name: "cr-cabinet-cups", material: goldBatchMat, transforms: cups, castShadow: false, receiveShadow: true }).toJSON(),
+    instances.custom(gobletSpec, { name: "cr-cabinet-silver", material: silverBatchMat, transforms: silver, castShadow: false, receiveShadow: true }).toJSON(),
+    box("cr-cabinet-banner-border", IC_MATERIALS.gildedCrownGold, border),
+    box("cr-cabinet-banner", IC_MATERIALS.royalCrimsonVelvet, banner),
+    primitives.box({ name: "cr-cabinet-glass", material: IC_MATERIALS.displayGlass, instances: glass, castShadow: false, receiveShadow: false }).toJSON()
   ];
 }
 
@@ -518,7 +541,7 @@ function buildThronePlinth(): readonly AuraSceneNode[] {
 
 /**
  * Back-of-house structure for the throne venue: a dark arena wall, three
- * rings of articulated crowd silhouettes, and two forged lighting trusses. Everything sits
+ * rings of sculpted cloaked crowd silhouettes, and forged lattice lighting trusses. Everything sits
  * behind the fight plane so the fighters keep a clean silhouette.
  */
 function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
@@ -538,7 +561,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
   for (let row = 0; row < tierZ.length; row += 1) {
     nodes.push(
       primitives.box({ name: `cr-crowd-deck-${row}`, material: steel, castShadow: false })
-        .position(0, 0.48 + row * 0.52, tierZ[row]).scale([28, 0.5, 1.35]).toJSON()
+        .position(0, 0.48 + row * 0.52, tierZ[row]!).scale([28, 0.5, 1.35]).toJSON()
     );
   }
 
@@ -577,13 +600,13 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
       col += 1;
     }
   }
-  const cloakMat = material.fabric({ color: "#ffffff", roughness: 0.9 });
+  const crowdBatchMat = material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0 });
   nodes.push(
     // IC47-AN2: runtime ids so the crowd can bob (game/ambientMotion.ts).
-    primitives.capsule({ name: "cr-crowd-bodies", material: cloakMat, instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.bodies }).toJSON(),
-    primitives.capsule({ name: "cr-crowd-mantles", material: cloakMat, instances: mantles, instanceColors: mantleColors, castShadow: false, receiveShadow: false }).toJSON(),
-    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.84 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON(),
-    primitives.capsule({ name: "cr-crowd-arms", material: material.fabric({ color: "#24151e", roughness: 0.9 }), instances: arms, castShadow: false, receiveShadow: false }).toJSON()
+    instances.custom(crowdBodySpec(), { name: "cr-crowd-bodies", material: crowdBatchMat, transforms: bodies, colors: bodyColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.bodies }).toJSON(),
+    primitives.capsule({ name: "cr-crowd-mantles", material: crowdBatchMat, instances: mantles, instanceColors: mantleColors, castShadow: false, receiveShadow: false }).toJSON(),
+    instances.custom(crowdHeadSpec(), { name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }), transforms: heads, colors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON(),
+    primitives.capsule({ name: "cr-crowd-arms", material: material.pbr({ color: "#24151e", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0 }), instances: arms, castShadow: false, receiveShadow: false }).toJSON()
   );
 
   // Sparse torch/ember arena lights in the stands (marked practical).
@@ -596,15 +619,16 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     crowdLightColors.push(i % 5 === 0 ? palette.aura : i % 3 === 0 ? "#8ee6ff" : palette.warning);
   }
   nodes.push(
-    primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.15, roughness: 0.3, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
+    primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.15, roughness: 0.3, metallic: 0, clearcoat: 0, sheen: 0, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
   );
 
-  // Lighting trusses and warm lens cans.
+  // Forged lattice lighting trusses and warm lens cans.
+  const postTruss = concertTrussSpec([0.32, 5.0, 0.32], 7, 0.022);
   for (const side of [-1, 1] as const) {
     const x = side * 6.3;
     nodes.push(
-      primitives.box({ name: `cr-truss-post-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
-        .position(x, 2.5, -5.6).scale([0.16, 5.0, 0.16]).toJSON(),
+      geometry.custom(postTruss, { name: `cr-truss-post-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
+        .position(x, 2.5, -5.6).toJSON(),
       primitives.box({ name: `cr-truss-foot-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
         .position(x, 0.12, -5.6).scale([0.72, 0.24, 0.72]).toJSON(),
       primitives.sphere({ name: `cr-truss-lens-${side > 0 ? "r" : "l"}`, material: material.pbr({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 1.1, roughness: 0.24, practical: true }), castShadow: false, receiveShadow: false })
@@ -612,8 +636,8 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     );
   }
   nodes.push(
-    primitives.box({ name: "cr-truss-beam", material: steel, castShadow: false })
-      .position(0, 4.95, -5.6).scale([12.8, 0.14, 0.14]).toJSON()
+    geometry.custom(concertTrussSpec([12.8, 0.32, 0.32], 14, 0.02), { name: "cr-truss-beam", material: steel, castShadow: false })
+      .position(0, 4.95, -5.6).toJSON()
   );
   for (const x of [-3.6, 0, 3.6] as const) {
     nodes.push(
@@ -650,21 +674,21 @@ const CROWN = makeStage(
     ...buildCrownTheater(CROWN_PALETTE),
     // Stepped 0.34m obsidian-and-brass dais directly under the throne at z = -3.45 so nothing blocks the throne chair.
     ...buildThronePlinth(),
-    modelProp(assets.ironcrownThrone, "cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 2.1, 0),
-    // The Iron Crown itself — bespoke Meshy prop (crown on velvet cushion), seated regally upon the throne cushion.
-    model(assets.ironcrownCrown, { name: "cr-iron-crown", targetMaxDimension: 0.78 })
-      .position(0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14)
-      .toJSON(),
-    // Iron Crown king statues flanking the throne (Poly Haven CC0 gothic_statue)
-    modelProp(assets.ironcrownKingStatue, "cr-dragon-l", [-2.2, 0, -2.1], 2.1, 0.45),
-    modelProp(assets.ironcrownKingStatue, "cr-dragon-r", [2.2, 0, -2.1], 2.1, -0.45),
+    buildSovereignThroneChair("cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 0),
+    // The Iron Crown itself — forged black-iron & gilded-gold regalia on a crimson velvet cushion atop the throne seat.
+    buildIronCrownRelic("cr-iron-crown", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0),
+    buildSanctumMarbleColonnade("cr-colonnade-l", [-2.9, 0, -4.2], 0.18),
+    buildSanctumMarbleColonnade("cr-colonnade-r", [2.9, 0, -4.2], -0.18),
+    // Armored king sentinel statues flanking the throne
+    buildSanctumKingStatue("cr-dragon-l", [-2.2, 0, -2.1], 0.45),
+    buildSanctumKingStatue("cr-dragon-r", [2.2, 0, -2.1], -0.45),
     // Corner fire braziers
-    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
-    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
+    buildForgedBrazierNode("cr-brazier-l", [-3.5, 0, -1.65], 2.15, "#ff5524", 0.2),
+    buildForgedBrazierNode("cr-brazier-r", [3.5, 0, -1.65], 2.15, "#ff5524", -0.2),
     // Trophy cabinets & follow-spot searchlights at the arena wings
     ...buildTrophyCabinets(),
-    modelProp(assets.ironcrownSearchlight, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
-    modelProp(assets.ironcrownSearchlight, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
+    buildSearchlightPylon("cr-speaker-l", [-4.9, 0, -2.2], 0.35, "#ffd76a"),
+    buildSearchlightPylon("cr-speaker-r", [4.9, 0, -2.2], -0.35, "#ffd76a")
   ]
 );
 

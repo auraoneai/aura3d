@@ -178,38 +178,44 @@ export function createSceneLabelOcclusionTest(
     readonly min: readonly [number, number, number];
     readonly max: readonly [number, number, number];
   }
-  const occluders: OccluderBox[] = [];
-  for (const node of groups.flatten(snapshot.nodes)) {
-    if (node.kind !== "primitive" && !isRenderableModelNode(node)) continue;
-    if ((node as { visible?: boolean }).visible === false) continue;
-    const runtimeSnapshot = node.runtime?.id ? runtimeNodes?.get(node.runtime.id)?.snapshot() : undefined;
-    if (runtimeSnapshot?.visible === false) continue;
-    const position = (runtimeSnapshot?.position ?? node.position ?? [0, 0, 0]) as AuraVec3;
-    const scale = (runtimeSnapshot?.scale ?? node.scale ?? [1, 1, 1]) as AuraVec3;
-    /*
-     * Local extents from the primitive's own geometry where available, and a unit box otherwise.
-     * A model's real bounds come from its asset, which is not loaded synchronously here; the declared
-     * scale is the honest approximation and is what the scene author controls.
-     */
-    const localBounds = node.kind === "primitive" ? primitiveGeometryBounds(node) : undefined;
-    const halfLocal: readonly [number, number, number] = localBounds
-      ? [
-          Math.max(1e-4, (localBounds.max[0] - localBounds.min[0]) / 2),
-          Math.max(1e-4, (localBounds.max[1] - localBounds.min[1]) / 2),
-          Math.max(1e-4, (localBounds.max[2] - localBounds.min[2]) / 2)
-        ]
-      : [0.5, 0.5, 0.5];
-    const half: readonly [number, number, number] = [
-      Math.abs(halfLocal[0] * scale[0]),
-      Math.abs(halfLocal[1] * scale[1]),
-      Math.abs(halfLocal[2] * scale[2])
-    ];
-    occluders.push({
-      min: [position[0] - half[0], position[1] - half[1], position[2] - half[2]],
-      max: [position[0] + half[0], position[1] + half[1], position[2] + half[2]]
-    });
-  }
-  if (occluders.length === 0) return () => false;
+  let occluders: OccluderBox[] | undefined;
+  const ensureOccluders = (): OccluderBox[] => {
+    if (occluders) return occluders;
+    const built: OccluderBox[] = [];
+    for (const node of groups.flatten(snapshot.nodes)) {
+      if (node.kind !== "primitive" && !isRenderableModelNode(node)) continue;
+      if ((node as { visible?: boolean }).visible === false) continue;
+      const runtimeSnapshot = node.runtime?.id ? runtimeNodes?.get(node.runtime.id)?.snapshot() : undefined;
+      if (runtimeSnapshot?.visible === false) continue;
+      const position = (runtimeSnapshot?.position ?? node.position ?? [0, 0, 0]) as AuraVec3;
+      const scale = (runtimeSnapshot?.scale ?? node.scale ?? [1, 1, 1]) as AuraVec3;
+      /*
+       * Local extents from the primitive's own geometry where available, and a unit box otherwise.
+       * A model's real bounds come from its asset, which is not loaded synchronously here; the declared
+       * scale is the honest approximation and is what the scene author controls.
+       */
+      const localBounds = node.kind === "primitive" ? primitiveGeometryBounds(node) : undefined;
+      const halfLocal: readonly [number, number, number] = localBounds
+        ? [
+            Math.max(1e-4, (localBounds.max[0] - localBounds.min[0]) / 2),
+            Math.max(1e-4, (localBounds.max[1] - localBounds.min[1]) / 2),
+            Math.max(1e-4, (localBounds.max[2] - localBounds.min[2]) / 2)
+          ]
+        : [0.5, 0.5, 0.5];
+      const scaleVec = typeof scale === "number" ? [scale, scale, scale] : scale;
+      const half: readonly [number, number, number] = [
+        Math.abs(halfLocal[0] * scaleVec[0]),
+        Math.abs(halfLocal[1] * scaleVec[1]),
+        Math.abs(halfLocal[2] * scaleVec[2])
+      ];
+      built.push({
+        min: [position[0] - half[0], position[1] - half[1], position[2] - half[2]],
+        max: [position[0] + half[0], position[1] + half[1], position[2] + half[2]]
+      });
+    }
+    occluders = built;
+    return built;
+  };
 
   /** Slab test: does the segment eye -> anchor enter this box strictly before reaching the anchor? */
   const segmentHitsBox = (anchor: readonly [number, number, number], box: OccluderBox): boolean => {
@@ -239,7 +245,8 @@ export function createSceneLabelOcclusionTest(
   };
 
   return (anchor) => {
-    for (const box of occluders) {
+    const boxes = ensureOccluders();
+    for (const box of boxes) {
       // Skip the box the anchor is inside: that is the subject, and a subject cannot occlude its own label.
       const insideBox = anchor[0] >= box.min[0] && anchor[0] <= box.max[0]
         && anchor[1] >= box.min[1] && anchor[1] <= box.max[1]

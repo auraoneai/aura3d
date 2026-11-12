@@ -419,6 +419,22 @@ export function extrudeStarPolygonMesh(poly: readonly V2[], depth: number, cente
   return out;
 }
 
+function computePositionsBounds(positions: Float32Array): { min: V3; max: V3 } | undefined {
+  if (positions.length < 3) return undefined;
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+  return { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] };
+}
+
 export function mergeRawMeshes(parts: readonly RawMesh[]): AuraCustomGeometrySpec {
   let totalVerts = 0;
   let totalIdx = 0;
@@ -444,7 +460,7 @@ export function mergeRawMeshes(parts: readonly RawMesh[]): AuraCustomGeometrySpe
     iOff += p.indices.length;
   }
 
-  return geometry.define({ positions, normals, uvs, indices });
+  return geometry.define({ positions, normals, uvs, indices, bounds: computePositionsBounds(positions) });
 }
 
 export interface MultiMatSlot {
@@ -493,7 +509,7 @@ export function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCu
     groups.push({ start, count: iOff - start, materialIndex });
   }
 
-  return geometry.define({ positions, normals, uvs, indices, groups });
+  return geometry.define({ positions, normals, uvs, indices, groups, bounds: computePositionsBounds(positions) });
 }
 
 // ---------------------------------------------------------------------------

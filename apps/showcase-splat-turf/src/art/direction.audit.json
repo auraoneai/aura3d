@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-splat-turf/src/art/direction.ts",
-  "sourceSha256": "742ba9f836db30a0f558a48011c147c483b900c285f23854d9f73e6bd41b86a2",
+  "sourceSha256": "469e20241b2d8efeaa1c0330ef6108156c7c1b5414395b401e88b84fbaf2366b",
   "id": "splat-turf",
   "genre": "maze-arcade",
   "signatureEffect": "Sunlit wet-ink skate-arena carnival: a persistent GPU splat coverage map with raised clearcoat meniscus highlights down a primed gesso road, plus a cyan solvent wipe wash that lifts pigment back to white.",

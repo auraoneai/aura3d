@@ -5,16 +5,33 @@
  * particles and post (cinematic bloom, SSR, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
-import { camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, defineModelAssets, effects, geometry, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
-import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { appendGroundShadows, BOULDER_SHADOW, TREE_SHADOW } from "./groundShadows";
-import { ACTIVE, ballSpec, cloudSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
+import { ACTIVE, cloudSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
+import {
+  COIN_POOL_CAP,
+  buildCarvedBoulderNode,
+  buildGoldenSkyCloudNode,
+  buildHoneyRoastPickupNode,
+  buildInstancedBonsaiPines,
+  buildInstancedCanopyTrees,
+  buildInstancedKarstMesas,
+  buildInstancedShoulderRocks,
+  buildInstancedStormTowers,
+  buildSanctuaryToriiNode,
+  buildSkyCoinNode,
+  buildSkyHermitCottageNode,
+  buildSkyPterosaurNode,
+  buildSkyStaffNode,
+  buildStarSphereNode,
+  buildStormTyrantNode
+} from "./art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
@@ -24,9 +41,7 @@ import { Mesh, box, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
-import { MESHY } from "./models";
-import { assets as cumulusAssets } from "../../apps/showcase-cloud-runner-port/src/aura-assets";
-import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
+import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, buildSanctuaryToriiPlacements, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
 import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
@@ -35,6 +50,10 @@ import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
 const LICENSE_ACG = "CC0 1.0, ambientCG";
+const LICENSE_HERO = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
+const HERO_MODEL = defineModelAssets({
+  hero: { url: new URL("./assets/meshy/hero.glb", import.meta.url).pathname, sha256: "sha256-ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d" }
+}, { license: LICENSE_HERO, queryParam: null }).refs.hero;
 /* same-origin pathnames, not absolute URLs: the production bridge treats http(s) model URLs as unsafe and refuses the scene */
 export const ASSETS = defineAuraAssets({
   pathColor: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-color.jpg", import.meta.url).pathname, hash: "sha256-5b083a420d259ad70ec62babb666554b6dcb82a7b06e8dfec8d3f6ba0bb0c7e6", metadata: { license: LICENSE_ACG } },
@@ -252,19 +271,16 @@ export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOO
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
-/** CD-06 storm towers: course distance, lateral offset, height (m) and yaw. The model is about 1.3x as wide as tall, so a
- *  300 m offset keeps each 240 m tower's near edge about 145 m off the road; A sits in the sky gap left of the title view. */
+/** CD-06 storm towers: course distance, lateral offset, height (m) and yaw. A 300 m offset keeps each 240 m tower's
+ *  near edge well off the road; A sits in the sky gap left of the title view. */
 const STORM_TOWERS: readonly { s: number; lat: number; height: number; yaw: number }[] = [
   { s: 900, lat: -300, height: 240, yaw: 0.6 },
   { s: 1500, lat: 300, height: 240, yaw: 2.3 }
 ];
-/** CD-06 wave 2: Meshy tower B, a third column between A's two stations (its model is 1.15x taller than wide, so 420 m keeps the near edge clear of the road). */
+/** CD-06 wave 2: storm tower B, a third column between A's two stations (420 m keeps the near edge clear of the road). */
 const STORM_TOWER_B: readonly { s: number; lat: number; height: number; yaw: number }[] = [{ s: 1200, lat: -420, height: 230, yaw: 1.1 }];
-/** Share of a tower's height sunk below the valley plane: the bottom third of the Meshy model is a grassy rock base. */
+/** Share of a tower's height sunk below the valley plane so the cloud column rises directly from the cloud sea. */
 const STORM_TOWER_SINK = 0.34;
-/** CD-13 Meshy hut: rendered height (m) and the sink (m) of its floor slab below the old procedural base plane. */
-const HUT_HEIGHT = 5.4;
-const HUT_SINK = 0.15;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
   const quads = spriteQuads();
@@ -302,16 +318,17 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.22, sun: 1.0 })));
   const mesas = buildMesas(ch);
   mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.38, mapScale: 0.18, rim: 0.32 })));
-  /* generated hero set pieces along the road: instanced, one draw each */
+  /* procedural multi-part instanced set pieces along the road (material.pbr with clearcoat:0, sheen:0) */
   const place = (list: readonly { pos: V3; scale: number; yaw: number; pitch?: number; roll?: number }[]) => list.map((p) => ({ position: p.pos, rotation: [p.pitch ?? 0, p.yaw, p.roll ?? 0] as V3, scale: p.scale }));
-  const heroSet = { targetHeight: 1, castShadow: true, receiveShadow: false, instancingAware: true } as const;
-  /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind;
-     the row sets the strength) */
-  const treeWind = ACTIVE_LOOK.wind ? { wind: { strength: ACTIVE_LOOK.wind.strength, gustStrength: ACTIVE_LOOK.wind.gustStrength, directionDeg: ACTIVE_LOOK.wind.directionDeg } } : {};
-  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, ...treeWind, transforms: place(scatter.roundTrees) }));
-  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, ...treeWind, transforms: place(scatter.pineTrees) }));
-  if (HERO_SET && scatter.boulders.length) b.add(instances.model(MESHY.boulder, { name: "hero-rocks", ...heroSet, castShadow: false, transforms: place(scatter.boulders) }));
-  if (HERO_SET && mesas.placements.length) b.add(instances.model(MESHY.mesa, { name: "hero-mesas", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true, transforms: mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 })) }));
+  /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind) */
+  const windSpec = ACTIVE_LOOK.wind ? { strength: ACTIVE_LOOK.wind.strength, gustStrength: ACTIVE_LOOK.wind.gustStrength, directionDeg: ACTIVE_LOOK.wind.directionDeg } : undefined;
+  if (HERO_SET && scatter.roundTrees.length) for (const n of buildInstancedCanopyTrees(place(scatter.roundTrees), windSpec)) { b.add(n); drawNodes++; }
+  if (HERO_SET && scatter.pineTrees.length) for (const n of buildInstancedBonsaiPines(place(scatter.pineTrees), windSpec)) { b.add(n); drawNodes++; }
+  if (HERO_SET && scatter.boulders.length) for (const n of buildInstancedShoulderRocks(place(scatter.boulders))) { b.add(n); drawNodes++; }
+  if (HERO_SET && mesas.placements.length) {
+    const mesaTransforms = mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 }));
+    for (const n of buildInstancedKarstMesas(mesaTransforms)) { b.add(n); drawNodes++; }
+  }
   /* GU47 phase 4: long soft ground shadows from the low storm sun under the hero trees and boulders (one merged draw) */
   if (ACTIVE_LOOK.scenery.receiveShadow && HERO_SET) {
     const shades = new Mesh();
@@ -329,32 +346,31 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     cloudIds.push(cid);
     addMesh(m, cid, ACTIVE_LOOK.id === "storm-washed" ? cloudSpec(0.36) : scenerySpec({ sun: 0.85, rim: 0.5 }), cid);
   });
-  /* CD-06 (GU47 WP-36): two Meshy storm towers rising out of the cloud sea beyond the cloud banks, one instanced draw
-     (storm-washed row). Each stands on its rock base sunk below the valley plane, so only the cloud column shows. */
+  /* CD-06: procedural silver-lined storm cumulonimbus towers rising out of the cloud sea beyond the cloud banks */
   if (ACTIVE_LOOK.id === "storm-washed") {
-    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusTowerA, {
-      name: "storm-towers", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
-      transforms: STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
-    }));
-    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusTowerB, {
-      name: "storm-towers-b", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
-      transforms: STORM_TOWER_B.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
-    }));
+    const towerTransformsA = STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; });
+    const towerTransformsB = STORM_TOWER_B.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; });
+    for (const n of buildInstancedStormTowers("storm-towers", towerTransformsA, 0)) { b.add(n); drawNodes++; }
+    for (const n of buildInstancedStormTowers("storm-towers-b", towerTransformsB, 31)) { b.add(n); drawNodes++; }
   }
   buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
-  /* CD-13 (GU47 wave 2): the Meshy stone hut replaces the procedural wall, roof and door (storm-washed row); the mound
-     stays procedural. The door faces the track (-right), the foot sits on the hut's base plane, 5.4 m tall. */
-  const meshyHut = ACTIVE_LOOK.id === "storm-washed" && !!ch.home;
-  const hut = buildHut(ch, !meshyHut);
+  /* WP-29: multi-material curved-roof Sky Hermit Cottage ("home-hut") facing the track (-right), with earthen mound behind */
+  const hut = buildHut(ch, false);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
-  if (meshyHut && ch.home) {
+  if (ch.home) {
     const hf = frameAt(ch.home.s, 9.5);
-    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusHut, {
-      name: "home-hut", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
-      transforms: [{ position: [hf.point[0], hf.point[1] - HUT_SINK, hf.point[2]] as V3, rotation: [0, yawOf([-hf.right[0], -hf.right[1], -hf.right[2]]), 0] as V3, scale: HUT_HEIGHT }]
-    }));
+    b.add(buildSkyHermitCottageNode(
+      [hf.point[0], hf.point[1], hf.point[2]],
+      yawOf([-hf.right[0], -hf.right[1], -hf.right[2]])
+    ));
+    drawNodes++;
+  }
+  /* WP-29: crimson sanctuary torii gates framing checkpoints and the home threshold outside the road shoulders */
+  for (const torii of buildSanctuaryToriiPlacements(ch)) {
+    b.add(buildSanctuaryToriiNode(torii.name, torii.pos, torii.yaw));
+    drawNodes++;
   }
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
   /* CD-20: cairns and cloth-strip cord poles at the gorges, one merged draw (storm-washed row) */
@@ -390,7 +406,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* characters and set pieces */
   /* CD-03: a cool PBR rim on the hero on rows that set one (E-D materialOverrides rim; maps untouched) */
   const heroRim = ACTIVE_LOOK.heroRim;
-  b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false, ...(heroRim ? { materialOverrides: [{ rim: { color: heroRim.color, power: heroRim.power, intensity: heroRim.intensity } }] } : {}) }).runtime({ id: "hero" }));
+  b.add(model(HERO_MODEL, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false, ...(heroRim ? { materialOverrides: [{ rim: { color: heroRim.color, power: heroRim.power, intensity: heroRim.intensity } }] } : {}) }).runtime({ id: "hero" }));
   // storm-washed has no ambient fill and a low side sun, so the ride log's camera-facing side crushed to near black in the
   // title orbit (p5 17); a 2.4x hemisphere fill on the log alone brings back the bark (GU47 phase 2)
   if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
@@ -399,20 +415,17 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* CD-02 / GU47 phase 4: the soft contact quad under the runner on both rows (the low storm sun throws the cast shadow
      metres to the side, so the feet need their own contact; slightly lighter where the sun shadow is received) */
   b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
-  b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false, ...(ACTIVE_LOOK.id === "storm-washed" ? { materialOverrides: [{ rim: { color: "#ffe2b8", power: 2.2, intensity: 0.85 } }] } : {}) }).runtime({ id: "sky-cloud" }));
-  const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
-  staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
-  staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0.94, 0]);
-  b.add(geometry.custom(meshGeometry(staff), { name: "staff", castShadow: true, material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: "staff" }));
-  for (const ball of ch.balls) b.add(primitives.sphere({ name: `ball-${ball.star}`, size: 0.95, material: material.custom(ballSpec(ball.star)) }).runtime({ id: `ball-${ball.star}` }));
-  if (ch.home) b.add(primitives.sphere({ name: `ball-${ch.home.star}`, size: 0.95, material: material.custom(ballSpec(ch.home.star)) }).runtime({ id: `ball-${ch.home.star}` }));
-  const meat = meatChunk();
-  ch.meat.forEach((_, i) => b.add(geometry.custom(meshGeometry(meat), { name: `meat-${i}`, castShadow: false, material: material.custom(scenerySpec({ sun: 1.4, rim: 0.4 })) }).runtime({ id: `meat-${i}` })));
-  ch.boulders.forEach((_, i) => b.add(model(MESHY.boulder, { name: `boulder-${i}`, targetHeight: 2.0, castShadow: true, receiveShadow: false }).runtime({ id: `boulder-${i}` })));
+  b.add(buildGoldenSkyCloudNode());
+  b.add(buildSkyStaffNode());
+  for (const ball of ch.balls) b.add(buildStarSphereNode(ball.star));
+  if (ch.home) b.add(buildStarSphereNode(ch.home.star));
+  ch.meat.forEach((_, i) => b.add(buildHoneyRoastPickupNode(i)));
+  for (let i = 0; i < COIN_POOL_CAP; i++) b.add(buildSkyCoinNode(i));
+  ch.boulders.forEach((_, i) => b.add(buildCarvedBoulderNode(i)));
   const dives = ch.creatures.filter((c) => c.type === "pteranodon");
-  dives.forEach((_, i) => b.add(model(MESHY.ptero, { name: `ptera-body-${i}`, targetHeight: 1.7, castShadow: true, receiveShadow: false }).runtime({ id: `ptera-body-${i}` })));
+  dives.forEach((_, i) => b.add(buildSkyPterosaurNode(i)));
   const hasRex = ch.creatures.some((c) => c.type === "trex");
-  if (hasRex) b.add(model(MESHY.rex, { name: "rex-body", targetHeight: 8.4, castShadow: true, receiveShadow: false }).runtime({ id: "rex-body" }));
+  if (hasRex) b.add(buildStormTyrantNode());
 
   const quad = (() => { const m = new Mesh(); m.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); m.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); m.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); m.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); m.quad(0, 1, 2, 3); return m; })();
   const warnIds: string[] = [];
@@ -741,8 +754,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         nd.setPosition(p[0], p[1], p[2]); nd.setRotation(0, clock * 1.8, 0.3);
       });
 
-      /* ---- orb field: collectables near the runner, magnet-pulled when riding ---- */
-      let k = 0;
+      /* ---- orb field: 3D spinning celestial sky-coins + soft additive glow halos, magnet-pulled when riding ---- */
+      let k = 0, coinIdx = 0;
       const put = (p: V3, size: number, alpha: number, tone: V3): void => {
         if (k >= ORB_CAP) return;
         orbPos[k * 3] = p[0]; orbPos[k * 3 + 1] = p[1]; orbPos[k * 3 + 2] = p[2];
@@ -756,8 +769,16 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const mag = g.magnet.get(orb.id);
         let p = at(orb.s, orb.lane, 1.15 + Math.sin(clock * 3 + orb.id) * 0.1);
         if (mag !== undefined) p = lerp3(p, chestNow, Math.min(1, 0.2 + mag * 0.6));
-        put(p, 0.55, 1, [1.0, 0.93, 0.62]);
+        put(p, 0.55, 0.68, [1.0, 0.93, 0.62]);
+        if (coinIdx < COIN_POOL_CAP) {
+          const cn = node(`sky-coin-${coinIdx}`);
+          cn.setVisible(true);
+          cn.setPosition(p[0], p[1], p[2]);
+          cn.setRotation(0, clock * 3.1 + orb.id * 0.65, 0.12);
+          coinIdx++;
+        }
       }
+      for (let i = coinIdx; i < COIN_POOL_CAP; i++) node(`sky-coin-${i}`).setVisible(false);
       for (const ball of ch.balls) if (!s.balls.includes(ball.star) && Math.abs(ball.s - s.s) < 90) put(at(ball.s, ball.lane, ball.height), 2.6, 0.55, [1.0, 0.55, 0.12]);
       for (let i = k; i < ORB_CAP; i++) { orbAlpha[i] = 0; orbPos[i * 3 + 1] = -1e4; }
       orbs.updateAttribute?.("position", { array: orbPos, offset: 0 });

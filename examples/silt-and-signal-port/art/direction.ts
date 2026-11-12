@@ -45,23 +45,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.07, 0.2], fovDeg: [62, 86], mobile: "both" },
   assets: [
-    { role: "character", assetKey: "courier", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "walk", "run"] } },
-    { role: "vehicle", assetKey: "hoverboard", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "canyonrocks", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "aqueduct", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gatehouse", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "ringgate", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "watchtower", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "ringclean", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "lantern", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "stall", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "banner", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "pillar", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
-    // WP-36 replaces these two Kenney stand-ins (DG-A1 palms/tamarisk, DG-A2 adobe dwellings)
-    { role: "set-dressing", assetKey: "tree", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "house", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 512 },
-    // WP-36 DG-A2 (wave 10): the inked look's instanced village houses (51 in chapter 1): 3,577 triangles, three 512 px maps (BC+N+ORM)
-    { role: "set-dressing", assetKey: "silt_and_signal_port_duneAdobeA", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
+    { role: "character", assetKey: "courier", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "walk", "run"] } }
   ],
   vfx: [
     { event: "board-low-fast", kind: "silt-sand-wake" },
@@ -82,9 +66,7 @@ export default defineArtDirection({
     { event: "chapter", cue: "chapter-theme", variants: 7 }
   ],
   signatureEffect: "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
-  standIns: [
-    { feature: "Kenney tree and house in the dressing", file: "examples/silt-and-signal-port/world.ts", request: "R-14-07", removeWhen: "WP-36 palms, tamarisk and adobe dwellings admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["lighting", "postprocessing", "vfx", "atmospheric_effects"],
   tiers: {
     low: { particles: 300, shadowMap: 2048, cascades: 1, textureMax: 1024 },

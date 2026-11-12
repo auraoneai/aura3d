@@ -9,9 +9,9 @@ const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "ut
 const entries: Array<{ id: string; outputPath: string; url: string; hash: string; sizeBytes: number; provenance?: { license?: string; evidence?: string[] } }> = manifest.assets ?? manifest;
 
 describe("bunker zero local assets", () => {
-  it("ships the pistol, the lifted enemy and pickup models and the owned CC0 props (GU47 phase 9)", () => {
+  it("ships the 4 rigged enemy GLBs and the 4 owned CC0 Poly Haven props (WP-11 procedural overhaul)", () => {
     const ids = entries.map((e) => e.id).sort();
-    expect(ids).toEqual(["bzArmorMeshy", "bzBarrelMeshy", "bzBlastDoor", "bzBulkheadLamp", "bzCrateMeshy", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzMachete", "bzMedicalBox", "bzMgViewmodel", "bzPistol", "bzShutterDoor", "bzWardenMeshy"]);
+    expect(ids).toEqual(["bzBulkheadLamp", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzMachete", "bzMedicalBox", "bzShutterDoor", "bzWardenMeshy"]);
   });
 
   for (const entry of entries) {
@@ -33,7 +33,7 @@ describe("bunker zero local assets", () => {
   }
 
   it("the lifted models are brighter than their near-black originals (derivation is recorded)", () => {
-    for (const id of ["bzGunnerMeshy", "bzGuardMeshy", "bzHoundMeshy", "bzWardenMeshy", "bzArmorMeshy"]) {
+    for (const id of ["bzGunnerMeshy", "bzGuardMeshy", "bzHoundMeshy", "bzWardenMeshy"]) {
       const rec = JSON.parse(readFileSync(path.join(APP, "aura-evidence/lift", `${id}.lift.json`), "utf8"));
       expect(rec.tool).toBe("tools/bunker-zero-lift/lift.mjs");
     }

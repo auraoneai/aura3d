@@ -19,7 +19,7 @@ import { Renderer, resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOn
 import { identityMat4 } from "@aura3d/scene/math";
 import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
 import { resolveActorBoneAttachments } from "../app/actorAnimationHandle.js";
-import { runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode, runtimeNodeLodAnchor, runtimeNodeParentedTransform, setRuntimeQueryRenderItems } from "../app/runtimeNodes.js";
+import { runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode, runtimeNodeLodAnchor, runtimeNodeParentedTransform, runtimeNodePivotMetadata, setRuntimeQueryRenderItems } from "../app/runtimeNodes.js";
 import { createProductionRuntimeEnvironmentFog, prd07FogRuntimeState } from "./fog.js";
 import { lodLevelVisible, lodMarkerOf } from "../lodMarkers.js";
 import { createProductionRuntimePostprocess, type ProductionTemporalSceneIdentity } from "./postprocess.js";
@@ -327,22 +327,23 @@ export function assertFramePivotSupported(
   assertValidPivot(node.pivot);
   const staticParent = parentTransformOf(node);
   const handle = renderableRuntimeHandle(node, runtimeNodes);
-  const live = handle?.snapshot() as { readonly pivot?: AuraVec3; readonly instances?: readonly AuraTransformSpec[] } | undefined;
-  const parented = handle ? runtimeNodeParentedTransform(handle) : undefined;
+  const meta = handle ? runtimeNodePivotMetadata(handle) : undefined;
   const prospectiveParent = options?.prospectiveParent;
-  const prospectiveTransform = prospectiveParent ? runtimeNodeParentedTransform(prospectiveParent) : undefined;
-  const prospectivePivot = prospectiveParent?.snapshot().pivot;
+  const prospectiveMeta = prospectiveParent ? runtimeNodePivotMetadata(prospectiveParent) : undefined;
+  const prospectivePivot = prospectiveMeta?.localPivot;
   assertValidPivot(prospectivePivot);
-  const localPivot = parented ? parented.localNode.pivot : live?.pivot ?? node.pivot;
+  const localPivot = meta ? meta.localPivot : node.pivot;
   assertValidPivot(localPivot);
-  const transforms = live?.instances ?? node.instances;
-  let pivoted = Boolean(parented?.hasPivot || staticParent?.hasPivot || prospectiveTransform?.hasPivot ||
+  const transforms = meta?.instances ?? node.instances;
+  let pivoted = Boolean(meta?.hasPivot || staticParent?.hasPivot || prospectiveMeta?.hasPivot ||
     hasNonzeroPivot(prospectivePivot) || hasNonzeroPivot(localPivot));
   for (const transform of transforms ?? []) {
     assertValidPivot(transform.pivot);
     pivoted ||= hasNonzeroPivot(transform.pivot);
   }
   if (!pivoted) return false;
+  const parented = meta?.isParented ? runtimeNodeParentedTransform(handle!) : undefined;
+  const prospectiveTransform = prospectiveMeta?.isParented ? runtimeNodeParentedTransform(prospectiveParent!) : undefined;
   // A node's own pivot composes with its own lookAt in the C-06 model matrix
   // (the pivot point stays fixed while -Z faces the target). The legacy matrix,
   // live parented look-at and pivoted instance batches have no such composition.
@@ -545,8 +546,8 @@ function createProductionRuntimeRendererInputOwned(
   // compiled and legacy production paths both construct their input here.
   const { projectionMetadata, depthConvention } = resolveProductionCameraDepth(snapshot.camera);
   const cache = ownerCaches.get(owner) ?? legacyCache;
-  for (const entry of actorEntries) assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null, entry.actor);
-  for (const entry of primitiveEntries) assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null);
+  const actorPivotedFlags = actorEntries.map((entry) => assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null, entry.actor));
+  const primitivePivotedFlags = primitiveEntries.map((entry) => assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null));
   // A replacement node array marks a new scene revision; no retained output
   // from the prior revision may be handed to the new one.
   if (cache.sceneNodes !== snapshot.nodes) {
@@ -556,6 +557,11 @@ function createProductionRuntimeRendererInputOwned(
     cache.colors = new WeakMap();
     cache.denseOutput = new WeakMap();
     cache.sizedNodes = new WeakMap();
+    for (const node of groups.flatten(snapshot.nodes)) {
+      if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
+        runtimeWarnings.add(formatSkippedInlineModelWarning(node));
+      }
+    }
   }
   const prd01ModelMatrixCache = cache.modelMatrix;
   // Root app extensions are bound only to an HTML canvas. A worker canvas
@@ -582,22 +588,18 @@ function createProductionRuntimeRendererInputOwned(
   const viewProjectionMatrix = cameraMatrices.viewProjection;
   const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
   const lodCamera = { projectionMatrix: cameraMatrices.projection, viewMatrix: cameraMatrices.view, viewProjectionMatrix, position: cameraPosition };
-  for (const node of groups.flatten(snapshot.nodes)) {
-    if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
-      runtimeWarnings.add(formatSkippedInlineModelWarning(node));
-    }
-  }
   textureResidency?.beginFrame();
   for (const [actorIndex, entry] of actorEntries.entries()) {
     // Register before visibility/LOD/empty-instance checks: skipped entries
     // must publish an empty list instead of retaining the preceding frame.
     const actorQueryItems = queryItemsFor(entry.node);
+    const actorHandle = renderableRuntimeHandle(entry.node, runtimeNodes);
+    if (actorHandle && !runtimeNodeEffectiveVisibility(actorHandle)) continue;
     let currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     let currentNode = currentState.node;
-    const actorHandle = renderableRuntimeHandle(entry.node, runtimeNodes);
     let parentedActor = actorHandle ? runtimeNodeParentedTransform(actorHandle) : undefined;
     const staticActorParent = parentTransformOf(entry.node);
-    let actorPivoted = assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null, entry.actor);
+    let actorPivoted = actorPivotedFlags[actorIndex]!;
     // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
     if (currentNode.visible === false || (parentedActor && actorHandle && !runtimeNodeEffectiveVisibility(actorHandle)) || !runtimeLodVisible(currentNode, actorHandle, cameraPosition, runtimeNodes ?? canvas)) continue;
     if (currentNode.instances !== undefined && currentNode.instances.length === 0) {
@@ -760,13 +762,14 @@ function createProductionRuntimeRendererInputOwned(
     : undefined;
   for (const [primitiveIndex, entry] of primitiveEntries.entries()) {
     const primitiveQueryItems = queryItemsFor(entry.node);
-    const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     const primitiveHandle = renderableRuntimeHandle(entry.node, runtimeNodes);
+    if (primitiveHandle && !runtimeNodeEffectiveVisibility(primitiveHandle)) continue;
+    const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     const parentedPrimitive = primitiveHandle ? runtimeNodeParentedTransform(primitiveHandle) : undefined;
     const staticPrimitiveParent = parentTransformOf(entry.node);
-    const primitivePivoted = assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null);
+    const primitivePivoted = primitivePivotedFlags[primitiveIndex]!;
     // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
-    if (!currentState.visible || (parentedPrimitive && primitiveHandle && !runtimeNodeEffectiveVisibility(primitiveHandle)) || !runtimeLodVisible(currentState.node, primitiveHandle, cameraPosition, runtimeNodes ?? canvas)) continue;
+    if (!currentState.visible || !runtimeLodVisible(currentState.node, primitiveHandle, cameraPosition, runtimeNodes ?? canvas)) continue;
     const denseMatrices = currentState.node.instances !== undefined ? denseInstanceMatrices(currentState.node) : undefined;
     if (currentState.node.instances !== undefined && (currentState.node.instances.length === 0 || denseMatrices?.length === 0)) {
       runtimeWarnings.add(`INSTANCES_EMPTY: instances.${currentState.node.primitive} "${currentState.node.name ?? "unnamed"}" has no instances this frame; nothing is drawn.`);

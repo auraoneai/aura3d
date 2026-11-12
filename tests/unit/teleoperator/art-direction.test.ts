@@ -27,7 +27,11 @@ function glbStats(url: string): { triangles: number; textures: number } {
   return { triangles: Math.round(triangles), textures: json.images?.length ?? 0 };
 }
 
-const manifest = { assets: Object.fromEntries(Object.entries(assets).map(([key, ref]) => [key, glbStats(ref.url)])) };
+const manifest = {
+  assets: Object.fromEntries(
+    direction.assets.map(({ assetKey }) => [assetKey, glbStats(assets[assetKey as keyof typeof assets].url)])
+  )
+};
 
 function snapshotFor(sky: (typeof SKY_ORDER)[number]): ArtDirectionSnapshot {
   const app = createAuraApp(undefined, { scene: buildGridDispatchScene(sky), autoStart: false });
@@ -39,7 +43,7 @@ function snapshotFor(sky: (typeof SKY_ORDER)[number]): ArtDirectionSnapshot {
 }
 
 describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
-  it("is a valid defineArtDirection contract with the WP-14 identity", () => {
+  it("is a valid defineArtDirection contract with the WP-14 identity and only the rigged passenger GLB mounted", () => {
     expect(direction.id).toBe("showcase-teleoperator");
     expect(direction.genre).toBe("racing");
     expect(direction.palette.primary).toEqual(["#5f7f8c", "#2b3a55", "#ffb15a", "#b3262b"]);
@@ -48,6 +52,9 @@ describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
     expect(direction.lighting.environment.background).toBe("sky");
     expect(direction.signatureEffect).toMatch(/marine-layer/i);
     expect(direction.signatureEffect).toMatch(/LiDAR scan pulse/);
+    expect(direction.assets.map((a) => a.assetKey)).toEqual(["gridPassenger"]);
+    const bootSnap = snapshotFor(BOOT_SKY);
+    expect(bootSnap.models.map((m) => m.assetKey)).toEqual(["gridPassenger"]);
   });
 
   it("names a VFX entry for every registered preset of the pack", () => {

@@ -43,22 +43,7 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.1, 0.24], fovDeg: [56, 66], mobile: "both" },
-  assets: [
-    { role: "hero", assetKey: "hero", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "enemy", assetKey: "roadsterRushSkyCar", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "skycar-far", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "vehicle", assetKey: "sedan", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "hatch", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "suv", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "taxi", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "van", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "pickup", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "boxtruck", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "bus", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "carrier", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "traffic-far-lod", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "apex-glass-towers", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 1024 }
-  ],
+  assets: [],
   vfx: [
     { event: "crash", kind: "apex-crash" },
     { event: "bolt-pickup", kind: "apex-bolt" },
@@ -77,10 +62,7 @@ export default defineArtDirection({
     { event: "rocket-send", cue: "apex-rocket-music", variants: 1 }
   ],
   signatureEffect: "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
-  standIns: [
-    { feature: "glass tower kit (procedural curtain-wall towers until the Meshy kit lands)", file: "src/render/towers.ts", request: "R-14-07", removeWhen: "WP-36 apex glass tower kit admitted" },
-    { feature: "deck pylons (instanced primitive pylons until the Meshy pylon lands)", file: "src/render/pylons.ts", request: "R-14-07", removeWhen: "WP-36 apex deck pylon admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["lighting", "atmospheric_effects", "environment_world", "gameplay_readability"],
   tiers: {
     low: { particles: 48, shadowMap: 1024, cascades: 1, textureMax: 1024 },

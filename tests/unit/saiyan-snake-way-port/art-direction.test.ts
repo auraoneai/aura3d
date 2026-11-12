@@ -6,14 +6,13 @@ import {
 } from "../../../examples/saiyan-snake-way-port/art/colorScript";
 import { SERPENT_VFX_KINDS, SERPENT_VFX_LIVE_CAP, registerSerpentVfx, serpentVfxPresets } from "../../../examples/saiyan-snake-way-port/art/vfx";
 import { STAGES } from "../../../examples/saiyan-snake-way-port/sim";
-import { MESHY } from "../../../examples/saiyan-snake-way-port/models";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
- * GU47 WP-27 look contract. The snapshot mirrors what world.ts mounts: one shadowed sun, the camera-side violet fill
- * (unshadowed), the hemisphere sky light (not an ambient light), the dusk sky probe (sunset preset), the rigged runner and the eight
- * Meshy props. Triangles are 0 (not measured in phase 1; the audit skips the floor check for 0).
+ * GU47 WP-27 + WP-21 look contract. The snapshot mirrors what world.ts mounts: one shadowed sun, the camera-side violet fill
+ * (unshadowed), the hemisphere sky light (not an ambient light), the dusk sky probe (sunset preset), and ONLY the rigged runner
+ * GLB (all static environment landmarks, islands, lanterns, gates, hazards, and collectibles are sculpted procedurally).
  */
 function mountedSceneMirror(): ArtDirectionSnapshot {
   const row = STAGE_LOOK[0]!;
@@ -26,7 +25,7 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
     ],
     hasAmbient: false,
     environment: { kind: "preset", background: false },
-    models: [model("runner"), ...Object.keys(MESHY).map(model)],
+    models: [model("runner")],
     drawCalls: 0
   };
 }

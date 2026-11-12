@@ -4,9 +4,18 @@
 
 import {
   game, lights, effects, scene, camera, instances, environments, defineAuraAssets,
-  primitives, material, text3D, texture, model, type AuraApp, type AuraSceneNode
+  primitives, material, text3D, texture, type AuraApp, type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../aura-assets.js";
+import {
+  BONUS_RELIC_KINDS,
+  POOL_CAPS,
+  buildArchitectDeskLampNode,
+  buildBonusArcadeRelicNode,
+  buildCourierCoreNode,
+  buildCourierHoverPodNode,
+  buildInstancedPoolNodes,
+  buildWarpTunnelArchNode
+} from "../art/proceduralModels.js";
 import { boxReflectionProbe } from "./engineCompat.js";
 import { idx, type ParsedMaze } from "./grid.js";
 import type { MazeId } from "./mazes.js";
@@ -68,18 +77,6 @@ function lampLight(look: BoardLookRow) {
 /** Phase 4 (4.7.2): SSR with the v2 fields (maxDistance, roughness, thickness), typed by effects.screenSpaceReflections since 5.0. */
 function ssrNode(): AuraSceneNode {
   return effects.screenSpaceReflections({ name: "mask reflections", intensity: GROUNDING.ssr.intensity, maxDistance: GROUNDING.ssr.maxDistance, roughness: GROUNDING.ssr.roughness, thickness: GROUNDING.ssr.thickness }).toJSON();
-}
-
-/** Phase 4 (4.7.2) courier pod model node (DD47-A1): world scale, cyan rim over the Meshy textures. */
-function courierPod(name: string) {
-  return model(assets.dotdashCourierPod, {
-    name,
-    scaleMode: "world",
-    scale: [COURIER_POD.scale, COURIER_POD.scale, COURIER_POD.scale],
-    castShadow: true,
-    receiveShadow: true,
-    materialOverrides: [{ rim: { ...COURIER_POD.rim }, emissive: COURIER_POD.emissive, emissiveIntensity: COURIER_POD.emissiveIntensity, envMapIntensity: 1.55, clearcoat: 0.92, clearcoatRoughness: 0.1 }]
-  }).runtime(game.runtimeNode(name));
 }
 
 export const TILE = 1;
@@ -144,33 +141,9 @@ export function tileToScreen(tx: number, ty: number, y = 0.6): { x: number; y: n
 
 // ---------------------------------------------------------------------------
 // Static-ish instanced pools — rebuilt when the maze changes.
+// All 24 pool geometries in `proceduralModels.ts` are unit-normalized to `[-0.5..0.5]^3`.
 // ---------------------------------------------------------------------------
-const CAP = {
-  wall: 420,
-  wallTrim: 420,  // luminous bevel trim crowning each lacquer wall module
-  rail: 1700,     // brushed-metal gull-wing pins: two per corridor-facing chip side (DD47-M2)
-  trace: 640,     // brushed copper traces between corridor tile centres (signature, DD47-M1)
-  traceLit: 640,  // the lit overlay over the traces the courier passed or a surge pulse crosses
-  dot: 220,       // faceted glint pellets
-  orb: 8,         // brushed-metal power-prism collars (surge cells, DD47-M3)
-  prism: 8,       // studioGlass power prisms
-  vent: 8,        // glowing plasma cores inside each power prism
-  marker: 8,      // ghost-school target tiles
-  eyes: 12,       // eyes-only specter state (2 per ghost max + margin)
-  dress: 140,     // anodized heatsink & Nixie socket bases
-  cap: 80,        // brushed-metal electrolytic capacitor cans
-  glow: 120,      // Nixie cathode filaments & component LEDs
-  hero: 2,        // courier forward prow visor (+ wrap echo)
-  halo: 2,        // courier spinning induction ring
-  shC: 2,         // sentry silhouettes: cone, cube, ring, saucer (+ wrap echo each)
-  shB: 2,
-  shT: 2,
-  shY: 2,
-  visor: 8,       // directional glowing sentry optic visors (+ wrap echoes)
-  scan: 8,        // translucent sentry forward scan cones (+ wrap echoes)
-  trophy: 12,     // studioGlass Nixie tube envelopes on perimeter sockets
-  gem: 2          // faceted bonus cache gem
-} as const;
+const CAP = POOL_CAPS;
 
 type Pool = { mat: Float32Array; col: Float32Array; n: number };
 const POOL = {} as Record<keyof typeof CAP, Pool>;
@@ -277,12 +250,6 @@ const boardMaterial = (look: BoardLookRow, baked: BoardTextures | null) => baked
     roughness: look.maskRoughness, metalness: 0.06, clearcoat: 0.92, clearcoatRoughness: 0.08
   })
   : material.pbr({ color: look.mask, roughness: look.maskRoughness, metalness: 0.06, clearcoat: 0.92, clearcoatRoughness: 0.08 });
-/** Brushed copper traces between the corridor tiles: bare metal, no glow until the courier passes (traceLit). */
-const traceMaterial = () => material.brushedMetal({ color: "#ffffff", roughness: 0.28, anisotropy: 0.55 });
-
-/** Instances that glow their own colour (E-D `instanceColorTarget: "both"`): LED lenses, vents, lit traces. */
-const glowing = (emissiveIntensity: number, roughness = 0.3) =>
-  material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity, roughness, metalness: 0.05, practical: true });
 
 // ---------------------------------------------------------------------------
 // Scene definition — one static graph; instanced pools get re-filled per frame.
@@ -344,32 +311,6 @@ export function buildScene(): unknown {
   // takes the instance colour on pools with `instanceColorTarget: "both" | "emissive"` (E-D). Never set a white
   // emissive on a "base" pool, or every instance emits pure white regardless of its colour.
   const P = BOARD_PARTS;
-  // WP-13: beveled high-gloss lacquer maze walls + luminous top bevel trim + brushed-metal gull-wing pins.
-  const wallMat = material.lacquer({ color: "#ffffff", roughness: P.epoxy.roughness, clearcoatRoughness: 0.1 });
-  const wallTrimMat = glowing(0.92, 0.24);
-  const pinMat = material.brushedMetal({ color: "#ffffff", roughness: P.pin.roughness, anisotropy: 0.68 });
-  // Faceted glint pellets + studioGlass power prisms with brushed-metal collars and pulsing plasma cores.
-  const dotMat = glowing(1.55, 0.15);
-  const canMat = material.brushedMetal({ color: P.can.color, roughness: 0.24, anisotropy: 0.6 });
-  const prismMat = material.physical({ color: "#ffe0b2", roughness: 0.04, metallic: 0.08, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 1, opacity: 0.48, alphaMode: "blend", depthWrite: false });
-  const ventMat = glowing(2.1, 0.2);
-  const markerMat = material.pbr({ color: "#ffffff", roughness: 0.4, metalness: 0.05 });
-  const eyesMat = glowing(1.4, 0.2);
-  const dressMat = material.pbr({ color: "#ffffff", roughness: 0.34, metalness: 0.68, clearcoat: 0.35 });
-  const capMat = material.brushedMetal({ color: "#ffffff", roughness: 0.24, anisotropy: 0.65 });
-  const glowMat = glowing(1.65, 0.22);
-  const traceLitMat = glowing(1.9, 0.24);
-
-  // Courier: bright plasma core, sleek directional prow visor (no opaque shell obscuring the pod), spinning induction ring.
-  const coreMat = material.emissive({ color: "#bffcff", emissive: "#6ff2ff", emissiveIntensity: 2.35 });
-  const visorHeroMat = glowing(1.9, 0.14);
-  const haloMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 1.05, roughness: 0.24, metalness: 0.4, practical: true });
-  // Sentries: lacquered armored drone chassis + directional optic visor + additive forward scan cone.
-  const sentryMat = material.lacquer({ color: "#ffffff", roughness: 0.22, clearcoatRoughness: 0.08, rim: { color: "#d8ebff", power: 2.4, intensity: 0.82 } });
-  const visorMat = glowing(2.1, 0.14);
-  const scanMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85, opacity: 0.22, blend: "additive", depthWrite: false, roughness: 0.5, metalness: 0, practical: true });
-  const nixieGlassMat = material.physical({ color: "#ffe6cc", roughness: 0.05, metallic: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, specularIntensity: 1, opacity: 0.42, alphaMode: "blend", depthWrite: false });
-  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.28, roughness: 0.05, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.04, practical: true });
   const portalMat = material.custom(dualEnergyFieldSpec({ coreColor: [0.14, 0.78, 1.0], edgeColor: [0.68, 0.98, 1.0], pulseSpeed: 3.2, scanScale: 12.0, opacity: 0.58 }));
   const doorMat = material.custom(dualEnergyFieldSpec({ coreColor: [1.0, 0.62, 0.18], edgeColor: [1.0, 0.92, 0.58], pulseSpeed: 3.4, scanScale: 15.0, opacity: 0.72 }));
   const beamMat = material.custom(dualEnergyFieldSpec({ coreColor: [1.0, 0.68, 0.22], edgeColor: [1.0, 0.94, 0.64], pulseSpeed: 4.0, scanScale: 10.0, opacity: 0.5 }));
@@ -384,43 +325,19 @@ export function buildScene(): unknown {
     primitives.box({ name: "board", size: [...BENCH.board.size], material: boardMaterial(look, paintBoardTextures(st.maze)), receiveShadow: true })
       .position(0, BENCH.board.y, 0)
       .runtime(game.runtimeNode("board")),
-    // instanced pools (strictly positive scales for single-draw GPU instancing)
-    instances.roundedBox({ name: "walls", params: { radius: 0.14, widthSegments: 3 }, size: [1, 1, 1], material: wallMat, transforms: pad(CAP.wall), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-wall")),
-    instances.box({ name: "wall-trim", size: [1, 1, 1], material: wallTrimMat, instanceColorTarget: "both", transforms: pad(CAP.wallTrim), castShadow: false }).runtime(game.runtimeNode("pool-wallTrim")),
-    instances.box({ name: "pins", size: [1, 1, 1], material: pinMat, transforms: pad(CAP.rail), castShadow: false }).runtime(game.runtimeNode("pool-rail")),
-    instances.box({ name: "traces", size: [1, 1, 1], material: traceMaterial(), transforms: pad(CAP.trace), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-trace")),
-    instances.box({ name: "traces lit", size: [1, 1, 1], material: traceLitMat, instanceColorTarget: "emissive", transforms: pad(CAP.traceLit), castShadow: false }).runtime(game.runtimeNode("pool-traceLit")),
-    instances.polyhedron({ name: "shards", params: { variant: "octahedron" }, size: [1, 1, 1], material: dotMat, instanceColorTarget: "both", transforms: pad(CAP.dot), castShadow: false }).runtime(game.runtimeNode("pool-dot")),
-    instances.cylinder({ name: "cells", size: [1, 1, 1], material: canMat, transforms: pad(CAP.orb), castShadow: true }).runtime(game.runtimeNode("pool-orb")),
-    instances.polyhedron({ name: "prisms", params: { variant: "octahedron" }, size: [1, 1, 1], material: prismMat, transforms: pad(CAP.prism), castShadow: false }).runtime(game.runtimeNode("pool-prism")),
-    instances.polyhedron({ name: "cell vents", params: { variant: "icosahedron" }, size: [1, 1, 1], material: ventMat, instanceColorTarget: "both", transforms: pad(CAP.vent), castShadow: false }).runtime(game.runtimeNode("pool-vent")),
-    instances.box({ name: "markers", size: [1, 1, 1], material: markerMat, transforms: pad(CAP.marker), castShadow: false }).runtime(game.runtimeNode("pool-marker")),
-    instances.sphere({ name: "eyes", size: [1, 1, 1], material: eyesMat, instanceColorTarget: "both", transforms: pad(CAP.eyes), castShadow: false }).runtime(game.runtimeNode("pool-eyes")),
-    instances.box({ name: "dress", size: [1, 1, 1], material: dressMat, transforms: pad(CAP.dress), castShadow: true }).runtime(game.runtimeNode("pool-dress")),
-    instances.cylinder({ name: "capacitors", size: [1, 1, 1], material: capMat, transforms: pad(CAP.cap), castShadow: true }).runtime(game.runtimeNode("pool-cap")),
-    instances.cylinder({ name: "glow", size: [1, 1, 1], material: glowMat, instanceColorTarget: "both", transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
-    instances.box({ name: "courier-visor", size: [1, 1, 1], material: visorHeroMat, instanceColorTarget: "both", transforms: pad(CAP.hero), castShadow: false }).runtime(game.runtimeNode("pool-hero")),
-    instances.torus({ name: "courier-halo", size: [1, 1, 1], material: haloMat, transforms: pad(CAP.halo), castShadow: false }).runtime(game.runtimeNode("pool-halo")),
-    instances.cone({ name: "sentry-hunter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shC), castShadow: true }).runtime(game.runtimeNode("pool-shC")),
-    instances.roundedBox({ name: "sentry-ambusher", params: { radius: 0.14, widthSegments: 2 }, size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shB), castShadow: true }).runtime(game.runtimeNode("pool-shB")),
-    instances.torus({ name: "sentry-drifter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shT), castShadow: true }).runtime(game.runtimeNode("pool-shT")),
-    instances.cylinder({ name: "sentry-skittish", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shY), castShadow: true }).runtime(game.runtimeNode("pool-shY")),
-    instances.box({ name: "sentry-visors", size: [1, 1, 1], material: visorMat, instanceColorTarget: "both", transforms: pad(CAP.visor), castShadow: false }).runtime(game.runtimeNode("pool-visor")),
-    instances.cone({ name: "sentry-scans", size: [1, 1, 1], material: scanMat, instanceColorTarget: "both", transforms: pad(CAP.scan), castShadow: false }).runtime(game.runtimeNode("pool-scan")),
-    instances.cylinder({ name: "nixie-tubes", size: [1, 1, 1], material: nixieGlassMat, transforms: pad(CAP.trophy), castShadow: true }).runtime(game.runtimeNode("pool-trophy")),
-    instances.polyhedron({ name: "cache-gem", params: { variant: "icosahedron" }, size: [1, 1, 1], material: gemMat, instanceColorTarget: "both", transforms: pad(CAP.gem), castShadow: true }).runtime(game.runtimeNode("pool-gem")),
+    // WP-12: 24 sculpted unit-bounded (`[-0.5..0.5]^3`) instanced procedural pools
+    ...buildInstancedPoolNodes(pad),
 
-    // courier core: hovering plasma sphere + Meshy courier pod
-    primitives.sphere({ name: "byte", size: [0.28, 0.28, 0.28], material: coreMat, castShadow: false })
-      .position(wx(st.maze.spawn.x), COURIER_POD.coreHeight, wz(st.maze.spawn.y))
-      .runtime(game.runtimeNode("byte")),
-    primitives.sphere({ name: "byte-echo", size: [0.28, 0.28, 0.28], material: coreMat, castShadow: false })
-      .position(0, -999, 0)
-      .runtime(game.runtimeNode("byte-echo")),
-    courierPod("courier-pod").position(wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)),
-    courierPod("courier-pod-echo").position(0, -999, 0),
+    // WP-12: sculpted faceted plasma hover-core + multi-material Glint Courier hover-pod (+ wrap echoes)
+    buildCourierCoreNode("byte", [wx(st.maze.spawn.x), COURIER_POD.coreHeight, wz(st.maze.spawn.y)]),
+    buildCourierCoreNode("byte-echo", [0, -999, 0]),
+    buildCourierHoverPodNode("courier-pod", [wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)]),
+    buildCourierHoverPodNode("courier-pod-echo", [0, -999, 0]),
 
-    // paired GLSL + WGSL custom shader nodes: sentry hub reactor pad, phase gate, telemetry beam, wrap-tunnel portals, spark flipbooks
+    // WP-12: 6 sculpted multi-material bonus arcade relics (cherries, berry, key, bell, gyro chalice, Galaxian craft)
+    ...BONUS_RELIC_KINDS.map((kind) => buildBonusArcadeRelicNode(kind)),
+
+    // paired GLSL + WGSL custom shader nodes: sentry hub reactor pad, phase gate, telemetry beam, wrap-tunnel portals + voussoir archways, spark flipbooks
     primitives.plane({ name: "hub-pad", size: [2.8, 2.8], material: material.custom(dualCircuitBusSpec()), castShadow: false, receiveShadow: false })
       .position(0, -999, 0).rotate(-Math.PI / 2, 0, 0)
       .runtime(game.runtimeNode("hub-pad")),
@@ -435,6 +352,7 @@ export function buildScene(): unknown {
         .position(0, -999, 0)
         .runtime(game.runtimeNode(`portal-${i}`))
     ),
+    ...Array.from({ length: 4 }, (_, i) => buildWarpTunnelArchNode(`warp-arch-${i}`)),
     ...Array.from({ length: SPARK_POOL_SIZE }, (_, i) =>
       primitives.plane({ name: `spark-burst-${i}`, size: [1, 1], material: material.custom(dualSparkFlipbookSpec(SPARKS_ATLAS)), castShadow: false, receiveShadow: false })
         .position(0, -999, 0).rotate(-0.92, 0, 0)
@@ -489,8 +407,9 @@ function roomNodes() {
       .position(0, benchTop + w.height / 2, w.z),
     primitives.box({ name: "pegboard", size: [pb.width, pb.height, 0.2], material: material.pbr({ color: pb.color, roughness: pb.roughness, metalness: 0 }), castShadow: false, receiveShadow: true })
       .position(pb.x, benchTop + pb.y, faceZ + 0.1),
-    instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0 }), transforms: holes, castShadow: false }),
-    instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
+    instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: holes, castShadow: false }),
+    instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
+    buildArchitectDeskLampNode(benchTop, LAMP.position, LAMP.target),
     ...lampShaft(),
     primitives.box({ name: "wall shelf", size: [44, 0.35, sh.depth], material: material.pbr({ color: sh.color, roughness: sh.roughness, metalness: 0 }), castShadow: true, receiveShadow: true })
       .position(pb.x, benchTop + sh.y, faceZ + sh.depth / 2)
@@ -667,15 +586,28 @@ function paintMaze(m: ParsedMaze): void {
     }
     for (let i = 0; i < 4; i++) {
       const pNode = app?.nodes?.get(`portal-${i}`);
-      if (!pNode) continue;
+      const aNode = app?.nodes?.get(`warp-arch-${i}`);
       const spec = portals[i];
       if (spec) {
-        pNode.setVisible(true);
-        pNode.setPosition(...spec.pos);
-        pNode.setRotation(0, spec.rotY, 0);
+        if (pNode) {
+          pNode.setVisible(true);
+          pNode.setPosition(...spec.pos);
+          pNode.setRotation(0, spec.rotY, 0);
+        }
+        if (aNode) {
+          aNode.setVisible(true);
+          aNode.setPosition(spec.pos[0], 0, spec.pos[2]);
+          aNode.setRotation(0, spec.rotY, 0);
+        }
       } else {
-        pNode.setVisible(false);
-        pNode.setPosition(0, -999, 0);
+        if (pNode) {
+          pNode.setVisible(false);
+          pNode.setPosition(0, -999, 0);
+        }
+        if (aNode) {
+          aNode.setVisible(false);
+          aNode.setPosition(0, -999, 0);
+        }
       }
     }
   } catch { /* boot race */ }
@@ -1090,10 +1022,25 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
       if (gx) place(wx(gx.x), wz(gx.y));
     }
 
-    // Bonus cache gem — faceted crystal icosahedron in the kind's colour
-    if (st.fruitActive) {
-      const kind = m.def.fruit;
-      inst("gem", wx(m.fruitTile.x), 0.42 + Math.sin(st.time * 4) * 0.06, wz(m.fruitTile.y), 0.5, 0.5, 0.5, GEM_COLOR[kind], st.time * 1.6);
+    // Bonus arcade relic — sculpted multi-material relic perched atop a spinning crown-cut crystal plinth
+    const activeFruit = st.fruitActive ? m.def.fruit : null;
+    if (activeFruit) {
+      const bobRelic = Math.sin(st.time * 4) * (calmMotion ? 0.02 : 0.055);
+      inst("gem", wx(m.fruitTile.x), 0.2 + bobRelic * 0.6, wz(m.fruitTile.y), 0.44, 0.24, 0.44, GEM_COLOR[activeFruit], st.time * 1.6);
+    }
+    for (const kind of BONUS_RELIC_KINDS) {
+      const relicNode = nodes.get(`bonus-relic-${kind}`);
+      if (!relicNode) continue;
+      if (activeFruit === kind) {
+        const bobRelic = Math.sin(st.time * 4) * (calmMotion ? 0.02 : 0.055);
+        relicNode.setVisible(true);
+        relicNode.setPosition(wx(m.fruitTile.x), 0.56 + bobRelic, wz(m.fruitTile.y));
+        relicNode.setRotation(calmMotion ? 0 : Math.sin(st.time * 2.4) * 0.08, calmMotion ? 0.4 : st.time * 1.6, 0);
+        relicNode.setScale(0.95);
+      } else {
+        relicNode.setVisible(false);
+        relicNode.setPosition(0, -999, 0);
+      }
     }
 
     const beam = nodes.get("school-beam");

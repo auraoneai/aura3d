@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/kid-goku-beyond-the-clouds-port/art/direction.ts",
-  "sourceSha256": "56b3899a54c65c24a81a719e72f18d95a364f8db5e9800ba332afdac06297cf8",
+  "sourceSha256": "c99f94610c6c03a560a1fec74423986402a86a3616abf9c7452c594280971b43",
   "id": "showcase-cloud-runner-port",
   "genre": "platformer",
   "signatureEffect": "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
@@ -40,55 +40,6 @@
     "models": [
       {
         "assetKey": "hero",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "cloud",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "boulder",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ptero",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rex",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "treeRound",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "treePine",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "mesa",
         "triangles": 0,
         "textures": 1,
         "unlit": false,
@@ -178,57 +129,6 @@
         "minTriangles": 4000,
         "textureSet": "BC+N",
         "maxTextureSize": 2048
-      },
-      {
-        "role": "enemy",
-        "assetKey": "rex",
-        "maxTriangles": 60000,
-        "minTriangles": 4000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "enemy",
-        "assetKey": "ptero",
-        "maxTriangles": 40000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "cloud",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "boulder",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "treeRound",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "treePine",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "mesa",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

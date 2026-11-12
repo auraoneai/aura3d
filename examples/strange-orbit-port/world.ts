@@ -5,7 +5,7 @@
  * sunlit crescent Earthrise + banded ochre gas giant, multi-lobe clearcoat/chrome/studioGlass
  * rovers with articulated cornering poses, low-G regolith dust plumes, and chase camera.
  */
-import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
   COURSE_LENGTH,
   GATES,
@@ -23,7 +23,6 @@ import {
 } from "./course";
 import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
 import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
-import { MESHY, MESHY_ENABLED, MESHY_SIZE } from "./models";
 import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
@@ -35,6 +34,26 @@ import { Vec3 } from "./vec3";
 import { EARTHRISE_POSITION, LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
+import {
+  createCourseGateLintelNode,
+  createCourseGatePylonNode,
+  createCourseSideRockNode,
+  createDeepSpaceDishNode,
+  createGhostRiderNode,
+  createLunarHabitatDomeNode,
+  createLunarLanderNode,
+  createLunarObservatoryNode,
+  createLunarRiderVehicleNode,
+  createMeteorRockNode,
+  createPressurizedFuelTankNode,
+  createResonanceCrystalNode,
+  createRiderSubPartNode,
+  createRimScatterInstancedNodes,
+  createRoverServiceTrailerNode,
+  createSolarArrayNode,
+  createStartFinishGantryNode,
+  createTrackBeaconInstancedNodes
+} from "./art/proceduralModels";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
@@ -63,24 +82,6 @@ export const IMPACT_REBOUND = { seconds: 0.2, metres: 0.6 } as const;
 export const REDUCED_MOTION_SPIN = 0.25;
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
-
-/**
- * Moon rock (meteors): Poly Haven "Moon Rock 01" (poly-haven:moon_rock_01, CC0-1.0, 1k BC+N+ORM), its LOD0 mesh only
- * (9,958 triangles, one draw) packed to one GLB and owned by this game; provenance in assets/provenance/craterline_moon_rock.*.json.
- */
-const ROCK_ASSET = defineAuraAssets({
-  craterlineMoonRock: {
-    type: "model",
-    format: "glb",
-    url: new URL("./assets/models/craterline_moon_rock.glb", import.meta.url).pathname,
-    sha256: "839eea481354d50937e229a3e00219ed6257ca4ba0017cba9f22a976977ea962",
-    sizeBytes: 1486348,
-    metadata: {
-      license: "CC0-1.0 (Poly Haven, https://polyhaven.com/a/moon_rock_01)",
-      provenance: { sourcePath: "https://polyhaven.com/a/moon_rock_01", sourceId: "poly-haven:moon_rock_01" }
-    }
-  }
-}).craterlineMoonRock;
 
 function dynamicFrom(m: MeshData, withPigments: boolean) {
   const attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> = {};
@@ -150,7 +151,7 @@ const PLANET_SPIN = 0.01;
 
 /** SO47-W2: beacon lamp glow steps (rest, then the leader pulse); quantised so the material is rewritten only on a step. */
 export const BEACON_GLOW: readonly number[] = [2.2, 2.8, 3.5, 4.2];
-const beaconLampMaterial = (glow: number) => material.glowingEmissive({ color: "#f2b857", emissive: "#f2b857", emissiveIntensity: glow, roughness: 0.18, practical: true });
+const beaconLampMaterial = (glow: number) => material.glowingEmissive({ color: "#f2b857", emissive: "#f2b857", emissiveIntensity: glow, roughness: 0.18, clearcoat: 0, sheen: 0, practical: true });
 
 /** SO47-W2: metres between amber beacon posts. */
 export const BEACON_SPACING = 40;
@@ -181,85 +182,48 @@ interface Riderrig {
   readonly parts: readonly PartSpec[];
 }
 
-/** Local yaw that turns each Meshy rider model so its forward points along the rig's +X. */
-const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", Math.PI), skate: axisRotation("y", Math.PI / 2) };
+/** Local yaw that turns each procedural lunar rider vehicle (`-Z` nose -> `+X` rig forward, `+Z` rear bells -> `-X` aft). */
+const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", -Math.PI / 2), skate: axisRotation("y", -Math.PI / 2) };
 
 function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Riderrig {
   const root = `rider-${index}`;
   const wheel = multiplyMat3(IDENTITY, axisRotation("x", Math.PI / 2));
   const lean = axisRotation("z", -0.45);
-  const acrossSide = axisRotation("x", Math.PI / 2); // cylinder axis Y -> Z
   const alongForward = axisRotation("z", Math.PI / 2); // cylinder/cone axis +Y -> -X (aft exhaust)
   const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, kind, offset, local });
-  if (MESHY_ENABLED) {
-    // `model()` grounds a model at bottom-centre (`parts[0]` stays `rider-i-model`); gouache attaches multi-lobe
-    // anodized carPaint keel, spinning chrome wheel hubs, chrome thruster bells, Mach-diamond plasma cones,
-    // matte fabric aero collar, and a reflective gold-iridium studioGlass astronaut visor.
-    if (look !== "gouache") {
-      return { root, parts: [part("model", [0, 0, 0], MODEL_YAW[vehicle])] };
-    }
-    if (vehicle === "skate") {
-      return {
-        root,
-        parts: [
-          part("model", [0, 0, 0], MODEL_YAW.skate),
-          part("fairing", [0.02, 0.13, 0]),
-          part("wheelF", [0.33, 0.09, 0], wheel),
-          part("wheelR", [-0.33, 0.09, 0], wheel),
-          part("nozzleL", [-0.43, 0.16, 0.11], alongForward),
-          part("nozzleR", [-0.43, 0.16, -0.11], alongForward),
-          part("coneL", [-0.62, 0.16, 0.11], alongForward),
-          part("coneR", [-0.62, 0.16, -0.11], alongForward),
-          part("torso", [0.02, 1.08, 0]),
-          part("visor", [0.13, 1.38, 0])
-        ]
-      };
-    }
-    return {
-      root,
-      parts: [
-        part("model", [0, 0, 0], MODEL_YAW.bike),
-        part("fairing", [0.14, 0.38, 0]),
-        part("wheelF", [0.72, 0.34, 0], wheel),
-        part("wheelR", [-0.72, 0.34, 0], wheel),
-        part("nozzleL", [-0.94, 0.5, 0.13], alongForward),
-        part("nozzleR", [-0.94, 0.5, -0.13], alongForward),
-        part("coneL", [-1.18, 0.5, 0.13], alongForward),
-        part("coneR", [-1.18, 0.5, -0.13], alongForward),
-        part("torso", [0.04, 1.06, 0], lean),
-        part("visor", [0.24, 1.35, 0])
-      ]
-    };
+  if (look !== "gouache") {
+    return { root, parts: [part("model", [0, 0, 0], MODEL_YAW[vehicle])] };
   }
   if (vehicle === "skate") {
     return {
       root,
       parts: [
-        part("deck", [0, 0.14, 0]),
-        part("truckFL", [0.3, 0.07, 0.11], acrossSide), part("truckFR", [0.3, 0.07, -0.11], acrossSide),
-        part("truckRL", [-0.3, 0.07, 0.11], acrossSide), part("truckRR", [-0.3, 0.07, -0.11], acrossSide),
-        part("legL", [0, 0.48, 0.1]), part("legR", [0, 0.48, -0.1]),
-        part("torso", [0, 0.88, 0]),
-        part("armL", [0.05, 0.95, 0.24], axisRotation("z", -0.3)), part("armR", [0.05, 0.95, -0.24], axisRotation("z", -0.3)),
-        part("head", [0.02, 1.36, 0]), part("visor", [0.1, 1.38, 0])
+        part("model", [0, 0, 0], MODEL_YAW.skate),
+        part("fairing", [0.02, 0.13, 0]),
+        part("wheelF", [0.33, 0.09, 0], wheel),
+        part("wheelR", [-0.33, 0.09, 0], wheel),
+        part("nozzleL", [-0.43, 0.16, 0.11], alongForward),
+        part("nozzleR", [-0.43, 0.16, -0.11], alongForward),
+        part("coneL", [-0.62, 0.16, 0.11], alongForward),
+        part("coneR", [-0.62, 0.16, -0.11], alongForward),
+        part("torso", [0.02, 1.08, 0]),
+        part("visor", [0.13, 1.38, 0])
       ]
     };
   }
   return {
     root,
     parts: [
-      part("frame", [0.06, 0.52, 0]),
-      part("headlight", [0.64, 0.6, 0]),
-      part("seat", [-0.27, 0.76, 0]),
-      part("bar", [0.46, 0.93, 0], acrossSide),
-      part("wheelF", [0.58, 0.34, 0], wheel), part("wheelR", [-0.58, 0.34, 0], wheel),
-      part("tireF", [0.58, 0.34, 0]), part("tireR", [-0.58, 0.34, 0]),
-      part("hubF", [0.58, 0.34, 0], wheel), part("hubR", [-0.58, 0.34, 0], wheel),
-      part("nozzleL", [-0.72, 0.46, 0.13], alongForward), part("nozzleR", [-0.72, 0.46, -0.13], alongForward),
-      part("legL", [0, 0.58, 0.13], axisRotation("z", 0.44)), part("legR", [0, 0.58, -0.13], axisRotation("z", 0.44)),
-      part("torso", [-0.02, 0.98, 0], lean),
-      part("armL", [0.3, 1.08, 0.19], axisRotation("z", -0.68)), part("armR", [0.3, 1.08, -0.19], axisRotation("z", -0.68)),
-      part("head", [0.16, 1.4, 0]), part("visor", [0.25, 1.43, 0])
+      part("model", [0, 0, 0], MODEL_YAW.bike),
+      part("fairing", [0.14, 0.38, 0]),
+      part("wheelF", [0.72, 0.34, 0], wheel),
+      part("wheelR", [-0.72, 0.34, 0], wheel),
+      part("nozzleL", [-0.94, 0.5, 0.13], alongForward),
+      part("nozzleR", [-0.94, 0.5, -0.13], alongForward),
+      part("coneL", [-1.18, 0.5, 0.13], alongForward),
+      part("coneR", [-1.18, 0.5, -0.13], alongForward),
+      part("torso", [0.04, 1.06, 0], lean),
+      part("visor", [0.24, 1.35, 0])
     ]
   };
 }
@@ -362,13 +326,11 @@ export function buildWorld(options: WorldOptions): World {
   }
   // SO47-P1 grain on every tier but Low (PRD §6.4).
   if (row.post.grain && high && !off.has("grain")) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain.intensity, size: row.post.grain.size }));
-  // SO47-P2 / P3 (High gouache only): boost motion blur and CA start at 0 and are driven at runtime through
-  // app.post.setEffect (art/director.ts); menu/results depth of field focuses the grid riders 8 m out.
+  // SO47-P2 (High gouache only): boost chromatic aberration starts at 0 and is driven at runtime through app.post.setEffect.
+  // Motion blur and depth of field remain off so crisp multi-material edges & WebGPU stay clean.
   if (look === "gouache" && high && !options.reducedMotion && !off.has("boostpost")) {
-    builder.add(effects.motionBlur({ name: "boost-motion-blur", intensity: 0 }));
     builder.add(effects.chromaticAberration({ name: "boost-ca", intensity: 0 }));
   }
-  if (look === "gouache" && high && !off.has("dof")) builder.add(effects.depthOfField({ name: "menu-dof", focusDistance: 8, fStop: 2.8, focalLength: 50 }));
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
@@ -482,7 +444,15 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stars-bright", material: spriteMaterial(true) }));
 
-  /* ---- checkpoints: veils + pillars + brushed-metal lintel ---- */
+  /* ---- checkpoints: veils + procedural lattice gate pylons + lintels + start/finish truss gantry ---- */
+  if (look === "gouache" && !off.has("lintel")) {
+    const sf = mainFrame(72);
+    builder.add(createStartFinishGantryNode({
+      name: "start-finish-gantry",
+      position: [sf.p.x - sf.up.x * 0.1, sf.p.y - sf.up.y * 0.1, sf.p.z - sf.up.z * 0.1],
+      rotation: euler(basisMatrix(sf.tangent, sf.up, sf.side))
+    }));
+  }
   GATES.forEach((gate, i) => {
     builder.add(geometry.custom(dynamicFrom(veilQuad(gate.s), false), {
       name: `gate-veil-${i}`,
@@ -491,33 +461,23 @@ export function buildWorld(options: WorldOptions): World {
     const f = mainFrame(gate.s);
     const rot = euler(basisMatrix(f.tangent, f.up, f.side));
     for (const side of [-1, 1]) {
-      const p = f.p.clone().addScaledVector(f.side, side * 11.1).addScaledVector(f.up, 6.4);
-      if (MESHY_ENABLED) {
-        builder.add(model(MESHY.pylon, { name: `gate-${i}-pillar-${side}`, position: [p.x - f.up.x * 6.5, p.y - f.up.y * 6.5, p.z - f.up.z * 6.5], rotation: rot, targetMaxDimension: 13, castShadow: false, receiveShadow: false }));
-        continue;
-      }
-      builder.add(primitives.roundedBox({
+      const p = f.p.clone().addScaledVector(f.side, side * 11.1).addScaledVector(f.up, -0.1);
+      builder.add(createCourseGatePylonNode({
         name: `gate-${i}-pillar-${side}`,
         position: [p.x, p.y, p.z],
         rotation: rot,
-        size: [1.05, 13, 1.05],
-        params: { radius: 0.16 },
-        material: look === "gouache"
-          ? material.brushedMetal({ color: "#8c96a4", roughness: 0.28 })
-          : solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.2)
+        gateIndex: i
       }));
     }
     const top = f.p.clone().addScaledVector(f.up, 13.1);
-    if (!off.has("lintel")) builder.add(primitives.roundedBox({
-      name: `gate-${i}-lintel`,
-      position: [top.x, top.y, top.z],
-      rotation: rot,
-      size: [0.95, 0.72, 23.2],
-      params: { radius: 0.18 },
-      material: look === "gouache"
-        ? material.brushedMetal({ color: "#b6a388", roughness: 0.26, envMapIntensity: 1.4 })
-        : solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.6)
-    }));
+    if (!off.has("lintel")) {
+      builder.add(createCourseGateLintelNode({
+        name: `gate-${i}-lintel`,
+        position: [top.x, top.y, top.z],
+        rotation: rot,
+        gateIndex: i
+      }));
+    }
   });
 
   /* ---- stratified basalt/anorthosite crater rim + terrain-grounded instanced lunar boulders ---- */
@@ -530,54 +490,13 @@ export function buildWorld(options: WorldOptions): World {
       indices: Uint32Array.from(rim.indices)
     }), { name: "crater-rim", scale: RIM_UNIT, material: mineralMaterial(hexLinear("#b9785e"), false) }));
     const scatter = rimScatter(high);
-    const rockTransforms = scatter.rocks.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
-    const spireTransforms = scatter.spires.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
-    const moonRockTransforms = scatter.moonRocks.map((r) => ({ position: [...r.position] as [number, number, number], rotation: [...r.rotation] as [number, number, number], scale: [...r.scale] as [number, number, number] }));
-    if (MESHY_ENABLED && !off.has("rocks")) {
-      builder.add(instances.model(MESHY.boulderA, {
-        name: "rim-rocks",
-        targetHeight: 1,
-        transforms: rockTransforms,
-        castShadow: false,
-        receiveShadow: true
-      }));
-      builder.add(instances.model(MESHY.boulderB, {
-        name: "rim-spires",
-        targetHeight: 1,
-        transforms: spireTransforms,
-        castShadow: false,
-        receiveShadow: true
-      }));
-      builder.add(instances.model(ROCK_ASSET, {
-        name: "rim-moon-rocks",
-        targetHeight: 1,
-        transforms: moonRockTransforms,
-        castShadow: false,
-        receiveShadow: true
-      }));
-    } else {
-      const rockColors = ["#a8644c", "#7d5a4e", "#c58a6a", "#5d5a66"];
-      builder.add(instances.polyhedron({
-        name: "rim-rocks",
-        params: { variant: "dodecahedron", detail: 0 },
-        transforms: rockTransforms,
-        colors: scatter.rocks.map((_, i) => rockColors[i % rockColors.length]!),
-        castShadow: false,
-        receiveShadow: false,
-        material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
-      }));
-      builder.add(instances.cylinder({
-        name: "rim-spires",
-        params: { radiusTop: 0.24, radiusBottom: 0.5, radialSegments: 7 },
-        transforms: spireTransforms,
-        colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#7a4f3e" : i % 3 === 1 ? "#b06e4e" : "#c9925f")),
-        castShadow: false,
-        receiveShadow: false,
-        material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
-      }));
+    const rimNodes = createRimScatterInstancedNodes(scatter);
+    builder.add(rimNodes.rocks).add(rimNodes.spires);
+    if (!off.has("rocks")) {
+      builder.add(rimNodes.moonRocks);
     }
   }
-  /* ---- chamfered brushed-metal lunar pylon beacons + hooded amber practical lenses every 40 m ---- */
+  /* ---- chamfered lunar pylon beacons + hooded amber practical lenses every 40 m ---- */
   if (look === "gouache" && !off.has("beacons")) {
     const posts: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
     const hoods: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
@@ -591,30 +510,8 @@ export function buildWorld(options: WorldOptions): World {
       lamps.push({ position: [p.x + f.up.x * 1.18, p.y + f.up.y * 1.18, p.z + f.up.z * 1.18], rotation: rot });
       hoods.push({ position: [p.x + f.up.x * 1.4, p.y + f.up.y * 1.4, p.z + f.up.z * 1.4], rotation: rot });
     }
-    builder.add(instances.roundedBox({
-      name: "beacon-posts",
-      size: [0.34, 2.3, 0.24],
-      params: { radius: 0.055 },
-      transforms: posts,
-      castShadow: false,
-      material: material.brushedMetal({ color: "#8e99a8", roughness: 0.29, envMapIntensity: 1.45 })
-    }));
-    builder.add(instances.roundedBox({
-      name: "beacon-hoods",
-      size: [0.46, 0.18, 0.4],
-      params: { radius: 0.045 },
-      transforms: hoods,
-      castShadow: false,
-      material: material.brushedMetal({ color: "#3d4652", roughness: 0.34, envMapIntensity: 1.25 })
-    }));
-    builder.add(instances.roundedBox({
-      name: "beacon-lamps",
-      size: [0.28, 0.34, 0.28],
-      params: { radius: 0.075 },
-      transforms: lamps,
-      castShadow: false,
-      material: beaconLampMaterial(BEACON_GLOW[0])
-    }).runtime({ id: "beacon-lamps" }));
+    const beaconNodes = createTrackBeaconInstancedNodes(posts, hoods, lamps, beaconLampMaterial(BEACON_GLOW[0]));
+    builder.add(beaconNodes.postsNode).add(beaconNodes.hoodsNode).add(beaconNodes.lampsNode);
   }
   // SO47-P3: sun lens flare on the key (High gouache); frustum occlusion drops it when the sun is off screen.
   if (look === "gouache" && high && !off.has("flare")) builder.add(lights.lensFlare({ name: "sun-flare", light: "key", position: [...row.key.position], intensity: 0.55, occlusion: "frustum" }));
@@ -625,29 +522,70 @@ export function buildWorld(options: WorldOptions): World {
     [0, 1, 2].forEach((k) => {
       const lane = gate.lane + (k - 1) * 0.55;
       const p = f.p.clone().addScaledVector(f.side, lane).addScaledVector(f.up, 0.9 + k * 0.15);
-      builder.add(primitives.cone({
+      builder.add(createResonanceCrystalNode({
         name: `crystal-${i}-${k}`,
         position: [p.x, p.y, p.z],
         rotation: euler(multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("z", (k - 1) * 0.25))),
-        params: { radius: 0.32, height: 1.8 + k * 0.4, radialSegments: 6 },
-        material: solidMaterial(hexLinear("#9fd8ff"), hexLinear("#b4a2ff"), 1.1)
+        height: 1.8 + k * 0.4
       }));
     });
   });
 
-  /* ---- Meshy set dressing: boulders along the rim, a lander and an observatory on the horizon ---- */
-  if (MESHY_ENABLED) {
-    const ASSET = { boulder: MESHY.boulderA, spire: MESHY.boulderB, lander: MESHY.lander, observatory: MESHY.observatory } as const;
-    for (const d of dressingPlan()) {
-      const f = mainFrame(d.s);
-      const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
-      const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
-      const rock = d.kind === "boulder" || d.kind === "spire";
-      builder.add(model(ASSET[d.kind], { name: d.name, position: [p.x, p.y, p.z], rotation: euler(rock ? multiplyMat3(base, axisRotation("z", d.tilt)) : base), targetMaxDimension: d.size, castShadow: false, receiveShadow: false }));
+  /* ---- procedural course-side boulders, spires, Apollo lander, crater observatories & lunar colony outposts ---- */
+  dressingPlan().forEach((d, idx) => {
+    const f = mainFrame(d.s);
+    const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
+    const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
+    if (d.kind === "lander") {
+      builder.add(createLunarLanderNode({ name: d.name, position: [p.x, p.y, p.z], rotation: euler(base), size: d.size }));
+    } else if (d.kind === "observatory") {
+      builder.add(createLunarObservatoryNode({ name: d.name, position: [p.x, p.y, p.z], rotation: euler(base), size: d.size }));
+    } else if (!off.has("rocks")) {
+      builder.add(createCourseSideRockNode({
+        name: d.name,
+        kind: d.kind,
+        position: [p.x, p.y, p.z],
+        rotation: euler(multiplyMat3(base, axisRotation("z", d.tilt))),
+        size: d.size,
+        seed: idx + 11
+      }));
+    }
+  });
+  if (look === "gouache" && !off.has("colony")) {
+    const colonyStations: readonly {
+      readonly name: string;
+      readonly kind: "habitat" | "dish" | "solar" | "trailer" | "fuel";
+      readonly s: number;
+      readonly lateral: number;
+      readonly drop: number;
+      readonly yaw: number;
+      readonly scale: number;
+    }[] = [
+      { name: "colony-habitat-grid", kind: "habitat", s: 30, lateral: 23.5, drop: -0.6, yaw: -Math.PI * 0.55, scale: 1.05 },
+      { name: "colony-trailer-grid", kind: "trailer", s: 41, lateral: 18.2, drop: -0.35, yaw: 0.18, scale: 1 },
+      { name: "colony-dish-grid", kind: "dish", s: 47, lateral: -21.5, drop: -0.5, yaw: 0.65, scale: 1.05 },
+      { name: "colony-fuel-grid", kind: "fuel", s: 53, lateral: -19.2, drop: -0.45, yaw: -0.25, scale: 1 },
+      { name: "colony-solar-grid", kind: "solar", s: 59, lateral: 22.0, drop: -0.45, yaw: 0.4, scale: 1.08 },
+      { name: "colony-habitat-violet", kind: "habitat", s: 368, lateral: -24.5, drop: -0.7, yaw: Math.PI * 0.42, scale: 1.15 },
+      { name: "colony-dish-ridge", kind: "dish", s: 642, lateral: 25.0, drop: -0.6, yaw: -0.5, scale: 1.18 },
+      { name: "colony-solar-ridge", kind: "solar", s: 824, lateral: -23.0, drop: -0.5, yaw: -0.35, scale: 1.15 },
+      { name: "colony-fuel-jade", kind: "fuel", s: 1108, lateral: 22.0, drop: -0.5, yaw: 0.52, scale: 1.1 },
+      { name: "colony-trailer-opal", kind: "trailer", s: 1286, lateral: -20.5, drop: -0.4, yaw: -0.28, scale: 1.08 }
+    ];
+    for (const c of colonyStations) {
+      const f = mainFrame(c.s);
+      const p = f.p.clone().addScaledVector(f.side, c.lateral).addScaledVector(f.up, c.drop);
+      const rot = euler(multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", c.yaw)));
+      const opts = { name: c.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: rot, scale: c.scale };
+      if (c.kind === "habitat") builder.add(createLunarHabitatDomeNode(opts));
+      else if (c.kind === "dish") builder.add(createDeepSpaceDishNode(opts));
+      else if (c.kind === "solar") builder.add(createSolarArrayNode(opts));
+      else if (c.kind === "trailer") builder.add(createRoverServiceTrailerNode(opts));
+      else builder.add(createPressurizedFuelTankNode(opts));
     }
   }
 
-  /* ---- meteors (moon rocks) ---- */
+  /* ---- meteors (procedural chondrite moon rocks) ---- */
   const meteors = collectibles("painted").filter((c) => c.kind === "meteor");
   meteors.forEach((c) => {
     builder.add(off.has("rocks")
@@ -657,7 +595,7 @@ export function buildWorld(options: WorldOptions): World {
         scale: [1, 0.8, 1.1],
         material: solidMaterial(hexLinear("#6b6470"), hexLinear("#2a2630"), 0.05)
       }).runtime({ id: `rock-${c.id}` })
-      : model(ROCK_ASSET, { name: `rock-${c.id}`, targetMaxDimension: 2.1, castShadow: false, receiveShadow: false }).runtime({ id: `rock-${c.id}` }));
+      : createMeteorRockNode(c.id));
   });
 
   /* ---- stardust ---- */
@@ -727,126 +665,40 @@ export function buildWorld(options: WorldOptions): World {
     }), { name: "exhaust", material: spriteMaterial(true) }).runtime({ id: "exhaust" }));
   }
 
-  /* ---- riders: glossy clearcoat GLBs + multi-lobe carPaint/chrome/fabric/studioGlass sub-parts ---- */
+  /* ---- riders: multi-material procedural hoverbikes/skates + articulated EVA suit sub-parts ---- */
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle, look));
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
-    const liveryHex = i === 0 ? RIDERS[rider]!.color : GOUACHE_LIVERIES[i - 1]!;
-    const body = hexLinear(bodyHex), accent = hexLinear(accentHex), dark = hexLinear("#2a2f3b");
-    const chassisPaint = material.carPaint({ color: liveryHex, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.025, envMapIntensity: 1.55 });
-    const chromeTrim = material.chrome({ color: "#eef4fb", roughness: 0.035, envMapIntensity: 1.9 });
-    const suitFabric = material.fabric({ color: mixHex(liveryHex, "#ebe6dc", 0.65), roughness: 0.78, sheen: 0.45 });
-    const goldVisor = material.studioGlass({
-      color: "#ffd685",
-      tint: "#ffbf52",
-      attenuationColor: "#d68624",
-      roughness: 0.025,
-      ior: 1.62,
-      thickness: 0.45,
-      clearcoat: 1,
-      clearcoatRoughness: 0.02,
-      envMapIntensity: 2.1
-    });
-    const machConeMat = material.glowingEmissive({
-      color: i === 0 ? "#8ce8ff" : "#ffbe73",
-      emissive: i === 0 ? "#66dcff" : "#ff9d42",
-      emissiveIntensity: i === 0 ? 3.2 : 2.4,
-      roughness: 0.14,
-      opacity: 0.84,
-      blend: "alpha",
-      practical: true
-    });
-    if (MESHY_ENABLED) {
-      const modelPart = rig.parts[0]!;
-      const size = vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target;
-      const wedge = vehicle === "bike" && i % 2 === 1;
-      const tint = look === "gouache"
-        ? [{
-          ...(i === 0
-            ? { color: riderSuitTint(rider), colorMode: "multiply" as const, clearcoat: 0.85, clearcoatRoughness: 0.12, envMapIntensity: 1.2 }
-            : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.15), colorMode: "multiply" as const, clearcoat: 0.72, clearcoatRoughness: 0.15, envMapIntensity: 1.15 }),
-          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.28 : 0.35 }
-        }]
-        : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
-      builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
-        name: modelPart.id,
-        targetMaxDimension: size,
-        castShadow: look === "gouache" && i === 0,
-        receiveShadow: false,
-        ...(tint ? { materialOverrides: tint } : {})
-      }).runtime({ id: modelPart.id }));
-      for (const sub of rig.parts.slice(1)) {
-        const makeSub = (): ReturnType<typeof primitives.box> => {
-          switch (sub.kind) {
-            case "fairing":
-              return primitives.roundedBox({ name: sub.id, size: vehicle === "skate" ? [0.76, 0.045, 0.24] : [0.88, 0.11, 0.22], params: { radius: 0.035 }, castShadow: false, material: chassisPaint });
-            case "wheelF":
-            case "wheelR":
-              return primitives.cylinder({ name: sub.id, size: vehicle === "skate" ? [0.13, 0.07, 0.13] : [0.32, 0.075, 0.32], castShadow: false, material: chromeTrim });
-            case "nozzleL":
-            case "nozzleR":
-              return primitives.cylinder({ name: sub.id, size: [0.11, 0.22, 0.11], castShadow: false, material: chromeTrim });
-            case "coneL":
-            case "coneR":
-              return primitives.cone({ name: sub.id, params: { radius: 0.075, height: 0.42, radialSegments: 12 }, castShadow: false, material: machConeMat });
-            case "torso":
-              return primitives.capsule({ name: sub.id, size: [0.15, 0.26, 0.15], castShadow: false, material: suitFabric });
-            case "visor":
-            default:
-              return primitives.sphere({ name: sub.id, size: 0.21, castShadow: false, material: goldVisor });
-          }
-        };
-        builder.add(makeSub().runtime({ id: sub.id }));
-      }
-      return;
-    }
-    for (const part of rig.parts) {
-      const kind = part.kind;
-      const suit = hexLinear("#d9d6cf");
-      const cyan = hexLinear("#8fe9ff");
-      const make = (): ReturnType<typeof primitives.box> => {
-        switch (kind) {
-          case "frame": return primitives.roundedBox({ name: part.id, size: [1.04, 0.17, 0.22], params: { radius: 0.075 }, material: look === "gouache" ? chassisPaint : solidMaterial(body, accent, 0.12) });
-          case "deck": return primitives.roundedBox({ name: part.id, size: [0.95, 0.05, 0.27], params: { radius: 0.02 }, material: look === "gouache" ? chassisPaint : solidMaterial(accent, accent, 0.18) });
-          case "seat": return primitives.roundedBox({ name: part.id, size: [0.44, 0.1, 0.3], params: { radius: 0.04 }, material: look === "gouache" ? suitFabric : solidMaterial(dark) });
-          case "bar": return primitives.cylinder({ name: part.id, size: [0.045, 0.62, 0.045], material: look === "gouache" ? chromeTrim : solidMaterial(dark) });
-          case "headlight": return primitives.sphere({ name: part.id, size: 0.15, material: solidMaterial(hexLinear("#fff3d6"), hexLinear("#ffe4a8"), 2.4) });
-          case "tireF":
-          case "tireR": return primitives.torus({ name: part.id, size: 0.8, material: look === "gouache" ? material.blackRubber() : solidMaterial(hexLinear("#171a22"), [0, 0, 0], 0) });
-          case "wheelF":
-          case "wheelR": return primitives.cylinder({ name: part.id, size: [0.58, 0.05, 0.58], material: look === "gouache" ? chromeTrim : solidMaterial(hexLinear("#3a4150")) });
-          case "hubF":
-          case "hubR": return primitives.cylinder({ name: part.id, size: [0.5, 0.085, 0.5], material: look === "gouache" ? chromeTrim : solidMaterial(accent, accent, 0.9) });
-          case "nozzleL":
-          case "nozzleR": return primitives.cylinder({ name: part.id, size: [0.12, 0.3, 0.12], material: look === "gouache" ? machConeMat : solidMaterial(cyan, cyan, 2.4) });
-          case "truckFL":
-          case "truckFR":
-          case "truckRL":
-          case "truckRR": return primitives.cylinder({ name: part.id, size: [0.12, 0.06, 0.12], material: look === "gouache" ? chromeTrim : solidMaterial(dark, accent, 0.4) });
-          case "legL":
-          case "legR": return primitives.capsule({ name: part.id, size: [vehicle === "skate" ? 0.14 : 0.13, vehicle === "skate" ? 0.6 : 0.62, vehicle === "skate" ? 0.14 : 0.13], material: look === "gouache" ? suitFabric : solidMaterial(dark) });
-          case "armL":
-          case "armR": return primitives.capsule({ name: part.id, size: [0.1, 0.58, 0.1], material: look === "gouache" ? suitFabric : solidMaterial(suit, accent, 0.06) });
-          case "torso": return primitives.capsule({ name: part.id, size: [0.34, 0.89, 0.34], material: look === "gouache" ? suitFabric : solidMaterial(accent, accent, 0.1) });
-          case "visor": return primitives.sphere({ name: part.id, size: 0.17, material: look === "gouache" ? goldVisor : solidMaterial(cyan, cyan, 2.0) });
-          default: return primitives.sphere({ name: part.id, size: 0.3, material: look === "gouache" ? suitFabric : solidMaterial(suit) });
-        }
-      };
-      builder.add(make().runtime({ id: part.id }));
+    const primaryColor = look === "gouache"
+      ? (i === 0 ? riderSuitTint(rider) : GOUACHE_LIVERIES[i - 1]!)
+      : bodyHex;
+    const suitColor = mixHex(primaryColor, "#ebe6dc", 0.65);
+    builder.add(createLunarRiderVehicleNode({
+      id: rig.parts[0]!.id,
+      vehicle,
+      primaryColor,
+      accentColor: accentHex,
+      suitColor,
+      isHero: i === 0,
+      castShadow: look === "gouache" && i === 0,
+      look
+    }));
+    for (const sub of rig.parts.slice(1)) {
+      builder.add(createRiderSubPartNode({
+        id: sub.id,
+        kind: sub.kind,
+        vehicle,
+        liveryColor: primaryColor,
+        accentColor: accentHex,
+        suitColor,
+        isHero: i === 0
+      }));
     }
   });
 
-  /* ---- time-trial ghost: the player's model, translucent and cyan ---- */
+  /* ---- time-trial ghost: translucent cyan procedural hologram ---- */
   if (options.ghost) {
-    builder.add(MESHY_ENABLED
-      ? model(vehicle === "skate" ? MESHY.skateRider : MESHY.bikeRider, {
-        name: "ghost-rider",
-        targetMaxDimension: vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target,
-        castShadow: false,
-        receiveShadow: false,
-        materialOverrides: [{ color: "#9fe8ff", colorMode: "replace", opacity: 0.38, emissive: "#5fd8ff", emissiveIntensity: 0.09 }]
-      }).runtime({ id: "ghost-rider" })
-      : primitives.capsule({ name: "ghost-rider", size: [0.5, 1.5, 0.5], material: solidMaterial(hexLinear("#9fe8ff"), hexLinear("#5fd8ff"), 0.8, 0, { transparent: true, blending: "additive", depthWrite: false }) }).runtime({ id: "ghost-rider" }));
+    builder.add(createGhostRiderNode(vehicle));
   }
 
   /* ---- legacy shadow quads disabled on gouache (replaced by real PCSS key + effects.contactShadows + SSAO) ---- */
@@ -1006,16 +858,13 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     return { x: 0.5 + (d.dot(r) / (depth * t * aspect)) / 2, y: 0.5 - (d.dot(u) / (depth * t)) / 2, depth };
   };
   const applyPost = (frame: PostFrame): void => {
-    const key = `${frame.motionBlur}|${frame.chromaticAberration}|${frame.depthOfField}`;
+    const key = `${frame.chromaticAberration}`;
     if (key === lastPost || !app.post) return;
     lastPost = key;
     if (input.high && input.look === "gouache" && !input.reducedMotion) {
-      app.post.setEffectEnabled("motion-blur", frame.motionBlur > 0);
-      app.post.setEffect("motion-blur", { intensity: frame.motionBlur });
       app.post.setEffectEnabled("chromatic-aberration", frame.chromaticAberration > 0);
       app.post.setEffect("chromatic-aberration", { intensity: frame.chromaticAberration });
     }
-    if (input.high && input.look === "gouache") app.post.setEffectEnabled("depth-of-field", frame.depthOfField);
   };
 
   /** Group pose for a rider standing at (`s`, `lane`) on `route`. */
@@ -1204,7 +1053,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         const pose = poseAt(ghost.s, ghost.lane, ghost.route, ghost.height, 0, 0);
         const side = new Vec3().crossVectors(pose.forward, pose.up).normalize();
         const up = new Vec3().crossVectors(side, pose.forward).normalize();
-        const e = euler(multiplyMat3(basisMatrix(pose.forward, up, side), MESHY_ENABLED ? MODEL_YAW[input.vehicle] : IDENTITY));
+        const e = euler(multiplyMat3(basisMatrix(pose.forward, up, side), MODEL_YAW[input.vehicle]));
         g.setPosition(pose.position.x, pose.position.y, pose.position.z);
         riderAt[6]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
         g.setRotation(e[0], e[1], e[2]);

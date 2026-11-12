@@ -32,6 +32,11 @@ function positiveScale(scale: number | readonly [number, number, number]): V3 {
   ];
 }
 
+const EPS = 1e-6;
+function changed3(a: V3, x: number, y: number, z: number): boolean {
+  return Math.abs(a[0] - x) > EPS || Math.abs(a[1] - y) > EPS || Math.abs(a[2] - z) > EPS;
+}
+
 /** The subset of a runtime node handle main.ts calls on a block or pooled prop. */
 export interface BlockHandle {
   setPosition(x: number, y: number, z: number): BlockHandle;
@@ -70,11 +75,17 @@ export class BlockInstancePool {
     if (existing) return existing;
     const s = this.slot(id);
     const h: BlockHandle = {
-      setPosition: (x, y, z) => { s.position = [x, y, z]; this.touch(s); return h; },
-      setRotation: (x, y, z) => { s.rotation = [x, y, z]; this.touch(s); return h; },
+      setPosition: (x, y, z) => {
+        if (changed3(s.position, x, y, z)) { s.position = [x, y, z]; this.touch(s); }
+        return h;
+      },
+      setRotation: (x, y, z) => {
+        if (changed3(s.rotation, x, y, z)) { s.rotation = [x, y, z]; this.touch(s); }
+        return h;
+      },
       setScale: (scale) => {
-        s.scale = positiveScale(scale);
-        this.touch(s);
+        const next = positiveScale(scale);
+        if (changed3(s.scale, next[0], next[1], next[2])) { s.scale = next; this.touch(s); }
         return h;
       },
       setVisible: (visible) => { if (s.visible !== visible) { s.visible = visible; this.touch(s); } return h; },
@@ -165,9 +176,19 @@ export class PropInstancePool {
     if (existing) return existing;
     const s = this.slot(id, family);
     const h: BlockHandle = {
-      setPosition: (x, y, z) => { s.position = [x, y, z]; this.dirty.add(family); return h; },
-      setRotation: (x, y, z) => { s.rotation = [x, y, z]; this.dirty.add(family); return h; },
-      setScale: (scale) => { s.scale = positiveScale(scale); this.dirty.add(family); return h; },
+      setPosition: (x, y, z) => {
+        if (changed3(s.position, x, y, z)) { s.position = [x, y, z]; this.dirty.add(family); }
+        return h;
+      },
+      setRotation: (x, y, z) => {
+        if (changed3(s.rotation, x, y, z)) { s.rotation = [x, y, z]; this.dirty.add(family); }
+        return h;
+      },
+      setScale: (scale) => {
+        const next = positiveScale(scale);
+        if (changed3(s.scale, next[0], next[1], next[2])) { s.scale = next; this.dirty.add(family); }
+        return h;
+      },
       setVisible: (visible) => { if (s.visible !== visible) { s.visible = visible; this.dirty.add(family); } return h; },
       setMaterial: () => h
     };

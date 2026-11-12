@@ -162,16 +162,31 @@ describe("FC-04 slide tackles", () => {
 });
 
 describe("FC-05 goal net is scaled once", () => {
-  it("net GLB renders at the goal-frame size (7.6 x 2.85 x 2.6 m), not 35 m", () => {
+  it("procedural FIFA goalframe renders at exact goal-frame bounds (2.6 x 2.85 x 7.6 m, scale 1x), not 35 m", () => {
     const { nodes } = flat("munich");
-    const net = nodes.find((n) => n.name === "fc-goal-mesh-1");
-    const b = assets.fcSoccerGoalNetMeshy.bounds as readonly number[];
-    const fit = net.targetMaxDimension / Math.max(...b);
-    expect(net.targetMaxDimension).toBe(GOAL_NET_GLB_MAX);
-    const size = [b[0] * net.scale[0] * fit, b[1] * net.scale[1] * fit, b[2] * net.scale[2] * fit];
-    expect(size[0]).toBeCloseTo(GOAL_HALF_W * 2, 1);
-    expect(size[1]).toBeCloseTo(GOAL_H, 1);
-    expect(size[2]).toBeCloseTo(2.6, 1);
+    for (const name of ["fc-goal-mesh--1", "fc-goal-mesh-1"] as const) {
+      const goal = nodes.find((n) => n.name === name);
+      expect(goal).toBeDefined();
+      expect(goal.scale ?? [1, 1, 1]).toEqual([1, 1, 1]);
+      // `geometry.multiMaterial` stores bounds on the child custom-geometry submeshes or root geometry
+      const childGeoms = [goal, ...(goal.children ?? [])].map((c: any) => c.geometry?.bounds).filter(Boolean);
+      expect(childGeoms.length).toBeGreaterThan(0);
+      const min = [
+        Math.min(...childGeoms.map((b: any) => b.min[0])),
+        Math.min(...childGeoms.map((b: any) => b.min[1])),
+        Math.min(...childGeoms.map((b: any) => b.min[2]))
+      ];
+      const max = [
+        Math.max(...childGeoms.map((b: any) => b.max[0])),
+        Math.max(...childGeoms.map((b: any) => b.max[1])),
+        Math.max(...childGeoms.map((b: any) => b.max[2]))
+      ];
+      const size = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+      expect(size[0]).toBeCloseTo(2.6, 1);
+      expect(size[1]).toBeCloseTo(GOAL_H, 1);
+      expect(size[2]).toBeCloseTo(GOAL_HALF_W * 2, 1);
+    }
+    expect(GOAL_NET_GLB_MAX).toBe(1.897);
   });
 });
 

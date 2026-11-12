@@ -12,12 +12,34 @@ import { LanternSky } from "./lanterns";
 import { RiderMotion, seatedRiderPose, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION, type StationProbe } from "./lights";
-import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
+import {
+  STREETCAR_FLOOR_Y,
+  buildBroadleafCanopySpec,
+  buildClockTowerNode,
+  buildCloudPuffSpec,
+  buildCoastalBoulderSpec,
+  buildCoastalBushSpec,
+  buildCoastalHouseNode,
+  buildCoastalPineSpec,
+  buildCoastalTreeTrunkSpec,
+  buildFreightCratesNode,
+  buildIslandUndercroftNode,
+  buildLighthouseNode,
+  buildPassengerNode,
+  buildPlazaFolkBodySpec,
+  buildSkyLanternSpec,
+  buildStationFolkNode,
+  buildStreetcarBodyNode,
+  buildSwanNeckLampNode,
+  buildTramCoachTrimRawParts,
+  createStaticTownBatcher,
+  upgradeVolumetricBeamWgsl
+} from "./art/proceduralModels";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { FLANGE_SPARKS_ATLAS, catenarySpec, cloudSpec, flangeSparkSpec, pointQuadSpec, pointsSpec, rainGraphSpec, rainSpec, signalLensSpec, skySpec } from "./materials";
 import { portableCloudMaterial } from "./portable";
 import { readPortableFlag } from "../shared/portable-flag";
-import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
+import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
@@ -121,8 +143,6 @@ const dyn = (r: Ribbon) => geometry.dynamic({ positions: f32(r.positions), norma
 const pbr = (color: string, roughness = 0.8, metallic = 0) => material.pbr({ color, roughness, metallic });
 const glow = (color: string, intensity = 1.2) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
 
-const PAX_ASSET = { easy: MESHY_ASSETS.paxEasy, sightseer: MESHY_ASSETS.paxSightseer, rushed: MESHY_ASSETS.paxRushed, sleeper: MESHY_ASSETS.paxSleeper };
-const HOUSES = [MESHY_ASSETS.houseCream, MESHY_ASSETS.houseOchre, MESHY_ASSETS.houseBlue];
 const LICENSE_KENNEY = "CC0-1.0 (Kenney Pirate Kit, kenney.nl), retinted for Lamplight Line";
 /**
  * GU47 phase 9 (PRD D2: owned assets): the two distant landmarks are CC0 Kenney Pirate Kit towers this game owns (claimed in the
@@ -201,8 +221,13 @@ interface TramGroup { id: string; mesh: MeshData; mat: AuraMaterialSpec; cast: b
 export const TRAM_GROUP_IDS = ["tram-livery", "tram-cream", "tram-teal", "tram-dark", "tram-brass", "tram-wood", "tram-glass", "tram-glow", "tram-tail"] as const;
 const TRAM_FX_IDS = ["a3g-fx-tram-lacquer", "a3g-fx-tram-brass", "a3g-fx-tram-glow", "a3g-fx-tram-glass"] as const;
 
-function tramGroups(): TramGroup[] {
+export function tramGroups(): TramGroup[] {
   const g = Object.fromEntries(TRAM_GROUP_IDS.map((id) => [id, new MeshData()])) as Record<(typeof TRAM_GROUP_IDS)[number], MeshData>;
+  const sculpted = buildTramCoachTrimRawParts();
+  g["tram-livery"].appendRaw(sculpted.lacquer);
+  g["tram-brass"].appendRaw(sculpted.brass);
+  g["tram-glass"].appendRaw(sculpted.glass);
+  g["tram-glow"].appendRaw(sculpted.glow);
   boxAt(g["tram-dark"], [0, 0.55, 0], [3.1, 0.5, 9.9]);
   boxAt(g["tram-livery"], [0, 1.2, 0], [3.0, 0.95, 9.4]);
   boxAt(g["tram-cream"], [0, 1.62, 0], [3.04, 0.14, 9.44]);
@@ -210,11 +235,7 @@ function tramGroups(): TramGroup[] {
   roofDome(g["tram-cream"], 3.82, 3.3, 0.9, 9.7);
   boxAt(g["tram-teal"], [0, 3.78, 0], [3.3, 0.14, 9.8]);
   for (const z of [4.62, -4.62]) boxAt(g["tram-livery"], [0, 2.1, z], [3.0, 0.8, 0.12]);
-  boxAt(g["tram-glass"], [0, 2.95, 4.69], [2.2, 1.0, 0.05]);
-  boxAt(g["tram-glow"], [0, 3.55, 4.7], [1.3, 0.24, 0.06]);
   for (const x of [-0.9, 0.9]) { boxAt(g["tram-glow"], [x, 1.35, 4.72], [0.36, 0.36, 0.2]); boxAt(g["tram-tail"], [x, 1.35, -4.72], [0.26, 0.26, 0.12]); }
-  for (const z of [5.0, -5.0]) boxAt(g["tram-brass"], [0, 0.75, z], [2.7, 0.2, 0.28]);
-  boxAt(g["tram-dark"], [0, 4.35, -1.2], [0.16, 0.7, 0.16]); boxAt(g["tram-dark"], [0, 4.72, -1.2], [1.5, 0.07, 0.07]); boxAt(g["tram-dark"], [0, 4.55, -0.8], [0.08, 0.08, 0.9]);
   for (const x of [-1.45, 1.45]) for (const z of [-3.9, -1.95, 0, 1.95, 3.9]) boxAt(g["tram-cream"], [x, 2.7, z], [0.12, 2.1, 0.16]);
   for (const z of [-3.2, 3.2]) for (const x of [-1.2, 1.2]) cylinderX(g["tram-dark"], [x, 0.38, z], 0.43, 0.26);
   SEATS.forEach((s2) => boxAt(g["tram-wood"], [s2[0] * 1.12, 1.82, s2[2]], [0.82, 0.12, 0.62]));
@@ -223,45 +244,32 @@ function tramGroups(): TramGroup[] {
     { id: "tram-livery", mesh: g["tram-livery"], mat: unnamed(material.lacquer({ color: livery, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.04 })), cast: true },
     { id: "tram-cream", mesh: g["tram-cream"], mat: unnamed(material.lacquer({ color: cream, roughness: 0.28, clearcoat: 0.85, clearcoatRoughness: 0.06 })), cast: true },
     { id: "tram-teal", mesh: g["tram-teal"], mat: unnamed(material.lacquer({ color: teal, roughness: 0.24, clearcoat: 0.9, clearcoatRoughness: 0.05 })), cast: false },
-    { id: "tram-dark", mesh: g["tram-dark"], mat: unnamed(material.brushedMetal({ color: dark, roughness: 0.36 })), cast: true },
-    { id: "tram-brass", mesh: g["tram-brass"], mat: unnamed(material.brushedMetal({ color: brass, roughness: 0.22 })), cast: false },
+    { id: "tram-dark", mesh: g["tram-dark"], mat: unnamed(material.studioMetal({ color: dark, roughness: 0.36, metallic: 0.88 })), cast: true },
+    { id: "tram-brass", mesh: g["tram-brass"], mat: unnamed(material.studioMetal({ color: brass, roughness: 0.22, metallic: 0.94 })), cast: false },
     { id: "tram-wood", mesh: g["tram-wood"], mat: pbr("#7a5236", 0.72), cast: false },
-    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#cfeaf6", roughness: 0.03, metallic: 0, clearcoat: 1, clearcoatRoughness: 0.03, opacity: 0.34, alphaMode: "blend", depthWrite: false })), cast: false },
+    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#cfeaf6", roughness: 0.03, opacity: 0.36, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.6 })), cast: false },
     { id: "tram-glow", mesh: g["tram-glow"], mat: glow("#ffe8b8", 3), cast: false },
     { id: "tram-tail", mesh: g["tram-tail"], mat: glow("#ff4a3a", 2), cast: false }
   ];
 }
 
 /**
- * Riveted `lacquer` & `brushedMetal` architectural trim + warm 2700K interior carriage glow behind `studioGlass` clerestory
- * and windscreen panes for the band look's Meshy railcar (moved rigidly with the tram pose; prefixed `a3g-fx-` so the C-35
+ * Sculpted `lacquer` & `studioMetal` brass beltline/bumper trim + warm 2700K interior carriage glow behind `studioGlass`
+ * clerestory panes for the band look's streetcar (moved rigidly with the tram pose; prefixed `a3g-fx-` so the C-35
  * light/material snapshot stays frozen).
  */
 function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof TRAM_FX_IDS)[number]; readonly mesh: MeshData; readonly mat: AuraMaterialSpec }[] {
   const lacquer = new MeshData(), brass = new MeshData(), glowMesh = new MeshData(), glass = new MeshData();
-  for (const sgn of [-1, 1]) {
-    boxAt(lacquer, [sgn * 1.49, 1.02, 0], [0.06, 0.34, 9.1]);
-    boxAt(brass, [sgn * 1.52, 1.56, 0], [0.05, 0.07, 9.25]);
-    boxAt(brass, [sgn * 1.18, 0.42, 0], [0.1, 0.22, 7.2]);
-    for (let r = -4; r <= 4; r++) boxAt(brass, [sgn * 1.54, 1.56, r * 1.08], [0.03, 0.04, 0.04]);
-    boxAt(glass, [sgn * 1.46, 3.32, 0], [0.03, 0.34, 7.6]);
-  }
-  for (const z of [4.88, -4.88]) {
-    boxAt(brass, [0, 0.72, z], [2.68, 0.18, 0.22]);
-    boxAt(lacquer, [0, 1.12, z * 0.96], [2.76, 0.28, 0.08]);
-    boxAt(glass, [0, 2.76, z * 0.965], [2.04, 0.88, 0.04]);
-  }
-  boxAt(brass, [0, 1.38, 4.82], [0.46, 0.46, 0.14]);
-  boxAt(brass, [0, 4.32, -1.15], [0.14, 0.62, 0.14]);
-  boxAt(brass, [0, 4.66, -1.15], [1.62, 0.06, 0.08]);
-  boxAt(glowMesh, [0, 3.36, 0], [1.18, 0.14, 7.2]);
-  boxAt(glowMesh, [0, 1.16, 0], [1.55, 0.06, 6.6]);
-  boxAt(glowMesh, [0, 1.38, 4.88], [0.32, 0.32, 0.08]);
+  const parts = buildTramCoachTrimRawParts();
+  lacquer.appendRaw(parts.lacquer);
+  brass.appendRaw(parts.brass);
+  glowMesh.appendRaw(parts.glow);
+  glass.appendRaw(parts.glass);
   return [
     { id: "a3g-fx-tram-lacquer", mesh: lacquer, mat: unnamed(material.lacquer({ color: "#7f231c", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.5 })) },
-    { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.brushedMetal({ color: "#d8aa56", roughness: 0.22, anisotropy: 0.88, envMapIntensity: 1.7 })) },
-    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: bulbIntensity * 1.15, practical: true }) },
-    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#d8eef8", roughness: 0.025, metallic: 0, clearcoat: 0.85, clearcoatRoughness: 0.04, envMapIntensity: 1.45, opacity: 0.36, alphaMode: "blend", depthWrite: false })) }
+    { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.studioMetal({ color: "#d8aa56", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.7 })) },
+    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: bulbIntensity * 1.15, practical: true })) },
+    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#d8eef8", roughness: 0.03, opacity: 0.38, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.6 })) }
   ];
 }
 
@@ -484,15 +492,16 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   /* GU47 LT-09: the Drowned Observatory's roofs carry snow in the band look (one merged mesh, +1 draw; the roof draws keep their count) */
   const snowRoofMesh = new MeshData();
   const roofOf = (town: number, ri: number): MeshData => (row && town === SNOW_TOWN ? snowRoofMesh : roofMesh[ri]!);
-  const stoneMesh = new MeshData(), cobbleMesh = new MeshData(), clockMesh = new MeshData(), signalLensMesh = new MeshData();
+  const stoneMesh = new MeshData(), cobbleMesh = new MeshData(), signalLensMesh = new MeshData();
   const trunkAt: Inst[] = [], canopyAt: Inst[] = [], pineAt: Inst[] = [], stoneAt: Inst[] = [];
   const canopyColors: string[] = [], pineColors: string[] = [];
   const planterAt: Inst[] = [], awningAt: Inst[] = [], awningColors: string[] = [], stallAt: Inst[] = [];
   const folkBodyAt: Inst[] = [], folkHeadAt: Inst[] = [], folkColors: string[] = [];
   const islandTop: Inst[] = [], islandRim: Inst[] = [], islandRock: Inst[] = [], islandColors: string[] = [];
   const platformAt: Inst[] = [], platformEdgeAt: Inst[] = [], canopyBoxAt: Inst[] = [], canopyBoxColors: string[] = [], canopyTrimAt: Inst[] = [];
-  const postAt: Inst[] = [], lampAt: Inst[] = [], benchAt: Inst[] = [], signAt: Inst[] = [];
+  const lampAt: Inst[] = [], benchAt: Inst[] = [], signAt: Inst[] = [];
   const signalAt: Inst[] = [], signalHeadAt: Inst[] = [], signalColors: string[] = [], festoonAt: Inst[] = [];
+  const townBatch = createStaticTownBatcher();
   towns.forEach((town, i) => {
     const s0 = sampleRoute(data.route, i, 0);
     const s1 = sampleRoute(data.route, i, 6);
@@ -515,10 +524,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     platformEdgeAt.push({ position: [s0.x + sx * 2.55, s0.y + 0.78, s0.z + sz * 2.55], rotation: [0, yaw, 0] });
     canopyBoxAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.9, s0.z + sz * 5.6], rotation: [0, yaw, 0] }); canopyBoxColors.push(mixHex(town.color, "#b4523d", 0.55));
     canopyTrimAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.68, s0.z + sz * 5.6], rotation: [0, yaw, 0] });
+    const lampGlow = row ? row.practicals.lampEmissive : night ? 3 : 0.5;
     for (const k of [-9, 9]) {
-      if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.lamp, { name: `lamp-post-${i}-${k}`, position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.85, s0.z + sz * 6.8 + fz * k], scaleMode: "world", scale: 2.5, castShadow: cast, receiveShadow: false }).runtime({ id: `lamp-post-${i}-${k}` }));
-      else postAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.7, s0.z + sz * 6.8 + fz * k] });
-      lampAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 4.35, s0.z + sz * 6.8 + fz * k] });
+      b.add(buildSwanNeckLampNode(`lamp-post-${i}-${k}`, [s0.x + sx * 6.8 + fx * k, s0.y + 0.75, s0.z + sz * 6.8 + fz * k], yaw - Math.PI * 0.5, lampGlow, cast, townBatch));
+      lampAt.push({ position: [s0.x + sx * 5.96 + fx * k, s0.y + 4.25, s0.z + sz * 5.96 + fz * k] });
     }
     for (const k of [-6, 0, 6]) benchAt.push({ position: [s0.x + sx * 6.4 + fx * k, s0.y + 1.15, s0.z + sz * 6.4 + fz * k], rotation: [0, yaw, 0] });
     signAt.push({ position: [s0.x + sx * 8.1 + fx * 12, s0.y + 2.6, s0.z + sz * 8.1 + fz * 12], rotation: [0, yaw + Math.PI / 2, 0] });
@@ -561,37 +570,23 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       }
     };
     const TOWER_ALONG = 18;
-    buildRow(1, 21, -56, 56, 3, 5, MESHY_ENABLED ? (m) => m > -37 && m < -1 : undefined);
-    buildRow(-1, 17, -56, 56, 3, 5, (m, w) => Math.abs(m - TOWER_ALONG) < w / 2 + 6 || (MESHY_ENABLED && m > -51 && m < -13));
-    if (MESHY_ENABLED) {
-      /* Meshy townhouses with real facade relief in the reserved windows; front (+Z) faces the track */
-      const SC = 6.84, HALF_H = 0.951 * SC;
+    const winGlow = row ? row.practicals.windowEmissive : night ? 1.8 : 0;
+    const snowTown = row !== null && i === SNOW_TOWN;
+    buildRow(1, 21, -56, 56, 3, 5, (m) => m > -37 && m < -1);
+    buildRow(-1, 17, -56, 56, 3, 5, (m, w) => Math.abs(m - TOWER_ALONG) < w / 2 + 6 || (m > -51 && m < -13));
+    {
       const house = (k: number, side: 1 | -1, along: number, depth: number): void => {
         const [hx, hz] = at(side * (side > 0 ? 21 : 17) + side * depth / 2, along);
-        b.add(model(HOUSES[k % 3]!, { name: `house-${i}-${side > 0 ? "a" : "b"}-${k}`, position: [hx, top + HALF_H, hz], rotation: [0, Math.atan2(-side * sx, -side * sz), 0], scaleMode: "world", scale: SC, castShadow: false, receiveShadow: true }).runtime({ id: `house-${i}-${side > 0 ? "a" : "b"}-${k}` }));
+        b.add(buildCoastalHouseNode(k % 3, `house-${i}-${side > 0 ? "a" : "b"}-${k}`, [hx, top, hz], Math.atan2(-side * sx, -side * sz), winGlow, snowTown, cast, townBatch));
       };
       house(2, 1, -30, 8.9); house(0, 1, -18, 7.1); house(1, 1, -8, 10.7);
       house((i + 0) % 3, -1, -44, 7.1); house((i + 1) % 3, -1, -32, 10.7); house((i + 2) % 3, -1, -20, 8.9);
     }
     buildRow(1, 46, -34, 34, 4, 6);
     buildRow(-1, 46, -34, 34, 4, 6);
-    if (MESHY_ENABLED) {
-      const [tx, tz] = at(-21, TOWER_ALONG), ts = 14.7;
-      b.add(model(MESHY_ASSETS.clockTower, { name: `clock-tower-${i}`, position: [tx, top + 0.951 * ts, tz], rotation: [0, Math.atan2(sx, sz), 0], scaleMode: "world", scale: ts, castShadow: true, receiveShadow: true }).runtime({ id: `clock-tower-${i}` }));
-    } else {
+    {
       const [tx, tz] = at(-21, TOWER_ALONG);
-      const th = 27, tw = 7;
-      wallBox(stoneMesh, tx, top, tz, tw, th, tw, yaw, { uTile: 4, vTile: 4 });
-      pyramidRoof(roofOf(i, 0), tx, top + th, tz, tw, 9.5, yaw, 0.9);
-      for (const [lx, lz, nx, nz] of [[0, tw / 2 + 0.05, 0, 1], [0, -tw / 2 - 0.05, 0, -1], [tw / 2 + 0.05, 0, 1, 0], [-tw / 2 - 0.05, 0, -1, 0]] as const) {
-        const cy = top + th - 5.2, half = 2.3;
-        const px = (u: number, v: number): V3 => {
-          const lxp = lx + (nz !== 0 ? u : 0), lzp = lz + (nx !== 0 ? u : 0);
-          const c = Math.cos(yaw), sn = Math.sin(yaw);
-          return [tx + lxp * c + lzp * sn, cy + v, tz - lxp * sn + lzp * c];
-        };
-        clockMesh.face([px(-half, -half), px(half, -half), px(half, half), px(-half, half)], [nx * Math.cos(yaw) + nz * Math.sin(yaw), 0, -nx * Math.sin(yaw) + nz * Math.cos(yaw)], [[0, 0], [1, 0], [1, 1], [0, 1]]);
-      }
+      b.add(buildClockTowerNode(`clock-tower-${i}`, [tx, top, tz], Math.atan2(sx, sz), winGlow, snowTown, true, townBatch));
     }
     {
       const trackY = sampleRoute(data.route, i, 52).y;
@@ -616,15 +611,14 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       const onPlatform = rand() < 0.7;
       const [fxp, fzp] = onPlatform ? at(4.4 + (rand() - 0.5) * 2.4, (rand() - 0.5) * 24) : at(-4 - rand() * 8, (rand() - 0.5) * 60);
       const base = rand() < 0.7 ? s0.y + 0.75 : top + 0.04;
-      if (MESHY_ENABLED && onPlatform && folkModels < 5) {
-        const kinds = [MESHY_ASSETS.paxEasy, MESHY_ASSETS.paxSightseer, MESHY_ASSETS.paxRushed, MESHY_ASSETS.paxSleeper] as const;
-        const fs = 0.85 + rand() * 0.2;
-        b.add(model(kinds[(folkModels + i) % 4]!, { name: `folk-${i}-${folkModels}`, position: [fxp, s0.y + 0.75 + 0.951 * fs, fzp], rotation: [0, rand() * Math.PI * 2, 0], scaleMode: "world", scale: fs, castShadow: cast, receiveShadow: false }).runtime({ id: `folk-${i}-${folkModels}` }));
+      if (onPlatform && folkModels < 5) {
+        const fs = 0.92 + rand() * 0.16;
+        b.add(buildStationFolkNode(folkModels + i, `folk-${i}-${folkModels}`, [fxp, s0.y + 0.75, fzp], rand() * Math.PI * 2, fs, cast, townBatch));
         folkModels++;
         continue;
       }
-      folkBodyAt.push({ position: [fxp, base + 0.8, fzp] });
-      folkHeadAt.push({ position: [fxp, base + 1.75, fzp] });
+      folkBodyAt.push({ position: [fxp, base + 0.75, fzp] });
+      folkHeadAt.push({ position: [fxp, base + 1.62, fzp] });
       folkColors.push(["#b8543b", "#396b78", "#d49b42", "#596896", "#4e8772", "#9e5c74", "#785c46"][Math.floor(rand() * 7)]!);
     }
     const placed: [number, number][] = [];
@@ -634,15 +628,14 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     placed.push([lx, la]);
     const lh = landmark === ASSETS.lamplightKeep ? 30 : 34;
     b.add(model(landmark, { name: `landmark-${i}`, position: [s0.x + sx * lx + fx * la, top + lh / 2 - 0.4, s0.z + sz * lx + fz * la], rotation: [0, yaw + i, 0], targetMaxDimension: lh, castShadow: false, receiveShadow: true }).runtime({ id: `landmark-${i}` }));
-    if (MESHY_ENABLED) {
-      for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
-        const [cx, cz] = at(4.6, al);
-        b.add(model(MESHY_ASSETS.crates, { name: `crates-${i}-${k}`, position: [cx, s0.y + 0.75 + 0.85, cz], rotation: [0, yaw + k * 1.9, 0], scaleMode: "world", scale: 0.9, castShadow: cast, receiveShadow: true }).runtime({ id: `crates-${i}-${k}` }));
-      }
-      if (i % 3 === 1) {
-        const [lx2, lz2] = at(-40, 44), ls = 20;
-        b.add(model(MESHY_ASSETS.lighthouse, { name: `lighthouse-${i}`, position: [lx2, top + 0.951 * ls, lz2], rotation: [0, yaw + i, 0], scaleMode: "world", scale: ls, castShadow: true, receiveShadow: true }).runtime({ id: `lighthouse-${i}` }));
-      }
+    for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
+      const [cx, cz] = at(4.6, al);
+      b.add(buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, cast, townBatch));
+    }
+    if (i % 3 === 1) {
+      const [lx2, lz2] = at(-40, 44);
+      const beamGain = row ? (row.practicals.headlamp > 0 ? 0.44 : 0.14) : night ? 0.5 : 0.12;
+      b.add(buildLighthouseNode(`lighthouse-${i}`, [lx2, top, lz2], yaw + i, beamGain, true));
     }
     for (let k = 0; k < 22; k++) {
       for (let tries = 0; tries < 10; tries++) {
@@ -670,25 +663,19 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       else { bushAt.push({ position: [wx, top + 0.9, wz], scale: 1.1 + rand() * 1.2 }); bushColors.push(mixHex("#4f8a3c", town.color, 0.25)); }
     }
   });
+  for (const staticTownNode of townBatch.buildNodes("town-static")) b.add(staticTownNode);
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
-  if (MESHY_ENABLED) {
-    /* LT-10 (GU47 wave 3): the Meshy rock-only underside hangs under each island in one instanced draw. The model is centred
-       with raw bounds 1.857 x 1.9 x 1.83, so the world scale fills the old cone's 136 x 108 x 136 m; it is flipped (apex down)
-       and its pale cap sits inside the island slab and rim. */
-    b.add(instances.model(MESHY_ASSETS.lamplightUndersideAR2, {
-      name: "island-rocks", scaleMode: "world", castShadow: false, receiveShadow: cast, instancingAware: true,
-      transforms: islandRock.map((r) => ({ position: [r.position[0], r.position[1] + 2, r.position[2]] as V3, rotation: r.rotation as V3, scale: [73.2, 56.8, 74.3] as V3 }))
-    }));
-  } else {
-    b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
-  }
+  b.add(buildIslandUndercroftNode(
+    islandRock.map((r) => ({ position: [r.position[0], r.position[1] + 2, r.position[2]] as V3, rotation: r.rotation as V3 })),
+    row !== null,
+    cast
+  ));
   b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr(row ? "#cfc5b0" : "#d9cfba", row ? (row.practicals.platformPoint > 0 ? 0.24 : 0.34) : 0.82), castShadow: cast }).runtime({ id: "platforms" }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
   b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: cast }));
-  if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: cast }));
-  b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
+  b.add(primitives.sphere({ name: "lamps", size: 0.42, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
   b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
   if (row) {
     // GU47 LT-12 + WP-24: merged copper-bronze catenary wire + paired GLSL/WGSL corona, signal posts/heads + Fresnel lenses, festoon bulbs
@@ -700,8 +687,8 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   }
   b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: cast }));
   b.add(primitives.sphere({ name: "flowers", size: 0.9, instances: flowerAt, instanceColors: flowerColors, material: pbr("#ffffff", 0.7), castShadow: false }));
-  b.add(primitives.sphere({ name: "bushes", size: [2.4, 1.8, 2.4], instances: bushAt, instanceColors: bushColors, material: pbr("#ffffff", 0.95), castShadow: cast }));
-  b.add(primitives.sphere({ name: "cloud-puffs", size: [2.2, 1.0, 2.2], instances: puffs, material: material.pbr({ color: "#fbfaf6", roughness: 1, emissive: "#e8ecf6", emissiveIntensity: row ? 0.06 : 0.28 }), castShadow: false }));
+  b.add(instances.custom(buildCoastalBushSpec(), { name: "bushes", transforms: bushAt, colors: bushColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.92, clearcoat: 0 })), castShadow: cast }));
+  b.add(instances.custom(buildCloudPuffSpec(), { name: "cloud-puffs", transforms: puffs, material: unnamed(material.pbr({ color: "#fbfaf6", roughness: 1, clearcoat: 0, emissive: "#e8ecf6", emissiveIntensity: row ? 0.06 : 0.28 })), castShadow: false }));
   const asRef = (t: unknown): never => t as never;
   const facadeMat = (tint: string, glowK: number) => tex
     ? material.pbr({ color: tint, roughness: 0.86, texture: asRef(tex.facade), emissiveMap: tex.facadeEmissive as never, emissive: "#ffffff", emissiveIntensity: glowK, textureAnisotropy: 8, ...(row ? { practical: true } : {}) })
@@ -712,40 +699,31 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   if (row) b.add(geometry.custom(snowRoofMesh.toGeometry(), { name: "roofs-snow", material: material.pbr({ color: SNOW_ROOF_COLOR, roughness: 0.62 }), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", row ? 0.38 : 0.92), castShadow: false, receiveShadow: true }));
-  if (!MESHY_ENABLED) b.add(geometry.custom(clockMesh.toGeometry(), { name: "clock-faces", material: texMat(tex?.clock, "#ffffff", 0.55), castShadow: false, receiveShadow: false }));
   b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: cast }));
   b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
   b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: cast }));
-  b.add(primitives.capsule({ name: "folk-bodies", size: [0.7, 1.5, 0.7], instances: folkBodyAt, instanceColors: folkColors, material: pbr("#ffffff", 0.75), castShadow: cast }));
-  b.add(primitives.sphere({ name: "folk-heads", size: 0.55, instances: folkHeadAt, material: pbr("#f0c9a4", 0.6), castShadow: cast }));
-  b.add(primitives.cylinder({ name: "tree-trunks", size: [0.7, 3.2, 0.7], instances: trunkAt, material: pbr("#6b4a32", 0.95), castShadow: cast }));
-  b.add(primitives.sphere({ name: "tree-canopies", size: [5.2, 4.6, 5.2], instances: canopyAt, instanceColors: canopyColors, material: pbr("#ffffff", 0.9), castShadow: true }));
-  b.add(primitives.cone({ name: "tree-pines", size: [3.6, 6.6, 3.6], params: { radialSegments: 8 }, instances: pineAt, instanceColors: pineColors, material: pbr("#ffffff", 0.9), castShadow: true }));
-  b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: cast }));
+  b.add(instances.custom(buildPlazaFolkBodySpec(), { name: "folk-bodies", transforms: folkBodyAt, colors: folkColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.78, clearcoat: 0 })), castShadow: cast }));
+  b.add(primitives.sphere({ name: "folk-heads", size: 0.44, instances: folkHeadAt, material: unnamed(material.pbr({ color: "#f0c9a4", roughness: 0.62, clearcoat: 0 })), castShadow: cast }));
+  b.add(instances.custom(buildCoastalTreeTrunkSpec(), { name: "tree-trunks", transforms: trunkAt, material: unnamed(material.pbr({ color: "#6b4a32", roughness: 0.94, clearcoat: 0 })), castShadow: cast }));
+  b.add(instances.custom(buildBroadleafCanopySpec(), { name: "tree-canopies", transforms: canopyAt, colors: canopyColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
+  b.add(instances.custom(buildCoastalPineSpec(), { name: "tree-pines", transforms: pineAt, colors: pineColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
+  b.add(instances.custom(buildCoastalBoulderSpec(), { name: "stones", transforms: stoneAt, material: unnamed(material.pbr({ color: "#8a867f", roughness: 0.94, clearcoat: 0 })), castShadow: cast }));
 
-  /* ---- tram and passengers (flat top-level nodes, moved from the runtime) ---- */
-  // GU47 phase 4 (WP-36 lamplightTramEnamel, LT-11): the band look carries the enamel retexture + riveted brass/lacquer/studioGlass coach trim.
-  if (MESHY_ENABLED) {
-    b.add(model(row ? MESHY_ASSETS.tramEnamel : MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...(row ? TRAM_ENAMEL_SCALE : TRAM.scale)] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
-    if (row) {
-      for (const part of tramCoachTrim(row.practicals.tramBulbs)) {
-        b.add(geometry.custom(part.mesh.toGeometry(), { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
-      }
+  /* ---- tram and passengers (sculpted multi-material nodes, moved from the runtime) ---- */
+  b.add(buildStreetcarBodyNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true));
+  if (row) {
+    for (const part of tramCoachTrim(row.practicals.tramBulbs)) {
+      b.add(geometry.custom(part.mesh.toGeometry(), { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
     }
-  } else for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
+  }
   SEATS.forEach((_, i) => {
-    if (MESHY_ENABLED) {
-      for (const t of TEMPERAMENTS) b.add(model(PAX_ASSET[t], { name: `pax-${i}-${t}`, scaleMode: "world", scale: PAX_SCALE, castShadow: cast, receiveShadow: false }).runtime({ id: `pax-${i}-${t}` }));
-      return;
-    }
-    b.add(primitives.sphere({ name: `head-${i}`, size: 0.42, material: pbr("#f0c9a4", 0.6), castShadow: false }).runtime({ id: `head-${i}` }));
-    for (const t of TEMPERAMENTS) b.add(primitives.capsule({ name: `pax-${i}-${t}`, size: [0.55, 1.1, 0.55], material: pbr(TEMPERAMENT_COLORS[t], 0.65), castShadow: false }).runtime({ id: `pax-${i}-${t}` }));
+    for (const t of TEMPERAMENTS) b.add(buildPassengerNode(t, `pax-${i}-${t}`, false));
   });
 
   /* ---- GU47 LT-13 signature: earned sky lanterns + WP-24 warm brass headlamp volumetric cone & wheel-flange spark flipbooks ---- */
   if (row) {
-    b.add(primitives.capsule({ name: "sky-lanterns", size: [0.9, 1.2, 0.9], instances: [{ position: [0, -400, 0], scale: 0.001 }], material: material.emissive({ color: "#ffb35c", emissive: "#ffc77a", emissiveIntensity: row.lanternGlow }), castShadow: false }).runtime({ id: "sky-lanterns" }));
-    b.add(effects.volumetricBeam({ name: "a3g-fx-headlamp-cone", position: [0, -400, 0], direction: [0, -0.08, 1], length: 22, endRadius: 3.1, color: "#ffdca2", intensity: row.practicals.headlamp > 0 ? (row.id === "C" ? 0.22 : 0.34) : 0.001, falloff: 1.9, edgeSoftness: 1.5, noise: 0.2 }).runtime({ id: "a3g-fx-headlamp-cone" }));
+    b.add(instances.custom(buildSkyLanternSpec(), { name: "sky-lanterns", transforms: [{ position: [0, -400, 0], scale: 0.001 }], material: unnamed(material.emissive({ color: "#ffb35c", emissive: "#ffc77a", emissiveIntensity: row.lanternGlow, practical: true })), castShadow: false }).runtime({ id: "sky-lanterns" }));
+    b.add(upgradeVolumetricBeamWgsl(effects.volumetricBeam({ name: "a3g-fx-headlamp-cone", position: [0, -400, 0], direction: [0, -0.08, 1], length: 22, endRadius: 3.1, color: "#ffdca2", intensity: row.practicals.headlamp > 0 ? (row.id === "C" ? 0.22 : 0.34) : 0.001, falloff: 1.9, edgeSoftness: 1.5, noise: 0.2 })).runtime({ id: "a3g-fx-headlamp-cone" }));
     for (const id of ["a3g-fx-flange-spark-l", "a3g-fx-flange-spark-r"] as const) {
       b.add(geometry.custom(sparkBillboardQuad(0.32), { name: id, position: [0, -400, 0], material: material.custom(flangeSparkSpec(FLANGE_SPARKS_ATLAS, 1.75)), castShadow: false, receiveShadow: false }).runtime({ id }));
     }
@@ -903,53 +881,38 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const f = dockForward(data, sim.leg, sim.distance);
     const rot = tramRotation(f, -sim.roll);
     const euler = matrixToEulerZYX(rot);
-    if (MESHY_ENABLED) {
-      const body = node("tram-body"), bodyEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("y", TRAM.yaw))), c = applyMat3(rot, [0, TRAM.centerY, 0]);
-      body.setPosition(here.x + c[0], here.y + 0.2 + bob + c[1], here.z + c[2]); body.setRotation(bodyEuler[0], bodyEuler[1], bodyEuler[2]);
-      if (shownBand !== null) {
-        for (const id of TRAM_FX_IDS) {
-          const h = node(id);
-          h.setPosition(here.x, here.y + 0.2 + bob, here.z);
-          h.setRotation(euler[0], euler[1], euler[2]);
-        }
+    const body = node("tram-body");
+    body.setPosition(here.x, here.y + 0.2 + bob, here.z);
+    body.setRotation(euler[0], euler[1], euler[2]);
+    if (shownBand !== null) {
+      for (const id of TRAM_FX_IDS) {
+        const h = node(id);
+        h.setPosition(here.x, here.y + 0.2 + bob, here.z);
+        h.setRotation(euler[0], euler[1], euler[2]);
       }
-    } else for (const id of TRAM_GROUP_IDS) { const h = node(id); h.setPosition(here.x, here.y + 0.2, here.z); h.setRotation(euler[0], euler[1], euler[2]); }
+    }
     const seated = new Set(sim.trips.map((t) => t.seat));
     SEATS.forEach((seat, i) => {
       const trip = sim.trips.find((t) => t.seat === i);
-      if (MESHY_ENABLED) {
-        for (const t of TEMPERAMENTS) {
-          const h = node(`pax-${i}-${t}`);
-          const on = seated.has(i) && trip?.temperament === t;
-          h.setVisible(on);
-          if (on) {
-            if (shownBand !== null) {
-              const sp = seatedRiderPose(i, seat[0], t, seconds, riderLean, rm);
-              const seatedPos = applyMat3(rot, [seat[0] + sp.latShift, TRAM.floorY + sp.yOffset + sp.breathY, seat[2]]);
-              const paxRot = multiplyMat3(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", (seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2) + sp.yawOffset)), axisRotation("x", sp.pitch));
-              const paxEuler = matrixToEulerZYX(paxRot);
-              h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
-              h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
-            } else {
-              const standing = applyMat3(rot, [seat[0], TRAM.floorY + PAX_SCALE * 0.951, seat[2]]);
-              const paxEuler = matrixToEulerZYX(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
-              h.setPosition(here.x + standing[0], here.y + standing[1] + 0.2 + bob, here.z + standing[2]);
-              h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
-            }
-          }
-        }
-        return;
-      }
-      const w = applyMat3(rot, seat);
-      const hw = applyMat3(rot, [seat[0], seat[1] + 0.95, seat[2]]);
-      const head = node(`head-${i}`);
-      head.setVisible(seated.has(i));
-      if (seated.has(i)) head.setPosition(here.x + hw[0], here.y + hw[1] + 0.2, here.z + hw[2]);
       for (const t of TEMPERAMENTS) {
         const h = node(`pax-${i}-${t}`);
         const on = seated.has(i) && trip?.temperament === t;
         h.setVisible(on);
-        if (on) { h.setPosition(here.x + w[0], here.y + w[1] + 0.2, here.z + w[2]); h.setRotation(euler[0], euler[1], euler[2]); }
+        if (on) {
+          if (shownBand !== null) {
+            const sp = seatedRiderPose(i, seat[0], t, seconds, riderLean, rm);
+            const seatedPos = applyMat3(rot, [seat[0] + sp.latShift, STREETCAR_FLOOR_Y + sp.yOffset + sp.breathY, seat[2]]);
+            const paxRot = multiplyMat3(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", (seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2) + sp.yawOffset)), axisRotation("x", sp.pitch));
+            const paxEuler = matrixToEulerZYX(paxRot);
+            h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
+            h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
+          } else {
+            const seatedPos = applyMat3(rot, [seat[0], STREETCAR_FLOOR_Y + 1.24, seat[2]]);
+            const paxEuler = matrixToEulerZYX(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
+            h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
+            h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
+          }
+        }
       }
     });
 

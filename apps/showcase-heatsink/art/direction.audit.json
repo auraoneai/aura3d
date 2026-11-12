@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-heatsink/art/direction.ts",
-  "sourceSha256": "9260a14c47650bf13cf7e4e4bd85e97a754eed3a5626660c66d5437f8421aab2",
+  "sourceSha256": "ae5e2948d0e0e93eb8809f35e1705023c6612488e98531fb0c1ffcb3afa0463e",
   "id": "showcase-heatsink",
   "genre": "racing",
   "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
@@ -63,204 +63,7 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [
-      {
-        "assetKey": "heatsinkDroneOrion",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneVolt",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneBastion",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneSpectre",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneRazor",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneNighthawk",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkDroneWraith",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkWeaponMine",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkGantryStart",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkOverpass",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalLadleCrane",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalTowerTIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalCoolingTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalSmokestacks",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalWaterTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkLavaFall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkWaterEmitter",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkBarrierA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalReactorRing",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkBoostPad",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkCoolingCanister",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkShieldPickup",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkExplosiveBarrel",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkWeaponShockwave",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalArchIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkTunnelFrame",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsink_thermalTowerLIron",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "heatsinkHoloBillboard",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      }
-    ],
+    "models": [],
     "materials": [
       {
         "node": "megacity-abyss-floor",
@@ -268,6 +71,10 @@
       },
       {
         "node": "td skyline 0 bodies",
+        "practical": false
+      },
+      {
+        "node": "td skyline 0 spires",
         "practical": false
       },
       {
@@ -280,12 +87,20 @@
         "practical": false
       },
       {
+        "node": "td skyline 1 spires",
+        "practical": false
+      },
+      {
         "node": "td skyline 1 seams",
         "emissiveIntensity": 1.05,
         "practical": true
       },
       {
         "node": "td skyline 2 bodies",
+        "practical": false
+      },
+      {
+        "node": "td skyline 2 spires",
         "practical": false
       },
       {
@@ -317,12 +132,12 @@
         "practical": true
       },
       {
-        "name": "td barrier brushed metal",
+        "name": "td barrier wall armor",
         "node": "track-walls",
         "practical": false
       },
       {
-        "name": "td heatsink cooling fins",
+        "name": "td heatsink louver array",
         "node": "track-heatsink-fins",
         "practical": false
       },
@@ -347,8 +162,9 @@
         "practical": false
       },
       {
+        "name": "td plasma laser bolt",
         "node": "laser-bolts",
-        "emissiveIntensity": 2.6,
+        "emissiveIntensity": 2.8,
         "practical": true
       },
       {
@@ -360,18 +176,41 @@
         "practical": false
       },
       {
+        "name": "td cryo coolant core",
         "node": "player-shockwave-ring",
-        "emissiveIntensity": 2.4,
+        "emissiveIntensity": 2.75,
         "practical": true
       },
       {
-        "node": "homing-missile-active",
-        "emissiveIntensity": 2.4,
+        "name": "td soot cast iron",
+        "node": "homing-missile-active material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "homing-missile-active material 2",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "homing-missile-active material 6",
+        "emissiveIntensity": 2.9,
         "practical": true
       },
       {
-        "node": "incoming-missile",
-        "emissiveIntensity": 2.6,
+        "name": "td soot cast iron",
+        "node": "incoming-missile material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "incoming-missile material 2",
+        "practical": false
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "incoming-missile material 9",
+        "emissiveIntensity": 2.5,
         "practical": true
       },
       {
@@ -381,6 +220,683 @@
       {
         "node": "vfx-sparks-flipbook",
         "practical": false
+      },
+      {
+        "name": "td orion foundry clearcoat",
+        "node": "drone-orion-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-orion-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-orion-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-orion-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear afterburner plasma",
+        "node": "drone-orion-hull material 5",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-orion-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-orion-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-volt-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-volt-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-volt-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-volt-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-volt-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear cryo afterburner",
+        "node": "drone-volt-hull material 5",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-volt-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-volt-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-bastion-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-bastion-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-bastion-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-bastion-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-bastion-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear afterburner plasma",
+        "node": "drone-bastion-hull material 5",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-bastion-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-bastion-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-spectre-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-spectre-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-spectre-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-spectre-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-spectre-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear cryo afterburner",
+        "node": "drone-spectre-hull material 5",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-spectre-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-spectre-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-razor-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-razor-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-razor-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-razor-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-razor-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear afterburner plasma",
+        "node": "drone-razor-hull material 5",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-razor-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-razor-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-nighthawk-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-nighthawk-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-nighthawk-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-nighthawk-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-nighthawk-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear afterburner plasma",
+        "node": "drone-nighthawk-hull material 5",
+        "emissiveIntensity": 3.2,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-nighthawk-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-nighthawk-canopy",
+        "practical": false
+      },
+      {
+        "name": "td rival aero clearcoat",
+        "node": "drone-wraith-hull material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "drone-wraith-hull material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "drone-wraith-hull material 2",
+        "practical": false
+      },
+      {
+        "name": "td tungsten chassis frame",
+        "node": "drone-wraith-hull material 3",
+        "practical": false
+      },
+      {
+        "name": "td thermal nozzle ceramic",
+        "node": "drone-wraith-hull material 4",
+        "practical": false
+      },
+      {
+        "name": "td rear cryo afterburner",
+        "node": "drone-wraith-hull material 5",
+        "emissiveIntensity": 3.1,
+        "practical": true
+      },
+      {
+        "name": "td tail navigation strobe",
+        "node": "drone-wraith-hull material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "td tinted cockpit canopy",
+        "node": "drone-wraith-canopy",
+        "practical": false
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "weapon-mine-active material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "weapon-mine-active material 2",
+        "practical": false
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "weapon-mine-active material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-gantry-start material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-gantry-start material 1",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-gantry-start material 2",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-gantry-start material 4",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-gantry-start material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td turbo boost chevron",
+        "node": "prop-gantry-start material 8",
+        "emissiveIntensity": 2.65,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-overpass material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-overpass material 1",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-overpass material 2",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-overpass material 3",
+        "practical": false
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-overpass material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-statue material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-statue material 1",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-statue material 2",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-statue material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-tower-t-left material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-tower-t-left material 1",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-tower-t-left material 4",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-tower-t-left material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-tower-t-left material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-cooling-tower material 1",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-cooling-tower material 4",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-cooling-tower material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-cooling-tower material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-tower-x-right material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-tower-x-right material 1",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-tower-x-right material 4",
+        "practical": false
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-tower-x-right material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-water-tower material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-water-tower material 2",
+        "practical": false
+      },
+      {
+        "name": "td cryogenic tank enamel",
+        "node": "prop-water-tower material 5",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-water-tower material 7",
+        "emissiveIntensity": 2.75,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-water-tower material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-lava-fall material 0",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-lava-fall material 4",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-lava-fall material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-water-emitter material 0",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-water-emitter material 1",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-water-emitter material 2",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-water-emitter material 3",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-water-emitter material 4",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-water-emitter material 7",
+        "emissiveIntensity": 2.75,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-barrier-left material 0",
+        "practical": false
+      },
+      {
+        "name": "td turbo boost chevron",
+        "node": "prop-barrier-left material 8",
+        "emissiveIntensity": 2.65,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-barrier-left material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-checkpoint-ring material 0",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-checkpoint-ring material 3",
+        "practical": false
+      },
+      {
+        "name": "td refractory concrete",
+        "node": "prop-checkpoint-ring material 4",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-checkpoint-ring material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td soot cast iron",
+        "node": "prop-boost-pad material 0",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-boost-pad material 2",
+        "practical": false
+      },
+      {
+        "name": "td turbo boost chevron",
+        "node": "prop-boost-pad material 8",
+        "emissiveIntensity": 2.65,
+        "practical": true
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-cooling-canister-body material 2",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-cooling-canister-body material 3",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-cooling-canister-body material 7",
+        "emissiveIntensity": 2.75,
+        "practical": true
+      },
+      {
+        "name": "td cryo containment glass",
+        "node": "prop-cooling-canister-glass",
+        "practical": false
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "prop-shield-pickup-core material 2",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-shield-pickup-core material 3",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-shield-pickup-core material 7",
+        "emissiveIntensity": 2.75,
+        "practical": true
+      },
+      {
+        "name": "td cryo containment glass",
+        "node": "prop-shield-pickup-shell",
+        "practical": false
+      },
+      {
+        "name": "td oxidised foundry steel",
+        "node": "prop-explosive-barrel material 1",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "prop-explosive-barrel material 3",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-explosive-barrel material 6",
+        "emissiveIntensity": 2.9,
+        "practical": true
+      },
+      {
+        "name": "td aero brushed titanium",
+        "node": "weapon-shockwave-emitter material 2",
+        "practical": false
+      },
+      {
+        "name": "td heatsink radiator copper",
+        "node": "weapon-shockwave-emitter material 3",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "weapon-shockwave-emitter material 7",
+        "emissiveIntensity": 2.75,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "batch-heatsink_thermalArchIron",
+        "practical": false
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "batch-heatsinkTunnelFrame",
+        "practical": false
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "batch-heatsink_thermalTowerLIron",
+        "practical": false
+      },
+      {
+        "name": "td batched holo frame",
+        "node": "batch-heatsinkHoloBillboard",
+        "emissiveIntensity": 1.65,
+        "practical": true
       }
     ],
     "drawCalls": 0
@@ -447,211 +963,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneOrion",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneVolt",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneBastion",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneSpectre",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneRazor",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneNighthawk",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "heatsinkDroneWraith",
-        "maxTriangles": 60000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "heatsinkGantryStart",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "heatsink_thermalArchIron",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "heatsinkOverpass",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "heatsinkTunnelFrame",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsink_thermalLadleCrane",
-        "maxTriangles": 30000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "heatsink_thermalTowerLIron",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "heatsink_thermalTowerTIron",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "heatsink_thermalSmokestacks",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "heatsink_thermalCoolingTower",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "heatsink_thermalWaterTower",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkHoloBillboard",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkLavaFall",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkWaterEmitter",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkBarrierA",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsink_thermalReactorRing",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkBoostPad",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkCoolingCanister",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkShieldPickup",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkExplosiveBarrel",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkWeaponShockwave",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "heatsinkWeaponMine",
-        "maxTriangles": 12000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "barrel",

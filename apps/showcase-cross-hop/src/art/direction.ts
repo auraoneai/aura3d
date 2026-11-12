@@ -3,7 +3,6 @@
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const CRITTERS = ["hop", "chick", "turtle", "bun", "axolotl", "ducky", "roboFrog", "toastCat", "mushroomKid", "knightToad", "astroFrog", "goldenHop"] as const;
-const VEHICLES = ["trafficSedan", "trafficHatch", "trafficSuv", "trafficTaxi", "trafficVan", "trafficPickup", "trafficBoxtruck", "tramCar", "trainCar", "trafficSkyCar"] as const;
 
 export default defineArtDirection({
   id: "cross-hop",
@@ -54,17 +53,6 @@ export default defineArtDirection({
       textureSet: "BC+N" as const,
       maxTextureSize: 1024 as const,
       animated: { clips: ["Idle", "Regular_Jump"] }
-    })),
-    { role: "enemy", assetKey: "hawk", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "rescuePod", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "coin", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    ...VEHICLES.map((assetKey) => ({
-      role: "vehicle" as const,
-      assetKey,
-      maxTriangles: 40000,
-      minTriangles: 2000,
-      textureSet: "BC+N+ORM" as const,
-      maxTextureSize: 1024 as const
     }))
   ],
   vfx: [
@@ -89,10 +77,7 @@ export default defineArtDirection({
     { event: "theme", cue: "stinger.level-start", variants: 1 }
   ],
   signatureEffect: "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
-  standIns: [
-    { feature: "verge dressing kits, gate arches, lamp model, lane furniture (primitive pools)", file: "src/game/core.ts", request: "R-14-07", removeWhen: "WP-36 cross-hop kit GLBs admitted" },
-    { feature: "coin, logs, lily pad, basalt stone (primitive pools)", file: "src/game/core.ts", request: "R-14-07", removeWhen: "WP-36 cross-hop prop GLBs admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["postprocessing", "lighting", "camera", "environment_world"],
   tiers: {
     low: { particles: 600, shadowMap: 1024, cascades: 1, textureMax: 1024 },

@@ -247,7 +247,9 @@ export class WebGL2LegacyPostPipeline {
     this.drawRenderTargetToBackbuffer(source, outputWidth, outputHeight);
     this.host.activeRenderTarget = null;
     this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, this.host.lifecycle.defaultFramebuffer());
-    this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    if (!this.host.lifecycle.shouldSamplePostError || this.host.lifecycle.shouldSamplePostError()) {
+      this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    }
     if (this.host.lifecycle.lastError) {
       throw new RenderDeviceError(`WebGL2 render-target presentation failed: ${this.host.lifecycle.lastError}`, "WEBGL_PRESENT_FAILED", {
         targetId: source.id,
@@ -572,7 +574,9 @@ export class WebGL2LegacyPostPipeline {
     } finally {
       this.restoreFullscreenPresentationState(previousState, outputWidth, outputHeight);
     }
-    this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    if (!this.host.lifecycle.shouldSamplePostError || this.host.lifecycle.shouldSamplePostError()) {
+      this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    }
     if (this.host.lifecycle.lastError) {
       throw new RenderDeviceError(`WebGL2 LDR postprocess presentation failed: ${this.host.lifecycle.lastError}`, "WEBGL_LDR_POSTPROCESS_FAILED", {
         targetId: source.id,
@@ -648,12 +652,13 @@ export class WebGL2LegacyPostPipeline {
         this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
         this.recordBloomDiagnostics(bloomOptions, source.width, source.height, true, plan.mipCount);
       }
-      this.host.gl.flush();
     } finally {
       this.restoreFullscreenPresentationState(previousState, source.width, source.height);
       this.host.stateCache.invalidate();
     }
-    this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    if (!this.host.lifecycle.shouldSamplePostError || this.host.lifecycle.shouldSamplePostError()) {
+      this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    }
     if (this.host.lifecycle.lastError) {
       throw new RenderDeviceError(`WebGL2 HDR bloom failed: ${this.host.lifecycle.lastError}`, "WEBGL_LDR_POSTPROCESS_FAILED", {
         targetId: source.id,
@@ -1759,6 +1764,53 @@ export class WebGL2LegacyPostPipeline {
   }
 
   prepareFullscreenPresentation(framebuffer: WebGLFramebuffer | null, outputWidth: number, outputHeight: number): WebGL2FullscreenPresentationStateSnapshot {
+    if (this.host.lifecycle?.frameActive && this.host.errorCheckMode === "sampled") {
+      const gl = this.host.gl;
+      const cacheSnap = this.host.stateCache.snapshot();
+      const samplers = this.host.samplers;
+      const activeIndex = samplers && samplers.activeTextureUnitIndex >= 0
+        ? samplers.activeTextureUnitIndex
+        : (cacheSnap.activeTextureUnit ?? 0);
+      const unitBinding = (unit: number): WebGL2TextureUnitBindingSnapshot => ({
+        texture2d: (samplers?.textureUnitBindings.get(unit * 0x10000 + gl.TEXTURE_2D) as WebGLTexture | undefined) ?? null,
+        sampler: (cacheSnap.samplers[unit] as WebGLSampler | undefined) ?? null
+      });
+      const extraTextureUnits: { unit: number; binding: WebGL2TextureUnitBindingSnapshot }[] = [];
+      for (let unit = 3; unit < PRESENTATION_TEXTURE_UNITS; unit += 1) {
+        extraTextureUnits.push({ unit, binding: unitBinding(unit) });
+      }
+      const snapshot: WebGL2FullscreenPresentationStateSnapshot = {
+        framebuffer: this.host.activeRenderTarget?.drawFramebuffer ?? this.host.lifecycle.defaultFramebuffer(),
+        program: typeof cacheSnap.program === "object" ? (cacheSnap.program as WebGLProgram | null) : null,
+        textureUnit0: {
+          activeTexture: gl.TEXTURE0 + activeIndex,
+          ...unitBinding(0)
+        },
+        textureUnit1: unitBinding(1),
+        textureUnit2: unitBinding(2),
+        extraTextureUnits,
+        vertexArray: typeof cacheSnap.vertexArray === "object" ? (cacheSnap.vertexArray as WebGLVertexArrayObject | null) : null,
+        viewport: cacheSnap.viewport ?? [0, 0, outputWidth, outputHeight],
+        colorMask: cacheSnap.colorMask ?? [true, true, true, true],
+        depthTestEnabled: cacheSnap.enabled[gl.DEPTH_TEST] ?? false,
+        cullFaceEnabled: cacheSnap.enabled[gl.CULL_FACE] ?? false,
+        blendEnabled: cacheSnap.enabled[gl.BLEND] ?? false,
+        scissorTestEnabled: cacheSnap.enabled[gl.SCISSOR_TEST] ?? false,
+        stencilTestEnabled: cacheSnap.enabled[gl.STENCIL_TEST] ?? false,
+        polygonOffsetFillEnabled: cacheSnap.enabled[gl.POLYGON_OFFSET_FILL] ?? false,
+        depthMask: cacheSnap.depthMask ?? true
+      };
+      this.host.lifecycle.bindOutput(framebuffer, outputWidth, outputHeight);
+      gl.colorMask(true, true, true, true);
+      gl.disable(gl.SCISSOR_TEST);
+      gl.disable(gl.STENCIL_TEST);
+      gl.disable(gl.POLYGON_OFFSET_FILL);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
+      gl.disable(gl.BLEND);
+      gl.depthMask(false);
+      return snapshot;
+    }
     const textureUnit0 = this.host.lifecycle.captureTextureUnit0();
     const textureUnit1 = this.host.lifecycle.captureTextureUnitBinding(1);
     const textureUnit2 = this.host.lifecycle.captureTextureUnitBinding(2);

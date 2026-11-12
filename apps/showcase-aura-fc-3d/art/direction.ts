@@ -52,31 +52,14 @@ export default defineArtDirection({
     exposureEV: 0.15
   },
   framing: { rig: "follow2d", subjectHeightFraction: [0.08, 0.3], fovDeg: [34, 54], mobile: "both" },
-  // Triangle counts and texture sets measured from the shipped GLBs (lane report, "Asset facts"). Characters and the
-  // ball state the target set (BC+N); today's athlete GLBs carry colour-only materials and the ball a single base
-  // colour map: both are listed in standIns until WP-36 delivers textured kits.
+  // WP-09: only the 5 rigged `skins=1` athlete and front-row supporter GLBs remain mounted as models; all static
+  // stadium architecture, goals, floodlight masts, dugouts, trophy, and match ball are procedural multi-material assemblies.
   assets: [
     { role: "character", assetKey: "fcSoccerStrikerMeshy", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Walk_Loop", "Run", "Sprint_Loop"] } },
     { role: "character", assetKey: "fcGoalkeeperMeshy", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Run", "Sprint_Loop"] } },
-    { role: "hero", assetKey: "fcMatchBallMeshy", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "world", assetKey: "fcSoccerGoalNetMeshy", maxTriangles: 10000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "world", assetKey: "fcFloodlightPylonMeshy", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "world", assetKey: "fcScoreboardGantryMeshy", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "world", assetKey: "fcGlacierDomeMeshy", maxTriangles: 14000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "fcHeroTrophyMeshy", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
-    // WP-36 (phase 4): the game's own stand module, four instances in one draw; Meshy UV seams stop the simplifier at 45.6k
-    { role: "backdrop", assetKey: "fcStandModuleMeshy", maxTriangles: 46000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 phase 9 (D2): the game's own CC0 team bench and ball crate (Poly Haven painted_wooden_bench, plastic_crate_02;
-    // 512 px maps); WP-36's Meshy dugout (pitchDugout) is blocked on Meshy credits
-    { role: "set-dressing", assetKey: "fcTeamBench", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // GU47 wave 2 (FC47-A1): inflatable players' tunnel on the far touchline; the simplifier stops at 13.0k on UV seams
-    { role: "set-dressing", assetKey: "fcPlayerTunnelMeshy", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // Meshy-07 (FC47-AN1): rigged front-row fans (idle / cheer / pump), crowd dressing: six skinned draws at the far rail; normal maps
-    // dropped at that distance
     { role: "set-dressing", assetKey: "fcPitchFanAMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
     { role: "set-dressing", assetKey: "fcPitchFanBMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
-    { role: "set-dressing", assetKey: "fcPitchFanCMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } },
-    { role: "set-dressing", assetKey: "fcBallCrate", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "set-dressing", assetKey: "fcPitchFanCMeshy", maxTriangles: 5200, textureSet: "BC", maxTextureSize: 512, animated: { clips: ["idle", "cheer", "pump"] } }
   ],
   vfx: [
     { event: "kick", kind: "fc-turf-divot" },
@@ -98,8 +81,7 @@ export default defineArtDirection({
   ],
   signatureEffect: "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
   standIns: [
-    { feature: "box stands and capsule crowd", file: "src/game/scene.ts", request: "R-14-07", removeWhen: "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted" },
-    { feature: "colour-only athlete kit materials and a base-colour-only match ball", file: "src/game/rig.ts", request: "R-14-07", removeWhen: "WP-36 textured kits (BC+N, number sheet) and a BC+N ball admitted" },
+    { feature: "colour-only athlete kit material overrides on rigged athletes", file: "src/game/rig.ts", request: "R-14-07", removeWhen: "WP-36 textured kits (BC+N, number sheet) admitted" },
     { feature: "instanced light pools for the three unshadowed towers", file: "src/game/scene.ts", request: "R-14-13", removeWhen: "a per-tier multi-caster budget allows four shadowed floods" }
   ],
   criticalCategories: ["lighting", "atmospheric_effects", "vfx", "material_quality", "camera"],

@@ -47,14 +47,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [40, 66], mobile: "both" },
   assets: [
-    { role: "hero", assetKey: "hero", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "enemy", assetKey: "rex", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "enemy", assetKey: "ptero", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "cloud", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "boulder", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "treeRound", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "treePine", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "mesa", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "hero", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "skypearl", kind: "pearl-spark" },

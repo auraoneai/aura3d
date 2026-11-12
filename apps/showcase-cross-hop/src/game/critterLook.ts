@@ -40,17 +40,17 @@ const RIM_AMPHIBIAN = { color: "#e8fff3", power: 3.1, intensity: 0.34 } as const
 export function critterOverrides(assetKey: string): readonly AuraModelMaterialOverride[] {
   switch (CRITTER_SURFACE[assetKey]) {
     case "fur":
-      return [{ rim: RIM_FUR, roughness: 0.84, envMapIntensity: 0.72 }];
+      return [{ rim: RIM_FUR, sheen: 0.56, sheenColor: "#fff4e6", sheenRoughness: 0.62, roughness: 0.82, envMapIntensity: 0.78 }];
     case "feather":
-      return [{ rim: RIM_FEATHER, roughness: 0.78, envMapIntensity: 0.78 }];
+      return [{ rim: RIM_FEATHER, sheen: 0.48, sheenColor: "#fff8e8", sheenRoughness: 0.52, roughness: 0.74, envMapIntensity: 0.84 }];
     case "shell":
-      return [{ clearcoat: 0.58, clearcoatRoughness: 0.22, roughness: 0.42, envMapIntensity: 1.05 }];
+      return [{ clearcoat: 0.72, clearcoatRoughness: 0.14, roughness: 0.34, envMapIntensity: 1.14 }];
     case "lacquer":
-      return [{ clearcoat: 1, clearcoatRoughness: 0.06, roughness: 0.18, envMapIntensity: 1.32 }];
+      return [{ clearcoat: 1, clearcoatRoughness: 0.05, roughness: 0.16, envMapIntensity: 1.36 }];
     case "metal":
-      return [{ clearcoat: 0.78, clearcoatRoughness: 0.12, roughness: 0.22, envMapIntensity: 1.42 }];
+      return [{ clearcoat: 0.86, clearcoatRoughness: 0.10, iridescence: 0.18, roughness: 0.20, envMapIntensity: 1.46 }];
     case "skin":
-      return [{ rim: RIM_AMPHIBIAN, clearcoat: 0.42, clearcoatRoughness: 0.28, roughness: 0.48, envMapIntensity: 0.95 }];
+      return [{ rim: RIM_AMPHIBIAN, clearcoat: 0.48, clearcoatRoughness: 0.22, sheen: 0.18, sheenColor: "#e8fff3", sheenRoughness: 0.45, roughness: 0.44, envMapIntensity: 1.02 }];
     default:
       return [];
   }

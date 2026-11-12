@@ -1,9 +1,12 @@
-/** Props for Cumulus Dash: sandstone mesas, cumulus cloud banks, rocks and logs, rope bridges, gorge posts, the home hut. */
+/** Props for Cumulus Dash: sandstone mesas, cumulus cloud banks, rocks and logs, rope bridges, gorge posts, sanctuary torii, and the home hut. */
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { Mesh, box, cylinder, hex, icosphere, mix3, mul3 } from "./mesh";
 import { seeded, smooth, layoutObstacles } from "./sim";
 import { CHUNK, ROAD_HALF, groundHeight, noise1 } from "./terrain";
+import { buildSanctuaryToriiNode, buildSkyHermitCottageNode } from "./art/proceduralModels";
+
+export { buildSanctuaryToriiNode, buildSkyHermitCottageNode };
 
 export const yawOf = (forward: V3): number => Math.atan2(forward[0], forward[2]);
 
@@ -232,18 +235,39 @@ export function buildGorgePosts(ch: Chapter): Mesh {
   return m;
 }
 
+export interface SanctuaryToriiPlacement { readonly name: string; readonly pos: V3; readonly yaw: number }
+
+export function buildSanctuaryToriiPlacements(ch: Chapter): SanctuaryToriiPlacement[] {
+  const out: SanctuaryToriiPlacement[] = [];
+  const stations = [...ch.checkpoints.filter((c) => c > 0), ch.length - 4];
+  stations.forEach((s, idx) => {
+    const f = frameAt(s, 0);
+    const gy = Math.min(groundHeight(ch, s, -ROAD_HALF - 1.05), groundHeight(ch, s, ROAD_HALF + 1.05));
+    out.push({
+      name: `sanctuary-torii-${idx}`,
+      pos: [f.point[0], f.point[1] + Math.max(-0.3, gy), f.point[2]],
+      yaw: yawOf(f.forward)
+    });
+  });
+  return out;
+}
+
 export function buildHut(ch: Chapter, walls = true): Mesh | null {
   if (!ch.home) return null;
   const m = new Mesh();
   const s = ch.home.s, f = frameAt(s, 9.5);
-  const wall = cylinder(14, 3.1, 3.0, 3.2, hex("#f1e2c0"), hex("#e9d7b0"));
-  const roof = cylinder(14, 4.1, 0.05, 2.6, hex("#c0502f"), hex("#d76a3c"));
-  const door = box(1.3, 2.0, 0.2, hex("#6b4527"));
+  const wall = cylinder(18, 2.75, 2.65, 2.95, hex("#f1e2c0"), hex("#e9d7b0"));
+  const roofLower = cylinder(20, 3.68, 2.25, 0.85, hex("#b83c28"), hex("#c94c34"));
+  const roofMid = cylinder(20, 2.25, 0.95, 0.95, hex("#c94c34"), hex("#d76a3c"));
+  const roofApex = cylinder(18, 0.95, 0.04, 0.78, hex("#d76a3c"), hex("#ecc058"));
+  const door = box(1.2, 1.9, 0.2, hex("#6b4527"));
   const base: V3 = [f.point[0], f.point[1], f.point[2]];
   if (walls) {
     m.append(wall, base, 1, 0, 0);
-    m.append(roof, [base[0], base[1] + 3.1, base[2]], 1, 0, 0);
-    m.append(door, [base[0] - f.right[0] * 3.0, base[1] + 1.0, base[2] - f.right[2] * 3.0], 1, yawOf(f.right), 0);
+    m.append(roofLower, [base[0], base[1] + 2.9, base[2]], 1, 0, 0);
+    m.append(roofMid, [base[0], base[1] + 3.75, base[2]], 1, 0, 0);
+    m.append(roofApex, [base[0], base[1] + 4.7, base[2]], 1, 0, 0);
+    m.append(door, [base[0] - f.right[0] * 2.7, base[1] + 0.95, base[2] - f.right[2] * 2.7], 1, yawOf(f.right), 0);
   }
   const mount = icosphere(1, hex("#8a6a4a"), 0.2, seeded(9), true);
   m.append(mount, [base[0] + f.right[0] * 6, base[1] - 0.4, base[2] + f.right[2] * 6], [6, 2.2, 5], 0.4);
