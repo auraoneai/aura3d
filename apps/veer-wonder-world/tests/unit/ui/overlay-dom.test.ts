@@ -11,6 +11,7 @@ import type { CharacterId, ParentSettings } from "../../../src/types.js";
 import { ENGLISH_ONLY, HIGH_CONTRAST_CLASS, UI_STRINGS, isCharacterId, type UiLocale } from "../../../src/ui/accessibility.js";
 import { mountCaptions } from "../../../src/ui/captions.js";
 import { showEpisodeMenu, type MenuItem, type PortraitMap } from "../../../src/ui/episode-menu.js";
+import { showOfflineCard } from "../../../src/ui/offline-card.js";
 import { PARENT_GATE_HOLD_MS, requireParent } from "../../../src/ui/parent-gate.js";
 import { LOCALE_CHOICES, SFX_CHOICES, openParentPanel } from "../../../src/ui/parent-panel.js";
 import { PORTRAITS } from "../../../src/ui/portraits.js";
@@ -633,9 +634,13 @@ describe("story menu (PRD 04 E02)", () => {
       cards.filter((card) => card.getAttribute("data-kind") === kind).map((card) => card.getAttribute("data-code"));
     expect(codes("episode")).toEqual([
       "e01", "e02", "e05", "e06", "e09", "e17",
-      "e03", "e04", "e07", "e08", "e10", "e11", "e12", "e13", "e14", "e15", "e16", "e18", "e19", "e20"
+      "e03", "e04", "e07", "e08", "e10", "e11", "e12", "e13", "e14", "e15", "e16", "e18", "e19", "e20",
+      "e21", "e22", "e23", "e24", "e25", "e26"
     ]);
-    expect(codes("activity")).toEqual(["g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12"]);
+    expect(codes("activity")).toEqual([
+      "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12",
+      "g13", "g14", "g15", "g16"
+    ]);
     for (const card of cards) {
       const badge = only(byClass(card, "ww-card-badge"));
       expect(badge.textContent).toBe(String(Number((card.getAttribute("data-code") ?? "").slice(1))));
@@ -717,29 +722,85 @@ describe("story menu (PRD 04 E02)", () => {
     expect(byAttr(root, "data-ui", "menu")).toEqual([]);
   });
 
-  it("offers Auto play in Grown-up settings and as a one-tap toggle in the menu header", () => {
+  it("offers Auto play and Wind-down in Grown-up settings and as one-tap toggles in the menu header", () => {
     const { root, storage, changes, close } = openPanel();
     const modeInputs = byAttr(root, "data-mode");
-    expect(modeInputs.map((n) => n.getAttribute("data-mode"))).toEqual(["play-together", "watch-sing", "auto"]);
+    expect(modeInputs.map((n) => n.getAttribute("data-mode"))).toEqual(["play-together", "watch-sing", "auto", "wind-down"]);
     const autoRadio = modeInputs[2];
     expect(autoRadio).toBeDefined();
     if (autoRadio) choose(autoRadio);
     expect(changes.at(-1)?.mode).toBe("auto");
     expect(loadSettings(storage).mode).toBe("auto");
+    const windDownRadio = modeInputs[3];
+    expect(windDownRadio).toBeDefined();
+    if (windDownRadio) choose(windDownRadio);
+    expect(changes.at(-1)?.mode).toBe("wind-down");
+    expect(loadSettings(storage).mode).toBe("wind-down");
+
+    const sleepInputs = byAttr(root, "data-sleep-timer-min");
+    expect(sleepInputs.map((n) => n.getAttribute("data-sleep-timer-min"))).toEqual(["0", "5", "10", "15", "20", "30"]);
+    if (sleepInputs[3]) choose(sleepInputs[3]);
+    expect(changes.at(-1)?.sleepTimerMin).toBe(15);
+    expect(loadSettings(storage).sleepTimerMin).toBe(15);
     close();
 
     const menuSetup = setup();
     const toggled: boolean[] = [];
-    const remove = showEpisodeMenu(asHtml(menuSetup.root), ENGLISH_ONLY, catalogItems(), () => {}, {
+    const windDownToggled: boolean[] = [];
+    const pickedSongs: string[] = [];
+    let jukeboxStarts = 0;
+    const itemsWithSleep: MenuItem[] = catalogItems().map((item) => ({
+      ...item,
+      ...(STORIES.find((s) => s.id === item.id)?.sleepCategory ? { sleepCategory: "bedtime" as const } : {})
+    }));
+    const remove = showEpisodeMenu(asHtml(menuSetup.root), ENGLISH_ONLY, itemsWithSleep, () => {}, {
       portraits: {},
       autoPlay: false,
-      onToggleAuto: (on) => toggled.push(on)
+      onToggleAuto: (on) => toggled.push(on),
+      windDown: false,
+      onToggleWindDown: (on) => windDownToggled.push(on),
+      onSelectSong: (id) => pickedSongs.push(id),
+      onPlayAllLullabies: () => {
+        jukeboxStarts += 1;
+      }
     });
     const autoBtn = only(byAttr(menuSetup.root, "data-control", "auto"));
     expect(autoBtn.getAttribute("aria-pressed")).toBe("false");
     tap(autoBtn);
     expect(autoBtn.getAttribute("aria-pressed")).toBe("true");
     expect(toggled).toEqual([true]);
+
+    const windDownBtn = only(byAttr(menuSetup.root, "data-control", "wind-down"));
+    expect(windDownBtn.getAttribute("aria-pressed")).toBe("false");
+    tap(windDownBtn);
+    expect(windDownBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(windDownToggled).toEqual([true]);
+
+    const songsTab = only(byAttr(menuSetup.root, "data-category", "songs"));
+    tap(songsTab);
+    const songCards = byClass(menuSetup.root, "ww-song-card");
+    expect(songCards).toHaveLength(26);
+    tap(only(byAttr(menuSetup.root, "data-action", "play-lullabies")));
+    expect(jukeboxStarts).toBe(1);
     remove();
+
+    const songMenuSetup = setup();
+    const removeSongMenu = showEpisodeMenu(asHtml(songMenuSetup.root), ENGLISH_ONLY, itemsWithSleep, () => {}, {
+      portraits: {},
+      onSelectSong: (id) => pickedSongs.push(id)
+    });
+    const twinkleCard = only(byAttr(songMenuSetup.root, "data-song-id", "twinkleRest"));
+    tap(twinkleCard);
+    expect(pickedSongs).toEqual(["twinkleRest"]);
+    removeSongMenu();
+
+    const sleepCardSetup = setup();
+    const closeSleep = showOfflineCard(asHtml(sleepCardSetup.root), ENGLISH_ONLY, "", () => {}, { variant: "sleep" });
+    const sleepOverlay = only(byAttr(sleepCardSetup.root, "data-ui", "offline"));
+    expect(sleepOverlay.getAttribute("data-variant")).toBe("sleep");
+    expect(sleepOverlay.classList.contains("is-sleep")).toBe(true);
+    expect(byClass(sleepOverlay, "ww-sleep-moon")).toHaveLength(1);
+    expect(sleepOverlay.textContent).toContain("Shh... sweet dreams");
+    closeSleep();
   });
 });

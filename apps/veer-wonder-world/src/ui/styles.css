@@ -93,6 +93,68 @@ html.high-contrast {
   font-size: 112.5%;
 }
 
+/* Evening Wind-down circadian dusk palette (bypassed when high-contrast is active). */
+html.wind-down:not(.high-contrast) {
+  color-scheme: dark;
+  --ww-bg: #181324;
+  --ww-sky: #1e1830;
+  --ww-meadow: #251d38;
+  --ww-surface: #241d34;
+  --ww-line: #463a61;
+  --ww-line-strong: #7d6b9e;
+  --ww-ink: #f4e8d4;
+  --ww-ink-soft: #d3c4e8;
+  --ww-primary: #d8bff8;
+  --ww-primary-hover: #e5d2fc;
+  --ww-on-primary: #1c1529;
+  --ww-selected-bg: #362b4d;
+  --ww-selected-ink: #f4e8d4;
+  --ww-selected-line: #d8bff8;
+  --ww-focus-bg: #403018;
+  --ww-focus-ink: #fbe3a4;
+  --ww-keyword-bg: #fbe3a4;
+  --ww-keyword-ink: #1c1529;
+  --ww-switch-off: #665884;
+  --ww-switch-on: #d8bff8;
+  --ww-switch-thumb: #1c1529;
+  --ww-focus: #a3c6ff;
+  --ww-backdrop: rgba(12, 9, 20, 0.72);
+  --ww-control-bg: rgba(36, 29, 52, 0.94);
+  --ww-caption-bg: rgba(20, 16, 30, 0.92);
+  --ww-caption-ink: #f4e8d4;
+}
+
+html.wind-down:not(.high-contrast) .ww-start:not(.ww-boot) {
+  background: rgba(20, 15, 32, 0.76);
+}
+
+html.wind-down:not(.high-contrast) .ww-start:not(.ww-boot) > .ww-start-inner {
+  border-color: rgba(125, 107, 158, 0.65);
+  background: rgba(36, 29, 52, 0.94);
+  box-shadow: 0 18px 44px rgba(8, 5, 16, 0.45);
+}
+
+html.wind-down:not(.high-contrast) .ww-start-name {
+  background: linear-gradient(100deg, #f6dfb2 0%, #e7c8f8 48%, #f4b8c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: none;
+}
+
+html.wind-down:not(.high-contrast) .ww-loading-card {
+  background: rgba(36, 29, 52, 0.96);
+}
+
+html.wind-down:not(.high-contrast) .ww-world-pill:not(.is-active) {
+  background: var(--ww-surface);
+}
+
+html.wind-down:not(.high-contrast) .ww-card-world-tag {
+  border-color: rgba(244, 232, 212, 0.22);
+  background: rgba(28, 21, 41, 0.88);
+  color: #f4e8d4;
+}
+
 /* Page ------------------------------------------------------------------- */
 
 html {
@@ -319,15 +381,43 @@ b {
   border-color: var(--ww-line-strong);
 }
 
-.ww-auto-toggle.is-active {
+.ww-auto-toggle.is-active,
+.ww-wind-down-toggle.is-active {
   border-color: var(--ww-primary);
   background: var(--ww-primary);
   color: var(--ww-on-primary);
 }
 
-.ww-auto-toggle.is-active:hover {
+.ww-auto-toggle.is-active:hover,
+.ww-wind-down-toggle.is-active:hover {
   border-color: var(--ww-primary-hover);
   background: var(--ww-primary-hover);
+}
+
+/* Unobtrusive progressive luminance dimmer during the final 60 s of the sleep timer. */
+.ww-sleep-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  background: #120d1c;
+  opacity: var(--ww-sleep-dim, 0);
+  pointer-events: none;
+}
+
+.ww-sleep-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ww-tap);
+  padding: 0 12px;
+  border: 1px solid var(--ww-line);
+  border-radius: 999px;
+  background: var(--ww-control-bg);
+  color: var(--ww-ink-soft);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .ww-button {
@@ -421,6 +511,17 @@ b {
 /* Three segments in one row (the sound-effect level: off, soft, normal). */
 .ww-segmented-three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Four segments (play modes): roomy 2x2 grid on phones/start, 4 across inside wide parent sheet. */
+.ww-segmented-four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 561px) {
+  .ww-parent .ww-segmented-four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .ww-segment,
@@ -1142,12 +1243,123 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face .
   line-height: 1.45;
 }
 
-/* World filter strip ("All" + 6 toy-island worlds). */
+/* Category tabs ("All", "Sleep & lullabies", "Songs", "Stories", "Games") + World filter strip. */
+.ww-category-tabs,
 .ww-world-filter {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.ww-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 1.5px solid var(--ww-line);
+  border-radius: 999px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-category-pill .ww-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ww-category-pill:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.ww-category-pill.is-active {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
+}
+
+.high-contrast .ww-category-pill {
+  border: 2px solid #000000;
+  background: #ffffff;
+  color: #000000;
+}
+
+.high-contrast .ww-category-pill.is-active {
+  background: #000000;
+  color: #ffffff;
+}
+
+.ww-songs-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.ww-songs-header .ww-menu-heading {
+  margin-top: 0;
+}
+
+.ww-lullaby-jukebox-btn {
+  border-color: var(--ww-primary);
+  background: var(--ww-selected-bg);
+  color: var(--ww-selected-ink);
+}
+
+.ww-song-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-height: 124px;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--ww-line);
+  border-radius: var(--ww-radius);
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(42, 38, 56, 0.05);
+}
+
+.ww-song-card:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.high-contrast .ww-song-card {
+  box-shadow: none;
+}
+
+.ww-song-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ww-dot, #d5d9e2);
+  color: #2a2638;
+}
+
+.ww-song-badge .ww-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.high-contrast .ww-song-badge {
+  border: 2px solid #000000;
+  background: #ffffff;
+  color: #000000;
 }
 
 .ww-world-pill {
@@ -1218,8 +1430,14 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face .
   list-style: none;
 }
 
-.ww-menu-cell {
+.ww-menu-cell,
+.ww-song-cell {
   display: flex;
+}
+
+.ww-menu-cell[hidden],
+.ww-song-cell[hidden] {
+  display: none;
 }
 
 .ww-card {
@@ -2018,6 +2236,44 @@ html.high-contrast .ww-caption-line {
   min-height: 54px;
   padding: 0 28px;
   font-size: 1.0625rem;
+}
+
+/* Quiet Dark Goodnight Card (bedtime completion & sleep-timer end). */
+html:not(.high-contrast) .ww-offline-overlay.is-sleep {
+  background: #14101c;
+}
+
+html:not(.high-contrast) .ww-offline.is-sleep {
+  border-color: #4a3d63;
+  background: #1e1829;
+  color: #f3e6d0;
+  box-shadow: 0 18px 44px rgba(6, 4, 12, 0.55);
+}
+
+html:not(.high-contrast) .ww-offline.is-sleep .ww-note-small {
+  color: #d5c5eb;
+}
+
+html:not(.high-contrast) .ww-offline.is-sleep .ww-offline-done {
+  border-color: #cbb6f0;
+  background: #cbb6f0;
+  color: #1b1526;
+}
+
+html:not(.high-contrast) .ww-offline.is-sleep .ww-offline-done:hover {
+  border-color: #decbf8;
+  background: #decbf8;
+}
+
+.ww-sleep-moon {
+  width: 56px;
+  height: 42px;
+  flex: none;
+}
+
+.ww-offline-sleep-sub {
+  max-width: 24rem;
+  margin: 0;
 }
 
 /* Small screens and short landscape screens ----------------------------------------------- */

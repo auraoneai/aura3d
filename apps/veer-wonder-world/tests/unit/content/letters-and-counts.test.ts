@@ -13,12 +13,14 @@ import { episode as gogoAbcTrain } from "../../../src/content/episodes/gogo-abc-
 import { episode as countingCookies } from "../../../src/content/episodes/counting-cookies.js";
 import { episode as numberBalloonRescue } from "../../../src/content/episodes/number-balloon-rescue.js";
 import { episode as littleBirthdayParty } from "../../../src/content/episodes/little-birthday-party.js";
+import { episode as threeSleepySheep } from "../../../src/content/episodes/e23-three-sleepy-sheep.js";
 import { activity as buildAndTumble } from "../../../src/content/activities/build-and-tumble.js";
 import * as alphabetZooText from "../../../src/localization/en/episodes/alphabet-zoo.js";
 import * as gogoAbcTrainText from "../../../src/localization/en/episodes/gogo-abc-train.js";
 import * as countingCookiesText from "../../../src/localization/en/episodes/counting-cookies.js";
 import * as numberBalloonRescueText from "../../../src/localization/en/episodes/number-balloon-rescue.js";
 import * as littleBirthdayPartyText from "../../../src/localization/en/episodes/little-birthday-party.js";
+import { EN_E23 } from "../../../src/localization/en/episodes-sleep.js";
 import * as buildAndTumbleText from "../../../src/localization/en/activities/build-and-tumble.js";
 
 function pack(text: { readonly lines: Record<string, string>; readonly strings: Record<string, string> }): LocalePack {
@@ -146,11 +148,12 @@ describe("numbers: spoken counts match visible objects (PRD 04 C05, QA-E08)", ()
     [countingCookies, pack(countingCookiesText)],
     [numberBalloonRescue, pack(numberBalloonRescueText)],
     [littleBirthdayParty, pack(littleBirthdayPartyText)],
-    [buildAndTumble, pack(buildAndTumbleText)]
+    [buildAndTumble, pack(buildAndTumbleText)],
+    [threeSleepySheep, pack(EN_E23)]
   ];
 
-  it("lists E05, E11, E16 and G08 as the counting stories", () => {
-    expect(COUNT_SEQUENCES.map((sequence) => sequence.code)).toEqual(["e05", "e11", "e16", "g08"]);
+  it("lists E05, E11, E16, G08 and E23 as the counting stories", () => {
+    expect(COUNT_SEQUENCES.map((sequence) => sequence.code)).toEqual(["e05", "e11", "e16", "g08", "e23"]);
     for (const [story] of COUNTING) expect(countSequenceFor(story.id)?.code).toBe(storyCode(story));
   });
 

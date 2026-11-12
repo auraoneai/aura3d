@@ -67,14 +67,18 @@ function has(record: object, key: string): boolean {
 
 export const CHARACTER_IDS = complete<CharacterId>()(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"]);
 export const SPEAKER_IDS = complete<SpeakerId>()(["narrator", "momo", "lulu", "sheru", "gogo", "lumi", "peeko", "robot"]);
-export const WORLD_IDS = complete<WorldId>()(["meadow", "music-garden", "peekaboo-barn", "station", "learning-cloud", "home-nook"]);
+export const WORLD_IDS = complete<WorldId>()([
+  "meadow", "music-garden", "peekaboo-barn", "station", "learning-cloud", "home-nook",
+  "moonlit-nursery", "starlight-cloud"
+]);
 export const PROP_ASSET_IDS = complete<PropAssetId>()([
   "gogoCarriage", "teddy", "robot", "cow", "sheep", "duck", "horse", "bird", "butterfly", "ball", "bubbleWand", "bubble",
   "cookie", "plate", "mirror", "door", "letterB", "letterA", "apple", "banana", "cake", "drum", "shaker", "toyPiano",
   "picnicBasket", "car", "sponge", "towel", "toyBlock", "lift", "flower", "flowerBud", "tree", "bush", "barn", "station",
   "tunnel", "house", "bed", "sink", "table", "chair", "cushion", "toyBox", "bench", "colourMachine", "storyBox",
   "pastryCircle", "pastrySquare", "pastryTriangle", "hat", "stompStone", "cloud", "balloon", "letterBLower", "letterALower",
-  "toothbrush", "sun", "candleFlame", "partyHat"
+  "toothbrush", "sun", "candleFlame", "partyHat",
+  "moon", "cradle", "cribMobile", "musicBox", "nightlight", "blanket", "sleepyCloud"
 ]);
 export const SPOT_IDS = complete<SpotId>()([
   "center", "left", "right", "farLeft", "farRight", "front", "frontLeft", "frontRight", "back", "backLeft", "backRight",
@@ -84,7 +88,7 @@ export const OFF_SPOTS: readonly SpotId[] = ["offLeft", "offRight", "offTop", "o
 export const GESTURES = complete<Gesture>()([
   "idle", "wave", "talk", "point", "happy", "cheer", "dance", "hop", "nod", "look", "sleep", "eat", "wake", "sway", "mirror",
   "pickUp", "shrug", "wag", "sniff", "bark", "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow",
-  "surprise", "wait"
+  "surprise", "wait", "yawn", "rock", "twinkle"
 ]);
 export const OBJECT_ACTIONS = complete<ObjectAction>()([
   "roll", "pop", "open", "close", "bounce", "wobble", "spin", "fall", "rise", "glow", "shrink", "grow", "bloom", "wash", "dry",
@@ -110,20 +114,23 @@ const CAMERA_SET = set(CAMERA_PRESETS);
 const BEAT_KIND_SET = set(BEAT_KINDS);
 
 // ---------------------------------------------------------------------------
-// Canonical catalog (MASTER-PROMPT section 2; PRD 05 sections 2-3).
+// Canonical catalog (MASTER-PROMPT section 2; PRD 05 sections 2-3; SleepingBaby-Songs-Games.PRD).
 
 /** Episode slugs in canonical order: index + 1 is the episode number. */
 export const EPISODE_SLUGS = [
   "momo-magic-mouth", "peekaboo-palace", "alphabet-zoo", "gogo-abc-train", "counting-cookies",
   "lulu-dino-dance", "magic-colour-machine", "wheres-sheru", "baby-animal-orchestra", "momos-hungry-belly",
   "number-balloon-rescue", "magic-shape-bakery", "silly-robot-factory", "lost-teddy-adventure", "momo-bubble-universe",
-  "little-birthday-party", "sheru-big-adventure", "whos-at-the-door", "momos-day", "little-story-machine"
+  "little-birthday-party", "sheru-big-adventure", "whos-at-the-door", "momos-day", "little-story-machine",
+  "lumi-moonlit-lullaby", "teddy-warm-blanket", "three-sleepy-sheep", "gogo-quiet-night-train",
+  "peeko-cricket-garden", "drifting-dream-clouds"
 ] as const;
 
 /** Activity slugs in canonical order: index + 1 is the activity number. */
 export const ACTIVITY_SLUGS = [
   "bubble-garden", "gogo-train", "sheru-ball", "peekaboo-animal-barn", "teddy-snack-picnic", "splashy-car-wash",
-  "little-lift", "build-and-tumble", "family-doorbells", "bears-little-band", "magic-sound-garden", "find-my-real-toy"
+  "little-lift", "build-and-tumble", "family-doorbells", "bears-little-band", "magic-sound-garden", "find-my-real-toy",
+  "tuck-in-friends", "starlight-music-box", "goodnight-little-lights", "cloud-sheep-hush"
 ] as const;
 
 /** The P1 pilot: episodes 1, 2, 5, 6, 9, 17 and activities 1-3 (PRD 05 section 0). */
@@ -164,9 +171,9 @@ export const MAX_ROUNDS = 5;
 /** The PRD's 4-6 s turn proposal; content may override per beat. */
 export const DEFAULT_WAIT_MS = 5000;
 export const MIN_WAIT_MS = 2000;
-/** Long enough for "Find My Real Toy" style real-world turns; always finite. */
+/** Long enough for "Find My Real Toy" style real-world turns and calm 52 s lullaby beats; always finite. */
 export const MAX_WAIT_MS = 60000;
-export const MAX_HOLD_MS = 30000;
+export const MAX_HOLD_MS = 60000;
 /** One short sentence or two linked phrases (PRD 02 section 5). */
 export const MAX_LINE_WORDS = 12;
 /** Fallback for a line with no text at all (matches the runtime fallback). */
@@ -233,16 +240,17 @@ export function familyNamesIn(text: string, guardNames: readonly string[] = []):
 
 /** Every UI string key the app shell and UI modules look up (src/localization/en/ui.ts defines them). */
 export const REQUIRED_UI_KEYS: readonly string[] = [
-  "ui.start.tap", "ui.start.title", "ui.start.sound", "ui.mode.play", "ui.mode.watch", "ui.mode.auto", "ui.mode.label",
-  "ui.menu.episodes", "ui.menu.activities", "ui.menu.title", "ui.menu.label",
+  "ui.start.tap", "ui.start.title", "ui.start.sound", "ui.mode.play", "ui.mode.watch", "ui.mode.auto", "ui.mode.windDown", "ui.mode.label",
+  "ui.menu.episodes", "ui.menu.activities", "ui.menu.sleep", "ui.menu.songs", "ui.menu.all", "ui.menu.playLullabies", "ui.menu.title", "ui.menu.label",
   "ui.parent.title", "ui.parent.open", "ui.parent.mode", "ui.parent.display", "ui.parent.music", "ui.parent.sound",
   "ui.parent.sfx", "ui.parent.sfxHelp", "ui.parent.sfx.off", "ui.parent.sfx.soft", "ui.parent.sfx.normal",
+  "ui.parent.windDown", "ui.parent.windDownHelp", "ui.parent.sleepTimer", "ui.parent.sleepTimerHelp", "ui.parent.sleepTimerOff",
   "ui.parent.captions", "ui.parent.reducedMotion", "ui.parent.highContrast", "ui.parent.wait", "ui.parent.waitHelp",
   "ui.parent.seconds", "ui.parent.words", "ui.parent.wordsHelp", "ui.parent.wordsEmpty", "ui.parent.wordsCount",
   "ui.parent.locale", "ui.parent.language", "ui.parent.locale.en",
   "ui.parent.exit", "ui.parent.back", "ui.parent.close", "ui.parent.clear", "ui.parent.reset",
   "ui.pause", "ui.resume", "ui.replay", "ui.allDone", "ui.parentButton", "ui.controls.label", "ui.confirm",
-  "ui.offline.title", "ui.offline.done",
+  "ui.offline.title", "ui.offline.done", "ui.sleep.title", "ui.sleep.body",
   "ui.gate.title", "ui.gate.hold", "ui.gate.button", "ui.gate.holding", "ui.gate.again", "ui.gate.cancel", "ui.gate.note",
   "ui.note.title", "ui.note.start", "ui.note.safety", "ui.note.privacy", "ui.note.links", "ui.note.aap", "ui.note.asha",
   "ui.guide.title", "ui.guide.1", "ui.guide.2", "ui.guide.3", "ui.guide.4",
@@ -1507,7 +1515,7 @@ export function validateStory(story: StorySpec, locale: LocalePack, opts: Valida
 // ---------------------------------------------------------------------------
 // Libraries (songs, effects, beds, words, letters) and the catalog.
 
-const STORY_CODE_PATTERN = /^(?:e(?:0[1-9]|1\d|20)|g(?:0[1-9]|1[0-2]))$/;
+const STORY_CODE_PATTERN = /^(?:e(?:0[1-9]|1\d|2[0-6])|g(?:0[1-9]|1[0-6]))$/;
 
 /** Checks the shared song, effect, bed, word and letter tables (`guardNames` as in ValidateOptions). */
 export function validateLibraries(locale?: LocalePack, guardNames: readonly string[] = []): string[] {
@@ -1518,12 +1526,14 @@ export function validateLibraries(locale?: LocalePack, guardNames: readonly stri
     if (song.titleKey !== `ui.song.${id}`) errors.push(`${tag}: titleKey must be "ui.song.${id}"`);
     if (locale && (locale.strings[song.titleKey] ?? "").trim() === "") errors.push(`${tag}: title ${song.titleKey} has no text in the ${locale.locale} locale`);
     if (song.vocal === "sung" && song.lyrics.length === 0) errors.push(`${tag}: a sung song needs lyrics`);
+    if (song.vocal === "instrumental" && song.lyrics.length > 0) errors.push(`${tag}: an instrumental song must have empty lyrics`);
     if (song.motions.length !== song.lyrics.length) errors.push(`${tag}: ${song.motions.length} motions for ${song.lyrics.length} lyric lines; give one motion per line`);
     for (const motion of song.motions) if (!GESTURE_SET.has(motion)) errors.push(`${tag}: motion "${motion}" is not a gesture`);
-    if (!Number.isFinite(song.bpm) || song.bpm < 50 || song.bpm > 140) errors.push(`${tag}: bpm ${song.bpm} must be 50-140 (slow and clear)`);
+    const minBpm = song.sleep ? 50 : 60;
+    if (!Number.isFinite(song.bpm) || song.bpm < minBpm || song.bpm > 140) errors.push(`${tag}: bpm ${song.bpm} must be ${minBpm}-140 (slow and clear)`);
     if (!song.style.includes(`${song.bpm} bpm`)) errors.push(`${tag}: style must name the tempo "${song.bpm} bpm"`);
     const seconds = songLengthSec(song);
-    const [minSec, maxSec] = id === "hello" || id === "allDone" ? [8, 15] : [15, 30];
+    const [minSec, maxSec] = id === "hello" || id === "allDone" ? [8, 15] : song.sleep ? [20, 56] : [15, 30];
     if (seconds < minSec || seconds > maxSec) errors.push(`${tag}: generated length ${seconds} s must be ${minSec}-${maxSec} s`);
     for (const lyric of song.lyrics) {
       for (const phrase of bannedPhrasesIn(lyric)) errors.push(`${tag}: lyric "${lyric}" uses the banned phrase "${phrase}"`);

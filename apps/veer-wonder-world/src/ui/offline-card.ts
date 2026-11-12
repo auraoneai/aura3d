@@ -25,6 +25,8 @@ export interface OfflineCardOptions {
   readonly cast?: readonly CharacterId[];
   /** Optional portrait map override (defaults to PORTRAITS). */
   readonly portraits?: PortraitMap;
+  /** `"sleep"` renders the quiet low-blue-light dark goodnight card after bedtime wind-down or sleep timer. */
+  readonly variant?: "day" | "sleep";
 }
 
 export type OfflineCardContent = OfflineCardOptions;
@@ -73,6 +75,30 @@ function offlineWordRow(doc: Document, words: readonly OfflineCardWord[]): HTMLE
   return list;
 }
 
+function sleepMoonSvg(doc: Document): SVGSVGElement {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = doc.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 64 48");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  svg.setAttribute("class", "ww-sleep-moon");
+  const moon = doc.createElementNS(ns, "path");
+  moon.setAttribute("d", "M38 10A15 15 0 1 0 48 34A12 12 0 0 1 38 10Z");
+  moon.setAttribute("fill", "#f5d796");
+  const starA = doc.createElementNS(ns, "circle");
+  starA.setAttribute("cx", "18");
+  starA.setAttribute("cy", "16");
+  starA.setAttribute("r", "2.2");
+  starA.setAttribute("fill", "#fae7be");
+  const starB = doc.createElementNS(ns, "circle");
+  starB.setAttribute("cx", "48");
+  starB.setAttribute("cy", "14");
+  starB.setAttribute("r", "1.8");
+  starB.setAttribute("fill", "#fae7be");
+  svg.append(moon, starA, starB);
+  return svg;
+}
+
 /**
  * Shows the card. `text` is the story's resolved offline-play line (for
  * example the `e17.offline` string). `onDone` runs once, on the button (or
@@ -80,15 +106,22 @@ function offlineWordRow(doc: Document, words: readonly OfflineCardWord[]): HTMLE
  */
 export function showOfflineCard(root: HTMLElement, locale: UiLocale, text: string, onDone: () => void, options: OfflineCardOptions = {}): () => void {
   const doc = docOf(root);
+  const isSleep = options.variant === "sleep";
   const titleId = uniqueId("ww-offline-title");
   const textId = uniqueId("ww-offline-text");
   const note = (options.note ?? "").trim();
   const noteId = note === "" ? null : uniqueId("ww-offline-note");
   const cast = options.cast && options.cast.length > 0 ? options.cast : CHARACTER_IDS;
   const portraits = options.portraits ?? PORTRAITS;
-  const wordsNode = options.words ? offlineWordRow(doc, options.words) : null;
+  const wordsNode = !isSleep && options.words ? offlineWordRow(doc, options.words) : null;
+  const headingText = isSleep ? uiText(locale, "ui.sleep.title") : uiText(locale, "ui.offline.title");
+  const sleepBodyText = uiText(locale, "ui.sleep.body");
+  const mainBodyText = isSleep && text.trim() === "" ? sleepBodyText : text;
 
-  const overlay = el(doc, "div", { className: "ww-overlay ww-offline-overlay", attrs: { "data-ui": "offline" } });
+  const overlay = el(doc, "div", {
+    className: isSleep ? "ww-overlay ww-offline-overlay is-sleep" : "ww-overlay ww-offline-overlay",
+    attrs: { "data-ui": "offline", "data-variant": isSleep ? "sleep" : "day" }
+  });
   const done = el(doc, "button", {
     className: "ww-button ww-button-primary ww-offline-done",
     text: uiText(locale, "ui.offline.done"),
@@ -98,7 +131,7 @@ export function showOfflineCard(root: HTMLElement, locale: UiLocale, text: strin
     doc,
     "section",
     {
-      className: "ww-dialog ww-offline",
+      className: isSleep ? "ww-dialog ww-offline is-sleep" : "ww-dialog ww-offline",
       attrs: {
         role: "dialog",
         "aria-modal": "true",
@@ -107,10 +140,14 @@ export function showOfflineCard(root: HTMLElement, locale: UiLocale, text: strin
       }
     },
     [
+      ...(isSleep ? [sleepMoonSvg(doc)] : []),
       offlineCastRow(doc, cast, portraits),
-      el(doc, "h2", { className: "ww-offline-title", text: uiText(locale, "ui.offline.title"), attrs: { id: titleId } }),
+      el(doc, "h2", { className: "ww-offline-title", text: headingText, attrs: { id: titleId } }),
       ...(wordsNode ? [wordsNode] : []),
-      el(doc, "p", { className: "ww-offline-text", text, attrs: { id: textId } }),
+      el(doc, "p", { className: "ww-offline-text", text: mainBodyText, attrs: { id: textId } }),
+      ...(isSleep && text.trim() !== "" && text.trim() !== sleepBodyText
+        ? [el(doc, "p", { className: "ww-offline-sleep-sub ww-note-small", text: sleepBodyText })]
+        : []),
       ...(noteId ? [el(doc, "p", { className: "ww-offline-note ww-note-small", text: note, attrs: { id: noteId, "data-ui": "offline-note" } })] : []),
       done
     ]

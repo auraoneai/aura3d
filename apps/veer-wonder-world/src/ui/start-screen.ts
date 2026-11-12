@@ -63,11 +63,12 @@ const PORTRAIT_SHIFT: Partial<Record<CharacterId, string>> = { gogo: "13%" };
 const MODE_HINTS: Readonly<Record<PlayMode, string>> = {
   "play-together": "Pauses for a turn",
   "watch-sing": "Plays right through",
-  auto: "Continuous stories"
+  auto: "Continuous stories",
+  "wind-down": "Bedtime & lullabies"
 };
 
 function isPlayMode(value: string | null): value is PlayMode {
-  return value === "play-together" || value === "watch-sing" || value === "auto";
+  return value === "play-together" || value === "watch-sing" || value === "auto" || value === "wind-down";
 }
 
 /** Adds concise caregiver descriptions under the two start-screen mode segments without changing radio labels. */

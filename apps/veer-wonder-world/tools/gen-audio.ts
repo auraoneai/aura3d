@@ -10,10 +10,11 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SONGS } from "../src/content/songs.js";
+import { SONGS, songLengthSec } from "../src/content/songs.js";
 import { SFX } from "../src/content/sfx.js";
 import { MUSIC_BEDS } from "../src/content/music.js";
-import type { BeatSpec, LineRef, SpeakerId, StorySpec } from "../src/types.js";
+import { storyBeats } from "../src/runtime/beat-runner.js";
+import type { LineRef, SpeakerId, StorySpec } from "../src/types.js";
 
 const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PRISM = "https://prism.auraone.ai/v1/voice/elevenlabs";
@@ -92,8 +93,15 @@ async function post(path: string, body: unknown, file: string, kind: string): Pr
 }
 
 function allLines(story: StorySpec): LineRef[] {
-  const beats: BeatSpec[] = story.kind === "episode" ? [...story.beats] : [...story.intro, ...story.round, ...story.outro];
-  return beats.flatMap((b) => [...b.lines, ...(b.response?.lines ?? [])]);
+  const beats = storyBeats(story);
+  const out: LineRef[] = [];
+  for (const b of beats) {
+    out.push(...b.lines, ...(b.response?.lines ?? []));
+    for (const r of Object.values(b.responseByTarget ?? {})) {
+      if (r?.lines) out.push(...r.lines);
+    }
+  }
+  return out;
 }
 
 interface Job { kind: "lines" | "songs" | "beds" | "sfx"; id: string; file: string; prompt: string; run: () => Promise<Prov> }
@@ -127,8 +135,11 @@ for (const story of STORIES) {
 for (const [id, s] of Object.entries(SONGS)) {
   const file = join(app, "src", "assets", "audio", "songs", `${id}.mp3`);
   const lyrics = s.lyrics.join(" / ");
-  const prompt = s.vocal === "sung" ? `${s.style}. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: ${lyrics}` : `${s.style}. Instrumental only, no vocals.`;
-  const seconds = Math.min(30, Math.max(10, Math.round((s.lyrics.length * 60 * 4) / Math.max(60, s.bpm))));
+  const prompt =
+    s.vocal === "sung" && s.lyrics.length > 0
+      ? `${s.style}. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: ${lyrics}`
+      : `${s.style}. Gentle soothing baby lullaby, original melody, slow steady ${s.bpm} bpm. Instrumental only, no vocals.`;
+  const seconds = songLengthSec(s);
   jobs.push({ kind: "songs", id, file, prompt, run: async () => {
     const k = await post(`/v1/music?output_format=mp3_44100_128`, { prompt: prompt.slice(0, 2000), music_length_ms: seconds * 1000 }, file, "songs");
     return { file: rel(file), provider: "elevenlabs", endpoint: "music", prismKey: k, tier: "", prompt, date: today };

@@ -1,15 +1,16 @@
-// Story menu (PRD 04 E02, PRD 01 section 6, PRD 06 QA-P04; WP-7). A finite
-// grid: the 20 episodes, then the 12 activities, with an optional world filter
-// strip ("All" + the six toy-island worlds, defaulting to "All"). Inside each
-// section the P1 pilot stories come first, then P2, each group in canonical
-// order. Every story is listed once with its world diorama header, canonical
-// number, host portrait (or host colour), title, host name, calm duration chip,
-// and an optional "Focus word" badge when a story's target words overlap the
-// parent's local word list. No recommendations, no "up next", no autoplay.
+// Story & lullaby menu (PRD 04 E02, PRD 01 section 6, PRD 06 QA-P04; WP-6/WP-7).
+// A finite, calm storybook shelf: category filter tabs ("All", "Sleep & lullabies",
+// "Songs", "Stories", "Games"), world filter pills ("All" + the eight worlds),
+// the 26 episodes, the 16 activities, and the 26 original songs (including 11
+// hushed bedtime lullabies and a one-tap "Play all lullabies" jukebox). Inside
+// each story section the P1 pilot stories come first, then P2, each group in
+// canonical order. Every story is listed once as `.ww-card`; song cards use
+// `.ww-song-card` so `.ww-card` queries stay strictly 1:1 with catalog stories.
 
 import { storyById } from "../content/catalog.js";
+import { SLEEP_SONG_IDS, SONGS, SONG_IDS, songLengthSec } from "../content/songs.js";
 import { HOST_HOME_WORLD, WORLD_ORDER, WORLD_THEMES, createWorldSceneSvg } from "./world-art.js";
-import type { CharacterId, Phase, WorldId } from "../types.js";
+import type { CharacterId, Phase, SleepCategory, SongId, WorldId } from "../types.js";
 import {
   CHARACTER_COLOURS,
   docOf,
@@ -32,13 +33,13 @@ import { loadSettings, safeLocalStorage } from "./settings-store.js";
 export interface MenuItem {
   /** Story id (the content slug). */
   readonly id: string;
-  /** Line-key prefix: e01-e20 or g01-g12. */
+  /** Line-key prefix: e01-e26 or g01-g16. */
   readonly code: string;
   /** Locale key of the title, for example "e17.title". */
   readonly titleKey: string;
   readonly kind: "episode" | "activity";
   readonly host: CharacterId;
-  /** Number in the canonical list: 1-20 for episodes, 1-12 for activities. */
+  /** Number in the canonical list: 1-26 for episodes, 1-16 for activities. */
   readonly number: number;
   /**
    * The story's build phase (`StorySpec.phase`). P1 pilot stories are listed
@@ -48,6 +49,8 @@ export interface MenuItem {
   readonly phase?: Phase;
   /** Optional world override (resolved from catalog `StorySpec.world` when omitted). */
   readonly world?: WorldId;
+  /** Optional bedtime shelf tag (resolved from catalog `StorySpec.sleepCategory` when omitted). */
+  readonly sleepCategory?: SleepCategory;
   /** Optional target vocabulary ids (resolved from catalog `StorySpec.targetWords` when omitted). */
   readonly targetWords?: readonly string[];
   /** Optional episode duration in seconds (resolved from catalog `EpisodeSpec.durationSec` when omitted). */
@@ -60,6 +63,7 @@ export interface MenuItem {
 export type PortraitMap = Readonly<Partial<Record<CharacterId, string>>>;
 
 export type WorldFilterValue = WorldId | "all";
+export type MenuCategoryValue = "all" | "sleep" | "songs" | "episodes" | "activities";
 
 export interface EpisodeMenuOptions {
   /** When given, a "Grown-ups" button in the header calls it (the app runs the parent gate). */
@@ -68,6 +72,14 @@ export interface EpisodeMenuOptions {
   readonly autoPlay?: boolean;
   /** One-tap continuous Auto-play toggle in the menu header. */
   readonly onToggleAuto?: (next: boolean) => void;
+  /** Whether evening Wind-down mode is currently active (`mode === "wind-down"` or `windDown === true`). */
+  readonly windDown?: boolean;
+  /** One-tap Wind-down toggle in the menu header. */
+  readonly onToggleWindDown?: (next: boolean) => void;
+  /** Starts a standalone lullaby or sing-along song stage scene. */
+  readonly onSelectSong?: (songId: SongId) => void;
+  /** Starts the continuous 11-song hushed Lullaby Jukebox. */
+  readonly onPlayAllLullabies?: () => void;
   /**
    * The 3D stage could not start on this device (no WebGL2, a blocked GPU): a
    * calm status line under the title says so, instead of a picked story
@@ -80,12 +92,43 @@ export interface EpisodeMenuOptions {
   readonly selectedWords?: readonly string[];
   /** Initial world filter ("all" by default so every episode and activity is visible initially). */
   readonly initialWorld?: WorldFilterValue;
+  /** Initial category tab ("all" by default). */
+  readonly initialCategory?: MenuCategoryValue;
 }
 
 const SECTIONS: readonly { readonly kind: MenuItem["kind"]; readonly key: UiStringKey }[] = [
   { kind: "episode", key: "ui.menu.episodes" },
   { kind: "activity", key: "ui.menu.activities" }
 ];
+
+export const SONG_WORLDS: Readonly<Record<SongId, { readonly world: WorldId; readonly host: CharacterId }>> = {
+  hello: { world: "meadow", host: "momo" },
+  allDone: { world: "home-nook", host: "momo" },
+  ballRolls: { world: "meadow", host: "momo" },
+  goStop: { world: "music-garden", host: "lulu" },
+  faceSong: { world: "home-nook", host: "peeko" },
+  peekaboo: { world: "peekaboo-barn", host: "peeko" },
+  animalBand: { world: "peekaboo-barn", host: "sheru" },
+  countToThree: { world: "learning-cloud", host: "lumi" },
+  bubbleSong: { world: "meadow", host: "lulu" },
+  birthday: { world: "home-nook", host: "momo" },
+  colours: { world: "learning-cloud", host: "lumi" },
+  shapes: { world: "home-nook", host: "momo" },
+  trainSong: { world: "station", host: "gogo" },
+  routine: { world: "home-nook", host: "momo" },
+  abc: { world: "learning-cloud", host: "lumi" },
+  lullaby: { world: "moonlit-nursery", host: "momo" },
+  twinkleRest: { world: "starlight-cloud", host: "lumi" },
+  rockingCradle: { world: "moonlit-nursery", host: "momo" },
+  sleepyClouds: { world: "starlight-cloud", host: "lulu" },
+  teddyGoodnight: { world: "moonlit-nursery", host: "sheru" },
+  countingSheepSong: { world: "starlight-cloud", host: "peeko" },
+  warmBlanketSong: { world: "moonlit-nursery", host: "momo" },
+  cricketHush: { world: "music-garden", host: "lulu" },
+  dreamBoatSong: { world: "starlight-cloud", host: "gogo" },
+  moonMusicBox: { world: "moonlit-nursery", host: "momo" },
+  starlightHum: { world: "starlight-cloud", host: "lumi" }
+};
 
 /** Listing order of the phases: the P1 pilot first (PRD 04 E02). */
 const PHASE_ORDER: Readonly<Record<Phase, number>> = { P1: 0, P2: 1 };
@@ -175,12 +218,26 @@ interface FilterPillEntry {
   readonly button: HTMLButtonElement;
 }
 
+interface CategoryPillEntry {
+  readonly value: MenuCategoryValue;
+  readonly button: HTMLButtonElement;
+}
+
 interface CardCellEntry {
   readonly world: WorldId;
+  readonly isSleep: boolean;
+  readonly kind: MenuItem["kind"];
+  readonly cell: HTMLLIElement;
+}
+
+interface SongCellEntry {
+  readonly world: WorldId;
+  readonly isSleep: boolean;
   readonly cell: HTMLLIElement;
 }
 
 interface SectionEntry {
+  readonly kind: MenuItem["kind"];
   readonly heading: HTMLHeadingElement;
   readonly grid: HTMLUListElement;
   readonly cells: readonly CardCellEntry[];
@@ -207,8 +264,34 @@ export function showEpisodeMenu(
   const inner = el(doc, "div", { className: "ww-menu-inner" });
   const title = el(doc, "h1", { className: "ww-menu-title", text: uiText(locale, "ui.menu.title"), attrs: { id: titleId, tabindex: "-1" } });
   const header = el(doc, "div", { className: "ww-menu-header" }, [title]);
-  if (options.onToggleAuto || options.onParent) {
-    const actions = options.onToggleAuto ? el(doc, "div", { className: "ww-menu-actions" }) : header;
+  if (options.onToggleWindDown || options.onToggleAuto || options.onParent) {
+    const hasPillToggle = Boolean(options.onToggleWindDown || options.onToggleAuto);
+    const actions = hasPillToggle ? el(doc, "div", { className: "ww-menu-actions" }) : header;
+    if (options.onToggleWindDown) {
+      const onToggleWindDown = options.onToggleWindDown;
+      let windDownOn = options.windDown === true;
+      const windBtn = el(
+        doc,
+        "button",
+        {
+          className: "ww-pill-button ww-wind-down-toggle",
+          attrs: { type: "button", "data-control": "wind-down", "aria-pressed": String(windDownOn) }
+        },
+        [icon(doc, "moon"), el(doc, "span", { text: uiText(locale, "ui.mode.windDown") })]
+      );
+      const syncWind = (): void => {
+        windBtn.classList.toggle("is-active", windDownOn);
+        windBtn.setAttribute("aria-pressed", String(windDownOn));
+        windBtn.dataset["windDown"] = String(windDownOn);
+      };
+      syncWind();
+      windBtn.addEventListener("click", () => {
+        windDownOn = !windDownOn;
+        syncWind();
+        onToggleWindDown(windDownOn);
+      });
+      actions.appendChild(windBtn);
+    }
     if (options.onToggleAuto) {
       const onToggleAuto = options.onToggleAuto;
       let autoOn = options.autoPlay === true;
@@ -249,15 +332,31 @@ export function showEpisodeMenu(
     );
   }
 
-  // World filter strip ("All" + 6 toy-island worlds) with roving tabindex.
+  let activeCategory: MenuCategoryValue = options.initialCategory ?? "all";
   let activeWorld: WorldFilterValue = options.initialWorld ?? "all";
+
+  // Category filter strip ("All", "Sleep & lullabies", "Songs", "Stories", "Games").
+  const categoryBar = el(doc, "div", {
+    className: "ww-category-tabs",
+    attrs: { role: "toolbar", "aria-label": "Filter by category", "data-ui": "category-filter" }
+  });
+  const categoryPills: CategoryPillEntry[] = [];
+  const categoryDefs: readonly { readonly value: MenuCategoryValue; readonly label: string; readonly iconName?: "moon" | "music" }[] = [
+    { value: "all", label: uiText(locale, "ui.menu.all") },
+    { value: "sleep", label: uiText(locale, "ui.menu.sleep"), iconName: "moon" },
+    { value: "songs", label: uiText(locale, "ui.menu.songs"), iconName: "music" },
+    { value: "episodes", label: uiText(locale, "ui.menu.episodes") },
+    { value: "activities", label: uiText(locale, "ui.menu.activities") }
+  ];
+
+  // World filter strip ("All" + 8 worlds) with roving tabindex.
   const filterBar = el(doc, "div", {
     className: "ww-world-filter",
     attrs: { role: "toolbar", "aria-label": "Filter by world", "data-ui": "world-filter" }
   });
   const filterPills: FilterPillEntry[] = [];
   const filterDefs: readonly { readonly value: WorldFilterValue; readonly label: string; readonly dot?: string; readonly bg?: string }[] = [
-    { value: "all", label: "All" },
+    { value: "all", label: uiText(locale, "ui.menu.all") },
     ...WORLD_ORDER.map((worldId) => {
       const theme = WORLD_THEMES[worldId];
       return {
@@ -270,9 +369,17 @@ export function showEpisodeMenu(
   ];
 
   const sectionEntries: SectionEntry[] = [];
+  const songCellEntries: SongCellEntry[] = [];
+  let songsHeaderRow: HTMLElement | null = null;
+  let songsGrid: HTMLUListElement | null = null;
 
-  const applyWorldFilter = (nextWorld: WorldFilterValue): void => {
-    activeWorld = nextWorld;
+  const syncFilters = (): void => {
+    for (const entry of categoryPills) {
+      const active = entry.value === activeCategory;
+      entry.button.classList.toggle("is-active", active);
+      entry.button.setAttribute("aria-pressed", String(active));
+      entry.button.setAttribute("tabindex", active ? "0" : "-1");
+    }
     for (const entry of filterPills) {
       const active = entry.value === activeWorld;
       entry.button.classList.toggle("is-active", active);
@@ -280,9 +387,16 @@ export function showEpisodeMenu(
       entry.button.setAttribute("tabindex", active ? "0" : "-1");
     }
     for (const sectionEntry of sectionEntries) {
+      const kindAllowed =
+        activeCategory === "all" ||
+        activeCategory === "sleep" ||
+        (activeCategory === "episodes" && sectionEntry.kind === "episode") ||
+        (activeCategory === "activities" && sectionEntry.kind === "activity");
       let visibleCount = 0;
       for (const cellEntry of sectionEntry.cells) {
-        const match = activeWorld === "all" || cellEntry.world === activeWorld;
+        const worldMatch = activeWorld === "all" || cellEntry.world === activeWorld;
+        const categoryMatch = kindAllowed && (activeCategory !== "sleep" || cellEntry.isSleep);
+        const match = worldMatch && categoryMatch;
         cellEntry.cell.hidden = !match;
         if (match) visibleCount += 1;
       }
@@ -290,7 +404,66 @@ export function showEpisodeMenu(
       sectionEntry.heading.hidden = hideSection;
       sectionEntry.grid.hidden = hideSection;
     }
+    if (songsHeaderRow && songsGrid) {
+      const songsAllowed = activeCategory === "all" || activeCategory === "sleep" || activeCategory === "songs";
+      let visibleSongs = 0;
+      for (const songEntry of songCellEntries) {
+        const worldMatch = activeWorld === "all" || songEntry.world === activeWorld;
+        const sleepMatch = activeCategory !== "sleep" || songEntry.isSleep;
+        const match = songsAllowed && worldMatch && sleepMatch;
+        songEntry.cell.hidden = !match;
+        if (match) visibleSongs += 1;
+      }
+      const hideSongs = visibleSongs === 0;
+      songsHeaderRow.hidden = hideSongs;
+      songsGrid.hidden = hideSongs;
+    }
   };
+
+  for (const def of categoryDefs) {
+    const children: Node[] = [];
+    if (def.iconName) children.push(icon(doc, def.iconName));
+    children.push(el(doc, "span", { text: def.label }));
+    const btn = el(
+      doc,
+      "button",
+      {
+        className: "ww-category-pill",
+        attrs: {
+          type: "button",
+          "data-category": def.value,
+          "aria-pressed": String(def.value === activeCategory),
+          tabindex: def.value === activeCategory ? "0" : "-1"
+        }
+      },
+      children
+    );
+    btn.addEventListener("click", () => {
+      activeCategory = def.value;
+      syncFilters();
+    });
+    categoryPills.push({ value: def.value, button: btn });
+    categoryBar.appendChild(btn);
+  }
+
+  categoryBar.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const keys = ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    const currentIndex = categoryPills.findIndex((entry) => entry.button === event.target);
+    if (currentIndex < 0 || categoryPills.length === 0) return;
+    let nextIndex = currentIndex;
+    if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = categoryPills.length - 1;
+    else if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (currentIndex + 1) % categoryPills.length;
+    else nextIndex = (currentIndex - 1 + categoryPills.length) % categoryPills.length;
+    const target = categoryPills[nextIndex];
+    if (!target) return;
+    event.preventDefault();
+    activeCategory = target.value;
+    syncFilters();
+    target.button.focus();
+  });
 
   for (const def of filterDefs) {
     const pillChildren: Node[] = [];
@@ -316,7 +489,8 @@ export function showEpisodeMenu(
     );
     if (def.bg) pill.style.setProperty("--ww-world-bg", def.bg);
     pill.addEventListener("click", () => {
-      applyWorldFilter(def.value);
+      activeWorld = def.value;
+      syncFilters();
     });
     filterPills.push({ value: def.value, button: pill });
     filterBar.appendChild(pill);
@@ -336,11 +510,14 @@ export function showEpisodeMenu(
     const target = filterPills[nextIndex];
     if (!target) return;
     event.preventDefault();
-    applyWorldFilter(target.value);
+    activeWorld = target.value;
+    syncFilters();
     target.button.focus();
   });
 
-  if (items.length > 0) inner.appendChild(filterBar);
+  if (items.length > 0) {
+    inner.append(categoryBar, filterBar);
+  }
 
   let picked = false;
   for (const section of SECTIONS) {
@@ -354,6 +531,7 @@ export function showEpisodeMenu(
     for (const item of list) {
       const spec = storyById(item.id);
       const world: WorldId = item.world ?? spec?.world ?? HOST_HOME_WORLD[item.host] ?? "meadow";
+      const isSleep = Boolean((item.sleepCategory ?? spec?.sleepCategory) === "bedtime" || item.id === "momos-day");
       const targetWords: readonly string[] = item.targetWords ?? spec?.targetWords ?? [];
       const hasFocusWord = selectedWordSet.size > 0 && targetWords.some((word) => selectedWordSet.has(word));
       const durationChip = resolveDurationChip(item, spec);
@@ -366,6 +544,7 @@ export function showEpisodeMenu(
         "data-code": item.code,
         "data-world": world
       };
+      if (isSleep) cardAttrs["data-sleep"] = "true";
       if (hasFocusWord) cardAttrs["data-focus-word"] = "true";
 
       const card = el(doc, "button", { className: "ww-card", attrs: cardAttrs });
@@ -411,22 +590,111 @@ export function showEpisodeMenu(
         }
       });
       const cell = el(doc, "li", { className: "ww-menu-cell" }, [card]);
-      cellEntries.push({ world, cell });
+      cellEntries.push({ world, isSleep, kind: item.kind, cell });
       grid.appendChild(cell);
     }
 
-    sectionEntries.push({ heading, grid, cells: cellEntries });
+    sectionEntries.push({ kind: section.kind, heading, grid, cells: cellEntries });
     inner.append(heading, grid);
   }
 
-  applyWorldFilter(activeWorld);
+  // Lullabies & Songs Jukebox Shelf (uses `.ww-song-card` so `.ww-card` remains strictly story cards).
+  if (items.length > 0) {
+    const songsHeadingId = uniqueId("ww-menu-songs");
+    const songsHeading = el(doc, "h2", {
+      className: "ww-menu-heading",
+      text: uiText(locale, "ui.menu.songs"),
+      attrs: { id: songsHeadingId }
+    });
+    const playLullabiesBtn = el(
+      doc,
+      "button",
+      {
+        className: "ww-pill-button ww-lullaby-jukebox-btn",
+        attrs: { type: "button", "data-action": "play-lullabies" }
+      },
+      [icon(doc, "moon"), el(doc, "span", { text: uiText(locale, "ui.menu.playLullabies") })]
+    );
+    playLullabiesBtn.addEventListener("click", () => {
+      if (picked || !options.onPlayAllLullabies) return;
+      picked = true;
+      try {
+        options.onPlayAllLullabies();
+      } catch (error) {
+        picked = false;
+        throw error;
+      }
+    });
+    songsHeaderRow = el(doc, "div", { className: "ww-songs-header" }, [songsHeading, playLullabiesBtn]);
+    songsGrid = el(doc, "ul", { className: "ww-menu-grid ww-songs-grid", attrs: { "aria-labelledby": songsHeadingId } });
+
+    // List the 11 sleep lullabies first, then the 15 daytime songs.
+    const orderedSongs: readonly SongId[] = [
+      ...SLEEP_SONG_IDS,
+      ...SONG_IDS.filter((id) => !SLEEP_SONG_IDS.includes(id))
+    ];
+    for (const songId of orderedSongs) {
+      const song = SONGS[songId];
+      const mapping = SONG_WORLDS[songId];
+      const isSleep = song.sleep === true;
+      const sec = songLengthSec(song);
+      const badgeIcon = isSleep ? "moon" : "music";
+      const kindLabel = song.vocal === "instrumental" ? "Instrumental" : isSleep ? "Lullaby" : speakerName(mapping.host, locale);
+      const songCard = el(
+        doc,
+        "button",
+        {
+          className: "ww-song-card",
+          attrs: {
+            type: "button",
+            "data-song-id": songId,
+            "data-world": mapping.world,
+            "data-sleep": String(isSleep)
+          }
+        },
+        [
+          el(doc, "span", { className: "ww-card-scene", attrs: { "aria-hidden": "true" } }, [
+            createWorldSceneSvg(doc, mapping.world),
+            el(doc, "span", { className: "ww-card-world-tag", text: WORLD_THEMES[mapping.world].shortLabel })
+          ]),
+          el(doc, "span", { className: "ww-card-body" }, [
+            el(doc, "span", { className: "ww-song-badge", attrs: { "aria-hidden": "true" } }, [icon(doc, badgeIcon)]),
+            el(doc, "span", { className: "ww-card-text" }, [
+              el(doc, "span", { className: "ww-card-title", text: storyText(locale, song.titleKey, humanizeId(songId)) }),
+              el(doc, "span", { className: "ww-card-meta" }, [
+                el(doc, "span", { className: "ww-card-host", text: kindLabel }),
+                el(doc, "span", { className: "ww-card-duration ww-chip-tnum", text: `${sec} s`, attrs: { "aria-hidden": "true" } })
+              ])
+            ])
+          ])
+        ]
+      );
+      songCard.style.setProperty("--ww-dot", CHARACTER_COLOURS[mapping.host]);
+      songCard.addEventListener("click", () => {
+        if (picked || !options.onSelectSong) return;
+        picked = true;
+        try {
+          options.onSelectSong(songId);
+        } catch (error) {
+          picked = false;
+          throw error;
+        }
+      });
+      const cell = el(doc, "li", { className: "ww-song-cell" }, [songCard]);
+      songCellEntries.push({ world: mapping.world, isSleep, cell });
+      songsGrid.appendChild(cell);
+    }
+    inner.append(songsHeaderRow, songsGrid);
+  }
+
+  syncFilters();
 
   screen.appendChild(inner);
   root.appendChild(screen);
   // The menu covers the whole overlay: whatever sits behind it (corner
   // controls, captions) leaves the tab order until the menu goes away.
   const restoreInert = inertOthers(root, screen);
-  const removeArrows = enableGridNavigation(screen, ".ww-card");
+  const removeArrows = enableGridNavigation(screen, ".ww-card, .ww-song-card");
   // Like a page change: focus the heading so a screen reader announces where we are.
   title.focus({ preventScroll: true });
 

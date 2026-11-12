@@ -22,6 +22,10 @@ export interface ChildControlHandlers {
   readonly initialAuto?: boolean;
   /** One-tap continuous Auto-play toggle right from the play bar. */
   onToggleAuto?(next: boolean): void;
+  /** Initial Wind-down state (`mode === "wind-down"` or `windDown === true`). */
+  readonly initialWindDown?: boolean;
+  /** Optional Wind-down toggle right from the play bar. */
+  onToggleWindDown?(next: boolean): void;
 }
 
 export interface ChildControls {
@@ -35,6 +39,10 @@ export interface ChildControls {
   setWaitProgress?(fractionRemaining: number): void;
   /** Syncs the continuous Auto-play pill state when mode changes in settings. */
   setAutoPlay?(on: boolean): void;
+  /** Syncs the Wind-down pill state when mode/windDown changes in settings. */
+  setWindDown?(on: boolean): void;
+  /** Updates or hides the unobtrusive tabular-numeral sleep timer badge (e.g. `"14:30"`). */
+  setSleepTimerLabel?(label: string | null): void;
   /** Hides or shows the whole bar (for example under the offline card). */
   setVisible(visible: boolean): void;
   dispose(): void;
@@ -111,6 +119,33 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
   };
   syncAuto();
 
+  let windDownOn = handlers.initialWindDown === true;
+  const windDownToggle = handlers.onToggleWindDown
+    ? el(
+        doc,
+        "button",
+        {
+          className: "ww-pill-button ww-wind-down-toggle",
+          attrs: { type: "button", "data-control": "wind-down", "aria-pressed": String(windDownOn) }
+        },
+        [icon(doc, "moon"), el(doc, "span", { text: uiText(locale, "ui.mode.windDown") })]
+      )
+    : null;
+
+  const syncWindDown = (): void => {
+    if (!windDownToggle) return;
+    windDownToggle.classList.toggle("is-active", windDownOn);
+    windDownToggle.setAttribute("aria-pressed", String(windDownOn));
+    windDownToggle.dataset["windDown"] = String(windDownOn);
+  };
+  syncWindDown();
+
+  const sleepTimerBadge = el(doc, "span", {
+    className: "ww-sleep-timer-badge ww-chip-tnum",
+    attrs: { "data-ui": "sleep-timer", "aria-hidden": "true" }
+  });
+  sleepTimerBadge.hidden = true;
+
   const bar = el(
     doc,
     "div",
@@ -121,6 +156,8 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
     [
       el(doc, "div", { className: "ww-controls-group" }, [allDone]),
       el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [
+        sleepTimerBadge,
+        ...(windDownToggle ? [windDownToggle] : []),
         ...(autoToggle ? [autoToggle] : []),
         confirm,
         pause,
@@ -180,6 +217,16 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       })
     );
   }
+  if (windDownToggle) {
+    windDownToggle.addEventListener(
+      "click",
+      ignoreRepeats(() => {
+        windDownOn = !windDownOn;
+        syncWindDown();
+        handlers.onToggleWindDown?.(windDownOn);
+      })
+    );
+  }
   replay.addEventListener("click", ignoreRepeats(() => handlers.onReplayWord()));
   parent.addEventListener("click", ignoreRepeats(() => handlers.onParent()));
   allDone.addEventListener("click", ignoreRepeats(() => handlers.onAllDone()));
@@ -210,6 +257,16 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       if (autoOn === on) return;
       autoOn = on;
       syncAuto();
+    },
+    setWindDown(on: boolean): void {
+      if (windDownOn === on) return;
+      windDownOn = on;
+      syncWindDown();
+    },
+    setSleepTimerLabel(label: string | null): void {
+      const clean = label?.trim() ?? "";
+      sleepTimerBadge.hidden = clean === "";
+      sleepTimerBadge.textContent = clean;
     },
     setVisible(visible: boolean): void {
       bar.hidden = !visible;

@@ -20,7 +20,7 @@
 import { installQaHooks, qaHookGlobalName, type InstalledQaHooks } from "@aura3d/engine";
 import { STEP_MS, type RunToEndResult, type WonderApp, type WonderDiagnostics, type WonderState } from "../app.js";
 import type { TargetRect } from "../scenes/stage.js";
-import type { PlayMode, StageAction } from "../types.js";
+import type { ParentSettings, PlayMode, SongId, StageAction } from "../types.js";
 
 /** The QA hook id; the global is `__AURA_WONDER_WORLD__`. */
 export const QA_HOOK_NAME = "wonder-world";
@@ -49,12 +49,19 @@ export type WonderQaApp = Pick<
   | "begin"
   | "reset"
   | "auraApp"
->;
+> &
+  Partial<Pick<WonderApp, "startSong" | "startLullabyJukebox" | "updateSettings">>;
 
 /** Wonder World hooks merged over the standard ones. */
 export interface WonderQaExtras {
   /** Skips the start screen and menu, loads the world and starts the director (works with audio locked). */
   startStory(id: string, mode: PlayMode): Promise<void>;
+  /** Opens a standalone song stage scene. */
+  startSong(id: SongId): Promise<void>;
+  /** Opens the continuous 11-song hushed Lullaby Jukebox. */
+  startLullabyJukebox(): Promise<void>;
+  /** Updates parent settings in memory and storage. */
+  updateSettings(partial: Partial<ParentSettings>): void;
   /** Advances director and stage in fixed 50 ms steps, then draws once. */
   advance(ms: number): void;
   /** Zero input until the story ends (default limit 20 minutes of story time). */
@@ -255,6 +262,11 @@ export type WonderQaHooks = InstalledQaHooks<WonderState, Record<string, never>,
 export function installWonderQaHooks(app: WonderQaApp, options: WonderQaOptions = {}): WonderQaHooks {
   const extras: WonderQaExtras = {
     startStory: (id, mode) => app.startStory(id, mode),
+    startSong: (id) => (app.startSong ? app.startSong(id) : Promise.resolve()),
+    startLullabyJukebox: () => (app.startLullabyJukebox ? app.startLullabyJukebox() : Promise.resolve()),
+    updateSettings: (partial) => {
+      app.updateSettings?.(partial);
+    },
     advance: (ms) => app.advance(ms),
     runToEnd: (maxMs) => app.runToEnd(maxMs),
     tap: (targetId) => app.tap(targetId),

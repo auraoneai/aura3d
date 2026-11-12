@@ -65,6 +65,13 @@ export const MODEL_KEYS = [
   "sun",
   "candleFlame",
   "partyHat",
+  "moon",
+  "cradle",
+  "cribMobile",
+  "musicBox",
+  "nightlight",
+  "blanket",
+  "sleepyCloud",
 ] as const;
 
 export type ModelKey = (typeof MODEL_KEYS)[number];
@@ -143,6 +150,13 @@ export const MODEL_INFO: Readonly<Record<ModelKey, ModelInfo>> = {
   sun: { heightM: 0.8, role: "prop", face: false, procedural: true },
   candleFlame: { heightM: 0.07, role: "prop", face: false, procedural: true },
   partyHat: { heightM: 0.3, role: "prop", face: false, procedural: true },
+  moon: { heightM: 0.75, role: "prop", face: true, procedural: true },
+  cradle: { heightM: 0.65, role: "prop", face: false, procedural: true },
+  cribMobile: { heightM: 0.75, role: "prop", face: false, procedural: true },
+  musicBox: { heightM: 0.45, role: "prop", face: false, procedural: true },
+  nightlight: { heightM: 0.42, role: "prop", face: false, procedural: true },
+  blanket: { heightM: 0.18, role: "prop", face: false, procedural: true },
+  sleepyCloud: { heightM: 0.85, role: "prop", face: true, procedural: true },
 };
 
 export const PROCEDURAL_MODELS: readonly ModelKey[] = MODEL_KEYS;

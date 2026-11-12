@@ -31,8 +31,15 @@ export const WONDER_VFX = {
   soapFoam: "soap-foam",
   starDust: "warm-star-dust",
   cookieCrumb: "cookie-crumb",
-  turfStep: "soft-turf-puff"
+  turfStep: "soft-turf-puff",
+  sleepyStars: "sleepy-stars"
 } as const;
+
+export const SLEEPY_STAR_WORLDS = ["moonlit-nursery", "starlight-cloud"] as const;
+
+export function isSleepyStarWorld(world: string | null | undefined): boolean {
+  return world === "moonlit-nursery" || world === "starlight-cloud";
+}
 
 export type WonderVfxKind = keyof typeof WONDER_VFX;
 export type WonderVfxPresetName = (typeof WONDER_VFX)[WonderVfxKind];
@@ -53,7 +60,8 @@ export const WONDER_VFX_COUNTS: Readonly<Record<WonderVfxKind, number>> = {
   soapFoam: 14,
   starDust: 12,
   cookieCrumb: 6,
-  turfStep: 6
+  turfStep: 6,
+  sleepyStars: 14
 };
 
 export const WONDER_VFX_PRESETS: Readonly<Record<WonderVfxKind, AuraVfxEffectSpec>> = {
@@ -245,6 +253,28 @@ export const WONDER_VFX_PRESETS: Readonly<Record<WonderVfxKind, AuraVfxEffectSpe
         additive: false,
         sprite: "smoke-a",
         maxScreen: 0.03
+      })
+    ]
+  },
+  sleepyStars: {
+    name: WONDER_VFX.sleepyStars,
+    layers: [
+      emitter({
+        preset: "dust",
+        count: WONDER_VFX_COUNTS.sleepyStars,
+        maxParticles: 14,
+        rate: 1.5,
+        color: "#FFE4A0",
+        colorOverLife: ["#FFE4A0", "#FFC878"],
+        speed: [0.02, 0.06],
+        life: [3.2, 4.8],
+        size: [0.022, 0.048],
+        gravity: 0.015,
+        drag: 1.8,
+        spread: 1.4,
+        additive: false,
+        sprite: "soft-dot",
+        maxScreen: 0.024
       })
     ]
   }

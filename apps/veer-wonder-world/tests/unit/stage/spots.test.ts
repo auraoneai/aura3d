@@ -387,7 +387,7 @@ describe("layout of shared spots", () => {
 
 describe("worlds and looks", () => {
   it("every world has dressing, a music bed and a look with an HDRI environment and no vignette", () => {
-    expect(WORLD_IDS).toHaveLength(6);
+    expect(WORLD_IDS).toHaveLength(8);
     for (const id of WORLD_IDS) {
       const world = WORLDS[id];
       expect(world.id).toBe(id);
@@ -466,8 +466,8 @@ describe("procedural rigs & quality floors (PRD 5.5.1 §3.6.1)", () => {
   const TIER2B_KEYS = new Set<StageAssetKey>(["bird", "butterfly"]);
   const TIER3B_KEYS = new Set<StageAssetKey>(["bubble", "candleFlame"]);
 
-  it("defines a valid procedural rig and layout traits for all 66 stage asset keys", () => {
-    expect(ALL_STAGE_KEYS).toHaveLength(66);
+  it("defines a valid procedural rig and layout traits for all 73 stage asset keys", () => {
+    expect(ALL_STAGE_KEYS).toHaveLength(73);
     for (const key of ALL_STAGE_KEYS) {
       const rig = PROCEDURAL_RIGS[key];
       expect(rig, key).toBeDefined();

@@ -48,6 +48,7 @@ import { createFixedStepPresenter } from "@aura3d/engine/game";
 import { AUDIO_MANIFEST } from "./audio-manifest.js";
 import { LOCALE_PACKS, STORIES, storyByCode, storyById, storyCode } from "./content/catalog.js";
 import { estimateLineMs } from "./content/schema.js";
+import { SLEEP_SONG_IDS, SONGS, SONG_IDS, songCueTimesMs, songLengthSec } from "./content/songs.js";
 import { createAudioMixer, type AudioMixer } from "./runtime/audio-mixer.js";
 import { storyBeats, type LineMs } from "./runtime/beat-runner.js";
 import { createEpisodeDirector } from "./runtime/episode-director.js";
@@ -76,12 +77,12 @@ import type {
 import { applyDisplaySettings } from "./ui/accessibility.js";
 import { mountCaptions, type Captions } from "./ui/captions.js";
 import { mountChildControls, type ChildControls } from "./ui/child-controls.js";
-import { menuSection, showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
+import { SONG_WORLDS, menuSection, showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
 import { showOfflineCard } from "./ui/offline-card.js";
 import { requireParent } from "./ui/parent-gate.js";
 import { openParentPanel } from "./ui/parent-panel.js";
 import { wordLabel } from "./ui/parent-wordlist.js";
-import { WAIT_MS_DEFAULT, WAIT_MS_MIN, clampWaitMs, saveSettings, type SettingsStorage } from "./ui/settings-store.js";
+import { WAIT_MS_DEFAULT, WAIT_MS_MIN, clampWaitMs, sanitizeSettings, saveSettings, type SettingsStorage } from "./ui/settings-store.js";
 import { showLoading, showStartScreen } from "./ui/start-screen.js";
 
 // ---------------------------------------------------------------- constants
@@ -566,6 +567,12 @@ export interface WonderApp {
   state(): WonderState;
   /** Opens a story (slug or code such as "e17"), skipping the start screen and menu; resolves once it is playing. */
   startStory(id: string, mode?: PlayMode): Promise<void>;
+  /** Opens a standalone song stage scene; resolves once it is playing. */
+  startSong?(id: SongId): Promise<void>;
+  /** Opens the continuous 11-song hushed Lullaby Jukebox; resolves once the first lullaby is playing. */
+  startLullabyJukebox?(): Promise<void>;
+  /** Updates parent settings in memory and storage (QA / bedtime timer control). */
+  updateSettings?(partial: Partial<ParentSettings>): void;
   /** Moves story time in fixed 50 ms steps (director and stage), then draws once. */
   advance(ms: number): void;
   /** Steps with zero input until the story ends (or `maxMs`). Does nothing while paused. */
@@ -609,6 +616,24 @@ interface ActiveStory {
   readonly controls: ChildControls;
 }
 
+interface ActiveSong {
+  readonly songId: SongId;
+  readonly queue: readonly SongId[];
+  readonly index: number;
+  readonly captions: Captions;
+  readonly controls: ChildControls;
+  readonly durationMs: number;
+  readonly cues: readonly number[];
+  elapsedMs: number;
+  shownLyricIndex: number;
+}
+
+/** Default turn-waiting override in evening Wind-down mode when the parent kept the 5 s default. */
+export const WIND_DOWN_WAIT_MS = 6000;
+
+/** Curated descending-arousal bedtime progression: calm routines/games -> bedtime stories -> lullaby jukebox -> quiet sleep card. */
+export const WIND_DOWN_STORY_CODES = ["g13", "g15", "e19", "e22", "e21", "e23", "e24", "e25", "e26"] as const;
+
 const MENU_ITEMS: readonly MenuItem[] = STORIES.map((story) => ({
   id: story.id,
   code: storyCode(story),
@@ -618,16 +643,23 @@ const MENU_ITEMS: readonly MenuItem[] = STORIES.map((story) => ({
   number: story.number,
   phase: story.phase,
   world: story.world,
+  ...(story.sleepCategory !== undefined ? { sleepCategory: story.sleepCategory } : {}),
   targetWords: story.targetWords,
   ...(story.kind === "episode" ? { durationSec: story.estimatedDurationSec } : { rounds: story.roundLimit })
 }));
 
-/** Continuous Auto-play order: matches the Story Menu order (P1 episodes, P2 episodes, then G01-G12 games). */
+/** Continuous Auto-play order: matches the Story Menu order (P1 episodes, P2 episodes, then G01-G16 games). */
 const ORDERED_STORIES: readonly StorySpec[] = [
   ...menuSection(MENU_ITEMS, "episode"),
   ...menuSection(MENU_ITEMS, "activity")
 ].flatMap((item) => {
   const found = storyById(item.id);
+  return found ? [found] : [];
+});
+
+/** Curated descending-arousal playlist for evening Wind-down mode. */
+const WIND_DOWN_PLAYLIST: readonly StorySpec[] = WIND_DOWN_STORY_CODES.flatMap((code) => {
+  const found = storyByCode(code);
   return found ? [found] : [];
 });
 
@@ -677,7 +709,15 @@ function afterFirstPaint(win: Window | null): Promise<void> {
 
 function waitOverride(waitMs: number, mode?: PlayMode): number | undefined {
   if (mode === "auto" && waitMs === WAIT_MS_DEFAULT) return WAIT_MS_MIN;
+  if (mode === "wind-down" && waitMs === WAIT_MS_DEFAULT) return WIND_DOWN_WAIT_MS;
   return waitMs === WAIT_MS_DEFAULT ? undefined : clampWaitMs(waitMs);
+}
+
+function formatSleepRemaining(remainingMs: number): string {
+  const totalSec = Math.max(0, Math.ceil(remainingMs / 1000));
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = totalSec % 60;
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
 
 /** Fixed steps for `ms` of story time (at least one for any positive time, at most RUN_TO_END_DEFAULT_MS worth). */
@@ -695,6 +735,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   /** `?reducedMotion=1` forces calm motion for this page load without changing the saved setting. */
   let forcedReducedMotion = flags.reducedMotion;
   const reducedMotionNow = (): boolean => settings.reducedMotion || forcedReducedMotion;
+  const windDownNow = (): boolean => settings.windDown || settings.mode === "wind-down";
   let locale: Locale = createLocale(LOCALE_PACKS, settings.locale);
   const text = {
     line: (key: string): string => locale.line(key),
@@ -707,7 +748,27 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (errors.length > MAX_ERRORS) errors.shift();
   };
 
-  applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow() });
+  applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow(), windDown: windDownNow() });
+
+  let sleepDimEl: HTMLDivElement | null = null;
+  const setSleepDim = (alpha: number): void => {
+    const clamped = Number.isFinite(alpha) ? Math.max(0, Math.min(0.55, alpha)) : 0;
+    if (clamped <= 0.001) {
+      if (sleepDimEl) {
+        sleepDimEl.remove();
+        sleepDimEl = null;
+      }
+      uiRoot.style.removeProperty("--ww-sleep-dim");
+      return;
+    }
+    if (!sleepDimEl) {
+      sleepDimEl = doc.createElement("div");
+      sleepDimEl.className = "ww-sleep-dim";
+      sleepDimEl.setAttribute("aria-hidden", "true");
+      uiRoot.appendChild(sleepDimEl);
+    }
+    uiRoot.style.setProperty("--ww-sleep-dim", clamped.toFixed(3));
+  };
 
   // ---- audio: one mixer (the one AudioContext), one narration player on story time
   const mixer = createAudioMixer({ manifest: AUDIO_MANIFEST, musicEnabled: settings.music, soundEnabled: settings.sound });
@@ -719,7 +780,25 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const lineLength = (key: string): number => spokenLineMs(locale.line(key), recordedLine(key));
 
   let active: ActiveStory | null = null;
+  let activeSong: ActiveSong | null = null;
   let lineOrder: readonly string[] = [];
+  let sleepElapsedMs = 0;
+
+  const resetSleepFade = (): void => {
+    sleepElapsedMs = 0;
+    setSleepDim(0);
+    mixer.setSleepGain(1);
+  };
+
+  const syncSleepControls = (controls: ChildControls | null | undefined): void => {
+    if (!controls) return;
+    if (settings.sleepTimerMin > 0) {
+      const remainingMs = Math.max(0, settings.sleepTimerMin * 60_000 - sleepElapsedMs);
+      controls.setSleepTimerLabel?.(formatSleepRemaining(remainingMs));
+    } else {
+      controls.setSleepTimerLabel?.(null);
+    }
+  };
 
   const preloadAfter = (key: string): void => {
     if (!flags.audio || !mixer.isUnlocked()) return;
@@ -763,6 +842,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   // ---- story state
   let pending: StorySpec | null = null;
+  let pendingSong: SongId | null = null;
   let storyToken = 0;
   const pauseReasons = createPauseSet();
   /** The story whose offline card is showing, with its final director snapshot. */
@@ -796,22 +876,85 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return current;
   };
 
-  /** One fixed step: director, then the story clock (narration timers); the stage too when `withStage`. */
+  /** The running standalone song / lullaby jukebox track, or null when paused or absent. */
+  const runningSong = (): ActiveSong | null => {
+    if (!activeSong || pauseReasons.paused()) return null;
+    return activeSong;
+  };
+
+  const tickSleepTimer = (): boolean => {
+    if (settings.sleepTimerMin <= 0) return false;
+    const totalMs = settings.sleepTimerMin * 60_000;
+    sleepElapsedMs += STEP_MS;
+    const remainingMs = Math.max(0, totalMs - sleepElapsedMs);
+    const controls = active?.controls ?? activeSong?.controls ?? null;
+    controls?.setSleepTimerLabel?.(formatSleepRemaining(remainingMs));
+    if (remainingMs <= 60_000) {
+      const dimProgress = 1 - remainingMs / 60_000;
+      setSleepDim(0.55 * Math.max(0, Math.min(1, dimProgress)));
+    } else {
+      setSleepDim(0);
+    }
+    if (remainingMs <= 30_000) {
+      const audioProgress = Math.max(0, Math.min(1, 1 - remainingMs / 30_000));
+      mixer.setSleepGain(0.5 * (1 + Math.cos(Math.PI * audioProgress)));
+    } else {
+      mixer.setSleepGain(1);
+    }
+    if (remainingMs <= 0) {
+      showSleepGoodnight();
+      return true;
+    }
+    return false;
+  };
+
+  /** One fixed step: director or song jukebox, then the story clock; the stage too when `withStage`. */
   const stepStory = (withStage: boolean): void => {
     const current = runningStory();
-    if (!current) return;
-    current.runner.tick(STEP_MS);
-    clock.advance(STEP_MS);
-    const timing = narration.timing();
-    stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
-    const snap = current.runner.snapshot();
-    if (snap.phase === "waiting") {
-      const beat = storyBeats(current.story).find((b) => b.id === snap.beatId);
-      const totalWaitMs = waitOverride(settings.waitMs, settings.mode) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
-      const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
-      current.controls.setWaitProgress?.(fracRemaining);
+    if (current) {
+      current.runner.tick(STEP_MS);
+      clock.advance(STEP_MS);
+      if (tickSleepTimer()) return;
+      const timing = narration.timing();
+      stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
+      const snap = current.runner.snapshot();
+      if (snap.phase === "waiting") {
+        const beat = storyBeats(current.story).find((b) => b.id === snap.beatId);
+        const totalWaitMs = waitOverride(settings.waitMs, settings.mode) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
+        const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
+        current.controls.setWaitProgress?.(fracRemaining);
+      }
+      if (withStage && active === current) stage?.update(STEP_MS / 1000);
+      return;
     }
-    if (withStage && active === current) stage?.update(STEP_MS / 1000);
+    const songState = runningSong();
+    if (!songState) return;
+    clock.advance(STEP_MS);
+    songState.elapsedMs += STEP_MS;
+    if (tickSleepTimer()) return;
+    const spec = SONGS[songState.songId];
+    while (
+      songState.shownLyricIndex + 1 < songState.cues.length &&
+      songState.shownLyricIndex + 1 < spec.lyrics.length &&
+      songState.elapsedMs >= (songState.cues[songState.shownLyricIndex + 1] ?? Number.POSITIVE_INFINITY)
+    ) {
+      songState.shownLyricIndex += 1;
+      const lyric = spec.lyrics[songState.shownLyricIndex];
+      if (lyric !== undefined) {
+        const host = SONG_WORLDS[songState.songId].host;
+        songState.captions.show(spec.vocal === "instrumental" ? "narrator" : host, lyric, []);
+      }
+    }
+    if (withStage && activeSong === songState) stage?.update(STEP_MS / 1000);
+    if (songState.elapsedMs >= songState.durationMs) {
+      if (songState.index + 1 < songState.queue.length) {
+        void openSongQueue(songState.queue, songState.index + 1);
+      } else if (spec.sleep === true || windDownNow()) {
+        showSleepGoodnight();
+      } else {
+        exitToMenu();
+      }
+    }
   };
 
   /** Restarts presentation at the current story time (story start, QA steps). */
@@ -839,13 +982,17 @@ export function createApp(options: WonderAppOptions): WonderApp {
       presenter.afterStep();
     },
     render: () => {
-      if (!runningStory()) return;
+      const storyRunning = runningStory();
+      const songRunning = runningSong();
+      if (!storyRunning && !songRunning) return;
       const shown = presenter.present(loop, true).t;
       const dt = shown - stageShownMs;
       if (dt <= 0) return;
       stageShownMs = shown;
-      const timing = narration.timing();
-      stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
+      if (storyRunning) {
+        const timing = narration.timing();
+        stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
+      }
       updateStage(dt);
     }
   });
@@ -853,7 +1000,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   /** Draws the current state once (after QA steps); never while a story's world is still being swapped in. */
   const presentNow = (): void => {
     const target = stage;
-    if (!target || !active) return;
+    if (!target || (!active && !activeSong)) return;
     try {
       target.game().app.step(0);
     } catch (error) {
@@ -861,13 +1008,17 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
   };
 
-  // ---- pause bookkeeping (story-scoped)
-  const storyExists = (): boolean => active !== null || pending !== null;
+  // ---- pause bookkeeping (story- or song-scoped)
+  const storyExists = (): boolean => active !== null || activeSong !== null || pending !== null || pendingSong !== null;
 
   const addPause = (reason: PauseReason): void => {
     if (disposed || !storyExists()) return;
-    if (pauseReasons.add(reason)) active?.runner.pause();
+    if (pauseReasons.add(reason)) {
+      active?.runner.pause();
+      if (activeSong) mixer.pauseAll();
+    }
     active?.controls.setPaused(true);
+    activeSong?.controls.setPaused(true);
   };
 
   const releasePause = (reasons: readonly PauseReason[]): void => {
@@ -877,13 +1028,16 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
     if (!pauseReasons.release(reasons)) return;
     active?.runner.resume();
+    if (activeSong) mixer.resumeAll();
     active?.controls.setPaused(false);
+    activeSong?.controls.setPaused(false);
   };
 
   /** Back from a hidden tab or a lost GPU: stay paused until a grown-up taps Resume (never auto-resume speech). */
   const holdForGrownUp = (reason: "hidden" | "device"): void => {
     if (!pauseReasons.holdForGrownUp(reason)) return;
     active?.controls.setPaused(true);
+    activeSong?.controls.setPaused(true);
   };
 
   const resumeByGrownUp = (): void => releasePause(["user", "hidden", "device"]);
@@ -893,6 +1047,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return;
     audioFailed = true;
     active?.captions.setAudioUnavailable(true);
+    activeSong?.captions.setAudioUnavailable(true);
     active?.runner.audioUnavailable();
   };
 
@@ -945,22 +1100,41 @@ export function createApp(options: WonderAppOptions): WonderApp {
       mixer.setSoundEnabled(settings.sound);
       narration.setMuted(!settings.sound);
     }
+    if (previous.sleepTimerMin !== settings.sleepTimerMin) resetSleepFade();
     if (previous.locale !== settings.locale) locale = createLocale(LOCALE_PACKS, settings.locale);
     const reduced = reducedMotionNow();
-    applyDisplaySettings(doc, { ...settings, reducedMotion: reduced });
+    const windDown = windDownNow();
+    applyDisplaySettings(doc, { ...settings, reducedMotion: reduced, windDown });
     stage?.setReducedMotion(reduced);
     const current = active;
     if (current) {
       current.captions.setEnabled(settings.captions);
       current.captions.setHighlightWords?.(storyHighlightWords(current.story, settings));
       current.controls.setAutoPlay?.(settings.mode === "auto");
+      current.controls.setWindDown?.(windDown);
+      syncSleepControls(current.controls);
       current.runner.setReducedMotion(reduced);
       current.runner.setWaitMs(waitOverride(settings.waitMs, settings.mode));
+    }
+    const currentSong = activeSong;
+    if (currentSong) {
+      currentSong.captions.setEnabled(settings.captions);
+      currentSong.controls.setAutoPlay?.(settings.mode === "auto");
+      currentSong.controls.setWindDown?.(windDown);
+      syncSleepControls(currentSong.controls);
     }
   };
 
   const toggleAutoPlay = (on: boolean): void => {
     applySettings({ ...settings, mode: on ? "auto" : manualMode });
+  };
+
+  const toggleWindDown = (on: boolean): void => {
+    applySettings({
+      ...settings,
+      windDown: on,
+      ...(on ? {} : settings.mode === "wind-down" ? { mode: manualMode } : {})
+    });
   };
 
   // ---- screens
@@ -992,20 +1166,27 @@ export function createApp(options: WonderAppOptions): WonderApp {
     panel?.();
   };
 
-  /** Ends the current or loading story without a card: stops every sound and removes the story UI. */
+  /** Ends the current or loading story/song without a card: stops every sound and removes the play UI. */
   const endStory = (): void => {
     storyToken += 1;
     pending = null;
+    pendingSong = null;
     dropLoading();
     closeParentUi();
     const current = active;
+    const currentSong = activeSong;
     active = null;
+    activeSong = null;
     lineOrder = [];
     pauseReasons.clear();
     if (current) {
       current.runner.dispose();
       current.controls.dispose();
       current.captions.dispose();
+    }
+    if (currentSong) {
+      currentSong.controls.dispose();
+      currentSong.captions.dispose();
     }
     narration.stop();
     narration.resume();
@@ -1020,6 +1201,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const showMenu = (): void => {
     if (disposed) return;
     closeScreens();
+    stage?.setRenderPaused?.(false);
     started = true;
     screen = "menu";
     removeMenu = showEpisodeMenu(
@@ -1035,11 +1217,40 @@ export function createApp(options: WonderAppOptions): WonderApp {
         onParent: () => void openParentFlow(),
         autoPlay: settings.mode === "auto",
         onToggleAuto: toggleAutoPlay,
+        windDown: windDownNow(),
+        onToggleWindDown: toggleWindDown,
+        onSelectSong: (songId) => {
+          void openSongQueue([songId], 0);
+        },
+        onPlayAllLullabies: () => {
+          void openSongQueue(SLEEP_SONG_IDS, 0);
+        },
         stageUnavailable: stageFailed,
         selectedWords: settings.wordList
       }
     );
   };
+
+  function showSleepGoodnight(): void {
+    if (disposed) return;
+    endStory();
+    closeScreens();
+    resetSleepFade();
+    stage?.setRenderPaused?.(true);
+    screen = "offline";
+    removeOffline = showOfflineCard(
+      uiRoot,
+      locale,
+      "",
+      () => {
+        removeOffline = null;
+        ended = null;
+        stage?.setRenderPaused?.(false);
+        showMenu();
+      },
+      { variant: "sleep" }
+    );
+  }
 
   const showOffline = (story: StorySpec, key: string): void => {
     if (disposed) return;
@@ -1047,6 +1258,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const spoken = active?.story === story ? active.runner.spokenKeys() : [];
     endStory();
     closeScreens();
+    const isSleepVariant = windDownNow() || story.sleepCategory === "bedtime";
+    if (isSleepVariant) stage?.setRenderPaused?.(true);
     screen = "offline";
     ended = snapshot ? { storyId: story.id, snapshot, spoken } : null;
     removeOffline = showOfflineCard(
@@ -1056,20 +1269,28 @@ export function createApp(options: WonderAppOptions): WonderApp {
       () => {
         removeOffline = null;
         ended = null;
+        stage?.setRenderPaused?.(false);
         showMenu();
       },
       // The story's caregiver bridge (PRD 01 section 4.3), target word recap chips, and story cast.
       {
         note: locale.str(story.caregiverBridgeKey, ""),
         words: story.targetWords.map((id) => ({ id, label: wordLabel(id) })),
-        cast: story.cast.map((member) => member.id)
+        cast: story.cast.map((member) => member.id),
+        ...(isSleepVariant ? { variant: "sleep" } : {})
       }
     );
   };
 
   const proceedFromStart = (mode: PlayMode): void => {
     started = true;
-    const story = initialStory ?? (mode === "auto" ? (ORDERED_STORIES[0] ?? STORIES[0] ?? null) : null);
+    const defaultStory =
+      mode === "auto"
+        ? (ORDERED_STORIES[0] ?? STORIES[0] ?? null)
+        : mode === "wind-down"
+          ? (WIND_DOWN_PLAYLIST[0] ?? STORIES[0] ?? null)
+          : null;
+    const story = initialStory ?? defaultStory;
     initialStory = null;
     if (story) void openStory(story, mode);
     else showMenu();
@@ -1136,6 +1357,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
       current.runner.allDone();
       return;
     }
+    if (activeSong || pendingSong) {
+      const songId = activeSong?.songId ?? pendingSong;
+      if ((songId && SONGS[songId].sleep === true) || windDownNow()) showSleepGoodnight();
+      else exitToMenu();
+      return;
+    }
     const loading = pending;
     if (loading) showOffline(loading, loading.offlinePlayKey);
   };
@@ -1156,11 +1383,118 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return STORIES[(rawIndex + 1) % STORIES.length];
   };
 
+  /** Loads a standalone song or lullaby-jukebox track on a hushed stage. */
+  async function openSongQueue(queue: readonly SongId[], index: number): Promise<"started" | "cancelled" | "failed"> {
+    const songId = queue[index];
+    if (disposed || !songId) return "cancelled";
+    endStory();
+    closeScreens();
+    stage?.setRenderPaused?.(false);
+    started = true;
+    const token = storyToken;
+    pendingSong = songId;
+    screen = "story";
+    const mapping = SONG_WORLDS[songId];
+    const spec = SONGS[songId];
+    removeLoading = showLoading(uiRoot, locale, {
+      world: mapping.world,
+      host: mapping.host,
+      title: locale.str(spec.titleKey, songId)
+    });
+    let target: WonderStage;
+    try {
+      target = await stageReady;
+      if (token !== storyToken || disposed) return "cancelled";
+      if (target.loadLullabyScene) {
+        await target.loadLullabyScene(mapping.world);
+      } else if (STORIES[0]) {
+        await target.load(STORIES[0], { nightVeil: true });
+      }
+    } catch (error) {
+      if (token !== storyToken || disposed) return "cancelled";
+      if (error !== stageBootError) recordError(error);
+      pendingSong = null;
+      dropLoading();
+      showMenu();
+      return "failed";
+    }
+    if (token !== storyToken || disposed) return "cancelled";
+    dropLoading();
+    pendingSong = null;
+
+    const captions = mountCaptions(uiRoot, locale, { highlightWords: [] });
+    captions.setEnabled(settings.captions);
+    captions.setAudioUnavailable(audioFailed);
+    const controls = mountChildControls(uiRoot, locale, {
+      onPause: () => addPause("user"),
+      onResume: () => resumeByGrownUp(),
+      onReplayWord: () => undefined,
+      onAllDone: () => allDone(),
+      onParent: () => void openParentFlow(),
+      initialAuto: settings.mode === "auto",
+      onToggleAuto: toggleAutoPlay,
+      initialWindDown: windDownNow(),
+      onToggleWindDown: toggleWindDown
+    });
+    controls.setReplayAvailable(false);
+    syncSleepControls(controls);
+
+    mixer.setBed(null);
+    const recordedSongMs = AUDIO_MANIFEST.songs[songId]?.durationMs;
+    const fallbackMs = Math.round(songLengthSec(spec) * 1000);
+    const clipMs = mixer.playSong(songId);
+    const durationMs = Math.max(
+      4000,
+      clipMs > 0 ? Math.round(clipMs) : recordedSongMs !== undefined && recordedSongMs > 0 ? recordedSongMs : fallbackMs
+    );
+    const cues = songCueTimesMs(songId, durationMs);
+
+    target.apply([
+      {
+        do: "song",
+        song: songId,
+        ...(spec.sleep === true ? { performers: spec.vocal === "instrumental" ? [] : ["lumi"] } : {})
+      }
+    ]);
+
+    const firstLyric = spec.lyrics[0];
+    let shownLyricIndex = -1;
+    if (firstLyric !== undefined && (cues[0] ?? 0) === 0) {
+      shownLyricIndex = 0;
+      captions.show(spec.vocal === "instrumental" ? "narrator" : mapping.host, firstLyric, []);
+    }
+
+    activeSong = {
+      songId,
+      queue,
+      index,
+      captions,
+      controls,
+      durationMs,
+      cues,
+      elapsedMs: 0,
+      shownLyricIndex
+    };
+    const nextSongId = queue[index + 1];
+    if (nextSongId !== undefined && flags.audio && mixer.isUnlocked()) {
+      void mixer.preload(AUDIO_MANIFEST.songs[nextSongId]);
+    }
+    syncPresenter();
+    target.update(0);
+    if (query.manual) presentNow();
+    if (activeSong?.songId === songId && pauseReasons.paused()) {
+      mixer.pauseAll();
+      controls.setPaused(true);
+    }
+    return "started";
+  }
+
   /** Loads a story's world and starts its director. Resolves "started", "cancelled" (a newer request won) or "failed". */
   async function openStory(story: StorySpec, mode: PlayMode): Promise<"started" | "cancelled" | "failed"> {
     if (disposed) return "cancelled";
     endStory();
     closeScreens();
+    stage?.setRenderPaused?.(false);
     started = true;
     const token = storyToken;
     pending = story;
@@ -1174,7 +1508,9 @@ export function createApp(options: WonderAppOptions): WonderApp {
     try {
       target = await stageReady;
       if (token !== storyToken || disposed) return "cancelled";
-      await target.load(story);
+      await target.load(story, {
+        nightVeil: windDownNow() || mode === "wind-down" || story.sleepCategory === "bedtime"
+      });
     } catch (error) {
       if (token !== storyToken || disposed) return "cancelled";
       // A stage that could not mount is recorded once, at boot.
@@ -1205,9 +1541,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
         active?.runner.confirm(clock.now());
       },
       initialAuto: settings.mode === "auto",
-      onToggleAuto: toggleAutoPlay
+      onToggleAuto: toggleAutoPlay,
+      initialWindDown: windDownNow(),
+      onToggleWindDown: toggleWindDown
     });
     controls.setReplayAvailable(false);
+    syncSleepControls(controls);
     const override = waitOverride(settings.waitMs, settings.mode);
     const runner = createStoryRunner({
       story,
@@ -1221,6 +1560,18 @@ export function createApp(options: WonderAppOptions): WonderApp {
         onMediaPaused: (paused) => controls.setPaused(paused),
         onTurn: (waiting) => controls.setTurnWaiting(waiting),
         onOffline: (key) => {
+          if (settings.mode === "wind-down" && runner.finishReason() === "complete") {
+            const sleepIndex = WIND_DOWN_PLAYLIST.indexOf(story);
+            if (sleepIndex >= 0 && sleepIndex + 1 < WIND_DOWN_PLAYLIST.length) {
+              const nextSleep = WIND_DOWN_PLAYLIST[sleepIndex + 1];
+              if (nextSleep) {
+                void openStory(nextSleep, settings.mode);
+                return;
+              }
+            }
+            void openSongQueue(SLEEP_SONG_IDS, 0);
+            return;
+          }
           if (settings.mode === "auto" && runner.finishReason() === "complete") {
             const next = nextInCatalog(story);
             if (next) {
@@ -1269,7 +1620,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
       // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
       onSongCue: (cue) => {
-        if (disposed || !runningStory()) return;
+        if (disposed || (!runningStory() && !runningSong())) return;
         for (const action of cue.actions) {
           if (action.do === "sfx") mixer.playSfx(action.sound);
           else if (action.do === "music") mixer.setBed(action.bed);
@@ -1308,7 +1659,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return;
     recordError(error);
     // The menu is up (nothing loading, no grown-up dialog open): show it again with the calm notice.
-    if (screen === "menu" && pending === null && active === null && !gateAbort && !closePanel) showMenu();
+    if (screen === "menu" && pending === null && pendingSong === null && active === null && activeSong === null && !gateAbort && !closePanel) showMenu();
   });
 
   const sessionGate = createSessionGate(doc, {
@@ -1349,7 +1700,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       const diagnostics = stageDiagnostics();
       return {
         screen,
-        storyId: current?.story.id ?? pending?.id ?? ended?.storyId ?? null,
+        storyId: current?.story.id ?? pending?.id ?? ended?.storyId ?? activeSong?.songId ?? pendingSong ?? null,
         director: snapshot ?? ended?.snapshot ?? null,
         targets: current ? [...current.runner.activeTargets()] : [],
         speaking: line?.key ?? null,
@@ -1380,6 +1731,22 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (result === "failed") throw new Error(`story "${story.id}" failed to load`);
       if (result === "cancelled") throw new Error(`story "${story.id}" was replaced before it started`);
     },
+    async startSong(id) {
+      if (!SONG_IDS.includes(id)) throw new Error(`unknown song "${String(id).slice(0, 40)}"`);
+      if (screen === "start") armGestureUnlock();
+      const result = await openSongQueue([id], 0);
+      if (result === "failed") throw new Error(`song "${id}" failed to load`);
+      if (result === "cancelled") throw new Error(`song "${id}" was replaced before it started`);
+    },
+    async startLullabyJukebox() {
+      if (screen === "start") armGestureUnlock();
+      const result = await openSongQueue(SLEEP_SONG_IDS, 0);
+      if (result === "failed") throw new Error("lullaby jukebox failed to load");
+      if (result === "cancelled") throw new Error("lullaby jukebox was replaced before it started");
+    },
+    updateSettings(partial) {
+      applySettings(sanitizeSettings({ ...settings, ...partial }, settings));
+    },
     advance(ms) {
       const steps = stepsFor(ms);
       for (let i = 0; i < steps; i += 1) stepStory(true);
@@ -1388,17 +1755,30 @@ export function createApp(options: WonderAppOptions): WonderApp {
     },
     runToEnd(maxMs) {
       const current = active;
-      if (!current) return { finished: false, reason: null, elapsedMs: 0 };
+      if (current) {
+        const limit = maxMs !== undefined && Number.isFinite(maxMs) && maxMs > 0 ? maxMs : RUN_TO_END_DEFAULT_MS;
+        let elapsed = 0;
+        while (active === current && runningStory() === current && elapsed < limit) {
+          stepStory(true);
+          elapsed += STEP_MS;
+        }
+        syncPresenter();
+        presentNow();
+        const reason = current.runner.finishReason();
+        return { finished: reason !== null, reason, elapsedMs: elapsed };
+      }
+      const currentSong = activeSong;
+      if (!currentSong) return { finished: false, reason: null, elapsedMs: 0 };
       const limit = maxMs !== undefined && Number.isFinite(maxMs) && maxMs > 0 ? maxMs : RUN_TO_END_DEFAULT_MS;
       let elapsed = 0;
-      while (active === current && runningStory() === current && elapsed < limit) {
+      while (activeSong === currentSong && runningSong() === currentSong && elapsed < limit) {
         stepStory(true);
         elapsed += STEP_MS;
       }
       syncPresenter();
       presentNow();
-      const reason = current.runner.finishReason();
-      return { finished: reason !== null, reason, elapsedMs: elapsed };
+      const finished = activeSong !== currentSong;
+      return { finished, reason: finished ? "complete" : null, elapsedMs: elapsed };
     },
     tap: (targetId) => active?.runner.tap(targetId, clock.now()) ?? false,
     parentConfirm: () => active?.runner.confirm(clock.now()) ?? false,
@@ -1411,7 +1791,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     setReducedMotion(on) {
       forcedReducedMotion = false;
       applySettings({ ...settings, reducedMotion: on });
-      if (query.manual && active) {
+      if (query.manual && (active || activeSong)) {
         stage?.update(0);
         presentNow();
       }
@@ -1436,7 +1816,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       return target.nodeRects(ids).map((rect) => ({ id: rect.id, x: rect.x + left, y: rect.y + top, w: rect.w, h: rect.h }));
     },
     stageApply(actions) {
-      if (disposed || !active) return;
+      if (disposed || (!active && !activeSong)) return;
       stage?.apply(actions);
       if (query.manual) {
         stage?.update(0);
@@ -1444,7 +1824,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       }
     },
     setTalking(actor) {
-      if (disposed || !active) return;
+      if (disposed || (!active && !activeSong)) return;
       stage?.setTalking(actor);
     },
     diagnostics: stageDiagnostics,
@@ -1457,6 +1837,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (disposed) return;
       endStory();
       closeScreens();
+      resetSleepFade();
+      stage?.setRenderPaused?.(false);
       if (started) showMenu();
       else showStart();
     },
@@ -1466,6 +1848,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (disposed) return;
       endStory();
       closeScreens();
+      resetSleepFade();
       disposed = true;
       loop.stop();
       sessionGate.dispose();

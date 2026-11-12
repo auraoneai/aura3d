@@ -24,7 +24,9 @@ export const WORLD_IDS: readonly WorldId[] = [
   "peekaboo-barn",
   "station",
   "learning-cloud",
-  "home-nook"
+  "home-nook",
+  "moonlit-nursery",
+  "starlight-cloud"
 ];
 
 export interface WorldSkyGradientSpec {
@@ -450,6 +452,111 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       skyColor: "#FFF0DC",
       groundColor: "#CFA074",
       intensity: 0.52
+    }
+  },
+  "moonlit-nursery": {
+    world: "moonlit-nursery",
+    look: "interior-warm",
+    hdri: "warm_bar",
+    background: "#2A1F33",
+    overrides: {
+      hdri: "warm_bar",
+      sun: { azimuthDeg: -28, elevationDeg: 24 },
+      exposureEv: -0.62,
+      environmentIntensity: 0.62,
+      environmentRotationDeg: 22,
+      background: "#2A1F33",
+      key: {
+        color: "#FFD89E",
+        intensity: 1.38,
+        shadow: STORYBOOK_PCSS_SHADOW
+      },
+      rim: {
+        color: "#F5C794",
+        intensity: 0.42,
+        azimuthDeg: 154
+      },
+      fog: {
+        color: "#32243D",
+        height: {
+          mode: "height",
+          density: 0.003,
+          heightFalloff: 0.28,
+          heightReference: 0
+        }
+      },
+      grade: {
+        contrast: 1.04,
+        saturation: 1.08,
+        temperature: 0.12
+      },
+      post: STORYBOOK_POST
+    },
+    contactShadows: { intensity: 0.68, length: 0.24 },
+    sky: null,
+    hemisphere: {
+      skyColor: "#F5CFA8",
+      groundColor: "#5A3D4C",
+      intensity: 0.42
+    }
+  },
+  "starlight-cloud": {
+    world: "starlight-cloud",
+    look: "golden-hour",
+    hdri: "spruit_sunrise",
+    background: "#352647",
+    overrides: {
+      hdri: "spruit_sunrise",
+      sun: { azimuthDeg: -24, elevationDeg: 18 },
+      exposureEv: -0.58,
+      environmentIntensity: 0.66,
+      environmentRotationDeg: 315,
+      background: "#352647",
+      key: {
+        color: "#FFE0A8",
+        intensity: 1.44,
+        shadow: STORYBOOK_PCSS_SHADOW
+      },
+      rim: {
+        color: "#F6C89F",
+        intensity: 0.48,
+        azimuthDeg: 162
+      },
+      fog: {
+        color: "#3D2B4F",
+        height: {
+          mode: "height",
+          density: 0.003,
+          heightFalloff: 0.22,
+          heightReference: -0.4
+        }
+      },
+      grade: {
+        contrast: 1.05,
+        saturation: 1.12,
+        temperature: 0.1
+      },
+      post: STORYBOOK_POST
+    },
+    contactShadows: { intensity: 0.64, length: 0.24 },
+    sky: {
+      zenith: "#2C203E",
+      horizon: "#7A5268",
+      ground: "#3B294A",
+      exponent: 0.74,
+      horizonGlow: 0.22,
+      sun: {
+        azimuthDeg: -24,
+        elevationDeg: 18,
+        color: "#FFE0A8",
+        intensity: 0.28,
+        discSize: 0.042
+      }
+    },
+    hemisphere: {
+      skyColor: "#F5D4B3",
+      groundColor: "#5E4368",
+      intensity: 0.46
     }
   }
 };

@@ -41,6 +41,8 @@ import * as g09 from "./activities/family-doorbells.js";
 import * as g10 from "./activities/bears-little-band.js";
 import * as g11 from "./activities/magic-sound-garden.js";
 import * as g12 from "./activities/find-my-real-toy.js";
+import { EN_E21, EN_E22, EN_E23, EN_E24, EN_E25, EN_E26 } from "./episodes-sleep.js";
+import { EN_G13, EN_G14, EN_G15, EN_G16 } from "./activities-sleep.js";
 
 /** One locale source file: its spoken lines and its strings. */
 export interface LocalePart {
@@ -102,6 +104,12 @@ export const EN_PARTS: readonly LocalePart[] = [
   { source: "episodes/whos-at-the-door", lines: e18.lines, strings: e18.strings },
   { source: "episodes/momos-day", lines: e19.lines, strings: e19.strings },
   { source: "episodes/little-story-machine", lines: e20.lines, strings: e20.strings },
+  { source: "episodes/lumi-moonlit-lullaby", lines: EN_E21.lines, strings: EN_E21.strings },
+  { source: "episodes/teddy-warm-blanket", lines: EN_E22.lines, strings: EN_E22.strings },
+  { source: "episodes/three-sleepy-sheep", lines: EN_E23.lines, strings: EN_E23.strings },
+  { source: "episodes/gogo-quiet-night-train", lines: EN_E24.lines, strings: EN_E24.strings },
+  { source: "episodes/peeko-cricket-garden", lines: EN_E25.lines, strings: EN_E25.strings },
+  { source: "episodes/drifting-dream-clouds", lines: EN_E26.lines, strings: EN_E26.strings },
   { source: "activities/bubble-garden", lines: g01.lines, strings: g01.strings },
   { source: "activities/gogo-train", lines: g02.lines, strings: g02.strings },
   { source: "activities/sheru-ball", lines: g03.lines, strings: g03.strings },
@@ -114,6 +122,10 @@ export const EN_PARTS: readonly LocalePart[] = [
   { source: "activities/bears-little-band", lines: g10.lines, strings: g10.strings },
   { source: "activities/magic-sound-garden", lines: g11.lines, strings: g11.strings },
   { source: "activities/find-my-real-toy", lines: g12.lines, strings: g12.strings },
+  { source: "activities/tuck-in-friends", lines: EN_G13.lines, strings: EN_G13.strings },
+  { source: "activities/starlight-music-box", lines: EN_G14.lines, strings: EN_G14.strings },
+  { source: "activities/goodnight-little-lights", lines: EN_G15.lines, strings: EN_G15.strings },
+  { source: "activities/cloud-sheep-hush", lines: EN_G16.lines, strings: EN_G16.strings },
   { source: "ui", lines: ui.lines, strings: ui.strings }
 ];
 

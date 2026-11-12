@@ -25,10 +25,15 @@ export const strings: Record<string, string> = {
   "ui.mode.play": "Play together",
   "ui.mode.watch": "Watch and sing",
   "ui.mode.auto": "Auto play",
+  "ui.mode.windDown": "Wind-down",
 
   // Menu.
   "ui.menu.title": "Choose a story or a game",
   "ui.menu.label": "Stories and games",
+  "ui.menu.all": "All",
+  "ui.menu.sleep": "Sleep & lullabies",
+  "ui.menu.songs": "Songs",
+  "ui.menu.playLullabies": "Play all lullabies",
   "ui.menu.episodes": "Stories",
   "ui.menu.activities": "Games",
 
@@ -46,6 +51,8 @@ export const strings: Record<string, string> = {
   // End-of-story card.
   "ui.offline.title": "All done! Now try...",
   "ui.offline.done": "Back to stories",
+  "ui.sleep.title": "Shh... sweet dreams",
+  "ui.sleep.body": "All quiet now. Put the screen to rest and cuddle close.",
 
   // Parent gate (ordinary UX, not a lock).
   "ui.gate.title": "For grown-ups",
@@ -77,6 +84,11 @@ export const strings: Record<string, string> = {
   "ui.parent.captions": "Captions",
   "ui.parent.reducedMotion": "Calm motion",
   "ui.parent.highContrast": "High contrast and larger text",
+  "ui.parent.windDown": "Evening wind-down",
+  "ui.parent.windDownHelp": "Warm dusk colours, gentle pacing and softer light for bedtime.",
+  "ui.parent.sleepTimer": "Sleep timer",
+  "ui.parent.sleepTimerHelp": "Fades sound to silence and rests on a dark goodnight screen.",
+  "ui.parent.sleepTimerOff": "Off",
   "ui.parent.wait": "Waiting time for a turn",
   "ui.parent.waitHelp": "How long a character pauses for your child. The story always carries on by itself.",
   "ui.parent.seconds": "{s} seconds",
@@ -122,6 +134,16 @@ export const strings: Record<string, string> = {
   "ui.song.routine": "Momo's Day Song",
   "ui.song.abc": "B Is for Ball",
   "ui.song.lullaby": "Moon Lullaby",
+  "ui.song.twinkleRest": "Little Star Rest",
+  "ui.song.rockingCradle": "Rocking Cradle Song",
+  "ui.song.sleepyClouds": "Sleepy Clouds",
+  "ui.song.teddyGoodnight": "Goodnight, Little Bear",
+  "ui.song.countingSheepSong": "Three Soft Sheep",
+  "ui.song.warmBlanketSong": "Warm Blanket Song",
+  "ui.song.cricketHush": "Sleepy Garden Hush",
+  "ui.song.dreamBoatSong": "Quiet Night Train",
+  "ui.song.moonMusicBox": "Moonlight Music Box",
+  "ui.song.starlightHum": "Starlight Cradle Hum",
 
   // Caption speaker names (the narrator has no label).
   "ui.speaker.momo": "Momo",

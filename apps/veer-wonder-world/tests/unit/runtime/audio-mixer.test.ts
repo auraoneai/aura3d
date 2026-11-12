@@ -1101,4 +1101,33 @@ describe("audio mixer + narration player", () => {
     player.dispose();
     mixer.dispose();
   });
+
+  it("attenuates master gain smoothly via setSleepGain and notifies playSong(id, onEnded)", async () => {
+    const { mixer, refs, latest } = setup();
+    await mixer.unlock();
+    expect(mixer.sleepGain()).toBe(1);
+
+    let songEnded = 0;
+    const ms = mixer.playSong("hello", () => {
+      songEnded += 1;
+    });
+    expect(ms).toBe(refs.hello.durationMs);
+    await flush();
+    const songSource = latest();
+    const master = masterOf(songSource);
+    const fullMasterGain = master.gain.target;
+    expect(fullMasterGain).toBeGreaterThan(0);
+
+    mixer.setSleepGain(0.5);
+    expect(mixer.sleepGain()).toBeCloseTo(0.5, 4);
+    expect(master.gain.target).toBeCloseTo(fullMasterGain * 0.5, 4);
+
+    mixer.setSleepGain(0);
+    expect(mixer.sleepGain()).toBe(0);
+    expect(master.gain.target).toBe(0);
+
+    songSource.end();
+    expect(songEnded).toBe(1);
+    mixer.dispose();
+  });
 });

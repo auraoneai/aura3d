@@ -89,15 +89,18 @@ export const GESTURE_CLIP_SECONDS: Readonly<Record<Gesture, number>> = {
   blink: 0.4,
   bow: 1.4,
   surprise: 0.8,
-  wait: 1.0
+  wait: 1.0,
+  yawn: 2.2,
+  rock: 2.86,
+  twinkle: 2.8
 };
 
 /**
  * The calm variant of a gesture, played instead of it by song motions in reduced motion (07 B20; PRD 02
  * section 4 "Low-motion": no secondary bouncing, the semantic action stays). The bouncy gestures map to the
  * calm ones the stories' own `reducedMotionStage` choose most (dance to sway, happy and hop to nod); a cheer
- * becomes a soft clap. Every other gesture is calm already and plays as itself, so the variant of a variant
- * is itself.
+ * becomes a soft clap. Every other gesture (including bedtime `yawn`, `rock`, `twinkle`, and `sleep`) is calm
+ * already and plays as itself, so the variant of a variant is itself.
  */
 export const CALM_GESTURES: Readonly<Partial<Record<Gesture, Gesture>>> = {
   hop: "nod",
@@ -458,6 +461,14 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
     halo(id) {
       const run = nodes.get(id);
       if (!run || !run.gesture || !run.plan || !run.plan.halo) return 0;
+      if (run.gesture === "twinkle") {
+        const twinkleFadeSec = 0.8;
+        const twinkleFadeIn = clamp01(run.elapsed / twinkleFadeSec);
+        const twinkleFadeOut = run.loop ? 1 : clamp01((run.plan.durationSec - run.elapsed) / twinkleFadeSec);
+        if (reduced) return 0.65 * Math.min(twinkleFadeIn, twinkleFadeOut);
+        if (run.loop) return (0.62 + 0.16 * Math.sin((2 * Math.PI * run.elapsed) / 2.8)) * twinkleFadeIn;
+        return envelope(clamp01(run.elapsed / Math.max(0.1, run.plan.durationSec)));
+      }
       // Every glow fades in and out over HALO_FADE_SEC, so it never switches on or off at once.
       const fadeIn = clamp01(run.elapsed / HALO_FADE_SEC);
       const fadeOut = run.loop ? 1 : clamp01((run.plan.durationSec - run.elapsed) / HALO_FADE_SEC);

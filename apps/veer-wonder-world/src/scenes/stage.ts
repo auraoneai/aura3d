@@ -45,6 +45,7 @@ import { calmGesture, createAnimationDirector, propAnimationProfile, type Animat
 import type {
   CameraPresetId,
   CharacterId,
+  EpisodeSpec,
   Gesture,
   MoveStyle,
   ObjectAction,
@@ -135,6 +136,7 @@ import {
 } from "./stand-ins.js";
 import {
   createWonderVfxEmitter,
+  isSleepyStarWorld,
   registerWonderVfxPresets,
   targetRippleMaterial,
   type WonderVfxEmitter
@@ -243,6 +245,9 @@ export interface StageSnapshot {
 }
 
 export interface WonderStage extends StageAdapter {
+  load(story: StorySpec, options?: { readonly nightVeil?: boolean }): Promise<void>;
+  loadLullabyScene(world: WorldId): Promise<void>;
+  setRenderPaused(paused: boolean): void;
   /** Resolves when the current scene (first mount or the last load) is warmed and shown. */
   ready(): Promise<void>;
   diagnostics(): StageDiagnostics;
@@ -282,6 +287,7 @@ const HALO_FADE_SEC = 0.6;
 /** A raised object that topples lands this many times its old height sideways, clear of the stack it fell from. */
 const TUMBLE_SPREAD = 1.25;
 const VEIL_COLOR = "#FBF6EC";
+const VEIL_NIGHT_COLOR = "#161120";
 
 /**
  * Every procedural rig in `PROCEDURAL_RIGS` is authored natively facing `+Z`
@@ -1072,6 +1078,56 @@ export function targetRectFor(
   return { id: candidate.id, x: clamp(cx - w / 2, 0, width - w), y: clamp(cy - h / 2, 0, height - h), w, h };
 }
 
+function resolveVeilColor(
+  next: StorySpec,
+  loadOptions?: { readonly nightVeil?: boolean }
+): string {
+  if (
+    loadOptions?.nightVeil === true ||
+    next.sleepCategory === "bedtime" ||
+    next.world === "moonlit-nursery" ||
+    next.world === "starlight-cloud"
+  ) {
+    return VEIL_NIGHT_COLOR;
+  }
+  return VEIL_COLOR;
+}
+
+function buildLullabyEpisodeSpec(world: WorldId): EpisodeSpec {
+  return {
+    id: `lullaby-${world}`,
+    kind: "episode",
+    version: 1,
+    phase: "P2",
+    number: 21,
+    sleepCategory: "bedtime",
+    host: "lumi",
+    titleKey: "e01.title",
+    world,
+    cast: [
+      { id: "lumi", at: "highLeft" },
+      { id: "momo", at: "center" }
+    ],
+    props: [
+      { id: "teddy", asset: "teddy", at: "left" },
+      { id: "bed", asset: "bed", at: "backRight" },
+      { id: "cushion", asset: "cushion", at: "frontLeft" }
+    ],
+    targetWords: [],
+    supportWords: [],
+    offlinePlayKey: "e01.offline",
+    caregiverBridgeKey: "e01.bridge",
+    review: {
+      language: "approved",
+      rights: "approved",
+      reviewer: "stage",
+      date: "2026-11-12"
+    },
+    beats: [],
+    estimatedDurationSec: 180
+  };
+}
+
 /** The calm scene shown before the first story loads: a world with no cast. */
 function buildIdleScene(
   world: WorldId,
@@ -1178,18 +1234,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const app = created.app;
   created.start();
 
+  let renderPaused = false;
+  let sleepyStarsCooldown = 0;
+
   let vfx: WonderVfxEmitter | null = null;
   if (app.effects) {
     try {
       registerWonderVfxPresets(app.effects);
-      vfx = createWonderVfxEmitter(app.effects, () => reducedMotion || host === null);
+      vfx = createWonderVfxEmitter(app.effects, () => reducedMotion || renderPaused || host === null);
     } catch (error) {
       warn(`vfx: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   const syncEffectsRuntime = (): void => {
     if (!app.effects) return;
-    app.effects.runtime = host !== null && !reducedMotion ? "on" : "off";
+    app.effects.runtime = host !== null && !reducedMotion && !renderPaused ? "on" : "off";
   };
   const warmOptions = () => ({
     ...WARM_OPTIONS,
@@ -1307,7 +1366,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       return () => undefined;
     }
     return () => {
-      if (disposed || manualClock || runtime.disposed || !runtime.paused) return;
+      if (disposed || manualClock || renderPaused || runtime.disposed || !runtime.paused) return;
       try {
         runtime.resume();
       } catch {
@@ -1490,9 +1549,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
-  /** Gentle time-of-day bounce-fill & window-beam shift for `momos-day` (`E19`: morning -> midday -> cosy bedtime). */
+  /** Gentle time-of-day bounce-fill & window-beam shift for `"home-nook"` (`momos-day` & bedtime stories). */
   const shiftHomeNookTimeOfDay = (phase: "morning" | "midday" | "bedtime"): void => {
-    if (story?.id !== "momos-day") return;
+    if (story?.world !== "home-nook") return;
     const palette: Record<typeof phase, { readonly color: string; readonly intensity: number }> = {
       morning: { color: "#FFE8BE", intensity: 0.52 },
       midday: { color: "#FFF2D6", intensity: 0.48 },
@@ -2477,6 +2536,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const songSpeechEnergyFor = (n: StageNode): number => {
     const run = songRun;
     if (!run || !isShown(n)) return 0;
+    if (SONGS[run.song]?.vocal === "instrumental") return 0;
     const isPerformer =
       run.performers.includes(n.id) ||
       (run.performers.length === 0 && n.role === "actor" && n.characterId !== null && !isOffStage(n.home));
@@ -2577,6 +2637,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     advanceSong(dt * 1000);
     director.update(dt);
     if (host !== null) currentWorld?.updateWorld(handle, time, reducedMotion);
+    if (host !== null && !reducedMotion && !renderPaused && dt > 0 && isSleepyStarWorld(worldId)) {
+      sleepyStarsCooldown -= dt;
+      if (sleepyStarsCooldown <= 0) {
+        sleepyStarsCooldown = 4.2;
+        vfx?.fire("sleepyStars", [0, 1.65, -1.1]);
+      }
+    }
     const carriers = order.filter((n) => !n.carriedBy);
     const carried = order.filter((n) => n.carriedBy);
     for (const n of order) step(n, dt);
@@ -2678,9 +2745,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   };
 
   /** One story load. Loads run one at a time (see `stage.load`); a newer request makes an older one stop at its next check. */
-  const load = async (next: StorySpec, seq: number): Promise<void> => {
+  const load = async (
+    next: StorySpec,
+    seq: number,
+    loadOptions?: { readonly nightVeil?: boolean }
+  ): Promise<void> => {
     if (seq !== loadSeq || disposed) return;
     mounted = false;
+    if (veil) veil.style.background = resolveVeilColor(next, loadOptions);
     await setVeil(1);
     if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
@@ -2691,6 +2763,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     adopt(built);
     story = next;
     worldId = next.world;
+    sleepyStarsCooldown = 0.6;
+    if (next.world === "home-nook" && next.sleepCategory === "bedtime") {
+      shiftHomeNookTimeOfDay("bedtime");
+    }
     if (app.effects) app.effects.runtime = "off";
     applyCamera(frameCamera(cameraPreset, aspectNow()), true);
     warming = true;
@@ -2708,9 +2784,15 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     warming = false;
     if (seq !== loadSeq || disposed) return;
     syncEffectsRuntime();
+    if (next.world === "home-nook" && next.sleepCategory === "bedtime") {
+      shiftHomeNookTimeOfDay("bedtime");
+    }
+    if (host !== null && !reducedMotion && !renderPaused && isSleepyStarWorld(next.world)) {
+      vfx?.fire("sleepyStars", [0, 1.65, -1.1]);
+    }
     written.clear();
     frame(0);
-    if (manualClock) {
+    if (manualClock && !renderPaused) {
       try {
         if (created.runtime.running) created.runtime.pause();
         app.step(0);
@@ -2736,12 +2818,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let loadChain: Promise<void> = readyPromise;
 
   const stage: WonderStage = {
-    load(next) {
+    load(next, loadOptions) {
       if (disposed) return Promise.resolve();
       songRun = null;
       const seq = ++loadSeq;
       const run = loadChain
-        .then(() => load(next, seq))
+        .then(() => load(next, seq, loadOptions))
         .catch((error: unknown) => {
           warn(`load ${next.id}: ${error instanceof Error ? error.message : String(error)}`);
           if (seq === loadSeq && !disposed) void setVeil(0);
@@ -2749,6 +2831,48 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       loadChain = run;
       readyPromise = run;
       return run;
+    },
+    async loadLullabyScene(world) {
+      if (disposed) return;
+      const lullabyStory = buildLullabyEpisodeSpec(world);
+      await stage.load(lullabyStory, { nightVeil: true });
+      if (disposed || story?.id !== lullabyStory.id) return;
+      stage.apply([
+        { do: "gesture", actor: "lumi", gesture: "float", loop: true },
+        { do: "gesture", actor: "momo", gesture: "sleep", loop: true },
+        { do: "gesture", actor: "teddy", gesture: "sleep", loop: true }
+      ]);
+      frame(0);
+      if (manualClock && !renderPaused) {
+        try {
+          app.step(0);
+        } catch {
+          // Headless or lost-context fallback.
+        }
+      }
+    },
+    setRenderPaused(paused) {
+      if (disposed || renderPaused === paused) return;
+      renderPaused = paused;
+      syncEffectsRuntime();
+      if (paused) {
+        try {
+          app.effects?.clear();
+        } catch {
+          // Best-effort clear.
+        }
+        try {
+          if (created.runtime.running) created.runtime.pause();
+        } catch {
+          // Headless or lost-context fallback.
+        }
+      } else if (!manualClock && !warming && !created.runtime.disposed && created.runtime.paused) {
+        try {
+          created.runtime.resume();
+        } catch {
+          // Headless or lost-context fallback.
+        }
+      }
     },
     apply(actions) {
       if (disposed) return;
@@ -2774,7 +2898,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       return pickTargetAt(candidates.map(candidateOf), cameraPoseNow(), x, y, width, height);
     },
     update(dtSeconds) {
-      if (disposed || !mounted || warming) return;
+      if (disposed || !mounted || warming || renderPaused) return;
       const dt = Number.isFinite(dtSeconds) ? clamp(dtSeconds, 0, 0.1) : 0;
       frame(dt);
     },

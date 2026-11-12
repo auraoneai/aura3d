@@ -241,9 +241,13 @@ export interface AudioMixer {
   /**
    * Starts a song (ending any other). Returns its duration in ms, or 0 when it
    * will not play (missing, locked, sound or music off). A no-op while paused.
+   * Optional `onEnded` runs once if the song finishes playing naturally.
    */
-  playSong(id: SongId): number;
+  playSong(id: SongId, onEnded?: () => void): number;
   stopSong(): void;
+  /** Smoothly scales master gain (`0..1`) for the bedtime sleep-timer fade-out without mutating parent settings. */
+  setSleepGain(factor: number): void;
+  sleepGain(): number;
   /** The looping background bed; null fades it out. Remembered until audio can play it. */
   setBed(id: MusicBedId | null): void;
   /** Music down while speech plays (fast attack, held slow release). */
@@ -428,6 +432,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   let musicEnabled = options.musicEnabled;
   let soundEnabled = options.soundEnabled;
   let sfxScale = SFX_VOLUME_SCALE.normal;
+  let sleepGainFactor = 1;
   let disposed = false;
   let graph: Graph | null = null;
   let graphFailed = false;
@@ -544,7 +549,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   // ---- levels ----------------------------------------------------------------
 
   function masterTarget(): number {
-    return soundEnabled ? AUDIO_LEVELS.master : 0;
+    return soundEnabled ? AUDIO_LEVELS.master * sleepGainFactor : 0;
   }
 
   function busTargets(): Record<BusId, number> {
@@ -1018,7 +1023,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       });
     },
 
-    playSong(id: SongId): number {
+    playSong(id: SongId, onEnded?: () => void): number {
       // Nothing changes while paused: the held song stays held.
       if (disposed || paused) return 0;
       stopSongInternal();
@@ -1032,7 +1037,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
         const late = activeClock() - requestedAt;
         const offset = late > SONG_SYNC_THRESHOLD_S ? late : 0;
         if (offset > clip.duration - SONG_MIN_REMAINING_S) return;
-        const track = newTrack("song", clip, false, null);
+        const track = newTrack("song", clip, false, onEnded ?? null);
         songTrack = track;
         songId = id;
         if (!beginTrack(track, offset, 0)) forget(track);
@@ -1048,6 +1053,16 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     },
 
     stopSong: stopSongInternal,
+
+    setSleepGain(factor: number): void {
+      if (disposed) return;
+      const clamped = Number.isFinite(factor) ? Math.min(1, Math.max(0, factor)) : 1;
+      if (clamped === sleepGainFactor) return;
+      sleepGainFactor = clamped;
+      applyLevels();
+    },
+
+    sleepGain: () => sleepGainFactor,
 
     setBed(id: MusicBedId | null): void {
       if (disposed) return;

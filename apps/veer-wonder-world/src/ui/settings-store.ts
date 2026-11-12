@@ -9,7 +9,7 @@
 // here leaves the device.
 
 import { isWordId } from "../content/words.js";
-import type { ParentSettings, PlayMode, SfxVolume } from "../types.js";
+import type { ParentSettings, PlayMode, SfxVolume, SleepTimerMinutes } from "../types.js";
 
 export type SettingsStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -25,6 +25,8 @@ export const PARENT_SETTINGS_FIELDS: readonly (keyof ParentSettings)[] = [
   "captions",
   "reducedMotion",
   "highContrast",
+  "windDown",
+  "sleepTimerMin",
   "locale",
   "waitMs",
   "wordList"
@@ -52,7 +54,9 @@ export const WORD_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,31}$/;
 /** A stored record longer than this is not a settings record; it is ignored. */
 const MAX_STORED_LENGTH = 4096;
 
-const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing", "auto"];
+const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing", "auto", "wind-down"];
+/** Sleep-timer durations in minutes (`0` = off). */
+export const SLEEP_TIMER_CHOICES: readonly SleepTimerMinutes[] = [0, 5, 10, 15, 20, 30];
 /** The sound-effect levels a grown-up can pick (01 section 9; 07 B20). */
 export const SFX_VOLUMES: readonly SfxVolume[] = ["off", "soft", "normal"];
 
@@ -70,6 +74,8 @@ export function defaultSettings(prefersReducedMotion = false, prefersMoreContras
     captions: true,
     reducedMotion: prefersReducedMotion,
     highContrast: prefersMoreContrast,
+    windDown: false,
+    sleepTimerMin: 0,
     locale: "en",
     waitMs: WAIT_MS_DEFAULT,
     wordList: []
@@ -118,6 +124,7 @@ export function sanitizeSettings(raw: unknown, defaults: ParentSettings = defaul
   const localeValue = raw["locale"];
   const waitValue = raw["waitMs"];
   const sfxValue = raw["sfxVolume"];
+  const sleepTimerValue = raw["sleepTimerMin"];
   return {
     mode: PLAY_MODES.find((mode) => mode === modeValue) ?? defaults.mode,
     music: pickBoolean(raw, "music", defaults.music),
@@ -126,6 +133,8 @@ export function sanitizeSettings(raw: unknown, defaults: ParentSettings = defaul
     captions: pickBoolean(raw, "captions", defaults.captions),
     reducedMotion: pickBoolean(raw, "reducedMotion", defaults.reducedMotion),
     highContrast: pickBoolean(raw, "highContrast", defaults.highContrast),
+    windDown: pickBoolean(raw, "windDown", defaults.windDown),
+    sleepTimerMin: SLEEP_TIMER_CHOICES.find((minutes) => minutes === sleepTimerValue) ?? defaults.sleepTimerMin,
     locale: typeof localeValue === "string" && AVAILABLE_LOCALES.includes(localeValue) ? localeValue : defaults.locale,
     waitMs: typeof waitValue === "number" ? clampWaitMs(waitValue) : defaults.waitMs,
     wordList: "wordList" in raw ? sanitizeWordList(raw["wordList"]) : [...defaults.wordList]

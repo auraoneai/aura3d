@@ -932,9 +932,451 @@ function holdRamp01(u: number): number {
   return ease("inOutSine", clamp01(u / 0.35));
 }
 
+export const SLEEP_BREATH_HZ = 0.22;
+export const CRADLE_ROCK_HZ = 0.35;
+
+export type BedtimeArticulatedPropKey =
+  | "cribMobile"
+  | "musicBox"
+  | "moon"
+  | "sleepyCloud"
+  | "cradle"
+  | "nightlight";
+
+/** Registered articulated sub-part declarations & traits for bedtime nursery props. */
+export const BEDTIME_PROP_ARTICULATED_PARTS: Readonly<Record<BedtimeArticulatedPropKey, readonly SubPartId[]>> = {
+  cribMobile: ["body", "petals"],
+  musicBox: ["body", "lid", "petals"],
+  moon: ["body", "eyelidL", "eyelidR", "cheekPuff"],
+  sleepyCloud: ["body", "eyelidL", "eyelidR", "cheekPuff"],
+  cradle: ["body"],
+  nightlight: ["body"]
+};
+
 const BIPED_ACTORS: ReadonlySet<string> = new Set(["momo", "lulu", "teddy", "robot"]);
 const QUADRUPED_ACTORS: ReadonlySet<string> = new Set(["sheru", "cow", "sheep", "horse"]);
 const BIRD_ACTORS: ReadonlySet<string> = new Set(["peeko", "duck", "bird"]);
+const BEDTIME_FACE_PROPS: ReadonlySet<string> = new Set(["moon", "sleepyCloud"]);
+
+function canonicalActorArchetypeId(actorId: string): string {
+  if (
+    BIPED_ACTORS.has(actorId) ||
+    QUADRUPED_ACTORS.has(actorId) ||
+    BIRD_ACTORS.has(actorId) ||
+    actorId === "lumi" ||
+    actorId === "gogo" ||
+    actorId === "cribMobile" ||
+    actorId === "musicBox" ||
+    actorId === "moon" ||
+    actorId === "sleepyCloud" ||
+    actorId === "cradle" ||
+    actorId === "nightlight" ||
+    actorId === "flower" ||
+    actorId === "flowerBud"
+  ) {
+    return actorId;
+  }
+  const compact = actorId.toLowerCase().replace(/[^a-z]/g, "");
+  if (compact.startsWith("cribmobile")) return "cribMobile";
+  if (compact.startsWith("musicbox")) return "musicBox";
+  if (compact.startsWith("sleepycloud")) return "sleepyCloud";
+  if (compact.startsWith("nightlight")) return "nightlight";
+  if (compact.startsWith("cradle")) return "cradle";
+  if (compact.startsWith("moon")) return "moon";
+  if (compact.startsWith("sheep")) return "sheep";
+  if (compact.startsWith("cow")) return "cow";
+  if (compact.startsWith("duck")) return "duck";
+  if (compact.startsWith("bird")) return "bird";
+  if (compact.startsWith("horse")) return "horse";
+  if (compact.startsWith("teddy")) return "teddy";
+  if (compact.startsWith("robot")) return "robot";
+  if (compact.startsWith("flowerbud")) return "flowerBud";
+  if (compact.startsWith("flower")) return "flower";
+  return actorId;
+}
+
+/**
+ * Archetype-aware peaceful `"sleep"` pose + gentle `0.22 Hz` breathing (`0` wave when `reducedMotion === true`).
+ * Closes `eyelidL`/`eyelidR` across all archetypes and tucks wings (birds), legs/ears/tail (quadrupeds),
+ * petals (`lumi`), chimney (`gogo`), or arms (`bipeds`).
+ */
+function sleepSubPartsForArchetype(
+  actorId: string,
+  canonicalId: string,
+  holdEnv: number,
+  timeSec: number,
+  reducedMotion: boolean
+): ArticulatedPoseMap {
+  const breathWave = reducedMotion ? 0 : Math.sin(TAU * SLEEP_BREATH_HZ * timeSec + phaseOf(actorId) * TAU);
+  const lidClosed: ArticulatedPartPose = {
+    offset: [0, -0.013 * holdEnv, 0.004 * holdEnv],
+    scale: [1, lerp(1, 0.08, holdEnv), 1]
+  };
+
+  if (BIRD_ACTORS.has(canonicalId)) {
+    return {
+      body: {
+        offset: [0, (-0.065 + 0.008 * breathWave) * holdEnv, 0],
+        rotation: [0.12 * holdEnv, 0, 0],
+        scale: [
+          1 + 0.014 * breathWave * holdEnv,
+          1 + 0.02 * breathWave * holdEnv,
+          1 + 0.014 * breathWave * holdEnv
+        ]
+      },
+      head: {
+        rotation: [(0.24 - 0.025 * breathWave) * holdEnv, 0, 0.08 * holdEnv],
+        offset: [0, -0.022 * holdEnv, 0]
+      },
+      wingL: {
+        rotation: [-0.32 * holdEnv, 0.28 * holdEnv, 0.18 * holdEnv],
+        offset: [0.015 * holdEnv, -0.01 * holdEnv, 0.012 * holdEnv]
+      },
+      wingR: {
+        rotation: [-0.32 * holdEnv, -0.28 * holdEnv, -0.18 * holdEnv],
+        offset: [-0.015 * holdEnv, -0.01 * holdEnv, 0.012 * holdEnv]
+      },
+      ...(canonicalId === "peeko" ? { tuft: { rotation: [0.26 * holdEnv, 0, 0.06 * holdEnv] } } : {}),
+      eyelidL: lidClosed,
+      eyelidR: lidClosed
+    };
+  }
+
+  if (QUADRUPED_ACTORS.has(canonicalId)) {
+    return {
+      body: {
+        offset: [0, (-0.095 + 0.008 * breathWave) * holdEnv, 0],
+        rotation: [0.08 * holdEnv, 0, 0],
+        scale: [
+          1 + 0.015 * breathWave * holdEnv,
+          1 + 0.02 * breathWave * holdEnv,
+          1 + 0.015 * breathWave * holdEnv
+        ]
+      },
+      head: {
+        rotation: [(0.26 - 0.025 * breathWave) * holdEnv, 0, 0.09 * holdEnv],
+        offset: [0, -0.028 * holdEnv, 0.01 * holdEnv]
+      },
+      legFL: { rotation: [-0.62 * holdEnv, 0, 0.06 * holdEnv], offset: [0, 0.03 * holdEnv, 0.035 * holdEnv] },
+      legFR: { rotation: [-0.62 * holdEnv, 0, -0.06 * holdEnv], offset: [0, 0.03 * holdEnv, 0.035 * holdEnv] },
+      legBL: { rotation: [0.58 * holdEnv, 0, 0.06 * holdEnv], offset: [0, 0.03 * holdEnv, -0.03 * holdEnv] },
+      legBR: { rotation: [0.58 * holdEnv, 0, -0.06 * holdEnv], offset: [0, 0.03 * holdEnv, -0.03 * holdEnv] },
+      earL: { rotation: [0.36 * holdEnv, 0.16 * holdEnv, 0.12 * holdEnv] },
+      earR: { rotation: [0.36 * holdEnv, -0.16 * holdEnv, -0.12 * holdEnv] },
+      tail: { rotation: [0.32 * holdEnv, 0.28 * holdEnv, 0.12 * holdEnv] },
+      eyelidL: lidClosed,
+      eyelidR: lidClosed
+    };
+  }
+
+  if (canonicalId === "lumi") {
+    const petalScale = lerp(1, 0.92, holdEnv) + 0.016 * breathWave * holdEnv;
+    return {
+      body: {
+        offset: [0, (-0.05 + 0.01 * breathWave) * holdEnv, 0],
+        rotation: [0.08 * holdEnv, 0, 0.08 * holdEnv],
+        scale: [
+          1 + 0.016 * breathWave * holdEnv,
+          1 + 0.018 * breathWave * holdEnv,
+          1 + 0.016 * breathWave * holdEnv
+        ]
+      },
+      petals: {
+        scale: [petalScale, petalScale, 1],
+        rotation: [0, 0, 0.04 * holdEnv]
+      },
+      cheekPuff: {
+        scale: [
+          1 + (0.06 + 0.015 * breathWave) * holdEnv,
+          1 + 0.05 * holdEnv,
+          1 + 0.06 * holdEnv
+        ]
+      },
+      eyelidL: lidClosed,
+      eyelidR: lidClosed
+    };
+  }
+
+  if (canonicalId === "gogo") {
+    return {
+      body: {
+        offset: [0, (-0.025 + 0.005 * breathWave) * holdEnv, 0],
+        rotation: [0.04 * holdEnv, 0, 0],
+        scale: [
+          1 + 0.01 * breathWave * holdEnv,
+          1 + 0.014 * breathWave * holdEnv,
+          1 + 0.01 * breathWave * holdEnv
+        ]
+      },
+      chimney: {
+        offset: [0, (-0.012 + 0.006 * breathWave) * holdEnv, 0],
+        scale: [
+          1 + (0.03 + 0.024 * breathWave) * holdEnv,
+          lerp(1, 0.93, holdEnv) - 0.02 * breathWave * holdEnv,
+          1 + (0.03 + 0.024 * breathWave) * holdEnv
+        ]
+      },
+      eyelidL: lidClosed,
+      eyelidR: lidClosed
+    };
+  }
+
+  if (BEDTIME_FACE_PROPS.has(canonicalId)) {
+    const softCrescentLid: ArticulatedPartPose = {
+      offset: [0, -0.008 * holdEnv, 0.002 * holdEnv],
+      scale: [1, lerp(1, 0.72, holdEnv), 1]
+    };
+    return {
+      body: {
+        offset: [0, (-0.03 + 0.01 * breathWave) * holdEnv, 0],
+        rotation: [0, 0, 0.06 * holdEnv],
+        scale: [
+          1 + 0.016 * breathWave * holdEnv,
+          1 + 0.02 * breathWave * holdEnv,
+          1 + 0.016 * breathWave * holdEnv
+        ]
+      },
+      cheekPuff: {
+        scale: [
+          1 + (0.06 + 0.018 * breathWave) * holdEnv,
+          1 + (0.05 + 0.015 * breathWave) * holdEnv,
+          1 + 0.06 * holdEnv
+        ]
+      },
+      eyelidL: softCrescentLid,
+      eyelidR: softCrescentLid
+    };
+  }
+
+  return {
+    body: {
+      offset: [0, (-0.06 + 0.008 * breathWave) * holdEnv, 0],
+      rotation: [0.12 * holdEnv, 0, 0],
+      scale: [
+        1 + 0.014 * breathWave * holdEnv,
+        1 + 0.02 * breathWave * holdEnv,
+        1 + 0.014 * breathWave * holdEnv
+      ]
+    },
+    head: { rotation: [(0.22 - 0.024 * breathWave) * holdEnv, 0, 0.11 * holdEnv] },
+    armL: {
+      rotation: [-0.58 * holdEnv, 0.34 * holdEnv, -0.14 * holdEnv],
+      offset: [0.018 * holdEnv, 0.01 * holdEnv, 0.024 * holdEnv]
+    },
+    armR: {
+      rotation: [-0.58 * holdEnv, -0.34 * holdEnv, 0.14 * holdEnv],
+      offset: [-0.018 * holdEnv, 0.01 * holdEnv, 0.024 * holdEnv]
+    },
+    ...(canonicalId === "lulu" ? { tail: { rotation: [0.14 * holdEnv, 0.24 * holdEnv, 0.08 * holdEnv] } } : {}),
+    ...(canonicalId === "teddy"
+      ? {
+          earL: { rotation: [0.12 * holdEnv, 0, 0.08 * holdEnv] },
+          earR: { rotation: [0.12 * holdEnv, 0, -0.08 * holdEnv] }
+        }
+      : {}),
+    eyelidL: lidClosed,
+    eyelidR: lidClosed
+  };
+}
+
+function yawnSubPartsForArchetype(
+  canonicalId: string,
+  u: number,
+  env: number,
+  k: number
+): ArticulatedPoseMap {
+  const yawnOpen = Math.sin(Math.PI * u) * env;
+  const lidDroop: ArticulatedPartPose = {
+    offset: [0, -0.012 * yawnOpen, 0.003 * yawnOpen],
+    scale: [1, lerp(1, 0.16, yawnOpen), 1]
+  };
+
+  if (BIRD_ACTORS.has(canonicalId)) {
+    return {
+      beakLower: { rotation: [0.46 * yawnOpen, 0, 0], offset: [0, -0.012 * yawnOpen, 0] },
+      wingL: { rotation: [-0.18 * yawnOpen, 0, -0.34 * yawnOpen * k] },
+      wingR: { rotation: [-0.18 * yawnOpen, 0, 0.34 * yawnOpen * k] },
+      head: { rotation: [-0.14 * yawnOpen * k, 0, 0.06 * yawnOpen * k] },
+      ...(canonicalId === "peeko" ? { tuft: { rotation: [-0.16 * yawnOpen * k, 0, 0] } } : {}),
+      body: { scale: [1 - 0.015 * yawnOpen, 1 + 0.042 * yawnOpen, 1 - 0.015 * yawnOpen] },
+      eyelidL: lidDroop,
+      eyelidR: lidDroop
+    };
+  }
+
+  if (QUADRUPED_ACTORS.has(canonicalId)) {
+    return {
+      jaw: { rotation: [0.48 * yawnOpen, 0, 0], offset: [0, -0.024 * yawnOpen, 0] },
+      head: { rotation: [-0.14 * yawnOpen * k, 0, 0.06 * yawnOpen * k] },
+      earL: { rotation: [0.22 * yawnOpen, 0, -0.14 * yawnOpen] },
+      earR: { rotation: [0.22 * yawnOpen, 0, 0.14 * yawnOpen] },
+      tail: { rotation: [0.2 * yawnOpen, 0.16 * yawnOpen * k, 0] },
+      body: {
+        rotation: [-0.07 * yawnOpen * k, 0, 0],
+        scale: [1 + 0.012 * yawnOpen, 1 + 0.036 * yawnOpen, 1 + 0.02 * yawnOpen]
+      },
+      eyelidL: lidDroop,
+      eyelidR: lidDroop
+    };
+  }
+
+  if (canonicalId === "lumi") {
+    return {
+      jaw: { rotation: [0.38 * yawnOpen, 0, 0], offset: [0, -0.022 * yawnOpen, 0] },
+      petals: { scale: [1 + 0.045 * yawnOpen, 1 + 0.055 * yawnOpen, 1] },
+      cheekPuff: { scale: [1 + 0.1 * yawnOpen, 1 + 0.08 * yawnOpen, 1 + 0.1 * yawnOpen] },
+      body: { scale: [1 + 0.02 * yawnOpen, 1 + 0.04 * yawnOpen, 1 + 0.02 * yawnOpen] },
+      eyelidL: lidDroop,
+      eyelidR: lidDroop
+    };
+  }
+
+  if (canonicalId === "gogo") {
+    return {
+      jaw: { rotation: [0.34 * yawnOpen, 0, 0], offset: [0, -0.024 * yawnOpen, 0] },
+      chimney: {
+        scale: [1 - 0.05 * yawnOpen, 1 + 0.09 * yawnOpen, 1 - 0.05 * yawnOpen],
+        offset: [0, 0.014 * yawnOpen, 0]
+      },
+      body: { scale: [1 + 0.012 * yawnOpen, 1 + 0.028 * yawnOpen, 1 + 0.012 * yawnOpen] },
+      eyelidL: lidDroop,
+      eyelidR: lidDroop
+    };
+  }
+
+  if (BEDTIME_FACE_PROPS.has(canonicalId)) {
+    const softDroop: ArticulatedPartPose = {
+      offset: [0, -0.008 * yawnOpen, 0.002 * yawnOpen],
+      scale: [1, lerp(1, 0.76, yawnOpen), 1]
+    };
+    return {
+      body: {
+        rotation: [-0.05 * yawnOpen * k, 0, 0.04 * yawnOpen * k],
+        scale: [1 + 0.02 * yawnOpen, 1 + 0.04 * yawnOpen, 1 + 0.02 * yawnOpen]
+      },
+      cheekPuff: { scale: [1 + 0.1 * yawnOpen, 1 + 0.08 * yawnOpen, 1 + 0.1 * yawnOpen] },
+      eyelidL: softDroop,
+      eyelidR: softDroop
+    };
+  }
+
+  return {
+    jaw: { rotation: [0.46 * yawnOpen, 0, 0], offset: [0, -0.024 * yawnOpen, 0.004 * yawnOpen] },
+    cheekPuff: { scale: [1 + 0.1 * yawnOpen, 1 + 0.08 * yawnOpen, 1 + 0.1 * yawnOpen] },
+    armL: {
+      rotation: [-1.12 * yawnOpen * k, -0.16 * yawnOpen, -0.38 * yawnOpen * k],
+      offset: [0, 0.035 * yawnOpen, 0]
+    },
+    armR: {
+      rotation: [-1.12 * yawnOpen * k, 0.16 * yawnOpen, 0.38 * yawnOpen * k],
+      offset: [0, 0.035 * yawnOpen, 0]
+    },
+    head: { rotation: [-0.14 * yawnOpen * k, 0, 0.07 * yawnOpen * k] },
+    body: { scale: [1 + 0.015 * yawnOpen, 1 + 0.042 * yawnOpen, 1 + 0.015 * yawnOpen] },
+    eyelidL: lidDroop,
+    eyelidR: lidDroop
+  };
+}
+
+function rockSubPartsForArchetype(
+  canonicalId: string,
+  elapsedSec: number,
+  env: number,
+  reducedMotion: boolean
+): ArticulatedPoseMap {
+  const damp = reducedMotion ? 0.45 : 1;
+  const rockWave = Math.sin(TAU * CRADLE_ROCK_HZ * elapsedSec) * env * damp;
+
+  if (canonicalId === "cradle") {
+    return {
+      body: {
+        rotation: [0, 0, 0.095 * rockWave],
+        offset: [0.018 * rockWave, 0, 0]
+      }
+    };
+  }
+
+  if (BIRD_ACTORS.has(canonicalId)) {
+    return {
+      body: { rotation: [0, 0, 0.065 * rockWave] },
+      head: { rotation: [0.04 * env, 0, 0.07 * rockWave] },
+      wingL: { rotation: [-0.14 * env, 0.12 * env, 0.08 * env] },
+      wingR: { rotation: [-0.14 * env, -0.12 * env, -0.08 * env] }
+    };
+  }
+
+  if (QUADRUPED_ACTORS.has(canonicalId)) {
+    return {
+      body: { rotation: [0, 0, 0.06 * rockWave] },
+      head: { rotation: [0.05 * env, 0, 0.075 * rockWave] },
+      tail: { rotation: [0.16 * env, 0.14 * rockWave, 0] }
+    };
+  }
+
+  return {
+    body: { rotation: [0, 0, 0.06 * rockWave] },
+    head: { rotation: [0.05 * env, 0, 0.08 * rockWave] }
+  };
+}
+
+function twinkleSubPartsForArchetype(
+  canonicalId: string,
+  u: number,
+  env: number,
+  reducedMotion: boolean
+): ArticulatedPoseMap {
+  const k = reducedMotion ? 0.45 : 1;
+  const wave = Math.sin(TAU * u);
+  const shimmer = (0.5 + 0.5 * Math.sin(TAU * 2 * u - Math.PI * 0.5)) * env * k;
+
+  if (canonicalId === "cribMobile" || canonicalId === "musicBox") {
+    return {
+      petals: {
+        rotation: [0, reducedMotion ? 0 : TAU * u * 0.5, 0],
+        scale: [1 + 0.04 * shimmer, 1 + 0.04 * shimmer, 1 + 0.04 * shimmer]
+      },
+      ...(canonicalId === "musicBox" ? { lid: { rotation: [-0.1 * env * k, 0, 0] } } : {})
+    };
+  }
+
+  if (canonicalId === "lumi" || canonicalId === "flower" || canonicalId === "flowerBud") {
+    return {
+      petals: {
+        rotation: [0, 0, reducedMotion ? 0 : 0.18 * wave * env],
+        scale: [1 + 0.055 * shimmer, 1 + 0.055 * shimmer, 1]
+      },
+      body: {
+        scale: [1 + 0.03 * shimmer, 1 + 0.03 * shimmer, 1 + 0.03 * shimmer]
+      },
+      ...(canonicalId === "lumi"
+        ? { cheekPuff: { scale: [1 + 0.08 * shimmer, 1 + 0.06 * shimmer, 1 + 0.08 * shimmer] } }
+        : {})
+    };
+  }
+
+  if (canonicalId === "moon" || canonicalId === "nightlight" || canonicalId === "sleepyCloud") {
+    return {
+      body: {
+        rotation: [0, 0, reducedMotion ? 0 : 0.05 * wave * env],
+        scale: [1 + 0.032 * shimmer, 1 + 0.032 * shimmer, 1 + 0.032 * shimmer]
+      }
+    };
+  }
+
+  if (BIRD_ACTORS.has(canonicalId)) {
+    return {
+      wingL: { rotation: [-0.15 * env, 0, (-0.24 - 0.14 * shimmer) * env] },
+      wingR: { rotation: [-0.15 * env, 0, (0.24 + 0.14 * shimmer) * env] },
+      head: { rotation: [-0.1 * env * k, 0.07 * wave * env * k, 0.06 * wave * env * k] }
+    };
+  }
+
+  return {
+    armL: { rotation: [-1.24 * env, -0.18 * env, (-0.32 - 0.12 * wave * k) * env] },
+    armR: { rotation: [-1.24 * env, 0.18 * env, (0.32 - 0.12 * wave * k) * env] },
+    head: { rotation: [-0.1 * env * k, 0.07 * wave * env * k, 0.06 * wave * env * k] }
+  };
+}
 
 function bipedPeekabooHideParts(holdEnv: number): ArticulatedPoseMap {
   return {
@@ -1168,13 +1610,15 @@ function gestureSpecificSubParts(
   elapsedSec: number,
   durationSec: number,
   loop: boolean,
-  reducedMotion: boolean
+  reducedMotion: boolean,
+  timeSec = elapsedSec
 ): ArticulatedPoseMap | undefined {
   const dur = Math.max(0.1, durationSec);
   const u = loop ? frac(Math.max(0, elapsedSec) / dur) : clamp01(elapsedSec / dur);
   const env = loop ? 1 : envelope(u);
   const holdEnv = loop ? 1 : holdRamp01(u);
   const k = reducedMotion ? 0.5 : 1;
+  const canonicalId = canonicalActorArchetypeId(actorId);
 
   if (gesture === "blink") {
     const blinkU = clamp01(elapsedSec / Math.max(0.14, dur));
@@ -1182,8 +1626,22 @@ function gestureSpecificSubParts(
     return eyelidPoseFromWeight(s * s);
   }
 
+  // ---- Universal bedtime kinematics across all archetypes & nursery props (`sleep`, `yawn`, `rock`, `twinkle`)
+  if (gesture === "sleep") {
+    return sleepSubPartsForArchetype(actorId, canonicalId, holdEnv, timeSec, reducedMotion);
+  }
+  if (gesture === "yawn") {
+    return yawnSubPartsForArchetype(canonicalId, u, env, k);
+  }
+  if (gesture === "rock") {
+    return rockSubPartsForArchetype(canonicalId, elapsedSec, env, reducedMotion);
+  }
+  if (gesture === "twinkle") {
+    return twinkleSubPartsForArchetype(canonicalId, u, env, reducedMotion);
+  }
+
   // ---- Universal non-squished "hide", "peek", and "eat" across biped characters & companions
-  if (BIPED_ACTORS.has(actorId)) {
+  if (BIPED_ACTORS.has(canonicalId)) {
     if (gesture === "hide") return bipedPeekabooHideParts(holdEnv);
     if (gesture === "peek") return bipedPeekParts(env, k);
     if (gesture === "eat") return bipedEatParts(u, env, k);
@@ -1684,15 +2142,6 @@ function gestureSpecificSubParts(
       return {
         head: { rotation: [0, 0.32 * Math.sin(TAU * u) * env * k, 0.05 * Math.sin(TAU * u) * env * k] }
       };
-    case "sleep":
-      return {
-        body: { offset: [0, -0.06 * holdEnv, 0], rotation: [0.12 * holdEnv, 0, 0] },
-        head: { rotation: [0.22 * holdEnv, 0, 0.1 * holdEnv] },
-        armL: { rotation: [-0.45 * holdEnv, 0.25 * holdEnv, -0.1 * holdEnv] },
-        armR: { rotation: [-0.45 * holdEnv, -0.25 * holdEnv, 0.1 * holdEnv] },
-        eyelidL: { scale: [1, lerp(1, 0.08, holdEnv), 1] },
-        eyelidR: { scale: [1, lerp(1, 0.08, holdEnv), 1] }
-      };
     default:
       return undefined;
   }
@@ -1703,7 +2152,15 @@ function gestureSpecificSubParts(
  * natural eyelid blink + locomotion gait + gesture / held pose + active prop choreography / carry cradle + 20 Hz speech sync.
  */
 export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): ArticulatedPoseMap | undefined {
-  const blink = blinkPartsAt(input.id, input.timeSec, input.reducedMotion);
+  const canonicalId = canonicalActorArchetypeId(input.id);
+  const activeGesture: Gesture | null = input.gesture ?? (input.holding ? (input.holdGesture ?? null) : null);
+  // Suppress periodic blink pulses while eyes are already closed in sleep/hide or on sculpted sleeping props.
+  const suppressPeriodicBlink =
+    activeGesture === "sleep" ||
+    activeGesture === "hide" ||
+    activeGesture === "yawn" ||
+    BEDTIME_FACE_PROPS.has(canonicalId);
+  const blink = suppressPeriodicBlink ? undefined : blinkPartsAt(input.id, input.timeSec, input.reducedMotion);
   const loco = locomotionSubParts(
     input.id,
     input.locomotion,
@@ -1712,7 +2169,6 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
     input.distanceTravelled ?? 0
   );
 
-  const activeGesture: Gesture | null = input.gesture ?? (input.holding ? (input.holdGesture ?? null) : null);
   let gestureParts: ArticulatedPoseMap | undefined;
   if (input.gesture) {
     gestureParts = gestureSpecificSubParts(
@@ -1721,7 +2177,8 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
       input.gestureElapsedSec,
       input.gestureDurationSec,
       input.loop,
-      input.reducedMotion
+      input.reducedMotion,
+      input.timeSec
     );
   } else if (input.holding && input.holdGesture) {
     gestureParts = gestureSpecificSubParts(
@@ -1730,7 +2187,8 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
       1,
       1,
       false,
-      input.reducedMotion
+      input.reducedMotion,
+      input.timeSec
     );
   } else if (input.id === "lumi" && !input.reducedMotion && !input.locomotion) {
     // Lumi's calm Lissajous figure-8 hover at idle.
@@ -1742,6 +2200,17 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
       },
       petals: {
         scale: [1 + 0.025 * Math.sin(w * 1.5), 1 + 0.025 * Math.cos(w * 1.5), 1]
+      }
+    };
+  }
+
+  // Slow continuous nursery turntable / mobile rotation on `cribMobile` and `musicBox` when `!reducedMotion`.
+  let ambientPropSpin: ArticulatedPoseMap | undefined;
+  if (!input.reducedMotion && (canonicalId === "cribMobile" || canonicalId === "musicBox")) {
+    const hz = canonicalId === "cribMobile" ? 0.08 : 0.16;
+    ambientPropSpin = {
+      petals: {
+        rotation: [0, TAU * hz * input.timeSec + phaseOf(input.id) * TAU, 0]
       }
     };
   }
@@ -1762,10 +2231,13 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
     activeGesture === "wave" ||
     activeGesture === "mirror" ||
     activeGesture === "cheer" ||
-    activeGesture === "happy";
+    activeGesture === "happy" ||
+    activeGesture === "sleep" ||
+    activeGesture === "yawn" ||
+    activeGesture === "twinkle";
 
   const carryParts: ArticulatedPoseMap | undefined =
-    input.carrying && !propParts && !gestureDrivesArms && BIPED_ACTORS.has(input.id)
+    input.carrying && !propParts && !gestureDrivesArms && BIPED_ACTORS.has(canonicalId)
       ? {
           armL: { rotation: [-0.96, 0.34, -0.16], offset: [0.02, 0.02, 0.04] },
           armR: { rotation: [-0.96, -0.34, 0.16], offset: [-0.02, 0.02, 0.04] }
@@ -1774,7 +2246,7 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
 
   const speech = speechSubParts(input.id, input.speechEnergy, input.timeSec, input.reducedMotion);
 
-  return mergePartPoses(loco, gestureParts, propParts, carryParts, speech, blink);
+  return mergePartPoses(loco, ambientPropSpin, gestureParts, propParts, carryParts, speech, blink);
 }
 
 // ---------------------------------------------------------------- optional skinned clip + AuraVoice viseme bridge

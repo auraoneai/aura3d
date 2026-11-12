@@ -27,7 +27,8 @@ export const WORD_IDS = [
   "bubble", "look", "find", "where", "there", "blow", "circle", "square", "triangle",
   "clap", "stomp", "dance", "ah", "oh", "mmm", "uh-oh",
   "block", "drum", "lift", "star", "chick", "cow", "sheep", "duck", "horse", "robot", "mirror",
-  "sun", "cloud", "balloon", "bell", "plate", "picnic", "sponge", "towel", "wave", "peekaboo"
+  "sun", "cloud", "balloon", "bell", "plate", "picnic", "sponge", "towel", "wave", "peekaboo",
+  "blanket", "pillow", "night", "dream", "quiet", "soft", "hush"
 ] as const;
 
 export type WordId = (typeof WORD_IDS)[number];
@@ -116,7 +117,7 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   // Cause and effect.
   open: word("open", "cause-effect", "Open! The door opens.", ["e02", "e18", "e20", "g04", "g07", "g11"],
     "Hide a toy in a box, pause, then open it together: \"Open!\"", { extension: "Open the box." }),
-  close: word("close", "cause-effect", "Close. The door is closed.", ["e02", "g07"],
+  close: word("close", "cause-effect", "Close. The door is closed.", ["e02", "e25", "g07", "g15"],
     "Open and close a cupboard door or a box lid together, naming each.", { extension: "Close the box.", forms: ["close", "closing"] }),
   pop: word("pop", "cause-effect", "Pop! The bubble pops.", ["e15", "g01"],
     "Blow bubbles together (with a grown-up holding the bottle) and pop them: \"Pop!\"", { extension: "Pop, pop, pop!" }),
@@ -154,7 +155,7 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   drink: word("drink", "daily-living", "Drink. A drink of water.", ["e19"], "Take a sip of water together and name it: \"drink\".", { forms: ["drink", "drank"] }),
   wash: word("wash", "daily-living", "Wash, wash, wash.", ["e19", "g06"], "Wash hands together and name it: \"Wash, wash.\"", { extension: "Wash the car." }),
   brush: word("brush", "daily-living", "Brush, brush.", ["e19"], "Brush teeth side by side and name each stroke: \"brush\".", { extension: "Brush teeth." }),
-  sleep: word("sleep", "daily-living", "Sleep. Shh, sleep.", ["e19", "e20"], "Tuck a toy into bed and whisper \"sleep\".", { extension: "Teddy sleeps.", forms: ["sleep", "slept"] }),
+  sleep: word("sleep", "daily-living", "Sleep. Shh, sleep.", ["e19", "e20", "e21", "e24", "g13"], "Tuck a toy into bed and whisper \"sleep\".", { extension: "Teddy sleeps.", forms: ["sleep", "slept"] }),
   wake: word("wake", "daily-living", "Wake up! Good morning.", ["e19"], "Pretend a toy is asleep, then wake it gently: \"Wake up!\"", { forms: ["wake", "waking", "woke"] }),
   // Familiar sound play.
   woof: word("woof", "sound", "Woof! Woof, woof.", ["e03", "e08", "e09", "e17", "g03"], "Take turns making a soft \"woof\" with a toy dog."),
@@ -184,8 +185,8 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   tummy: word("tummy", "body", "Tummy. A rumbly tummy.", ["e05", "e10"], "Pat your tummy before a snack and name it."),
   door: word("door", "home", "Door. Knock, knock.", ["e02", "e18", "g09"], "Knock on a real door together, open it, and wave hi.", { extension: "Open the door." }),
   box: word("box", "home", "Box. A big box.", ["e08", "e20"], "Put a toy in a box, close it, then open it together.", { extension: "Open the box." }),
-  bed: word("bed", "home", "Bed. Time for bed.", ["e19"], "Tuck a toy into bed and whisper \"night-night\"."),
-  moon: word("moon", "nature", "Moon. The moon is up.", ["e19"], "Look for the moon in a book or out of the window at night."),
+  bed: word("bed", "home", "Bed. Time for bed.", ["e19", "e22", "g13"], "Tuck a toy into bed and whisper \"night-night\"."),
+  moon: word("moon", "nature", "Moon. The moon is up.", ["e19", "e21", "g14"], "Look for the moon in a book or out of the window at night."),
   // Concepts (one pair per scene).
   big: word("big", "concept", "Big! A big ball.", [], BIG_SMALL_PLAY),
   small: word("small", "concept", "Small. A small ball.", [], BIG_SMALL_PLAY),
@@ -194,7 +195,7 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   wet: word("wet", "concept", "Wet! The car is wet.", ["g06"], WET_DRY_PLAY),
   dry: word("dry", "concept", "Dry. Dry, dry, dry.", ["g06"], WET_DRY_PLAY, { forms: ["dry", "dries", "dried"] }),
   fast: word("fast", "concept", "Fast! Zoom!", [], FAST_SLOW_PLAY),
-  slow: word("slow", "concept", "Slow. Slow and gentle.", [], FAST_SLOW_PLAY),
+  slow: word("slow", "concept", "Slow. Slow and gentle.", ["e24"], FAST_SLOW_PLAY),
   on: word("on", "position", "On! On the table.", [], "Put a toy on a box, then under a blanket, naming where it is.", { forms: ["on", "onto"] }),
   under: word("under", "position", "Under! Under the box.", ["e08", "e14"], "Hide a toy under a blanket and find it together."),
   behind: word("behind", "position", "Behind. Behind the bush.", ["e08", "e14"], "Hide behind a chair for a gentle game of peekaboo."),
@@ -204,9 +205,9 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   yellow: word("yellow", "colour", "Yellow! A yellow banana.", [], "Find something yellow in the room together."),
   green: word("green", "colour", "Green. Green grass.", [], "Find something green on a walk."),
   // Numbers: counted objects, 1-3 only (PRD 01 section 3.3).
-  one: word("one", "number", "One. One ball.", ["e05", "e11", "e16", "g08"], COUNT_PLAY),
-  two: word("two", "number", "Two. Two balls.", ["e05", "e11", "e16", "g08"], COUNT_PLAY),
-  three: word("three", "number", "Three! Three balls.", ["e05", "e11", "e16", "g08"], COUNT_PLAY),
+  one: word("one", "number", "One. One ball.", ["e05", "e11", "e16", "e23", "g08"], COUNT_PLAY),
+  two: word("two", "number", "Two. Two balls.", ["e05", "e11", "e16", "e23", "g08"], COUNT_PLAY),
+  three: word("three", "number", "Three! Three balls.", ["e05", "e11", "e16", "e23", "g08"], COUNT_PLAY),
   // Letters: the name and the sound stay apart (see letters.ts).
   b: word("b", "letter", "B. Bee. B is for ball.", ["e03"], "Find the letter B on a page, then find a real ball.", { label: "B", forms: ["b", "bee"] }),
   a: word("a", "letter", "A. Ay. A is for apple.", ["e04"], "Find the letter A on a page, then find a real apple.", { label: "A", forms: ["a", "ay"] }),
@@ -232,16 +233,16 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   block: word("block", "object", "Block! A big block.", ["g08"], "Stack three big blocks and knock them down gently."),
   drum: word("drum", "object", "Drum. Boom, boom!", ["e06", "g10"], "Tap a pot gently like a drum, taking turns."),
   lift: word("lift", "object", "Lift. Up we go!", ["g07"], "Move a toy up and down a stack of books like a little lift."),
-  star: word("star", "nature", "Star. A little star.", [], "Look at stars in a picture book or the night sky."),
+  star: word("star", "nature", "Star. A little star.", ["e21", "g14"], "Look at stars in a picture book or the night sky."),
   chick: word("chick", "animal", "Chick! A little chick.", ["e02", "e03", "e09"], "Make a soft \"tweet\" with a toy bird or a picture of a chick."),
   cow: word("cow", "animal", "Cow. Moo!", ["e09", "g04"], ANIMAL_SOUND_PLAY),
-  sheep: word("sheep", "animal", "Sheep. Baa!", ["e09"], ANIMAL_SOUND_PLAY),
+  sheep: word("sheep", "animal", "Sheep. Baa!", ["e09", "e23", "g16"], ANIMAL_SOUND_PLAY),
   duck: word("duck", "animal", "Duck! Quack, quack.", ["e02", "e09", "e20", "g04"], ANIMAL_SOUND_PLAY),
   horse: word("horse", "animal", "Horse. Neigh!", ["g04"], ANIMAL_SOUND_PLAY),
   robot: word("robot", "object", "Robot! Beep, beep.", ["e13"], "Move like a slow, friendly robot together."),
   mirror: word("mirror", "object", "Mirror. Look, it's me!", ["e01"], "Look in a mirror together and copy each other's faces."),
   sun: word("sun", "nature", "Sun! Good morning, sun.", ["e19"], "Open the curtains in the morning and say hello to the sun."),
-  cloud: word("cloud", "nature", "Cloud. A soft cloud.", [], "Look at clouds in the sky together."),
+  cloud: word("cloud", "nature", "Cloud. A soft cloud.", ["e26", "g16"], "Look at clouds in the sky together."),
   balloon: word("balloon", "object", "Balloon! A red balloon.", ["e11", "e16"],
     "Point to balloons in a picture book and count them together (real balloons are not toddler toys)."),
   bell: word("bell", "object", "Bell. Ding, ding!", ["e18", "g09"], "Ring a small bell together and wave hi."),
@@ -250,7 +251,14 @@ export const WORDS: Readonly<Record<WordId, WordInfo>> = {
   sponge: word("sponge", "object", "Sponge. Wash, wash.", ["g06"], "Wash a toy car with a damp sponge together."),
   towel: word("towel", "object", "Towel. Dry, dry.", ["g06"], "Dry a toy or your hands with a towel together."),
   wave: word("wave", "action", "Wave! Wave bye-bye.", ["e18", "g09"], "Wave hello and bye-bye to people and toys.", { forms: ["wave", "waving"] }),
-  peekaboo: word("peekaboo", "sound", "Peekaboo! There you are.", ["e02", "g04"], "Play peekaboo with your hands or a soft blanket.", { forms: ["peekaboo", "peek a boo"] })
+  peekaboo: word("peekaboo", "sound", "Peekaboo! There you are.", ["e02", "g04"], "Play peekaboo with your hands or a soft blanket.", { forms: ["peekaboo", "peek a boo"] }),
+  blanket: word("blanket", "home", "Blanket. A warm blanket.", ["e22", "g13"], "Tuck a stuffed toy under a soft blanket and whisper \"warm blanket\"."),
+  pillow: word("pillow", "home", "Pillow. A soft pillow.", ["e22"], "Pat a pillow gently before resting and name it together."),
+  night: word("night", "nature", "Night. Quiet night.", ["e25", "g15"], "Look out at the evening sky together and whisper \"night-night\".", { forms: ["night", "nighttime"] }),
+  dream: word("dream", "daily-living", "Dream. Sweet dreams.", ["e26"], "Whisper \"sweet dreams\" as you dim the room for rest."),
+  quiet: word("quiet", "concept", "Quiet. Nice and quiet.", ["e24", "g14"], "Listen together for a quiet moment and whisper \"quiet\".", { forms: ["quiet", "quietly"] }),
+  soft: word("soft", "concept", "Soft. Soft like a cloud.", ["e26", "g16"], "Feel a soft blanket or plush toy together and name \"soft\".", { forms: ["soft", "softly"] }),
+  hush: word("hush", "sound", "Hush. Shh, hush now.", ["e25", "g15"], "Rock a favourite toy slowly and model a gentle \"hush\".")
 };
 
 const WORD_SET: ReadonlySet<string> = new Set<string>(WORD_IDS);

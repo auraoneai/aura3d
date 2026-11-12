@@ -11,6 +11,7 @@ import {
   PARENT_SETTINGS_FIELDS,
   SETTINGS_STORAGE_KEY,
   SFX_VOLUMES,
+  SLEEP_TIMER_CHOICES,
   WAIT_MS_DEFAULT,
   WAIT_MS_MAX,
   WAIT_MS_MIN,
@@ -52,7 +53,20 @@ const blockedStorage: SettingsStorage = {
   }
 };
 
-const SETTINGS_FIELDS = ["captions", "highContrast", "locale", "mode", "music", "reducedMotion", "sfxVolume", "sound", "waitMs", "wordList"];
+const SETTINGS_FIELDS = [
+  "captions",
+  "highContrast",
+  "locale",
+  "mode",
+  "music",
+  "reducedMotion",
+  "sfxVolume",
+  "sleepTimerMin",
+  "sound",
+  "waitMs",
+  "windDown",
+  "wordList"
+];
 
 /** Field names that would identify a child or family; none may ever be stored. */
 const IDENTITY_FIELDS = [
@@ -83,7 +97,9 @@ describe("settings defaults", () => {
       highContrast: false,
       locale: "en",
       waitMs: 5000,
-      wordList: []
+      wordList: [],
+      windDown: false,
+      sleepTimerMin: 0
     });
     expect(WAIT_MS_DEFAULT).toBe(5000);
   });
@@ -163,7 +179,7 @@ describe("settings round trip", () => {
   it("saves and loads every field", () => {
     const storage = new MemoryStorage();
     const chosen: ParentSettings = {
-      mode: "watch-sing",
+      mode: "wind-down",
       music: false,
       sound: true,
       sfxVolume: "soft",
@@ -172,11 +188,28 @@ describe("settings round trip", () => {
       highContrast: true,
       locale: "en",
       waitMs: 7000,
-      wordList: ["ball", "more", "all-done"]
+      wordList: ["ball", "more", "all-done"],
+      windDown: true,
+      sleepTimerMin: 15
     };
     expect(saveSettings(storage, chosen)).toBe(true);
     expect(loadSettings(storage)).toEqual(chosen);
     expect(Object.keys(storedRecord(storage)).sort()).toEqual(SETTINGS_FIELDS);
+  });
+
+  it("keeps windDown and valid sleepTimerMin choices, falling back to 0 for invalid timer values", () => {
+    expect(SLEEP_TIMER_CHOICES).toEqual([0, 5, 10, 15, 20, 30]);
+    const storage = new MemoryStorage();
+    for (const min of SLEEP_TIMER_CHOICES) {
+      saveSettings(storage, { ...defaultSettings(), windDown: true, sleepTimerMin: min });
+      expect(loadSettings(storage).sleepTimerMin).toBe(min);
+      expect(loadSettings(storage).windDown).toBe(true);
+    }
+    for (const bad of [3, 7, 45, -5, "10", null, true]) {
+      storage.data.set(SETTINGS_STORAGE_KEY, JSON.stringify({ sleepTimerMin: bad, windDown: "yes" }));
+      expect(loadSettings(storage).sleepTimerMin).toBe(0);
+      expect(loadSettings(storage).windDown).toBe(false);
+    }
   });
 
   it("keeps a stored calm-motion choice over the OS preference", () => {

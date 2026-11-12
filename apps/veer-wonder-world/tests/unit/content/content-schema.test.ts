@@ -357,16 +357,22 @@ describe("songs, sound effects, music beds and words", () => {
     expect(SONGS.goStop.lyrics).toEqual([...PRD_SONG_LYRICS.goStop]);
   });
 
-  it("keep hello and all-done short (8-15 s) and every other song 15-30 s, with one motion per line", () => {
+  it("keep hello and all-done short (8-15 s), daytime songs 15-30 s, and sleep songs 20-56 s, with one motion per lyric line", () => {
     for (const id of SONG_IDS) {
       const song = SONGS[id];
       const seconds = songLengthSec(song);
       if (id === "hello" || id === "allDone") expect(seconds, id).toBeGreaterThanOrEqual(8);
+      else if (song.sleep) expect(seconds, id).toBeGreaterThanOrEqual(20);
       else expect(seconds, id).toBeGreaterThanOrEqual(15);
-      expect(seconds, id).toBeLessThanOrEqual(id === "hello" || id === "allDone" ? 15 : 30);
+      expect(seconds, id).toBeLessThanOrEqual(id === "hello" || id === "allDone" ? 15 : song.sleep ? 56 : 30);
       expect(song.motions, id).toHaveLength(song.lyrics.length);
       expect(song.style, id).toContain(`${song.bpm} bpm`);
-      expect(song.vocal, id).toBe("sung");
+      if (song.vocal === "instrumental") {
+        expect(song.sleep, id).toBe(true);
+        expect(song.lyrics, id).toEqual([]);
+      } else {
+        expect(song.vocal, id).toBe("sung");
+      }
     }
   });
 
@@ -425,7 +431,7 @@ describe("songs, sound effects, music beds and words", () => {
 
   it("list exactly the allowed vocabulary, each word with a category, model phrase and offline prompt", () => {
     const allowed =
-      "more, again, help, go, stop, up, down, open, close, pop, roll, hi, hello, bye, thank-you, my-turn, your-turn, all-done, ball, dog, car, train, book, teddy, bear, eat, drink, wash, brush, sleep, wake, woof, moo, quack, baa, neigh, tweet, beep, boom, apple, banana, cookie, cake, hat, bird, butterfly, water, flower, hand, hands, foot, feet, nose, tummy, door, box, bed, moon, big, small, in, out, wet, dry, fast, slow, on, under, behind, red, blue, yellow, green, one, two, three, b, a, bubble, look, find, where, there, blow, circle, square, triangle, clap, stomp, dance, ah, oh, mmm, uh-oh, block, drum, lift, star, chick, cow, sheep, duck, horse, robot, mirror, sun, cloud, balloon, bell, plate, picnic, sponge, towel, wave, peekaboo";
+      "more, again, help, go, stop, up, down, open, close, pop, roll, hi, hello, bye, thank-you, my-turn, your-turn, all-done, ball, dog, car, train, book, teddy, bear, eat, drink, wash, brush, sleep, wake, woof, moo, quack, baa, neigh, tweet, beep, boom, apple, banana, cookie, cake, hat, bird, butterfly, water, flower, hand, hands, foot, feet, nose, tummy, door, box, bed, moon, big, small, in, out, wet, dry, fast, slow, on, under, behind, red, blue, yellow, green, one, two, three, b, a, bubble, look, find, where, there, blow, circle, square, triangle, clap, stomp, dance, ah, oh, mmm, uh-oh, block, drum, lift, star, chick, cow, sheep, duck, horse, robot, mirror, sun, cloud, balloon, bell, plate, picnic, sponge, towel, wave, peekaboo, blanket, pillow, night, dream, quiet, soft, hush";
     expect([...WORD_IDS]).toEqual(allowed.split(", "));
     for (const id of WORD_IDS) {
       const word = WORDS[id];

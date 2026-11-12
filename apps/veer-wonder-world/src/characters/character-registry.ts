@@ -82,7 +82,8 @@ export interface CharacterProfile {
 export const GESTURES: readonly Gesture[] = [
   "idle", "wave", "talk", "point", "happy", "cheer", "dance", "hop", "nod", "look",
   "sleep", "eat", "wake", "sway", "mirror", "pickUp", "shrug", "wag", "sniff", "bark",
-  "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow", "surprise", "wait"
+  "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow", "surprise", "wait",
+  "yawn", "rock", "twinkle"
 ];
 
 /** True for a Gesture id (song motions are plain strings in src/content/songs.ts). */
@@ -130,7 +131,11 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
   // startle: 02 section 1). Stretch and hop together stay under 15% taller.
   surprise: gestureMotion([proc("stretch", 0.8, 0.1), proc("hop", 0.8, 0.06)]),
   // Waiting: lean in a little toward the child and hold still, attentive (01 section 3.1: wait, do not ask again).
-  wait: gestureMotion([proc("lean", 1.0, 0.1)], { hold: true })
+  wait: gestureMotion([proc("lean", 1.0, 0.1)], { hold: true }),
+  // Bedtime gestures: slow sleepy yawn stretch, gentle 0.35 Hz cradle rock, and soft starlight twinkle.
+  yawn: gestureMotion([proc("stretch", 2.2, 0.06), proc("lean", 2.2, -0.06)]),
+  rock: gestureMotion([proc("rock", 2.86, 0.085, 1)]),
+  twinkle: gestureMotion([proc("pulse", 2.8, 0.04), proc("float", 2.8, 0.03)], { halo: true })
 };
 
 /** Gentle breathing for characters at rest. */

@@ -19,10 +19,10 @@ const OWNER = "AuraOne (project owner)";
 const PROCEDURAL_STAGE_LICENSE = "Original procedural @aura3d/engine stage art owned by AuraOne";
 const failures = [];
 
-// ---- procedural stage assets (all 65 ModelKeys; zero binary .glb models)
+// ---- procedural stage assets (all 72 ModelKeys; zero binary .glb models)
 const assets = readJson(join(app, "tools", "wonder-assets.json")).assets;
-if (!Array.isArray(assets) || assets.length !== 65) {
-  failures.push(`wonder-assets.json: expected 65 procedural assets, got ${Array.isArray(assets) ? assets.length : "non-array"}`);
+if (!Array.isArray(assets) || assets.length !== 72) {
+  failures.push(`wonder-assets.json: expected 72 procedural assets, got ${Array.isArray(assets) ? assets.length : "non-array"}`);
 }
 const modelsDir = join(app, "src", "assets", "models");
 if (existsSync(modelsDir)) {

@@ -82,6 +82,11 @@ const SHARED_UI_KEYS = [
 const PACK_UI_KEYS = [
   "ui.start.sound",
   "ui.mode.auto",
+  "ui.mode.windDown",
+  "ui.menu.sleep",
+  "ui.menu.songs",
+  "ui.menu.all",
+  "ui.menu.playLullabies",
   "ui.prototype",
   "ui.controls.label",
   "ui.confirm",
@@ -98,10 +103,17 @@ const PACK_UI_KEYS = [
   "ui.parent.sfx.off",
   "ui.parent.sfx.soft",
   "ui.parent.sfx.normal",
+  "ui.parent.windDown",
+  "ui.parent.windDownHelp",
+  "ui.parent.sleepTimer",
+  "ui.parent.sleepTimerHelp",
+  "ui.parent.sleepTimerOff",
   "ui.parent.waitHelp",
   "ui.parent.wordsHelp",
   "ui.parent.wordsEmpty",
   "ui.parent.wordsCount",
+  "ui.sleep.title",
+  "ui.sleep.body",
   "ui.guide.title",
   "ui.note.title",
   "ui.note.aap",
@@ -719,7 +731,7 @@ describe("WP-7 co-play UI upgrades", () => {
       selectedWords: ["ball"]
     });
     const host = root as unknown as MiniElement;
-    expect(host.querySelectorAll(".ww-world-pill")).toHaveLength(7);
+    expect(host.querySelectorAll(".ww-world-pill")).toHaveLength(9);
     expect(host.querySelectorAll('[data-ui="focus-word"]')).toHaveLength(1);
     const cells = host.querySelectorAll(".ww-menu-cell");
     expect(cells.map((c) => c.hidden)).toEqual([false, false]);

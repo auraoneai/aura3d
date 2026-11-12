@@ -25,6 +25,10 @@ export interface SongSpec {
   motions: string[];
   vocal: "sung" | "instrumental";
   style: string;
+  /** Marks hushed lullabies & sleep tracks eligible for the Lullaby Jukebox and 52..68 BPM / 20..56 s envelope. */
+  sleep?: boolean;
+  /** Explicit target duration (seconds) for instrumental or extended sleep songs (24..56 s). */
+  durationSec?: number;
 }
 
 /** Shared rights and review record for every song (lyrics, melody, recording). */
@@ -172,12 +176,172 @@ export const SONGS: Record<SongId, SongSpec> = {
     bpm: 66,
     motions: ["sway", "sway", "nod", "sway", "wave", "sleep"],
     vocal: "sung",
+    sleep: true,
     style: "very soft preschool lullaby, gentle music box and felt piano, 66 bpm, warm hushed female vocal, slow and clear, quiet and soothing, original melody"
+  },
+  twinkleRest: {
+    titleKey: "ui.song.twinkleRest",
+    lyrics: [
+      "Little star up in the sky,",
+      "shining softly way up high.",
+      "Time to yawn and gently sway,",
+      "rest now at the end of day.",
+      "Hush now, little starlight friend,",
+      "softly, softly sleep."
+    ],
+    bpm: 60,
+    motions: ["twinkle", "sway", "look", "yawn", "rock", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 36,
+    style: "very soft baby lullaby, delicate celesta, warm harp and felt piano, 60 bpm, warm hushed female vocal, slow and clear, an original lullaby melody of its own (never traditional twinkle)"
+  },
+  rockingCradle: {
+    titleKey: "ui.song.rockingCradle",
+    lyrics: [
+      "Rock, rock, slow and slow,",
+      "back and forth the cradle goes.",
+      "Warm and cosy, safe and snug,",
+      "wrapped inside a gentle hug.",
+      "Close your eyes and drift away,",
+      "sleep, sleep, sleep."
+    ],
+    bpm: 58,
+    motions: ["rock", "sway", "rock", "nod", "yawn", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 38,
+    style: "ultra gentle baby cradle lullaby, fingerpicked warm nylon guitar and antique music box, 58 bpm, warm hushed female vocal, slow rocking rhythm, original melody"
+  },
+  sleepyClouds: {
+    titleKey: "ui.song.sleepyClouds",
+    lyrics: [
+      "Floating on a sleepy cloud,",
+      "quiet sky, nothing loud.",
+      "Soft and fluffy, warm and slow,",
+      "drifting in the golden glow.",
+      "A cosy dream is on its way,",
+      "shh, shh, sleep."
+    ],
+    bpm: 56,
+    motions: ["float", "sway", "float", "blink", "rock", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 40,
+    style: "dreamy hushed baby lullaby, warm soft Rhodes electric piano, gentle harp and warm pad, 56 bpm, soothing calm female vocal, very slow and peaceful, original melody"
+  },
+  teddyGoodnight: {
+    titleKey: "ui.song.teddyGoodnight",
+    lyrics: [
+      "Teddy yawns a sleepy yawn,",
+      "daytime play is nearly gone.",
+      "Pillow soft beneath his head,",
+      "snug inside his little bed.",
+      "Night-night, little furry bear,",
+      "sweet dreams everywhere."
+    ],
+    bpm: 62,
+    motions: ["sway", "nod", "rock", "yawn", "wave", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 36,
+    style: "cosy bedtime lullaby for a baby, muted warm marimba, felt piano and soft music box, 62 bpm, warm gentle female vocal, slow and soothing, original melody"
+  },
+  countingSheepSong: {
+    titleKey: "ui.song.countingSheepSong",
+    lyrics: [
+      "One soft sheep upon a cloud,",
+      "two soft sheep, never loud.",
+      "Three soft sheep curl up to rest,",
+      "one, two, three in a fluffy nest.",
+      "Baa, baa, whisper low,",
+      "off to sleep they go."
+    ],
+    bpm: 60,
+    motions: ["point", "point", "point", "sway", "yawn", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 36,
+    style: "soothing baby counting lullaby, warm pizzicato cello, felt piano and soft harp, 60 bpm, hushed friendly female vocal, slow steady pulse, original melody"
+  },
+  warmBlanketSong: {
+    titleKey: "ui.song.warmBlanketSong",
+    lyrics: [
+      "Pull the blanket up so warm,",
+      "cosy, quiet, safe from storm.",
+      "Soft, soft blanket on our toes,",
+      "a little yawn, and eyelids close.",
+      "Snug and quiet through the night,",
+      "hush now, sleep tight."
+    ],
+    bpm: 62,
+    motions: ["sway", "nod", "rock", "blink", "sway", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 36,
+    style: "warm soothing tuck-in lullaby, soft acoustic guitar harmonics, gentle glockenspiel and felt piano, 62 bpm, hushed female vocal, slow and reassuring, original melody"
+  },
+  cricketHush: {
+    titleKey: "ui.song.cricketHush",
+    lyrics: [
+      "Flowers close inside the night,",
+      "leaves are resting, soft and quiet.",
+      "Little lantern, warm and low,",
+      "watch the sleepy garden glow.",
+      "Hush now, garden, hush now, friend,",
+      "day has reached its end."
+    ],
+    bpm: 58,
+    motions: ["look", "sway", "nod", "blink", "twinkle", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 38,
+    style: "tranquil evening garden lullaby, warm wooden flute, soft thumb kalimba and felt piano, 58 bpm, hushed gentle female vocal, slow and peaceful, original melody"
+  },
+  dreamBoatSong: {
+    titleKey: "ui.song.dreamBoatSong",
+    lyrics: [
+      "Gliding slow across the night,",
+      "underneath the golden light.",
+      "Quiet wheels and quiet breeze,",
+      "resting softly, full of ease.",
+      "Dream, dream, gentle friend,",
+      "sleep until the morning."
+    ],
+    bpm: 56,
+    motions: ["rock", "sway", "float", "rock", "yawn", "sleep"],
+    vocal: "sung",
+    sleep: true,
+    durationSec: 42,
+    style: "gentle 6/8 barcarolle baby lullaby, soft harp arpeggios, warm solo cello and felt piano, 56 bpm, hushed female vocal, slow cradle sway, original melody"
+  },
+  moonMusicBox: {
+    titleKey: "ui.song.moonMusicBox",
+    lyrics: [],
+    bpm: 54,
+    motions: [],
+    vocal: "instrumental",
+    sleep: true,
+    durationSec: 48,
+    style: "pure soothing baby sleep instrumental, antique wound brass music box and warm felt piano resonances, 54 bpm, ultra gentle, low dynamic range, no percussion, original lullaby melody"
+  },
+  starlightHum: {
+    titleKey: "ui.song.starlightHum",
+    lyrics: [],
+    bpm: 52,
+    motions: [],
+    vocal: "instrumental",
+    sleep: true,
+    durationSec: 52,
+    style: "deep baby sleep cradle instrumental, warm muted cello, delicate harp harmonics and soft celesta over a warm pad, 52 bpm, very slow, tranquil and soothing, no percussion, original melody"
   }
 };
 
 /** Song ids in a stable order. */
 export const SONG_IDS: readonly SongId[] = keysOf(SONGS);
+
+/** Sleep & lullaby song ids in descending arousal order for the Lullaby Jukebox. */
+export const SLEEP_SONG_IDS: readonly SongId[] = SONG_IDS.filter((id) => SONGS[id].sleep === true);
 
 function keysOf<T extends string>(record: Readonly<Record<T, unknown>>): T[] {
   const out: T[] = [];
@@ -187,20 +351,28 @@ function keysOf<T extends string>(record: Readonly<Record<T, unknown>>): T[] {
 
 /**
  * The length (seconds) tools/gen-audio.ts asks the music generator for: four
- * beats per lyric line at the song's tempo, clamped to 10-30 s. The validator
- * uses it until the recorded song exists.
+ * beats per lyric line at the song's tempo, clamped to 10-30 s for daytime songs
+ * and up to 56 s for hushed sleep/lullaby tracks.
  */
-export function songLengthSec(song: Pick<SongSpec, "lyrics" | "bpm">): number {
+export function songLengthSec(song: Pick<SongSpec, "lyrics" | "bpm" | "sleep" | "durationSec">): number {
+  if (song.durationSec !== undefined) {
+    return Math.min(56, Math.max(20, Math.round(song.durationSec)));
+  }
+  if (song.sleep) {
+    const raw = Math.round((Math.max(4, song.lyrics.length) * 60 * 4) / Math.max(52, song.bpm));
+    return Math.min(56, Math.max(20, raw));
+  }
   return Math.min(30, Math.max(10, Math.round((song.lyrics.length * 60 * 4) / Math.max(60, song.bpm))));
 }
 
 /**
- * Start time (ms) of each lyric line, spread evenly over the song. Pass the
- * recorded duration when it is known; otherwise the generated length is used.
+ * Start time (ms) of each lyric line, spread evenly over the song. Instrumental
+ * songs with zero lyrics return an empty cue schedule.
  */
 export function songCueTimesMs(id: SongId, durationMs?: number): number[] {
   const song = SONGS[id];
+  if (song.lyrics.length === 0) return [];
   const total = durationMs !== undefined && Number.isFinite(durationMs) && durationMs > 0 ? durationMs : songLengthSec(song) * 1000;
-  const count = Math.max(1, song.lyrics.length);
+  const count = song.lyrics.length;
   return song.lyrics.map((_, index) => Math.round((index * total) / count));
 }

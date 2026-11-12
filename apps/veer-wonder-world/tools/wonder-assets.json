@@ -64,6 +64,13 @@
     { "key": "toothbrush", "role": "prop", "heightM": 0.4, "face": false },
     { "key": "sun", "role": "prop", "heightM": 0.8, "face": false },
     { "key": "candleFlame", "role": "prop", "heightM": 0.07, "face": false },
-    { "key": "partyHat", "role": "prop", "heightM": 0.3, "face": false }
+    { "key": "partyHat", "role": "prop", "heightM": 0.3, "face": false },
+    { "key": "moon", "role": "prop", "heightM": 0.75, "face": true },
+    { "key": "cradle", "role": "prop", "heightM": 0.65, "face": false },
+    { "key": "cribMobile", "role": "prop", "heightM": 0.75, "face": false },
+    { "key": "musicBox", "role": "prop", "heightM": 0.45, "face": false },
+    { "key": "nightlight", "role": "prop", "heightM": 0.42, "face": false },
+    { "key": "blanket", "role": "prop", "heightM": 0.18, "face": false },
+    { "key": "sleepyCloud", "role": "prop", "heightM": 0.85, "face": true }
   ]
 }

@@ -98,7 +98,14 @@ const TURNAROUND_KEYS = [
   "lift",
   "colourMachine",
   "cake",
-  "mirror"
+  "mirror",
+  "moon",
+  "cradle",
+  "cribMobile",
+  "musicBox",
+  "nightlight",
+  "blanket",
+  "sleepyCloud"
 ];
 
 const WORLD_CAPTURES = [
@@ -109,7 +116,9 @@ const WORLD_CAPTURES = [
   { slug: "05-peekaboo-barn-G04", storyId: "peekaboo-animal-barn", expectedWorld: "peekaboo-barn", advanceMs: 6500 },
   { slug: "06-learning-cloud-E03", storyId: "alphabet-zoo", expectedWorld: "learning-cloud", advanceMs: 6500 },
   { slug: "07-birthday-cake-E16", storyId: "little-birthday-party", expectedWorld: "music-garden", advanceMs: 6500 },
-  { slug: "08-car-wash-G06", storyId: "splashy-car-wash", expectedWorld: "home-nook", advanceMs: 6500 }
+  { slug: "08-car-wash-G06", storyId: "splashy-car-wash", expectedWorld: "home-nook", advanceMs: 6500 },
+  { slug: "09-moonlit-nursery-E21", storyId: "lumi-moonlit-lullaby", expectedWorld: "moonlit-nursery", advanceMs: 6500 },
+  { slug: "10-starlight-cloud-E26", storyId: "drifting-dream-clouds", expectedWorld: "starlight-cloud", advanceMs: 6500 }
 ];
 
 const STUDIO_HTML = `<!doctype html>

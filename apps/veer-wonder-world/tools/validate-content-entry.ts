@@ -9,7 +9,7 @@
 // counting, songs, effects, beds, timing, review and the canonical 20 + 12
 // catalog. It also checks that each locale file only defines its own keys,
 // every story/world model key is registered as procedural in src/aura-assets.ts
-// (65 ModelKeys, 0 .glb files anywhere in the app source tree), and every
+// (72 ModelKeys, 0 .glb files anywhere in the app source tree), and every
 // recorded audio clip exists, matches its sha256, has a complete provenance
 // record and was recorded from the current line text, lyrics or prompt.
 // Recorded audio is required for every line, song, effect and bed once any line
@@ -78,28 +78,32 @@ async function validateModels(
     { peekabooBarn },
     { station },
     { learningCloud },
-    { homeNook }
+    { homeNook },
+    { moonlitNursery },
+    { starlightCloud }
   ] = await Promise.all([
     import("../src/scenes/meadow.js"),
     import("../src/scenes/music-garden.js"),
     import("../src/scenes/peekaboo-barn.js"),
     import("../src/scenes/station.js"),
     import("../src/scenes/learning-cloud.js"),
-    import("../src/scenes/home-nook.js")
+    import("../src/scenes/home-nook.js"),
+    import("../src/scenes/moonlit-nursery.js"),
+    import("../src/scenes/starlight-cloud.js")
   ]);
 
-  if (MODEL_KEYS.length !== 65) {
-    extra.push(`src/aura-assets.ts: expected 65 MODEL_KEYS, got ${MODEL_KEYS.length}`);
+  if (MODEL_KEYS.length !== 72) {
+    extra.push(`src/aura-assets.ts: expected 72 MODEL_KEYS, got ${MODEL_KEYS.length}`);
   }
-  if (PROCEDURAL_MODELS.length !== 65) {
-    extra.push(`src/aura-assets.ts: expected 65 PROCEDURAL_MODELS, got ${PROCEDURAL_MODELS.length}`);
+  if (PROCEDURAL_MODELS.length !== 72) {
+    extra.push(`src/aura-assets.ts: expected 72 PROCEDURAL_MODELS, got ${PROCEDURAL_MODELS.length}`);
   }
 
   const assetList = record(readJson(join(appRoot, "tools", "wonder-assets.json")));
   const assets = Array.isArray(assetList["assets"]) ? assetList["assets"] : [];
   const catalogKeys = assets.map((entry) => String(record(entry)["key"] ?? ""));
-  if (catalogKeys.length !== 65) {
-    extra.push(`tools/wonder-assets.json: expected 65 asset entries, got ${catalogKeys.length}`);
+  if (catalogKeys.length !== 72) {
+    extra.push(`tools/wonder-assets.json: expected 72 asset entries, got ${catalogKeys.length}`);
   }
   if (JSON.stringify(catalogKeys) !== JSON.stringify(MODEL_KEYS)) {
     extra.push("src/aura-assets.ts MODEL_KEYS is out of sync with tools/wonder-assets.json; rerun tools/gen-aura-assets.mjs");
@@ -124,7 +128,7 @@ async function validateModels(
       if (prop.asset !== "bubble") usedModels.add(prop.asset);
     }
   }
-  for (const world of [meadow, musicGarden, peekabooBarn, station, learningCloud, homeNook]) {
+  for (const world of [meadow, musicGarden, peekabooBarn, station, learningCloud, homeNook, moonlitNursery, starlightCloud]) {
     for (const item of world.dressing) {
       if (item.kind === "model") usedModels.add(item.key);
     }
@@ -195,7 +199,7 @@ async function main(): Promise<number> {
     }
   }
 
-  // Models: all 65 ModelKeys are procedural and zero .glb files exist.
+  // Models: all 72 ModelKeys are procedural and zero .glb files exist.
   const proceduralCount = await validateModels(app, STORIES, CHARACTER_IDS, PROP_ASSET_IDS, extra);
 
   // Audio: every recorded clip exists and matches its sha256, has a complete
@@ -218,6 +222,11 @@ async function main(): Promise<number> {
     if (kind === "songs") {
       const song = Object.entries(SONGS).find(([key]) => key === id)?.[1];
       if (!song) return "the song no longer exists";
+      if (song.vocal === "instrumental" || song.lyrics.length === 0) {
+        return prompt.includes(song.style) && prompt.includes("Instrumental only, no vocals.")
+          ? null
+          : "it was recorded from an older style or vocal mode";
+      }
       return prompt.includes(song.style) && prompt.includes(song.lyrics.join(" / ")) ? null : "it was recorded from older lyrics or an older style";
     }
     const spec = kind === "sfx" ? Object.entries(SFX).find(([key]) => key === id)?.[1] : Object.entries(MUSIC_BEDS).find(([key]) => key === id)?.[1];

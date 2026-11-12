@@ -3,14 +3,16 @@
 
 import type { CharacterId, WorldId } from "../types.js";
 
-/** Canonical display order of the six toy-island worlds in the menu filter strip. */
+/** Canonical display order of the eight toy-island worlds in the menu filter strip. */
 export const WORLD_ORDER: readonly WorldId[] = [
   "meadow",
   "music-garden",
   "peekaboo-barn",
   "station",
   "learning-cloud",
-  "home-nook"
+  "home-nook",
+  "moonlit-nursery",
+  "starlight-cloud"
 ];
 
 /** Default home world for each recurring host character when a synthetic test item omits `world`. */
@@ -115,6 +117,32 @@ export const WORLD_THEMES: Readonly<Record<WorldId, WorldSceneTheme>> = {
     accent: "#d9825b",
     accentSoft: "#fff3cc",
     pillBg: "#f8ead8"
+  },
+  "moonlit-nursery": {
+    id: "moonlit-nursery",
+    label: "Moonlit Nursery",
+    shortLabel: "Moonlit Nursery",
+    host: "momo",
+    skyTop: "#241d3c",
+    skyBottom: "#3d2f54",
+    hillBack: "#4a395a",
+    hillFront: "#5d4666",
+    accent: "#f6cf86",
+    accentSoft: "#fae7be",
+    pillBg: "#efe8f8"
+  },
+  "starlight-cloud": {
+    id: "starlight-cloud",
+    label: "Starlight Cloud",
+    shortLabel: "Starlight Cloud",
+    host: "lumi",
+    skyTop: "#1c1833",
+    skyBottom: "#352b54",
+    hillBack: "#3f3564",
+    hillFront: "#51457a",
+    accent: "#f7dc82",
+    accentSoft: "#fff1bf",
+    pillBg: "#ebe6fa"
   }
 };
 
@@ -220,6 +248,33 @@ function worldMotifShapes(world: WorldId, theme: WorldSceneTheme): readonly SvgS
         { tag: "circle", attrs: { cx: "266", cy: "34", r: "18", fill: theme.accentSoft, opacity: "0.55" } },
         { tag: "path", attrs: { d: "M266 38 V68 M258 68 H274", stroke: "#9c744f", "stroke-width": "3", "stroke-linecap": "round" } },
         { tag: "path", attrs: { d: "M256 39 L260 25 H272 L276 39 Z", fill: "#ffe3a8" } }
+      ];
+    case "moonlit-nursery":
+      return [
+        { tag: "rect", attrs: { x: "0", y: "58", width: "320", height: "30", fill: theme.hillBack } },
+        { tag: "rect", attrs: { x: "0", y: "68", width: "320", height: "20", fill: theme.hillFront } },
+        { tag: "ellipse", attrs: { cx: "194", cy: "79", rx: "68", ry: "8", fill: "#7a5b88" } },
+        { tag: "path", attrs: { d: "M174 54 V24 A22 20 0 0 1 218 24 V54 Z", fill: "#18142c" } },
+        { tag: "path", attrs: { d: "M198 18 A10 10 0 1 0 206 33 A8 8 0 1 1 198 18 Z", fill: theme.accent } },
+        { tag: "circle", attrs: { cx: "185", cy: "28", r: "1.8", fill: theme.accentSoft } },
+        { tag: "circle", attrs: { cx: "208", cy: "22", r: "1.5", fill: theme.accentSoft } },
+        { tag: "rect", attrs: { x: "168", y: "18", width: "8", height: "38", rx: "4", fill: "#8e739e" } },
+        { tag: "rect", attrs: { x: "216", y: "18", width: "8", height: "38", rx: "4", fill: "#8e739e" } },
+        { tag: "circle", attrs: { cx: "268", cy: "44", r: "16", fill: theme.accentSoft, opacity: "0.35" } },
+        { tag: "circle", attrs: { cx: "268", cy: "44", r: "7", fill: theme.accent } }
+      ];
+    case "starlight-cloud":
+      return [
+        { tag: "path", attrs: { d: "M248 16 A13 13 0 1 0 260 36 A10 10 0 1 1 248 16 Z", fill: theme.accent } },
+        { tag: "circle", attrs: { cx: "74", cy: "22", r: "2.4", fill: theme.accentSoft } },
+        { tag: "circle", attrs: { cx: "126", cy: "16", r: "2", fill: theme.accent } },
+        { tag: "circle", attrs: { cx: "192", cy: "24", r: "2.2", fill: theme.accentSoft } },
+        { tag: "circle", attrs: { cx: "292", cy: "20", r: "1.8", fill: theme.accentSoft } },
+        { tag: "path", attrs: { d: "M0 68 Q56 50 112 64 Q168 48 224 64 Q274 52 320 64 L320 88 L0 88 Z", fill: theme.hillBack } },
+        { tag: "circle", attrs: { cx: "110", cy: "71", r: "17", fill: theme.hillFront } },
+        { tag: "circle", attrs: { cx: "138", cy: "68", r: "20", fill: "#655792" } },
+        { tag: "circle", attrs: { cx: "246", cy: "69", r: "19", fill: "#655792" } },
+        { tag: "circle", attrs: { cx: "272", cy: "72", r: "15", fill: theme.hillFront } }
       ];
   }
 }

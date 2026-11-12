@@ -12,7 +12,7 @@
 // moves between them (and wraps inside the panel), arrow keys move inside a
 // radio group, Space toggles a switch or a word, and Escape closes the panel.
 
-import type { ParentSettings, SfxVolume } from "../types.js";
+import type { ParentSettings, SfxVolume, SleepTimerMinutes } from "../types.js";
 import {
   applyDisplaySettings,
   buildModeChoice,
@@ -29,6 +29,7 @@ import {
 } from "./accessibility.js";
 import { mountWordList, wordChoices, type WordChoice } from "./parent-wordlist.js";
 import {
+  SLEEP_TIMER_CHOICES,
   WAIT_MS_MAX,
   WAIT_MS_MIN,
   WAIT_MS_STEP,
@@ -223,6 +224,65 @@ export function openParentPanel(
     );
   }
 
+  // Bedtime & wind-down: warm dusk theme switch + gentle sleep timer (`0` = off, `5..30` min in Whitney `tnum`).
+  const windDownHelpId = uniqueId("ww-wind-down-help");
+  const windDownInput = el(doc, "input", {
+    className: "ww-choice-input",
+    attrs: { type: "checkbox", role: "switch", "data-setting": "windDown", "aria-describedby": windDownHelpId }
+  });
+  windDownInput.addEventListener("change", () => emit({ ...current, windDown: windDownInput.checked }));
+  const windDownList = el(doc, "div", { className: "ww-switch-list" }, [
+    el(doc, "label", { className: "ww-switch-row" }, [
+      el(doc, "span", { className: "ww-switch-label", text: uiText(locale, "ui.parent.windDown") }),
+      windDownInput,
+      el(doc, "span", { className: "ww-switch-track", attrs: { "aria-hidden": "true" } })
+    ])
+  ]);
+  const windDownField = el(doc, "div", { className: "ww-field" }, [
+    windDownList,
+    el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.windDownHelp"), attrs: { id: windDownHelpId } })
+  ]);
+
+  const sleepTimerName = uniqueId("ww-sleep-timer");
+  const sleepTimerHelpId = uniqueId("ww-sleep-timer-help");
+  const sleepTimerGrid = el(doc, "div", { className: "ww-chip-grid ww-sleep-timer-grid" });
+  const sleepTimerField = el(
+    doc,
+    "fieldset",
+    { className: "ww-field", attrs: { "data-setting": "sleepTimerMin", "aria-describedby": sleepTimerHelpId } },
+    [
+      el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.parent.sleepTimer") }),
+      el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.sleepTimerHelp"), attrs: { id: sleepTimerHelpId } }),
+      sleepTimerGrid
+    ]
+  );
+  const sleepTimerInputs = new Map<SleepTimerMinutes, HTMLInputElement>();
+  for (const minutes of SLEEP_TIMER_CHOICES) {
+    const isOff = minutes === 0;
+    const faceLabel = isOff ? uiText(locale, "ui.parent.sleepTimerOff") : `${minutes} min`;
+    const ariaLabel = isOff ? uiText(locale, "ui.parent.sleepTimerOff") : `${minutes} minutes`;
+    const input = el(doc, "input", {
+      className: "ww-choice-input",
+      attrs: {
+        type: "radio",
+        name: sleepTimerName,
+        value: String(minutes),
+        "data-sleep-timer-min": String(minutes),
+        "aria-label": ariaLabel
+      }
+    });
+    input.addEventListener("change", () => {
+      if (input.checked) emit({ ...current, sleepTimerMin: minutes });
+    });
+    sleepTimerInputs.set(minutes, input);
+    sleepTimerGrid.appendChild(
+      el(doc, "label", { className: "ww-chip" }, [
+        input,
+        el(doc, "span", { className: isOff ? "ww-chip-face" : "ww-chip-face ww-chip-tnum", text: faceLabel })
+      ])
+    );
+  }
+
   // Wait time for a turn: 3-8 whole seconds (`tnum` tabular numerals). Silence always carries on.
   const waitName = uniqueId("ww-wait");
   const waitHelpId = uniqueId("ww-wait-help");
@@ -292,6 +352,9 @@ export function openParentPanel(
     modeChoice.element,
     switchField,
     sfxField,
+    sectionKicker(doc, "bedtime & wind-down"),
+    windDownField,
+    sleepTimerField,
     sectionKicker(doc, "pacing & language"),
     waitField,
     localeField,
@@ -351,6 +414,8 @@ export function openParentPanel(
     modeChoice.set(current.mode);
     for (const [field, input] of switchInputs) input.checked = current[field];
     for (const [level, input] of sfxInputs) input.checked = level === current.sfxVolume;
+    windDownInput.checked = current.windDown;
+    for (const [minutes, input] of sleepTimerInputs) input.checked = minutes === current.sleepTimerMin;
     const wait = clampWaitMs(current.waitMs);
     for (const [ms, input] of waitInputs) input.checked = ms === wait;
     localeValue.textContent = LOCALE_CHOICES.find((choice) => choice.code === current.locale)?.name ?? current.locale;

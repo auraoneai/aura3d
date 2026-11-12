@@ -34,6 +34,12 @@ import { episode as e17 } from "./episodes/sheru-big-adventure.js";
 import { episode as e18 } from "./episodes/whos-at-the-door.js";
 import { episode as e19 } from "./episodes/momos-day.js";
 import { episode as e20 } from "./episodes/little-story-machine.js";
+import { episode as e21 } from "./episodes/e21-lumi-moonlit-lullaby.js";
+import { episode as e22 } from "./episodes/e22-teddy-warm-blanket.js";
+import { episode as e23 } from "./episodes/e23-three-sleepy-sheep.js";
+import { episode as e24 } from "./episodes/e24-gogo-quiet-night-train.js";
+import { episode as e25 } from "./episodes/e25-peeko-cricket-garden.js";
+import { episode as e26 } from "./episodes/e26-drifting-dream-clouds.js";
 
 import { activity as g01 } from "./activities/bubble-garden.js";
 import { activity as g02 } from "./activities/gogo-train.js";
@@ -47,19 +53,32 @@ import { activity as g09 } from "./activities/family-doorbells.js";
 import { activity as g10 } from "./activities/bears-little-band.js";
 import { activity as g11 } from "./activities/magic-sound-garden.js";
 import { activity as g12 } from "./activities/find-my-real-toy.js";
+import { activity as g13 } from "./activities/g13-tuck-in-friends.js";
+import { activity as g14 } from "./activities/g14-starlight-music-box.js";
+import { activity as g15 } from "./activities/g15-goodnight-little-lights.js";
+import { activity as g16 } from "./activities/g16-cloud-sheep-hush.js";
 
 export { storyCode };
 
-/** Episodes 1-20 in canonical order. */
+/** Episodes 1-26 in canonical order. */
 export const EPISODES: readonly EpisodeSpec[] = [
-  e01, e02, e03, e04, e05, e06, e07, e08, e09, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20
+  e01, e02, e03, e04, e05, e06, e07, e08, e09, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20,
+  e21, e22, e23, e24, e25, e26
 ];
 
-/** Activities 1-12 in canonical order. */
-export const ACTIVITIES: readonly ActivitySpec[] = [g01, g02, g03, g04, g05, g06, g07, g08, g09, g10, g11, g12];
+/** Activities 1-16 in canonical order. */
+export const ACTIVITIES: readonly ActivitySpec[] = [
+  g01, g02, g03, g04, g05, g06, g07, g08, g09, g10, g11, g12,
+  g13, g14, g15, g16
+];
 
-/** Every story: episodes 1-20, then activities 1-12. */
+/** Every story: episodes 1-26, then activities 1-16. */
 export const STORIES: readonly StorySpec[] = [...EPISODES, ...ACTIVITIES];
+
+/** Bedtime stories and calm baby-sleep games (`sleepCategory === "bedtime"` plus E19 `momos-day`). */
+export const SLEEP_STORIES: readonly StorySpec[] = STORIES.filter(
+  (story) => story.sleepCategory === "bedtime" || story.id === "momos-day"
+);
 
 const BY_ID: ReadonlyMap<string, StorySpec> = new Map(STORIES.map((story) => [story.id, story]));
 const BY_CODE: ReadonlyMap<string, StorySpec> = new Map(STORIES.map((story) => [storyCode(story), story]));

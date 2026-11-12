@@ -3,7 +3,7 @@
 // Every stage actor and prop is sculpted natively via `PROCEDURAL_RIGS`
 // (`src/scenes/procedural-rigs/index.ts`) with zero external `.glb` files and
 // zero crude programmer-art boxes. This module retains the canonical layout,
-// footprint, picking, resting-surface, and locomotion traits for all 66
+// footprint, picking, resting-surface, and locomotion traits for all 73
 // `StageAssetKey`s plus thin primitive parameter helpers used by diorama worlds.
 
 import { MODEL_INFO, type ModelKey } from "../aura-assets.js";
@@ -13,7 +13,7 @@ import { PROCEDURAL_RIGS } from "./procedural-rigs/index.js";
 
 export type LayoutRole = "actor" | "surface" | "container" | "occluder" | "stackable" | "plain";
 
-/** Every asset the stage can place: the 65 procedural model keys plus the thin-film soap bubble. */
+/** Every asset the stage can place: the 72 procedural model keys plus the thin-film soap bubble. */
 export type StageAssetKey = ModelKey | "bubble";
 
 // ---------------------------------------------------------------- traits
@@ -129,6 +129,13 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   sun: trait(1.0, 0.35, "plain", { floats: true, defaultStyle: "float" }),
   candleFlame: trait(0.55, 0.55, "plain"),
   partyHat: trait(0.75, 0.75, "plain", { tintMode: "replace" }),
+  moon: trait(0.95, 0.45, "plain", { floats: true, idle: "float", defaultStyle: "float" }),
+  cradle: trait(1.5, 1.0, "surface", { restAt: 0.58 }),
+  cribMobile: trait(0.95, 0.95, "plain", { floats: true, idle: "sway", defaultStyle: "float" }),
+  musicBox: trait(1.15, 0.95, "container", { restAt: 0.55, container: true }),
+  nightlight: trait(0.72, 0.72, "plain"),
+  blanket: trait(2.2, 1.6, "surface", { restAt: 0.75, tintMode: "replace" }),
+  sleepyCloud: trait(1.65, 1.05, "plain", { floats: true, idle: "float", defaultStyle: "float" }),
   bubble: trait(1, 1, "plain", { round: true, floats: true, idle: "float", defaultStyle: "float" })
 };
 

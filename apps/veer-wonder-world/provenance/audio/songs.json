@@ -158,5 +158,105 @@
   "prompt": "soft preschool goodbye song, gentle acoustic guitar and music box, 84 bpm, warm female vocal, slow and clear, calm and settling, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: All done, all done, / time to wave bye-bye, / bye-bye for now.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "twinkleRest": {
+  "file": "src/assets/audio/songs/twinkleRest.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "very soft baby lullaby, delicate celesta, warm harp and felt piano, 60 bpm, warm hushed female vocal, slow and clear, an original lullaby melody of its own (never traditional twinkle). Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Little star up in the sky, / shining softly way up high. / Time to yawn and gently sway, / rest now at the end of day. / Hush now, little starlight friend, / softly, softly sleep.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "rockingCradle": {
+  "file": "src/assets/audio/songs/rockingCradle.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "ultra gentle baby cradle lullaby, fingerpicked warm nylon guitar and antique music box, 58 bpm, warm hushed female vocal, slow rocking rhythm, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Rock, rock, slow and slow, / back and forth the cradle goes. / Warm and cosy, safe and snug, / wrapped inside a gentle hug. / Close your eyes and drift away, / sleep, sleep, sleep.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "sleepyClouds": {
+  "file": "src/assets/audio/songs/sleepyClouds.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "dreamy hushed baby lullaby, warm soft Rhodes electric piano, gentle harp and warm pad, 56 bpm, soothing calm female vocal, very slow and peaceful, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Floating on a sleepy cloud, / quiet sky, nothing loud. / Soft and fluffy, warm and slow, / drifting in the golden glow. / A cosy dream is on its way, / shh, shh, sleep.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "teddyGoodnight": {
+  "file": "src/assets/audio/songs/teddyGoodnight.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "cosy bedtime lullaby for a baby, muted warm marimba, felt piano and soft music box, 62 bpm, warm gentle female vocal, slow and soothing, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Teddy yawns a sleepy yawn, / daytime play is nearly gone. / Pillow soft beneath his head, / snug inside his little bed. / Night-night, little furry bear, / sweet dreams everywhere.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "countingSheepSong": {
+  "file": "src/assets/audio/songs/countingSheepSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "soothing baby counting lullaby, warm pizzicato cello, felt piano and soft harp, 60 bpm, hushed friendly female vocal, slow steady pulse, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: One soft sheep upon a cloud, / two soft sheep, never loud. / Three soft sheep curl up to rest, / one, two, three in a fluffy nest. / Baa, baa, whisper low, / off to sleep they go.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "warmBlanketSong": {
+  "file": "src/assets/audio/songs/warmBlanketSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "warm soothing tuck-in lullaby, soft acoustic guitar harmonics, gentle glockenspiel and felt piano, 62 bpm, hushed female vocal, slow and reassuring, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Pull the blanket up so warm, / cosy, quiet, safe from storm. / Soft, soft blanket on our toes, / a little yawn, and eyelids close. / Snug and quiet through the night, / hush now, sleep tight.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "cricketHush": {
+  "file": "src/assets/audio/songs/cricketHush.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "tranquil evening garden lullaby, warm wooden flute, soft thumb kalimba and felt piano, 58 bpm, hushed gentle female vocal, slow and peaceful, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Flowers close inside the night, / leaves are resting, soft and quiet. / Little lantern, warm and low, / watch the sleepy garden glow. / Hush now, garden, hush now, friend, / day has reached its end.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "dreamBoatSong": {
+  "file": "src/assets/audio/songs/dreamBoatSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle 6/8 barcarolle baby lullaby, soft harp arpeggios, warm solo cello and felt piano, 56 bpm, hushed female vocal, slow cradle sway, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Gliding slow across the night, / underneath the golden light. / Quiet wheels and quiet breeze, / resting softly, full of ease. / Dream, dream, gentle friend, / sleep until the morning.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "moonMusicBox": {
+  "file": "src/assets/audio/songs/moonMusicBox.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "pure soothing baby sleep instrumental, antique wound brass music box and warm felt piano resonances, 54 bpm, ultra gentle, low dynamic range, no percussion, original lullaby melody. Gentle soothing baby lullaby, original melody, slow steady 54 bpm. Instrumental only, no vocals.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "starlightHum": {
+  "file": "src/assets/audio/songs/starlightHum.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "deep baby sleep cradle instrumental, warm muted cello, delicate harp harmonics and soft celesta over a warm pad, 52 bpm, very slow, tranquil and soothing, no percussion, original melody. Gentle soothing baby lullaby, original melody, slow steady 52 bpm. Instrumental only, no vocals.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
  }
 }

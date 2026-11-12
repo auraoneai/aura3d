@@ -504,6 +504,8 @@ describe("determinism guard", () => {
     "src/scenes/station.ts",
     "src/scenes/learning-cloud.ts",
     "src/scenes/home-nook.ts",
+    "src/scenes/moonlit-nursery.ts",
+    "src/scenes/starlight-cloud.ts",
     "src/characters/momo.ts",
     "src/characters/lulu.ts",
     "src/characters/sheru.ts",
@@ -519,6 +521,7 @@ describe("determinism guard", () => {
     "src/scenes/procedural-rigs/vehicle-architecture-rigs.ts",
     "src/scenes/procedural-rigs/music-furniture-nature-rigs.ts",
     "src/scenes/procedural-rigs/play-food-letter-rigs.ts",
+    "src/scenes/procedural-rigs/bedtime-rigs.ts",
     "src/scenes/procedural-rigs/index.ts"
   ];
 

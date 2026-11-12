@@ -11,8 +11,16 @@ export type CharacterId = "momo" | "lulu" | "sheru" | "gogo" | "lumi" | "peeko";
 /** Who a line belongs to. `narrator` is the off-screen storyteller voice. */
 export type SpeakerId = CharacterId | "narrator" | "robot";
 
-/** The six places on the toy island. */
-export type WorldId = "meadow" | "music-garden" | "peekaboo-barn" | "station" | "learning-cloud" | "home-nook";
+/** The eight places on the toy island (six daytime + two circadian bedtime worlds). */
+export type WorldId =
+  | "meadow"
+  | "music-garden"
+  | "peekaboo-barn"
+  | "station"
+  | "learning-cloud"
+  | "home-nook"
+  | "moonlit-nursery"
+  | "starlight-cloud";
 
 /**
  * Generated model keys (see tools/wonder-assets.json and src/aura-assets.ts).
@@ -27,7 +35,9 @@ export type PropAssetId =
   | "colourMachine" | "storyBox" | "pastryCircle" | "pastrySquare" | "pastryTriangle" | "hat"
   | "stompStone" | "cloud" | "balloon"
   // 2026-10-29 (07 B20): drawn from scene geometry like the other procedural props.
-  | "letterBLower" | "letterALower" | "toothbrush" | "sun" | "candleFlame" | "partyHat";
+  | "letterBLower" | "letterALower" | "toothbrush" | "sun" | "candleFlame" | "partyHat"
+  // Sleeping Baby & Bedtime procedural props:
+  | "moon" | "cradle" | "cribMobile" | "musicBox" | "nightlight" | "blanket" | "sleepyCloud";
 
 /**
  * Named positions every world defines (the scene layer maps them to
@@ -44,7 +54,9 @@ export type Gesture =
   | "sleep" | "eat" | "wake" | "sway" | "mirror" | "pickUp" | "shrug" | "wag" | "sniff" | "bark"
   | "sit" | "clap" | "stomp" | "freeze" | "peek" | "hide" | "float" | "glow" | "blink" | "bow"
   // 2026-10-29 (07 B20): the "surprised" and "waiting" states of the 02 section 2 expression sheet.
-  | "surprise" | "wait";
+  | "surprise" | "wait"
+  // Calm bedtime & lullaby gestures:
+  | "yawn" | "rock" | "twinkle";
 
 /** Things that happen to objects. */
 export type ObjectAction =
@@ -70,10 +82,20 @@ export type SfxId =
 export type SongId =
   | "hello" | "allDone" | "ballRolls" | "goStop" | "faceSong" | "peekaboo" | "animalBand"
   | "countToThree" | "bubbleSong" | "birthday" | "colours" | "shapes" | "trainSong" | "routine"
-  | "abc" | "lullaby";
+  | "abc" | "lullaby"
+  | "twinkleRest" | "rockingCradle" | "sleepyClouds" | "teddyGoodnight" | "countingSheepSong"
+  | "warmBlanketSong" | "cricketHush" | "dreamBoatSong" | "moonMusicBox" | "starlightHum";
 
 /** Background music beds (instrumental, quiet). */
-export type MusicBedId = "meadowBed" | "gardenBed" | "barnBed" | "stationBed" | "cloudBed" | "homeBed";
+export type MusicBedId =
+  | "meadowBed"
+  | "gardenBed"
+  | "barnBed"
+  | "stationBed"
+  | "cloudBed"
+  | "homeBed"
+  | "nurseryBed"
+  | "starlightBed";
 
 /** A spoken line: content refers to it by key; text lives in the locale pack. */
 export interface LineRef {
@@ -177,10 +199,13 @@ export interface PropPlacement {
 
 export type Phase = "P1" | "P2";
 
+export type SleepCategory = "bedtime";
+
 interface StoryCommon {
   readonly id: string;
   readonly version: number;
   readonly phase: Phase;
+  readonly sleepCategory?: SleepCategory;
   readonly titleKey: string;
   readonly world: WorldId;
   readonly cast: readonly CastMember[];
@@ -258,7 +283,9 @@ export interface AudioClipRef {
   readonly env?: string;
 }
 
-export type PlayMode = "watch-sing" | "play-together" | "auto";
+export type PlayMode = "watch-sing" | "play-together" | "auto" | "wind-down";
+
+export type SleepTimerMinutes = 0 | 5 | 10 | 15 | 20 | 30;
 
 /** Events the episode director accepts. */
 export type DirectorEvent =
@@ -305,7 +332,9 @@ export interface DirectorSnapshot {
 
 /** What the scene layer must provide to the app. */
 export interface StageAdapter {
-  load(story: StorySpec): Promise<void>;
+  load(story: StorySpec, options?: { readonly nightVeil?: boolean }): Promise<void>;
+  loadLullabyScene?(world: WorldId): Promise<void>;
+  setRenderPaused?(paused: boolean): void;
   apply(actions: readonly StageAction[]): void;
   setTalking(actor: string | null): void;
   setSpeechEnergy?(energy: number | null): void;
@@ -333,4 +362,6 @@ export interface ParentSettings {
   readonly locale: string;
   readonly waitMs: number;
   readonly wordList: readonly string[];
+  readonly windDown: boolean;
+  readonly sleepTimerMin: SleepTimerMinutes;
 }

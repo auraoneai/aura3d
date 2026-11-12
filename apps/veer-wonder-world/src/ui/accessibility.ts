@@ -72,6 +72,11 @@ export const UI_STRINGS = {
 
   "ui.start.sound": "Sound starts after you tap.",
   "ui.mode.auto": "Auto play",
+  "ui.mode.windDown": "Wind-down",
+  "ui.menu.sleep": "Sleep & lullabies",
+  "ui.menu.songs": "Songs",
+  "ui.menu.all": "All",
+  "ui.menu.playLullabies": "Play all lullabies",
   "ui.prototype": "Prototype",
   "ui.controls.label": "Grown-up controls",
   "ui.confirm": "Your child had a turn",
@@ -88,6 +93,13 @@ export const UI_STRINGS = {
   "ui.parent.sfx.off": "Off",
   "ui.parent.sfx.soft": "Soft",
   "ui.parent.sfx.normal": "Normal",
+  "ui.parent.windDown": "Evening wind-down",
+  "ui.parent.windDownHelp": "Warm dusk colours, gentle pacing and softer light for bedtime.",
+  "ui.parent.sleepTimer": "Sleep timer",
+  "ui.parent.sleepTimerHelp": "Fades sound to silence and rests on a dark goodnight screen.",
+  "ui.parent.sleepTimerOff": "Off",
+  "ui.sleep.title": "Shh... sweet dreams",
+  "ui.sleep.body": "All quiet now. Put the screen to rest and cuddle close.",
   "ui.parent.waitHelp": "How long a character pauses for your child. The story always carries on by itself.",
   "ui.parent.wordsHelp": "Pick up to 5 words to use often while you play. This list stays on this device and does not track progress.",
   "ui.parent.wordsEmpty": "No words are available yet.",
@@ -255,11 +267,12 @@ export function castDots(doc: Document): HTMLElement {
   return row;
 }
 
-/** The three play modes, in the order the UI lists them. */
+/** The four play modes, in the order the UI lists them. */
 export const MODE_CHOICES: readonly { readonly mode: PlayMode; readonly key: UiStringKey }[] = [
   { mode: "play-together", key: "ui.mode.play" },
   { mode: "watch-sing", key: "ui.mode.watch" },
-  { mode: "auto", key: "ui.mode.auto" }
+  { mode: "auto", key: "ui.mode.auto" },
+  { mode: "wind-down", key: "ui.mode.windDown" }
 ];
 
 export interface ModeChoice {
@@ -268,13 +281,13 @@ export interface ModeChoice {
 }
 
 /**
- * The "Play together / Watch and sing / Auto play" choice as a native radio group
- * (arrow keys work as usual), drawn as three clear segments.
+ * The "Play together / Watch and sing / Auto play / Wind-down" choice as a native radio group
+ * (arrow keys work as usual), drawn as clear segments.
  */
 export function buildModeChoice(doc: Document, locale: UiLocale, selected: PlayMode, onSelect: (mode: PlayMode) => void): ModeChoice {
   const name = uniqueId("ww-mode");
   const fieldset = el(doc, "fieldset", { className: "ww-field ww-segmented", attrs: { "data-setting": "mode" } });
-  const options = el(doc, "div", { className: "ww-segmented-options ww-segmented-three" });
+  const options = el(doc, "div", { className: "ww-segmented-options ww-segmented-four" });
   // The label sits in its own span, so the start screen can give it a soft backing over the sky (styles.css).
   fieldset.append(el(doc, "legend", { className: "ww-legend" }, [el(doc, "span", { className: "ww-legend-text", text: uiText(locale, "ui.mode.label") })]), options);
   const inputs = new Map<PlayMode, HTMLInputElement>();
@@ -558,12 +571,17 @@ export function watchMedia(win: MediaWindow | null | undefined, query: string, o
 /** Classes on <html> that styles.css keys off. */
 export const HIGH_CONTRAST_CLASS = "high-contrast";
 export const REDUCED_MOTION_CLASS = "reduced-motion";
+export const WIND_DOWN_CLASS = "wind-down";
 
 /** Mirrors the display-related parent settings onto the document root. */
-export function applyDisplaySettings(doc: Document, settings: Pick<ParentSettings, "highContrast" | "reducedMotion" | "locale">): void {
+export function applyDisplaySettings(
+  doc: Document,
+  settings: Pick<ParentSettings, "highContrast" | "reducedMotion" | "locale"> & { readonly windDown?: boolean }
+): void {
   const html = doc.documentElement;
   html.classList.toggle(HIGH_CONTRAST_CLASS, settings.highContrast);
   html.classList.toggle(REDUCED_MOTION_CLASS, settings.reducedMotion);
+  html.classList.toggle(WIND_DOWN_CLASS, Boolean(settings.windDown && !settings.highContrast));
   html.lang = settings.locale;
 }
 
@@ -589,7 +607,9 @@ export const ICONS = {
   sound: [{ d: "M4 9.5h3.5L12 6v12l-4.5-3.5H4z", fill: true }, { d: "M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8" }],
   hold: [{ d: "M12 9a3 3 0 1 1 0 6a3 3 0 1 1 0-6z", fill: true }, { d: "M12 4.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 1 1 0-15z" }],
   tip: [{ d: "M12 3.5a5.5 5.5 0 0 0-3 10.1V16h6v-2.4a5.5 5.5 0 0 0-3-10.1zM9.5 19h5" }],
-  auto: [{ d: "M17 4l3 3-3 3M4 11V9a2 2 0 0 1 2-2h14M7 20l-3-3 3-3M20 13v2a2 2 0 0 1-2 2H4" }]
+  auto: [{ d: "M17 4l3 3-3 3M4 11V9a2 2 0 0 1 2-2h14M7 20l-3-3 3-3M20 13v2a2 2 0 0 1-2 2H4" }],
+  moon: [{ d: "M18.5 14.5A7.5 7.5 0 0 1 9.5 5.5a7.5 7.5 0 1 0 9 9z", fill: true }],
+  music: [{ d: "M9 17V6l10-2v11" }, { d: "M6.5 19.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5zM16.5 17.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z", fill: true }]
 } as const satisfies Readonly<Record<string, readonly IconPart[]>>;
 
 export type IconName = keyof typeof ICONS;

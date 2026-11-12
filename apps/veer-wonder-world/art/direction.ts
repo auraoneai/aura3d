@@ -1,6 +1,6 @@
 // Wonder World art direction contract (C-35, Aura3D 5.5.1, 100% Procedural Craft Rigs).
-// Validated via `defineArtDirection` and audited across all 6 Wonder World storybook dioramas
-// in `tests/unit/stage/art-direction.test.ts`, which writes `art/direction.audit.json`.
+// Validated via `defineArtDirection` and audited across all 8 Wonder World storybook dioramas
+// (6 daytime + 2 circadian bedtime sets) in `tests/unit/stage/art-direction.test.ts`, which writes `art/direction.audit.json`.
 import { defineArtDirection, type GameArtDirection } from "@aura3d/engine/game/art";
 import { WONDER_VFX } from "../src/scenes/vfx-presets.js";
 
@@ -8,7 +8,7 @@ const directionSpec: GameArtDirection = {
   id: "wonder-world",
   genre: "maze-arcade",
   fantasy:
-    "A needle-felted wool, matte clay, and beechwood picture-book diorama stage where toddler friends explore warm morning sets.",
+    "A needle-felted wool, matte clay, and beechwood picture-book diorama stage spanning sunny morning sets and cozy bedtime worlds.",
   rebuildTier: "S-world",
   wave: 4,
   references: [
@@ -72,7 +72,7 @@ const directionSpec: GameArtDirection = {
     { event: "celebrate-turn", cue: "giggle_warm", variants: 1 }
   ],
   signatureEffect:
-    "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
+    "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, eight world-matched CC0 HDRI IBL skies and cozy amber bedtime interiors, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
   criticalCategories: [
     "environment_world",
     "material_quality",

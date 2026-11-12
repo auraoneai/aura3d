@@ -1,9 +1,10 @@
-// Exhaustive 66-asset procedural rig barrel (`65` ModelKeys + `"bubble"`).
+// Exhaustive 73-asset procedural rig barrel (`72` ModelKeys + `"bubble"`).
 // Zero external `.glb` dependencies, zero network fetches, zero clocks, zero unsafe casts.
 
 import type { AuraColor, AuraNodeBuilder, AuraSceneNode } from "@aura3d/engine";
 import type { Vec3 } from "../motion.js";
 import type { StageAssetKey } from "../stand-ins.js";
+import { BEDTIME_RIGS } from "./bedtime-rigs.js";
 import { CAST_RIGS } from "./cast-rigs.js";
 import { COMPANION_ANIMAL_RIGS } from "./companion-animal-rigs.js";
 import { MUSIC_FURNITURE_NATURE_RIGS } from "./music-furniture-nature-rigs.js";
@@ -34,14 +35,15 @@ export {
 };
 
 /**
- * Exhaustive compile-time-verified map of all 66 `StageAssetKey` procedural rigs.
+ * Exhaustive compile-time-verified map of all 73 `StageAssetKey` procedural rigs.
  */
 export const PROCEDURAL_RIGS: Readonly<Record<StageAssetKey, ProceduralAssetRig>> = {
   ...CAST_RIGS,
   ...COMPANION_ANIMAL_RIGS,
   ...VEHICLE_ARCHITECTURE_RIGS,
   ...MUSIC_FURNITURE_NATURE_RIGS,
-  ...PLAY_FOOD_LETTER_RIGS
+  ...PLAY_FOOD_LETTER_RIGS,
+  ...BEDTIME_RIGS
 };
 
 export function getProceduralRig(key: StageAssetKey): ProceduralAssetRig {

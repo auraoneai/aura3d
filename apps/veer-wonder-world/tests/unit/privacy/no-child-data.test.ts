@@ -295,7 +295,7 @@ describe("J07: no child name", () => {
   });
 
   it("has no child name in story ids, routes, codes, storage keys or QA globals", () => {
-    expect(STORIES).toHaveLength(32);
+    expect(STORIES).toHaveLength(42);
     for (const story of STORIES) {
       for (const value of [story.id, storyCode(story), story.titleKey, story.offlinePlayKey, story.caregiverBridgeKey]) {
         expect(childNameIn(value), value).toBe(false);

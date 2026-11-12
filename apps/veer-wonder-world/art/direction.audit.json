@@ -1,10 +1,10 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/veer-wonder-world/art/direction.ts",
-  "sourceSha256": "9dcc448422c0867634b353af9951205c09c33babe6291b9ebedabb443e524a9b",
+  "sourceSha256": "6c36fdaf0bbc8392fe4af42aec6e9c96752fae8fbd9d6754c3c4f6c55dd1f42f",
   "id": "wonder-world",
   "genre": "maze-arcade",
-  "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
+  "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, eight world-matched CC0 HDRI IBL skies and cozy amber bedtime interiors, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
   "palette": {
     "primary": [
       "#FBF6EC",
@@ -2883,13 +2883,1166 @@
           }
         ],
         "drawCalls": 0
+      },
+      "moonlit-nursery": {
+        "lights": [
+          {
+            "type": "directional",
+            "shadow": true,
+            "intensity": 1.38
+          },
+          {
+            "type": "directional",
+            "shadow": false,
+            "intensity": 0.42
+          },
+          {
+            "type": "hemisphere",
+            "shadow": false,
+            "intensity": 0.42
+          },
+          {
+            "type": "point",
+            "shadow": false,
+            "intensity": 1.55
+          },
+          {
+            "type": "point",
+            "shadow": false,
+            "intensity": 1.55
+          }
+        ],
+        "hasAmbient": false,
+        "environment": {
+          "kind": "hdri",
+          "background": true
+        },
+        "models": [],
+        "materials": [
+          {
+            "node": "nursery cedar subfloor plinth",
+            "practical": false
+          },
+          {
+            "node": "nursery warm cedar floor planks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery braided plum rug outer",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery braided oatmeal rug middle",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery braided lavender rug center",
+            "practical": false
+          },
+          {
+            "node": "nursery braided rug plum rings",
+            "practical": false
+          },
+          {
+            "node": "nursery braided rug cream stitch rings",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery back wall left",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery back wall right",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery back wall window apron",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery back wall window header",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery left wing wall",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery right wing wall",
+            "practical": false
+          },
+          {
+            "node": "nursery back cedar baseboard",
+            "practical": false
+          },
+          {
+            "node": "nursery left cedar baseboard",
+            "practical": false
+          },
+          {
+            "node": "nursery right cedar baseboard",
+            "practical": false
+          },
+          {
+            "node": "nursery back cedar dado rail",
+            "practical": false
+          },
+          {
+            "node": "nursery left cedar dado rail",
+            "practical": false
+          },
+          {
+            "node": "nursery right cedar dado rail",
+            "practical": false
+          },
+          {
+            "node": "nursery back crown cornice",
+            "practical": false
+          },
+          {
+            "node": "nursery left crown cornice",
+            "practical": false
+          },
+          {
+            "node": "nursery right crown cornice",
+            "practical": false
+          },
+          {
+            "node": "nursery cedar wainscoting panels",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nursery-window-night-backdrop",
+            "practical": false
+          },
+          {
+            "node": "nursery window brass crescent moon",
+            "emissiveIntensity": 1.15,
+            "practical": true
+          },
+          {
+            "node": "nursery window brass star cluster",
+            "emissiveIntensity": 1.08,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "nursery window dusk cloud bank",
+            "practical": false
+          },
+          {
+            "node": "nursery cedar window sill",
+            "practical": false
+          },
+          {
+            "node": "nursery window clear glass pane",
+            "practical": false
+          },
+          {
+            "node": "nursery window vertical mullion",
+            "practical": false
+          },
+          {
+            "node": "nursery window horizontal mullion",
+            "practical": false
+          },
+          {
+            "node": "nursery arched window casing",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "nursery brass curtain rod",
+            "practical": false
+          },
+          {
+            "node": "nursery-curtain-left-pleated-panel",
+            "practical": false
+          },
+          {
+            "node": "nursery-curtain-left-tieback-cord",
+            "practical": false
+          },
+          {
+            "node": "nursery-curtain-right-pleated-panel",
+            "practical": false
+          },
+          {
+            "node": "nursery-curtain-right-tieback-cord",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "nursery-sconce-left-brass-bracket",
+            "practical": false
+          },
+          {
+            "node": "nursery-sconce-left-amber-shade",
+            "emissiveIntensity": 1.2,
+            "practical": true
+          },
+          {
+            "name": "brushed metal",
+            "node": "nursery-sconce-right-brass-bracket",
+            "practical": false
+          },
+          {
+            "node": "nursery-sconce-right-amber-shade",
+            "emissiveIntensity": 1.2,
+            "practical": true
+          },
+          {
+            "node": "nursery cedar bookshelf frame",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "nursery bedtime board books",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "nursery lavender ceramic jar",
+            "practical": false
+          },
+          {
+            "node": "nursery cedar rocking chair",
+            "practical": false
+          },
+          {
+            "node": "nursery rocker quilted cushions",
+            "practical": false
+          },
+          {
+            "node": "nursery mobile beechwood hoop",
+            "practical": false
+          },
+          {
+            "node": "nursery mobile warm moon charm",
+            "emissiveIntensity": 1.05,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "nursery mobile felt star 1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery mobile felt star 2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery mobile felt star 3",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "nursery mobile felt star 4",
+            "practical": false
+          },
+          {
+            "node": "moonlit-nursery:dressing-0-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moonlit-nursery:dressing-0-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "moonlit-nursery:dressing-0-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moonlit-nursery:dressing-1-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "moonlit-nursery:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moonlit-nursery:dressing-2-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "moonlit-nursery:dressing-2-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "moonlit-nursery:dressing-2-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "moonlit-nursery:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "moonlit-nursery:dressing-3-dressing1-1",
+            "practical": false
+          },
+          {
+            "node": "moonlit-nursery:dressing-3-dressing2-2",
+            "emissiveIntensity": 0.35,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "moonlit-nursery:dressing-4",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moonlit-nursery:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "moonlit-nursery:dressing-5-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-body-starBabyCore",
+            "emissiveIntensity": 0.16,
+            "practical": true
+          },
+          {
+            "name": "matte clay",
+            "node": "lumi-body-starFiligree",
+            "practical": false
+          },
+          {
+            "node": "lumi-petals-starCrown",
+            "emissiveIntensity": 0.18,
+            "practical": true
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-jaw-starJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-cheekPuff-starCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-body-plushTorso",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-body-tummyMedallion",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-head-plushHead",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-armL-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-armR-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footL-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "momo-jaw-smileJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-cheekPuff-cheekBlush",
+            "practical": false
+          },
+          {
+            "node": "cradle-body-mapleCradleFrame",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cradle-body-rattanBasket",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cradle-body-quiltedMattress",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "cradle-body-brassFinials",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-body-teddyBodyFelt",
+            "practical": false
+          },
+          {
+            "node": "teddy-body-teddyWoodButton",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-head-teddyHeadFelt",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "teddy-head-teddyNoseGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-jaw-teddyJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-earL-teddyEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-earR-teddyEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-armL-teddyArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-armR-teddyArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-footL-teddyFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "teddy-footR-teddyFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "teddy-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "teddy-eyelidR-eyeGloss",
+            "practical": false
+          },
+          {
+            "node": "nightlight-body-maplePlinth",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "nightlight-body-stonewareBelly",
+            "practical": false
+          },
+          {
+            "node": "nightlight-body-amberStarDome",
+            "emissiveIntensity": 0.38,
+            "practical": true
+          },
+          {
+            "name": "brushed metal",
+            "node": "nightlight-body-brassLanternTrim",
+            "practical": false
+          },
+          {
+            "node": "moon-body-goldenCrescent",
+            "emissiveIntensity": 0.32,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "moon-body-quiltedNightcap",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "moon-body-brassStarPom",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moon-eyelidL-sleepEyelidL",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moon-eyelidR-sleepEyelidR",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "moon-cheekPuff-warmCheeks",
+            "practical": false
+          },
+          {
+            "node": "cribMobile-body-beechwoodArm",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "cribMobile-body-brassSwivel",
+            "practical": false
+          },
+          {
+            "node": "cribMobile-petals-mobileCrossRing",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cribMobile-petals-plushMobileCharms",
+            "practical": false
+          },
+          {
+            "node": "__ring-0",
+            "practical": false
+          },
+          {
+            "node": "__ring-1",
+            "practical": false
+          },
+          {
+            "node": "__halo-0",
+            "emissiveIntensity": 0.35,
+            "practical": true
+          },
+          {
+            "node": "__halo-1",
+            "emissiveIntensity": 0.35,
+            "practical": true
+          }
+        ],
+        "drawCalls": 0
+      },
+      "starlight-cloud": {
+        "lights": [
+          {
+            "type": "directional",
+            "shadow": true,
+            "intensity": 1.44
+          },
+          {
+            "type": "directional",
+            "shadow": false,
+            "intensity": 0.48
+          },
+          {
+            "type": "hemisphere",
+            "shadow": false,
+            "intensity": 0.46
+          },
+          {
+            "type": "point",
+            "shadow": false,
+            "intensity": 1.48
+          },
+          {
+            "type": "point",
+            "shadow": false,
+            "intensity": 1.48
+          }
+        ],
+        "hasAmbient": false,
+        "environment": {
+          "kind": "hdri",
+          "background": true
+        },
+        "models": [],
+        "materials": [
+          {
+            "node": "starlight-cloud sky dome",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight cloud quilted island",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight cloud dusk underbelly cushion",
+            "practical": false
+          },
+          {
+            "node": "starlight cloud perimeter pillows",
+            "practical": false
+          },
+          {
+            "node": "starlight quilted cloud bolster row",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight moon arch cloud bolsters",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "starlight golden crescent moon arch",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "starlight moon arch brass cord",
+            "practical": false
+          },
+          {
+            "node": "starlight moon arch warm star charm",
+            "emissiveIntensity": 1.12,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "starlight-lantern-left-cloud-bolster",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "starlight-lantern-left-brass-post",
+            "practical": false
+          },
+          {
+            "node": "starlight-lantern-left-amber-globe",
+            "emissiveIntensity": 1.22,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "starlight-lantern-right-cloud-bolster",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "starlight-lantern-right-brass-post",
+            "practical": false
+          },
+          {
+            "node": "starlight-lantern-right-amber-globe",
+            "emissiveIntensity": 1.22,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud-drift-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud-drift-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud-drift-3",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud:dressing-0-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "starlight-cloud:dressing-0-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud:dressing-1-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "starlight-cloud:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud:dressing-2-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "starlight-cloud:dressing-2-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "starlight-cloud:dressing-3-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "starlight-cloud:dressing-4-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "starlight-cloud:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-body-dinoTorso",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-head-dinoHead",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-armL-dinoArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-armR-dinoArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-footL-dinoFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-footR-dinoFoot",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-tail-dinoTail",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-jaw-dinoJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-cheekPuff-dinoCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-body-starBabyCore",
+            "emissiveIntensity": 0.16,
+            "practical": true
+          },
+          {
+            "name": "matte clay",
+            "node": "lumi-body-starFiligree",
+            "practical": false
+          },
+          {
+            "node": "lumi-petals-starCrown",
+            "emissiveIntensity": 0.18,
+            "practical": true
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-jaw-starJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-cheekPuff-starCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-body-sheepFleece",
+            "practical": false
+          },
+          {
+            "node": "sheepOne-body-sheepCollarTag",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-head-sheepFace",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-jaw-sheepJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-earL-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-earR-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-tail-sheepTail",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-legFL-legFLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-legFR-legFRCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-legBL-legBLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepOne-legBR-legBRCoat",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepOne-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepOne-eyelidR-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-body-sheepFleece",
+            "practical": false
+          },
+          {
+            "node": "sheepTwo-body-sheepCollarTag",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-head-sheepFace",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-jaw-sheepJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-earL-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-earR-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-tail-sheepTail",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-legFL-legFLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-legFR-legFRCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-legBL-legBLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepTwo-legBR-legBRCoat",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepTwo-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepTwo-eyelidR-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-body-sheepFleece",
+            "practical": false
+          },
+          {
+            "node": "sheepThree-body-sheepCollarTag",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-head-sheepFace",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-jaw-sheepJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-earL-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-earR-sheepEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-tail-sheepTail",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-legFL-legFLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-legFR-legFRCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-legBL-legBLCoat",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "sheepThree-legBR-legBRCoat",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepThree-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "sheepThree-eyelidR-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudOne-body-lavenderCumulus",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cloudOne-body-quiltedCloudTrim",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudOne-eyelidL-sleepEyelidL",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudOne-eyelidR-sleepEyelidR",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cloudOne-cheekPuff-rosyCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudTwo-body-lavenderCumulus",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cloudTwo-body-quiltedCloudTrim",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudTwo-eyelidL-sleepEyelidL",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloudTwo-eyelidR-sleepEyelidR",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cloudTwo-cheekPuff-rosyCheeks",
+            "practical": false
+          },
+          {
+            "node": "moon-body-goldenCrescent",
+            "emissiveIntensity": 0.32,
+            "practical": true
+          },
+          {
+            "name": "felt",
+            "node": "moon-body-quiltedNightcap",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "moon-body-brassStarPom",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moon-eyelidL-sleepEyelidL",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "moon-eyelidR-sleepEyelidR",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "moon-cheekPuff-warmCheeks",
+            "practical": false
+          },
+          {
+            "node": "__ring-0",
+            "practical": false
+          },
+          {
+            "node": "__ring-1",
+            "practical": false
+          },
+          {
+            "node": "__halo-0",
+            "emissiveIntensity": 0.35,
+            "practical": true
+          },
+          {
+            "node": "__halo-1",
+            "emissiveIntensity": 0.35,
+            "practical": true
+          }
+        ],
+        "drawCalls": 0
       }
     }
   },
   "direction": {
     "id": "wonder-world",
     "genre": "maze-arcade",
-    "fantasy": "A needle-felted wool, matte clay, and beechwood picture-book diorama stage where toddler friends explore warm morning sets.",
+    "fantasy": "A needle-felted wool, matte clay, and beechwood picture-book diorama stage spanning sunny morning sets and cozy bedtime worlds.",
     "rebuildTier": "S-world",
     "wave": 4,
     "references": [
@@ -2986,6 +4139,10 @@
       {
         "event": "turfStep",
         "kind": "turfStep"
+      },
+      {
+        "event": "sleepyStars",
+        "kind": "sleepyStars"
       }
     ],
     "audio": [
@@ -3015,7 +4172,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
+    "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, eight world-matched CC0 HDRI IBL skies and cozy amber bedtime interiors, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
     "criticalCategories": [
       "environment_world",
       "material_quality",

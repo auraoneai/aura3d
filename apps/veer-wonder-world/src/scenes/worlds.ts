@@ -32,8 +32,10 @@ import {
 import { homeNook } from "./home-nook.js";
 import { learningCloud } from "./learning-cloud.js";
 import { meadow } from "./meadow.js";
+import { moonlitNursery } from "./moonlit-nursery.js";
 import { musicGarden } from "./music-garden.js";
 import { peekabooBarn } from "./peekaboo-barn.js";
+import { starlightCloud } from "./starlight-cloud.js";
 import { station } from "./station.js";
 
 /** A sculpted procedural rig placed as static scenery in a diorama world. */
@@ -136,7 +138,9 @@ export const WORLDS: Readonly<Record<WorldId, WorldDefinition>> = {
   "peekaboo-barn": peekabooBarn,
   station,
   "learning-cloud": learningCloud,
-  "home-nook": homeNook
+  "home-nook": homeNook,
+  "moonlit-nursery": moonlitNursery,
+  "starlight-cloud": starlightCloud
 };
 
 export const WORLD_IDS: readonly WorldId[] = [
@@ -145,7 +149,9 @@ export const WORLD_IDS: readonly WorldId[] = [
   "peekaboo-barn",
   "station",
   "learning-cloud",
-  "home-nook"
+  "home-nook",
+  "moonlit-nursery",
+  "starlight-cloud"
 ];
 
 export function worldDefinition(id: WorldId): WorldDefinition {

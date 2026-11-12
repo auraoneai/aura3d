@@ -121,6 +121,13 @@ export const COUNT_SEQUENCES: readonly CountSequence[] = [
     noun: "block",
     counts: [1, 2, 3],
     how: "Each round places up to three big blocks; a number is spoken only when its block becomes visible, then the tower tumbles gently."
+  },
+  {
+    storyId: "three-sleepy-sheep",
+    code: "e23",
+    noun: "sheep",
+    counts: [1, 2, 3],
+    how: "Three fluffy sheep float onto sleepy cloud pillows one at a time, each counted as it appears on stage before drifting to sleep."
   }
 ];
 

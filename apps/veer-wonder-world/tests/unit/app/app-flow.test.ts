@@ -16,6 +16,8 @@ import {
   RUN_TO_END_DEFAULT_MS,
   STEP_MS,
   TAP_DEBOUNCE_MS,
+  WIND_DOWN_STORY_CODES,
+  WIND_DOWN_WAIT_MS,
   createStoryClock,
   createStoryRunner,
   findStory,
@@ -30,11 +32,12 @@ import {
   type StoryRunner,
   type StorySinks
 } from "../../../src/app.js";
+import { SLEEP_SONG_IDS, SONGS } from "../../../src/content/songs.js";
 import { AUDIO_MANIFEST } from "../../../src/audio-manifest.js";
 import { ACTIVITIES, EPISODES, STORIES } from "../../../src/content/catalog.js";
 import { estimateLineMs } from "../../../src/content/schema.js";
 import { en } from "../../../src/localization/en/index.js";
-import { MAX_TARGETS, beatWaits } from "../../../src/runtime/beat-runner.js";
+import { MAX_TARGETS, applyRoundVariant, beatTargets, beatWaits, resolveBeatResponse } from "../../../src/runtime/beat-runner.js";
 import { bindCanvasTaps, type TapListener, type TapSurface } from "../../../src/runtime/touch-router.js";
 import { LOOK_HDRI_FILES } from "../../../src/scenes/looks.js";
 import type { DirectorEffect, LineRef, PlayMode, StageAction, StorySpec } from "../../../src/types.js";
@@ -410,8 +413,8 @@ describe("shell helpers", () => {
 
 describe("story runner", () => {
   it("finishes every episode and activity with zero input in both modes and ends on its offline card", () => {
-    expect(EPISODES).toHaveLength(20);
-    expect(ACTIVITIES).toHaveLength(12);
+    expect(EPISODES).toHaveLength(26);
+    expect(ACTIVITIES).toHaveLength(16);
     for (const story of STORIES) {
       for (const mode of ["watch-sing", "play-together"] as const) {
         const h = harness(story, { mode });
@@ -432,7 +435,7 @@ describe("story runner", () => {
   });
 
   it("plays every story to its end in Play Together with a tap on the first active target at every wait (06:36, QA-E03)", () => {
-    expect(STORIES).toHaveLength(32);
+    expect(STORIES).toHaveLength(42);
     for (const story of STORIES) {
       const label = story.id;
       const h = harness(story, { mode: "play-together" });
@@ -470,10 +473,23 @@ describe("story runner", () => {
       expect(h.finished, label).toEqual(["complete"]);
       expect(h.offline, label).toEqual([story.offlinePlayKey]);
       expect(used, `${label} ends in a short session`).toBeLessThan(10 * 60 * 1000);
-      // A tap on every "more" plays every round, and every answered wait speaks its response: the lines are exactly the
-      // authored ones in order (an activity's round once per round).
-      const beats = story.kind === "episode" ? story.beats : [...story.intro, ...Array.from({ length: story.roundLimit }, () => story.round).flat(), ...story.outro];
-      const expected = beats.flatMap((beat) => [...beat.lines, ...(beatWaits(beat) ? (beat.response?.lines ?? []) : [])].map((line) => line.key));
+      // A tap on every "more" plays every round, and every answered wait speaks its resolved response (including
+      // roundVariants and responseByTarget for the first active target): the lines match the authored order.
+      const beats =
+        story.kind === "episode"
+          ? story.beats
+          : [
+              ...story.intro,
+              ...Array.from({ length: story.roundLimit }, (_, r) =>
+                story.round.map((b, idx) => applyRoundVariant(b, story.roundVariants?.[r], idx))
+              ).flat(),
+              ...story.outro
+            ];
+      const expected = beats.flatMap((beat) => {
+        const [firstTarget] = beatTargets(beat);
+        const resp = beatWaits(beat) ? resolveBeatResponse(beat, "tap", firstTarget ?? null) : null;
+        return [...beat.lines, ...(resp?.lines ?? [])].map((line) => line.key);
+      });
       const played = h.of("narration", "play").map((call) => lineKeyOf(call.args[0]));
       expect(played, `${label}: every authored line in order`).toEqual(expected);
       if (story.kind === "activity") expect(h.runner.snapshot().round, `${label}: a tap on every "more" plays all ${story.roundLimit} rounds`).toBe(story.roundLimit);
@@ -790,5 +806,21 @@ describe("shell sources", () => {
     // createGame comes only from the game kit (through the stage), never from the root stub.
     expect(read("src/app.ts")).not.toMatch(/import\s*\{[^}]*\bcreateGame\b[^}]*\}\s*from\s*"@aura3d\/engine"/);
     expect(read("src/scenes/stage.ts")).toMatch(/import\s*\{[^}]*\bcreateGame\b[^}]*\}\s*from\s*"@aura3d\/engine\/game"/);
+  });
+
+  it("defines the descending-arousal Wind-down playlist (6 s turn wait) and 11-song Lullaby Jukebox", () => {
+    expect(WIND_DOWN_WAIT_MS).toBe(6000);
+    expect(WIND_DOWN_STORY_CODES).toEqual(["g13", "g15", "e19", "e22", "e21", "e23", "e24", "e25", "e26"]);
+    for (const code of WIND_DOWN_STORY_CODES) {
+      const story = findStory(code);
+      expect(story, code).toBeDefined();
+      if (code !== "e19") expect(story?.sleepCategory, code).toBe("bedtime");
+    }
+    expect(SLEEP_SONG_IDS).toHaveLength(11);
+    for (const songId of SLEEP_SONG_IDS) {
+      expect(SONGS[songId].sleep, songId).toBe(true);
+      expect(SONGS[songId].bpm, songId).toBeGreaterThanOrEqual(52);
+      expect(SONGS[songId].bpm, songId).toBeLessThanOrEqual(68);
+    }
   });
 });

@@ -37,6 +37,14 @@ export const MUSIC_BEDS: Record<MusicBedId, MusicBedSpec> = {
   homeBed: {
     prompt: "calm, quiet, cosy instrumental background loop for a toy home, soft felt piano, gentle music box and warm strings, 68 bpm, low dynamic range, no drums, seamless loop",
     seconds: 60
+  },
+  nurseryBed: {
+    prompt: "calm, quiet, soothing bedtime instrumental background loop for a warm moonlit nursery, hushed wound music box, soft felt piano and warm cello pad, 56 bpm, ultra low dynamic range, no percussion, seamless loop",
+    seconds: 60
+  },
+  starlightBed: {
+    prompt: "calm, quiet, dreamy nighttime instrumental background loop for a sleepy starlight cloud, gentle celesta harmonics, soft harp arpeggios and warm pad, 54 bpm, ultra low dynamic range, no percussion, seamless loop",
+    seconds: 60
   }
 };
 
@@ -47,7 +55,9 @@ export const WORLD_BEDS: Readonly<Record<WorldId, MusicBedId>> = {
   "peekaboo-barn": "barnBed",
   station: "stationBed",
   "learning-cloud": "cloudBed",
-  "home-nook": "homeBed"
+  "home-nook": "homeBed",
+  "moonlit-nursery": "nurseryBed",
+  "starlight-cloud": "starlightBed"
 };
 
 /** Shortest and longest loop lengths (seconds). */
