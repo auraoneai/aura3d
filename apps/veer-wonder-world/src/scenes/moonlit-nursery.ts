@@ -590,7 +590,7 @@ export function buildMoonlitNurseryDiorama(
   nodes.push(
     primitives.box({
       name: "nursery cedar subfloor plinth",
-      size: [12.4, 0.26, 11.4],
+      size: [22.8, 0.26, 11.4],
       position: [0, -0.156, 0.4],
       material: woodMat("#9A6B44", false),
       castShadow: false,
@@ -601,7 +601,7 @@ export function buildMoonlitNurseryDiorama(
   const plankTransforms: AuraTransformSpec[] = [];
   const plankColors: AuraColor[] = [];
   const cedarTones: readonly AuraColor[] = ["#B88458", "#AE7A4E", "#C28E62", "#A9764C", "#BC885C"];
-  const plankCount = 26;
+  const plankCount = 50;
   const plankWidth = 0.46;
   for (let i = 0; i < plankCount; i += 1) {
     const x = (i - (plankCount - 1) * 0.5) * plankWidth;
@@ -632,16 +632,16 @@ export function buildMoonlitNurseryDiorama(
   nodes.push(
     primitives.box({
       name: "nursery back wall left",
-      size: [4.05, 6.2, 0.22],
-      position: [-4.2, 3.1, -4.35],
+      size: [9.19, 6.2, 0.22],
+      position: [-6.805, 3.1, -4.35],
       material: duskPlaster,
       castShadow: false,
       receiveShadow: true
     }),
     primitives.box({
       name: "nursery back wall right",
-      size: [6.25, 6.2, 0.22],
-      position: [3.05, 3.1, -4.35],
+      size: [11.49, 6.2, 0.22],
+      position: [5.655, 3.1, -4.35],
       material: duskPlaster,
       castShadow: false,
       receiveShadow: true
@@ -665,7 +665,7 @@ export function buildMoonlitNurseryDiorama(
     primitives.box({
       name: "nursery left wing wall",
       size: [0.22, 6.2, 11.4],
-      position: [-6.05, 3.1, 1.2],
+      position: [-11.25, 3.1, 1.2],
       material: duskPlaster,
       castShadow: false,
       receiveShadow: true
@@ -673,7 +673,7 @@ export function buildMoonlitNurseryDiorama(
     primitives.box({
       name: "nursery right wing wall",
       size: [0.22, 6.2, 11.4],
-      position: [6.05, 3.1, 1.2],
+      position: [11.25, 3.1, 1.2],
       material: duskPlaster,
       castShadow: false,
       receiveShadow: true
@@ -681,86 +681,86 @@ export function buildMoonlitNurseryDiorama(
     extrudeContour({
       name: "nursery back cedar baseboard",
       profile: NURSERY_BASEBOARD_PROFILE,
-      from: [-5.95, 0.068, -4.22],
-      to: [5.95, 0.068, -4.22],
+      from: [-11.15, 0.068, -4.22],
+      to: [11.15, 0.068, -4.22],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery left cedar baseboard",
       profile: NURSERY_BASEBOARD_PROFILE,
-      from: [-5.92, 0.068, 5.2],
-      to: [-5.92, 0.068, -4.22],
+      from: [-11.12, 0.068, 5.2],
+      to: [-11.12, 0.068, -4.22],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery right cedar baseboard",
       profile: NURSERY_BASEBOARD_PROFILE,
-      from: [5.92, 0.068, -4.22],
-      to: [5.92, 0.068, 5.2],
+      from: [11.12, 0.068, -4.22],
+      to: [11.12, 0.068, 5.2],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery back cedar dado rail",
       profile: NURSERY_DADO_PROFILE,
-      from: [-5.95, 0.92, -4.22],
-      to: [5.95, 0.92, -4.22],
+      from: [-11.15, 0.92, -4.22],
+      to: [11.15, 0.92, -4.22],
       material: cedarTrim,
       castShadow: true
     }),
     extrudeContour({
       name: "nursery left cedar dado rail",
       profile: NURSERY_DADO_PROFILE,
-      from: [-5.92, 0.92, 5.2],
-      to: [-5.92, 0.92, -4.22],
+      from: [-11.12, 0.92, 5.2],
+      to: [-11.12, 0.92, -4.22],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery right cedar dado rail",
       profile: NURSERY_DADO_PROFILE,
-      from: [5.92, 0.92, -4.22],
-      to: [5.92, 0.92, 5.2],
+      from: [11.12, 0.92, -4.22],
+      to: [11.12, 0.92, 5.2],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery back crown cornice",
       profile: NURSERY_CORNICE_PROFILE,
-      from: [-5.95, 3.88, -4.2],
-      to: [5.95, 3.88, -4.2],
+      from: [-11.15, 3.88, -4.2],
+      to: [11.15, 3.88, -4.2],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery left crown cornice",
       profile: NURSERY_CORNICE_PROFILE,
-      from: [-5.92, 3.88, 5.2],
-      to: [-5.92, 3.88, -4.2],
+      from: [-11.12, 3.88, 5.2],
+      to: [-11.12, 3.88, -4.2],
       material: cedarTrim,
       castShadow: false
     }),
     extrudeContour({
       name: "nursery right crown cornice",
       profile: NURSERY_CORNICE_PROFILE,
-      from: [5.92, 3.88, -4.2],
-      to: [5.92, 3.88, 5.2],
+      from: [11.12, 3.88, -4.2],
+      to: [11.12, 3.88, 5.2],
       material: cedarTrim,
       castShadow: false
     })
   );
 
   const wainscotTransforms: AuraTransformSpec[] = [];
-  for (let i = 0; i < 9; i += 1) {
-    const x = -5.12 + i * 1.28;
+  for (let i = 0; i < 17; i += 1) {
+    const x = -10.24 + i * 1.28;
     wainscotTransforms.push({ position: [x, 0.48, -4.22] });
   }
   for (let j = 0; j < 5; j += 1) {
     const z = -3.4 + j * 1.45;
-    wainscotTransforms.push({ position: [-5.92, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
-    wainscotTransforms.push({ position: [5.92, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
+    wainscotTransforms.push({ position: [-11.12, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
+    wainscotTransforms.push({ position: [11.12, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
   }
   nodes.push(
     instances.roundedBox({

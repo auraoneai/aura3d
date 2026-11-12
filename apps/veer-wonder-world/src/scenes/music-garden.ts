@@ -159,10 +159,11 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "music garden seafoam island plinth",
       seed: 302,
       material: feltMat("#84C6A8"),
-      span: [31, 29],
+      span: [46, 29],
       segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 13.8,
+      islandRadiusX: 21.6,
       outerSwellAmplitude: 0.32,
       basin: {
         center: LOTUS_POND_CENTER,
@@ -173,7 +174,7 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     }),
     primitives.cylinder({
       name: "music garden plinth base",
-      size: [28.6, 0.42, 26.8],
+      size: [43.2, 0.42, 26.8],
       position: [0, -0.9, 0],
       material: clayMat("#D8C7B2", false),
       castShadow: false,
@@ -195,8 +196,8 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     buildBackdropHillNode({
       name: "music garden left hill",
       seed: 311,
-      position: [-7.8, -0.2, -9.2],
-      size: [13.6, 8.8],
+      position: [-9.6, -0.2, -9.2],
+      size: [18.0, 9.0],
       peakHeight: 2.1,
       material: feltMat("#92D0B4", false),
       rotationY: 0.2
@@ -205,15 +206,15 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "music garden center hill",
       seed: 312,
       position: [0, -0.22, -11.4],
-      size: [17.4, 9.6],
+      size: [20.4, 9.6],
       peakHeight: 2.55,
       material: feltMat("#78BA9C", false)
     }),
     buildBackdropHillNode({
       name: "music garden right hill",
       seed: 313,
-      position: [7.8, -0.2, -9.2],
-      size: [13.6, 8.8],
+      position: [9.6, -0.2, -9.2],
+      size: [18.0, 9.0],
       peakHeight: 2.1,
       material: feltMat("#92D0B4", false),
       rotationY: -0.2

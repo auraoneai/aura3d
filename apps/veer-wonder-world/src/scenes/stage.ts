@@ -1357,6 +1357,44 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  let lastObservedAspect = aspectNow();
+  const reframeForViewport = (): void => {
+    if (disposed || warming) return;
+    const nextAspect = aspectNow();
+    if (Math.abs(nextAspect - lastObservedAspect) < 1e-4 && cameraApplied !== null) return;
+    lastObservedAspect = nextAspect;
+    applyCamera(cameraPoseNow(), cameraElapsed >= cameraDuration);
+    if (manualClock && mounted && !renderPaused) {
+      try {
+        app.step(0);
+      } catch {
+        // Headless or lost-context fallback.
+      }
+    }
+  };
+
+  const resizeCleanups: Array<() => void> = [];
+  if (host && typeof window !== "undefined") {
+    const onWinResize = (): void => reframeForViewport();
+    window.addEventListener("resize", onWinResize, { passive: true });
+    window.addEventListener("orientationchange", onWinResize, { passive: true });
+    resizeCleanups.push(() => {
+      window.removeEventListener("resize", onWinResize);
+      window.removeEventListener("orientationchange", onWinResize);
+    });
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", onWinResize, { passive: true });
+      resizeCleanups.push(() => vv.removeEventListener("resize", onWinResize));
+    }
+    if (typeof ResizeObserver === "function") {
+      const observer = new ResizeObserver(() => reframeForViewport());
+      observer.observe(host);
+      if (app.canvas && app.canvas !== host) observer.observe(app.canvas);
+      resizeCleanups.push(() => observer.disconnect());
+    }
+  }
+
   /**
    * Stops the engine's own frames until the returned function runs (07 B41), preventing rAF overlap
    * with `warmPrograms` device leases behind the opaque veil.
@@ -2926,6 +2964,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     dispose() {
       if (disposed) return;
       disposed = true;
+      for (const cleanup of resizeCleanups.splice(0)) cleanup();
       loadSeq += 1;
       mounted = false;
       songRun = null;

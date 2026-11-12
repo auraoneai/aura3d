@@ -58,6 +58,7 @@ import { createNarrationPlayer, type NarrationPlayer } from "./runtime/narration
 import { createPauseSet, type PauseReason } from "./runtime/pause-reasons.js";
 import { createSessionGate } from "./runtime/session-gate.js";
 import { bindCanvasTaps, createTouchRouter, type TouchRouter } from "./runtime/touch-router.js";
+import { WORLD_LOOKS } from "./scenes/looks.js";
 import { createStage, type StageDiagnostics, type TargetRect, type WonderStage } from "./scenes/stage.js";
 import type {
   AudioClipRef,
@@ -72,12 +73,14 @@ import type {
   SpeakerId,
   StageAction,
   StageAdapter,
-  StorySpec
+  StorySpec,
+  WorldId
 } from "./types.js";
 import { applyDisplaySettings } from "./ui/accessibility.js";
 import { mountCaptions, type Captions } from "./ui/captions.js";
 import { mountChildControls, type ChildControls } from "./ui/child-controls.js";
 import { SONG_WORLDS, menuSection, showEpisodeMenu, type MenuItem } from "./ui/episode-menu.js";
+import { bindViewportCssVars, canFullscreen, isFullscreen, requestAppFullscreen, syncThemeColor } from "./ui/fullscreen.js";
 import { showOfflineCard } from "./ui/offline-card.js";
 import { requireParent } from "./ui/parent-gate.js";
 import { openParentPanel } from "./ui/parent-panel.js";
@@ -749,6 +752,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   };
 
   applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow(), windDown: windDownNow() });
+  const unbindViewport = bindViewportCssVars(view, doc);
 
   let sleepDimEl: HTMLDivElement | null = null;
   const setSleepDim = (alpha: number): void => {
@@ -832,6 +836,42 @@ export function createApp(options: WonderAppOptions): WonderApp {
   let screen: WonderScreen = "start";
   let started = false;
   let disposed = false;
+
+  const syncChromeTheme = (worldHint?: WorldId | null): void => {
+    if (settings.highContrast) {
+      syncThemeColor(doc, "#ffffff");
+      return;
+    }
+    if (windDownNow()) {
+      syncThemeColor(doc, "#181324");
+      return;
+    }
+    if (screen === "story") {
+      const currentSongId = activeSong?.songId ?? pendingSong;
+      const isSleepStory =
+        (active?.story ?? pending)?.sleepCategory === "bedtime" ||
+        (currentSongId !== null && SONGS[currentSongId].sleep === true);
+      if (isSleepStory) {
+        syncThemeColor(doc, "#181324");
+        return;
+      }
+      const world =
+        worldHint ??
+        active?.story.world ??
+        pending?.world ??
+        (currentSongId !== null ? SONG_WORLDS[currentSongId].world : null);
+      if (world) {
+        syncThemeColor(doc, WORLD_LOOKS[world].background);
+        return;
+      }
+    }
+    if (screen === "start") {
+      syncThemeColor(doc, "#e3edf6");
+      return;
+    }
+    syncThemeColor(doc, "#f4efe6");
+  };
+  syncChromeTheme();
   let removeStart: (() => void) | null = null;
   let removeMenu: (() => void) | null = null;
   let removeOffline: (() => void) | null = null;
@@ -1105,6 +1145,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const reduced = reducedMotionNow();
     const windDown = windDownNow();
     applyDisplaySettings(doc, { ...settings, reducedMotion: reduced, windDown });
+    syncChromeTheme();
     stage?.setReducedMotion(reduced);
     const current = active;
     if (current) {
@@ -1204,6 +1245,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     stage?.setRenderPaused?.(false);
     started = true;
     screen = "menu";
+    syncChromeTheme();
     removeMenu = showEpisodeMenu(
       uiRoot,
       locale,
@@ -1238,6 +1280,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     resetSleepFade();
     stage?.setRenderPaused?.(true);
     screen = "offline";
+    syncThemeColor(doc, settings.highContrast ? "#ffffff" : "#181324");
     removeOffline = showOfflineCard(
       uiRoot,
       locale,
@@ -1261,6 +1304,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const isSleepVariant = windDownNow() || story.sleepCategory === "bedtime";
     if (isSleepVariant) stage?.setRenderPaused?.(true);
     screen = "offline";
+    syncThemeColor(doc, settings.highContrast ? "#ffffff" : isSleepVariant ? "#181324" : "#f4efe6");
     ended = snapshot ? { storyId: story.id, snapshot, spoken } : null;
     removeOffline = showOfflineCard(
       uiRoot,
@@ -1300,16 +1344,27 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return;
     closeScreens();
     screen = "start";
+    syncChromeTheme();
     removeStart = showStartScreen(
       uiRoot,
       locale,
       (mode) => {
         removeStart = null;
         unlockFromStartTap();
+        if (canFullscreen(doc) && view && view.innerWidth > view.innerHeight && !isFullscreen(doc)) {
+          void requestAppFullscreen(doc);
+        }
         if (mode !== settings.mode) applySettings({ ...settings, mode });
         proceedFromStart(mode);
       },
-      { initialMode: settings.mode }
+      {
+        initialMode: settings.mode,
+        onModeChange: (previewMode) => {
+          const previewWindDown = settings.windDown || previewMode === "wind-down";
+          applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow(), windDown: previewWindDown });
+          syncThemeColor(doc, settings.highContrast ? "#ffffff" : previewWindDown ? "#181324" : "#e3edf6");
+        }
+      }
     );
   };
 
@@ -1396,6 +1451,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     screen = "story";
     const mapping = SONG_WORLDS[songId];
     const spec = SONGS[songId];
+    syncChromeTheme(mapping.world);
     removeLoading = showLoading(uiRoot, locale, {
       world: mapping.world,
       host: mapping.host,
@@ -1499,6 +1555,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     const token = storyToken;
     pending = story;
     screen = "story";
+    syncChromeTheme(story.world);
     removeLoading = showLoading(uiRoot, locale, {
       world: story.world,
       host: story.host,
@@ -1852,6 +1909,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       disposed = true;
       loop.stop();
       sessionGate.dispose();
+      unbindViewport();
       disarmGesture?.();
       unbindTaps?.();
       unbindTaps = null;

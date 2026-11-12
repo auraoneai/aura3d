@@ -159,6 +159,7 @@ html.wind-down:not(.high-contrast) .ww-card-world-tag {
 
 html {
   height: 100%;
+  background: var(--ww-chrome-bg, var(--ww-bg));
   font-synthesis: none;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -199,8 +200,34 @@ b {
 
 .ww-app {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  width: 100dvw;
+  width: var(--ww-vw, 100dvw);
+  height: 100vh;
+  height: 100dvh;
+  height: var(--ww-vh, 100dvh);
   overflow: hidden;
+}
+
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  html.ww-ios-bar-collapsible {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  html.ww-ios-bar-collapsible body {
+    height: auto;
+    min-height: calc(100lvh + 2px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+  }
 }
 
 #stage {
@@ -351,6 +378,19 @@ b {
 
 .ww-icon-button:hover {
   border-color: var(--ww-line-strong);
+}
+
+.ww-icon-button.is-active {
+  border-color: var(--ww-selected-line);
+  background: var(--ww-selected-bg);
+  color: var(--ww-selected-ink);
+}
+
+.ww-start-fullscreen {
+  position: fixed;
+  top: calc(12px + var(--ww-safe-top));
+  right: calc(14px + var(--ww-safe-right));
+  z-index: 2;
 }
 
 .ww-icon-button:disabled {
@@ -1198,14 +1238,26 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face .
 
 .ww-menu {
   z-index: 30;
-  background: var(--ww-bg);
+  background: rgba(244, 239, 230, 0.86);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+html.wind-down:not(.high-contrast) .ww-menu {
+  background: rgba(24, 19, 36, 0.86);
+}
+
+.high-contrast .ww-menu {
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .ww-menu-inner {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: min(100%, 68rem);
+  width: min(100%, 96rem);
   margin: 0 auto;
 }
 
@@ -2403,14 +2455,14 @@ html:not(.high-contrast) .ww-offline.is-sleep .ww-offline-done:hover {
 }
 
 /*
- * Landscape screens up to 840 px tall (laptops, iPads held sideways, phones on their side including 568x320 and
- * 667x375): the welcome stands beside the controls so the start screen fits without scrolling.
+ * Landscape screens (phones on their side, iPads, laptops, 1080p/4K Apple TV and ultrawide displays):
+ * the welcome stands beside the controls so the start screen scales cleanly across wide aspect ratios.
  */
-@media (orientation: landscape) and (max-height: 840px) and (min-width: 540px) {
+@media (orientation: landscape) and (min-width: 540px) {
   .ww-start:not(.ww-boot) > .ww-start-inner {
     flex-direction: row;
     gap: clamp(18px, 4vw, 56px);
-    width: min(100%, 66rem);
+    width: min(100%, 72rem);
   }
 
   .ww-start-hero {
@@ -2419,15 +2471,37 @@ html:not(.high-contrast) .ww-offline.is-sleep .ww-offline-done:hover {
 
   .ww-start-panel {
     flex: 1 1 0;
-    max-width: 26rem;
+    max-width: 28rem;
   }
 
   .ww-start-name {
-    font-size: clamp(2rem, 5.4vw, 4.125rem);
+    font-size: clamp(2rem, 5.2vw, 4.125rem);
   }
 
   .ww-start-face {
-    width: clamp(42px, 5.8vw, 68px);
+    width: clamp(42px, 5.6vw, 72px);
+  }
+}
+
+@media (orientation: landscape) and (min-width: 1200px) and (min-height: 720px) {
+  .ww-start:not(.ww-boot) > .ww-start-inner {
+    gap: clamp(32px, 4.5vw, 72px);
+    width: min(92vw, 86rem);
+    padding: clamp(24px, 3.6vh, 44px) clamp(28px, 4vw, 56px);
+  }
+
+  .ww-start-panel {
+    max-width: 32rem;
+  }
+
+  .ww-start .ww-segmented,
+  .ww-start-note {
+    max-width: 32rem;
+    width: 100%;
+  }
+
+  .ww-start-face {
+    width: clamp(54px, 4.8vw, 80px);
   }
 }
 

@@ -98,10 +98,11 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "meadow felt island plinth",
       seed: 101,
       material: feltMat("#7FBC6B"),
-      span: [32, 30],
+      span: [46, 30],
       segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 14.2,
+      islandRadiusX: 21.6,
       outerSwellAmplitude: 0.38,
       channel: {
         points: BROOK_CHANNEL_2D,
@@ -112,7 +113,7 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     }),
     primitives.cylinder({
       name: "meadow clay plinth rim",
-      size: [29.4, 0.45, 27.6],
+      size: [43.2, 0.45, 27.6],
       position: [0, -0.92, 0],
       material: clayMat("#C8A882", false),
       castShadow: false,
@@ -125,8 +126,8 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     buildBackdropHillNode({
       name: "meadow west hill",
       seed: 211,
-      position: [-8.2, -0.18, -9.4],
-      size: [14.5, 9.2],
+      position: [-9.8, -0.18, -9.4],
+      size: [18.5, 9.4],
       peakHeight: 2.35,
       material: feltMat("#8CC875", false),
       rotationY: 0.18
@@ -135,15 +136,15 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "meadow center hill",
       seed: 212,
       position: [0.6, -0.22, -11.8],
-      size: [18.5, 10.4],
+      size: [21.5, 10.4],
       peakHeight: 2.95,
       material: feltMat("#76B364", false)
     }),
     buildBackdropHillNode({
       name: "meadow east hill",
       seed: 213,
-      position: [8.4, -0.18, -9.2],
-      size: [14.2, 9.0],
+      position: [10.0, -0.18, -9.2],
+      size: [18.2, 9.2],
       peakHeight: 2.2,
       material: feltMat("#95CE7D", false),
       rotationY: -0.16

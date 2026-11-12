@@ -79,6 +79,8 @@ export const UI_STRINGS = {
   "ui.menu.playLullabies": "Play all lullabies",
   "ui.prototype": "Prototype",
   "ui.controls.label": "Grown-up controls",
+  "ui.fullscreen.enter": "Full screen",
+  "ui.fullscreen.exit": "Exit full screen",
   "ui.confirm": "Your child had a turn",
   "ui.stage.unavailable": "The 3D pictures could not start on this device. Reload the page or try another browser.",
   "ui.gate.title": "For grown-ups",
@@ -609,7 +611,9 @@ export const ICONS = {
   tip: [{ d: "M12 3.5a5.5 5.5 0 0 0-3 10.1V16h6v-2.4a5.5 5.5 0 0 0-3-10.1zM9.5 19h5" }],
   auto: [{ d: "M17 4l3 3-3 3M4 11V9a2 2 0 0 1 2-2h14M7 20l-3-3 3-3M20 13v2a2 2 0 0 1-2 2H4" }],
   moon: [{ d: "M18.5 14.5A7.5 7.5 0 0 1 9.5 5.5a7.5 7.5 0 1 0 9 9z", fill: true }],
-  music: [{ d: "M9 17V6l10-2v11" }, { d: "M6.5 19.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5zM16.5 17.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z", fill: true }]
+  music: [{ d: "M9 17V6l10-2v11" }, { d: "M6.5 19.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5zM16.5 17.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z", fill: true }],
+  fullscreen: [{ d: "M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" }],
+  exitFullscreen: [{ d: "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" }]
 } as const satisfies Readonly<Record<string, readonly IconPart[]>>;
 
 export type IconName = keyof typeof ICONS;

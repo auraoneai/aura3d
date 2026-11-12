@@ -9,6 +9,7 @@
 // tap never pauses and resumes, or ends twice.
 
 import { docOf, el, icon, iconButton, ignoreRepeats, uiText, type UiLocale } from "./accessibility.js";
+import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
 
 export interface ChildControlHandlers {
   onPause(): void;
@@ -96,6 +97,28 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
 
   const pause = iconButton(doc, "pause", pauseLabel, { "data-control": "pause" });
   const replay = iconButton(doc, "replay", uiText(locale, "ui.replay"), { "data-control": "replay" });
+  const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
+  const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
+  const fullscreenBtn = canFullscreen(doc)
+    ? iconButton(doc, "fullscreen", enterFsLabel, {
+        "data-control": "fullscreen",
+        "aria-pressed": "false"
+      })
+    : null;
+  const syncFullscreen = (): void => {
+    if (!fullscreenBtn) return;
+    const active = isFullscreen(doc);
+    const label = active ? exitFsLabel : enterFsLabel;
+    fullscreenBtn.textContent = "";
+    fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
+    fullscreenBtn.setAttribute("aria-label", label);
+    fullscreenBtn.setAttribute("aria-pressed", String(active));
+    fullscreenBtn.classList.toggle("is-active", active);
+    fullscreenBtn.title = label;
+    fullscreenBtn.dataset["fullscreen"] = String(active);
+  };
+  syncFullscreen();
+  const unwatchFullscreen = fullscreenBtn ? watchFullscreen(doc, () => syncFullscreen()) : () => {};
   const parent = iconButton(doc, "settings", uiText(locale, "ui.parentButton"), { "data-control": "parent" });
 
   let autoOn = handlers.initialAuto === true;
@@ -162,6 +185,7 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
         confirm,
         pause,
         replay,
+        ...(fullscreenBtn ? [fullscreenBtn] : []),
         parent
       ])
     ]
@@ -227,6 +251,14 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       })
     );
   }
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener(
+      "click",
+      ignoreRepeats(() => {
+        void toggleAppFullscreen(doc).then(() => syncFullscreen());
+      })
+    );
+  }
   replay.addEventListener("click", ignoreRepeats(() => handlers.onReplayWord()));
   parent.addEventListener("click", ignoreRepeats(() => handlers.onParent()));
   allDone.addEventListener("click", ignoreRepeats(() => handlers.onAllDone()));
@@ -272,6 +304,7 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       bar.hidden = !visible;
     },
     dispose(): void {
+      unwatchFullscreen();
       bar.remove();
     }
   };

@@ -39,6 +39,8 @@ export const strings: Record<string, string> = {
 
   // Grown-up controls during play.
   "ui.controls.label": "Grown-up controls",
+  "ui.fullscreen.enter": "Full screen",
+  "ui.fullscreen.exit": "Exit full screen",
   "ui.pause": "Pause",
   "ui.resume": "Resume",
   "ui.replay": "Replay word",

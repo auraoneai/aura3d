@@ -19,7 +19,7 @@ done
 node "$APP_DIR/tools/validate-wonder-world-content.mjs"
 node_modules/.bin/vite build "$APP_DIR" --logLevel warn
 rm -f "$APP_DIR/dist/assets/"*.glb
-for file in _headers robots.txt 404.html; do
+for file in _headers robots.txt 404.html manifest.webmanifest icon.svg; do
   if [ -f "$APP_DIR/public/$file" ]; then
     cp "$APP_DIR/public/$file" "$APP_DIR/dist/$file"
   fi

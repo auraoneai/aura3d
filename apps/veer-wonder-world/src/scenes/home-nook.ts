@@ -373,7 +373,7 @@ export function homeNookScene(
   nodes.push(
     primitives.box({
       name: "nook subfloor plinth",
-      size: [12.4, 0.26, 11.4],
+      size: [22.8, 0.26, 11.4],
       position: [0, -0.15, 0.4],
       material: woodMat("#B98452", false),
       castShadow: false,
@@ -384,7 +384,7 @@ export function homeNookScene(
   const plankTransforms: AuraTransformSpec[] = [];
   const plankColors: AuraColor[] = [];
   const oakTones: readonly AuraColor[] = ["#DCA974", "#D39E68", "#E3B27E", "#CCA070", "#DAA56F"];
-  const plankCount = 26;
+  const plankCount = 50;
   const plankWidth = 0.46;
   for (let i = 0; i < plankCount; i += 1) {
     const x = (i - (plankCount - 1) * 0.5) * plankWidth;
@@ -416,16 +416,16 @@ export function homeNookScene(
   nodes.push(
     primitives.box({
       name: "nook back wall left",
-      size: [3.95, 6.2, 0.22],
-      position: [-4.22, 3.1, -4.35],
+      size: [9.15, 6.2, 0.22],
+      position: [-6.825, 3.1, -4.35],
       material: wallPlaster,
       castShadow: false,
       receiveShadow: true
     }),
     primitives.box({
       name: "nook back wall right",
-      size: [6.35, 6.2, 0.22],
-      position: [3.02, 3.1, -4.35],
+      size: [11.55, 6.2, 0.22],
+      position: [5.625, 3.1, -4.35],
       material: wallPlaster,
       castShadow: false,
       receiveShadow: true
@@ -449,7 +449,7 @@ export function homeNookScene(
     primitives.box({
       name: "nook left wing wall",
       size: [0.22, 6.2, 11.4],
-      position: [-6.05, 3.1, 1.2],
+      position: [-11.25, 3.1, 1.2],
       material: wallPlaster,
       castShadow: false,
       receiveShadow: true
@@ -457,7 +457,7 @@ export function homeNookScene(
     primitives.box({
       name: "nook right wing wall",
       size: [0.22, 6.2, 11.4],
-      position: [6.05, 3.1, 1.2],
+      position: [11.25, 3.1, 1.2],
       material: wallPlaster,
       castShadow: false,
       receiveShadow: true
@@ -466,24 +466,24 @@ export function homeNookScene(
     extrudeContour({
       name: "nook back baseboard moulding",
       profile: BASEBOARD_PROFILE,
-      from: [-5.95, 0.068, -4.22],
-      to: [5.95, 0.068, -4.22],
+      from: [-11.15, 0.068, -4.22],
+      to: [11.15, 0.068, -4.22],
       material: trimWood,
       castShadow: false
     }),
     extrudeContour({
       name: "nook left baseboard moulding",
       profile: BASEBOARD_PROFILE,
-      from: [-5.92, 0.068, 5.2],
-      to: [-5.92, 0.068, -4.22],
+      from: [-11.12, 0.068, 5.2],
+      to: [-11.12, 0.068, -4.22],
       material: trimWood,
       castShadow: false
     }),
     extrudeContour({
       name: "nook right baseboard moulding",
       profile: BASEBOARD_PROFILE,
-      from: [5.92, 0.068, -4.22],
-      to: [5.92, 0.068, 5.2],
+      from: [11.12, 0.068, -4.22],
+      to: [11.12, 0.068, 5.2],
       material: trimWood,
       castShadow: false
     }),
@@ -491,24 +491,24 @@ export function homeNookScene(
     extrudeContour({
       name: "nook back dado rail",
       profile: DADO_MOLDING_PROFILE,
-      from: [-5.95, 0.92, -4.22],
-      to: [5.95, 0.92, -4.22],
+      from: [-11.15, 0.92, -4.22],
+      to: [11.15, 0.92, -4.22],
       material: trimWood,
       castShadow: true
     }),
     extrudeContour({
       name: "nook left dado rail",
       profile: DADO_MOLDING_PROFILE,
-      from: [-5.92, 0.92, 5.2],
-      to: [-5.92, 0.92, -4.22],
+      from: [-11.12, 0.92, 5.2],
+      to: [-11.12, 0.92, -4.22],
       material: trimWood,
       castShadow: false
     }),
     extrudeContour({
       name: "nook right dado rail",
       profile: DADO_MOLDING_PROFILE,
-      from: [5.92, 0.92, -4.22],
-      to: [5.92, 0.92, 5.2],
+      from: [11.12, 0.92, -4.22],
+      to: [11.12, 0.92, 5.2],
       material: trimWood,
       castShadow: false
     }),
@@ -516,24 +516,24 @@ export function homeNookScene(
     extrudeContour({
       name: "nook back crown cornice",
       profile: CROWN_CORNICE_PROFILE,
-      from: [-5.95, 3.88, -4.2],
-      to: [5.95, 3.88, -4.2],
+      from: [-11.15, 3.88, -4.2],
+      to: [11.15, 3.88, -4.2],
       material: trimWood,
       castShadow: false
     }),
     extrudeContour({
       name: "nook left crown cornice",
       profile: CROWN_CORNICE_PROFILE,
-      from: [-5.92, 3.88, 5.2],
-      to: [-5.92, 3.88, -4.2],
+      from: [-11.12, 3.88, 5.2],
+      to: [-11.12, 3.88, -4.2],
       material: trimWood,
       castShadow: false
     }),
     extrudeContour({
       name: "nook right crown cornice",
       profile: CROWN_CORNICE_PROFILE,
-      from: [5.92, 3.88, -4.2],
-      to: [5.92, 3.88, 5.2],
+      from: [11.12, 3.88, -4.2],
+      to: [11.12, 3.88, 5.2],
       material: trimWood,
       castShadow: false
     })
@@ -541,14 +541,14 @@ export function homeNookScene(
 
   // Recessed wainscoting panels across back & side walls (1 draw call)
   const wainscotTransforms: AuraTransformSpec[] = [];
-  for (let i = 0; i < 9; i += 1) {
-    const x = -5.12 + i * 1.28;
+  for (let i = 0; i < 17; i += 1) {
+    const x = -10.24 + i * 1.28;
     wainscotTransforms.push({ position: [x, 0.48, -4.22] });
   }
   for (let j = 0; j < 5; j += 1) {
     const z = -3.4 + j * 1.45;
-    wainscotTransforms.push({ position: [-5.92, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
-    wainscotTransforms.push({ position: [5.92, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
+    wainscotTransforms.push({ position: [-11.12, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
+    wainscotTransforms.push({ position: [11.12, 0.48, z], rotation: [0, Math.PI * 0.5, 0] });
   }
   nodes.push(
     instances.roundedBox({

@@ -329,10 +329,11 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "barn golden pasture island plinth",
       seed: 505,
       material: feltMat("#A5BD68"),
-      span: [32, 30],
+      span: [46, 30],
       segments: [38, 36],
       flatStageRadius: 3.5,
       islandRadius: 14.2,
+      islandRadiusX: 21.6,
       outerSwellAmplitude: 0.36,
       basin: {
         center: POND_CENTER,
@@ -343,7 +344,7 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     }),
     primitives.cylinder({
       name: "barn clay plinth base",
-      size: [29.4, 0.44, 27.6],
+      size: [43.2, 0.44, 27.6],
       position: [0, -0.92, 0],
       material: clayMat("#C8A379", false),
       castShadow: false,
@@ -356,8 +357,8 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     buildBackdropHillNode({
       name: "barn west sunrise hill",
       seed: 511,
-      position: [-8.2, -0.2, -9.6],
-      size: [14.4, 9.0],
+      position: [-9.8, -0.2, -9.6],
+      size: [18.4, 9.2],
       peakHeight: 2.3,
       material: feltMat("#B3C670", false),
       rotationY: 0.2
@@ -366,15 +367,15 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "barn north orchard hill",
       seed: 512,
       position: [0.4, -0.22, -11.9],
-      size: [18.6, 10.2],
+      size: [21.6, 10.2],
       peakHeight: 2.85,
       material: feltMat("#98B25E", false)
     }),
     buildBackdropHillNode({
       name: "barn east pasture hill",
       seed: 513,
-      position: [8.3, -0.2, -9.4],
-      size: [14.0, 9.0],
+      position: [9.9, -0.2, -9.4],
+      size: [18.2, 9.2],
       peakHeight: 2.25,
       material: feltMat("#B8CA76", false),
       rotationY: -0.18

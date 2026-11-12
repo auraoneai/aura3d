@@ -1400,6 +1400,11 @@
           },
           {
             "name": "felt",
+            "node": "station west valley hill",
+            "practical": false
+          },
+          {
+            "name": "felt",
             "node": "station north valley ridge",
             "practical": false
           },

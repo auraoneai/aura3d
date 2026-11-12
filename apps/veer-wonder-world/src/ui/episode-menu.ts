@@ -28,6 +28,7 @@ import {
   type UiStringKey
 } from "./accessibility.js";
 import { PORTRAITS } from "./portraits.js";
+import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
 import { loadSettings, safeLocalStorage } from "./settings-store.js";
 
 export interface MenuItem {
@@ -264,9 +265,36 @@ export function showEpisodeMenu(
   const inner = el(doc, "div", { className: "ww-menu-inner" });
   const title = el(doc, "h1", { className: "ww-menu-title", text: uiText(locale, "ui.menu.title"), attrs: { id: titleId, tabindex: "-1" } });
   const header = el(doc, "div", { className: "ww-menu-header" }, [title]);
-  if (options.onToggleWindDown || options.onToggleAuto || options.onParent) {
-    const hasPillToggle = Boolean(options.onToggleWindDown || options.onToggleAuto);
-    const actions = hasPillToggle ? el(doc, "div", { className: "ww-menu-actions" }) : header;
+  const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
+  const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
+  const fullscreenBtn = canFullscreen(doc)
+    ? iconButton(doc, "fullscreen", enterFsLabel, {
+        "data-control": "fullscreen",
+        "aria-pressed": "false"
+      })
+    : null;
+  const syncMenuFullscreen = (): void => {
+    if (!fullscreenBtn) return;
+    const active = isFullscreen(doc);
+    const label = active ? exitFsLabel : enterFsLabel;
+    fullscreenBtn.textContent = "";
+    fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
+    fullscreenBtn.setAttribute("aria-label", label);
+    fullscreenBtn.setAttribute("aria-pressed", String(active));
+    fullscreenBtn.classList.toggle("is-active", active);
+    fullscreenBtn.title = label;
+    fullscreenBtn.dataset["fullscreen"] = String(active);
+  };
+  syncMenuFullscreen();
+  const unwatchFullscreen = fullscreenBtn ? watchFullscreen(doc, () => syncMenuFullscreen()) : () => {};
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener("click", () => {
+      void toggleAppFullscreen(doc).then(() => syncMenuFullscreen());
+    });
+  }
+  if (options.onToggleWindDown || options.onToggleAuto || fullscreenBtn || options.onParent) {
+    const hasActionGroup = Boolean(options.onToggleWindDown || options.onToggleAuto || fullscreenBtn);
+    const actions = hasActionGroup ? el(doc, "div", { className: "ww-menu-actions" }) : header;
     if (options.onToggleWindDown) {
       const onToggleWindDown = options.onToggleWindDown;
       let windDownOn = options.windDown === true;
@@ -316,6 +344,9 @@ export function showEpisodeMenu(
         onToggleAuto(autoOn);
       });
       actions.appendChild(autoBtn);
+    }
+    if (fullscreenBtn) {
+      actions.appendChild(fullscreenBtn);
     }
     if (options.onParent) {
       const onParent = options.onParent;
@@ -702,6 +733,7 @@ export function showEpisodeMenu(
   return () => {
     if (disposed) return;
     disposed = true;
+    unwatchFullscreen();
     removeArrows();
     screen.remove();
     restoreInert();

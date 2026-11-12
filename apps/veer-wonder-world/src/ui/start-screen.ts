@@ -23,6 +23,7 @@ import {
   el,
   fillTemplate,
   icon,
+  iconButton,
   inertOthers,
   speakerName,
   uiText,
@@ -30,6 +31,7 @@ import {
   type UiLocale
 } from "./accessibility.js";
 import type { PortraitMap } from "./episode-menu.js";
+import { canFullscreen, isFullscreen, toggleAppFullscreen, watchFullscreen } from "./fullscreen.js";
 import { PORTRAITS } from "./portraits.js";
 
 /** The welcome title's big line: "<name>'s Wonder World", or "Wonder World" when no name is set. */
@@ -116,6 +118,8 @@ function welcomeParade(doc: Document): HTMLElement {
 export interface StartScreenOptions {
   /** Pre-selected mode (usually the saved parent setting). Default "play-together". */
   readonly initialMode?: PlayMode;
+  /** Optional preview callback when the grown-up switches mode on the start screen. */
+  readonly onModeChange?: (mode: PlayMode) => void;
 }
 
 /**
@@ -142,8 +146,40 @@ export function showStartScreen(
 
   const modeChoice = buildModeChoice(doc, locale, mode, (next) => {
     mode = next;
+    options.onModeChange?.(next);
   });
   decorateStartModes(doc, modeChoice.element);
+
+  const enterFsLabel = uiText(locale, "ui.fullscreen.enter");
+  const exitFsLabel = uiText(locale, "ui.fullscreen.exit");
+  const fullscreenBtn = canFullscreen(doc)
+    ? iconButton(doc, "fullscreen", enterFsLabel, {
+        "data-control": "fullscreen",
+        "aria-pressed": "false"
+      })
+    : null;
+  if (fullscreenBtn) {
+    fullscreenBtn.classList.add("ww-start-fullscreen");
+  }
+  const syncStartFullscreen = (): void => {
+    if (!fullscreenBtn) return;
+    const active = isFullscreen(doc);
+    const label = active ? exitFsLabel : enterFsLabel;
+    fullscreenBtn.textContent = "";
+    fullscreenBtn.appendChild(icon(doc, active ? "exitFullscreen" : "fullscreen"));
+    fullscreenBtn.setAttribute("aria-label", label);
+    fullscreenBtn.setAttribute("aria-pressed", String(active));
+    fullscreenBtn.classList.toggle("is-active", active);
+    fullscreenBtn.title = label;
+    fullscreenBtn.dataset["fullscreen"] = String(active);
+  };
+  syncStartFullscreen();
+  const unwatchFullscreen = fullscreenBtn ? watchFullscreen(doc, () => syncStartFullscreen()) : () => {};
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener("click", () => {
+      void toggleAppFullscreen(doc).then(() => syncStartFullscreen());
+    });
+  }
 
   // The route stays labelled as a prototype until real-device evidence exists.
   const prototype = el(doc, "p", { className: "ww-prototype", text: uiText(locale, "ui.prototype") });
@@ -162,6 +198,7 @@ export function showStartScreen(
   // Two groups: the welcome (portraits and title) and the controls. They stack, and stand side by side on short
   // landscape screens (styles.css), so the start screen fits without scrolling there too.
   screen.appendChild(welcomeSky(doc));
+  if (fullscreenBtn) screen.appendChild(fullscreenBtn);
   screen.appendChild(
     el(doc, "div", { className: "ww-start-inner" }, [
       el(doc, "div", { className: "ww-start-hero" }, [welcomeParade(doc), el(doc, "div", { className: "ww-start-head" }, [title, prototype])]),
@@ -176,6 +213,7 @@ export function showStartScreen(
   const remove = (): void => {
     if (removed) return;
     removed = true;
+    unwatchFullscreen();
     screen.remove();
     restoreInert();
   };

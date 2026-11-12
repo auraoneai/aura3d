@@ -61,12 +61,16 @@ const FONT_STYLESHEET = "fonts/local.css";
 
 /** Folders of the shared root public/ tree served at the origin root (dev and preview). */
 const SHARED_DIRS = ["fonts", "hdri"].map((dir) => path.join(sharedPublicDir, dir) + path.sep);
+const appPublicDir = path.join(appDir, "public");
+const APP_PUBLIC_FILES = ["manifest.webmanifest", "icon.svg"] as const;
 
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
   ".cjs": "text/javascript; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
   ".woff": "font/woff",
   ".hdr": "application/octet-stream",
@@ -89,13 +93,21 @@ function sharedBuildFiles(): { readonly required: string[]; readonly optional: s
   };
 }
 
-/** Serves /fonts/* and /hdri/* from the shared root public/ tree (dev and preview). */
+/** Serves /fonts/* and /hdri/* from the shared root public/ tree, plus /manifest.webmanifest and /icon.svg (dev and preview). */
 function serveSharedFile(req: Connect.IncomingMessage, res: ServerResponse, next: () => void): void {
   let urlPath: string;
   try {
     urlPath = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
   } catch {
     next();
+    return;
+  }
+  const cleanRel = urlPath.replace(/^\/+/, "");
+  const appFile = (APP_PUBLIC_FILES as readonly string[]).includes(cleanRel) ? path.join(appPublicDir, cleanRel) : null;
+  if (appFile && fs.existsSync(appFile) && fs.statSync(appFile).isFile()) {
+    res.setHeader("content-type", CONTENT_TYPES[path.extname(appFile).toLowerCase()] ?? "application/octet-stream");
+    res.setHeader("content-length", String(fs.statSync(appFile).size));
+    fs.createReadStream(appFile).pipe(res);
     return;
   }
   const file = path.resolve(sharedPublicDir, `.${urlPath}`);
@@ -123,7 +135,11 @@ const copySharedPublicFiles: Plugin = {
   apply: "build",
   transformIndexHtml: {
     order: "pre",
-    handler: (html) => html.replace(/(<link\b[^>]*\bhref=["']\/fonts\/local\.css["'][^>]*?)(\s*\/?>)/, "$1 vite-ignore$2")
+    handler: (html) =>
+      html.replace(
+        /(<link\b[^>]*\bhref=["']\/(?:fonts\/local\.css|manifest\.webmanifest|icon\.svg)["'][^>]*?)(\s*\/?>)/g,
+        "$1 vite-ignore$2"
+      )
   },
   generateBundle() {
     const { required, optional } = sharedBuildFiles();
@@ -138,6 +154,12 @@ const copySharedPublicFiles: Plugin = {
         continue;
       }
       this.emitFile({ type: "asset", fileName: rel, source: fs.readFileSync(file) });
+    }
+    for (const rel of APP_PUBLIC_FILES) {
+      const file = path.join(appPublicDir, rel);
+      if (fs.existsSync(file)) {
+        this.emitFile({ type: "asset", fileName: rel, source: fs.readFileSync(file) });
+      }
     }
   }
 };

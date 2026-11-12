@@ -311,16 +311,17 @@ export function stationScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "station sage island plinth",
       seed: 404,
       material: feltMat("#8FBB7D"),
-      span: [34, 30],
+      span: [46, 30],
       segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 14.6,
+      islandRadiusX: 21.6,
       outerSwellAmplitude: 0.36,
       plinthBaseY: -1.1
     }),
     primitives.cylinder({
       name: "station clay plinth base",
-      size: [30.8, 0.44, 27.8],
+      size: [43.4, 0.44, 27.8],
       position: [0, -0.92, 0],
       material: clayMat("#C5B49C", false),
       castShadow: false,
@@ -328,7 +329,7 @@ export function stationScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   );
 
-  // 2. Sculpted pine-covered backdrop hills (left tunnel mountain + valley ridge + east hill)
+  // 2. Sculpted pine-covered backdrop hills (left tunnel mountain + valley ridge + east/west hills)
   nodes.push(
     buildBackdropHillNode({
       name: "station left tunnel mountain",
@@ -340,18 +341,27 @@ export function stationScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       rotationY: 0.22
     }),
     buildBackdropHillNode({
+      name: "station west valley hill",
+      seed: 414,
+      position: [-10.4, -0.2, -9.4],
+      size: [16.8, 9.0],
+      peakHeight: 2.4,
+      material: feltMat("#7CA86F", false),
+      rotationY: 0.16
+    }),
+    buildBackdropHillNode({
       name: "station north valley ridge",
       seed: 412,
       position: [0, -0.22, -12.2],
-      size: [19.4, 10.2],
+      size: [22.8, 10.2],
       peakHeight: 3.05,
       material: feltMat("#739E68", false)
     }),
     buildBackdropHillNode({
       name: "station east meadow hill",
       seed: 413,
-      position: [8.4, -0.2, -9.4],
-      size: [14.0, 9.0],
+      position: [9.8, -0.2, -9.4],
+      size: [18.0, 9.2],
       peakHeight: 2.45,
       material: feltMat("#80AB73", false),
       rotationY: -0.18

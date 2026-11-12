@@ -89,6 +89,8 @@ const PACK_UI_KEYS = [
   "ui.menu.playLullabies",
   "ui.prototype",
   "ui.controls.label",
+  "ui.fullscreen.enter",
+  "ui.fullscreen.exit",
   "ui.confirm",
   "ui.stage.unavailable",
   "ui.gate.title",

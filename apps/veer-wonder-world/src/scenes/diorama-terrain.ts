@@ -528,6 +528,8 @@ export interface IslandPlinthOptions {
   readonly flatStageRadius?: number;
   /** Outer radius where the bevelled diorama island rounds down to the plinth skirt. */
   readonly islandRadius?: number;
+  /** Optional wider horizontal radius on X so wide-screen (`16:9`–`21:9`) frustums never clip the island rim. */
+  readonly islandRadiusX?: number;
   /** Gentle outer meadow/pasture swell amplitude beyond `flatStageRadius`. */
   readonly outerSwellAmplitude?: number;
   /** Optional recessed basin `{ center: [x, z], radius, depth }` (e.g. duck pond). */
@@ -559,6 +561,8 @@ export function buildIslandPlinthNode(options: IslandPlinthOptions): AuraNodeBui
   const segZ = Math.min(rawSegZ, 36);
   const flatR = Math.max(3.45, options.flatStageRadius ?? 3.65);
   const islandR = options.islandRadius ?? 13.4;
+  const islandRX = Math.max(islandR, options.islandRadiusX ?? islandR);
+  const rimXScale = islandR / islandRX;
   const swellAmp = options.outerSwellAmplitude ?? 0.34;
   const quiltAmp = options.quiltAmplitude ?? 0;
   const baseY = options.plinthBaseY ?? -1.05;
@@ -568,7 +572,7 @@ export function buildIslandPlinthNode(options: IslandPlinthOptions): AuraNodeBui
   const channelKey = options.channel
     ? `${options.channel.halfWidth}:${options.channel.depth}:${options.channel.points.map((p) => p.join(",")).join(";")}`
     : "none";
-  const cacheKey = `plinth:${options.seed}:${width}x${depth}:${segX}x${segZ}:${flatR}:${islandR}:${swellAmp}:${quiltAmp}:${baseY}:${basinKey}:${channelKey}`;
+  const cacheKey = `plinth:${options.seed}:${width}x${depth}:${segX}x${segZ}:${flatR}:${islandR}x${islandRX}:${swellAmp}:${quiltAmp}:${baseY}:${basinKey}:${channelKey}`;
 
   const spec = cachedProceduralSpec(cacheKey, () => {
     const fbm = createFbm2D(options.seed, { octaves: 3, gain: 0.48, lacunarity: 2.05 });
@@ -591,7 +595,8 @@ export function buildIslandPlinthNode(options: IslandPlinthOptions): AuraNodeBui
             ? Math.abs(Math.sin(x * 0.95) * Math.cos(z * 0.95)) * quiltAmp * outerBlend
             : 0;
 
-        const rimDrop = smoothstep(islandR - 2.1, islandR, r) * 0.72;
+        const rimR = Math.hypot(x * rimXScale, z * 1.06);
+        const rimDrop = smoothstep(islandR - 2.1, islandR, rimR) * 0.72;
         let h = (organic + quilt) * outerBlend - rimDrop;
 
         if (options.basin) {
