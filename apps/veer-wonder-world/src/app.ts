@@ -1755,6 +1755,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
         surface,
         (x, y) => created.pick(x, y),
         (id) => {
+          if (needsAudioUnlock()) unlockFromStartTap();
           active?.runner.tap(id, clock.now());
         },
         () => clock.now(),

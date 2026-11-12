@@ -1515,8 +1515,10 @@ describe("audio mixer: AirPlay and iOS interruption recovery", () => {
       expect(ctx().sources.filter((s) => s.playing)).toHaveLength(1);
       fallback?.stop();
 
+      const loadsBeforeDispose = el.loads;
+      expect(loadsBeforeDispose).toBeGreaterThanOrEqual(5);
       mixer.dispose();
-      expect(el.loads).toBe(1);
+      expect(el.loads).toBe(loadsBeforeDispose + 1);
       expect(el.removed).toBe(1);
     } finally {
       if (prevBridge === undefined) Reflect.deleteProperty(globalThis, bridgeSymbol);
@@ -1642,6 +1644,109 @@ describe("audio mixer: AirPlay and iOS interruption recovery", () => {
       expect(mixer.snapshot().songId).toBe("hello");
 
       player.dispose();
+      mixer.dispose();
+    } finally {
+      if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);
+      else Reflect.deleteProperty(globalThis, "navigator");
+      if (prevDocDesc) Object.defineProperty(globalThis, "document", prevDocDesc);
+      else Reflect.deleteProperty(globalThis, "document");
+    }
+  });
+
+  it("queues playSong while unlock() is pending and survives multi-second Apple TV handshake aborts", async () => {
+    const prevNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const prevDocDesc = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const primeBox: { resolve: (() => void) | null } = { resolve: null };
+    let remainingAborts = 0;
+
+    const fakeEl = {
+      loop: false,
+      preload: "",
+      muted: false,
+      volume: 1,
+      hidden: false,
+      paused: true,
+      ended: false,
+      disableRemotePlayback: false,
+      currentTime: 0,
+      duration: 5.0,
+      src: "",
+      style: { display: "" },
+      onended: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+      onpause: null as (() => void) | null,
+      setAttribute() {},
+      removeAttribute() {},
+      play() {
+        if (this.src.startsWith("data:audio/wav")) {
+          return new Promise<void>((resolve) => {
+            primeBox.resolve = () => {
+              this.paused = false;
+              resolve();
+            };
+          });
+        }
+        if (remainingAborts > 0) {
+          remainingAborts -= 1;
+          this.paused = true;
+          const abortErr = new Error("AirPlay handshake still negotiating");
+          abortErr.name = "AbortError";
+          return Promise.reject(abortErr);
+        }
+        this.paused = false;
+        return Promise.resolve();
+      },
+      pause() {
+        this.paused = true;
+      },
+      load() {},
+      remove() {}
+    };
+
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: {
+        vendor: "Apple Computer, Inc.",
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1"
+      }
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        body: { appendChild: () => undefined },
+        createElement: () => fakeEl
+      }
+    });
+
+    try {
+      const { mixer, timers } = setup({ resume: "reject" });
+      const unlocking = mixer.unlock();
+      expect(mixer.isUnlocked()).toBe(false);
+
+      // Tapping a song card while unlock() is still settling queues the song rather than dropping it.
+      remainingAborts = 4; // Fails initial play + 120ms + 120ms + 400ms, succeeds at 900ms (~1.54s handshake).
+      expect(mixer.playSong("hello")).toBeGreaterThan(0);
+
+      primeBox.resolve?.();
+      await expect(unlocking).resolves.toBe(true);
+      await flush();
+
+      expect(fakeEl.src).toContain("hello");
+      expect(fakeEl.paused).toBe(true);
+      timers.advance(120);
+      await flush();
+      expect(fakeEl.paused).toBe(true);
+      timers.advance(120);
+      await flush();
+      expect(fakeEl.paused).toBe(true);
+      timers.advance(400);
+      await flush();
+      expect(fakeEl.paused).toBe(true);
+      timers.advance(900);
+      await flush();
+      expect(fakeEl.paused).toBe(false);
+      expect(mixer.snapshot().songId).toBe("hello");
+
       mixer.dispose();
     } finally {
       if (prevNavDesc) Object.defineProperty(globalThis, "navigator", prevNavDesc);

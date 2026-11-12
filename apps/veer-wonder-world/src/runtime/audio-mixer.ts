@@ -741,6 +741,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   let activeNativeToken = 0;
   let nativeUnlocked = false;
   let nativeAutoResumes = 0;
+  let wirelessRouteResetUsed = false;
   let cancelNativeRecovery: (() => void) | null = null;
   let detachWirelessListener: (() => void) | null = null;
 
@@ -891,20 +892,23 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     cancel?.();
   }
 
+  const NATIVE_RECOVERY_DELAYS_MS: readonly number[] = [120, 120, 400, 900, 1600];
+
   function isTransientPlayAbort(reason: unknown): boolean {
     if (!isObjectRecord(reason) || Reflect.get(reason, "name") !== "AbortError") return false;
     if (foregroundEl && isObjectRecord(Reflect.get(foregroundEl, "error"))) return false;
-    return nativeAutoResumes < 2;
+    return nativeAutoResumes < NATIVE_RECOVERY_DELAYS_MS.length;
   }
 
   function scheduleNativeRecovery(token: number, track: Track): void {
+    const delayMs = NATIVE_RECOVERY_DELAYS_MS[nativeAutoResumes];
     if (
       disposed ||
       activeNativeToken !== token ||
       track.state !== "playing" ||
       paused ||
       track.userPaused ||
-      nativeAutoResumes >= 2
+      delayMs === undefined
     ) {
       return;
     }
@@ -932,7 +936,11 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
             () => {
               if (!disposed) nativeUnlocked = true;
             },
-            () => undefined
+            (err) => {
+              if (!disposed && activeNativeToken === token && track.state === "playing" && !paused && !track.userPaused) {
+                if (isTransientPlayAbort(err)) scheduleNativeRecovery(token, track);
+              }
+            }
           );
         } else if (typeof foregroundEl.play === "function") {
           nativeUnlocked = true;
@@ -943,7 +951,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       if (unlockedOnce && manager && manager.state !== "running" && manager.state !== "closed") {
         void manager.resume().catch(() => undefined);
       }
-    }, 120);
+    }, delayMs);
   }
 
   function ensureForegroundElement(): DomAudioElementLike | null {
@@ -995,6 +1003,10 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
           syncBed();
           const current = activeNativeTrack();
           if (current && current.state === "playing" && !paused && !current.userPaused && activeNativeToken !== 0) {
+            if (!wirelessRouteResetUsed && nativeAutoResumes >= NATIVE_RECOVERY_DELAYS_MS.length) {
+              wirelessRouteResetUsed = true;
+              nativeAutoResumes = NATIVE_RECOVERY_DELAYS_MS.length - 1;
+            }
             scheduleNativeRecovery(activeNativeToken, current);
           } else if (unlockedOnce && manager && manager.state !== "running" && manager.state !== "closed") {
             void manager.resume().catch(() => undefined);
@@ -1064,6 +1076,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     syncForegroundLevels();
     loadedNativeUrl = foregroundSilentUri;
     el.src = foregroundSilentUri;
+    el.load?.();
     try {
       const res = el.play();
       if (isThenable(res)) {
@@ -1092,6 +1105,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     loadedNativeUrl = "";
     nativeUnlocked = false;
     nativeAutoResumes = 0;
+    wirelessRouteResetUsed = false;
     if (!el) return;
     el.onended = null;
     el.onerror = null;
@@ -1309,15 +1323,37 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     clearNativeRecovery();
     if (!resuming) {
       nativeAutoResumes = 0;
+      wirelessRouteResetUsed = false;
       nativeTokenCounter += 1;
       track.nativeToken = nativeTokenCounter;
       activeNativeToken = track.nativeToken;
       const token = track.nativeToken;
+      el.onended = null;
+      el.onerror = null;
+      el.onpause = null;
       if ("disableRemotePlayback" in el) {
         el.disableRemotePlayback = false;
       }
       el.setAttribute("x-webkit-airplay", "allow");
       el.loop = track.loop;
+      if (loadedNativeUrl !== track.url) {
+        loadedNativeUrl = track.url;
+        el.src = track.url;
+        el.load?.();
+      } else {
+        try {
+          el.currentTime = track.offsetS;
+        } catch {
+          el.load?.();
+        }
+      }
+      if (track.offsetS > 0) {
+        try {
+          el.currentTime = track.offsetS;
+        } catch {
+          // Ignore initial seek errors before metadata.
+        }
+      }
       el.onended = () => {
         if (activeNativeToken === token && track.state === "playing") naturalEnd(track);
       };
@@ -1332,23 +1368,6 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
           scheduleNativeRecovery(token, track);
         }
       };
-      if (loadedNativeUrl !== track.url) {
-        loadedNativeUrl = track.url;
-        el.src = track.url;
-      } else {
-        try {
-          el.currentTime = track.offsetS;
-        } catch {
-          // Ignore seek errors if media is not seekable yet.
-        }
-      }
-      if (track.offsetS > 0) {
-        try {
-          el.currentTime = track.offsetS;
-        } catch {
-          // Ignore initial seek errors before metadata.
-        }
-      }
     }
     syncForegroundLevels();
     track.state = "playing";
@@ -1738,10 +1757,16 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
         track.state = "done";
         if (activeNativeToken === token) {
           activeNativeToken = 0;
+          loadedNativeUrl = "";
           if (foregroundEl) {
             foregroundEl.onended = null;
             foregroundEl.onerror = null;
             foregroundEl.onpause = null;
+            try {
+              foregroundEl.pause?.();
+            } catch {
+              // Ignore pause errors on minimal DOM fakes.
+            }
           }
         }
         forget(track);
@@ -1981,57 +2006,72 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       // Nothing changes while paused: the held song stays held.
       if (disposed || paused) return 0;
       stopSongInternal();
-      if (!(running() && soundEnabled && musicEnabled)) return 0;
+      if (!((running() || unlockAttempt !== null) && soundEnabled && musicEnabled)) return 0;
       const ref = manifest.songs[id];
       if (!ref) return 0;
-      if (useNativeMedia && voices.size === 0 && !nativeFailedUrls.has(ref.url)) {
-        const track = newNativeTrack("song", ref, onEnded ?? null);
-        songTrack = track;
-        songId = id;
-        const started = startNativeMedia(track);
-        if (started.ok) {
-          const token = track.nativeToken;
-          if (started.pending) {
-            void started.pending.then(
-              () => {
-                if (track.state !== "playing" || activeNativeToken !== token || paused || track.userPaused) {
-                  if (activeNativeToken === token) foregroundEl?.pause?.();
-                }
-              },
-              (err) => {
-                if (!disposed && songTrack === track && activeNativeToken === token && track.state === "playing" && !paused) {
-                  if (isTransientPlayAbort(err)) {
-                    scheduleNativeRecovery(token, track);
-                    return;
-                  }
-                  clearNativeRecovery();
-                  track.onEnded = null;
-                  track.state = "done";
-                  activeNativeToken = 0;
-                  loadedNativeUrl = "";
-                  if (foregroundEl) {
-                    foregroundEl.onended = null;
-                    foregroundEl.onerror = null;
-                    foregroundEl.onpause = null;
-                  }
-                  forget(track);
-                  if (!failedUrls.has(ref.url)) {
-                    startWebAudioSong(id, ref, onEnded);
-                  }
-                }
-              }
-            );
-          }
-          applyLevels();
-          return ref.durationMs;
+      const launchSong = (expectedSongToken: number): boolean => {
+        if (disposed || paused || expectedSongToken !== songToken || !(running() && soundEnabled && musicEnabled)) {
+          return false;
         }
-        track.onEnded = null;
-        track.state = "done";
-        forget(track);
+        if (useNativeMedia && voices.size === 0 && !nativeFailedUrls.has(ref.url)) {
+          const track = newNativeTrack("song", ref, onEnded ?? null);
+          songTrack = track;
+          songId = id;
+          const started = startNativeMedia(track);
+          if (started.ok) {
+            const token = track.nativeToken;
+            if (started.pending) {
+              void started.pending.then(
+                () => {
+                  if (track.state !== "playing" || activeNativeToken !== token || paused || track.userPaused) {
+                    if (activeNativeToken === token) foregroundEl?.pause?.();
+                  }
+                },
+                (err) => {
+                  if (!disposed && songTrack === track && activeNativeToken === token && track.state === "playing" && !paused) {
+                    if (isTransientPlayAbort(err)) {
+                      scheduleNativeRecovery(token, track);
+                      return;
+                    }
+                    clearNativeRecovery();
+                    track.onEnded = null;
+                    track.state = "done";
+                    activeNativeToken = 0;
+                    loadedNativeUrl = "";
+                    if (foregroundEl) {
+                      foregroundEl.onended = null;
+                      foregroundEl.onerror = null;
+                      foregroundEl.onpause = null;
+                    }
+                    forget(track);
+                    if (!failedUrls.has(ref.url)) {
+                      startWebAudioSong(id, ref, onEnded);
+                    }
+                  }
+                }
+              );
+            }
+            applyLevels();
+            return true;
+          }
+          track.onEnded = null;
+          track.state = "done";
+          forget(track);
+        }
+        if (failedUrls.has(ref.url)) return false;
+        startWebAudioSong(id, ref, onEnded);
+        return true;
+      };
+      if (!running() && unlockAttempt !== null) {
+        if (!(useNativeMedia && !nativeFailedUrls.has(ref.url)) && failedUrls.has(ref.url)) return 0;
+        const expectedSongToken = songToken;
+        const pending = unlockAttempt;
+        void pending.then((ok) => {
+          if (ok) launchSong(expectedSongToken);
+        });
+        return ref.durationMs;
       }
-      if (failedUrls.has(ref.url)) return 0;
-      startWebAudioSong(id, ref, onEnded);
-      return ref.durationMs;
+      return launchSong(songToken) ? ref.durationMs : 0;
     },
 
     stopSong: stopSongInternal,
