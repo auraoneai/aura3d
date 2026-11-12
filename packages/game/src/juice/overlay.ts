@@ -75,6 +75,24 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
     ch.color = parseColor(color);
   }
 
+  let vigChild: HTMLElement | null = null;
+  let lastVigRgb = "";
+
+  function ensureVigChild(parent: HTMLElement): HTMLElement | null {
+    if (vigChild) return vigChild;
+    const doc = (parent as { ownerDocument?: Document }).ownerDocument;
+    if (!doc || typeof doc.createElement !== "function" || typeof parent.appendChild !== "function") {
+      return null;
+    }
+    const child = doc.createElement("div");
+    child.className = "a3g-juice-vignette";
+    child.setAttribute("aria-hidden", "true");
+    child.style.cssText = "position:absolute;inset:0;pointer-events:none;opacity:0;will-change:opacity;";
+    parent.appendChild(child);
+    vigChild = child;
+    return child;
+  }
+
   function write(): void {
     const t = now();
     const flashA = amountAt(flash, t);
@@ -91,7 +109,24 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
       el.style.background = flashA > 0
         ? `rgba(${Math.round(flash.color[0] * 255)},${Math.round(flash.color[1] * 255)},${Math.round(flash.color[2] * 255)},${flashA})`
         : "transparent";
-      el.style.boxShadow = vigA > 0 ? `inset 0 0 ${Math.round(40 * vigA)}px rgba(${Math.round(vignette.color[0] * 255)},${Math.round(vignette.color[1] * 255)},${Math.round(vignette.color[2] * 255)},${vigA})` : "";
+      const vigLayer = ensureVigChild(el);
+      if (vigLayer) {
+        if (vigA > 0) {
+          const rgb = `${Math.round(vignette.color[0] * 255)},${Math.round(vignette.color[1] * 255)},${Math.round(vignette.color[2] * 255)}`;
+          if (rgb !== lastVigRgb) {
+            lastVigRgb = rgb;
+            vigLayer.style.background = `radial-gradient(circle, transparent 42%, rgb(${rgb}) 100%)`;
+          }
+          vigLayer.style.opacity = String(vigA);
+        } else {
+          vigLayer.style.opacity = "0";
+        }
+      } else {
+        // Bare style-only test stub fallback (zero box-shadow blur rasterization).
+        el.style.backgroundImage = vigA > 0
+          ? `radial-gradient(circle, transparent 42%, rgba(${Math.round(vignette.color[0] * 255)},${Math.round(vignette.color[1] * 255)},${Math.round(vignette.color[2] * 255)},${vigA}) 100%)`
+          : "";
+      }
       backend = "dom";
     } else if (deps.app) {
       const r = deps.app.setOutputOverlay(

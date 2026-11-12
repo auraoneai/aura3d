@@ -131,8 +131,8 @@ describe("Aura Hoops broadcast camera (H47-C1 / H47-P2)", () => {
         target: [holder[0] + LIVE_CAM.chase.targetOffset[0], LIVE_CAM.chase.targetOffset[1], holder[2] + LIVE_CAM.chase.targetOffset[2]] as V3,
         fov: LIVE_CAM.chase.fov
       };
-      expect(frameCameraForAspect(base, 1280 / 720, { holder, ball: holder, rim })).toBe(base);
-      const portrait = frameCameraForAspect(base, 390 / 844, { holder, ball: holder, rim });
+      expect(frameCameraForAspect(base, 1280 / 720, { holder, ball: holder, rim, shotNow: false })).toBe(base);
+      const portrait = frameCameraForAspect(base, 390 / 844, { holder, ball: holder, rim, shotNow: false });
       const hNdc = projectPointToNdc(holder, portrait, 390 / 844);
       const rNdc = projectPointToNdc(rim, portrait, 390 / 844);
       expect(hNdc).not.toBeNull();

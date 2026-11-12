@@ -169,8 +169,8 @@ describe("GU47 pass-4 game-lane handoff targets", () => {
     expect(src("examples/drift-and-deliver-port/main.ts")).toMatch(/params\.get\("look"\)/);
     expect(src("examples/heatsink-port/art/look.ts")).toMatch(/get\("look"\)/);
     const ninja = src("examples/ninja-runner-port/main.ts");
-    // Phase-2 second pass: the pooled lantern lights are opt-in (`?lanterns=1`); `?lanterns=0` still reads as off.
-    expect(ninja).toMatch(/params\.get\("lanterns"\) === "1"/);
+    // WP-24 procedural overhaul: pooled lantern practical lights default on unless opted out (`?lanterns=0`), matching `cones`.
+    expect(ninja).toMatch(/params\.get\("lanterns"\) !== "0"/);
     expect(ninja).toMatch(/params\.get\("cones"\) !== "0"/);
     // Ninja Runner (G20, GU47 phase 3): the evening is the default (the gate view, `?at=` from 2260 m, keeps 4.6.2);
     // `?look=original` and `?look=evening` force a look.

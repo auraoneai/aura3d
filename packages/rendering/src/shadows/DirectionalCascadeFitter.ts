@@ -200,16 +200,20 @@ function toLight(p: Vec3Tuple, basis: LightBasis): Vec3Tuple {
 
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export function casterRectClamp(
   slicePts: readonly Vec3Tuple[],
   casterBounds: readonly { min: Vec3Tuple; max: Vec3Tuple }[],
   basis: LightBasis,
-  padding: number
+  padding: number,
+  clampOverhang = true
 ): { extent: number; centerX: number; centerY: number; zMin: number; zMax: number } | null {
-  if (casterBounds.length === 0) return null;
+  if (casterBounds.length === 0 || !Number.isFinite(padding) || padding < 0) return null;
   let cMin: [number, number, number] = [Infinity, Infinity, Infinity];
   let cMax: [number, number, number] = [-Infinity, -Infinity, -Infinity];
   for (const b of casterBounds) {
@@ -223,17 +227,47 @@ export function casterRectClamp(
   const lightPts = slicePts.map((p) => toLight(p, basis));
   const fMinX = Math.min(...lightPts.map((p) => p[0])), fMaxX = Math.max(...lightPts.map((p) => p[0]));
   const fMinY = Math.min(...lightPts.map((p) => p[1])), fMaxY = Math.max(...lightPts.map((p) => p[1]));
-  if (cMin[0] < fMinX || cMax[0] > fMaxX || cMin[1] < fMinY || cMax[1] > fMaxY) return null;
-  const rect = { minX: cMin[0] - padding, maxX: cMax[0] + padding, minY: cMin[1] - padding, maxY: cMax[1] + padding };
+  const fSpanX = fMaxX - fMinX;
+  const fSpanY = fMaxY - fMinY;
+  const fMaxSpan = Math.max(fSpanX, fSpanY);
+  if (!Number.isFinite(fMaxSpan) || fMaxSpan <= 0) return null;
+  const casterSpanX = cMax[0] - cMin[0];
+  const casterSpanY = cMax[1] - cMin[1];
+  // Reject unbounded / world-spanning caster unions (e.g. a 2,400 m forest or
+  // distant mountain) so open-world cascades keep yaw-stable sphere fitting,
+  // while bounded scenes whose casters overhang the near slice by millimetres
+  // or a few metres clamp cleanly to the slice footprint instead of returning null.
+  const sliceDiag = Math.hypot(
+    Math.max(...lightPts.map((p) => p[0])) - Math.min(...lightPts.map((p) => p[0])),
+    Math.max(...lightPts.map((p) => p[1])) - Math.min(...lightPts.map((p) => p[1])),
+    Math.max(...lightPts.map((p) => p[2])) - Math.min(...lightPts.map((p) => p[2]))
+  );
+  if (Math.max(casterSpanX, casterSpanY) > Math.max(fMaxSpan, sliceDiag)) return null;
+  const overhangsSlice = cMin[0] < fMinX || cMax[0] > fMaxX || cMin[1] < fMinY || cMax[1] > fMaxY;
+  if (overhangsSlice && !clampOverhang) return null;
+  // Require the caster footprint to actually overlap the slice XY footprint.
+  if (cMax[0] < fMinX || cMin[0] > fMaxX || cMax[1] < fMinY || cMin[1] > fMaxY) return null;
+  const clampedMinX = Math.max(cMin[0], fMinX);
+  const clampedMaxX = Math.min(cMax[0], fMaxX);
+  const clampedMinY = Math.max(cMin[1], fMinY);
+  const clampedMaxY = Math.min(cMax[1], fMaxY);
+  if (clampedMinX > clampedMaxX || clampedMinY > clampedMaxY) return null;
+  const rect = {
+    minX: clampedMinX - padding,
+    maxX: clampedMaxX + padding,
+    minY: clampedMinY - padding,
+    maxY: clampedMaxY + padding
+  };
   const extent = Math.max(rect.maxX - rect.minX, rect.maxY - rect.minY);
   if (!Number.isFinite(extent) || extent <= 0) return null;
   const receivers = sliceDepthWithinRect(lightPts, rect);
+  if (!receivers) return null;
   return {
     extent,
     centerX: (rect.minX + rect.maxX) / 2,
     centerY: (rect.minY + rect.maxY) / 2,
-    zMin: Math.min(cMin[2], receivers?.zMin ?? Infinity),
-    zMax: Math.max(cMax[2], receivers?.zMax ?? -Infinity)
+    zMin: Math.min(cMin[2], receivers.zMin),
+    zMax: Math.max(cMax[2], receivers.zMax)
   };
 }
 
@@ -442,8 +476,9 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     // the caster rectangle (world-fixed, so still shimmer-stable) and depth to
     // casters ∪ the receivers in that prism. Unbounded/partial cases keep the
     // bounding-sphere fit above.
+    const allowOverhangClamp = !legacyFit;
     const clamp = casterBounds.length === options.casters.length
-      ? casterRectClamp(frustumPts, casterBounds, basis, padding)
+      ? casterRectClamp(frustumPts, casterBounds, basis, padding, allowOverhangClamp)
       : null;
     if (clamp && Number.isFinite(clamp.extent) && clamp.extent > 0 && clamp.extent < extent) {
       extent = clamp.extent;

@@ -87,8 +87,8 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     const strataMat = strataUndercroftMaterial();
     expect(beamMat.kind).toBe("custom");
     expect(strataMat.kind).toBe("custom");
-    if (beamMat.kind === "custom") checkWgslTwin("lamplight-light-beam", beamMat.custom, false);
-    if (strataMat.kind === "custom") checkWgslTwin("lamplight-strata-undercroft", strataMat.custom, true);
+    if (beamMat.kind === "custom" && beamMat.custom) checkWgslTwin("lamplight-light-beam", beamMat.custom, false);
+    if (strataMat.kind === "custom" && strataMat.custom) checkWgslTwin("lamplight-strata-undercroft", strataMat.custom, true);
     expect(webgpuCustomShaderGap(beamMat)).toBeUndefined();
     expect(webgpuCustomShaderGap(strataMat)).toBeUndefined();
   });

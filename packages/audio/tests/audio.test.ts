@@ -1067,3 +1067,65 @@ test("owned adapter releases its stream if output disconnection fails", () => {
   assert.equal(stopped, 1);
   assert.equal(adapter.disposed, true);
 });
+
+test("AudioContextManager defers unlock until running and recovers from iOS interrupted statechange", async () => {
+  const listeners = new Set<() => void>();
+  let allowRunning = false;
+  const context = {
+    state: "suspended",
+    destination: new MockNode() as unknown as AudioNode,
+    currentTime: 0,
+    addEventListener(_type: "statechange", listener: () => void) {
+      listeners.add(listener);
+    },
+    removeEventListener(_type: "statechange", listener: () => void) {
+      listeners.delete(listener);
+    },
+    async resume() {
+      if (allowRunning) {
+        this.state = "running";
+        listeners.forEach((cb) => cb());
+      }
+    },
+    async suspend() {
+      this.state = "suspended";
+      listeners.forEach((cb) => cb());
+    },
+    async close() {
+      this.state = "closed";
+    },
+    createGain: () => new MockGain() as unknown as GainNode,
+    createBufferSource: () => new MockSource() as unknown as AudioBufferSourceNode,
+    createPanner: () => new MockNode() as unknown as PannerNode,
+    createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
+    createConvolver: () => new MockNode() as unknown as ConvolverNode
+  };
+
+  const states: string[] = [];
+  const manager = new AudioContextManager({ context });
+  const off = manager.onStateChange((state) => states.push(state));
+
+  // Non-gesture unlock attempt where context remains suspended stays locked.
+  await manager.unlock();
+  assert.equal(manager.state, "locked");
+
+  // Gesture unlock succeeds once context reaches running.
+  allowRunning = true;
+  await manager.unlock();
+  assert.equal(manager.state, "running");
+
+  // iOS Safari interruption re-locks the manager so gesture listeners re-arm.
+  context.state = "interrupted";
+  listeners.forEach((cb) => cb());
+  assert.equal(manager.state, "locked");
+
+  // Subsequent gesture unlock recovers cleanly.
+  await manager.unlock();
+  assert.equal(manager.state, "running");
+  assert.ok(states.includes("locked"));
+  assert.ok(states.includes("running"));
+
+  off();
+  await manager.dispose();
+  assert.equal(listeners.size, 0);
+});

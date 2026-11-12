@@ -275,20 +275,18 @@ describe("pre-mount WebGPU gap for the W2 combinations", () => {
     Symbol.for("@aura3d/rendering/webgpu-dof-gap/v1")];
   const dof = { focusDistance: 4 };
 
-  it("admits MSAA, vignette, grain, CA and a targeted outline; still reports the rest", () => {
+  it("admits MSAA, SMAA, vignette, grain, CA, targeted and full-frame outline; still reports unsupported TAA/legacy-only ssao", () => {
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, vignette: { intensity: 0.3 }, filmGrain: { intensity: 0.1 }, chromaticAberration: { intensity: 0.002 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1], targets: ["ball"] } })).toBeUndefined();
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1] } })).toMatchObject({ missing: ["outline"] });
-    // AO, SSR, god rays, motion blur, a LUT, registered passes and the legacy twins combine; SMAA, TAA and legacy-only ssao do not.
-    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, ssr: {}, lut: {} } })).toMatchObject({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["anti-aliasing-smaa"] });
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof }, outline: { color: [1, 1, 1, 1] } })).toBeUndefined();
+    // AO, SSR, god rays, motion blur, a LUT, SMAA, registered passes and the legacy twins combine; TAA and legacy-only ssao do not.
+    expect(dofGap({ v2: true, pipeline: { antiAliasing: "smaa", dof, motionBlur: {}, ao: {}, ssr: {}, lut: {} } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "msaa", dof, ao: {}, ssr: {}, lut: {} }, ssao: {}, ssr: {}, depthOfField: { focusDepth: 0.1 } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { antiAliasing: "off", dof, taa: {} }, ssao: {} })).toMatchObject({ missing: ["taa", "ssao"] });
   });
 
-  it("reports display stages on Display-P3 output, which the device refuses", () => {
-    expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3", vignette: { intensity: 0.3 } } })).toMatchObject({
-      code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED", missing: ["display-p3-display-stages"] });
+  it("admits display stages on Display-P3 output", () => {
+    expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3", vignette: { intensity: 0.3 } } })).toBeUndefined();
     expect(dofGap({ v2: true, pipeline: { dof, outputColorSpace: "display-p3" } })).toBeUndefined();
   });
 });

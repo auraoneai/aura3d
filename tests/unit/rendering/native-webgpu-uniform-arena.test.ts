@@ -182,7 +182,7 @@ describe("5.5.1 generated-PBR patch ranges", () => {
       ["u_shadowMapNormalBias", 0.25], ["u_normalMatrix", Array.from({ length: 16 }, (_, i) => i / 3)]]);
     const base = packGeneratedPbrMaterialUniforms(uniforms);
     for (const [name, value, length] of [["u_modelMatrix", Array.from({ length: 16 }, (_, i) => 40 - i), 16], ["u_baseColor", [0.9, 0.8, 0.7, 0.5], 4],
-      ["u_shadowMapNormalBias", 0.75, -1], ["u_normalMatrix", Array.from({ length: 16 }, (_, i) => -i), 16]] as const) {
+      ["u_shadowMapNormalBias", 0.75, -1], ["u_roughness", 0.42, -1], ["u_normalMatrix", Array.from({ length: 16 }, (_, i) => -i), 16]] as const) {
       const bytes = base.slice();
       expect(patchGeneratedPbrMaterialUniform(bytes, name, value, length, false)).toBe(true);
       const [start, end] = generatedPbrPatchByteRange(name, length)!;
@@ -192,7 +192,7 @@ describe("5.5.1 generated-PBR patch ranges", () => {
       const repacked = new Map(uniforms); repacked.set(name, value as UniformValue);
       expect(bytes).toEqual(packGeneratedPbrMaterialUniforms(repacked));
     }
-    expect(generatedPbrPatchByteRange("u_roughness", -1)).toBeNull();
+    expect(generatedPbrPatchByteRange("u_ior", -1)).toBeNull();
   });
 });
 

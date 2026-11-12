@@ -26,16 +26,127 @@ import { currentWorkerAssets } from "@aura3d/core";
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+  has(feature: string): boolean;
+}
+
+export type WebGPUCompressedCapabilitySource =
+  | WebGPUFeatureSetLike
+  | ReadonlySet<string>
+  | readonly string[]
+  | {
+      readonly kind?: string;
+      readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+      readonly nativeGpuDevice?: { readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null } | null;
+      readonly device?: { readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null } | null;
+    };
+
+const ACTIVE_WEBGPU_FEATURES_KEY = Symbol.for("@aura3d/rendering/activeWebGPUFeatures/v1");
+
+function resolveWebGPUFeatureLookup(source?: WebGPUCompressedCapabilitySource | null): ((feature: string) => boolean) | null {
+  const candidate = source === undefined
+    ? (globalThis as Record<symbol, unknown>)[ACTIVE_WEBGPU_FEATURES_KEY] as WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | undefined
+    : source;
+  const resolved = typeof candidate === "function" ? candidate() : candidate;
+  if (!resolved || typeof resolved !== "object") return null;
+  if (Array.isArray(resolved)) {
+    const set = new Set(resolved);
+    return (feature) => set.has(feature);
+  }
+  if (typeof (resolved as WebGPUFeatureSetLike).has === "function") {
+    const featureSet = resolved as WebGPUFeatureSetLike;
+    return (feature) => Boolean(featureSet.has(feature));
+  }
+  const wrapper = resolved as Exclude<WebGPUCompressedCapabilitySource, WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[]>;
+  let features = wrapper.features ?? null;
+  if (!features && wrapper.nativeGpuDevice && typeof wrapper.nativeGpuDevice === "object") {
+    try {
+      features = wrapper.nativeGpuDevice.features ?? null;
+    } catch {
+      features = null;
+    }
+  }
+  if (!features && wrapper.device && typeof wrapper.device === "object") {
+    features = wrapper.device.features ?? null;
+  }
+  if (!features) return null;
+  if (Array.isArray(features)) {
+    const set = new Set(features);
+    return (feature) => set.has(feature);
+  }
+  if (typeof (features as WebGPUFeatureSetLike).has === "function") {
+    const featureSet = features as WebGPUFeatureSetLike;
+    return (feature) => Boolean(featureSet.has(feature));
+  }
+  return null;
+}
+
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export function detectWebGPUCompressedTextureCapabilities(
+  source?: WebGPUCompressedCapabilitySource | null
+): CompressedTextureCapabilities {
+  const has = resolveWebGPUFeatureLookup(source);
+  if (!has) {
+    return {
+      astc: false,
+      bptc: false,
+      etc2: false,
+      s3tc: false,
+      s3tcSrgb: false
+    };
+  }
+  const hasBc = has("texture-compression-bc");
+  const hasExplicitS3tc = has("bc1-rgb-unorm") || has("s3tc");
+  return {
+    astc: has("texture-compression-astc"),
+    bptc: hasBc,
+    etc2: has("texture-compression-etc2"),
+    s3tc: hasExplicitS3tc,
+    s3tcSrgb: hasExplicitS3tc && (hasBc || has("s3tc-srgb"))
+  };
+}
+
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export function setActiveWebGPUCompressedFeatureSource(
+  source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined
+): void {
+  const globalStore = globalThis as Record<symbol, unknown>;
+  if (source == null) {
+    delete globalStore[ACTIVE_WEBGPU_FEATURES_KEY];
+  } else {
+    globalStore[ACTIVE_WEBGPU_FEATURES_KEY] = source;
+  }
+}
+
 export const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities = {
-  astc: false,
-  bptc: false,
-  etc2: false,
-  s3tc: false,
-  s3tcSrgb: false
+  get astc(): boolean {
+    return detectWebGPUCompressedTextureCapabilities().astc;
+  },
+  get bptc(): boolean {
+    return detectWebGPUCompressedTextureCapabilities().bptc;
+  },
+  get etc2(): boolean {
+    return detectWebGPUCompressedTextureCapabilities().etc2;
+  },
+  get s3tc(): boolean {
+    return detectWebGPUCompressedTextureCapabilities().s3tc;
+  },
+  get s3tcSrgb(): boolean {
+    return detectWebGPUCompressedTextureCapabilities().s3tcSrgb;
+  }
 };
 
 export interface AppAssetDecoders {
@@ -192,10 +303,16 @@ export function typedGLBActorDecoderOptions(
   caps?: CompressedTextureCapabilities
 ): TypedGLBActorDecoderOptions {
   if (!flags.on("A3D_QR_ASSETS")) return {};
+  const activeWebGpuCaps = caps === undefined ? detectWebGPUCompressedTextureCapabilities() : undefined;
+  const resolvedCaps = caps ?? (
+    activeWebGpuCaps && (activeWebGpuCaps.astc || activeWebGpuCaps.bptc || activeWebGpuCaps.etc2 || activeWebGpuCaps.s3tc || activeWebGpuCaps.s3tcSrgb)
+      ? activeWebGpuCaps
+      : undefined
+  );
   return {
     decoders: assetsOption?.decoders ?? {},
     ...(assetsOption?.maxTextureSize !== undefined ? { maxTextureSize: assetsOption.maxTextureSize } : {}),
-    ...(caps ? { compressedTextureCapabilities: caps } : {})
+    ...(resolvedCaps ? { compressedTextureCapabilities: resolvedCaps } : {})
   };
 }
 

@@ -212,6 +212,8 @@ export class FrameLoop {
     if (this.qrLoopEnabled && realDt > this.maxFrameDt) {
       realDt = this.maxFrameDt;
       this.clampedFramesCount += 1;
+    } else if (!this.qrLoopEnabled && source === "raf" && realDt > 0.25) {
+      realDt = 0.25;
     }
     const scaledDt = realDt * this.timeScale;
     if (this.fixedDt <= 0) {

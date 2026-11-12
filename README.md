@@ -115,7 +115,7 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 | `@aura3d/cli` | Typed asset workflow, asset search across open public sources, Meshy admission, look-dev, `check-deploy`, `init`, `migrate three` |
 | `create-aura3d` | Vite project scaffolder with agent skills and `llms.txt` |
 | `@aura3d/core`, `@aura3d/math`, `@aura3d/scene` | Lifecycle and deterministic stepping, math, scene graph |
-| `@aura3d/rendering` | Render device, WebGL2 backend, materials, passes |
+| `@aura3d/rendering` | Render device, WebGPU and WebGL2 backends, RuntimeQualityGovernor, materials, passes |
 | `@aura3d/assets`, `@aura3d/asset-index` | Asset loading and caching; asset search across public sources |
 | `@aura3d/animation`, `@aura3d/audio`, `@aura3d/input`, `@aura3d/controls` | Clips and state machines, audio buses, input, camera controls |
 | `@aura3d/physics`, `@aura3d/physics-rapier`, `@aura3d/navigation-recast` | Physics, with optional Rapier and navigation adapters |

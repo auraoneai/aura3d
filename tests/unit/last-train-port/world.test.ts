@@ -63,4 +63,71 @@ describe("last-train-port rendering helpers", () => {
     const names = [...json.matchAll(/(?<!"options":\{)"name":"([^"]+)"/g)].map((m) => m[1]!);
     expect(new Set(names).size).toBe(names.length);
   });
+
+  it("triggers impactRig cleanly on departure/catches, applies fovDeltaDeg without NaN, and rebinds sky/clouds/weather handles across setScene", () => {
+    const world = buildWorld(data, "bands");
+    let sceneGeneration = 0;
+    const nodeCalls = new Map<string, number>();
+    const recordedFovs: number[] = [];
+    const mockApp = {
+      effects: { runtime: "off", registerPreset() {}, spawn() {} },
+      camera: {
+        setPose(pose: { fov: number }) {
+          recordedFovs.push(pose.fov);
+        }
+      },
+      setScene() {
+        sceneGeneration += 1;
+      },
+      nodes: {
+        require(id: string) {
+          return this.get(id);
+        },
+        get(id: string) {
+          const gen = sceneGeneration;
+          const record = (kind: string) => {
+            const key = `${gen}:${id}:${kind}`;
+            nodeCalls.set(key, (nodeCalls.get(key) ?? 0) + 1);
+          };
+          return {
+            setPosition() { record("pos"); },
+            setRotation() {},
+            setVisible() {},
+            setMaterial() {},
+            setInstances() {},
+            setLight() {},
+            setUniform() { record("uniform"); },
+            updateAttribute() { record("attr"); }
+          };
+        }
+      }
+    };
+    const runtime = world.bind(mockApp as unknown as Parameters<typeof world.bind>[0], data);
+    const simBase = {
+      leg: 0,
+      distance: 0,
+      speed: 0,
+      roll: 0,
+      rollVelocity: 0,
+      timeOfDay: "day" as const,
+      comfort: 100,
+      score: 0,
+      trips: [],
+      attempt: { id: 1, status: "active" as const, fares: 0, tips: 0, bonuses: 0, lost: 0, catches: 0, streak: 0, grade: "Gold" as const }
+    };
+    runtime.update({ ...simBase, phase: "closing" } as unknown as Parameters<typeof runtime.update>[0], 0.1);
+    runtime.update({ ...simBase, phase: "enroute", speed: 6 } as unknown as Parameters<typeof runtime.update>[0], 0.15);
+    runtime.update({ ...simBase, phase: "enroute", speed: 6, attempt: { ...simBase.attempt, catches: 1 } } as unknown as Parameters<typeof runtime.update>[0], 0.2);
+    expect(recordedFovs.length).toBe(3);
+    expect(recordedFovs.every(Number.isFinite)).toBe(true);
+
+    // Dock at leg 3 (band swap A -> C) to verify generation-1 sky/clouds/motes handles are updated instead of stale generation-0 handles.
+    const gen0SkyBeforeSwap = nodeCalls.get("0:sky:pos") ?? 0;
+    runtime.update({ ...simBase, leg: 3, phase: "docked", speed: 0 } as unknown as Parameters<typeof runtime.update>[0], 0.3);
+    expect(sceneGeneration).toBe(1);
+    expect(nodeCalls.get("0:sky:pos")).toBe(gen0SkyBeforeSwap);
+    expect(nodeCalls.get("1:sky:pos")).toBe(1);
+    expect(nodeCalls.get("1:cloud-sea:pos")).toBe(1);
+    expect(nodeCalls.get("1:motes:attr")).toBeGreaterThan(0);
+  });
 });

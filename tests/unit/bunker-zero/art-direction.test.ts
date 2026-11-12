@@ -298,10 +298,10 @@ describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
       proc.buildTacticalGloveNode("right", "test-glove"),
       proc.buildBlastDoorBulkheadNode(3, false, "test-door"),
       proc.buildSecretPushWallNode(3, false, "test-pw"),
-      proc.buildClearanceKeycardNode("test-key"),
-      proc.buildBullionCaseNode("test-treasure"),
-      proc.buildMunitionBoxNode("test-ammo"),
-      proc.buildBallisticArmorNode("test-armor"),
+      proc.buildClearanceKeycardNode(false, "test-key"),
+      proc.buildBullionCaseNode("gold", false, "test-treasure"),
+      proc.buildMunitionBoxNode(false, "test-ammo"),
+      proc.buildBallisticArmorNode(false, "test-armor"),
       proc.buildHazardDrumNode(false, "test-drum"),
       proc.buildMilitaryCrateNode(false, "test-crate"),
       proc.buildRocketWarheadNode("test-warhead"),
@@ -309,7 +309,7 @@ describe("Bunker Zero procedural multi-material craft (WP-11)", () => {
       proc.buildEnemyOpticVisorNode("boss", "test-visor")
     ];
     for (const builder of assemblies) {
-      const json = builder.toJSON() as { kind: string; children: { material?: unknown; geometry?: { positions?: ArrayLike<number> } }[] };
+      const json = builder.toJSON() as unknown as { kind: string; children: readonly { material?: unknown; geometry?: { positions?: ArrayLike<number> } }[] };
       expect(json.kind).toBe("group");
       expect(json.children.length).toBeGreaterThanOrEqual(2);
       const child = json.children[0]!;

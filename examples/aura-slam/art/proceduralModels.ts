@@ -12,10 +12,11 @@ import {
   instances,
   material,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraSceneNode
 } from "@aura3d/engine";
+
+type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }>;
 import {
   archwayVoussoirSlots,
   articulatedFolkSlots,

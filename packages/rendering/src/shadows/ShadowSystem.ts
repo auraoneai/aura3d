@@ -15,7 +15,7 @@
 
 import { withStandardDeviceDepth } from "../renderer/FrameDepthConvention";
 import type { ShadowPcfTapTier } from "./ShadowFilterTier";
-import { DepthPass, assertStableDepthClippingInputs, depthAlphaVariantForItem, type PreparedDepthPlan } from "../DepthPass";
+import { DepthPass, assertStableDepthClippingInputs, depthAlphaVariantForItem, skipWebGPUPointDepthCaster, type PreparedDepthPlan } from "../DepthPass";
 import { RenderDeviceError, type RenderDevice, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
 import type { RenderPassContext } from "../RenderPass";
 import type { Texture } from "../Texture";
@@ -26,7 +26,8 @@ import type { FrameCamera } from "../contracts/frameGraph";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import { shadowFitLegacy } from "./shadowLegacy";
-import { cameraDepthOf, fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
+import { cameraDepthOf, fitDirectionalCascades, isOversizeShadowCaster, itemWorldBounds, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
+import { isStockPrd10WindDeform } from "../world/vegetation/shaders/wind.js";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import { unusedCascadeIndices, type CascadeUseCamera } from "./CascadeUse";
 import {
@@ -241,9 +242,15 @@ export class Prd02ShadowSystem {
       const reason = depthDeformIncompatibility(feature);
       if (reason) this.lastDropped.push(`depth.deform:${reason}`);
     }
+    const variantCache = new Map<RenderItem, ShadowCasterVariantKey>();
     const variantKeys = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
-    const resolve = (item: RenderItem): ShadowCasterVariantKey =>
-      resolvePrd02ShadowCasterVariant(item, frame.flags, frame.tier, this.depthFeatures);
+    const resolve = (item: RenderItem): ShadowCasterVariantKey => {
+      const cached = variantCache.get(item);
+      if (cached) return cached;
+      const computed = resolvePrd02ShadowCasterVariant(item, frame.flags, frame.tier, this.depthFeatures);
+      variantCache.set(item, computed);
+      return computed;
+    };
     for (const caster of casters) {
       const key = resolve(caster);
       variantKeys.set(shadowCasterVariantId(key), { key, features: this.depthFeatures });
@@ -251,13 +258,20 @@ export class Prd02ShadowSystem {
     this.lastVariants = [...variantKeys.keys()].sort();
 
     this.lastSkippedCascades = skip ? [...skip].sort() : [];
+    const subTexelK = cascadeSubTexelThreshold(frame.tier);
+    const cullEntries = this.lastFits.length > 0 ? buildCascadeCasterCullEntries(casters, resolve, this.depthFeatures) : [];
+    const cascadeCasterLists = new Map<number, readonly RenderItem[]>();
+    for (const fit of this.lastFits) {
+      if (skip?.has(fit.index)) continue;
+      cascadeCasterLists.set(fit.index, filterCastersForCascade(cullEntries, fit, subTexelK));
+    }
     const cameraPosition = frame.cameraPosition ?? (camera as Partial<FrameCamera>).position ?? frame.cascadeUse?.camera.eye;
-    const prepared = this.prepareShadowFrame(casters, resolve, cameraPosition, frame.timeSeconds, skip);
+    const prepared = this.prepareShadowFrame(casters, cascadeCasterLists, resolve, cameraPosition, frame.timeSeconds, skip);
     let uniforms: Prd02ShadowFrameUniforms;
     try {
       // Light depth stays standard inside reversed/logarithmic camera frames.
       withStandardDeviceDepth(this.device, () => {
-        this.renderCascades(casters, resolve, cameraPosition, frame.timeSeconds, skip, prepared);
+        this.renderCascades(casters, cascadeCasterLists, resolve, cameraPosition, frame.timeSeconds, skip, prepared);
         this.renderAtlas(casters, resolve, cameraPosition, frame.timeSeconds, prepared);
       });
       uniforms = this.frameUniforms();
@@ -275,10 +289,11 @@ export class Prd02ShadowSystem {
     this.depthFeatures = activeDepthFeatures(frame.flags);
     const variants = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     for (const caster of frame.casters) {
-      // DepthPass skips empty instance sets and applies CPU morphs before it
+      // DepthPass skips empty instance sets and clipped WebGPU point casters, and applies CPU morphs before it
       // selects a variant. Mirror that preparation here: a morph-aware feature
       // must see the same geometry and cleared morph fields as the actual draw.
       if (caster.instanceTransforms !== undefined && caster.instanceTransforms.length === 0) continue;
+      if (skipWebGPUPointDepthCaster(caster, this.device)) continue;
       const hasMorph = caster.morphTargets !== undefined || caster.morphWeights !== undefined;
       const geometry = hasMorph ? resolveRenderGeometry(caster) : caster.geometry;
       try {
@@ -459,9 +474,14 @@ export class Prd02ShadowSystem {
     }
   }
 
-  private prepareShadowFrame(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey,
-    cameraPosition: readonly [number, number, number] | undefined, timeSeconds: number | undefined,
-    skip?: ReadonlySet<number>): PreparedShadowFrame | undefined {
+  private prepareShadowFrame(
+    casters: readonly RenderItem[],
+    cascadeCasterLists: ReadonlyMap<number, readonly RenderItem[]>,
+    resolve: (item: RenderItem) => ShadowCasterVariantKey,
+    cameraPosition: readonly [number, number, number] | undefined,
+    timeSeconds: number | undefined,
+    skip?: ReadonlySet<number>
+  ): PreparedShadowFrame | undefined {
     if (casters.length === 0) return undefined;
     const fits = this.lastFits.filter((fit) => !skip?.has(fit.index));
     if (fits.length === 0 && this.lastTiles.length === 0) return undefined;
@@ -477,8 +497,8 @@ export class Prd02ShadowSystem {
     const cascades = new Map<number, PreparedShadowDraw>();
     const tiles: PreparedShadowDraw[] = [];
     const all: PreparedShadowDraw[] = [];
-    const prepare = (viewProjection: Float32Array, size: number, scissor?: AtlasTile["scissor"]): PreparedShadowDraw => {
-      const pass = new DepthPass(this.depthPassOptions(casters, resolve, viewProjection, cameraPosition, timeSeconds, scissor));
+    const prepare = (passCasters: readonly RenderItem[], viewProjection: Float32Array, size: number, scissor?: AtlasTile["scissor"]): PreparedShadowDraw => {
+      const pass = new DepthPass(this.depthPassOptions(passCasters, resolve, viewProjection, cameraPosition, timeSeconds, scissor));
       const context = { device: this.device, width: size, height: size };
       const plan = pass.prepare(context);
       const draw = { pass, plan, context };
@@ -487,8 +507,11 @@ export class Prd02ShadowSystem {
       return draw;
     };
     try {
-      for (const fit of fits) cascades.set(fit.index, prepare(fit.drawViewProjection, this.config.mapSize));
-      for (const tile of this.lastTiles) tiles.push(prepare(tile.drawViewProjection, ATLAS_SIZE, tile.scissor));
+      for (const fit of fits) {
+        const fitCasters = cascadeCasterLists.get(fit.index) ?? casters;
+        cascades.set(fit.index, prepare(fitCasters, fit.drawViewProjection, this.config.mapSize));
+      }
+      for (const tile of this.lastTiles) tiles.push(prepare(casters, tile.drawViewProjection, ATLAS_SIZE, tile.scissor));
       // A later preparation can invalidate an earlier plan through shared
       // resources. Recheck the whole set before clearing the first target.
       for (const draw of all) draw.pass.validatePrepared(draw.context, draw.plan);
@@ -500,9 +523,15 @@ export class Prd02ShadowSystem {
     }
   }
 
-  private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey,
-    cameraPosition: readonly [number, number, number] | undefined, timeSeconds: number | undefined,
-    skip: ReadonlySet<number> | undefined, prepared: PreparedShadowFrame | undefined): void {
+  private renderCascades(
+    casters: readonly RenderItem[],
+    cascadeCasterLists: ReadonlyMap<number, readonly RenderItem[]>,
+    resolve: (item: RenderItem) => ShadowCasterVariantKey,
+    cameraPosition: readonly [number, number, number] | undefined,
+    timeSeconds: number | undefined,
+    skip: ReadonlySet<number> | undefined,
+    prepared: PreparedShadowFrame | undefined
+  ): void {
     if (casters.length === 0) return;
     const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
@@ -518,8 +547,13 @@ export class Prd02ShadowSystem {
         if (draw) draw.pass.validatePrepared(draw.context, draw.plan);
         this.device.clearRenderTarget?.([1, 1, 1, 1]);
         if (draw) draw.pass.executePrepared(draw.context, draw.plan);
-        else new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection, cameraPosition, timeSeconds))
-          .execute({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
+        else {
+          const fitCasters = cascadeCasterLists.get(fit.index) ?? casters;
+          if (fitCasters.length > 0) {
+            new DepthPass(this.depthPassOptions(fitCasters, resolve, fit.drawViewProjection, cameraPosition, timeSeconds))
+              .execute({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
+          }
+        }
       }
     } finally {
       this.device.setRenderTarget(prevTarget);
@@ -596,4 +630,170 @@ export class Prd02ShadowSystem {
 
 export function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem {
   return new Prd02ShadowSystem(device, config);
+}
+
+interface CascadeCasterCullEntry {
+  readonly caster: RenderItem;
+  readonly alwaysKeep: boolean;
+  readonly cx: number;
+  readonly cy: number;
+  readonly cz: number;
+  readonly hx: number;
+  readonly hy: number;
+  readonly hz: number;
+  readonly footprintRadius: number;
+}
+
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export function cascadeSubTexelThreshold(
+  tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined
+): number {
+  const key = typeof tier === "string" ? tier : tier?.shadow?.filter;
+  if (key === "pcf2" || key === "low") return 3.0; // low
+  if (key === "pcf3" || key === "medium") return 2.25; // medium
+  return 1.5; // high / ultra / pcf5
+}
+
+function maxInstanceWorldRadius(caster: RenderItem): number {
+  const lb = caster.geometry?.bounds;
+  if (!lb) return NaN;
+  const localR = 0.5 * Math.hypot(lb.max[0] - lb.min[0], lb.max[1] - lb.min[1], lb.max[2] - lb.min[2]);
+  if (!(localR > 0) || !Number.isFinite(localR)) return localR;
+  const m = caster.modelMatrix;
+  let modelScale = 1;
+  if (m && m.length >= 16) {
+    modelScale = Math.max(
+      Math.hypot(m[0]!, m[1]!, m[2]!),
+      Math.hypot(m[4]!, m[5]!, m[6]!),
+      Math.hypot(m[8]!, m[9]!, m[10]!)
+    );
+    if (!Number.isFinite(modelScale)) return NaN;
+  }
+  const transforms = caster.instanceTransforms;
+  if (!transforms || transforms.length < 16) return localR * modelScale;
+  let maxInstScaleSq = 0;
+  const n = Math.floor(transforms.length / 16);
+  for (let i = 0; i < n; i += 1) {
+    const o = i * 16;
+    const s0 = transforms[o]! * transforms[o]! + transforms[o + 1]! * transforms[o + 1]! + transforms[o + 2]! * transforms[o + 2]!;
+    const s1 = transforms[o + 4]! * transforms[o + 4]! + transforms[o + 5]! * transforms[o + 5]! + transforms[o + 6]! * transforms[o + 6]!;
+    const s2 = transforms[o + 8]! * transforms[o + 8]! + transforms[o + 9]! * transforms[o + 9]! + transforms[o + 10]! * transforms[o + 10]!;
+    const smax = s0 > s1 ? (s0 > s2 ? s0 : s2) : (s1 > s2 ? s1 : s2);
+    if (!Number.isFinite(smax)) return NaN;
+    if (smax > maxInstScaleSq) maxInstScaleSq = smax;
+  }
+  return localR * modelScale * Math.sqrt(maxInstScaleSq);
+}
+
+const DEFAULT_CASTER_VARIANT_KEY: ShadowCasterVariantKey = {
+  skinning: 0,
+  skinningTexture: false,
+  morphTargets: false,
+  instanced: false,
+  batched: false,
+  alphaTest: false,
+  alphaHash: false,
+  doubleSided: false,
+  features: {}
+};
+
+export function buildCascadeCasterCullEntries(
+  casters: readonly RenderItem[],
+  resolve: (item: RenderItem) => ShadowCasterVariantKey = () => DEFAULT_CASTER_VARIANT_KEY,
+  depthFeatures: readonly DepthVariantFeature[] = []
+): readonly CascadeCasterCullEntry[] {
+  const entries: CascadeCasterCullEntry[] = [];
+  for (const caster of casters) {
+    const variant = resolve(caster);
+    const hasCustomDeform = depthFeatures.some(
+      (feature) =>
+        variant.features[feature.id] !== undefined &&
+        feature.hooks.includes("vertex:deform") &&
+        feature.id !== "prd06.deform" &&
+        !isStockPrd10WindDeform(feature)
+    );
+    if (
+      caster.frustumCulled === false ||
+      caster.morphTargets !== undefined ||
+      caster.morphWeights !== undefined ||
+      (caster as { readonly multiDraw?: unknown }).multiDraw !== undefined ||
+      hasCustomDeform
+    ) {
+      entries.push({ caster, alwaysKeep: true, cx: 0, cy: 0, cz: 0, hx: 0, hy: 0, hz: 0, footprintRadius: NaN });
+      continue;
+    }
+    const wb = itemWorldBounds(caster);
+    if (!wb) {
+      entries.push({ caster, alwaysKeep: true, cx: 0, cy: 0, cz: 0, hx: 0, hy: 0, hz: 0, footprintRadius: NaN });
+      continue;
+    }
+    const hasWind = variant.features["prd10.wind"] !== undefined;
+    const inflate = hasWind ? 1.15 : 1.0;
+    const windPad = hasWind ? 0.35 : 0;
+    const cx = 0.5 * (wb.min[0] + wb.max[0]);
+    const cy = 0.5 * (wb.min[1] + wb.max[1]);
+    const cz = 0.5 * (wb.min[2] + wb.max[2]);
+    const rawHx = 0.5 * (wb.max[0] - wb.min[0]);
+    const rawHy = 0.5 * (wb.max[1] - wb.min[1]);
+    const rawHz = 0.5 * (wb.max[2] - wb.min[2]);
+    const hx = rawHx * inflate + windPad;
+    const hy = rawHy * inflate + windPad;
+    const hz = rawHz * inflate + windPad;
+    const footprintRadius =
+      caster.instanceTransforms && caster.instanceTransforms.length >= 32
+        ? maxInstanceWorldRadius(caster)
+        : Math.hypot(rawHx, rawHy, rawHz);
+    entries.push({ caster, alwaysKeep: false, cx, cy, cz, hx, hy, hz, footprintRadius });
+  }
+  return entries;
+}
+
+export function filterCastersForCascade(
+  entries: readonly CascadeCasterCullEntry[],
+  fit: DirectionalCascadeFit,
+  subTexelK: number
+): readonly RenderItem[] {
+  const vp = fit.drawViewProjection;
+  const v0 = vp[0]!, v1 = vp[1]!, v2 = vp[2]!;
+  const v4 = vp[4]!, v5 = vp[5]!, v6 = vp[6]!;
+  const v8 = vp[8]!, v9 = vp[9]!, v10 = vp[10]!;
+  const v12 = vp[12]!, v13 = vp[13]!, v14 = vp[14]!;
+  const av0 = Math.abs(v0), av1 = Math.abs(v1), av2 = Math.abs(v2);
+  const av4 = Math.abs(v4), av5 = Math.abs(v5), av6 = Math.abs(v6);
+  const av8 = Math.abs(v8), av9 = Math.abs(v9), av10 = Math.abs(v10);
+  const minDiameter = Number.isFinite(fit.texelWorld) && fit.texelWorld > 0 ? subTexelK * fit.texelWorld : 0;
+  const kept: RenderItem[] = [];
+  for (const entry of entries) {
+    if (entry.alwaysKeep) {
+      kept.push(entry.caster);
+      continue;
+    }
+    const { caster, cx, cy, cz, hx, hy, hz, footprintRadius } = entry;
+    const nx = v0 * cx + v4 * cy + v8 * cz + v12;
+    const ny = v1 * cx + v5 * cy + v9 * cz + v13;
+    const nz = v2 * cx + v6 * cy + v10 * cz + v14;
+    const ex = av0 * hx + av4 * hy + av8 * hz;
+    const ey = av1 * hx + av5 * hy + av9 * hz;
+    const ez = av2 * hx + av6 * hy + av10 * hz;
+    if (Number.isFinite(nx + ny + nz + ex + ey + ez)) {
+      if (nx + ex < -1 || nx - ex > 1 || ny + ey < -1 || ny - ey > 1 || nz + ez < -1 || nz - ez > 1) {
+        continue;
+      }
+    }
+    if (
+      minDiameter > 0 &&
+      !(caster.skinning !== undefined && fit.index === 0) &&
+      footprintRadius > 0 &&
+      Number.isFinite(footprintRadius) &&
+      2 * footprintRadius < minDiameter
+    ) {
+      continue;
+    }
+    kept.push(caster);
+  }
+  return kept;
 }

@@ -799,7 +799,16 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const mpos = new Float32Array(MOTE_COUNT * 3), mfade = new Float32Array(MOTE_COUNT), msize = new Float32Array(MOTE_COUNT);
   /** With sprite quads, the point arrays written below land on the four corners of each quad (unchanged arrays are not rewritten). */
   const spriteHandle = (h: Handle) => SPRITE_QUADS ? skipUnchangedUpdates(quadUpdater(h, { position: 3, size: 1, fade: 1 })) : h;
-  const sky = node("sky"), clouds = node("cloud-sea"), weather = spriteHandle(node("weather")), motes = spriteHandle(node("motes")), rain = node("rain");
+  let sky = node("sky"), clouds = node("cloud-sea"), weather = spriteHandle(node("weather")), motes = spriteHandle(node("motes")), rain = node("rain");
+  const rebindSceneHandles = (): void => {
+    handles.clear();
+    sky = node("sky");
+    clouds = node("cloud-sea");
+    weather = spriteHandle(node("weather"));
+    motes = spriteHandle(node("motes"));
+    rain = node("rain");
+    weatherWasOn = true;
+  };
   const rpos = new Float32Array(RAIN_COUNT * 12), rfade = new Float32Array(RAIN_COUNT * 4), ruv = new Float32Array(RAIN_COUNT * 8);
   let shownNight = startNight ? 1 : 0;
   let nightLevel = startNight ? 1 : 0;
@@ -851,7 +860,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
       if (night !== shownNight) {
         shownNight = night;
         app.setScene(sceneFor(night ? "night" : "day"));
-        handles.clear();
+        rebindSceneHandles();
       }
     } else {
       const wanted = bandFor(sim.leg, sim.timeOfDay, PINNED_BAND);
@@ -859,7 +868,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         if (sim.phase === "enroute") enrouteSwaps++;
         shownBand = wanted;
         app.setScene(sceneFor(wanted));
-        handles.clear();
+        rebindSceneHandles();
         lightTown = -1;
         platformsWet = false; lastLanternCount = -1; flashOn = false;
       }
@@ -982,12 +991,12 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
       if (prevVfx) {
         if (!still) {
           if (prevVfx.phase === "enroute" && sim.phase === "docked") {
-            impactRig.impact({ trauma: 0.16, hitStopSeconds: 0.03, fovPunchDeg: -1.3 });
+            impactRig.trigger({ trauma: 0.16, freezeSeconds: 0.03, fovKickDeg: -1.3 });
           }
           if (sim.attempt.catches > prevVfx.catches) {
-            impactRig.impact({ trauma: 0.4, hitStopSeconds: 0.045, fovPunchDeg: 2.1 });
+            impactRig.trigger({ trauma: 0.4, freezeSeconds: 0.045, fovKickDeg: 2.1 });
           } else if (prevVfx.phase === "closing" && sim.phase === "enroute") {
-            impactRig.impact({ trauma: 0.12, hitStopSeconds: 0, fovPunchDeg: 1.0 });
+            impactRig.trigger({ trauma: 0.12, freezeSeconds: 0, fovKickDeg: 1.0 });
           }
         }
         if (fx) {
@@ -1060,7 +1069,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
       const shot = shots.frame({ eye, target, fov: fovTarget }, { here: [here.x, here.y, here.z], forward: f, side: sd }, seconds, still);
       wantEye = shot.eye; wantLook = shot.target; fovTarget = shot.fov; shakeOffset = shot.shakeOffset; cut = shot.cut;
       if (!still) {
-        fovTarget += feel.fovPunchDeg;
+        fovTarget += feel.fovDeltaDeg ?? 0;
         if (Math.hypot(feel.shakeOffset[0], feel.shakeOffset[1], feel.shakeOffset[2]) > 1e-4) {
           shakeOffset = shakeOffset
             ? [shakeOffset[0] + feel.shakeOffset[0], shakeOffset[1] + feel.shakeOffset[1], shakeOffset[2] + feel.shakeOffset[2]]

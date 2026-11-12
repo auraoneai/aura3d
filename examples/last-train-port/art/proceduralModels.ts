@@ -15,11 +15,13 @@ import {
   primitives,
   type AuraCustomGeometrySpec,
   type AuraCustomMaterialSpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraPrimitiveNode,
+  type AuraSceneNode,
   type AuraTransformSpec
 } from "@aura3d/engine";
+
+type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }>;
 import {
   archwayVoussoirSlots,
   articulatedFolkSlots,

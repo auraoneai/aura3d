@@ -299,6 +299,83 @@ describe("mountHud (PRD-09 1758/1759)", () => {
     hud.dispose();
     expect(listeners.size).toBe(0);
   });
+
+  it("positions damageNumber via GPU translate3d with live camera re-projection and stops idle rAF", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div") as FakeEl;
+    let t = 0;
+    let scheduleCalls = 0;
+    let pending: (() => void) | null = null;
+    const schedule: HudScheduler = (cb) => {
+      scheduleCalls++;
+      pending = cb;
+      return { cancel: () => { pending = null; } };
+    };
+    const pump = () => {
+      const cb = pending;
+      pending = null;
+      cb?.();
+    };
+    let camOffsetX = 120;
+    const hud = mountHud(
+      {
+        root,
+        doc,
+        schedule,
+        now: () => t,
+        devAssertions: false,
+        project: (w) => {
+          const wx = Array.isArray(w) ? w[0] : (w as { readonly x: number }).x;
+          return [camOffsetX + wx, 240];
+        }
+      },
+      {
+        theme: "arcade-neon",
+        widgets: [{ id: "score", kind: "score", anchor: "top-left", rollMs: 0 }]
+      }
+    );
+
+    // Flush initial dirty pass; once idle, scheduler stops requesting frames.
+    pump();
+    expect(pending).toBeNull();
+    const callsWhenIdle = scheduleCalls;
+
+    // Wakes on set() and goes idle again once non-rolling score flushes.
+    hud.set("score", 42);
+    expect(scheduleCalls).toBe(callsWhenIdle + 1);
+    pump();
+    expect(pending).toBeNull();
+
+    // damageNumber positions via static left/top=0px + translate3d without getBoundingClientRect().
+    hud.damageNumber(99, [10, 0, 0]);
+    const hudEl = root.children[0] as FakeEl;
+    const dmgLayer = hudEl.children.find((c) => String(c.className).includes("a3g-damage"))!;
+    const callout = dmgLayer.children[0]!;
+    let calloutRectReads = 0;
+    callout.getBoundingClientRect = () => {
+      calloutRectReads++;
+      return callout.rect;
+    };
+    expect(callout.style.left).toBe("0px");
+    expect(callout.style.top).toBe("0px");
+    expect(callout.style.transform).toContain("translate3d(130.0px, 240.0px, 0)");
+
+    // Camera pans while callout rises -> live world re-projection updates translate3d with 0 reflow reads.
+    camOffsetX = 200;
+    t += 100;
+    pump();
+    expect(calloutRectReads).toBe(0);
+    expect(callout.style.left).toBe("0px");
+    expect(callout.style.top).toBe("0px");
+    expect(callout.style.transform).toContain("translate3d(210.0px, ");
+
+    // After callout expires, rAF stops again.
+    t += 2000;
+    pump();
+    expect(dmgLayer.children.length).toBe(0);
+    expect(pending).toBeNull();
+    hud.dispose();
+  });
 });
 
 describe("screenFraction", () => {

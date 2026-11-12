@@ -116,8 +116,13 @@ describe("native prd15.paritySprite", () => {
     expect(createGeneratedUnlitProgram(unlit({})).sprite).toBe(false);
   });
 
-  it("rejects clipped sprites, sprite lines and inconsistent metadata", () => {
-    expect(() => createGeneratedUnlitProgram(unlit({ "prd15.paritySprite": true, "a3d.clipping": true }))).toThrow(/clipped billboard sprites/);
+  it("supports clipped sprites via view/world inverse uniforms and rejects sprite lines and inconsistent metadata", () => {
+    const clippedSprite = createGeneratedUnlitProgram(unlit({ "prd15.paritySprite": true, "a3d.clipping": true }));
+    expect(clippedSprite.sprite).toBe(true);
+    expect(clippedSprite.clipping).toBe(true);
+    expect(clippedSprite.vertex).toContain("material.spriteViewToWorld * spriteView");
+    expect(clippedSprite.vertex).toContain("material.spriteWorldToObject * vec4f(v_worldPos, 1.0)");
+    expect(clippedSprite.fragment).toContain("generatedUnlitClipRetains(input.v_worldPos, input.local)");
     expect(() => createGeneratedUnlitProgram(unlit({ "prd15.paritySprite": true, "a3d.nativePrimitive": "lines" }))).toThrow(/paritySprite/);
     const descriptor = unlit({ "prd15.paritySprite": true });
     expect(() => createGeneratedUnlitProgram({ ...descriptor, activeFeatures: descriptor.activeFeatures.filter((item) => item.id !== "prd15.paritySprite") }))

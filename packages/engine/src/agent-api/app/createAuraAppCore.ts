@@ -1236,6 +1236,8 @@ export function createAuraAppWithPhysicsWorldAccess(
    */
   let restoreRemountUnsubscribe: (() => void) | undefined;
   let internalDeviceLostUnsubscribe: (() => void) | undefined;
+  let pendingDeferredOutgoing: WebGLRenderController | undefined;
+  let activeWebGPUCanvasHandoffCleanup: (() => void) | undefined;
   const attachRestoreRemount = (controller: WebGLRenderController): void => {
     restoreRemountUnsubscribe?.();
     restoreRemountUnsubscribe = undefined;
@@ -1792,11 +1794,29 @@ export function createAuraAppWithPhysicsWorldAccess(
         throw error;
       }
     });
+    let deferredWebGPUOutgoing: WebGLRenderController | undefined;
+    const canDeferWebGPUHandoff = activeRendererBackend === "webgpu"
+      && Boolean(canvas)
+      && !disposed
+      && !recoveryAttempt
+      && options.renderer?.textureResidency === undefined;
     cleanupCurrent(() => {
+      const releaseHandoff = activeWebGPUCanvasHandoffCleanup;
+      activeWebGPUCanvasHandoffCleanup = undefined;
+      releaseHandoff?.();
+      const priorDeferred = pendingDeferredOutgoing;
+      pendingDeferredOutgoing = undefined;
+      if (priorDeferred) void retireController(priorDeferred);
       const controller = productionController;
       productionController = undefined;
       activeRendererBackend = undefined;
-      void retireController(controller);
+      if (controller && canDeferWebGPUHandoff) {
+        controller.pause?.();
+        deferredWebGPUOutgoing = controller;
+        pendingDeferredOutgoing = controller;
+      } else {
+        void retireController(controller);
+      }
     });
     cleanupCurrent(() => {
       const unsubscribe = restoreRemountUnsubscribe;
@@ -1822,6 +1842,11 @@ export function createAuraAppWithPhysicsWorldAccess(
       physics?.dispose();
     });
     if (disposed || revision !== mountRevision || cleanupFailures.length > 0) {
+      if (deferredWebGPUOutgoing && pendingDeferredOutgoing === deferredWebGPUOutgoing) {
+        pendingDeferredOutgoing = undefined;
+        cleanup(() => { void retireController(deferredWebGPUOutgoing); });
+        deferredWebGPUOutgoing = undefined;
+      }
       cleanup(disposePrepared);
       throwCleanupFailures();
       return;
@@ -1829,6 +1854,12 @@ export function createAuraAppWithPhysicsWorldAccess(
     lastTime = 0;
     canvasFrameRate = createFrameRateMeter();
     const shouldUseProductionRenderer = shouldUseProductionRendererForCurrentScene();
+    if (deferredWebGPUOutgoing && !(shouldUseProductionRenderer && canvas)) {
+      const outgoing = deferredWebGPUOutgoing;
+      deferredWebGPUOutgoing = undefined;
+      if (pendingDeferredOutgoing === outgoing) pendingDeferredOutgoing = undefined;
+      void retireController(outgoing);
+    }
     /*
      * WS-2.5 — a scene with renderable content must never fall to the diagnostic 2D path.
      *
@@ -1923,7 +1954,82 @@ export function createAuraAppWithPhysicsWorldAccess(
       const waitForPriorRenderer = waitForResidency || webGPUCanvasRequiresFence || recoveryAttempt !== undefined;
       const precedingMounts = waitForPriorRenderer ? [...mountTasks] : [];
       const precedingTeardowns = waitForPriorRenderer ? [...teardownTasks] : [];
+      const handoffOutgoing = deferredWebGPUOutgoing;
+      deferredWebGPUOutgoing = undefined;
       const mountingSnapshot = renderSnapshot;
+      const installWebGPUSwapchainHandoff = (): (() => void) => {
+        if (!handoffOutgoing || !canvas || typeof (canvas as HTMLCanvasElement).getContext !== "function") return () => {};
+        type WebGPUSwapchainContextLike = { configure?: (...args: unknown[]) => unknown; unconfigure?: () => unknown };
+        const lookupWebGPUContext = (): WebGPUSwapchainContextLike | null => {
+          try {
+            return (canvas as HTMLCanvasElement).getContext("webgpu") as unknown as WebGPUSwapchainContextLike | null;
+          } catch {
+            return null;
+          }
+        };
+        const gpuCtx = lookupWebGPUContext();
+        if (!gpuCtx || typeof gpuCtx.configure !== "function" || typeof gpuCtx.unconfigure !== "function") return () => {};
+        const origConfigure = gpuCtx.configure;
+        const origUnconfigure = gpuCtx.unconfigure;
+        let open = true;
+        let suppressedUnconfigure = false;
+        const restoreMethods = (): void => {
+          try { gpuCtx.configure = origConfigure; } catch { /* frozen mock context */ }
+          try { gpuCtx.unconfigure = origUnconfigure; } catch { /* frozen mock context */ }
+        };
+        const closeHandoff = (): void => {
+          if (!open) return;
+          open = false;
+          if (activeWebGPUCanvasHandoffCleanup === closeHandoff) activeWebGPUCanvasHandoffCleanup = undefined;
+          restoreMethods();
+          if (suppressedUnconfigure) {
+            suppressedUnconfigure = false;
+            origUnconfigure.call(gpuCtx);
+          }
+        };
+        try {
+          gpuCtx.unconfigure = function (this: unknown) {
+            if (open) {
+              suppressedUnconfigure = true;
+              return undefined;
+            }
+            return origUnconfigure.call(this);
+          };
+          gpuCtx.configure = function (this: unknown, ...args: unknown[]) {
+            if (open) {
+              // WebGPU context.configure() atomically replaces the prior swapchain configuration
+              // without an intermediate unconfigure() blank.
+              suppressedUnconfigure = false;
+              open = false;
+              if (activeWebGPUCanvasHandoffCleanup === closeHandoff) activeWebGPUCanvasHandoffCleanup = undefined;
+              restoreMethods();
+            }
+            return origConfigure.apply(this, args);
+          };
+        } catch {
+          restoreMethods();
+          return () => {};
+        }
+        activeWebGPUCanvasHandoffCleanup = closeHandoff;
+        return closeHandoff;
+      };
+      const retireOutgoingAndStartMount = async (): Promise<WebGLRenderController | undefined> => {
+        await Promise.all([...precedingMounts, ...precedingTeardowns]);
+        if (!handoffOutgoing) return startMount();
+        if (pendingDeferredOutgoing === handoffOutgoing) pendingDeferredOutgoing = undefined;
+        if (disposed || revision !== mountRevision) {
+          await retireController(handoffOutgoing);
+          settleMount();
+          return undefined;
+        }
+        const closeHandoff = installWebGPUSwapchainHandoff();
+        try {
+          await retireController(handoffOutgoing);
+          return await startMount();
+        } finally {
+          closeHandoff();
+        }
+      };
       const startMount = (): Promise<WebGLRenderController | undefined> => {
         if (waitForPriorRenderer && teardownFailures.size) return Promise.reject(teardownFailures.values().next().value);
         if (disposed || revision !== mountRevision) { settleMount(); return Promise.resolve(undefined); }
@@ -2043,8 +2149,8 @@ export function createAuraAppWithPhysicsWorldAccess(
         }
       );
       };
-      const task = (precedingMounts.length || precedingTeardowns.length
-        ? Promise.all([...precedingMounts, ...precedingTeardowns]).then(startMount)
+      const task = (handoffOutgoing || precedingMounts.length || precedingTeardowns.length
+        ? retireOutgoingAndStartMount()
         : startMount())
         .then(async (controller) => {
           if (!controller) return;
@@ -2758,6 +2864,16 @@ export function createAuraAppWithPhysicsWorldAccess(
         ownedInputControllers.clear();
         cleanup(() => canvasRuntimePhysics?.dispose());
         cleanup(() => appPhysicsWorldInstance?.dispose());
+        cleanup(() => {
+          const releaseHandoff = activeWebGPUCanvasHandoffCleanup;
+          activeWebGPUCanvasHandoffCleanup = undefined;
+          releaseHandoff?.();
+        });
+        cleanup(() => {
+          const deferred = pendingDeferredOutgoing;
+          pendingDeferredOutgoing = undefined;
+          if (deferred) void retireController(deferred);
+        });
         cleanup(() => { void retireController(productionController); });
         productionController = undefined;
         cleanup(() => runtimeNodes.dispose());

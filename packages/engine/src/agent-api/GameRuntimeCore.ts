@@ -2039,8 +2039,12 @@ export function createGameInput(
     return bindings.some((binding) => activeBindings.has(binding));
   };
   const isActionHeld = (action: string): boolean => currentHeld.get(action) ?? resolveHeld(action);
+  const MAX_LIVE_REPLAY_EVENTS = 4096;
   const record = (type: GameInputReplayEvent["type"], binding: string, source?: GameInputReplayEvent["source"]) => {
     replayEvents.push({ frame, time, type, binding, ...(source ? { source } : {}) });
+    if (!recordDeviceState && replayEvents.length > MAX_LIVE_REPLAY_EVENTS) {
+      replayEvents.splice(0, replayEvents.length - MAX_LIVE_REPLAY_EVENTS);
+    }
   };
   const pressBinding = (binding: string, shouldRecord = true) => {
     activeBindings.add(binding);
@@ -2272,58 +2276,189 @@ export function createGameInput(
     wasPointerLocked = locked;
     pointer = { ...pointer, x: next.clientX, y: next.clientY, dx, dy };
   };
+  // Multi-pointer & multi-touch state: lifting 1 of 2 fingers or cancelling a
+  // pointer must never clobber the remaining active finger's held bindings.
+  const activePointers = new Map<number, { button: number; x: number; y: number }>();
+  let primaryPointerId: number | null = null;
+  const activeTouches = new Set<number>();
+
+  const pointerKeyOf = (ev: PointerEvent): number =>
+    typeof ev.pointerId === "number" ? ev.pointerId : -1 - (ev.button ?? 0);
+
+  const syncPointerButtons = (): number[] => {
+    const uniq = new Set<number>();
+    for (const info of activePointers.values()) uniq.add(info.button);
+    return [...uniq].sort((a, b) => a - b);
+  };
+
+  const releasePointerById = (next: PointerEvent, updateDelta: boolean): void => {
+    const pid = pointerKeyOf(next);
+    const removed = activePointers.get(pid);
+    activePointers.delete(pid);
+    const button = removed?.button ?? (next.button ?? 0);
+    let buttonStillHeld = false;
+    for (const info of activePointers.values()) {
+      if (info.button === button) { buttonStillHeld = true; break; }
+    }
+    if (!buttonStillHeld) {
+      releaseBinding(button === 2 ? "PointerSecondary" : "PointerPrimary");
+      releaseBinding(`PointerButton${button}`);
+    }
+    if (updateDelta && (primaryPointerId === null || pid === primaryPointerId)) {
+      accumulatePointerDelta(next);
+    }
+    if (pid === primaryPointerId) {
+      const nextEntry = activePointers.entries().next();
+      if (!nextEntry.done) {
+        primaryPointerId = nextEntry.value[0];
+        pointer = {
+          ...pointer,
+          active: true,
+          x: nextEntry.value[1].x,
+          y: nextEntry.value[1].y,
+          buttons: syncPointerButtons()
+        };
+        return;
+      }
+      primaryPointerId = null;
+    }
+    const buttons = syncPointerButtons();
+    pointer = { ...pointer, active: activePointers.size > 0 || activeTouches.size > 0, buttons };
+  };
+
   const onPointerDown = (event: Event) => withLiveState(() => {
     if (options.pointer === false) return;
     const next = event as PointerEvent;
+    const pid = pointerKeyOf(next);
+    const button = next.button ?? 0;
     markDevice(next.pointerType === "touch" ? "touch" : "pointer");
-    pressBinding(next.button === 2 ? "PointerSecondary" : "PointerPrimary");
-    pressBinding(`PointerButton${next.button}`);
-    pointer = {
-      active: true,
-      x: next.clientX,
-      y: next.clientY,
-      // Preserve this frame's accumulated delta: a click mid-flick must not
-      // wipe the look movement already earned in the same frame.
-      dx: pointer.dx,
-      dy: pointer.dy,
-      buttons: [...new Set([...pointer.buttons, next.button])].sort()
-    };
+    activePointers.set(pid, { button, x: next.clientX, y: next.clientY });
+    if (primaryPointerId === null) primaryPointerId = pid;
+    pressBinding(button === 2 ? "PointerSecondary" : "PointerPrimary");
+    pressBinding(`PointerButton${button}`);
+    if (pid === primaryPointerId) {
+      pointer = {
+        active: true,
+        x: next.clientX,
+        y: next.clientY,
+        // Preserve this frame's accumulated delta: a click mid-flick must not
+        // wipe the look movement already earned in the same frame.
+        dx: pointer.dx,
+        dy: pointer.dy,
+        buttons: syncPointerButtons()
+      };
+    } else {
+      pointer = { ...pointer, active: true, buttons: syncPointerButtons() };
+    }
   });
   const onPointerMove = (event: Event) => withLiveState(() => {
     if (options.pointer === false) return;
-    accumulatePointerDelta(event as PointerEvent);
+    const next = event as PointerEvent;
+    if (typeof next.pointerId === "number" && activePointers.has(next.pointerId)) {
+      const prev = activePointers.get(next.pointerId)!;
+      activePointers.set(next.pointerId, { button: prev.button, x: next.clientX, y: next.clientY });
+      if (primaryPointerId !== null && next.pointerId !== primaryPointerId) return;
+    } else if (typeof next.pointerId === "number" && activePointers.size > 0 && next.pointerType === "touch") {
+      return;
+    }
+    accumulatePointerDelta(next);
   });
   const onPointerUp = (event: Event) => withLiveState(() => {
     if (options.pointer === false) return;
-    const next = event as PointerEvent;
-    releaseBinding(next.button === 2 ? "PointerSecondary" : "PointerPrimary");
-    releaseBinding(`PointerButton${next.button}`);
-    accumulatePointerDelta(next);
-    const buttons = pointer.buttons.filter((button) => button !== next.button);
-    pointer = { ...pointer, active: buttons.length > 0, buttons };
+    releasePointerById(event as PointerEvent, true);
   });
+  const onPointerCancel = (event: Event) => withLiveState(() => {
+    if (options.pointer === false) return;
+    releasePointerById(event as PointerEvent, false);
+  });
+  const syncTouchSet = (ev: TouchEvent): number => {
+    if (ev.touches && typeof ev.touches.length === "number") {
+      activeTouches.clear();
+      for (let i = 0; i < ev.touches.length; i += 1) {
+        const t = ev.touches[i];
+        if (t) activeTouches.add(typeof t.identifier === "number" ? t.identifier : i);
+      }
+      return activeTouches.size;
+    }
+    return 0;
+  };
   const onTouchStart = (event: Event) => withLiveState(() => {
     if (options.touch === false) return;
     markDevice("touch");
-    const touch = (event as TouchEvent).touches[0];
-    pressBinding("TouchPrimary");
-    if (touch) pointer = { active: true, x: touch.clientX, y: touch.clientY, dx: 0, dy: 0, buttons: [0] };
+    const te = event as TouchEvent;
+    const wasEmpty = activeTouches.size === 0;
+    if (te.touches && typeof te.touches.length === "number") {
+      syncTouchSet(te);
+    } else {
+      activeTouches.add(0);
+    }
+    const touch = te.touches?.[0];
+    if (wasEmpty || !activeBindings.has("TouchPrimary")) {
+      pressBinding("TouchPrimary");
+    }
+    if (touch && wasEmpty) {
+      pointer = { active: true, x: touch.clientX, y: touch.clientY, dx: 0, dy: 0, buttons: [0] };
+    } else if (touch) {
+      pointer = { ...pointer, active: true };
+    }
   });
-  const onTouchEnd = () => withLiveState(() => {
+  const onTouchEnd = (event: Event) => withLiveState(() => {
     if (options.touch === false) return;
+    const te = event as TouchEvent | undefined;
+    let remaining = 0;
+    if (te && te.touches && typeof te.touches.length === "number") {
+      remaining = syncTouchSet(te);
+    } else if (te && te.changedTouches && typeof te.changedTouches.length === "number") {
+      for (let i = 0; i < te.changedTouches.length; i += 1) {
+        const t = te.changedTouches[i];
+        activeTouches.delete(typeof t?.identifier === "number" ? t.identifier : 0);
+      }
+      remaining = activeTouches.size;
+    } else {
+      activeTouches.clear();
+      remaining = 0;
+    }
+    if (remaining > 0) {
+      const primary = te?.touches?.[0];
+      if (primary) {
+        pointer = { ...pointer, active: true, x: primary.clientX, y: primary.clientY };
+      }
+      return;
+    }
     releaseBinding("TouchPrimary");
-    pointer = { ...pointer, active: false, buttons: [] };
+    pointer = { ...pointer, active: activePointers.size > 0, buttons: syncPointerButtons() };
   });
+  const releaseAllLiveInputs = () => withLiveState(() => {
+    activePointers.clear();
+    primaryPointerId = null;
+    activeTouches.clear();
+    for (const binding of [...activeBindings]) {
+      if (!gamepadBindings.has(binding)) releaseBinding(binding);
+    }
+    pointer = { ...pointer, active: false, dx: 0, dy: 0, buttons: [] };
+  });
+  const onVisibilityLost = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      releaseAllLiveInputs();
+    }
+  };
+  const docTarget =
+    options.autoListen !== false && typeof document !== "undefined" && typeof document.addEventListener === "function"
+      ? document
+      : undefined;
   if (options.autoListen !== false && target?.addEventListener) {
     target.addEventListener("keydown", onKeyDown);
     target.addEventListener("keyup", onKeyUp);
     target.addEventListener("pointerdown", onPointerDown);
     target.addEventListener("pointermove", onPointerMove);
     target.addEventListener("pointerup", onPointerUp);
+    target.addEventListener("pointercancel", onPointerCancel);
     target.addEventListener("touchstart", onTouchStart);
     target.addEventListener("touchend", onTouchEnd);
     target.addEventListener("touchcancel", onTouchEnd);
+    target.addEventListener("blur", releaseAllLiveInputs);
   }
+  docTarget?.addEventListener("visibilitychange", onVisibilityLost);
 
   const controller: GameInputController & { recordedDeviceState(): GameInputDeviceRecording | undefined } = {
     kind: "aura-game-input-plan",
@@ -2536,10 +2671,16 @@ export function createGameInput(
         target.removeEventListener("pointerdown", onPointerDown);
         target.removeEventListener("pointermove", onPointerMove);
         target.removeEventListener("pointerup", onPointerUp);
+        target.removeEventListener("pointercancel", onPointerCancel);
         target.removeEventListener("touchstart", onTouchStart);
         target.removeEventListener("touchend", onTouchEnd);
         target.removeEventListener("touchcancel", onTouchEnd);
+        target.removeEventListener("blur", releaseAllLiveInputs);
       }
+      docTarget?.removeEventListener?.("visibilitychange", onVisibilityLost);
+      activePointers.clear();
+      primaryPointerId = null;
+      activeTouches.clear();
       activate(liveState);
       activeBindings.clear();
       activeActionOverrides.clear();

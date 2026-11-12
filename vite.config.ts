@@ -108,6 +108,10 @@ export default {
   resolve: {
     alias,
   },
+  worker: {
+    format: "es" as const,
+    plugins: () => [createSourceWorkerEntryPlugin()],
+  },
   plugins: [
     createSourceWorkerEntryPlugin(),
     createEditorExportRuntimePlugin(),

@@ -13,12 +13,14 @@ import {
   material,
   type AuraColor,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraPrimitiveNode,
+  type AuraSceneNode,
   type AuraTransformSpec
 } from "@aura3d/engine";
+
+type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }> & { readonly visible?: boolean };
 import type { AmmoId } from "../game/ammo";
 import type { ChapterLook } from "../game/look";
 

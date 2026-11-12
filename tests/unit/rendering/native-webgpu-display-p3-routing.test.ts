@@ -398,9 +398,7 @@ describe("WebGPU Display-P3 final output", () => {
       { source: ldr, options: { passes: [tone], toneMappingDefaults: defaults } },
       { source: hdr, options: { passes: [], toneMappingDefaults: defaults } },
       { source: hdr, options: { passes: [tone, tone], toneMappingDefaults: defaults } },
-      { source: hdr, options: { passes: [tone, { name: "fxaa", options: {} }], toneMappingDefaults: defaults } },
-      { source: hdr, options: { passes: [tone, { name: "color-grade", options: {} }], toneMappingDefaults: defaults } },
-      { source: hdr, options: { passes: [tone], nativeEffects: [{ kind: "pixelation", size: 2 }], toneMappingDefaults: defaults } },
+      { source: hdr, options: { passes: [tone, { name: "bloom", options: {} }], toneMappingDefaults: defaults } },
       { source: hdr, options: { passes: [{ name: "tone-mapping", options: { operator: "aces", outputColorSpace: "srgb" } }], toneMappingDefaults: defaults } },
       { source: hdr, options: { passes: [{ name: "tone-mapping", options: { operator: "aces", outputColorSpace: "linear" } }], toneMappingDefaults: defaults } }
     ];
@@ -411,6 +409,13 @@ describe("WebGPU Display-P3 final output", () => {
         expect(f.submitted.filter((pass) => pass.draws > 0)).toHaveLength(0);
       }
       expect(canvasDraws(f)).toHaveLength(0);
+      // WP-06: display-referred stages (color-grade, fxaa, smaa, outline, nativeEffects) are now admitted after P3 tone mapping.
+      expect(() => f.device.presentLdrPostprocess(hdr, {
+        passes: [tone, { name: "color-grade", options: {} }, { name: "fxaa", options: {} }],
+        nativeEffects: [{ kind: "pixelation", size: 2 }],
+        toneMappingDefaults: defaults
+      })).not.toThrow();
+      expect(canvasDraws(f)).toHaveLength(1);
     } finally { hdr.dispose(); ldr.dispose(); f.close(); }
   });
 

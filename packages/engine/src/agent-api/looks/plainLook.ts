@@ -19,8 +19,21 @@ import type { AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 /** Group name `looks.preset("plain")` emits. */
 export const PLAIN_LOOK_GROUP = "aura-look:plain";
 
-/** Node kinds a plain scene may hold besides lights, non-HDRI environments, skies and fog. */
+/** Node kinds a plain scene may hold besides lights, non-HDRI environments, skies and orthogonal post effects. */
 const PLAIN_GEOMETRY_KINDS: ReadonlySet<string> = new Set(["model", "primitive", "group", "label", "interaction", "line", "points", "sprite", "batched"]);
+
+/**
+ * Atmosphere and post-processing effects orthogonal to tone-mapping and diffuse-fill stacking: adding bloom, AA, AO,
+ * vignette or fog to a simple lit scene preserves the plain output and `plainDiffuseYield` instead of snapping to ACES.
+ */
+const PLAIN_ORTHOGONAL_EFFECTS: ReadonlySet<string> = new Set([
+  "fog",
+  "bloom",
+  "anti-alias",
+  "vignette",
+  "ambient-occlusion",
+  "contact-occlusion"
+]);
 
 const plainOutputs = new WeakSet<object>();
 
@@ -36,13 +49,14 @@ export function isPlainDefaultOutput(output: unknown): boolean {
   return typeof output === "object" && output !== null && plainOutputs.has(output);
 }
 
-export function plainLookEnabled(): boolean {
+export function plainLookEnabled(backend?: unknown): boolean {
   try {
     if (typeof location !== "undefined" && /[?&]a3d-plain-look=(0|off|false)(&|$)/.test(location.search)) return false;
     if (typeof process !== "undefined" && process.env && /^(0|off|false)$/.test(process.env.A3D_PLAIN_LOOK ?? "")) return false;
   } catch {
     /* no location/process: default on */
   }
+  if (backend === "webgpu") return true;
   return hdrTargetsAvailable();
 }
 
@@ -77,11 +91,10 @@ export interface PlainLookAppOptions {
   readonly renderer?: unknown;
 }
 
-/** App options that leave the output to the engine: no `plainLook: false`, output or lighting, main-thread WebGL2, no renderer profile. */
+/** App options that leave the output to the engine: no `plainLook: false`, output or lighting, main-thread WebGL2/WebGPU/auto. */
 export function plainLookOptionsApply(options: PlainLookAppOptions): boolean {
   if (options.plainLook === false || options.output !== undefined || options.lighting !== undefined) return false;
   if (options.worker !== undefined || options.frameMode === "async") return false;
-  if (options.quality !== undefined && options.quality !== "auto") return false;
   if (typeof location !== "undefined" && /[?&](aura3d-tonemap|tm|aura3d-exp|exp)=/.test(location.search)) return false;
   const r = options.renderer as {
     readonly output?: unknown;
@@ -95,8 +108,8 @@ export function plainLookOptionsApply(options: PlainLookAppOptions): boolean {
   } | undefined;
   if (r === undefined) return true;
   if (r.output !== undefined) return false;
-  if (r.backend !== undefined && r.backend !== "webgl2") return false;
-  if (r.qualityProfile !== undefined || r.drawingPath !== undefined || r.textureResidency !== undefined) return false;
+  if (r.backend !== undefined && r.backend !== "webgl2" && r.backend !== "webgpu" && r.backend !== "auto") return false;
+  if (r.qualityProfile === "experimental-webgpu" || r.drawingPath !== undefined || r.textureResidency !== undefined) return false;
   if (r.mode !== undefined || r.fallback !== undefined || (r.requiredFeatures?.length ?? 0) > 0) return false;
   return true;
 }
@@ -129,7 +142,7 @@ function scan(nodes: readonly AuraSceneNode[], found: Scan): void {
       found.lit = true;
       continue;
     }
-    if (kind === "effect" && node.effect === "fog") continue;
+    if (kind === "effect" && typeof node.effect === "string" && PLAIN_ORTHOGONAL_EFFECTS.has(node.effect)) continue;
     if (typeof kind === "string" && PLAIN_GEOMETRY_KINDS.has(kind)) continue;
     // A look node, a post effect, a scene kit or any kind this module does not know: the author chose something.
     found.authored = true;
@@ -177,10 +190,11 @@ export function resolvePlainLook(snapshot: AuraSceneSnapshot, options: PlainLook
   if (!plainLookOptionsApply(options)) return null;
   const found: Scan = { plainLook: false, otherLook: false, authored: false, lit: false, fill: false };
   scan(snapshot.nodes, found);
+  const backend = (options.renderer as { readonly backend?: unknown } | undefined)?.backend;
   let source: PlainLookResolution["source"];
   if (found.plainLook && !found.otherLook) source = "preset";
   else {
-    if (!plainLookEnabled()) return null;
+    if (!plainLookEnabled(backend)) return null;
     if (found.plainLook || found.otherLook || found.authored || !found.lit) return null;
     if (snapshot.backgroundImage !== undefined || snapshot.backgroundToneMapped === false) return null;
     source = "default";
@@ -195,7 +209,8 @@ export function resolvePlainLook(snapshot: AuraSceneSnapshot, options: PlainLook
  * authored an output/lighting, opted out (`plainLook: false`, `?a3d-plain-look=0`) or selected a non-default path.
  */
 export function coldStartPlainOutput(options: PlainLookAppOptions): AuraOutputOptions | null {
-  if (!plainLookOptionsApply(options) || !plainLookEnabled()) return null;
+  const backend = (options.renderer as { readonly backend?: unknown } | undefined)?.backend;
+  if (!plainLookOptionsApply(options) || !plainLookEnabled(backend)) return null;
   return createPlainOutput();
 }
 

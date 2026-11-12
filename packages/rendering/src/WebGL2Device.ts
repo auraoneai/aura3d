@@ -657,6 +657,7 @@ export interface WebGL2RenderTargetOptions {
 export class WebGL2RenderTarget implements RenderTarget {
   public disposed = false;
   public needsResolve = false;
+  public multisampleDirty = false;
   /** Native names from a lost context cannot be deleted after restoration. */
   public nativeInvalid = false;
   /** Removes owned handles from the device registry before releasing them. */
@@ -1190,7 +1191,7 @@ export class WebGL2Device implements RenderDevice {
       maxTextureAnisotropy: this.maxTextureAnisotropy,
       maxVertexAttributes: this.maxVertexAttributes,
       textureBudgetPolicy,
-      resolveMultisampleTarget: (target: WebGL2RenderTarget) => this.resolveMultisampleTarget(target),
+      resolveMultisampleTarget: (target: WebGL2RenderTarget, discardMultisample = false) => this.resolveMultisampleTarget(target, discardMultisample),
       device: this
     } as unknown as WebGL2DeviceHost;
     host.lifecycle = new WebGL2ContextLifecycle(host, canvas);
@@ -3677,38 +3678,112 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
-  private resolveMultisampleTarget(target: WebGL2RenderTarget): void {
-    if (target.sampleCount <= 1 || !target.needsResolve) return;
+  private readonly cachedAllDrawBuffers = new Map<number, GLenum[]>();
+  private readonly cachedSingleSlotDrawBuffers = new Map<number, GLenum[][]>();
+
+  private getAllDrawBuffers(gl: WebGL2RenderingContext, attachmentCount: number): GLenum[] {
+    let cached = this.cachedAllDrawBuffers.get(attachmentCount);
+    if (!cached) {
+      const list: GLenum[] = [];
+      for (let index = 0; index < attachmentCount; index += 1) {
+        list.push(gl.COLOR_ATTACHMENT0 + index);
+      }
+      cached = list;
+      this.cachedAllDrawBuffers.set(attachmentCount, cached);
+    }
+    return cached;
+  }
+
+  private getSingleSlotDrawBuffers(gl: WebGL2RenderingContext, attachmentCount: number, activeSlot: number): GLenum[] {
+    let bySlot = this.cachedSingleSlotDrawBuffers.get(attachmentCount);
+    if (!bySlot) {
+      const slots: GLenum[][] = [];
+      for (let slot = 0; slot < attachmentCount; slot += 1) {
+        const list: GLenum[] = [];
+        for (let index = 0; index < attachmentCount; index += 1) {
+          list.push(index === slot ? gl.COLOR_ATTACHMENT0 + index : gl.NONE);
+        }
+        slots.push(list);
+      }
+      bySlot = slots;
+      this.cachedSingleSlotDrawBuffers.set(attachmentCount, bySlot);
+    }
+    return bySlot[activeSlot]!;
+  }
+
+  private getMultisampleInvalidateAttachments(gl: WebGL2RenderingContext, target: WebGL2RenderTarget, attachmentCount: number): GLenum[] {
+    const attachments: GLenum[] = [];
+    if (!target.depthOnly) {
+      for (let index = 0; index < attachmentCount; index += 1) {
+        attachments.push(gl.COLOR_ATTACHMENT0 + index);
+      }
+    }
+    if (target.depthHandle) {
+      attachments.push(target.hasStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT);
+    }
+    return attachments;
+  }
+
+  private resolveMultisampleTarget(target: WebGL2RenderTarget, discardMultisample = false): void {
+    if (target.sampleCount <= 1) return;
     const gl = this.gl;
-    const previousRead = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
-    const previousDraw = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
-    const scissorEnabled = gl.isEnabled(gl.SCISSOR_TEST);
-    const attachmentCount = target.colorTextures?.length ?? 1;
-    let sourceReadBuffer: GLenum | undefined;
-    let destinationDrawBuffers: GLenum[] | undefined;
+    const attachmentCount = target.colorTextures?.length ?? (target.depthOnly ? 0 : 1);
+    const activeFramebuffer = this.host.activeRenderTarget
+      ? this.host.activeRenderTarget.drawFramebuffer
+      : this.host.lifecycle.defaultFramebuffer();
+    if (!target.needsResolve) {
+      if (discardMultisample && target.multisampleDirty && typeof gl.invalidateFramebuffer === "function") {
+        const attachments = this.getMultisampleInvalidateAttachments(gl, target, Math.max(attachmentCount, 1));
+        if (attachments.length > 0) {
+          gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.drawFramebuffer);
+          try {
+            gl.invalidateFramebuffer(gl.READ_FRAMEBUFFER, attachments);
+            target.multisampleDirty = false;
+          } finally {
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, activeFramebuffer);
+          }
+        }
+      }
+      return;
+    }
+    const scissorEnabled = this.host.lifecycle.effectiveScissor() !== null;
+    const restoredReadBuffer = target.depthOnly ? gl.NONE : gl.COLOR_ATTACHMENT0;
+    const restoredDrawBuffers = target.depthOnly ? [gl.NONE] : this.getAllDrawBuffers(gl, Math.max(attachmentCount, 1));
     try {
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.drawFramebuffer);
       gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, target.framebuffer);
-      sourceReadBuffer = gl.getParameter(gl.READ_BUFFER) as GLenum;
-      destinationDrawBuffers = Array.from({ length: attachmentCount }, (_, index) => gl.getParameter(gl.DRAW_BUFFER0 + index) as GLenum);
       // A blit copies the selected read buffer to every enabled draw buffer.
       // Resolve each attachment with exactly one corresponding destination.
       if (scissorEnabled) gl.disable(gl.SCISSOR_TEST);
-      for (let attachment = 0; attachment < attachmentCount; attachment += 1) {
-        gl.readBuffer(gl.COLOR_ATTACHMENT0 + attachment);
-        gl.drawBuffers(Array.from({ length: attachmentCount }, (_, index) => index === attachment ? gl.COLOR_ATTACHMENT0 + index : gl.NONE));
-        let mask = gl.COLOR_BUFFER_BIT;
+      const count = Math.max(attachmentCount, 1);
+      for (let attachment = 0; attachment < count; attachment += 1) {
+        if (!target.depthOnly) {
+          gl.readBuffer(gl.COLOR_ATTACHMENT0 + attachment);
+          gl.drawBuffers(this.getSingleSlotDrawBuffers(gl, count, attachment));
+        }
+        let mask = target.depthOnly ? 0 : gl.COLOR_BUFFER_BIT;
         if (attachment === 0 && target.depthTextureHandle) mask |= gl.DEPTH_BUFFER_BIT;
-        gl.blitFramebuffer(0, 0, target.width, target.height, 0, 0, target.width, target.height, mask, gl.NEAREST);
+        if (mask !== 0) {
+          gl.blitFramebuffer(0, 0, target.width, target.height, 0, 0, target.width, target.height, mask, gl.NEAREST);
+        }
+      }
+      if (discardMultisample && typeof gl.invalidateFramebuffer === "function") {
+        const attachments = this.getMultisampleInvalidateAttachments(gl, target, count);
+        if (attachments.length > 0) {
+          gl.invalidateFramebuffer(gl.READ_FRAMEBUFFER, attachments);
+        }
+        target.multisampleDirty = false;
+      } else {
+        target.multisampleDirty = true;
       }
       target.needsResolve = false;
     } finally {
-      if (sourceReadBuffer !== undefined) gl.readBuffer(sourceReadBuffer);
-      if (destinationDrawBuffers) gl.drawBuffers(destinationDrawBuffers);
+      if (!target.depthOnly) {
+        gl.readBuffer(restoredReadBuffer);
+      }
+      gl.drawBuffers(restoredDrawBuffers);
       if (scissorEnabled) gl.enable(gl.SCISSOR_TEST);
-      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousRead);
-      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, previousDraw);
-      this.stateCache.invalidate();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, activeFramebuffer);
     }
   }
 

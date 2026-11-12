@@ -29,12 +29,16 @@ out vec4 outColor;
 
 float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 
+vec3 a3dSanitizeHdr(vec3 c) {
+  return (any(isnan(c)) || any(isinf(c))) ? vec3(0.0) : clamp(c, vec3(0.0), vec3(65504.0));
+}
+
 // One 2x2 box sample averaged at bilinear footprint centre.
 vec3 box4(vec2 uv, vec2 halfTexel) {
-  vec3 s = texture(u_hdr, uv + vec2(-halfTexel.x, -halfTexel.y)).rgb;
-  s += texture(u_hdr, uv + vec2(halfTexel.x, -halfTexel.y)).rgb;
-  s += texture(u_hdr, uv + vec2(-halfTexel.x, halfTexel.y)).rgb;
-  s += texture(u_hdr, uv + vec2(halfTexel.x, halfTexel.y)).rgb;
+  vec3 s = a3dSanitizeHdr(texture(u_hdr, uv + vec2(-halfTexel.x, -halfTexel.y)).rgb);
+  s += a3dSanitizeHdr(texture(u_hdr, uv + vec2(halfTexel.x, -halfTexel.y)).rgb);
+  s += a3dSanitizeHdr(texture(u_hdr, uv + vec2(-halfTexel.x, halfTexel.y)).rgb);
+  s += a3dSanitizeHdr(texture(u_hdr, uv + vec2(halfTexel.x, halfTexel.y)).rgb);
   return s * 0.25;
 }
 

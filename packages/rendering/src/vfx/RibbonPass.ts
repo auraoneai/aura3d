@@ -24,28 +24,55 @@ export const RIBBON_VERTEX_FORMAT = new VertexFormat(
   RIBBON_VERTEX_FLOATS * 4
 );
 
+interface RibbonBufferSlot {
+  vertexBuffer: RenderBuffer | null;
+  indexBuffer: RenderBuffer | null;
+  vertexCapacity: number;
+  indexCapacity: number;
+}
+
 export class RibbonPass {
   private readonly programs = new Map<string, RenderShaderProgram>();
-  private vertexBuffer: RenderBuffer | null = null;
-  private indexBuffer: RenderBuffer | null = null;
-  private vertexCapacity = 0;
-  private indexCapacity = 0;
+  private readonly bufferSlots: RibbonBufferSlot[] = [];
+  private readonly retiredBuffers: RenderBuffer[] = [];
+  private slotCursor = 0;
+  private lastFrameIndex: number | undefined = undefined;
+  private lastCameraRef: object | null = null;
   /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
   private wgslUnavailable = false;
 
   constructor(private readonly device: RenderDevice) {}
 
-  /** C-01 contributor: one queue item per populated orientation group. */
-  transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[] {
-    const cameraPosition = ctx.camera?.position ?? [0, 0, 0];
-    const geometries = batch.buildAll(cameraPosition as readonly [number, number, number]);
-    return geometries.map((g) => ({ sortDepth: 0, draw: () => this.drawGeometry(g, ctx) }));
+  private beginBatch(ctx: FrameContributorContext): void {
+    const cameraRef = (ctx.camera as unknown as object | null | undefined) ?? null;
+    const isNewFrame = ctx.frameIndex !== undefined
+      ? ctx.frameIndex !== this.lastFrameIndex
+      : cameraRef === this.lastCameraRef;
+    if (isNewFrame) {
+      this.slotCursor = 0;
+      while (this.retiredBuffers.length > 0) {
+        this.retiredBuffers.pop()?.dispose();
+      }
+    }
+    this.lastFrameIndex = ctx.frameIndex;
+    this.lastCameraRef = cameraRef;
   }
 
-  private drawGeometry(geometry: RibbonGeometry, ctx: FrameContributorContext): void {
-    const vb = this.ensureBuffer("vertex", geometry.vertices.byteLength, this.vertexBuffer, "vb");
+  /** C-01 contributor: one queue item per populated orientation group. */
+  transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[] {
+    this.beginBatch(ctx);
+    const cameraPosition = ctx.camera?.position ?? [0, 0, 0];
+    const geometries = batch.buildAll(cameraPosition as readonly [number, number, number]);
+    return geometries.map((g) => {
+      const slotIndex = this.slotCursor++;
+      return { sortDepth: 0, draw: () => this.drawGeometry(g, ctx, slotIndex) };
+    });
+  }
+
+  private drawGeometry(geometry: RibbonGeometry, ctx: FrameContributorContext, slotIndex: number): void {
+    const vb = this.ensureSlotBuffer(slotIndex, "vertex", geometry.vertices.byteLength, "vb");
     this.device.updateBuffer(vb, 0, geometry.vertices);
-    const ib = this.ensureBuffer("index", geometry.indices.byteLength, this.indexBuffer, "ib");
+    const ib = this.ensureSlotBuffer(slotIndex, "index", geometry.indices.byteLength, "ib");
     this.device.updateBuffer(ib, 0, geometry.indices);
 
     const depth = resolveSceneDepth(ctx);
@@ -77,18 +104,23 @@ export class RibbonPass {
     });
   }
 
-  private ensureBuffer(usage: "vertex" | "index", bytes: number, existing: RenderBuffer | null, which: "vb" | "ib"): RenderBuffer {
-    const capacity = which === "vb" ? this.vertexCapacity : this.indexCapacity;
+  private ensureSlotBuffer(slotIndex: number, usage: "vertex" | "index", bytes: number, which: "vb" | "ib"): RenderBuffer {
+    while (this.bufferSlots.length <= slotIndex) {
+      this.bufferSlots.push({ vertexBuffer: null, indexBuffer: null, vertexCapacity: 0, indexCapacity: 0 });
+    }
+    const slot = this.bufferSlots[slotIndex]!;
+    const capacity = which === "vb" ? slot.vertexCapacity : slot.indexCapacity;
+    const existing = which === "vb" ? slot.vertexBuffer : slot.indexBuffer;
     if (existing && capacity >= bytes) return existing;
     const next = Math.max(bytes, capacity * 2 || 0, 4096);
-    existing?.dispose();
+    if (existing) this.retiredBuffers.push(existing);
     const buffer = this.device.createBuffer(usage, next);
     if (which === "vb") {
-      this.vertexBuffer = buffer;
-      this.vertexCapacity = next;
+      slot.vertexBuffer = buffer;
+      slot.vertexCapacity = next;
     } else {
-      this.indexBuffer = buffer;
-      this.indexCapacity = next;
+      slot.indexBuffer = buffer;
+      slot.indexCapacity = next;
     }
     return buffer;
   }
@@ -110,8 +142,14 @@ export class RibbonPass {
   }
 
   dispose(): void {
-    this.vertexBuffer?.dispose();
-    this.indexBuffer?.dispose();
+    for (const slot of this.bufferSlots) {
+      slot.vertexBuffer?.dispose();
+      slot.indexBuffer?.dispose();
+    }
+    this.bufferSlots.length = 0;
+    while (this.retiredBuffers.length > 0) {
+      this.retiredBuffers.pop()?.dispose();
+    }
     this.programs.clear();
   }
 }

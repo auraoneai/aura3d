@@ -28,10 +28,15 @@ fn a3dPrd04SheenInit(lobes: ptr<function, A3DPrd04Lobes>, color: vec3f, roughnes
 }
 
 fn a3dPrd04DCharlie(roughness: f32, nDotH: f32) -> f32 {
-  let alpha = max(roughness * roughness, 1e-4);
+  let alpha = max(roughness * roughness, 0.002);
   let inverseAlpha = 1.0 / alpha;
-  let sinSquared = max(1.0 - nDotH * nDotH, 0.0);
-  return (2.0 + inverseAlpha) * pow(sinSquared, 0.5 * inverseAlpha) / (2.0 * PI);
+  let nh = saturate(nDotH);
+  let oneMinusNh2 = 1.0 - nh * nh;
+  if (oneMinusNh2 <= 0.0) {
+    return 0.0;
+  }
+  let sinSquared = max(oneMinusNh2, 0.0078125);
+  return min((2.0 + inverseAlpha) * pow(sinSquared, 0.5 * inverseAlpha) / (2.0 * PI), 65504.0);
 }
 
 fn a3dPrd04VNeubelt(nDotV: f32, nDotL: f32) -> f32 {
@@ -46,7 +51,7 @@ fn a3dPrd04SheenDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, color: ve
     return vec3f(0.0);
   }
   let h = a3dPrd04HalfVector(lightDir, viewDir, normal);
-  return color * a3dPrd04DCharlie(roughness, saturate(dot(normal, h))) * a3dPrd04VNeubelt(nv, nl);
+  return clamp(color * a3dPrd04DCharlie(roughness, saturate(dot(normal, h))) * a3dPrd04VNeubelt(nv, nl), vec3f(0.0), vec3f(65504.0));
 }
 
 const a3dPrd04SheenAlbedo = array<f32, 256>(${A3D_SHEEN_ALBEDO_LUT.map((value) => value.toFixed(8)).join(", ")});

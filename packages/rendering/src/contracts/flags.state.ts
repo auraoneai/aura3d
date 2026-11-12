@@ -63,6 +63,9 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // instance-wind contributor (registered on the first `instances.*({ wind })`),
   // so `instances.model({ wind })` sways without the WORLD lane.
   A3D_QR_WORLD_WIND: "default-on",
+  // WP-05 (GOV-1): enables the zero-remount dynamic thermal QualityGovernor in
+  // production while keeping A3D_QR_TIERS (telemetry/batching/restore) dev-gated.
+  A3D_QR_TIERS_GOVERNOR: "default-on",
   // threejs-parity lanes (docs/workflows/threejs-parity-gaps.md §5.0). Each new
   // node kind/material/texture/runtime surface compiles to a
   // "not yet implemented (A3D_PARITY_*)" validate error until its lane lands

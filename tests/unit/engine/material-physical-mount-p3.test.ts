@@ -43,13 +43,13 @@ describe("P3 material.physical mount proof", () => {
     expect(materialBuilder).toContain("ior: Math.max(1, materialSpec.ior)");
   });
 
-  it("instanced fast path never silently drops extensions: extended materials expand", () => {
+  it("instanced fast path forwards surface extensions and expands transmissive/volume materials", () => {
     const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/primitives.ts"), "utf8");
     const materialBuilder = extractFunctionBody(source, "createProductionPrimitiveMaterial");
 
-    // The one-draw InstancedPBRMaterial path is taken ONLY when no extension is
-    // requested; anything extended renders correctly via expansion instead.
-    expect(materialBuilder).toContain("if (node.instances && !declaresExtension && transmission === 0");
+    // Surface physical extensions (clearcoat, sheen, anisotropy, iridescence, ior, specular)
+    // are forwarded onto InstancedPBRMaterial; transmissive/volumetric materials expand.
+    expect(materialBuilder).toContain("if (node.instances && transmission === 0 && materialSpec?.thickness === undefined");
     expect(materialBuilder).toContain("those continue to render correctly via expansion");
   });
 });

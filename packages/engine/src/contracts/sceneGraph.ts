@@ -6,7 +6,7 @@
 
 import type { AuraVec3, AuraTransformSpec, AuraColor } from "../agent-api/nodes/types.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
-import { parseAuraColorSrgb as parseCssSrgb } from "../agent-api/color.js";
+import { parseAuraColorLinear as parseCssLinear, parseAuraColorSrgb as parseCssSrgb } from "../agent-api/color.js";
 
 export type AuraEulerOrder = "XYZ" | "XZY" | "YXZ" | "YZX" | "ZXY" | "ZYX";
 export type AuraQuat = readonly [number, number, number, number];         // shared with C-22 (PRD 08 "first public quaternion type")
@@ -103,18 +103,21 @@ export function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQ
 export { AuraColorParseError } from "../agent-api/color.js";
 
 function parseSrgbChannels(color: AuraColor): readonly [number, number, number, number] {
-  if (typeof color === "number" && Number.isFinite(color)) {
+  if (typeof color === "number" && Number.isFinite(color) && color >= 0) {
     const v = color >>> 0;
     return [((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255, ((v >> 24) & 0xff) / 255 || 1];
   }
-  // Every CSS colour form (hex of any length, rgb(), hsl(), oklch(), names): the single C-06 parser.
+  // Every CSS colour form (hex of any length, rgb(), hsl(), oklch(), color(display-p3 ...), names): the single C-06 parser.
   return parseCssSrgb(color);
 }
 
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export function parseAuraColor(color: AuraColor): readonly [number, number, number, number] {
-  const [r, g, b, a] = parseSrgbChannels(color);
-  return [srgbToLinearChannel(r), srgbToLinearChannel(g), srgbToLinearChannel(b), a];
+  if (typeof color === "number" && Number.isFinite(color) && color >= 0) {
+    const [r, g, b, a] = parseSrgbChannels(color);
+    return [srgbToLinearChannel(r), srgbToLinearChannel(g), srgbToLinearChannel(b), a];
+  }
+  return parseCssLinear(color);
 }
 
 /** sRGB-encoded RGBA. */

@@ -31,9 +31,9 @@ fn a3dPrd04ClearcoatDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, rough
     return vec3f(0.0);
   }
   let h = a3dPrd04HalfVector(lightDir, viewDir, normal);
-  let alpha = max(roughness * roughness, 1e-4);
-  return F_Schlick(vec3f(0.04), 1.0, dot(viewDir, h))
-    * D_GGX(alpha, dot(normal, h)) * V_GGX_SmithCorrelated(alpha, nl, nv);
+  let alpha = max(roughness * roughness, 0.002);
+  let spec = min(D_GGX(alpha, saturate(dot(normal, h))) * V_GGX_SmithCorrelated(alpha, nl, nv), 65504.0);
+  return clamp(F_Schlick(vec3f(0.04), 1.0, saturate(dot(viewDir, h))) * spec, vec3f(0.0), vec3f(65504.0));
 }
 
 fn a3dPrd04ClearcoatIndirect(normal: vec3f, viewDir: vec3f, roughness: f32, radiance: vec3f) -> vec3f {

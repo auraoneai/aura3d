@@ -98,7 +98,7 @@ describe("gridlock courier procedural multi-material hero car & fleet (WP-22)", 
 
     const rigJson = buildHeroCourierRigNode("car-rig", true, "YXZ").toJSON();
     expect(rigJson.rotationOrder).toBe("YXZ");
-    const glazingChild = rigJson.children.find((c) => c.name === "car-rig-glazing");
+    const glazingChild = rigJson.children.find((c) => "name" in c && c.name === "car-rig-glazing");
     expect(glazingChild).toBeDefined();
     expect(glazingChild && "castShadow" in glazingChild ? glazingChild.castShadow : undefined).toBe(false);
 

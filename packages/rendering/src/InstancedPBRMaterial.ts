@@ -27,6 +27,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
   readonly environmentBrdfLutTexture?: TextureBinding;
   readonly emissiveColor?: readonly [number, number, number];
   readonly emissiveStrength?: number;
+  readonly clearcoatFactor?: number;
+  readonly clearcoatRoughnessFactor?: number;
+  readonly clearcoatNormalScale?: number;
+  readonly transmissionFactor?: number;
+  readonly diffuseTransmissionFactor?: number;
+  readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+  readonly transmissionFallbackEnergy?: number;
+  readonly volumeThicknessFactor?: number;
+  readonly volumeAttenuationDistance?: number;
+  readonly volumeAttenuationColor?: readonly [number, number, number];
+  readonly ior?: number;
+  readonly specularFactor?: number;
+  readonly specularColorFactor?: readonly [number, number, number];
+  readonly sheenColorFactor?: readonly [number, number, number];
+  readonly sheenRoughnessFactor?: number;
+  readonly anisotropyStrength?: number;
+  readonly anisotropyRotation?: number;
+  readonly iridescenceFactor?: number;
+  readonly iridescenceIor?: number;
+  readonly iridescenceThicknessMinimum?: number;
+  readonly iridescenceThicknessMaximum?: number;
+  readonly dispersion?: number;
   /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
   readonly fog?: boolean;
 }
@@ -48,6 +70,12 @@ export class InstancedPBRMaterial extends Material {
     const environmentColor = options.environmentColor ?? [1, 1, 1];
     const proceduralEnvironmentMap: InstancedPBRProceduralEnvironmentMapOptions = options.proceduralEnvironmentMap ?? DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP;
     const emissiveColor = options.emissiveColor ?? [0, 0, 0];
+    const specularColorFactor = options.specularColorFactor ?? [1, 1, 1];
+    const sheenColorFactor = options.sheenColorFactor ?? [0, 0, 0];
+    const diffuseTransmissionColorFactor = options.diffuseTransmissionColorFactor ?? [1, 1, 1];
+    const volumeAttenuationColor = options.volumeAttenuationColor ?? [1, 1, 1];
+    const iridescenceThicknessMinimum = options.iridescenceThicknessMinimum ?? 100;
+    const iridescenceThicknessMaximum = options.iridescenceThicknessMaximum ?? 400;
     validateColor4(baseColor, "baseColor");
     validateColor3(environmentColor, "environmentColor");
     validateProceduralEnvironmentMap(proceduralEnvironmentMap);
@@ -56,11 +84,32 @@ export class InstancedPBRMaterial extends Material {
     validateFinite(options.environmentMapRotation ?? 0, "environmentMapRotation");
     validateMipCount(options.environmentMapMipCount ?? 1);
     validateColor3(emissiveColor, "emissiveColor");
+    validateNonNegativeColor3(specularColorFactor, "specularColorFactor");
+    validateColor3(sheenColorFactor, "sheenColorFactor");
+    validateColor3(diffuseTransmissionColorFactor, "diffuseTransmissionColorFactor");
+    validateColor3(volumeAttenuationColor, "volumeAttenuationColor");
     validateUnit(options.metallic ?? 0, "metallic");
     validateUnit(options.roughness ?? 0.5, "roughness");
     validateNonNegative(options.environmentIntensity ?? DEFAULT_PBR_ENVIRONMENT_INTENSITY, "environmentIntensity");
     validateNonNegative(options.envMapIntensity ?? 1, "envMapIntensity");
     validateNonNegative(options.emissiveStrength ?? 1, "emissiveStrength");
+    validateUnit(options.clearcoatFactor ?? 0, "clearcoatFactor");
+    validateUnit(options.clearcoatRoughnessFactor ?? 0, "clearcoatRoughnessFactor");
+    validateUnit(options.transmissionFactor ?? 0, "transmissionFactor");
+    validateUnit(options.diffuseTransmissionFactor ?? 0, "diffuseTransmissionFactor");
+    validateUnit(options.transmissionFallbackEnergy ?? 0.08, "transmissionFallbackEnergy");
+    validateNonNegative(options.volumeThicknessFactor ?? 0, "volumeThicknessFactor");
+    validatePositive(options.volumeAttenuationDistance ?? 1_000_000, "volumeAttenuationDistance");
+    validateUnit(options.specularFactor ?? 1, "specularFactor");
+    validateUnit(options.sheenRoughnessFactor ?? 0, "sheenRoughnessFactor");
+    validateUnit(options.anisotropyStrength ?? 0, "anisotropyStrength");
+    validateFinite(options.anisotropyRotation ?? 0, "anisotropyRotation");
+    validateUnit(options.iridescenceFactor ?? 0, "iridescenceFactor");
+    validateIridescenceIOR(options.iridescenceIor ?? 1.3);
+    validateNonNegative(iridescenceThicknessMinimum, "iridescenceThicknessMinimum");
+    validateNonNegative(iridescenceThicknessMaximum, "iridescenceThicknessMaximum");
+    validateNonNegative(options.dispersion ?? 0, "dispersion");
+    validateIOR(options.ior ?? 1.5);
 
     super({
       name: options.name ?? "instanced-pbr",
@@ -93,6 +142,27 @@ export class InstancedPBRMaterial extends Material {
         u_environmentBrdfLutEnabled: options.environmentBrdfLutTexture ? 1 : 0,
         u_emissiveColor: emissiveColor,
         u_emissiveStrength: options.emissiveStrength ?? 1,
+        u_clearcoatFactor: options.clearcoatFactor ?? 0,
+        u_clearcoatRoughnessFactor: options.clearcoatRoughnessFactor ?? 0,
+        u_transmissionFactor: options.transmissionFactor ?? 0,
+        u_diffuseTransmissionFactor: options.diffuseTransmissionFactor ?? 0,
+        u_diffuseTransmissionColorFactor: diffuseTransmissionColorFactor,
+        u_transmissionFallbackEnergy: options.transmissionFallbackEnergy ?? 0.08,
+        u_volumeThicknessFactor: options.volumeThicknessFactor ?? 0,
+        u_volumeAttenuationDistance: options.volumeAttenuationDistance ?? 1_000_000,
+        u_volumeAttenuationColor: volumeAttenuationColor,
+        u_ior: options.ior ?? 1.5,
+        u_specularFactor: options.specularFactor ?? 1,
+        u_specularColorFactor: specularColorFactor,
+        u_sheenColorFactor: sheenColorFactor,
+        u_sheenRoughnessFactor: options.sheenRoughnessFactor ?? 0,
+        u_anisotropyStrength: options.anisotropyStrength ?? 0,
+        u_anisotropyRotation: options.anisotropyRotation ?? 0,
+        u_iridescenceFactor: options.iridescenceFactor ?? 0,
+        u_iridescenceIor: options.iridescenceIor ?? 1.3,
+        u_iridescenceThicknessMinimum: iridescenceThicknessMinimum,
+        u_iridescenceThicknessMaximum: iridescenceThicknessMaximum,
+        u_dispersion: options.dispersion ?? 0,
         u_lightCount: 0,
         u_lightData: new Float32Array(0),
         u_instanceMatrices: defaultInstanceMatrices(),
@@ -133,6 +203,27 @@ export class InstancedPBRMaterial extends Material {
         { name: "u_environmentBrdfLutEnabled", kind: "float", required: false },
         { name: "u_emissiveColor", kind: "vec3" },
         { name: "u_emissiveStrength", kind: "float" },
+        { name: "u_clearcoatFactor", kind: "float" },
+        { name: "u_clearcoatRoughnessFactor", kind: "float" },
+        { name: "u_transmissionFactor", kind: "float" },
+        { name: "u_diffuseTransmissionFactor", kind: "float" },
+        { name: "u_diffuseTransmissionColorFactor", kind: "vec3" },
+        { name: "u_transmissionFallbackEnergy", kind: "float" },
+        { name: "u_volumeThicknessFactor", kind: "float" },
+        { name: "u_volumeAttenuationDistance", kind: "float" },
+        { name: "u_volumeAttenuationColor", kind: "vec3" },
+        { name: "u_ior", kind: "float" },
+        { name: "u_specularFactor", kind: "float" },
+        { name: "u_specularColorFactor", kind: "vec3" },
+        { name: "u_sheenColorFactor", kind: "vec3" },
+        { name: "u_sheenRoughnessFactor", kind: "float" },
+        { name: "u_anisotropyStrength", kind: "float" },
+        { name: "u_anisotropyRotation", kind: "float" },
+        { name: "u_iridescenceFactor", kind: "float" },
+        { name: "u_iridescenceIor", kind: "float" },
+        { name: "u_iridescenceThicknessMinimum", kind: "float" },
+        { name: "u_iridescenceThicknessMaximum", kind: "float" },
+        { name: "u_dispersion", kind: "float" },
         { name: "u_lightCount", kind: "float" },
         { name: "u_lightData", kind: "any" },
         { name: "u_instanceMatrices", kind: "any" },
@@ -199,6 +290,30 @@ function validateColor4(value: readonly number[], label: string): void {
 function validateColor3(value: readonly number[], label: string): void {
   if (value.length !== 3 || value.some((channel) => !Number.isFinite(channel) || channel < 0 || channel > 1)) {
     throw new RangeError(`InstancedPBRMaterial ${label} must contain three finite values in [0, 1]`);
+  }
+}
+
+function validateNonNegativeColor3(value: readonly number[], label: string): void {
+  if (value.length !== 3 || value.some((channel) => !Number.isFinite(channel) || channel < 0)) {
+    throw new RangeError(`InstancedPBRMaterial ${label} must contain three finite non-negative values`);
+  }
+}
+
+function validatePositive(value: number, label: string): void {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new RangeError(`InstancedPBRMaterial ${label} must be finite and positive`);
+  }
+}
+
+function validateIOR(value: number): void {
+  if (!Number.isFinite(value) || value < 1) {
+    throw new RangeError("InstancedPBRMaterial ior must be finite and >= 1");
+  }
+}
+
+function validateIridescenceIOR(value: number): void {
+  if (!Number.isFinite(value) || value < 1) {
+    throw new RangeError("InstancedPBRMaterial iridescenceIor must be finite and >= 1");
   }
 }
 

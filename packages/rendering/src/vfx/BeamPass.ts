@@ -197,32 +197,57 @@ function buildAurora(spec: BeamDrawSpec): BuiltGeometry {
   return w.build();
 }
 
+interface BeamBufferSlot {
+  vertexBuffer: RenderBuffer | null;
+  indexBuffer: RenderBuffer | null;
+  vertexCapacity: number;
+  indexCapacity: number;
+}
+
 export class BeamPass {
   private readonly programs = new Map<string, RenderShaderProgram>();
-  private vertexBuffer: RenderBuffer | null = null;
-  private indexBuffer: RenderBuffer | null = null;
-  private vertexCapacity = 0;
-  private indexCapacity = 0;
+  private readonly bufferSlots: BeamBufferSlot[] = [];
+  private readonly retiredBuffers: RenderBuffer[] = [];
+  private slotCursor = 0;
+  private lastFrameIndex: number | undefined = undefined;
+  private lastCameraRef: object | null = null;
 
   constructor(private readonly device: RenderDevice) {}
 
+  private beginBatch(ctx: FrameContributorContext): void {
+    const cameraRef = (ctx.camera as unknown as object | null | undefined) ?? null;
+    const isNewFrame = ctx.frameIndex !== undefined
+      ? ctx.frameIndex !== this.lastFrameIndex
+      : cameraRef === this.lastCameraRef;
+    if (isNewFrame) {
+      this.slotCursor = 0;
+      while (this.retiredBuffers.length > 0) {
+        this.retiredBuffers.pop()?.dispose();
+      }
+    }
+    this.lastFrameIndex = ctx.frameIndex;
+    this.lastCameraRef = cameraRef;
+  }
+
   /** C-01 transparent-phase items: one draw per beam-family node. */
   transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[] {
+    this.beginBatch(ctx);
     const cameraPosition = (ctx.camera?.position ?? [0, 0, 0]) as AuraVec3;
     const items: TransparentQueueItem[] = [];
     for (const spec of specs) {
       const geometry =
         spec.kind === "lightCone" ? buildCone(spec) : spec.kind === "auroraRibbon" ? buildAurora(spec) : buildBeam(spec, cameraPosition);
       if (geometry.vertexCount === 0) continue;
-      items.push({ sortDepth: 0, draw: () => this.drawGeometry(spec, geometry, ctx) });
+      const slotIndex = this.slotCursor++;
+      items.push({ sortDepth: 0, draw: () => this.drawGeometry(spec, geometry, ctx, slotIndex) });
     }
     return items;
   }
 
-  private drawGeometry(spec: BeamDrawSpec, geometry: BuiltGeometry, ctx: FrameContributorContext): void {
-    const vb = this.ensureBuffer("vertex", geometry.vertices.byteLength, this.vertexBuffer, "vb");
+  private drawGeometry(spec: BeamDrawSpec, geometry: BuiltGeometry, ctx: FrameContributorContext, slotIndex: number): void {
+    const vb = this.ensureSlotBuffer(slotIndex, "vertex", geometry.vertices.byteLength, "vb");
     this.device.updateBuffer(vb, 0, geometry.vertices);
-    const ib = this.ensureBuffer("index", geometry.indices.byteLength, this.indexBuffer, "ib");
+    const ib = this.ensureSlotBuffer(slotIndex, "index", geometry.indices.byteLength, "ib");
     this.device.updateBuffer(ib, 0, geometry.indices);
 
     const depth = resolveSceneDepth(ctx);
@@ -260,18 +285,23 @@ export class BeamPass {
     });
   }
 
-  private ensureBuffer(usage: "vertex" | "index", bytes: number, existing: RenderBuffer | null, which: "vb" | "ib"): RenderBuffer {
-    const capacity = which === "vb" ? this.vertexCapacity : this.indexCapacity;
+  private ensureSlotBuffer(slotIndex: number, usage: "vertex" | "index", bytes: number, which: "vb" | "ib"): RenderBuffer {
+    while (this.bufferSlots.length <= slotIndex) {
+      this.bufferSlots.push({ vertexBuffer: null, indexBuffer: null, vertexCapacity: 0, indexCapacity: 0 });
+    }
+    const slot = this.bufferSlots[slotIndex]!;
+    const capacity = which === "vb" ? slot.vertexCapacity : slot.indexCapacity;
+    const existing = which === "vb" ? slot.vertexBuffer : slot.indexBuffer;
     if (existing && capacity >= bytes) return existing;
     const next = Math.max(bytes, capacity * 2 || 0, 4096);
-    existing?.dispose();
+    if (existing) this.retiredBuffers.push(existing);
     const buffer = this.device.createBuffer(usage, next);
     if (which === "vb") {
-      this.vertexBuffer = buffer;
-      this.vertexCapacity = next;
+      slot.vertexBuffer = buffer;
+      slot.vertexCapacity = next;
     } else {
-      this.indexBuffer = buffer;
-      this.indexCapacity = next;
+      slot.indexBuffer = buffer;
+      slot.indexCapacity = next;
     }
     return buffer;
   }
@@ -291,5 +321,17 @@ export class BeamPass {
       this.programs.set(key, shader);
     }
     return shader;
+  }
+
+  dispose(): void {
+    for (const slot of this.bufferSlots) {
+      slot.vertexBuffer?.dispose();
+      slot.indexBuffer?.dispose();
+    }
+    this.bufferSlots.length = 0;
+    while (this.retiredBuffers.length > 0) {
+      this.retiredBuffers.pop()?.dispose();
+    }
+    this.programs.clear();
   }
 }

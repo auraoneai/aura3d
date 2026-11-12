@@ -532,3 +532,7 @@ evidence/look-reference-frames/
 !/fixtures/environment-corpus/hdri/*.hdr
 tests/fixtures/agent-loop-seeded/_work-*/
 tests/fixtures/agent-loop-seeded/_staged-*/
+
+# Motion Studio quarantined upstream repos & nested dependencies
+motion-studio/third_party/
+motion-studio/**/node_modules/

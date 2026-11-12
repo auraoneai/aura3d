@@ -37,7 +37,11 @@ Owner rule for these features: on by default in a game only after it passes a re
 | # | Item | State |
 |---|---|---|
 | E1 | Agent efficiency: fewer turns and tokens per Aura3D scene | First A/B stopped (`tests/reports/benchmark-c1/EFFICIENCY.md`): the done rule gave worse-looking scenes and the docs change was reverted (`35a0347dc`). Next try: the exact-signatures block alone, with the agent seeing a screenshot, on a cloud runner. CLI changes stay on `exp/agent-efficiency`, unpublished. |
-| F1 | Lamplight Line and Duneglide: a quick left or right turn can show one solid background-colour frame (owner report) | Cause not found. Camera-guard candidate on `fix/turn-solid-frame` (`70ba89e32`), not deployed and not reproduced; repro script `tools/remote-acr/scripts/turn-flash.json`. Both games stay on WebGPU. |
+| F1 | Lamplight Line and Duneglide: a quick left or right turn can show one solid background-colour frame (owner report) | Shipped in 5.5.3 (`2026-11-12`): fixed `warmGeneratedProgramsSync` (`warmup = true`), WebGPU `[0, 1]` Reversed-Z far-plane frustum culling (`CullingBatching`, `InstanceFrustumCull`), deferred WebGPU swapchain `unconfigure()` handoff across `setScene()`, and collinear/180° camera guards. |
+
+**Shipped in 5.5.3 (2026-11-12):**
+- Full 30/30 native WebGPU post & shader parity: 1× and 4× MSAA SSR, native WGSL Sobel `outline`, 3-pass WGSL SMAA 1×, v2 HDR/LDR TAA, Display-P3 post stages, `@binding(3)` linearized scene depth for WGSL custom post passes, and WGSL twins for `material.strata`, `material.caustics`, `material.lightBeam`, `material.toon`, `material.distance`, `material.shadow`, `effects.toon`, `VolumetricFogPass`, `DecalPass`, and `MeshParticlePass`.
+- Default-on 5-rung zero-remount `RuntimeQualityGovernor` with iOS Low Power Mode 30 Hz VSync lock detection, TBDR 4× MSAA `storeOp: "discard"` / `gl.invalidateFramebuffer`, KTX2/ASTC capability wiring + `PostResources` resize trim, compiler geometry/material pooling + static auto-batching + tight shadow culling, iOS `"interrupted"` audio recovery, coarse-pointer `TouchControls`, zero-reflow `HudKit`, and coalesced OffscreenCanvas worker patches with ES module worker bundling.
 
 Rules as before: paired load-gated fps runs, a game switches only at >= 0.92x, WebGL2 output unchanged, public API additive only.
 

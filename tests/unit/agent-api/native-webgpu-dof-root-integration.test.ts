@@ -173,11 +173,11 @@ describe("root-authored depth of field on native WebGPU", () => {
   it("still rejects temporal and other unsupported post stages; admits AO, SSR, a LUT and multiple authored DoF nodes", () => {
     const authored = authoredOptions();
     const pipeline = authored.pipeline as PostPipelineOptions;
-    for (const stage of [{ ao: {} }, { ssr: {} }, { lut: {} }]) {
+    for (const stage of [{ ao: {} }, { ssr: {} }, { lut: {} }, { antiAliasing: "smaa" }]) {
       expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {})).not.toThrow();
     }
     for (const stage of [{ taa: {} },
-      { antiAliasing: "smaa" }, { nativeEffects: [{ kind: "pixelation", size: 2 }] }, { customPasses: [{}] }]) {
+      { nativeEffects: [{ kind: "pixelation", size: 2 }] }, { customPasses: [{}] }]) {
       expect(() => validateNativeDofRoute(authored, { ...pipeline, ...stage } as PostPipelineOptions, {}))
         .toThrowError(expect.objectContaining({ code: "WEBGPU_DOF_COMBINATION_UNSUPPORTED" }));
     }

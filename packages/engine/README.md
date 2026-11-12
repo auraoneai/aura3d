@@ -102,8 +102,8 @@ three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and too
 - **30 playable games as proof** in the [showcase](https://aura3d.auraone.ai/apps/showcase-index/).
 - **Measured on the published 4.5.0 package.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors, and the 16 option-coverage tests pass, so an option either takes effect or raises `OPTION_IGNORED`. Software WebGL2 on a remote runner, one run, median of 3 cold loads for the first frame; not GPU numbers ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md)).
 
-**Agent-authoring benchmark (Aura3D 5.5.2, three.js 0.185.1).** The same AI model built the same eight scenes three times with each engine. The Aura3D apps came out 17% shorter (median 270 lines against 326; shorter on 6 of 8 tasks), passed the same functional checks (every check passed in 88% of runs in both, every follow-up edit in 100%), and a blind visual judge picked the Aura3D frame in 13 of 24 pairs. One model (`claude-sonnet-5.5`), 72 runs, frames on a real GPU ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.2.md), [full report](https://github.com/auraoneai/aura3d/blob/main/tests/reports/benchmark-c1/REPORT.md)).
-<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.2.md -->
+**Agent-authoring benchmark (Aura3D 5.5.1, three.js 0.185.1).** The same AI model built the same eight scenes three times with each engine. The Aura3D apps came out 17% shorter (median 270 lines against 326; shorter on 6 of 8 tasks), passed the same functional checks (every check passed in 88% of runs in both, every follow-up edit in 100%), and a blind visual judge picked the Aura3D frame in 13 of 24 pairs. One model (`claude-sonnet-5.5`), 72 runs, frames on a real GPU ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md), [full report](https://github.com/auraoneai/aura3d/blob/main/tests/reports/benchmark-c1/REPORT.md)).
+<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
 
 Full comparison with sources: [`docs/aura3d-vs-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md). Porting an existing three.js project: [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md).
 
@@ -117,7 +117,7 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 | `@aura3d/cli` | Typed asset workflow, asset search across open public sources, Meshy admission, look-dev, `check-deploy`, `init`, `migrate three` |
 | `create-aura3d` | Vite project scaffolder with agent skills and `llms.txt` |
 | `@aura3d/core`, `@aura3d/math`, `@aura3d/scene` | Lifecycle and deterministic stepping, math, scene graph |
-| `@aura3d/rendering` | Render device, WebGL2 backend, materials, passes |
+| `@aura3d/rendering` | Render device, WebGPU and WebGL2 backends, RuntimeQualityGovernor, materials, passes |
 | `@aura3d/assets`, `@aura3d/asset-index` | Asset loading and caching; asset search across public sources |
 | `@aura3d/animation`, `@aura3d/audio`, `@aura3d/input`, `@aura3d/controls` | Clips and state machines, audio buses, input, camera controls |
 | `@aura3d/physics`, `@aura3d/physics-rapier`, `@aura3d/navigation-recast` | Physics, with optional Rapier and navigation adapters |

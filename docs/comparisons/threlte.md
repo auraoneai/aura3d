@@ -1,6 +1,6 @@
 # Aura3D And Threlte
 
-Version: 5.5.2
+Version: 5.5.3
 
 ## What you get with Aura3D
 

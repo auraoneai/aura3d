@@ -263,7 +263,9 @@ export function buildWorld(options: WorldOptions): World {
   const high = options.quality === "high";
   const look: OrbitLook = options.look ?? "gouache";
   activeLook = look;
-  spriteQuads = resolveLabBackend(readLabFlags()) !== undefined;
+  const labBackend = resolveLabBackend(readLabFlags(), "auto");
+  const webgpuActive = typeof navigator !== "undefined" && "gpu" in navigator && Boolean((navigator as { gpu?: unknown }).gpu);
+  spriteQuads = labBackend === "webgpu" || (labBackend === "auto" && webgpuActive);
   /** Debug switch: `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` disables individual look upgrades (bisecting a render problem). */
   const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()

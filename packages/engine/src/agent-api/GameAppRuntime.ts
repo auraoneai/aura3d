@@ -15,7 +15,8 @@ import type {
 import {
   createFrameLoop,
   type FrameLoopOptions,
-  type FrameLoopSnapshot
+  type FrameLoopSnapshot,
+  type FrameLoopTickCallback
 } from "./FrameLoop";
 import { StubTimeController, type AuraTimeController } from "../contracts/time";
 import { resolveQrFlags } from "../contracts/flags.js";
@@ -105,6 +106,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
   resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
   onFrame(callback: AuraAppFrameCallback): () => void;
   offFrame(callback: AuraAppFrameCallback): void;
+  /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+  onTick?(callback: FrameLoopTickCallback): () => void;
   inputController(options: GameInputOptions): GameInputController;
   screenshot(): AuraAppScreenshot;
   /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -183,8 +186,15 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   };
 
   const fallbackTime = new StubTimeController();
+  if (options.loop?.timeScale !== undefined) {
+    fallbackTime.scale = Math.max(0, options.loop.timeScale);
+  }
   const timeController = (): AuraTimeController =>
     (app as { time?: AuraTimeController }).time ?? fallbackTime;
+  loop.bindTimeScale(() => {
+    const tc = timeController();
+    return tc.hitStopRemaining > 0 ? 0 : tc.scale;
+  });
 
   // A waiter belongs to the frame that claimed it, not to whichever frame
   // happens to run the delayed presentation callback. Keep claimed waiters in
@@ -282,9 +292,14 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
         presentStep(frame.dt);
       }
   );
-  const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => {
-    presentStep(0);
-  }) : undefined;
+  const loopTickUnsubscribe = loop.onTick((tick) => {
+    if ((app as { time?: AuraTimeController }).time === undefined && tick.realDt > 0) {
+      fallbackTime.advance(tick.realDt);
+    }
+    if (cameraLoopOn) {
+      presentStep(0);
+    }
+  });
   const internalFrameUnsubscribe = app.onFrame((frame) => {
     const context = stepContexts.at(-1);
     if (context && context.frame === undefined && frame.source !== "raf") context.frame = frame.frame;
@@ -483,6 +498,10 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     },
     offFrame(callback) {
       frameCallbacks.delete(callback);
+    },
+    onTick(callback) {
+      assertAlive("onTick");
+      return loop.onTick(callback);
     },
     inputController(inputOptions) {
       assertAlive("inputController");

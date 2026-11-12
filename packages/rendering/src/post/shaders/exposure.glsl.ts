@@ -25,18 +25,22 @@ uniform int u_centerWeighted;  // 1 = centre-weighted metering, 0 = average
 in vec2 v_uv;
 out vec4 outColor;
 
+vec3 a3dSanitizeHdr(vec3 c) {
+	return (any(isnan(c)) || any(isinf(c))) ? vec3(0.0) : clamp(c, vec3(0.0), vec3(65504.0));
+}
+
 void main() {
 	// One output texel covers a 4×4 block of source texels; average the block.
 	vec4 acc = vec4(0.0);
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
 			vec2 uv = v_uv + (vec2(float(x), float(y)) - 1.5) * u_texelSize;
-			acc.rgb += texture(u_hdr, uv).rgb;
+			acc.rgb += a3dSanitizeHdr(texture(u_hdr, uv).rgb);
 			acc.a += 1.0;
 		}
 	}
 	vec3 c = acc.rgb / max(acc.a, 1.0);
-	float luma = max(dot(c, vec3(0.2126, 0.7152, 0.0722)), 1e-5);
+	float luma = clamp(dot(c, vec3(0.2126, 0.7152, 0.0722)), 1e-5, 65504.0);
 	// Centre-weighted: w = 1 - (d^2), clamped — an 18% gray card reads weight 1
 	// at frame centre and falls to 0 at the corners.
 	vec2 centered = v_uv - 0.5;
@@ -53,11 +57,15 @@ uniform vec2 u_texelSize;      // 1 / source size
 in vec2 v_uv;
 out vec4 outColor;
 
+vec4 a3dSanitizeSample(vec4 s) {
+	return (any(isnan(s)) || any(isinf(s))) ? vec4(0.0, 0.0, 0.0, 1.0) : s;
+}
+
 void main() {
-	vec4 sum = texture(u_source, v_uv + vec2(-0.5, -0.5) * u_texelSize)
-		+ texture(u_source, v_uv + vec2( 0.5, -0.5) * u_texelSize)
-		+ texture(u_source, v_uv + vec2(-0.5,  0.5) * u_texelSize)
-		+ texture(u_source, v_uv + vec2( 0.5,  0.5) * u_texelSize);
+	vec4 sum = a3dSanitizeSample(texture(u_source, v_uv + vec2(-0.5, -0.5) * u_texelSize))
+		+ a3dSanitizeSample(texture(u_source, v_uv + vec2( 0.5, -0.5) * u_texelSize))
+		+ a3dSanitizeSample(texture(u_source, v_uv + vec2(-0.5,  0.5) * u_texelSize))
+		+ a3dSanitizeSample(texture(u_source, v_uv + vec2( 0.5,  0.5) * u_texelSize));
 	outColor = sum * 0.25;
 }
 `;
@@ -82,12 +90,19 @@ out vec4 outColor;
 
 void main() {
 	vec4 avg = texelFetch(u_avg, ivec2(0), 0);
-	float avgLog2 = avg.r / max(avg.g, 1e-4);   // Σ(l·w)/Σw — weighted mean
-	float target = clamp(-avgLog2 + log2(0.18) + u_compensationEv, u_minEv, u_maxEv);
+	float safeAvgLog2 = (any(isnan(avg.rg)) || any(isinf(avg.rg))) ? log2(0.18) : (avg.r / max(avg.g, 1e-4));
+	float rawTarget = -safeAvgLog2 + log2(0.18) + u_compensationEv;
+	float target = (isnan(rawTarget) || isinf(rawTarget))
+		? clamp(u_compensationEv, u_minEv, u_maxEv)
+		: clamp(rawTarget, u_minEv, u_maxEv);
 	float prev = texelFetch(u_prev, ivec2(0), 0).r;
-	float speed = target > prev ? u_speedUp : u_speedDown;
-	float ev = u_hasPrev == 1 ? mix(prev, target, 1.0 - exp(-u_dt * speed)) : target;
-	outColor = vec4(ev, 0.0, 0.0, 1.0);
+	bool validPrev = u_hasPrev == 1 && !isnan(prev) && !isinf(prev);
+	float safePrev = validPrev ? clamp(prev, u_minEv, u_maxEv) : target;
+	float speed = max(0.0, target > safePrev ? u_speedUp : u_speedDown);
+	float alpha = 1.0 - exp(-clamp(u_dt, 0.0, 10.0) * speed);
+	float ev = validPrev ? mix(safePrev, target, clamp(alpha, 0.0, 1.0)) : target;
+	if (isnan(ev) || isinf(ev)) ev = target;
+	outColor = vec4(clamp(ev, u_minEv, u_maxEv), 0.0, 0.0, 1.0);
 }
 `;
 
@@ -101,8 +116,11 @@ out vec4 outColor;
 
 void main() {
 	float ev = texelFetch(u_ev, ivec2(0), 0).r;
+	if (isnan(ev) || isinf(ev)) ev = 0.0;
+	ev = clamp(ev, -24.0, 24.0);
 	vec4 c = texture(u_hdr, v_uv);
-	outColor = vec4(c.rgb * exp2(ev), c.a);
+	vec3 rgb = (any(isnan(c.rgb)) || any(isinf(c.rgb))) ? vec3(0.0) : clamp(c.rgb, vec3(0.0), vec3(65504.0));
+	outColor = vec4(clamp(rgb * exp2(ev), vec3(0.0), vec3(65504.0)), c.a);
 }
 `;
 
@@ -115,8 +133,16 @@ export function adaptEv(prev: number, avgLog2: number, options: {
   readonly speedUp: number; readonly speedDown: number; readonly compensationEv: number;
   readonly hasPrev: boolean;
 }): number {
-  const target = Math.min(Math.max(-avgLog2 + Math.log2(0.18) + options.compensationEv, options.minEv), options.maxEv);
-  if (!options.hasPrev) return target;
-  const speed = target > prev ? options.speedUp : options.speedDown;
-  return prev + (target - prev) * (1 - Math.exp(-options.dt * speed));
+  const safeAvgLog2 = Number.isFinite(avgLog2) ? avgLog2 : Math.log2(0.18);
+  const rawTarget = -safeAvgLog2 + Math.log2(0.18) + options.compensationEv;
+  const target = Number.isFinite(rawTarget)
+    ? Math.min(Math.max(rawTarget, options.minEv), options.maxEv)
+    : Math.min(Math.max(options.compensationEv, options.minEv), options.maxEv);
+  const validPrev = options.hasPrev && Number.isFinite(prev);
+  if (!validPrev) return target;
+  const safePrev = Math.min(Math.max(prev, options.minEv), options.maxEv);
+  const speed = Math.max(0, target > safePrev ? options.speedUp : options.speedDown);
+  const dt = Number.isFinite(options.dt) ? Math.min(Math.max(options.dt, 0), 10) : 0;
+  const ev = safePrev + (target - safePrev) * (1 - Math.exp(-dt * speed));
+  return Number.isFinite(ev) ? Math.min(Math.max(ev, options.minEv), options.maxEv) : target;
 }

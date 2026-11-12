@@ -319,8 +319,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     unsupported("features.prd10.wind", "inconsistent wind metadata");
   }
   if (wind && !descriptor.verifiedFeatures?.includes("prd10.wind")) unsupported("activeFeatures", "a replaced or unverified prd10.wind contributor");
-  // With prd06.deform the GLSL chunks compose through A3D_DEFORM_ENTRY; the native template has no such composition yet.
-  if (wind && active.has("prd06.deform")) unsupported("prd10.wind", "wind combined with skinning or morph deformation");
+  // WGPU-2 W5(ii): morph -> skinning -> wind compose sequentially in vs_main.
   // PRD-04 rim: the stock feature (value true), its bit and its define agree; the WGSL emissive term replaces its GLSL chunk.
   const rim = active.has("prd04.rim");
   if ((rim && active.get("prd04.rim") !== true) || (f.features["prd04.rim"] === true) !== rim
@@ -581,7 +580,7 @@ fn generatedSheenDirect(n: vec3f, v: vec3f, l: vec3f, color: vec3f, roughness: f
   let sum = l + v; var h = n;
   if (dot(sum, sum) > 0.000001) { h = normalize(sum); }
   let ndh = clamp(dot(n, h), 0.0, 1.0);
-  let inverseAlpha = 1.0 / max(roughness * roughness, 0.0001);
+  let inverseAlpha = 1.0 / max(roughness * roughness, 0.002);
   let distribution = (2.0 + inverseAlpha) * pow(max(1.0 - ndh * ndh, 0.0), 0.5 * inverseAlpha) / (2.0 * A3D_PHYSICAL_PI);
   let visibility = min(1.0 / max(4.0 * (nl + nv - nl * nv), 0.000001), 1.0);
   return color * distribution * visibility;
@@ -917,7 +916,7 @@ const CLEARCOAT_WGSL = `fn generatedClearcoatDirect(n: vec3f, v: vec3f, l: vec3f
   if (nl <= 0.0 || nv <= 0.0) { return vec3f(0.0); }
   let halfSum = l + v; var h = n;
   if (dot(halfSum, halfSum) > 0.000001) { h = normalize(halfSum); }
-  let alpha = max(roughness * roughness, 0.0001);
+  let alpha = max(roughness * roughness, 0.002);
   return a3dPhysicalFresnel(vec3f(0.04), 1.0, dot(v, h)) * a3dPhysicalDggx(alpha, dot(n, h)) * a3dPhysicalVisibility(alpha, nl, nv);
 }`;
 
@@ -929,7 +928,7 @@ const ANISOTROPY_WGSL = `fn generatedAnisotropicGgx(n: vec3f, v: vec3f, l: vec3f
   if (nl <= 0.0 || nv <= 0.0) { return vec3f(0.0); }
   let halfSum = l + v; var h = n;
   if (dot(halfSum, halfSum) > 0.000001) { h = normalize(halfSum); }
-  let at = max(alphaT, 0.0001); let ab = max(alphaB, 0.0001);
+  let at = max(alphaT, 0.002); let ab = max(alphaB, 0.002);
   let nh = clamp(dot(n, h), 0.0, 1.0); let th = dot(tangent, h) / at; let bh = dot(bitangent, h) / ab;
   let slope = th * th + bh * bh + nh * nh;
   let distribution = 1.0 / max(A3D_PHYSICAL_PI * at * ab * slope * slope, 0.000000000001);
@@ -1428,7 +1427,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
       let irNl = clamp(dot(n, light.direction), 0.0, 1.0); let halfSum = light.direction + view; var halfVector = n;
       if (dot(halfSum, halfSum) > 0.000001) { halfVector = normalize(halfSum); }
       let irFresnel = a3dPhysicalFresnel(irBaseF0, irF90, dot(view, halfVector));
-      let irMixed = mix(irFresnel, irFilmFresnel, iridescenceStrength); let irAlpha = roughness * roughness;
+      let irMixed = mix(irFresnel, irFilmFresnel, iridescenceStrength); let irAlpha = max(roughness * roughness, 0.002);
       let irGgx = a3dPhysicalVisibility(irAlpha, irNl, irNdotV) * a3dPhysicalDggx(irAlpha, dot(n, halfVector));
       directSpecular += light.radiance * irNl * (irMixed - irFresnel) * irGgx${sheenSubstrate};
     }` : ""}
@@ -1438,7 +1437,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     if (anStrength > 0.0 && anNl > 0.0 && anNv > 0.0 && dot(anHalfSum, anHalfSum) > 0.000001) {
       // Replace the host's single-scatter isotropic term exactly once. Its
       // separate DFG multiple-scatter approximation is deliberately retained.
-      let anHalf = normalize(anHalfSum); let anAlphaB = roughness * roughness;
+      let anHalf = normalize(anHalfSum); let anAlphaB = max(roughness * roughness, 0.002);
       let isotropic = a3dPhysicalFresnel(anF0, anF90, dot(view, anHalf)) * a3dPhysicalDggx(anAlphaB, dot(n, anHalf)) * a3dPhysicalVisibility(anAlphaB, anNl, anNv);
       let anisotropic = a3dPrd04AnisotropyDirect(light.direction, view, n, anF0, anF90, roughness, anLobes);
       directSpecular += max(light.radiance, vec3f(0.0)) * anNl * (anisotropic - isotropic)${sheenSubstrate};
@@ -1446,7 +1445,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
       let anNl = clamp(dot(n, light.direction), 0.0, 1.0); let anNv = clamp(dot(n, view), 0.0, 1.0);
       let anHalfSum = light.direction + view; var anHalf = n;
       if (dot(anHalfSum, anHalfSum) > 0.000001) { anHalf = normalize(anHalfSum); }
-      let anAlphaB = roughness * roughness;
+      let anAlphaB = max(roughness * roughness, 0.002);
       let isotropic = a3dPhysicalFresnel(anF0, anF90, dot(view, anHalf)) * a3dPhysicalDggx(anAlphaB, dot(n, anHalf)) * a3dPhysicalVisibility(anAlphaB, anNl, anNv);
       let anisotropic = generatedAnisotropicGgx(n, view, light.direction, anT, anB, anAlphaT, anAlphaB, anF0, anF90);
       directSpecular += light.radiance * anNl * (anisotropic - isotropic);
@@ -1565,20 +1564,20 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene${sheenView};
   indirectDiffuse = mix(directDiffuse + indirectDiffuse, transmitted, clamp(material.transmission.x${mode.lobeMaps.transmission !== undefined ? " * transmissionSample" : ""}, 0.0, 1.0));
   directDiffuse = vec3f(0.0);` : ""}
-  let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + ${mode.instanceEmissive ? "(" : ""}material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}${mode.rim ? " + material.rim.rgb * (material.rim.a * pow(1.0 - clamp(dot(n, view), 0.0, 1.0), max(material.rimParams.x, 0.01)))" : ""}${mode.instanceEmissive ? ") * input.instanceColor.rgb" : ""}, vec3f(0.0));
+  let ${f.fog === "none" && !mode.prd07Fog ? "color" : "unfoggedColor"} = clamp(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + ${mode.instanceEmissive ? "(" : ""}material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}${mode.rim ? " + material.rim.rgb * (material.rim.a * pow(1.0 - clamp(dot(n, view), 0.0, 1.0), max(material.rimParams.x, 0.01)))" : ""}${mode.instanceEmissive ? ") * input.instanceColor.rgb" : ""}, vec3f(0.0), vec3f(65504.0));
   ${mode.prd07Fog ? "let color = a3dPrd07ApplyFog(unfoggedColor, input.worldPosition);" : ""}
   ${f.fog !== "none" && !mode.prd07Fog ? `let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w; // reversed depth (P22 > 0) keeps the standard reading, as a3d.reversedFogDepth does on WebGL2
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let fogDensity = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.worldPosition.y, 0.0) * material.fogParams.w)" : ""};
   let fogDistance = fogDensity * fogDepth;
   let fogAmount = clamp(1.0 - exp(-fogDistance * fogDistance), 0.0, 1.0);`}
   let color = mix(unfoggedColor, material.fogColor.rgb, fogAmount);` : ""}
-  ${fraction ? "let luma = vec3f(0.2126, 0.7152, 0.0722); let alpha = 2.0 + clamp(dot(indirectDiffuse + indirectSpecular, luma) / max(dot(color, luma), 0.0001), 0.0, 1.0);" : `let alpha = ${f.alphaMode === "blend" ? "base.a" : mode.alphaToCoverage ? "a3dCoverage" : "1.0"};`}
+  ${fraction ? "let luma = vec3f(0.2126, 0.7152, 0.0722); let alpha = 2.0 + clamp(dot(indirectDiffuse + indirectSpecular, luma) / max(dot(clamp(color, vec3f(0.0), vec3f(65504.0)), luma), 0.0001), 0.0, 1.0);" : `let alpha = ${f.alphaMode === "blend" ? "base.a" : mode.alphaToCoverage ? "a3dCoverage" : "1.0"};`}
   ${clipping ? "if (!generatedClipRetains(input.worldPosition, input.clipLocal)) { discard; }" : ""}
   ${writesDepthCoverage
-    ? `return GeneratedDepthCoverageOutput(vec4f(color, alpha), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
+    ? `return GeneratedDepthCoverageOutput(vec4f(clamp(color, vec3f(0.0), vec3f(65504.0)), alpha), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
     : logDepth
-      ? `return GeneratedLogDepthOutput(vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "color"}, alpha), generatedLogFragmentDepth(input.worldPosition));`
-      : `return vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "color"}, alpha);`}
+      ? `return GeneratedLogDepthOutput(vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "clamp(color, vec3f(0.0), vec3f(65504.0))"}, alpha), generatedLogFragmentDepth(input.worldPosition));`
+      : `return vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "clamp(color, vec3f(0.0), vec3f(65504.0))"}, alpha);`}
 }`;
   return Object.freeze<GeneratedPbrProgram>({
     vertex, fragment, vertexEntryPoint: "vs_main", fragmentEntryPoint: "fs_main",

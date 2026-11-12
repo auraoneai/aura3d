@@ -38,6 +38,33 @@ export interface PostTargetLease {
 type ActivePostLease = { readonly token: symbol; readonly kind: "legacy" | "token" };
 type Cleanup = { readonly attempted: Set<RenderTarget>; readonly errors: unknown[]; unsubscribeAttempted: boolean };
 
+interface DevicePostResourcesHook {
+  resize(width: number, height: number): void;
+  trim(maxIdleFrames: number): void;
+}
+
+const DEVICE_POST_RESOURCES_HOOKS = Symbol.for("@aura3d/rendering/device-post-resources/v1");
+
+function getDevicePostResourcesHooks(device: object): Set<DevicePostResourcesHook> {
+  const globalStore = globalThis as unknown as Record<symbol, WeakMap<object, Set<DevicePostResourcesHook>> | undefined>;
+  const map = (globalStore[DEVICE_POST_RESOURCES_HOOKS] ??= new WeakMap<object, Set<DevicePostResourcesHook>>());
+  let set = map.get(device);
+  if (!set) {
+    set = new Set<DevicePostResourcesHook>();
+    map.set(device, set);
+  }
+  return set;
+}
+
+function deleteDevicePostResourcesHook(device: object, hook: DevicePostResourcesHook): void {
+  const globalStore = globalThis as unknown as Record<symbol, WeakMap<object, Set<DevicePostResourcesHook>> | undefined>;
+  const map = globalStore[DEVICE_POST_RESOURCES_HOOKS];
+  const set = map?.get(device);
+  if (!set) return;
+  set.delete(hook);
+  if (set.size === 0) map?.delete(device);
+}
+
 function keyOf(key: PostTargetKey): string {
   return `${key.width}x${key.height}:${key.format}:${key.samples}:${key.depth ? 1 : 0}`;
 }
@@ -59,6 +86,7 @@ export class PostResources {
   private unsubscribed = false;
   private readonly backingPool: RenderTargetPoolLike;
   private readonly unsubscribeLoss?: () => void;
+  private readonly deviceHook: DevicePostResourcesHook;
 
   constructor(
     private readonly device: RenderDevice,
@@ -67,6 +95,15 @@ export class PostResources {
     // Keep the pool that created the leases even if a caller later changes
     // flags. Re-resolving the factory on release can return a different pool.
     this.backingPool = renderTargetPoolSlot.get(flags)(device);
+    this.deviceHook = {
+      resize: (width, height) => {
+        if (!this.disposed) this.resize(width, height);
+      },
+      trim: (maxIdleFrames) => {
+        if (!this.disposed) this.trim(maxIdleFrames);
+      }
+    };
+    getDevicePostResourcesHooks(device).add(this.deviceHook);
     const lifecycle = device as RenderDevice & { onDeviceLost?: (listener: () => void) => () => void };
     this.unsubscribeLoss = lifecycle.onDeviceLost?.(() => {
       // Context-loss deletion is best effort, but every lease is detached.
@@ -303,6 +340,7 @@ export class PostResources {
 
   dispose(): void {
     this.disposed = true;
+    deleteDevicePostResourcesHook(this.device, this.deviceHook);
     this.withCleanup("Post resources disposal failed", cleanup => {
       // Revoke every acquisition before calling even the unsubscribe hook:
       // that callback can reenter and attempt to transfer an old lease.

@@ -9,7 +9,7 @@ import { groups } from "../nodes/groups.js";
 import { mediaMatches } from "../platform.js";
 import { mergeLookColorGrade } from "../looks/lookGrade.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
-import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, runtimeQualityStateFor, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { lights } from "../nodes/lights.js";
 import { outlineTargetsField } from "../nodes/outlineTargets.js";
@@ -67,7 +67,7 @@ function linkRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nat
  */
 export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement | OffscreenCanvas): AuraQualityTier {
   if (requested && requested !== "auto") return requested;
-  return postOnlyTierFor(canvas) ?? (mediaMatches("(pointer: coarse)") ? "medium" : "high");
+  return runtimeQualityStateFor(canvas)?.postTier ?? postOnlyTierFor(canvas) ?? (mediaMatches("(pointer: coarse)") ? "medium" : "high");
 }
 
 /** Stable mounted owner and original scene, before any per-frame wrapper is built. */
@@ -165,12 +165,14 @@ export function createProductionRuntimePostprocess(
   // E4: resolve even without an authored AA node (authoredAaMode is then
   // "auto") so the tier's sampleCount reaches the forward target instead of
   // falling through to a renderer-internal default with no diagnostics.
+  const runtimeQuality = runtimeQualityStateFor(attach?.canvas);
   const resolvedAa = postFlagOn
     ? resolvePostAntiAlias({
       settings: QUALITY_TIERS[resolvedTier],
       tier: resolvedTier,
       authored: authoredAaMode,
       renderPixels: Math.max(1, Math.round(renderWidth)) * Math.max(1, Math.round(renderHeight)),
+      ...(runtimeQuality?.pinnedSampleCount !== undefined ? { pinnedSampleCount: runtimeQuality.pinnedSampleCount } : {}),
       // Compile-time facts: a static frame qualifies (moving 0/0). When the
       // route's geometry cannot support temporal inputs, mark one mover
       // without history so TAA resolves to its coverage fallback.
@@ -187,6 +189,9 @@ export function createProductionRuntimePostprocess(
       })()
     })
     : null;
+  if (runtimeQuality && runtimeQuality.pinnedSampleCount === undefined && resolvedAa) {
+    runtimeQuality.pinnedSampleCount = resolvedAa.sampleCount;
+  }
   const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa");
   const sceneKey = productionTemporalSceneKey(snapshot, attach?.temporalSceneIdentity);
   const fxaaRequested = resolvedAa ? resolvedAa.mode === "fxaa" : (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
@@ -364,7 +369,7 @@ export function createProductionRuntimePostprocess(
       taaResolved: resolvedAa?.mode === "taa" || authoredAntiAlias?.mode === "taa",
       autoExposureAuthored: authoredPostContext?.output?.autoExposure !== undefined && authoredPostContext?.output?.autoExposure !== false
     });
-    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution, attach?.canvas);
+    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution, attach?.canvas, runtimeQuality?.renderScale);
     fieldDiagnostics.push(...pipelineResult.diagnostics);
     // The fields are readonly, so the v2 additions come in as a rebuilt
     // object — flag-off keeps the legacy bag untouched (byte-equal).

@@ -17,10 +17,20 @@ import {
   type HudValue
 } from "./widgets/index.js";
 
-export interface Vec3Like {
-  readonly x: number;
-  readonly y: number;
-  readonly z: number;
+export type Vec3Like =
+  | readonly [number, number, number]
+  | {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+  };
+
+function readVec3(v: Vec3Like): { readonly x: number; readonly y: number; readonly z: number } {
+  if (Array.isArray(v)) {
+    return { x: v[0] ?? 0, y: v[1] ?? 0, z: v[2] ?? 0 };
+  }
+  const obj = v as { readonly x: number; readonly y: number; readonly z: number };
+  return { x: obj.x, y: obj.y, z: obj.z };
 }
 
 export interface HudMountOptions {
@@ -95,7 +105,7 @@ export interface HudMediaQuery {
 }
 
 /** Same breakpoint as `styles/hud-base.css` (mobile anchors + `.a3g-mobile-hidden`). */
-export const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px)";
+export const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px), (orientation: landscape) and (max-height: 500px)";
 
 function defaultMobileQuery(): HudMediaQuery | null {
   const mm = (globalThis as { matchMedia?: (q: string) => HudMediaQuery }).matchMedia;
@@ -115,35 +125,9 @@ function safeAreaStyle(el: HudElement): void {
   el.style.paddingRight = "calc(8px + env(safe-area-inset-right, 0px))";
 }
 
-/** Dev guard (PRD-09 1758): wrap innerHTML so a write under `.a3g-hud` throws. */
-export function assertNoInnerHtml(doc: HudDocument, warn: (m: string) => void): () => void {
-  const proto = (doc as unknown as { defaultView?: { Element?: { prototype: object } } }).defaultView;
-  const elementProto = proto?.Element?.prototype;
-  if (!elementProto) return () => {};
-  const descriptor = Object.getOwnPropertyDescriptor(elementProto, "innerHTML");
-  if (!descriptor?.set) return () => {};
-  const original = descriptor.set;
-  Object.defineProperty(elementProto, "innerHTML", {
-    configurable: true,
-    get: descriptor.get,
-    set(this: Element, html: string) {
-      let node: Element | null = this;
-      while (node) {
-        if (node.classList?.contains?.("a3g-hud")) {
-          throw new Error("a3g-hud: innerHTML is forbidden after mount; use hud.set()");
-        }
-        node = node.parentElement;
-      }
-      original.call(this, html);
-    }
-  });
-  return () => {
-    Object.defineProperty(elementProto, "innerHTML", {
-      configurable: true,
-      get: descriptor.get,
-      set: original
-    });
-  };
+/** Retained as a no-op for API compatibility; avoids global Element.prototype.innerHTML monkeypatching. */
+export function assertNoInnerHtml(_doc: HudDocument, _warn: (m: string) => void): () => void {
+  return () => {};
 }
 
 const HUD_BASE_CSS = [
@@ -185,10 +169,10 @@ const HUD_BASE_CSS = [
   "  display: flex; flex-direction: column; align-items: center; gap: 4px; }",
   ".a3g-toast { background: var(--a3g-bg); border: 1px solid var(--a3g-edge); border-radius: var(--a3g-radius); padding: 4px 12px; font-size: 13px; }",
   ".a3g-damage { position: absolute; inset: 0; overflow: hidden; }",
-  ".a3g-dmg { position: absolute; font-weight: 800; font-size: 18px; color: var(--a3g-fg);",
+  ".a3g-dmg { position: absolute; left: 0; top: 0; font-weight: 800; font-size: 18px; color: var(--a3g-fg);",
   "  text-shadow: 0 1px 2px rgba(0,0,0,.7); will-change: transform, opacity; }",
   ".a3g-dmg-crit { font-size: 26px; color: var(--a3g-danger); }",
-  "@media (orientation: portrait) and (max-width: 480px) {",
+  "@media (orientation: portrait) and (max-width: 480px), (orientation: landscape) and (max-height: 500px) {",
   "  .a3g-mobile-hidden { display: none; }",
   "  .a3g-w { font-size: 13px; padding: 3px 8px; }",
   "}"
@@ -269,15 +253,36 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
     }
     widgets.set(spec.id, w);
   }
+  let fractionDirty = true;
   const applyLayout = () => {
     const mobile = mobileQuery?.matches === true;
     for (const r of relocatable) slots.get(mobile ? r.mobileAnchor : r.anchor)?.appendChild(r.el);
+    fractionDirty = true;
   };
   applyLayout();
-  const onLayoutChange = () => applyLayout();
+  const onLayoutChange = () => {
+    applyLayout();
+    ensureScheduled();
+  };
   if (relocatable.length > 0) mobileQuery?.addEventListener?.("change", onLayoutChange);
 
   root.appendChild(hud);
+
+  let resizeObserver: ResizeObserver | null = null;
+  if (options.maxScreenFraction !== undefined && typeof ResizeObserver !== "undefined" && typeof Element !== "undefined" && hud instanceof Element) {
+    try {
+      resizeObserver = new ResizeObserver(() => {
+        fractionDirty = true;
+        ensureScheduled();
+      });
+      resizeObserver.observe(hud);
+      for (const w of widgets.values()) {
+        if (w.el instanceof Element) resizeObserver.observe(w.el);
+      }
+    } catch {
+      resizeObserver = null;
+    }
+  }
 
   let restoreInnerHtml = () => {};
   if (deps.devAssertions !== false) {
@@ -285,25 +290,66 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
   }
 
   // Batched write phase: set() marks a widget dirty; each frame flush applies
-  // queued values once, then advances widget animation in the same pass.
+  // queued values once, then advances widget animation in the same pass. When
+  // no widgets, banners, toasts, or callouts are active, the rAF loop stops
+  // completely and wakes on demand.
   let visible = true;
   let lastT = now();
   let disposed = false;
   const pending = new Map<string, HudValue>();
-  interface DamageLife { el: HudElement; born: number; ttl: number; x: number; y: number }
+  interface DamageLife {
+    el: HudElement;
+    born: number;
+    ttl: number;
+    world: Vec3Like;
+    x: number;
+    y: number;
+    hadProjection: boolean;
+  }
   const damageLive: DamageLife[] = [];
   interface Timed { el: HudElement; until: number }
   const toasts: Timed[] = [];
   let bannerUntil = -1;
   let bannerDone: (() => void) | null = null;
+  let frameHandle: { cancel(): void } | null = null;
+  let isScheduled = false;
+
+  const canvasRect = deps.canvasRect ?? (() => hud.getBoundingClientRect());
+  const measureFraction = () =>
+    screenFraction(
+      [...widgets.values()].map((w) => w.el.getBoundingClientRect()),
+      canvasRect()
+    );
+
+  const hasActiveWork = (): boolean => {
+    if (pending.size > 0 || bannerUntil >= 0 || toasts.length > 0 || damageLive.length > 0) {
+      return true;
+    }
+    for (const w of widgets.values()) {
+      if (w.isAnimating?.()) return true;
+    }
+    return false;
+  };
+
+  function ensureScheduled(): void {
+    if (disposed || isScheduled) return;
+    isScheduled = true;
+    lastT = now();
+    frameHandle = schedule(flush);
+  }
 
   const flush = () => {
+    isScheduled = false;
+    frameHandle = null;
     if (disposed) return;
     const t = now();
     const dt = Math.min(0.1, Math.max(0, (t - lastT) / 1000));
     lastT = t;
-    for (const [id, v] of pending) widgets.get(id)?.apply(v);
-    pending.clear();
+    if (pending.size > 0) {
+      for (const [id, v] of pending) widgets.get(id)?.apply(v);
+      pending.clear();
+      fractionDirty = true;
+    }
     for (const w of widgets.values()) w.tick(dt);
     if (bannerUntil >= 0 && t > bannerUntil) {
       bannerEl.classList.add("a3g-hidden");
@@ -319,40 +365,54 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
     }
     for (let i = damageLive.length - 1; i >= 0; i--) {
       const d = damageLive[i];
-      const age = (t - d.born) / d.ttl;
+      const age = Math.max(0, (t - d.born) / d.ttl);
       if (age >= 1) {
         d.el.remove();
         damageLive.splice(i, 1);
         continue;
       }
-      d.el.style.transform = `translate(-50%, ${(-age * 48).toFixed(1)}px)`;
-      d.el.style.opacity = String(1 - age);
+      if (deps.project) {
+        const projected = deps.project(d.world);
+        if (projected) {
+          d.hadProjection = true;
+          d.x = projected[0];
+          d.y = projected[1];
+          d.el.style.opacity = String(1 - age);
+        } else if (d.hadProjection) {
+          d.el.style.opacity = "0";
+          continue;
+        } else {
+          d.el.style.opacity = String(1 - age);
+        }
+      } else {
+        d.el.style.opacity = String(1 - age);
+      }
+      d.el.style.transform = `translate3d(${d.x.toFixed(1)}px, ${(d.y - age * 48).toFixed(1)}px, 0) translate(-50%, -50%)`;
     }
     const maxFrac = options.maxScreenFraction;
-    if (maxFrac !== undefined) {
+    if (maxFrac !== undefined && fractionDirty) {
+      fractionDirty = false;
       const frac = measureFraction();
       if (frac > maxFrac) warn(`a3g-hud: screen fraction ${frac.toFixed(3)} exceeds budget ${maxFrac}`);
     }
-    frame = schedule(flush);
+    if (hasActiveWork()) {
+      isScheduled = true;
+      frameHandle = schedule(flush);
+    }
   };
-  let frame = schedule(flush);
-
-  const canvasRect = deps.canvasRect ?? (() => hud.getBoundingClientRect());
-  const measureFraction = () =>
-    screenFraction(
-      [...widgets.values()].map((w) => w.el.getBoundingClientRect()),
-      canvasRect()
-    );
+  ensureScheduled();
 
   return {
     set(id, value) {
       pending.set(id, value);
+      ensureScheduled();
     },
     banner(text, opts) {
       bannerEl.textContent = text;
       bannerEl.className = `a3g-banner${opts?.style ? ` a3g-banner-${opts.style}` : ""}`;
       bannerUntil = now() + (opts?.holdMs ?? 1600);
       bannerDone?.();
+      ensureScheduled();
       return new Promise<void>((resolve) => { bannerDone = resolve; });
     },
     toast(text, opts) {
@@ -361,19 +421,32 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
       el.textContent = text;
       toastHost.appendChild(el);
       toasts.push({ el, until: now() + (opts?.ms ?? 2600) });
+      ensureScheduled();
     },
     damageNumber(value, world, opts) {
       const el = doc.createElement("div");
       el.className = `a3g-dmg${opts?.crit ? " a3g-dmg-crit" : ""}`;
       el.textContent = String(Math.round(value));
       if (opts?.color) el.style.color = opts.color;
-      const p = deps.project ? deps.project(world) : null;
-      const x = p ? p[0] : world.x;
-      const y = p ? p[1] : world.y;
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
+      const normWorld = readVec3(world);
+      const p = deps.project ? deps.project(normWorld) : null;
+      const x = p ? p[0] : normWorld.x;
+      const y = p ? p[1] : normWorld.y;
+      el.style.left = "0px";
+      el.style.top = "0px";
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      el.style.opacity = "1";
       dmgHost.appendChild(el);
-      damageLive.push({ el, born: now(), ttl: 900, x, y });
+      damageLive.push({
+        el,
+        born: now(),
+        ttl: 900,
+        world: normWorld,
+        x,
+        y,
+        hadProjection: p !== null
+      });
+      ensureScheduled();
     },
     setVisible(v) {
       visible = v;
@@ -402,7 +475,10 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
     },
     dispose() {
       disposed = true;
-      frame.cancel();
+      frameHandle?.cancel();
+      frameHandle = null;
+      isScheduled = false;
+      resizeObserver?.disconnect();
       bannerDone?.();
       bannerDone = null;
       restoreInnerHtml();

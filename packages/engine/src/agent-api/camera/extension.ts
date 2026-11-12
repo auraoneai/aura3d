@@ -33,6 +33,7 @@ import type {
 } from "../../contracts/camera.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import { mediaMatches } from "../platform.js";
+import { readWorkerCanvasCssSize, workerCanvasTransferAttempted } from "../app/workerRuntime.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
 import {
@@ -289,8 +290,58 @@ export function createAuraCameraController(
    * Rig inputs and spec deps take copies, so nothing feeds back.
    */
   const POSE_KEYS = ["mode", "position", "target", "up", "roll", "fov", "near", "far", "orthographicSize"] as const;
+  const MIN_POSE_EYE_TARGET_DISTANCE = 0.05;
+  const isFinite3 = (v: unknown): v is AuraVec3 =>
+    Array.isArray(v) && v.length === 3 && Number.isFinite(v[0]) && Number.isFinite(v[1]) && Number.isFinite(v[2]);
+  let lastValidPose: AuraCameraPose = {
+    position: [0, 1.4, 4],
+    target: [0, 0.7, 0],
+    up: [0, 1, 0],
+    roll: 0,
+    fov: 50,
+    near: 0.1,
+    far: 200
+  };
   let renderCamera: CameraSpecMutable | undefined;
   let renderCameraBackup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> | undefined;
+
+  const seedLastValidPose = (spec: LegacyCameraSpec | CameraSpecMutable | undefined) => {
+    if (!spec) return;
+    const pos = isFinite3(spec.position) ? spec.position : lastValidPose.position;
+    let tgt = isFinite3(spec.target) ? spec.target : lastValidPose.target;
+    const dx = tgt[0] - pos[0];
+    const dy = tgt[1] - pos[1];
+    const dz = tgt[2] - pos[2];
+    const dist = Math.hypot(dx, dy, dz);
+    if (dist < MIN_POSE_EYE_TARGET_DISTANCE) {
+      tgt = [pos[0], pos[1], pos[2] - MIN_POSE_EYE_TARGET_DISTANCE];
+    }
+    const dirLen = Math.hypot(tgt[0] - pos[0], tgt[1] - pos[1], tgt[2] - pos[2]) || MIN_POSE_EYE_TARGET_DISTANCE;
+    const dirY = (tgt[1] - pos[1]) / dirLen;
+    const defaultUp: AuraVec3 = Math.abs(dirY) > 0.98 ? [0, 0, 1] : [0, 1, 0];
+    let up = isFinite3(spec.up) ? spec.up : defaultUp;
+    const upLen = Math.hypot(up[0], up[1], up[2]);
+    if (upLen < 1e-6) up = defaultUp;
+    else {
+      const cos = Math.abs((up[0] * (tgt[0] - pos[0]) + up[1] * (tgt[1] - pos[1]) + up[2] * (tgt[2] - pos[2])) / (upLen * dirLen));
+      if (cos > 0.9998) up = defaultUp;
+    }
+    const near = typeof spec.near === "number" && Number.isFinite(spec.near) && spec.near > 0 ? spec.near : lastValidPose.near;
+    const far = typeof spec.far === "number" && Number.isFinite(spec.far) && spec.far > near ? spec.far : Math.max(near + 1, lastValidPose.far);
+    const specRoll = "roll" in spec ? spec.roll : undefined;
+    lastValidPose = {
+      position: pos,
+      target: tgt,
+      up,
+      roll: typeof specRoll === "number" && Number.isFinite(specRoll) ? specRoll : lastValidPose.roll,
+      fov: typeof spec.fov === "number" && Number.isFinite(spec.fov) ? Math.min(179, Math.max(1, spec.fov)) : lastValidPose.fov,
+      near,
+      far,
+      ...(typeof spec.orthographicSize === "number" && Number.isFinite(spec.orthographicSize) && spec.orthographicSize > 0
+        ? { orthographicSize: spec.orthographicSize }
+        : {})
+    };
+  };
 
   const restoreRenderCamera = () => {
     if (!renderCamera || !renderCameraBackup || Object.isFrozen(renderCamera)) return;
@@ -306,6 +357,7 @@ export function createAuraCameraController(
     restoreRenderCamera();
     renderCamera = spec && !Object.isFrozen(spec) ? spec : undefined;
     renderCameraBackup = undefined;
+    seedLastValidPose(spec);
     if (renderCamera) {
       const backup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> = {};
       for (const key of POSE_KEYS) if (key in renderCamera) backup[key] = renderCamera[key];
@@ -313,9 +365,64 @@ export function createAuraCameraController(
     }
   };
 
-  const applyPose = (pose: AuraCameraPose) => {
+  const guardAppliedPose = (pose: AuraCameraPose, commitLast = true): AuraCameraPose => {
+    const position: AuraVec3 = isFinite3(pose.position) ? pose.position : lastValidPose.position;
+    let target: AuraVec3 = isFinite3(pose.target) ? pose.target : lastValidPose.target;
+    let dx = target[0] - position[0];
+    let dy = target[1] - position[1];
+    let dz = target[2] - position[2];
+    let dist = Math.hypot(dx, dy, dz);
+    if (dist < MIN_POSE_EYE_TARGET_DISTANCE) {
+      const prevDx = lastValidPose.target[0] - lastValidPose.position[0];
+      const prevDy = lastValidPose.target[1] - lastValidPose.position[1];
+      const prevDz = lastValidPose.target[2] - lastValidPose.position[2];
+      const prevLen = Math.hypot(prevDx, prevDy, prevDz);
+      const ux = prevLen > 1e-6 ? prevDx / prevLen : 0;
+      const uy = prevLen > 1e-6 ? prevDy / prevLen : 0;
+      const uz = prevLen > 1e-6 ? prevDz / prevLen : -1;
+      dx = ux * MIN_POSE_EYE_TARGET_DISTANCE;
+      dy = uy * MIN_POSE_EYE_TARGET_DISTANCE;
+      dz = uz * MIN_POSE_EYE_TARGET_DISTANCE;
+      target = [position[0] + dx, position[1] + dy, position[2] + dz];
+      dist = MIN_POSE_EYE_TARGET_DISTANCE;
+    }
+    const dirY = dy / dist;
+    const fallbackUp: AuraVec3 = Math.abs(dirY) > 0.98 ? [0, 0, 1] : [0, 1, 0];
+    let up: AuraVec3 = isFinite3(pose.up) ? pose.up : fallbackUp;
+    const upLen = Math.hypot(up[0], up[1], up[2]);
+    if (upLen < 1e-6) {
+      up = fallbackUp;
+    } else {
+      const cosAngle = Math.abs((up[0] * dx + up[1] * dy + up[2] * dz) / (upLen * dist));
+      if (cosAngle > 0.9998) up = fallbackUp;
+    }
+    const roll = Number.isFinite(pose.roll) ? pose.roll : lastValidPose.roll;
+    const fov = Number.isFinite(pose.fov) ? Math.min(179, Math.max(1, pose.fov)) : lastValidPose.fov;
+    const near = Number.isFinite(pose.near) && pose.near > 0 ? pose.near : lastValidPose.near;
+    const far = Number.isFinite(pose.far) && pose.far > near ? pose.far : Math.max(near + 1, lastValidPose.far);
+    const orthographicSize = pose.orthographicSize !== undefined
+      ? (Number.isFinite(pose.orthographicSize) && pose.orthographicSize > 0
+          ? pose.orthographicSize
+          : (lastValidPose.orthographicSize ?? 5))
+      : undefined;
+    const guarded: AuraCameraPose = {
+      position,
+      target,
+      up,
+      roll,
+      fov,
+      near,
+      far,
+      ...(orthographicSize !== undefined ? { orthographicSize } : {})
+    };
+    if (commitLast) lastValidPose = guarded;
+    return guarded;
+  };
+
+  const applyPose = (rawPose: AuraCameraPose) => {
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (!scene) return;
+    const pose = guardAppliedPose(rawPose);
     const mode = pose.orthographicSize !== undefined ? "orthographic" : "perspective";
     const fields: CameraSpecMutable = {
       mode,
@@ -417,15 +524,33 @@ export function createAuraCameraController(
         .map((box) => ({ ...box, owner: staticOwner }))
     ]
   });
+  const resolveControllerAspect = (): number => {
+    const canvas = (app as { canvas?: HTMLCanvasElement | OffscreenCanvas }).canvas;
+    const isWorker = (app as { execution?: { active?: string } }).execution?.active === "worker"
+      || Boolean(canvas && typeof canvas === "object" && workerCanvasTransferAttempted(canvas));
+    if (isWorker && canvas && typeof canvas === "object") {
+      const tracked = readWorkerCanvasCssSize(canvas);
+      if (tracked && tracked.width > 0 && tracked.height > 0) return tracked.width / tracked.height;
+      const html = canvas as { clientWidth?: number; clientHeight?: number; getBoundingClientRect?: () => { width: number; height: number } };
+      if (typeof html.clientWidth === "number" && typeof html.clientHeight === "number" && html.clientWidth > 0 && html.clientHeight > 0) {
+        return html.clientWidth / html.clientHeight;
+      }
+      if (typeof html.getBoundingClientRect === "function") {
+        const rect = html.getBoundingClientRect();
+        if (rect && rect.width > 0 && rect.height > 0) return rect.width / rect.height;
+      }
+      const rs = (app as { diagnostics?: () => { renderSize?: readonly [number, number] } }).diagnostics?.()?.renderSize;
+      if (rs && rs[0] > 0 && rs[1] > 0) return rs[0] / rs[1];
+    }
+    return canvas && canvas.width > 0 && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
+  };
+  seedLastValidPose(currentSpec());
   const controller = createCameraController({
     resolveSubject,
     probe,
     // Copy: applyPose writes the presented pose into the authored object.
     specDeps: specDepsFor({ ...((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}) }),
-    aspect: () => {
-      const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
-      return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
-    },
+    aspect: () => resolveControllerAspect(),
     applyPose,
     onCut: () => (app as { cutCamera?: () => void }).cutCamera?.(),
     reducedMotion: () => {
@@ -437,10 +562,7 @@ export function createAuraCameraController(
     },
     barsLayer: () =>
       createCinematicBarsLayer({
-        canvasAspect: (() => {
-          const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
-          return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
-        })()
+        canvasAspect: resolveControllerAspect()
       }),
     initial: { spec: (() => { const s = currentSpec(); return s ? { ...s } : undefined; })() }
   });
@@ -524,8 +646,35 @@ export function createAuraCameraController(
       subjectSource = undefined;
     }
   };
-  armed.use = (rig, o) => { arm(); controller.use(rig, o); };
-  armed.setPose = (p, o) => { arm(); controller.setPose(p, o); };
+  const rigToWrapped = new WeakMap<AuraCameraRig, AuraCameraRig>();
+  const wrappedToRig = new WeakMap<AuraCameraRig, AuraCameraRig>();
+  const guardRig = (rig: AuraCameraRig): AuraCameraRig => {
+    const cached = rigToWrapped.get(rig);
+    if (cached) return cached;
+    const wrapped = new Proxy(rig, {
+      get(target, prop, receiver) {
+        if (prop === "update") {
+          return (ctx: Parameters<AuraCameraRig["update"]>[0]) => guardAppliedPose(target.update(ctx), false);
+        }
+        return Reflect.get(target, prop, receiver);
+      }
+    });
+    rigToWrapped.set(rig, wrapped);
+    wrappedToRig.set(wrapped, rig);
+    return wrapped;
+  };
+  Object.defineProperty(armed, "rig", {
+    get: () => wrappedToRig.get(controller.rig) ?? controller.rig,
+    enumerable: true,
+    configurable: true
+  });
+  armed.use = (rig, o) => { arm(); controller.use(guardRig(rig), o); };
+  armed.setPose = (p, o) => {
+    arm();
+    const base = controller.presented();
+    const guarded = guardAppliedPose({ ...base, ...p }, false);
+    controller.setPose(guarded, o);
+  };
   armed.setFov = (fov, o) => { arm(); controller.setFov(fov, o); };
   armed.setRoll = (roll, o) => { arm(); controller.setRoll(roll, o); };
   armed.addLayer = (layer, order) => { arm(); return controller.addLayer(layer, order); };

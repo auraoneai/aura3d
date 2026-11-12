@@ -7,19 +7,41 @@ export function devicePixelRatioSafe(): number {
 }
 
 const mediaQueries = new Map<string, MediaQueryList>();
+let workerCoarsePointer: boolean | undefined;
+
+/**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export function setWorkerCoarsePointer(value: boolean | undefined): void {
+  workerCoarsePointer = value;
+}
 
 /**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export function mediaMatches(query: string): boolean {
-  if (typeof matchMedia !== "function") return false;
+  if (typeof matchMedia !== "function") {
+    return query.trim() === "(pointer: coarse)" ? workerCoarsePointer === true : false;
+  }
   let list = mediaQueries.get(query);
   if (list === undefined) {
     list = matchMedia(query);
     mediaQueries.set(query, list);
   }
   return list.matches;
+}
+
+export function isCoarsePointerDevice(): boolean {
+  if (typeof matchMedia !== "function" && workerCoarsePointer !== undefined) {
+    return workerCoarsePointer;
+  }
+  const maxTouchPoints = typeof navigator !== "undefined" && typeof navigator.maxTouchPoints === "number"
+    ? navigator.maxTouchPoints
+    : 0;
+  return mediaMatches("(pointer: coarse)") || maxTouchPoints > 0;
 }
 
 export function performanceNow(): number {

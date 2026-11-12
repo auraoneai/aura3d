@@ -34,6 +34,84 @@ struct OutputVertex {
   return output;
 }`;
 
+const OUTPUT_TONE_P3_HELPERS_WGSL = `
+fn a3dSceneSrgbToP3(c: vec3<f32>) -> vec3<f32> {
+  return a3dRows(c,
+    vec3<f32>(0.8224619687143624, 0.17753803128563794, 0.0),
+    vec3<f32>(0.03319419885096169, 0.9668058011490385, 0.0),
+    vec3<f32>(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));
+}
+fn a3dSceneP3ToSrgb(c: vec3<f32>) -> vec3<f32> {
+  return a3dRows(c,
+    vec3<f32>(1.2249401762805586, -0.2249401762805588, 0.0),
+    vec3<f32>(-0.04205695470968808, 1.042056954709688, 0.0),
+    vec3<f32>(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));
+}`;
+
+const OUTPUT_TONE_P3_WGSL = `
+fn a3dRows(v: vec3<f32>, r0: vec3<f32>, r1: vec3<f32>, r2: vec3<f32>) -> vec3<f32> {
+  return vec3<f32>(dot(r0, v), dot(r1, v), dot(r2, v));
+}${OUTPUT_TONE_P3_HELPERS_WGSL}
+fn a3dToneNone(c: vec3<f32>) -> vec3<f32> { return c; }
+fn a3dToneLinear(c: vec3<f32>) -> vec3<f32> {
+  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(c), vec3<f32>(0.0), vec3<f32>(1.0)));
+}
+fn a3dReinhardChannel(v: f32) -> f32 {
+  if (v < 0.0) { return v; }
+  return v / (1.0 + v);
+}
+fn a3dToneReinhard(c: vec3<f32>) -> vec3<f32> {
+  let p3 = a3dSceneSrgbToP3(c);
+  return a3dSceneP3ToSrgb(vec3<f32>(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));
+}
+fn a3dToneAces(c: vec3<f32>) -> vec3<f32> {
+  let working = max(a3dRows(c / 0.6,
+    vec3<f32>(0.59719, 0.35458, 0.04823),
+    vec3<f32>(0.07600, 0.90834, 0.01566),
+    vec3<f32>(0.02840, 0.13383, 0.83777)), vec3<f32>(0.0));
+  let numerator = (working + vec3<f32>(0.0245786)) * working - vec3<f32>(0.000090537);
+  let denominator = (0.983729 * working + vec3<f32>(0.432951)) * working + vec3<f32>(0.238081);
+  return a3dRows(numerator / denominator,
+    vec3<f32>(1.60475, -0.53108, -0.07367),
+    vec3<f32>(-0.10208, 1.10813, -0.00605),
+    vec3<f32>(-0.00327, -0.07276, 1.07602));
+}
+fn a3dAgxContrast(x: vec3<f32>) -> vec3<f32> {
+  return (((((15.5 * x - vec3<f32>(40.14)) * x + vec3<f32>(31.96)) * x - vec3<f32>(6.868)) * x + vec3<f32>(0.4298)) * x + vec3<f32>(0.1191)) * x - vec3<f32>(0.00232);
+}
+fn a3dToneAgx(c: vec3<f32>) -> vec3<f32> {
+  let p3 = max(a3dSceneSrgbToP3(c), vec3<f32>(0.0));
+  let inset = a3dRows(p3,
+    vec3<f32>(0.856627153315983, 0.0951212405381588, 0.0482516061458583),
+    vec3<f32>(0.137318972929847, 0.761241990602591, 0.101439036467562),
+    vec3<f32>(0.11189821299995, 0.0767994186031903, 0.811302368396859));
+  let logExposure = clamp((log2(max(inset, vec3<f32>(1e-10))) + vec3<f32>(12.47393)) / 16.499999, vec3<f32>(0.0), vec3<f32>(1.0));
+  let outset = a3dRows(a3dAgxContrast(logExposure),
+    vec3<f32>(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),
+    vec3<f32>(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),
+    vec3<f32>(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));
+  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3<f32>(0.0)), vec3<f32>(2.2)), vec3<f32>(0.0), vec3<f32>(1.0)));
+}
+fn a3dToneCineon(c: vec3<f32>) -> vec3<f32> {
+  let p3 = a3dSceneSrgbToP3(c);
+  let x = max(p3 - vec3<f32>(0.004), vec3<f32>(0.0));
+  return a3dSceneP3ToSrgb(pow((x * (6.2 * x + vec3<f32>(0.5))) / (x * (6.2 * x + vec3<f32>(1.7)) + vec3<f32>(0.06)), vec3<f32>(2.2)));
+}
+fn a3dToneNeutral(c: vec3<f32>) -> vec3<f32> {
+  let p3 = max(a3dSceneSrgbToP3(c), vec3<f32>(0.0));
+  let minimum = min(p3.r, min(p3.g, p3.b));
+  let offset = select(0.04, minimum * (1.0 - 6.25 * minimum), minimum < 0.08);
+  let shifted = p3 - vec3<f32>(offset);
+  let peak = max(shifted.r, max(shifted.g, shifted.b));
+  let knee = 0.76;
+  if (peak < knee) { return a3dSceneP3ToSrgb(shifted); }
+  let shoulder = 1.0 - knee;
+  let compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);
+  let scaled = shifted * (compressed / peak);
+  let keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));
+  return a3dSceneP3ToSrgb(vec3<f32>(compressed) + (scaled - vec3<f32>(compressed)) * keepColor);
+}`;
+
 // Explicit rows avoid relying on a language's matrix-constructor ordering.
 // These are the independently authored Aura3D curves in the existing output
 // contract; inputs are already exposed and outputs are linear display light.
@@ -167,6 +245,28 @@ fn a3dOutputColorGrade(linearSrgb: vec3<f32>, uv: vec2<f32>) -> vec3<f32> {
   return a3dGradeSrgbToLinear(clamp(graded * vignette, vec3<f32>(0.0), vec3<f32>(1.0)));
 }`;
 
+const OUTPUT_COLOR_GRADE_P3_WGSL = `
+fn a3dGradeSrgbToLinear(c: vec3<f32>) -> vec3<f32> {
+  return select(c / 12.92, pow((c + vec3<f32>(0.055)) / 1.055, vec3<f32>(2.4)), c >= vec3<f32>(0.04045));
+}
+fn a3dOutputColorGrade(linearSrgb: vec3<f32>, uv: vec2<f32>) -> vec3<f32> {
+  let color = a3dLinearToSrgb(clamp(a3dOutputGamut(linearSrgb), vec3<f32>(0.0), vec3<f32>(1.0)));
+  let contrast = aura.u_gradeA.x;
+  let contrastOffset = 0.5 - 0.5 * contrast;
+  let redShift = aura.u_gradeA.y * 0.08 - aura.u_gradeA.z * 0.02;
+  let greenShift = aura.u_gradeA.z * 0.06;
+  let blueShift = -aura.u_gradeA.y * 0.08 - aura.u_gradeA.z * 0.02;
+  let luma = dot(color, vec3<f32>(0.2126, 0.7152, 0.0722));
+  var graded = color * contrast + vec3<f32>(contrastOffset + redShift, contrastOffset + greenShift, contrastOffset + blueShift);
+  let distanceFromLuma = min(1.0, abs(graded.r - luma) + abs(graded.g - luma) + abs(graded.b - luma));
+  let vibranceBoost = select(aura.u_gradeB.x * (1.0 - distanceFromLuma), 0.0, aura.u_gradeB.x == 0.0);
+  let saturation = aura.u_gradeA.w + vibranceBoost;
+  graded = vec3<f32>(luma) + (graded - vec3<f32>(luma)) * saturation;
+  let centered = uv * 2.0 - vec2<f32>(1.0);
+  let vignette = 1.0 - aura.u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
+  return a3dSceneP3ToSrgb(a3dGradeSrgbToLinear(clamp(graded * vignette, vec3<f32>(0.0), vec3<f32>(1.0))));
+}`;
+
 /**
  * Construct a native shader and its group-0 schema for a single OutputPass
  * variant. Resource order is scene sampler/texture followed by coverage when
@@ -209,7 +309,8 @@ export function createOutputWgsl(options: OutputWgslOptions): {
       { name: "u_overlayShape", kind: "vec4" as const }, { name: "u_overlayFade", kind: "vec4" as const }
     ] : [])
   ];
-  const gamut = outputColorSpace === "display-p3"
+  const isP3 = outputColorSpace === "display-p3";
+  const gamut = isP3
     ? `return a3dRows(linearSrgb,
     vec3<f32>(0.8224619687143624, 0.17753803128563794, 0.0),
     vec3<f32>(0.03319419885096169, 0.9668058011490385, 0.0),
@@ -218,13 +319,17 @@ export function createOutputWgsl(options: OutputWgslOptions): {
   const coverage = options.backgroundCoverage
     ? "textureSampleLevel(u_coverageTexture, u_coverageSampler, uv, 0.0).r"
     : options.fullCoverage || alphaMode !== "opaque" ? "1.0" : "clamp(scene.a, 0.0, 1.0)";
+  const clearClamp = isP3
+    ? "a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(hdr), vec3<f32>(0.0), vec3<f32>(1.0)))"
+    : "clamp(hdr, vec3<f32>(0.0), vec3<f32>(1.0))";
+  const gradeWgsl = isP3 ? OUTPUT_COLOR_GRADE_P3_WGSL : OUTPUT_COLOR_GRADE_WGSL;
   const fragment = `// a3d.output
 /* @aura3d-bindings */
-${OUTPUT_TONE_WGSL}
+${isP3 ? OUTPUT_TONE_P3_WGSL : OUTPUT_TONE_WGSL}
 ${OUTPUT_TRANSFER_WGSL}
 fn a3dOutputGamut(linearSrgb: vec3<f32>) -> vec3<f32> { ${gamut} }
 ${options.vignette ? OUTPUT_VIGNETTE_WGSL : ""}
-${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}${options.colorGrade ? `\n${OUTPUT_COLOR_GRADE_WGSL}` : ""}
+${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}${options.colorGrade ? `\n${gradeWgsl}` : ""}
 @fragment fn fs_main(@location(0) uv: vec2<f32>, @builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
   var scene = textureSampleLevel(u_sceneTexture, u_sceneSampler, uv, 0.0);
   // Exponent bits set in any component identify NaN or infinity, including alpha.
@@ -237,7 +342,7 @@ ${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}${options.colorGrade ? `\n${OUTPUT_
   ${options.vignette ? "hdr = a3dLinearVignette(hdr, uv);" : ""}
   let coverage = ${coverage};
   // Coverage mixes already-composited light; it cannot independently tone-map foreground and raw background.
-  ${options.colorGrade ? "var" : "let"} display = mix(clamp(hdr, vec3<f32>(0.0), vec3<f32>(1.0)), ${TONE_FUNCTIONS[options.toneMapping]}(hdr * aura.u_exposure), coverage);${options.colorGrade ? "\n  display = a3dOutputColorGrade(display, uv);" : ""}
+  ${options.colorGrade ? "var" : "let"} display = mix(${clearClamp}, ${TONE_FUNCTIONS[options.toneMapping]}(hdr * aura.u_exposure), coverage);${options.colorGrade ? "\n  display = a3dOutputColorGrade(display, uv);" : ""}
   var encoded = a3dLinearToSrgb(clamp(a3dOutputGamut(display), vec3<f32>(0.0), vec3<f32>(1.0)));
   // Match GLSL's bottom-left gl_FragCoord in the full destination framebuffer,
   // independent of the HDR input's size or a sub-viewport's origin.

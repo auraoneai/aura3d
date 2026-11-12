@@ -434,8 +434,9 @@ interface LookRig {
   readonly key: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor; readonly shadow: LookKeyShadow };
   readonly rim?: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor };
   /**
-   * near/far are the look range (the density is 24/far, scaled by fogDensityScale). `range` is set when the fog
-   * override authored near/far (they then ride on the node for the C-21 linear mode); `height` makes it a C-21 height fog.
+   * near/far are the look range (the density is 24/far, scaled by fogDensityScale). `range` is set whenever the fog is
+   * not a C-21 height fog (so near/far ride on the node for the linear mode, including on fogless presets); `height`
+   * makes it a C-21 height fog.
    */
   readonly fog?: { readonly color: AuraColor; readonly near: number; readonly far: number; readonly range: boolean; readonly height?: AuraHeightFogSpec };
   readonly background: AuraColor;
@@ -517,7 +518,7 @@ function overrideFog(preset: AuraLookPreset, overrides: AuraLookOverrides | unde
     color: fog?.color ?? base?.color ?? background,
     near,
     far,
-    range: fog?.near !== undefined || fog?.far !== undefined || (base !== undefined && fog?.height === undefined),
+    range: fog?.height === undefined,
     ...(fog?.height !== undefined ? { height: fog.height } : {})
   };
 }

@@ -4,7 +4,8 @@ import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSiz
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRenderFlags, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
-import { applyWorkerNodePatch, type AuraWorkerAppCall } from "./workerPatch.js";
+import { applyWorkerNodePatch, collectWorkerPatchTransferables, type AuraWorkerAppCall } from "./workerPatch.js";
+import { isCoarsePointerDevice, setWorkerCoarsePointer } from "../platform.js";
 import { bindWorkerAtmosphere, type WorkerAtmosphereBinding } from "./workerAtmosphere.js";
 import { createWorkerEffectsReplayer } from "./workerEffects.js";
 import type { AuraRuntimeNodeRegistry } from "../nodes/types.js";
@@ -55,6 +56,8 @@ export interface AuraWorkerRendererOptions {
   readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
   /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
   readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
+  /** 5.5.3: override host coarse-pointer detection forwarded to the worker's `init` request. */
+  readonly coarsePointer?: boolean;
   /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
   readonly disposeTimeoutMs?: number;
 }
@@ -103,10 +106,16 @@ export function supportsWorkerRendering(canvas: HTMLCanvasElement | OffscreenCan
 
 const transferredCanvases = new WeakSet<object>();
 const canvasTransferAttempts = new WeakSet<object>();
+const workerCanvasCssSizes = new WeakMap<object, { readonly width: number; readonly height: number }>();
 const MAX_PENDING_REQUESTS = 128;
 
 export function workerCanvasTransferAttempted(canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
   return canvasTransferAttempts.has(canvas);
+}
+
+/** Latest tracked CSS/viewport dimensions for a worker-managed canvas (unaffected by frozen `300x150` transferred attributes). */
+export function readWorkerCanvasCssSize(canvas: object): { readonly width: number; readonly height: number } | undefined {
+  return workerCanvasCssSizes.get(canvas);
 }
 
 /** Raw direct-module URL; bundled applications should use createWorkerRendererWorker instead. */
@@ -137,6 +146,7 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
   validateScene(options.scene);
   const size = options.size ?? options.measureSize?.() ?? measureWorkerCanvas(canvas);
   workerCanvasBackingSize(size);
+  if (size.width > 0 && size.height > 0) workerCanvasCssSizes.set(canvas, { width: size.width, height: size.height });
   if (options.sceneTransfer?.includes(canvas as Transferable)) throw new AuraWorkerError("The canvas is transferred automatically; do not include it in sceneTransfer.", "invalid-transfer");
   if (options.sceneTransfer && new Set(options.sceneTransfer).size !== options.sceneTransfer.length) {
     throw new AuraWorkerError("Each scene transferable may only appear once.", "invalid-transfer");
@@ -386,11 +396,13 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
     });
   };
   const rendererGlobals = collectWorkerRendererGlobals();
+  const coarsePointer = options.coarsePointer ?? isCoarsePointerDevice();
   const ready = send({ type: "init", canvas: offscreen, scene: initialScene, renderer: options.renderer, assets: assetOptions, size, autoStart: options.autoStart !== false,
     ...(options.flags ? { flags: options.flags } : {}),
     ...(options.prepareLocalScene ? { syncLocalScenes: true } : {}),
     ...(options.onAssetProgress || options.onAssetError ? { assetEvents: true } : {}),
-    ...(rendererGlobals ? { globals: rendererGlobals } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
+    ...(rendererGlobals ? { globals: rendererGlobals } : {}),
+    ...(coarsePointer ? { coarsePointer: true } : options.coarsePointer === false ? { coarsePointer: false } : {}) }, [offscreen, ...(options.sceneTransfer ?? [])], undefined, initialReservation.release).then((response) => {
     if (options.prepareLocalScene && (response.syncLocalScenes !== true || response.sceneRevision !== 1)) {
       throw new AuraWorkerError("Worker does not support synchronized local scene replacement.", "scene-sync-unsupported");
     }
@@ -445,9 +457,10 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
       return send({ type: "input", input }).then(() => undefined);
     },
     flushInput: () => flushHostInput(),
-    patch: (ops) => ops.length === 0 ? Promise.resolve() : send({ type: "patch", ops }).then(() => undefined),
+    patch: (ops) => ops.length === 0 ? Promise.resolve() : send({ type: "patch", ops }, collectWorkerPatchTransferables(ops)).then(() => undefined),
     resize(next) {
       try { workerCanvasBackingSize(next); } catch (error) { return Promise.reject(error); }
+      if (next.width > 0 && next.height > 0) workerCanvasCssSizes.set(canvas, { width: next.width, height: next.height });
       return send({ type: "resize", size: next }).then(() => undefined);
     },
     setVisible: (visible) => send({ type: "visibility", visible }).then(() => undefined),
@@ -707,7 +720,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     const flags = qrFlagsWithAnimationMixer(resolveQrFlags({ ...(renderFlags?.qualityRebuild === undefined ? {} : { options: renderFlags.qualityRebuild }), ...(renderFlags?.url === undefined ? {} : { url: renderFlags.url }) }), renderFlags?.animationMixer);
     // K1: the registry node patches write through, read by the renderer every frame.
     // Node-handle extensions replayed from host patches read the app's scene (prd09 setInstanceTransforms).
-    const runtimeNodes = createAuraRuntimeNodeRegistry(next, { flags, app: { scene: next } as unknown as AuraApp }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
+    const runtimeNodes = createAuraRuntimeNodeRegistry(next, { flags, app: { scene: next } as unknown as AuraApp, getScene: () => next }) as AuraRuntimeNodeRegistry & { dispose?: () => void };
     const animation = actorAnimation.createActorAnimationContext(flags);
     actorAnimation.bindActorAnimationContext(owner, animation);
     actorFlags.setTypedGLBActorQrFlags(flags, owner);
@@ -1055,7 +1068,10 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       if (suspended()) return;
       if (renderer.deviceLost?.()) throw new AuraWorkerError("Renderer device is lost; wait for restoration.", "device-lost", "recoverable");
       const texturedMaterials = sampleTexturedMaterials(renderer);
-      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source, presentedAt: workerNow(), ...(texturedMaterials ? { texturedMaterials } : {}) };
+      const viewProjection = sceneHasLabels(scene) && typeof (renderer as { viewProjection?: (t?: number) => Float32Array }).viewProjection === "function"
+        ? (renderer as { viewProjection(t?: number): Float32Array }).viewProjection(frame.time)
+        : undefined;
+      lastFrame = { backend: renderer.backend, drawCalls, width: canvas.width, height: canvas.height, time: frame.time, deltaSeconds: frame.deltaSeconds, source: frame.source, presentedAt: workerNow(), ...(texturedMaterials ? { texturedMaterials } : {}), ...(viewProjection ? { viewProjection } : {}) };
       if (frame.source === "automatic") send({ type: "presented", id: 0, result: lastFrame });
     }
   });
@@ -1081,6 +1097,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
       try { await disposeRenderer(); } catch (error) { failures.push(error); }
       for (const handle of sceneTextures) { try { handle.dispose(); } catch (error) { failures.push(error); } }
       sceneTextures.clear();
+      setWorkerCoarsePointer(undefined);
       if (failures.length === 1) throw failures[0];
       if (failures.length > 1) throw new AggregateError(failures, "Worker renderer shutdown failed.");
     })().then(resolveStop, rejectStop);
@@ -1133,6 +1150,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
           canvas = message.canvas; rendererOptions = message.renderer; runRequested = message.autoStart;
           syncLocalScenes = message.syncLocalScenes === true;
           assetEvents = message.assetEvents === true;
+          setWorkerCoarsePointer(message.coarsePointer === true);
           installWorkerRendererGlobals(message.globals);
           resizeOffscreenCanvas(canvas, message.size);
           await mount(message.scene, controller.signal);
@@ -1307,6 +1325,18 @@ function asWorkerError(error: unknown, severity: "recoverable" | "terminal" = "t
 }
 function validateScene(scene: AuraSceneSnapshot): void {
   if (!scene || scene.schema !== "aura3d-scene-snapshot/1.0" || !Array.isArray(scene.nodes)) throw new AuraWorkerError("Worker scene must be an Aura3D scene snapshot.", "invalid-scene");
+}
+
+function sceneHasLabels(scene: AuraSceneSnapshot | undefined): boolean {
+  if (!scene || !Array.isArray(scene.nodes)) return false;
+  const stack = [...scene.nodes];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
+    if (node.kind === "label") return true;
+    if (node.kind === "group" && Array.isArray(node.children)) stack.push(...node.children);
+  }
+  return false;
 }
 
 /** Root diagnostics flatten group nodes and cannot safely traverse cyclic groups. */
@@ -2113,6 +2143,17 @@ function installHostEvents(canvas: HTMLCanvasElement, api: AuraWorkerRenderer, c
   let resizeRetryDelay = 50;
   let visibilityRetryDelay = 50;
   let observer: ResizeObserver | undefined;
+  let cachedContent: ReturnType<typeof canvasContentGeometry> | undefined;
+  const invalidateContent = (): void => { cachedContent = undefined; };
+  const getContent = (refresh = false): ReturnType<typeof canvasContentGeometry> => {
+    if (refresh || !cachedContent) {
+      cachedContent = canvasContentGeometry(canvas);
+      if (cachedContent.width > 0 && cachedContent.height > 0) {
+        workerCanvasCssSizes.set(canvas, { width: cachedContent.width, height: cachedContent.height });
+      }
+    }
+    return cachedContent;
+  };
   const pageWindow = typeof window === "undefined" ? undefined : window;
   const pageDocument = typeof document === "undefined" ? undefined : document;
   const releaseCaptures = (): void => {
@@ -2166,7 +2207,7 @@ function installHostEvents(canvas: HTMLCanvasElement, api: AuraWorkerRenderer, c
   const pointer = (event: PointerEvent): void => {
     if (event.type === "lostpointercapture" && !activePointers.has(event.pointerId)) return;
     const previous = pointers.get(event.pointerId);
-    const content = canvasContentGeometry(canvas);
+    const content = getContent(event.type === "pointerdown");
     if (event.type === "pointerdown") {
       activePointers.add(event.pointerId);
       try {
@@ -2265,10 +2306,25 @@ function installHostEvents(canvas: HTMLCanvasElement, api: AuraWorkerRenderer, c
     }
   };
   const resize = (): void => {
-    if (!alive || options.resize === false) return;
+    invalidateContent();
+    if (!alive) return;
+    if (options.resize === false) {
+      try { getContent(true); } catch { /* layout refresh is best effort */ }
+      return;
+    }
     try {
-      const size = options.measureSize?.() ?? measureWorkerCanvas(canvas);
+      const size = options.measureSize
+        ? options.measureSize()
+        : (() => {
+            const content = getContent(true);
+            return {
+              width: content.width || canvas.width || 1,
+              height: content.height || canvas.height || 1,
+              pixelRatio: typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1
+            };
+          })();
       workerCanvasBackingSize(size);
+      if (size.width > 0 && size.height > 0) workerCanvasCssSizes.set(canvas, { width: size.width, height: size.height });
       latestSize = { width: size.width, height: size.height, pixelRatio: size.pixelRatio };
     } catch (error) {
       // Measurement and bounds failures happen before the worker is touched.
@@ -2315,6 +2371,7 @@ function installHostEvents(canvas: HTMLCanvasElement, api: AuraWorkerRenderer, c
     if (pageWindow) {
       release(() => pageWindow.removeEventListener("keydown", key)); release(() => pageWindow.removeEventListener("keyup", key));
       release(() => pageWindow.removeEventListener("blur", blur)); release(() => pageWindow.removeEventListener("resize", resize));
+      release(() => pageWindow.removeEventListener("scroll", invalidateContent));
     }
     if (pageDocument) release(() => pageDocument.removeEventListener("visibilitychange", visibility));
     release(() => observer?.disconnect());
@@ -2323,7 +2380,13 @@ function installHostEvents(canvas: HTMLCanvasElement, api: AuraWorkerRenderer, c
     if (cleanupFailed) throw new AuraWorkerError("Worker event listener cleanup failed.", "worker-cleanup-failed");
   });
   for (const name of ["pointerdown", "pointermove", "pointerup", "pointercancel", "lostpointercapture"] as const) canvas.addEventListener(name, pointer);
-  if (pageWindow) { pageWindow.addEventListener("keydown", key); pageWindow.addEventListener("keyup", key); pageWindow.addEventListener("blur", blur); if (options.resize !== false) pageWindow.addEventListener("resize", resize); }
+  if (pageWindow) {
+    pageWindow.addEventListener("keydown", key);
+    pageWindow.addEventListener("keyup", key);
+    pageWindow.addEventListener("blur", blur);
+    pageWindow.addEventListener("scroll", invalidateContent, { passive: true });
+    if (options.resize !== false) pageWindow.addEventListener("resize", resize);
+  }
   if (pageDocument) { pageDocument.addEventListener("visibilitychange", visibility); visibility(); }
   observer = options.resize === false || typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(resize);
   observer?.observe(canvas);

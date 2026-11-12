@@ -84,6 +84,7 @@ export function attachSessionLifecycle(options: LifecycleOptions): () => void {
     window.addEventListener("keydown", onKey);
     disposers.push(() => window.removeEventListener("keydown", onKey));
 
+    const hasInjectedGamepads = options.getGamepads !== undefined;
     const getGamepads =
       options.getGamepads ??
       (() => {
@@ -101,11 +102,30 @@ export function attachSessionLifecycle(options: LifecycleOptions): () => void {
 
     let prevPressed = false;
     let pollId = 0;
+    let hasConnectedGamepad = hasInjectedGamepads;
+    let initialCheckPending = !hasInjectedGamepads;
+
     const poll = () => {
+      pollId = 0;
+      if (!hasConnectedGamepad && !initialCheckPending) {
+        return;
+      }
+      if (initialCheckPending) {
+        initialCheckPending = false;
+        // Avoid calling navigator.getGamepads() at 120Hz on mobile Safari when
+        // no gamepadconnected event has fired; check once only if already present.
+        if (!hasConnectedGamepad) {
+          return;
+        }
+      }
       let pressed = false;
+      let anyConnected = false;
       try {
         for (const pad of getGamepads()) {
-          if (pad?.buttons?.[buttonIndex]?.pressed) pressed = true;
+          if (pad && pad.connected !== false) {
+            anyConnected = true;
+            if (pad.buttons?.[buttonIndex]?.pressed) pressed = true;
+          }
         }
       } catch {
         /* gamepad polling unsupported */
@@ -115,10 +135,45 @@ export function attachSessionLifecycle(options: LifecycleOptions): () => void {
         else session.pause("user");
       }
       prevPressed = pressed;
+      if (!hasInjectedGamepads && !anyConnected) {
+        hasConnectedGamepad = false;
+        return;
+      }
       pollId = schedulePoll(poll);
     };
+
+    const onGamepadConnected = () => {
+      hasConnectedGamepad = true;
+      if (pollId === 0) {
+        pollId = schedulePoll(poll);
+      }
+    };
+    const onGamepadDisconnected = () => {
+      try {
+        let stillConnected = false;
+        for (const pad of getGamepads()) {
+          if (pad && pad.connected !== false) { stillConnected = true; break; }
+        }
+        hasConnectedGamepad = hasInjectedGamepads || stillConnected;
+      } catch {
+        hasConnectedGamepad = hasInjectedGamepads;
+      }
+      if (!hasConnectedGamepad && pollId !== 0) {
+        cancelPoll(pollId);
+        pollId = 0;
+      }
+    };
+    window.addEventListener("gamepadconnected", onGamepadConnected);
+    window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
     pollId = schedulePoll(poll);
-    disposers.push(() => cancelPoll(pollId));
+    disposers.push(() => {
+      window.removeEventListener("gamepadconnected", onGamepadConnected);
+      window.removeEventListener("gamepaddisconnected", onGamepadDisconnected);
+      if (pollId !== 0) {
+        cancelPoll(pollId);
+        pollId = 0;
+      }
+    });
   }
 
   return () => {

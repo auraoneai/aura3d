@@ -4,18 +4,18 @@ import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRe
 import { createParentFit } from "./parentFit.js";
 import { bindLazyFrameDiagnostics, deviceFrameCounters, rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
-import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, getRootRenderSource, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
+import { DeferredFrameResources, applyRootParticleQuality, getRootPerformanceBaseSize, getRootPerformanceQuality, getRootRenderSource, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
 import { applyRenderPathToCanvas, directPathVetoReasons, resolveAppRenderPath, takeDecodedDirectPathBlockers, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
-import { resolveMountQuality } from "../compiler/renderer.js";
+import { explicitMountQualityTier, resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups, withFrameFlattenMemo } from "../nodes/groups.js";
 import { sceneConsumesClock } from "./timeConsumers.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
-import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
+import { normalizeCreateAppRendererOptions, parseQualityRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, qrFlagsWithStudioGlass, resolveQrFlags } from "../../contracts/flags.js";
 import { sceneUsesStudioGlass } from "../nodes/scene.js";
 import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
@@ -26,7 +26,7 @@ import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusi
 import { authoredBackingResize, canvasContentBox, noteEngineCanvasSize, ownSizedCanvasAxes, refreshOwnSizedAxes } from "./canvas.js";
 import { setAdvancedLightingInvalidator } from "./advancedLightingState.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
-import { isPrd07DeviceLeaseBusy } from "@aura3d/rendering";
+import { RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, isPrd07DeviceLeaseBusy } from "@aura3d/rendering";
 import { RenderDeviceError } from "@aura3d/rendering";
 import { isPlainDefaultOutput } from "../looks/plainLook.js";
 
@@ -196,12 +196,42 @@ export async function startProductionRender(
   // is re-evaluated on every resize (devicePixelRatio can change) with a 1×1 minimum.
   const coreDpr = qrFlags.on("A3D_QR_CORE");
   const backingMinimum = minimumBackingSize(coreDpr);
-  const tierMaxPixelRatio = appTierMaxPixelRatio(resolveMountQuality(options.renderer).tier);
+  const mountQuality = resolveMountQuality(options.renderer);
+  const tierMaxPixelRatio = appTierMaxPixelRatio(mountQuality.tier);
+  const runtimeGovernorEnabled = (() => {
+    if (!qrFlags.on("A3D_QR_TIERS_GOVERNOR")) return false;
+    if (explicitMountQualityTier(options.renderer) !== undefined) return false;
+    const topQuality = (options as { readonly quality?: unknown }).quality;
+    if (typeof topQuality === "string" && topQuality !== "auto") return false;
+    try {
+      const search = typeof location !== "undefined" ? location.search : null;
+      const parsed = parseQualityRendererOptions(options.renderer, search);
+      return parsed.requested === "auto" && parsed.adaptive !== false;
+    } catch {
+      return false;
+    }
+  })();
+  const runtimeTargetFrameMs = (() => {
+    const rate = (options.renderer as { readonly targetFrameRate?: unknown } | undefined)?.targetFrameRate;
+    return typeof rate === "number" && Number.isFinite(rate) && rate > 0 ? 1000 / rate : 16.67;
+  })();
+  const runtimeGovernor = runtimeGovernorEnabled
+    ? new RuntimeQualityGovernor({ mountTier: mountQuality.tier, targetFrameMs: runtimeTargetFrameMs })
+    : null;
+  const auraRendererDevice = () =>
+    (renderer.auraRenderer as { readonly device?: { counters?: () => { readonly programCompiles?: number } } } | undefined)?.device;
+  const runtimeQualityState = runtimeGovernor ? ensureRuntimeQualityState(canvas) : undefined;
+  if (runtimeQualityState) {
+    bindRuntimeQualityDevice(auraRendererDevice(), runtimeQualityState);
+  }
+  let userLockedPerformanceQuality = false;
   const resolvePixelRatio = (): number => resolveAppPixelRatio({
     flagOn: coreDpr,
     option: options.pixelRatio,
     profilePixelRatio: rendererSelection.profile.pixelRatio,
-    maxPixelRatio: tierMaxPixelRatio,
+    maxPixelRatio: runtimeQualityState?.maxPixelRatioCap !== undefined
+      ? Math.min(tierMaxPixelRatio, runtimeQualityState.maxPixelRatioCap)
+      : tierMaxPixelRatio,
     devicePixelRatio: currentDevicePixelRatio(),
     legacyDevicePixelRatio: devicePixelRatioSafe
   });
@@ -302,6 +332,7 @@ export async function startProductionRender(
     try {
       try { lazyFrameDiagnostics.freeze(); } catch (error) { resourceReleaseFailures.push(error); }
       try { labelLayer?.dispose(); } catch (error) { resourceReleaseFailures.push(error); }
+      try { clearRuntimeQualityState(canvas, auraRendererDevice()); } catch (error) { resourceReleaseFailures.push(error); }
       // The deferred owner can release from a frame's finally block. Record
       // failures instead of replacing that frame's original result.
       startRendererRetirement();
@@ -363,6 +394,7 @@ export async function startProductionRender(
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       animationHandle = 0;
     } else {
+      runtimeGovernor?.notifyVisibilityResume();
       // Re-read layout and DPR, including changes made while the page was hidden.
       resizeRenderer();
       resetHistory("visibility-resume");
@@ -406,6 +438,8 @@ export async function startProductionRender(
     // T0-12: first real frame — closes the mount-timing window the bench
     // harness reads from payload.extra.mountTiming.
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
+    const rawRafDelta = lastTime > 0 ? time - lastTime : 0;
+    const cpuBodyStartMs = runtimeGovernor && !explicit && pendingFrames === 0 ? performanceNow() : 0;
     // Automatic simulation cannot consume an unbounded wall-clock gap after a stall.
     const delta = lastTime > 0 ? Math.min(100, Math.max(1, time - lastTime)) : 16.67;
     lastTime = time;
@@ -511,6 +545,37 @@ export async function startProductionRender(
     overlay?.update();
     });
     if (disposed || isCancelled()) return;
+    if (runtimeGovernor && runtimeQualityState && !explicit && pendingFrames === 0 && !pageHidden && !isPaused() && presented) {
+      const cpuBodyMs = performanceNow() - cpuBodyStartMs;
+      const compiledPrograms = auraRendererDevice()?.counters?.()?.programCompiles ?? null;
+      const step = runtimeGovernor.sample({
+        nowMs: time,
+        rafDeltaMs: rawRafDelta,
+        cpuBodyMs,
+        compiledPrograms
+      });
+      if (step.changed) {
+        runtimeQualityState.rung = step.rung;
+        runtimeQualityState.postTier = step.effectivePostTier;
+        runtimeQualityState.renderScale = step.allocation.renderScale;
+        runtimeQualityState.maxPixelRatioCap = step.allocation.maxPixelRatioCap;
+        runtimeQualityState.maxShadowCascades = step.allocation.maxShadowCascades;
+        runtimeQualityState.maxShadowMapSize = step.allocation.maxShadowMapSize;
+        bindRuntimeQualityDevice(auraRendererDevice(), runtimeQualityState);
+        if (!userLockedPerformanceQuality) {
+          const particleScale = step.rung === 0 ? 1 : step.rung === 1 ? 0.9 : step.rung === 2 ? 0.75 : step.rung === 3 ? 0.6 : 0.5;
+          const lodBias = step.rung === 0 ? 1 : step.rung === 1 ? 1.2 : step.rung === 2 ? 1.5 : step.rung === 3 ? 2 : 2.5;
+          setRootPerformanceQuality(canvas, {
+            resolutionScale: step.allocation.resolutionScale,
+            particleScale,
+            lodBias,
+            shadowSize: step.allocation.maxShadowMapSize
+          });
+          applyRootParticleQuality(canvas, particleScale);
+          if (options.resize !== false) resizeRenderer();
+        }
+      }
+    }
     if (lastTime !== 0 && !firstFrameEndMarked) { firstFrameEndMarked = true; markTiming("a3d:mount:first-renderFrame:end"); }
     if (!explicit && canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
       animationHandle = requestAnimationFrame(scheduleFrame);
@@ -678,6 +743,7 @@ export async function startProductionRender(
     },
     setPerformanceQuality(settings) {
       if (disposed || pendingFrames > 0) throw new Error("PERFORMANCE_QUALITY_BUSY: await the active frame before changing quality.");
+      userLockedPerformanceQuality = true;
       setRootPerformanceQuality(canvas, settings);
       if (options.resize !== false) resizeRenderer();
       else {

@@ -146,9 +146,11 @@ export class AuraQuality implements AuraQualityController {
     }
     const probe = this.probe;
     const mobile = probe?.mobile === true || this.env.mobile === true;
-    const targetFrameMs = mobile && this.env.targetFrameRate !== 60
-      ? 33.3
-      : QUALITY_TIERS[this.currentTier].targetFrameMs;
+    const targetFrameMs = this.env.targetFrameRate !== undefined && this.env.targetFrameRate > 0
+      ? 1000 / this.env.targetFrameRate
+      : mobile
+        ? 16.67
+        : QUALITY_TIERS[this.currentTier].targetFrameMs;
     const settings = resolveTierSettings(this.currentTier, this.overrides);
     const dpr = probe?.devicePixelRatio ?? 1;
     const governor = new QualityGovernor({

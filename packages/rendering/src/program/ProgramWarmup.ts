@@ -48,9 +48,19 @@ export function collectWarmupFeatures(input: WarmupInput, tier: AuraQualityTier)
 
   const lightBuckets = input.lights && input.lights.length > 0 ? input.lights : [normalizeProgramFeatures({}).lights];
   const environments = input.environments && input.environments.length > 0 ? input.environments : [normalizeProgramFeatures({}).environment];
-  const shadowSets = input.shadows && input.shadows.length > 0
+  const baseShadowSets = input.shadows && input.shadows.length > 0
     ? input.shadows
     : [tierShadowSettings(tier), ...(nextLowerTier(tier) ? [tierShadowSettings(nextLowerTier(tier)!)] : [])];
+  // WP-05 (Trap B): pre-warm all lower cascade counts (1..s.cascades) for every
+  // mounted shadow set so runtime cascade reductions (3 -> 2 -> 1) hit already-
+  // compiled programs without triggering `async-skip` mesh blinking.
+  const shadowSets: ProgramFeatures["shadows"][] = [];
+  for (const s of baseShadowSets) {
+    shadowSets.push(s);
+    for (let c = s.cascades - 1; c >= 1; c -= 1) {
+      shadowSets.push({ ...s, cascades: c as 1 | 2 | 3 | 4 });
+    }
+  }
 
   for (const material of input.materials) {
     for (const lights of lightBuckets) {

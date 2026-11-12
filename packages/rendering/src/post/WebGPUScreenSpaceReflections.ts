@@ -14,7 +14,7 @@ import { SSR_TRACE_UNIFORM_BYTES } from "./shaders/ssr.wgsl";
  * exists. The pass itself runs whenever a device does advertise it; this only
  * gates the pre-mount check. Turned on together with the W1 depth-textures lane.
  */
-export const WEBGPU_PRECHECK_ASSUMES_DEPTH_TEXTURES = false;
+export const WEBGPU_PRECHECK_ASSUMES_DEPTH_TEXTURES = true;
 
 /**
  * Post stages the native WebGPU chain runs over scene depth (pre-mount check input). `ssr` runs on any frame once the

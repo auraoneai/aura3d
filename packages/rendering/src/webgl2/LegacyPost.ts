@@ -241,7 +241,7 @@ export class WebGL2LegacyPostPipeline {
         targetId: source.id
       });
     }
-    this.host.resolveMultisampleTarget(source);
+    (this.host.resolveMultisampleTarget as (target: WebGL2RenderTarget, discardMultisample?: boolean) => void)(source, true);
     const outputWidth = this.host.lifecycle.viewportWidth || this.host.gl.drawingBufferWidth;
     const outputHeight = this.host.lifecycle.viewportHeight || this.host.gl.drawingBufferHeight;
     this.drawRenderTargetToBackbuffer(source, outputWidth, outputHeight);
@@ -289,7 +289,7 @@ export class WebGL2LegacyPostPipeline {
         targetId: source.id
       });
     }
-    this.host.resolveMultisampleTarget(source);
+    (this.host.resolveMultisampleTarget as (target: WebGL2RenderTarget, discardMultisample?: boolean) => void)(source, true);
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
     const depthOfFieldPass = options.passes.find((pass) => pass.name === "depth-of-field");
@@ -604,29 +604,43 @@ export class WebGL2LegacyPostPipeline {
     if (source.colorTexture.format === "rgba8") {
       throw new RenderDeviceError("HDR bloom requires a floating-point source target.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", { targetId: source.id });
     }
-    this.host.resolveMultisampleTarget(source);
+    (this.host.resolveMultisampleTarget as (target: WebGL2RenderTarget, discardMultisample?: boolean) => void)(source, true);
     const bloomOptions = normalizeNativeBloomOptions({ ...bloomOptionsRaw, v2: true });
     const vertexArray = this.ensurePresentationVertexArray();
-    const resources = this.ensureBloomPingPongResources(source.width, source.height, true);
     const previousState = this.prepareFullscreenPresentation(destination.framebuffer, source.width, source.height);
     try {
       if (bloomOptions.quality === "performance") {
+        const resources = this.ensureBloomPingPongResources(source.width, source.height, true);
         this.executeNativeBloomPasses(source.colorHandle, resources, bloomOptions, vertexArray, true, destination);
         this.recordBloomDiagnostics(bloomOptions, source.width, source.height, true, 1);
       } else {
         const plan = resolveBloomPyramidPlan(source.width, source.height, bloomOptions.quality, true);
         const pyramid = this.ensureBloomPyramidResources(plan, true);
+        const mipCount = plan.mips.length;
+        const level0 = plan.mips[0]!;
+        const fused = this.host.device.bloomFusedPasses === true && mipCount <= BLOOM_FUSED_MAX_MIPS;
+        const fusion = this.host.device.bloomFusion;
+        const needsFullResStaging = !(
+          fused &&
+          fusion.extract &&
+          fusion.accumulate &&
+          level0.width * 2 === source.width &&
+          level0.height * 2 === source.height
+        );
+        const resources = needsFullResStaging ? this.ensureBloomPingPongResources(source.width, source.height, true) : undefined;
         const pyramidResult = this.executeNativeBloomPyramidPasses(
           source.colorHandle,
           source.width,
           source.height,
           pyramid,
-          {
-            textureA: resources.textures[0],
-            framebufferA: resources.framebuffers[0],
-            textureB: resources.textures[1],
-            framebufferB: resources.framebuffers[1]
-          },
+          resources
+            ? {
+                textureA: resources.textures[0],
+                framebufferA: resources.framebuffers[0],
+                textureB: resources.textures[1],
+                framebufferB: resources.framebuffers[1]
+              }
+            : undefined,
           bloomOptions,
           vertexArray,
           true
@@ -1035,7 +1049,7 @@ export class WebGL2LegacyPostPipeline {
       framebufferA: WebGLFramebuffer;
       textureB: WebGLTexture;
       framebufferB: WebGLFramebuffer;
-    },
+    } | undefined,
     options: NativeBloomOptions,
     vertexArray: WebGLVertexArrayObject,
     hdr: boolean
@@ -1185,6 +1199,9 @@ export class WebGL2LegacyPostPipeline {
       this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_bloomSelective"), signal ? 1 : 0);
       this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
     } else {
+      if (!fullResStaging) {
+        throw new Error("Unfused bloom pyramid extract requires full-resolution staging resources");
+      }
       const extractProgram = signal ? this.ensureBloomBrightExtractSelectiveProgram() : brightProgram;
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, fullResStaging.framebufferA);
       this.host.gl.viewport(0, 0, sourceWidth, sourceHeight);
@@ -1280,6 +1297,9 @@ export class WebGL2LegacyPostPipeline {
     // Upsample the weighted sum onto full-resolution staging target A, using
     // the cleared staging target B as the zero base (never sample A while
     // rendering into it).
+    if (!fullResStaging) {
+      throw new Error("Unfused bloom pyramid accumulate requires full-resolution staging resources");
+    }
     this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, fullResStaging.framebufferB);
     this.host.gl.viewport(0, 0, sourceWidth, sourceHeight);
     this.host.gl.clearColor(0, 0, 0, 0);
@@ -3463,7 +3483,10 @@ export function executePostGraphWebGL2(
           current = afterBloomStage.run(bloomed as unknown as import("../post/v2Stages").PostColorInput) as unknown as RenderTarget;
         }
       } else {
-        host.resolveMultisampleTarget(workSource as WebGL2RenderTarget);
+        (host.resolveMultisampleTarget as (target: WebGL2RenderTarget, discardMultisample?: boolean) => void)(
+          workSource as WebGL2RenderTarget,
+          true
+        );
       }
       // Bind the final destination first: the OutputPass restores the previously bound target, so the
       // frame ends on the default framebuffer (or the explicit output target), never on an HDR target.

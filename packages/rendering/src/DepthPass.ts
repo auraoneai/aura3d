@@ -1343,7 +1343,7 @@ export class DepthPass extends BaseRenderPass {
         shader: clipping || logarithmic ? this.getConfiguredShader(device, clipping, logarithmic) : this.getShader(device),
         uniforms,
         renderState: {
-          ...depthRenderState(this.options.scissor, base?.renderState.cullMode ?? "back", this.options.depthConvention,
+          ...depthRenderState(this.options.scissor, caster.geometry.topology !== "triangles" ? "none" : (base?.renderState.cullMode ?? "back"), this.options.depthConvention,
             renderItemHasNegativeHandedness(caster, true) !== (base?.renderState.frontFace === "cw"))
         }
       };
@@ -1444,7 +1444,7 @@ export class DepthPass extends BaseRenderPass {
         shader,
         uniforms,
         renderState: {
-          ...depthRenderState(this.options.scissor, variant.doubleSided ? "none" :
+          ...depthRenderState(this.options.scissor, caster.geometry.topology !== "triangles" || variant.doubleSided ? "none" :
             (caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material)?.renderState.cullMode === "front" ? "front" : "back",
             this.options.depthConvention, renderItemHasNegativeHandedness(caster, true)
               !== ((caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material)?.renderState.frontFace === "cw"))
@@ -1682,7 +1682,7 @@ export class DepthPass extends BaseRenderPass {
         shader,
         uniforms,
         ...(nativeStorageBindings?.length ? { nativeStorageBindings } : {}),
-        renderState: depthRenderState(this.options.scissor, cullMode, this.options.depthConvention,
+        renderState: depthRenderState(this.options.scissor, caster.geometry.topology !== "triangles" ? "none" : cullMode, this.options.depthConvention,
           // Clockwise front faces cull like a mirrored (negative-handedness) transform.
           renderItemHasNegativeHandedness({ ...caster, modelMatrix: model }, usesGeometryMatrix) !== (base?.renderState.frontFace === "cw"))
       };

@@ -170,9 +170,12 @@ describe("v0 emission of the GU47 E-A keys", () => {
     expect(plain).toMatchObject({ near: lookPresets["outdoor-day"].v0.fog!.near, far: lookPresets["outdoor-day"].v0.fog!.far });
     const height = effect(children("outdoor-day", { fog: { height: { heightFalloff: 0.3, heightDensity: 0.04, maxOpacity: 0.8 } } }), "fog")!;
     expect(height).toMatchObject({ mode: "height", heightFalloff: 0.3, heightDensity: 0.04, maxOpacity: 0.8, color: lookPresets["outdoor-day"].v0.fog!.color });
-    // A fog override on a look without fog adds one (colour = the look background unless set).
+    // A fog override on a look without fog adds one (colour = the look background unless set), keeping linear near/far range so HeightFog never falls back to exp2 density=0.2 whiteout.
     expect(effect(children("interior-industrial"), "fog")).toBeUndefined();
-    expect(effect(children("interior-industrial", { fog: { far: 80 } }), "fog")).toMatchObject({ color: lookPresets["interior-industrial"].v0.background, far: 80 });
+    expect(effect(children("interior-industrial", { fog: { far: 80 } }), "fog")).toMatchObject({ color: lookPresets["interior-industrial"].v0.background, near: 0, far: 80 });
+    const colorOnlyFog = effect(children("product-studio", { fog: { color: "#ccddee" } }), "fog")!;
+    expect(effect(children("product-studio"), "fog")).toBeUndefined();
+    expect(colorOnlyFog).toMatchObject({ color: "#ccddee", near: 0, far: 200 });
     // fogDensityScale still applies on top, and 0 still removes the fog.
     expect(effect(children("outdoor-day", { fog: { far: 120 }, fogDensityScale: 2 }), "fog")!.density).toBeCloseTo(24 / 60, 10);
     expect(effect(children("outdoor-day", { fog: { far: 120 }, fogDensityScale: 0 }), "fog")).toBeUndefined();

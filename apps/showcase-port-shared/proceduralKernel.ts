@@ -8,10 +8,12 @@
 import {
   geometry,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
-  type AuraNodeBuilder
+  type AuraNodeBuilder,
+  type AuraSceneNode
 } from "@aura3d/engine";
+
+export type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }> & { readonly visible?: boolean };
 
 export type V2 = readonly [number, number];
 export type V3 = readonly [number, number, number];

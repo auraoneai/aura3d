@@ -45,7 +45,7 @@ import { installEvidenceChannel, createPerfRing, type EvidenceChannelContract, t
 import { GameShellImpl, GameHudImpl } from "./components";
 import { createPoolFxLayer, withFxPool, type PoolFxLayer, type PoolNodeHandle } from "./juice/fxPoolLayer";
 import { mountHud } from "./hud/HudKit";
-import { mountTouchControls } from "./touch/TouchControls";
+import { mountTouchControls, type TouchControlsOptions } from "./touch/TouchControls";
 import { createJuice, type Juice, type JuiceCamera, type JuiceEventMap } from "./juice/Juice";
 import type { HudDocument, HudElement } from "./hud/dom";
 import { createOverlayDriver } from "./juice/overlay";
@@ -145,9 +145,10 @@ export function assertGameWorkerRequest(worker: CreateGameOptions<string, string
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
 export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> =
-  Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
+  Omit<CreateGameOptions<TCue, TEvent>, "target" | "touch"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
+    readonly touch?: TouchControlsOptions;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
     /** Wired into the session lifecycle (suspend/dispose/unlock on tab events). */
     readonly soundAdapter?: LifecycleSound;
@@ -323,9 +324,70 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
       }
       : undefined
   );
+  const hudRootEl = hasDom ? (targetEl ?? document.body) : null;
+  let hudViewportW = 0;
+  let hudViewportH = 0;
+  let hudViewportObserver: ResizeObserver | null = null;
+  if (hudRootEl) {
+    const syncHudViewport = () => {
+      const r = hudRootEl.getBoundingClientRect?.();
+      if (r && r.width > 0 && r.height > 0) {
+        hudViewportW = r.width;
+        hudViewportH = r.height;
+      } else if (typeof window !== "undefined") {
+        hudViewportW = window.innerWidth || 0;
+        hudViewportH = window.innerHeight || 0;
+      }
+    };
+    syncHudViewport();
+    if (typeof ResizeObserver !== "undefined" && typeof Element !== "undefined" && hudRootEl instanceof Element) {
+      try {
+        hudViewportObserver = new ResizeObserver((entries) => {
+          const cr = entries[0]?.contentRect;
+          if (cr && cr.width > 0 && cr.height > 0) {
+            hudViewportW = cr.width;
+            hudViewportH = cr.height;
+          } else {
+            syncHudViewport();
+          }
+        });
+        hudViewportObserver.observe(hudRootEl);
+      } catch {
+        hudViewportObserver = null;
+      }
+    }
+  }
+
+  const projectWorldForHud = (
+    world: readonly [number, number, number] | { readonly x: number; readonly y: number; readonly z: number }
+  ): readonly [number, number] | null => {
+    const wx = Array.isArray(world) ? world[0] : (world as { readonly x: number }).x;
+    const wy = Array.isArray(world) ? world[1] : (world as { readonly y: number }).y;
+    const wz = Array.isArray(world) ? world[2] : (world as { readonly z: number }).z;
+    const projApp = app as unknown as {
+      camera?: { evidence?: () => { viewProjection?: readonly number[] } };
+      viewProjection?: () => ArrayLike<number>;
+    };
+    const camVp = projApp.camera?.evidence?.().viewProjection;
+    const m: ArrayLike<number> | undefined =
+      camVp && camVp.length >= 16 ? camVp : projApp.viewProjection?.();
+    if (!m || m.length < 16) return null;
+    const cw = m[3]! * wx + m[7]! * wy + m[11]! * wz + m[15]!;
+    if (!(cw > 1e-6)) return null;
+    const vw = hudViewportW > 0 ? hudViewportW : (typeof window !== "undefined" ? window.innerWidth || 1 : 1);
+    const vh = hudViewportH > 0 ? hudViewportH : (typeof window !== "undefined" ? window.innerHeight || 1 : 1);
+    const ndcX = (m[0]! * wx + m[4]! * wy + m[8]! * wz + m[12]!) / cw;
+    const ndcY = (m[1]! * wx + m[5]! * wy + m[9]! * wz + m[13]!) / cw;
+    return [(ndcX * 0.5 + 0.5) * vw, (-ndcY * 0.5 + 0.5) * vh];
+  };
+
   const hud: Hud = hasDom && options.hud
     ? (mountHud(
-      { root: (targetEl ?? document.body) as unknown as HudElement, doc: document as unknown as HudDocument },
+      {
+        root: hudRootEl as unknown as HudElement,
+        doc: document as unknown as HudDocument,
+        project: projectWorldForHud
+      },
       options.hud as Parameters<typeof mountHud>[1]
     ) as unknown as Hud)
     : new GameHudImpl();
@@ -341,11 +403,33 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
       })
       : undefined);
 
+  const isCoarsePointer = (): boolean => {
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+      try {
+        if (window.matchMedia("(pointer: coarse)").matches) return true;
+      } catch { /* ignore */ }
+    }
+    if (typeof navigator !== "undefined" && typeof navigator.maxTouchPoints === "number" && navigator.maxTouchPoints > 0) {
+      return true;
+    }
+    return false;
+  };
+
   const touch: TouchControls | null = hasDom && options.touch && touchInput
     ? mountTouchControls(
       touchInput,
-      { preset: options.touch.preset, bindings: options.touch.bindings },
-      { doc: document as unknown as HudDocument, root: (targetEl ?? document.body) as unknown as HudElement }
+      {
+        preset: options.touch.preset,
+        bindings: options.touch.bindings,
+        show: options.touch.show ?? options.touch.visible,
+        haptics: options.touch.haptics,
+        scale: options.touch.scale
+      },
+      {
+        doc: document as unknown as HudDocument,
+        root: hudRootEl as unknown as HudElement,
+        coarsePointer: isCoarsePointer
+      }
     )
     : null;
 
@@ -392,6 +476,67 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
     unlock: () => { if (options.soundAdapter) options.soundAdapter.unlock?.(); else void audio?.unlock(); }
   } : undefined;
 
+  // iOS Safari / mobile gesture audio unlock: capture-phase listener on first
+  // pointerdown / touchend / keydown that detaches once AudioContext is running
+  // and re-arms automatically if WebKit interrupts/suspends the context.
+  const detachGestureAudioUnlock = (() => {
+    if (!lifecycleSound || typeof window === "undefined" || typeof window.addEventListener !== "function") {
+      return () => {};
+    }
+    const GESTURE_EVENTS = ["pointerdown", "touchend", "keydown"] as const;
+    let armed = false;
+    const disarm = () => {
+      if (!armed) return;
+      armed = false;
+      for (const type of GESTURE_EVENTS) {
+        window.removeEventListener(type, onGesture, true);
+      }
+    };
+    const onGesture = () => {
+      if (disposed) { disarm(); return; }
+      if (options.soundAdapter) {
+        options.soundAdapter.unlock?.();
+        disarm();
+        return;
+      }
+      if (audio) {
+        void audio.unlock().then((ev) => {
+          if (ev.unlocked) disarm();
+        }).catch(() => undefined);
+      }
+    };
+    const arm = () => {
+      if (armed || disposed) return;
+      if (audio && audio.evidence.unlocked) return;
+      armed = true;
+      for (const type of GESTURE_EVENTS) {
+        window.addEventListener(type, onGesture, { capture: true, passive: true });
+      }
+    };
+    arm();
+    const unsubAudioState = (audio as { onStateChange?: (cb: (state: string, isUnlocked: boolean) => void) => () => void } | undefined)
+      ?.onStateChange?.((_state, isUnlocked) => {
+        if (isUnlocked) disarm();
+        else arm();
+      });
+    const onVisReturn = () => {
+      if (disposed) return;
+      if (typeof document !== "undefined" && document.visibilityState === "visible" && audio && !audio.evidence.unlocked) {
+        arm();
+      }
+    };
+    if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+      document.addEventListener("visibilitychange", onVisReturn);
+    }
+    return () => {
+      disarm();
+      unsubAudioState?.();
+      if (typeof document !== "undefined" && typeof document.removeEventListener === "function") {
+        document.removeEventListener("visibilitychange", onVisReturn);
+      }
+    };
+  })();
+
   let firstFrameAt: number | null = null;
   let scenarioStarted = false;
   // Scene revision counter for the §15 test hook's presentLog.sceneId.
@@ -431,23 +576,38 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
   let overlayClock = 0;
   const overlayFrameCallbacks = new Set<() => void>();
   const tweens = createTweenEngine();
-  const detachFrame = runtime.onFrame((frame) => {
+  const advanceSessionTick = (dt: number) => {
     const t0 = now();
-    const activeDt = session.paused ? 0 : frame.dt;
+    const activeDt = session.paused ? 0 : dt;
     session.tick(activeDt);
     sessionSpans[spanHead] = now() - t0;
     spanHead = (spanHead + 1) % SPAN_CAP;
     spanCount = Math.min(spanCount + 1, SPAN_CAP);
-    perfRing.record(frame.dt * 1000);
-    overlayClock += Math.max(0, frame.dt);
+    perfRing.record(dt * 1000);
+    overlayClock += Math.max(0, dt);
     const scaledDt = session.paused ? 0 : session.scaledDt(activeDt);
     (touch as (TouchControls & { update?: () => void }) | null)?.update?.();
-    tweens.tick(frame.dt, scaledDt);
+    tweens.tick(dt, scaledDt);
     fx.tick(scaledDt);
-    const due = [...overlayFrameCallbacks];
-    overlayFrameCallbacks.clear();
-    for (const cb of due) cb();
+    if (overlayFrameCallbacks.size > 0) {
+      const due = [...overlayFrameCallbacks];
+      overlayFrameCallbacks.clear();
+      for (const cb of due) cb();
+    }
+  };
+  const detachFrame = runtime.onFrame((frame) => {
+    if (frame.dt === 0 && typeof (runtime as { onTick?: unknown }).onTick === "function") return;
+    advanceSessionTick(frame.dt);
   });
+  const detachZeroSubstepTick =
+    (runtime as { onTick?: (cb: (tick: { readonly realDt: number; readonly substeps: number }) => void) => () => void })
+      .onTick?.((tick) => {
+        // During hitStop or slowMo sub-frames where 0 simulation substeps run,
+        // advance session real-time timers so hitStop/slowMo decay on real time.
+        if (tick.substeps === 0 && tick.realDt > 0) {
+          advanceSessionTick(tick.realDt);
+        }
+      });
 
   const spanSamples = (): number[] => {
     const out: number[] = [];
@@ -725,6 +885,8 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
       attempt(() => { if (resetController && !resetController.signal.aborted) resetController.abort(disposedError()); });
       attempt(() => { if (readyController && !readyController.signal.aborted) readyController.abort(disposedError()); });
       attempt(detachLifecycle);
+      attempt(detachGestureAudioUnlock);
+      attempt(() => hudViewportObserver?.disconnect());
       attempt(detachPause);
       attempt(detachResume);
       attempt(() => contextLoss?.dispose());
@@ -732,6 +894,7 @@ export function createGameImplWithGameApp<TCue extends string, TEvent extends st
       attempt(accessibilityUnsub);
       attempt(() => accessibility.dispose());
       attempt(detachFrame);
+      attempt(() => detachZeroSubstepTick?.());
       attempt(() => tweens.cancelAll());
       attempt(() => overlayFrameCallbacks.clear());
       attempt(detachBeacon);

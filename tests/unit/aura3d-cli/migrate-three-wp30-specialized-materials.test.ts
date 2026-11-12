@@ -155,7 +155,7 @@ describe("migrate three: suggested public material options", () => {
       expect(toon.custom!.uniforms!.toonSteps).toEqual({ type: "f32", value: 4 });
       expect(toon.custom!.uniforms!.toonRamp).toEqual({ type: "texture2d", value: ramp });
       expect(toon.custom!.glsl.fragment).toContain("a3dDirect(");
-      expect(toon.custom!.wgsl).toBeUndefined();
+      expect(toon.custom!.wgsl?.fragment).toContain("a3dDirect(");
       for (const spec of [cap, depth, distance, toon]) {
         expect(primitives.box({ material: spec }).toJSON().material).toBe(spec);
       }

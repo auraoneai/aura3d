@@ -29,8 +29,8 @@ fn a3dPrd04VGGXAnisotropic(alphaT: f32, alphaB: f32, tv: f32, bv: f32,
 }
 
 fn a3dPrd04DGGXAnisotropic(alphaT: f32, alphaB: f32, nh: f32, th: f32, bh: f32) -> f32 {
-  let at = max(alphaT, 1e-4);
-  let ab = max(alphaB, 1e-4);
+  let at = max(alphaT, 0.002);
+  let ab = max(alphaB, 0.002);
   let slope = pow2(th / at) + pow2(bh / ab) + nh * nh;
   return 1.0 / max(PI * at * ab * slope * slope, 1e-12);
 }
@@ -48,7 +48,7 @@ fn a3dPrd04AnisotropyInit(lobes: ptr<function, A3DPrd04Lobes>, factor: vec2f, te
   let strength = length(direction);
   let axis = select(vec2f(1.0, 0.0), direction / max(strength, 1e-6), strength > 1e-6);
   (*lobes).anisotropy = saturate(strength);
-  (*lobes).alphaT = mix(pow2(clamp(roughness, 0.0, 1.0)), 1.0, pow2((*lobes).anisotropy));
+  (*lobes).alphaT = max(mix(pow2(clamp(roughness, 0.0, 1.0)), 1.0, pow2((*lobes).anisotropy)), 0.002);
   (*lobes).anisotropyT = tangent * axis.x + bitangent * axis.y;
   (*lobes).anisotropyB = bitangent * axis.x - tangent * axis.y;
 }
@@ -61,13 +61,13 @@ fn a3dPrd04AnisotropyDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, f0: 
     return vec3f(0.0);
   }
   let h = a3dPrd04HalfVector(lightDir, viewDir, normal);
-  let alphaB = max(roughness * roughness, 1e-4);
+  let alphaB = max(roughness * roughness, 0.002);
   let d = a3dPrd04DGGXAnisotropic(lobes.alphaT, alphaB, saturate(dot(normal, h)),
     dot(lobes.anisotropyT, h), dot(lobes.anisotropyB, h));
   let vis = a3dPrd04VGGXAnisotropic(lobes.alphaT, alphaB, dot(lobes.anisotropyT, viewDir),
     dot(lobes.anisotropyB, viewDir), dot(lobes.anisotropyT, lightDir),
     dot(lobes.anisotropyB, lightDir), nv, nl);
-  return F_Schlick(f0, f90, dot(viewDir, h)) * (d * vis);
+  return clamp(F_Schlick(f0, f90, saturate(dot(viewDir, h))) * min(d * vis, 65504.0), vec3f(0.0), vec3f(65504.0));
 }
 
 fn a3dPrd04AnisotropyBentNormal(viewDir: vec3f, normal: vec3f, roughness: f32, bitangent: vec3f, anisotropy: f32) -> vec3f {

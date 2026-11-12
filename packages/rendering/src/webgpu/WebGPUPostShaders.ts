@@ -61,18 +61,28 @@ export function webgpuBrightExtractFragment(): string {
 @group(0) @binding(1) var u_sampler: sampler;
 @group(0) @binding(2) var u_source: texture_2d<f32>;
 
+fn a3d_sanitize_hdr(c: vec3<f32>) -> vec3<f32> {
+  let bits = bitcast<vec3<u32>>(c);
+  let finite_mask = (bits & vec3<u32>(0x7f800000u)) != vec3<u32>(0x7f800000u);
+  let clean = select(vec3<f32>(0.0), c, finite_mask);
+  return clamp(clean, vec3<f32>(0.0), vec3<f32>(65504.0));
+}
+
 @fragment
 fn fs_bright(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
   let color = textureSample(u_source, u_sampler, uv);
-  let luma = dot(color.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let rgb = a3d_sanitize_hdr(color.rgb);
+  let luma = dot(rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
   // Soft-knee gate: smoothstep over [threshold - knee, threshold + knee].
-  // knee = 0 collapses to a hard step (matches the native WebGL2 path).
-  // NOTE: threshold/knee MUST be read from u_bloom (not baked): an
-  // unreferenced uniform is stripped, which invalidates bind-group entry 0.
-  let lo = u_bloom.threshold - u_bloom.knee;
-  let hi = u_bloom.threshold + u_bloom.knee;
-  let weight = smoothstep(lo, hi, luma);
-  return vec4<f32>(color.rgb * weight, 1.0);
+  // Floor knee >= 1e-4 before smoothstep so knee = 0 never triggers WGSL
+  // smoothstep(lo, lo, x) undefined behavior, while preserving hard step at 0.
+  let safe_knee = max(u_bloom.knee, 1e-4);
+  let lo = u_bloom.threshold - safe_knee;
+  let hi = u_bloom.threshold + safe_knee;
+  let soft_weight = smoothstep(lo, hi, luma);
+  let hard_weight = select(0.0, 1.0, luma >= u_bloom.threshold);
+  let weight = select(soft_weight, hard_weight, u_bloom.knee <= 0.0);
+  return vec4<f32>(rgb * weight, 1.0);
 }
 `;
 }
@@ -265,7 +275,7 @@ export function webgpuColorGradeFragment(): string {
   exposure: f32,
   contrast: f32,
   saturation: f32,
-  _pad: f32,
+  display_p3: f32,
 };
 
 @group(0) @binding(0) var<uniform> u_grade: GradeUniforms;
@@ -277,10 +287,15 @@ fn fs_grade(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
   var color = textureSample(u_source, u_sampler, uv).rgb;
   // Exposure first (stops simulate the root colorGrade node), then
   // saturation around luma, then contrast around middle gray.
-  // NOTE: all three MUST be read from u_grade (not baked): an unreferenced
+  // NOTE: all fields MUST be read from u_grade (not baked): an unreferenced
   // uniform is stripped, which invalidates bind-group entry 0.
   ${exposureLine}
-  let luma = dot(color, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let luma_weights = select(
+    vec3<f32>(0.2126, 0.7152, 0.0722),
+    vec3<f32>(0.22897456, 0.69173852, 0.07928691),
+    u_grade.display_p3 > 0.5
+  );
+  let luma = dot(color, luma_weights);
   color = mix(vec3<f32>(luma), color, u_grade.saturation);
   color = (color - vec3<f32>(0.5)) * u_grade.contrast + vec3<f32>(0.5);
   return vec4<f32>(color, 1.0);
@@ -403,16 +418,23 @@ export function normalizeWebGPUBloomV2Options(options: Readonly<Record<string, u
 export const WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT = `@group(0) @binding(0) var<uniform> params: vec4<f32>;
 @group(0) @binding(1) var u_sampler: sampler;
 @group(0) @binding(2) var u_source: texture_2d<f32>;
+fn a3d_prefilter_sanitize(c: vec3<f32>) -> vec3<f32> {
+  let bits = bitcast<vec3<u32>>(c);
+  let finite_mask = (bits & vec3<u32>(0x7f800000u)) != vec3<u32>(0x7f800000u);
+  let clean = select(vec3<f32>(0.0), c, finite_mask);
+  return clamp(clean, vec3<f32>(0.0), vec3<f32>(65504.0));
+}
 @fragment
 fn fs_bloom_prefilter(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
   let size = vec2<f32>(textureDimensions(u_source));
   let source = textureSampleLevel(u_source, u_sampler, position.xy / size, 0.0);
-  let luma = dot(source.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
-  let knee = max(params.y, 0.0);
-  var soft = clamp(luma - params.x + knee, 0.0, 2.0 * knee);
-  soft = soft * soft / (4.0 * knee + 1e-5);
-  let excessWeight = max(soft, luma - params.x) / max(luma, 1e-5);
-  return vec4<f32>(source.rgb * excessWeight, source.a);
+  let rgb = a3d_prefilter_sanitize(source.rgb);
+  let luma = dot(rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  let knee = max(params.y, 1e-4);
+  let soft_raw = clamp(luma - params.x + knee, 0.0, 2.0 * knee);
+  let soft = select(0.0, soft_raw * soft_raw / (4.0 * knee), params.y > 0.0);
+  let excessWeight = max(soft, max(luma - params.x, 0.0)) / max(luma, 1e-5);
+  return vec4<f32>(rgb * excessWeight, source.a);
 }
 `;
 
@@ -523,5 +545,332 @@ fn fs_hdr_grade(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32
   let s = clamp(log2(max(dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)), 1e-6) / 0.18) / 8.0 + 0.5, 0.0, 1.0);
   c = c * (grade.shadows.rgb * (1.0 - s) * (1.0 - s) + grade.midtones.rgb * 2.0 * s * (1.0 - s) + grade.highlights.rgb * s * s);
   return vec4<f32>(c, src.a);
+}
+`;
+
+export interface WebGPUOutlineOptions {
+  readonly threshold?: number;
+  readonly width?: number;
+  readonly radius?: number;
+  readonly opacity?: number;
+  readonly color?: readonly number[];
+  readonly depthThreshold?: number;
+  readonly normalThreshold?: number;
+}
+
+export interface NormalizedWebGPUOutline {
+  readonly threshold: number;
+  readonly radius: number;
+  readonly opacity: number;
+  readonly color: readonly [number, number, number];
+  readonly depthThreshold: number;
+  readonly normalThreshold: number;
+}
+
+export function normalizeWebGPUOutlineOptions(
+  options: WebGPUOutlineOptions | Readonly<Record<string, unknown>> = {}
+): NormalizedWebGPUOutline {
+  const rawThreshold = options.threshold === undefined ? 0.18 : Number(options.threshold);
+  if (!Number.isFinite(rawThreshold) || rawThreshold < 0 || rawThreshold > 4) {
+    throw new RangeError("WebGPU outline threshold must be a finite number in [0, 4].");
+  }
+  const rawRadius = options.width !== undefined ? Number(options.width) : options.radius !== undefined ? Number(options.radius) : 1;
+  if (!Number.isFinite(rawRadius) || rawRadius < 0) {
+    throw new RangeError("WebGPU outline width/radius must be a finite number >= 0.");
+  }
+  const radius = Math.min(6, Math.max(0, rawRadius));
+  const rawOpacity = options.opacity === undefined ? 0.85 : Number(options.opacity);
+  if (!Number.isFinite(rawOpacity) || rawOpacity < 0 || rawOpacity > 1) {
+    throw new RangeError("WebGPU outline opacity must be a finite number in [0, 1].");
+  }
+  const rawDepthThreshold = options.depthThreshold === undefined ? 0.08 : Number(options.depthThreshold);
+  const depthThreshold = Number.isFinite(rawDepthThreshold) && rawDepthThreshold > 0 ? rawDepthThreshold : 0.08;
+  const rawNormalThreshold = options.normalThreshold === undefined ? 0.35 : Number(options.normalThreshold);
+  const normalThreshold = Number.isFinite(rawNormalThreshold) && rawNormalThreshold > 0 ? rawNormalThreshold : 0.35;
+
+  let color: [number, number, number] = [1.0, 188 / 255, 64 / 255];
+  let alphaScale = 1;
+  if (Array.isArray(options.color)) {
+    if ((options.color.length !== 3 && options.color.length !== 4)
+      || options.color.some((channel) => typeof channel !== "number" || !Number.isFinite(channel) || channel < 0 || channel > 255)) {
+      throw new RangeError("WebGPU outline color must be a 3- or 4-channel finite tuple in [0, 255].");
+    }
+    const maxChannel = Math.max(...(options.color as readonly number[]));
+    const scale = maxChannel > 1 ? 1 / 255 : 1;
+    color = [
+      Math.min(1, Math.max(0, Number(options.color[0]) * scale)),
+      Math.min(1, Math.max(0, Number(options.color[1]) * scale)),
+      Math.min(1, Math.max(0, Number(options.color[2]) * scale))
+    ];
+    if (options.color.length === 4) {
+      alphaScale = Math.min(1, Math.max(0, Number(options.color[3]) * scale));
+    }
+  }
+  return {
+    threshold: rawThreshold,
+    radius,
+    opacity: rawOpacity * alphaScale,
+    color,
+    depthThreshold,
+    normalThreshold
+  };
+}
+
+export function packWebGPUOutlineUniforms(
+  width: number,
+  height: number,
+  options: NormalizedWebGPUOutline,
+  hasDepth: boolean,
+  farPlane = 1000
+): Float32Array {
+  return new Float32Array([
+    1 / Math.max(1, width),
+    1 / Math.max(1, height),
+    options.radius,
+    options.threshold,
+    options.color[0],
+    options.color[1],
+    options.color[2],
+    options.opacity,
+    hasDepth ? 1 : 0,
+    options.depthThreshold,
+    options.normalThreshold,
+    Number.isFinite(farPlane) && farPlane > 0 ? Math.min(farPlane, 65000) : 1000
+  ]);
+}
+
+/**
+ * Full-frame 3x3 Sobel depth, surface-normal crease, and luma/chroma outline pass.
+ * Binding 2 = display/linear color, Binding 3 = clamped linear view depth (or 1x1 dummy when `depth.x <= 0.5`).
+ */
+export const WEBGPU_OUTLINE_FRAGMENT = /* wgsl */ `struct OutlineUniforms {
+  texel_radius_threshold: vec4<f32>,
+  color_opacity: vec4<f32>,
+  depth_params: vec4<f32>,
+};
+
+@group(0) @binding(0) var<uniform> u_outline: OutlineUniforms;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_source: texture_2d<f32>;
+@group(0) @binding(3) var u_linear_depth: texture_2d<f32>;
+
+fn a3d_outline_luma(uv: vec2<f32>) -> f32 {
+  let c = textureSampleLevel(u_source, u_sampler, clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).rgb;
+  return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722));
+}
+
+fn a3d_outline_depth(uv: vec2<f32>) -> f32 {
+  return textureSampleLevel(u_linear_depth, u_sampler, clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).r;
+}
+
+@fragment
+fn fs_outline(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let center = textureSampleLevel(u_source, u_sampler, uv, 0.0);
+  let step_uv = u_outline.texel_radius_threshold.xy * max(u_outline.texel_radius_threshold.z, 0.0);
+  let threshold = u_outline.texel_radius_threshold.w;
+
+  let l00 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, -step_uv.y));
+  let l10 = a3d_outline_luma(uv + vec2<f32>(0.0, -step_uv.y));
+  let l20 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, -step_uv.y));
+  let l01 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, 0.0));
+  let l21 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, 0.0));
+  let l02 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, step_uv.y));
+  let l12 = a3d_outline_luma(uv + vec2<f32>(0.0, step_uv.y));
+  let l22 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, step_uv.y));
+
+  let gx = -l00 + l20 - 2.0 * l01 + 2.0 * l21 - l02 + l22;
+  let gy = -l00 - 2.0 * l10 - l20 + l02 + 2.0 * l12 + l22;
+  let luma_grad = length(vec2<f32>(gx, gy)) * 0.25;
+  let lo_edge = max(threshold * 0.75, 0.0);
+  let hi_edge = max(threshold * 1.25, lo_edge + 1e-4);
+  let color_edge = smoothstep(lo_edge, hi_edge, luma_grad);
+
+  let zc = a3d_outline_depth(uv);
+  let z00 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, -step_uv.y));
+  let z10 = a3d_outline_depth(uv + vec2<f32>(0.0, -step_uv.y));
+  let z20 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, -step_uv.y));
+  let z01 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, 0.0));
+  let z21 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, 0.0));
+  let z02 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, step_uv.y));
+  let z12 = a3d_outline_depth(uv + vec2<f32>(0.0, step_uv.y));
+  let z22 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, step_uv.y));
+
+  let inv_z = 1.0 / max(min(zc, u_outline.depth_params.w), 0.1);
+  let dzx = (-z00 + z20 - 2.0 * z01 + 2.0 * z21 - z02 + z22) * 0.25 * inv_z;
+  let dzy = (-z00 - 2.0 * z10 - z20 + z02 + 2.0 * z12 + z22) * 0.25 * inv_z;
+  let depth_grad = length(vec2<f32>(dzx, dzy));
+  let d_thresh = max(u_outline.depth_params.y, 1e-4);
+  let depth_edge = smoothstep(d_thresh * 0.75, d_thresh * 1.35, depth_grad);
+
+  // Second-order depth Laplacian detects surface-normal creases while vanishing on tilted planes.
+  let crease = abs(z10 + z12 + z01 + z21 - 4.0 * zc) * inv_z;
+  let n_thresh = max(u_outline.depth_params.z, 1e-4);
+  let normal_edge = smoothstep(n_thresh * 0.5, n_thresh, crease * 4.0);
+  let geo_edge = select(0.0, max(depth_edge, normal_edge), u_outline.depth_params.x > 0.5);
+
+  let enabled = select(0.0, 1.0, u_outline.texel_radius_threshold.z > 0.0 && u_outline.color_opacity.a > 0.0);
+  let edge = clamp(max(color_edge, geo_edge) * u_outline.color_opacity.a * enabled, 0.0, 1.0);
+  return vec4<f32>(mix(center.rgb, u_outline.color_opacity.rgb, edge), center.a);
+}
+`;
+
+/**
+ * Filterable fp16 linear view-space depth pass for custom `@binding(3)` depth consumers
+ * and full-frame Sobel outlines. Clamps sky depth to 65000.0 so `rgba16float` never overflows to +Inf.
+ */
+export function webgpuFilterableLinearDepthFragment(multisampled: boolean): string {
+  const depthType = multisampled ? "texture_depth_multisampled_2d" : "texture_2d<f32>";
+  const rawLoad = multisampled ? "textureLoad(u_depth, coord, 0)" : "textureLoad(u_depth, coord, 0).r";
+  return `struct AoLinearDepthParams {
+  near_value: f32,
+  far_value: f32,
+  perspective: f32,
+  reversed: f32,
+  _pad: vec4<f32>,
+};
+
+@group(0) @binding(0) var<uniform> u_params: AoLinearDepthParams;
+@group(0) @binding(2) var u_depth: ${depthType};
+
+@fragment
+fn fs_chain_linear_depth(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+  let dims = vec2<i32>(textureDimensions(u_depth));
+  let coord = clamp(vec2<i32>(position.xy), vec2<i32>(0), max(dims - vec2<i32>(1), vec2<i32>(0)));
+  let d = ${rawLoad};
+  let rev = u_params.reversed > 0.5;
+  if ((rev && d <= 0.000001) || (!rev && d >= 0.999999)) {
+    return vec4<f32>(65000.0, 65000.0, 0.0, 1.0);
+  }
+  let near_weight = select(1.0 - d, d, rev);
+  let mixed = near_weight * u_params.near_value + (1.0 - near_weight) * u_params.far_value;
+  var view_z = mixed;
+  if (u_params.perspective > 0.5) {
+    view_z = select(65000.0, 1.0 / mixed, mixed > 1e-6);
+  }
+  let clamped_z = clamp(view_z, 0.0, 65000.0);
+  return vec4<f32>(clamped_z, clamped_z, 0.0, 1.0);
+}
+`;
+}
+
+/**
+ * Native WebGPU SMAA 1x three-pass shaders adapted to `runWebGPUFullscreenPass`
+ * (`@binding(0)` uniform, `@binding(1)` linear sampler, `@binding(2..4)` textures).
+ * Matches `post/shaders/smaa.wgsl.ts` and `post/smaa/textures.ts` (`81x1` area, `256x1` search).
+ */
+export const WEBGPU_SMAA_EDGES_FRAGMENT = /* wgsl */ `struct SmaaParams {
+  resolution: vec2<f32>,
+  _pad: vec2<f32>,
+};
+@group(0) @binding(0) var<uniform> u_params: SmaaParams;
+@group(0) @binding(1) var u_color_smp: sampler;
+@group(0) @binding(2) var u_color_tex: texture_2d<f32>;
+
+fn a3d_smaa_diff(a: vec4<f32>, b: vec4<f32>) -> f32 {
+  let d = abs(a - b);
+  return max(max(d.r, d.g), max(d.b, d.a));
+}
+
+@fragment
+fn fs_smaa_edges(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let center = textureSampleLevel(u_color_tex, u_color_smp, uv, 0.0);
+  let dx = vec2<f32>(u_params.resolution.x, 0.0);
+  let dy = vec2<f32>(0.0, u_params.resolution.y);
+  let left = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv - dx, 0.0));
+  let right = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv + dx, 0.0));
+  let down = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv - dy, 0.0));
+  let up = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv + dy, 0.0));
+  let local_max = max(max(left, right), max(down, up));
+  let contrast = vec2<f32>(left, down);
+  let strength = smoothstep(vec2<f32>(0.04), vec2<f32>(0.10), contrast)
+    * step(vec2<f32>(local_max * 0.35), contrast);
+  return vec4<f32>(strength, 0.0, 1.0);
+}
+`;
+
+export const WEBGPU_SMAA_WEIGHTS_FRAGMENT = /* wgsl */ `struct SmaaParams {
+  resolution: vec2<f32>,
+  _pad: vec2<f32>,
+};
+@group(0) @binding(0) var<uniform> u_params: SmaaParams;
+@group(0) @binding(1) var u_linear_smp: sampler;
+@group(0) @binding(2) var u_edges_tex: texture_2d<f32>;
+@group(0) @binding(3) var u_area_tex: texture_2d<f32>;
+@group(0) @binding(4) var u_search_tex: texture_2d<f32>;
+
+const A3D_SMAA_MAX_EDGE_RUN: i32 = 8;
+fn a3d_smaa_edge(uv: vec2<f32>, vertical: bool) -> f32 {
+  if (any(uv < vec2<f32>(0.0)) || any(uv > vec2<f32>(1.0))) { return 0.0; }
+  let edge = textureSampleLevel(u_edges_tex, u_linear_smp, uv, 0.0).rg;
+  return select(edge.g, edge.r, vertical);
+}
+
+fn a3d_smaa_edge_weight(uv: vec2<f32>, vertical: bool) -> f32 {
+  let strength = a3d_smaa_edge(uv, vertical);
+  let area_zero = textureSampleLevel(u_area_tex, u_linear_smp, vec2<f32>(0.5 / 81.0, 0.5), 0.0).r;
+  let search_zero = textureSampleLevel(u_search_tex, u_linear_smp, vec2<f32>(0.5 / 256.0, 0.5), 0.0).r;
+  if (strength <= 0.0) { return 0.0 * (area_zero + search_zero); }
+  let tangent = select(vec2<f32>(u_params.resolution.x, 0.0),
+                       vec2<f32>(0.0, u_params.resolution.y), vertical);
+  var negative: i32 = 0;
+  var positive: i32 = 0;
+  for (var i: i32 = 1; i <= A3D_SMAA_MAX_EDGE_RUN; i = i + 1) {
+    if (a3d_smaa_edge(uv - tangent * f32(i), vertical) <= 0.0) { break; }
+    negative = i;
+  }
+  for (var i: i32 = 1; i <= A3D_SMAA_MAX_EDGE_RUN; i = i + 1) {
+    if (a3d_smaa_edge(uv + tangent * f32(i), vertical) <= 0.0) { break; }
+    positive = i;
+  }
+  if (negative == A3D_SMAA_MAX_EDGE_RUN && positive == A3D_SMAA_MAX_EDGE_RUN) { return 0.0; }
+  let index = f32(negative + (A3D_SMAA_MAX_EDGE_RUN + 1) * positive);
+  let area = textureSampleLevel(u_area_tex, u_linear_smp, vec2<f32>((index + 0.5) / 81.0, 0.5), 0.0).r;
+  let response = textureSampleLevel(u_search_tex, u_linear_smp, vec2<f32>((strength * 255.0 + 0.5) / 256.0, 0.5), 0.0).r;
+  return 0.25 * area * response;
+}
+
+@fragment
+fn fs_smaa_weights(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  return vec4<f32>(a3d_smaa_edge_weight(uv, true), a3d_smaa_edge_weight(uv, false), 0.0, 0.0);
+}
+`;
+
+export const WEBGPU_SMAA_BLEND_FRAGMENT = /* wgsl */ `struct SmaaParams {
+  resolution: vec2<f32>,
+  _pad: vec2<f32>,
+};
+@group(0) @binding(0) var<uniform> u_params: SmaaParams;
+@group(0) @binding(1) var u_linear_smp: sampler;
+@group(0) @binding(2) var u_weights_tex: texture_2d<f32>;
+@group(0) @binding(3) var u_color_tex: texture_2d<f32>;
+
+fn a3d_smaa_to_linear(c: vec3<f32>) -> vec3<f32> {
+  return mix(c / 12.92, pow(max((c + vec3<f32>(0.055)) / 1.055, vec3<f32>(0.0)), vec3<f32>(2.4)),
+             step(vec3<f32>(0.04045), c));
+}
+fn a3d_smaa_to_display(input: vec3<f32>) -> vec3<f32> {
+  let c = max(input, vec3<f32>(0.0));
+  return mix(12.92 * c, 1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055),
+             step(vec3<f32>(0.0031308), c));
+}
+
+@fragment
+fn fs_smaa_blend(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let center = textureSampleLevel(u_color_tex, u_linear_smp, uv, 0.0);
+  let here = textureSampleLevel(u_weights_tex, u_linear_smp, uv, 0.0).rg;
+  let right = textureSampleLevel(u_weights_tex, u_linear_smp, uv + vec2<f32>(u_params.resolution.x, 0.0), 0.0).r;
+  let up = textureSampleLevel(u_weights_tex, u_linear_smp, uv + vec2<f32>(0.0, u_params.resolution.y), 0.0).g;
+  var weight = here.r;
+  var offset = vec2<f32>(-u_params.resolution.x, 0.0);
+  if (right > weight) { weight = right; offset = vec2<f32>(u_params.resolution.x, 0.0); }
+  if (here.g > weight) { weight = here.g; offset = vec2<f32>(0.0, -u_params.resolution.y); }
+  if (up > weight) { weight = up; offset = vec2<f32>(0.0, u_params.resolution.y); }
+  if (weight <= 0.0) { return center; }
+  let other = textureSampleLevel(u_color_tex, u_linear_smp, uv + offset, 0.0);
+  let alpha = mix(center.a, other.a, weight);
+  if (alpha <= 1e-8) { return vec4<f32>(0.0); }
+  let premultiplied = mix(a3d_smaa_to_linear(center.rgb) * center.a,
+                          a3d_smaa_to_linear(other.rgb) * other.a, weight);
+  return vec4<f32>(a3d_smaa_to_display(premultiplied / alpha), alpha);
 }
 `;

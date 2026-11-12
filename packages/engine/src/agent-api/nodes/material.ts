@@ -105,6 +105,221 @@ void main() {
   outColor = vec4(color, 1.0);
 }`;
 
+const TOON_VERTEX_WGSL = /* wgsl */ `/* @aura3d-bindings */
+override a3dZeroToOneProjection: bool = false;
+fn a3dToonRasterPosition(clip: vec4<f32>) -> vec4<f32> {
+  return vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);
+}
+fn a3dToonMat3Mul(m: mat4x4<f32>, v: vec3<f32>) -> vec3<f32> {
+  return (m * vec4<f32>(v, 0.0)).xyz;
+}
+struct ToonVertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vToonWorld: vec3<f32>,
+  @location(1) vToonNormal: vec3<f32>,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(1) a_normal: vec3<f32>,
+  @location(8) a_instanceMatrix0: vec4<f32>,
+  @location(9) a_instanceMatrix1: vec4<f32>,
+  @location(10) a_instanceMatrix2: vec4<f32>,
+  @location(11) a_instanceMatrix3: vec4<f32>
+) -> ToonVertexOutput {
+  let inst = mat4x4<f32>(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
+  let world = aura.u_modelMatrix * inst * vec4<f32>(a_position, 1.0);
+  var out: ToonVertexOutput;
+  out.vToonWorld = world.xyz;
+  out.vToonNormal = a3dToonMat3Mul(aura.u_normalMatrix, a3dToonMat3Mul(inst, a_normal));
+  out.position = a3dToonRasterPosition(aura.u_projectionMatrix * aura.u_viewMatrix * world);
+  return out;
+}`;
+
+function toonFragmentWgsl(hasRamp: boolean, hasRim: boolean): string {
+  return /* wgsl */ `/* @aura3d-bindings */
+fn a3dHemiLight(n: vec3<f32>) -> vec3<f32> {
+  let up = clamp(n.y / max(length(n), 1e-4) * 0.5 + 0.5, 0.0, 1.0);
+  return mix(aura.u_a3dHemiGround, aura.u_a3dHemiSky, vec3<f32>(up));
+}
+fn a3dSunShadow(worldPosition: vec3<f32>, normal: vec3<f32>, toLight: vec3<f32>) -> f32 {
+  if (aura.u_shadowMapEnabled < 0.5) { return 1.0; }
+  let receiverNormal = normal / max(length(normal), 0.0001);
+  let receiverLightDirection = toLight / max(length(toLight), 0.0001);
+  let lightPosition = aura.u_shadowMapMatrix * vec4<f32>(worldPosition + receiverNormal * aura.u_shadowMapNormalBias, 1.0);
+  let projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  let uv = projected.xy * 0.5 + vec2<f32>(0.5);
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { return 1.0; }
+  let normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  let slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  let slopeTexelBias = slopeTangent * aura.u_shadowMapSlopeBias * max(aura.u_shadowMapTexelSize.x, aura.u_shadowMapTexelSize.y);
+  let projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
+  var shadowed = 0.0;
+  var totalWeight = 0.0;
+  let sampleCount = clamp(i32(aura.u_shadowPcfSampleCount), 1, 32);
+  for (var i = 0; i < 32; i = i + 1) {
+    if (i >= sampleCount) { break; }
+    let sampleData = aura.u_shadowPcfSamples[u32(i)];
+    let weight = max(sampleData.z, 0.0);
+    let tapOffset = sampleData.xy * aura.u_shadowMapTexelSize;
+    let storedDepth = textureSampleLevel(u_shadowMapTextureTexture, u_shadowMapTextureSampler, vec2<f32>(uv.x + tapOffset.x, 1.0 - uv.y - tapOffset.y), 0.0).r;
+    let sampleTexelDistance = max(1.0, length(sampleData.xy));
+    let receiverDepth = projectedDepth - aura.u_shadowMapBias - slopeTexelBias * sampleTexelDistance;
+    shadowed = shadowed + select(0.0, 1.0, receiverDepth > storedDepth) * weight;
+    totalWeight = totalWeight + weight;
+  }
+  let occlusion = select(0.0, shadowed / totalWeight, totalWeight > 0.0);
+  return mix(1.0, 1.0 - occlusion, clamp(aura.u_shadowMapStrength, 0.0, 1.0));
+}
+fn a3dDirectLight(N: vec3<f32>, V: vec3<f32>, L: vec3<f32>, radiance: vec3<f32>, albedo: vec3<f32>, roughness: f32) -> vec3<f32> {
+  let n = N / max(length(N), 1e-4);
+  let v = V / max(length(V), 1e-4);
+  let l = L / max(length(L), 1e-4);
+  let nDotL = clamp(dot(n, l), 0.0, 1.0);
+  let halfVector = v + l;
+  let h = halfVector / max(length(halfVector), 1e-4);
+  let nDotV = clamp(dot(n, v), 1e-4, 1.0);
+  let nDotH = clamp(dot(n, h), 0.0, 1.0);
+  let vDotH = clamp(dot(v, h), 0.0, 1.0);
+  let rClamped = clamp(roughness, 0.0, 1.0);
+  let alpha = max(rClamped * rClamped, 0.002);
+  let alpha2 = alpha * alpha;
+  let denom = nDotH * nDotH * (alpha2 - 1.0) + 1.0;
+  let distribution = alpha2 / max(3.14159265 * denom * denom, 1e-6);
+  let lambdaV = nDotL * sqrt(max(nDotV * nDotV * (1.0 - alpha2) + alpha2, 0.0));
+  let lambdaL = nDotV * sqrt(max(nDotL * nDotL * (1.0 - alpha2) + alpha2, 0.0));
+  let visibility = 0.5 / max(lambdaV + lambdaL, 1e-5);
+  let edge = 1.0 - vDotH;
+  let edge2 = edge * edge;
+  let fresnel = 0.04 + 0.96 * edge2 * edge2 * edge;
+  let diffuse = albedo * (1.0 - fresnel) * 0.31830989;
+  return (diffuse + vec3<f32>(distribution * visibility * fresnel)) * radiance * nDotL;
+}
+fn a3dDirect(N: vec3<f32>, V: vec3<f32>, albedo: vec3<f32>, roughness: f32, worldPos: vec3<f32>) -> vec3<f32> {
+  var total = vec3<f32>(0.0);
+  let count = min(i32(aura.u_lightCount), 16);
+  for (var i = 0; i < 16; i = i + 1) {
+    if (i >= count) { break; }
+    let base = u32(i * 6);
+    let colorIntensity = aura.u_lightData[base];
+    let positionRange = aura.u_lightData[base + 1u];
+    let directionKind = aura.u_lightData[base + 2u];
+    let spotShadow = aura.u_lightData[base + 3u];
+    let areaRight = aura.u_lightData[base + 4u];
+    let areaUp = aura.u_lightData[base + 5u];
+    let kind = directionKind.w;
+    if (kind > 2.5) {
+      if (areaUp.w < 0.5) { continue; }
+      let axis = directionKind.xyz / max(length(directionKind.xyz), 0.0001);
+      let r = areaRight.xyz / max(length(areaRight.xyz), 0.0001);
+      let u = areaUp.xyz / max(length(areaUp.xyz), 0.0001);
+      let width = max(spotShadow.x, 0.0);
+      let height = max(spotShadow.y, 0.0);
+      for (var sampleIndex = 0; sampleIndex < 4; sampleIndex = sampleIndex + 1) {
+        let sampleSign = vec2<f32>(select(1.0, -1.0, sampleIndex == 0 || sampleIndex == 2), select(1.0, -1.0, sampleIndex < 2));
+        let samplePosition = positionRange.xyz + 0.28867513459 * (r * width * sampleSign.x + u * height * sampleSign.y);
+        let delta = samplePosition - worldPos;
+        let distanceToLight = length(delta);
+        let l = select(-axis, delta / distanceToLight, distanceToLight > 0.0001);
+        let areaRatio = distanceToLight / max(positionRange.w, 0.0001);
+        let areaRatio2 = areaRatio * areaRatio;
+        let areaWindow = select(clamp(1.0 - areaRatio2 * areaRatio2, 0.0, 1.0), 1.0, positionRange.w <= 0.0);
+        let areaGeometry = width * height * 0.25 * abs(dot(axis, -l)) * areaWindow * areaWindow / max(distanceToLight * distanceToLight, 0.01);
+        total = total + a3dDirectLight(N, V, l, colorIntensity.rgb * colorIntensity.a * areaGeometry, albedo, roughness);
+      }
+      continue;
+    }
+    var lightDirection = -directionKind.xyz;
+    var attenuation = 1.0;
+    if (kind > 0.5) {
+      let toLight = positionRange.xyz - worldPos;
+      let distanceToLight = length(toLight);
+      lightDirection = select(-directionKind.xyz, toLight / distanceToLight, distanceToLight > 0.0001);
+      let ratio = distanceToLight / max(positionRange.w, 0.0001);
+      let ratio2 = ratio * ratio;
+      var rangeFalloff = select(clamp(1.0 - ratio2 * ratio2, 0.0, 1.0), 1.0, positionRange.w <= 0.0);
+      rangeFalloff = rangeFalloff * rangeFalloff;
+      attenuation = rangeFalloff / max(distanceToLight * distanceToLight, 1.0);
+    }
+    if (kind > 1.5) {
+      let fromLight = worldPos - positionRange.xyz;
+      let axis = directionKind.xyz / max(length(directionKind.xyz), 1e-4);
+      var cone = dot(axis, fromLight / max(length(fromLight), 1e-4));
+      if (areaUp.w > 0.5) { cone = abs(cone); }
+      let outer = cos(spotShadow.x);
+      let inner = cos(spotShadow.x * max(1.0 - spotShadow.y, 0.001));
+      attenuation = attenuation * smoothstep(outer, inner, cone);
+    }
+    if (kind < 0.5 && spotShadow.z > 0.5) { attenuation = attenuation * a3dSunShadow(worldPos, N, lightDirection); }
+    total = total + a3dDirectLight(N, V, lightDirection, colorIntensity.rgb * colorIntensity.a * attenuation, albedo, roughness);
+  }
+  return total;
+}
+${hasRamp ? "" : `fn a3dToonRamp(x: f32, steps: f32, soft: f32) -> f32 {
+  let s = max(steps, 1.0);
+  let t = clamp(x, 0.0, 1.0) * s;
+  let f = floor(t);
+  return (f + smoothstep(1.0 - clamp(soft, 1e-3, 1.0), 1.0, t - f)) / s;
+}`}
+${hasRim ? `fn a3dRim(n: vec3<f32>, v: vec3<f32>, color: vec3<f32>, power: f32, intensity: f32) -> vec3<f32> {
+  let facing = clamp(dot(n / max(length(n), 1e-4), v / max(length(v), 1e-4)), 0.0, 1.0);
+  let edge = exp2(clamp(power, 0.1, 16.0) * log2(max(1.0 - facing, 1e-4)));
+  return color * (clamp(intensity, 0.0, 16.0) * edge);
+}` : ""}
+fn a3dEnvironmentFogFactor(worldPosition: vec3<f32>) -> f32 {
+  if (aura.u_environmentFogEnabled < 0.5) { return 0.0; }
+  let distanceToCamera = length(aura.u_cameraPosition - worldPosition);
+  var factor = 0.0;
+  if (aura.u_environmentFogMode < 1.5) {
+    factor = (distanceToCamera - aura.u_environmentFogNear) / max(aura.u_environmentFogFar - aura.u_environmentFogNear, 0.000001);
+  } else if (aura.u_environmentFogMode < 2.5) {
+    factor = 1.0 - exp(-max(aura.u_environmentFogDensity, 0.0) * distanceToCamera);
+  } else {
+    let scaledDensity = max(aura.u_environmentFogDensity, 0.0) * distanceToCamera;
+    factor = 1.0 - exp(-(scaledDensity * scaledDensity));
+  }
+  var heightMultiplier = 1.0;
+  if (aura.u_environmentFogHeightFalloff > 0.0) {
+    heightMultiplier = exp(-max(0.0, worldPosition.y - aura.u_environmentFogHeightReference) * aura.u_environmentFogHeightFalloff);
+  }
+  return clamp(factor * heightMultiplier, 0.0, 1.0) * clamp(aura.u_environmentFogMaxOpacity, 0.0, 1.0);
+}
+fn a3dApplyEnvironmentFog(linearColor: vec3<f32>, worldPosition: vec3<f32>, fragCoord: vec2<f32>) -> vec3<f32> {
+  let fogFactor = a3dEnvironmentFogFactor(worldPosition);
+  var fogged = mix(linearColor, aura.u_environmentFogColor, fogFactor);
+  if (aura.u_volumetricIntensity > 0.0) {
+    let viewDistance = max(length(aura.u_cameraPosition - worldPosition), 0.000001);
+    let viewDirection = (aura.u_cameraPosition - worldPosition) / viewDistance;
+    let forwardLobe = pow(max(dot(viewDirection, aura.u_volumetricLightDirection), 0.0), 6.0);
+    var heightGate = 1.0;
+    if (aura.u_environmentFogHeightFalloff > 0.0) {
+      heightGate = exp(-max(0.0, worldPosition.y - aura.u_environmentFogHeightReference) * aura.u_environmentFogHeightFalloff);
+    }
+    let inscatter = aura.u_volumetricIntensity * heightGate * forwardLobe * aura.u_volumetricLightColor * (0.15 + 0.85 * fogFactor);
+    let dither = fract(sin(dot(fragCoord, vec2<f32>(12.9898, 78.233))) * 43758.5453) - 0.5;
+    fogged = fogged + inscatter + vec3<f32>(dither * (1.0 / 255.0));
+  }
+  return fogged;
+}
+@fragment fn fs_main(
+  @builtin(front_facing) frontFacing: bool,
+  @builtin(position) fragCoord: vec4<f32>,
+  @location(0) vToonWorld: vec3<f32>,
+  @location(1) vToonNormal: vec3<f32>
+) -> @location(0) vec4<f32> {
+  var N = vToonNormal / max(length(vToonNormal), 1e-4);
+  if (!frontFacing) { N = -N; }
+  let V = (aura.u_cameraPosition - vToonWorld) / max(length(aura.u_cameraPosition - vToonWorld), 1e-4);
+  let direct = a3dDirect(N, V, vec3<f32>(1.0), 1.0, vToonWorld);
+  let light = clamp(dot(direct, vec3<f32>(0.2126, 0.7152, 0.0722)) * 3.14159265, 0.0, 1.0);
+${hasRamp
+    ? `  var color = aura.u_toonColor * textureSample(u_toonRampTexture, u_toonRampSampler, vec2<f32>(light, 0.5)).rgb;`
+    : `  var color = mix(aura.u_toonShadowColor, aura.u_toonColor, a3dToonRamp(light, aura.u_toonSteps, 0.08));`}
+  color = color + aura.u_toonColor * a3dHemiLight(N) * 0.25;
+${hasRim ? `  color = color + a3dRim(N, V, aura.u_toonRimColor, aura.u_toonRimPower, aura.u_toonRimIntensity);` : ""}
+  return vec4<f32>(a3dApplyEnvironmentFog(color, vToonWorld, fragCoord.xy), 1.0);
+}`;
+}
+
 const linearRgb = (color: string): readonly [number, number, number] => {
   const [r, g, b] = parseAuraColor(color);
   return [r, g, b];
@@ -123,6 +338,8 @@ export function toonMaterial(options: AuraToonMaterialOptions = {}): AuraMateria
     toonSteps: { type: "f32", value: Math.round(clampFinite(options.steps, 3, 1, 8)) }
   };
   const defines: Record<string, boolean> = {};
+  const hasRamp = Boolean(options.ramp);
+  const hasRim = Boolean(options.rim);
   if (options.ramp) {
     uniforms.toonRamp = { type: "texture2d", value: options.ramp };
     defines.A3D_TOON_RAMP = true;
@@ -135,6 +352,7 @@ export function toonMaterial(options: AuraToonMaterialOptions = {}): AuraMateria
   }
   const custom: AuraCustomMaterialSpec = {
     glsl: { vertex: TOON_VERTEX_GLSL, fragment: TOON_FRAGMENT_GLSL },
+    wgsl: { vertex: TOON_VERTEX_WGSL, fragment: toonFragmentWgsl(hasRamp, hasRim) },
     uniforms,
     ...(Object.keys(defines).length > 0 ? { defines } : {}),
     fog: true,
@@ -217,17 +435,19 @@ void main() {
 }`;
 
 const SPECIAL_SURFACE_VERTEX_WGSL = `
+override a3dZeroToOneProjection: bool = false;
 struct SpecialVertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) world: vec3<f32>,
   @location(1) normal: vec3<f32>,
 };
-@vertex fn vs_main(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>) -> SpecialVertexOutput {
-  let world = aura.u_modelMatrix * vec4<f32>(position, 1.0);
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>) -> SpecialVertexOutput {
+  let world = aura.u_modelMatrix * vec4<f32>(a_position, 1.0);
   var output: SpecialVertexOutput;
   output.world = world.xyz;
-  output.normal = (aura.u_normalMatrix * vec4<f32>(normal, 0.0)).xyz;
-  output.position = aura.u_projectionMatrix * aura.u_viewMatrix * world;
+  output.normal = (aura.u_normalMatrix * vec4<f32>(a_normal, 0.0)).xyz;
+  let clip = aura.u_projectionMatrix * aura.u_viewMatrix * world;
+  output.position = vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);
   return output;
 }`;
 
@@ -356,6 +576,7 @@ void main() {
 }`;
 
 const PREVIEW_VERTEX_WGSL = `
+override a3dZeroToOneProjection: bool = false;
 struct PreviewVertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) world: vec3<f32>,
@@ -367,7 +588,8 @@ struct PreviewVertexOutput {
   var output: PreviewVertexOutput;
   output.world = world.xyz;
   output.depth = -eye.z;
-  output.position = aura.u_projectionMatrix * eye;
+  let clip = aura.u_projectionMatrix * eye;
+  output.position = vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);
   return output;
 }`;
 

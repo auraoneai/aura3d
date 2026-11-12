@@ -2,6 +2,7 @@
  * Shared 120/144 Hz feel, real-time hit-stop, camera trauma/FOV kick, and procedural WebAudio SFX kit
  * built strictly on `@aura3d/engine/game` primitives (`createHitStop`, `createCameraShake`).
  */
+import { AudioContextManager } from "@aura3d/engine/audio";
 import { createCameraShake, createHitStop } from "@aura3d/engine/game";
 
 export interface ImpactRig {
@@ -58,24 +59,27 @@ export function createImpactRig(options: { reducedMotion?: boolean } = {}): Impa
 
 export type ProceduralCue = "pickup" | "impact" | "boost" | "perfect" | "whoosh" | "tick";
 
-/** Lightweight zero-asset WebAudio procedural synthesizer with mute toggle and graceful headless no-op. */
+/** Lightweight zero-asset WebAudio procedural synthesizer on the shared AudioContextManager with mute toggle and graceful headless no-op. */
 export function createProceduralSfx() {
-  let ctx: AudioContext | null = null;
+  let manager: AudioContextManager | null = null;
   let muted = false;
 
-  const ensureCtx = (): AudioContext | null => {
-    if (muted || typeof window === "undefined") return null;
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctor) return null;
-    if (!ctx) {
+  const ensureCtx = (): (AudioContext & { createOscillator?: () => OscillatorNode }) | null => {
+    if (muted || typeof window === "undefined" || typeof window.AudioContext !== "function") return null;
+    if (!manager) {
       try {
-        ctx = new Ctor();
+        manager = new AudioContextManager();
       } catch {
         return null;
       }
     }
-    if (ctx.state === "suspended") void ctx.resume().catch(() => {});
-    return ctx;
+    void manager.unlock().catch(() => {});
+    try {
+      const ctx = manager.context as unknown as AudioContext & { createOscillator?: () => OscillatorNode };
+      return typeof ctx?.createOscillator === "function" ? ctx : null;
+    } catch {
+      return null;
+    }
   };
 
   const play = (cue: ProceduralCue, intensity = 1): void => {

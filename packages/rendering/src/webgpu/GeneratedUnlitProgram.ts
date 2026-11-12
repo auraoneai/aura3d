@@ -61,8 +61,10 @@ const fields: readonly { readonly name: string; readonly type: ShaderDataType; r
   // Logarithmic frames: u_a3dLogDepthView and (near, far) from u_a3dLogDepthRange.
   { name: "logDepthView", type: mat4, wgsl: "mat4x4f" },
   { name: "logDepthRange", type: vec4, wgsl: "vec4f" },
-  // prd15.paritySprite: (u_spriteRotation, u_spriteCenter.xy, u_spriteSizeAttenuation).
+  // prd15.paritySprite: (u_spriteRotation, u_spriteCenter.xy, u_spriteSizeAttenuation) + clip inverse matrices.
   { name: "sprite", type: vec4, wgsl: "vec4f" },
+  { name: "spriteViewToWorld", type: mat4, wgsl: "mat4x4f" },
+  { name: "spriteWorldToObject", type: mat4, wgsl: "mat4x4f" },
   // PRD-07 forward fog (`prd07.fog`), packed from the u_fog* uniforms of the GLSL chunk.
   ...PRD07_FOG_WGSL_FIELDS.map(({ name, length }) => length
     ? { name, type: { kind: "array", element: vec4, length } as ShaderDataType, wgsl: `array<vec4f, ${length}>` }
@@ -125,7 +127,7 @@ const OUTPUT = `fn generatedUnlitEncodeOutput(linear: vec3f) -> vec3f {
  * sizeAttenuation off scales by -viewZ under perspective so the sprite keeps a constant screen fraction.
  * `world` is the sprite centre (fog and the world varying read it, as on WebGL2).
  */
-function SPRITE_VERTEX(instanced: boolean): string {
+function SPRITE_VERTEX(instanced: boolean, clipping: boolean): string {
   return `let spriteCenterWorld = material.model * ${instanced ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}vec4f(0.0, 0.0, 0.0, 1.0);
   var spriteView = frame.view * vec4f(spriteCenterWorld.xyz, 1.0);
   var spriteScale = vec2f(length(material.model[0].xyz), length(material.model[1].xyz));
@@ -134,7 +136,10 @@ function SPRITE_VERTEX(instanced: boolean): string {
   let spriteCos = cos(material.sprite.x); let spriteSin = sin(material.sprite.x);
   spriteView = vec4f(spriteView.xy + vec2f(spriteCos * spriteAligned.x - spriteSin * spriteAligned.y, spriteSin * spriteAligned.x + spriteCos * spriteAligned.y), spriteView.zw);
   let world = vec4f(spriteCenterWorld.xyz, 1.0);
-  let clip = frame.projection * spriteView;`;
+  let clip = frame.projection * spriteView;${clipping ? `
+  let spriteClipWorldH = material.spriteViewToWorld * spriteView;
+  let v_worldPos = spriteClipWorldH.xyz / spriteClipWorldH.w;
+  let v_localPos = (material.spriteWorldToObject * vec4f(v_worldPos, 1.0)).xyz;` : ""}`;
 }
 
 function unsupported(field: string, detail: string): never {
@@ -197,8 +202,6 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   if ((sprite && active.get("prd15.paritySprite") !== true) || (!sprite && f.features["prd15.paritySprite"] !== undefined && f.features["prd15.paritySprite"] !== false)) {
     unsupported("features.prd15.paritySprite", "inconsistent prd15.paritySprite metadata");
   }
-  // WebGL2 rebuilds clipped sprite positions with CPU inverses (u_a3dSpriteViewToWorld); the native path has no twin.
-  if (sprite && clipping) unsupported("features.prd15.paritySprite", "clipped billboard sprites");
   const outputSrgb = f.features["a3d.output.srgb"] === true;
   // As on WebGL2, alpha-to-coverage draws keep coverage alpha and skip the indirect-fraction tag.
   const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage, unsupported);
@@ -241,13 +244,13 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   const vertexInput = ["@location(0) position: vec3f", ...(uv0 ? ["@location(2) uv: vec2f"] : []), ...(point ? ["@location(3) pointCorner: vec2f"] : []), ...(uv1 ? ["@location(7) uv1: vec2f"] : []),
     ...(f.vertexColors ? ["@location(4) color: vec4f"] : []), ...(f.instancing ? ["@location(8) instance0: vec4f", "@location(9) instance1: vec4f", "@location(10) instance2: vec4f", "@location(11) instance3: vec4f"] : []),
     ...(f.instancing?.color ? ["@location(12) instanceColor: vec4f"] : [])].join(", ");
-  const varyings = `@location(0) ${point ? "@interpolate(flat) " : ""}world: vec3f, ${clipping ? `@location(1) ${point ? "@interpolate(flat) " : ""}local: vec3f,` : ""} ${uv0 ? "@location(2) uv: vec2f," : ""} ${uv1 ? "@location(3) uv1: vec2f," : ""} ${f.vertexColors ? "@location(4) color: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${point ? "@location(6) @interpolate(linear) pointCoord: vec2f, @location(7) pointInvalid: f32," : ""}`;
+  const varyings = `@location(0) ${point ? "@interpolate(flat) " : ""}world: vec3f, ${clipping ? `@location(1) ${point ? "@interpolate(flat) " : ""}local: vec3f,` : ""} ${uv0 ? "@location(2) uv: vec2f," : ""} ${uv1 ? "@location(3) uv1: vec2f," : ""} ${f.vertexColors ? "@location(4) color: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${point ? "@location(6) @interpolate(linear) pointCoord: vec2f, @location(7) pointInvalid: f32," : ""} ${sprite && clipping ? "@location(8) v_worldPos: vec3f," : ""}`;
   const vertex = `${MATERIAL}\n${FRAME}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${point ? NATIVE_POINT_WGSL : ""}
 struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
 @vertex fn vs_main(${vertexInput}) -> VertexOutput {
   var output: VertexOutput;
   let local = material.geometry * vec4f(position, 1.0);
-  ${sprite ? SPRITE_VERTEX(Boolean(f.instancing)) : `let world = material.model * ${f.instancing ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}local;
+  ${sprite ? SPRITE_VERTEX(Boolean(f.instancing), clipping) : `let world = material.model * ${f.instancing ? "mat4x4f(instance0, instance1, instance2, instance3) * " : ""}local;
   let clip = frame.viewProjection * world;`}
   ${point ? `var expanded = A3dPointExpansion(vec4f(2.0, 2.0, 2.0, 1.0), 1.0);
   if (a3dPointCanExpand(clip, ${point.attenuated}) && a3dPointCenterInSceneClip(clip)) {
@@ -257,7 +260,7 @@ struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
   output.position = vec4f(expanded.clip.xy, ${rasterClipDepthWgsl("expanded.clip")}, expanded.clip.w);
   output.pointCoord = pointCorner; output.pointInvalid = expanded.invalid;` : `output.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);`}
   output.world = world.xyz;
-  ${clipping ? "output.local = local.xyz;" : ""}
+  ${clipping ? (sprite ? "output.local = v_localPos; output.v_worldPos = v_worldPos;" : "output.local = local.xyz;") : ""}
   ${uv0 ? "output.uv = uv;" : ""} ${uv1 ? "output.uv1 = uv1;" : ""}
   ${f.vertexColors ? "output.color = color;" : ""} ${f.instancing?.color ? "output.instanceColor = instanceColor;" : ""}
   return output;
@@ -279,7 +282,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   ${f.fog !== "none" && !prd07Fog ? `let fogDepth = select(input.position.z, 1.0 - input.position.z, frame.projection[2][2] > 0.0) / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let density = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.world.y, 0.0) * material.fogParams.w)" : ""}; let distance = density * fogDepth; let fogAmount = clamp(1.0 - exp(-distance * distance), 0.0, 1.0);`}
   let color = mix(unfogged, material.fogColor.rgb, fogAmount);` : ""}
-  ${clipping ? "if (!generatedUnlitClipRetains(input.world, input.local)) { discard; }" : ""}
+  ${clipping ? `if (!generatedUnlitClipRetains(${sprite ? "input.v_worldPos" : "input.world"}, input.local)) { discard; }` : ""}
   ${writesDepthCoverage
     ? `return GeneratedDepthCoverageOutput(vec4f(color, 1.0), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
     : logDepth
@@ -332,6 +335,8 @@ export function packGeneratedUnlitMaterialUniforms(uniforms: ReadonlyMap<string,
     logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
     logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0],
     sprite: [scalar("u_spriteRotation"), ...numbers(uniforms, "u_spriteCenter", 2, [0.5, 0.5]), scalar("u_spriteSizeAttenuation", 1)],
+    spriteViewToWorld: numbers(uniforms, "u_a3dSpriteViewToWorld", 16, IDENTITY),
+    spriteWorldToObject: numbers(uniforms, "u_a3dSpriteWorldToObject", 16, IDENTITY),
     // Only a program that selected the stock prd07.fog feature receives u_fogMode (its bindUniforms always writes it).
     ...packPrd07FogWgslFields(uniforms, (name, length, fallback) => uniforms.has("u_fogMode") ? numbers(uniforms, name, length, fallback) : [...fallback])
   });

@@ -36,6 +36,12 @@ export interface PostAntiAliasInput {
   readonly renderPixels: number;
   /** C-14 coverage: items that moved since last frame vs how many have history. */
   readonly velocity: { readonly moving: number; readonly movingWithHistory: number };
+  /**
+   * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+   * Keeps the forward-target `sampleCount` invariant across runtime quality
+   * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+   */
+  readonly pinnedSampleCount?: 1 | 4;
 }
 
 export interface PostAntiAliasResolution {
@@ -49,9 +55,13 @@ export interface PostAntiAliasResolution {
 export const MSAA_PIXEL_GUARD = 2_400_000;
 
 export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasResolution {
-  const { settings, authored, renderPixels, velocity } = input;
+  const { settings, authored, renderPixels, velocity, pinnedSampleCount } = input;
   const msaaBlocked = renderPixels > MSAA_PIXEL_GUARD;
-  const msaaCapable = settings.msaaSamples === 4 && !msaaBlocked;
+  const msaaCapable = pinnedSampleCount === 4
+    ? !msaaBlocked
+    : pinnedSampleCount === 1
+      ? false
+      : settings.msaaSamples === 4 && !msaaBlocked;
   // Every mover since the last frame needs C-14 previous-frame data; static
   // scenes qualify trivially (moving === 0).
   const taaAllowed = velocity.movingWithHistory >= velocity.moving;
@@ -66,18 +76,23 @@ export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasRe
   }
   if (authored === "smaa") return { mode: "smaa", sampleCount: 1 };
   if (authored === "taa") {
-    if (taaAllowed) return { mode: "taa", sampleCount: 1 };
+    if (taaAllowed && pinnedSampleCount !== 4) return { mode: "taa", sampleCount: 1 };
     return msaaCapable
-      ? { mode: "msaa", sampleCount: 4, reason: "TAA_VELOCITY_COVERAGE" }
+      ? { mode: "msaa", sampleCount: 4, reason: pinnedSampleCount === 4 ? "MSAA_SAMPLE_COUNT_PINNED" : "TAA_VELOCITY_COVERAGE" }
       : { mode: "smaa", sampleCount: 1, reason: "TAA_VELOCITY_COVERAGE" };
   }
   if (authored === "msaa") {
     return msaaCapable
       ? { mode: "msaa", sampleCount: 4 }
-      : { mode: "smaa", sampleCount: 1, reason: "msaa-pixel-guard" };
+      : { mode: "smaa", sampleCount: 1, reason: pinnedSampleCount === 1 ? "MSAA_SAMPLE_COUNT_PINNED" : "msaa-pixel-guard" };
   }
 
-  // `auto` — the C-27 tier row resolves the mode.
+  // `auto` — the C-27 tier row resolves the mode, subject to Trap A sampleCount pinning.
+  if (pinnedSampleCount === 4 && !msaaBlocked) {
+    return settings.msaaSamples === 4 && settings.postAntiAlias === "none"
+      ? { mode: "msaa", sampleCount: 4 }
+      : { mode: "msaa", sampleCount: 4, reason: "MSAA_SAMPLE_COUNT_PINNED" };
+  }
   const tierMode = settings.postAntiAlias;
   if (tierMode === "fxaa") return { mode: "fxaa", sampleCount: 1 };
   if (tierMode === "taa") {
@@ -90,5 +105,5 @@ export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasRe
   if (msaaCapable) return { mode: "msaa", sampleCount: 4 };
   // MSAA blocked by the pixel guard; CCR-03-4 is pending so auto never selects
   // TAA for a `postAntiAlias: "none"` tier — SMAA 1x is the substitute.
-  return { mode: "smaa", sampleCount: 1, reason: "msaa-pixel-guard" };
+  return { mode: "smaa", sampleCount: 1, reason: pinnedSampleCount === 1 ? "MSAA_SAMPLE_COUNT_PINNED" : "msaa-pixel-guard" };
 }

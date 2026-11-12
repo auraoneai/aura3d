@@ -47,6 +47,8 @@ export interface HudWidgetInstance {
   apply(value: HudValue): void;
   /** Advance widget-internal animation (score roll, ghost trail). */
   tick(dt: number): void;
+  /** Whether this widget currently requires future animation frames. */
+  isAnimating?(): boolean;
   /** Last applied value for `hud.snapshot()`. */
   value(): HudValue | undefined;
 }
@@ -138,6 +140,7 @@ function scoreWidget(spec: HudScoreSpec, doc: HudDocument): HudWidgetInstance {
       if (Math.abs(target - shown) < 1) shown = target;
       write();
     },
+    isAnimating: () => text === null && shown !== target,
     value: () => applied
   };
 }
@@ -191,6 +194,7 @@ function meterWidget(spec: HudMeterSpec, doc: HudDocument): HudWidgetInstance {
       ghostFrac = Math.max(frac, ghostFrac - dt * 0.9);
       paint();
     },
+    isAnimating: () => Boolean(spec.ghost) && ghostFrac > frac,
     value: () => applied
   };
 }
@@ -318,6 +322,7 @@ function indicatorWidget(spec: HudIndicatorSpec, doc: HudDocument): HudWidgetIns
       const t = spec.target();
       root.classList.toggle("a3g-hidden", t === null && applied === undefined);
     },
+    isAnimating: () => true,
     value: () => applied
   };
 }

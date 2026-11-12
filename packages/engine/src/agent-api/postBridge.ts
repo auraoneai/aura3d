@@ -21,6 +21,7 @@ import {
   postStagesRan,
   postV2ModulesReady,
   postVelocityCoverage,
+  runtimeQualityStateFor,
   volumetricLightDirection,
   type CollectedLight,
   type RendererPostProcessOptions
@@ -1353,7 +1354,8 @@ export function createRootPostPipeline(
   tierSettings: AuraQualityTierSettings,
   lights: readonly CollectedLight[] = [],
   tierResolution?: PostTierResolution,
-  canvas?: PostCanvas
+  canvas?: PostCanvas,
+  renderScale?: number
 ): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
   const nodes = groups.flatten(snapshot.nodes);
   const diagnostics: PostFieldDiagnostic[] = [];
@@ -1484,6 +1486,11 @@ export function createRootPostPipeline(
   // GU47 E-C (EC-2): the S10b `.cube` LUT, once loaded.
   const lutBag = gradeNode ? resolvePipelineLut(gradeNode, diagnostics) : undefined;
 
+  const dynamicRenderScale = renderScale ?? runtimeQualityStateFor(canvas)?.renderScale;
+  const effectiveRenderScale = typeof dynamicRenderScale === "number" && Number.isFinite(dynamicRenderScale) && dynamicRenderScale > 0 && dynamicRenderScale < 1
+    ? dynamicRenderScale
+    : 1;
+
   const options: PostPipelineOptions = {
     ...(nativeEffects.length ? { nativeEffects } : {}),
     antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
@@ -1492,13 +1499,10 @@ export function createRootPostPipeline(
       far: camera?.far ?? 1000,
       projection: camera?.mode === "orthographic" || camera?.mode === "isometric" ? "orthographic" : "perspective"
     },
-    // The scale the post chain's input was rendered at, not the governor's
-    // floor: the renderer's postprocess forward target is full-size, so
-    // this is 1. Passing `minRenderScale` (0.5–0.75) made S5 run the §8.6
-    // TAAU upsample on a full-res frame (enlarging and re-filtering it: the
-    // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
-    // 38203056326) and armed the S12 RCAS sharpen on every frame.
-    renderScale: 1,
+    // Preserve an active dynamic renderScale (< 1) from the runtime governor or
+    // caller; default to 1 when the forward target is rendered at full backing size
+    // (never `tierSettings.minRenderScale`, which is only the governor's floor).
+    renderScale: effectiveRenderScale,
     // A scene without a selective request keeps the exact bloom bag.
     ...(bloom ? { bloom: selectiveBloomRequested || unsupportedBloomSource ? {
       ...bloom.options,

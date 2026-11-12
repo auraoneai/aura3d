@@ -17,10 +17,12 @@ import {
   instances,
   material,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
-  type AuraNodeBuilder
+  type AuraNodeBuilder,
+  type AuraSceneNode
 } from "@aura3d/engine";
+
+type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }>;
 import {
   assembleMultiMaterialNode,
   bevelBoxMesh,

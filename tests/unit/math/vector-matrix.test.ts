@@ -126,4 +126,19 @@ describe("math vectors and matrices", () => {
 
     expect(run()).toEqual(run());
   });
+
+  it("guards Matrix4.lookAt against non-finite inputs, zero forward vectors, and collinear up vectors", () => {
+    const nanVec = Object.assign(Object.create(Vector3.prototype), { x: Number.NaN, y: 0, z: 0 }) as Vector3;
+    expect(() => Matrix4.lookAt(nanVec, Vector3.zero, Vector3.up)).toThrow(/look-at/i);
+    expect(() => Matrix4.lookAt(Vector3.zero, Vector3.zero, Vector3.up)).toThrow(/look-at/i);
+    expect(() => Matrix4.lookAt(new Vector3(0, 0, 1e-8), Vector3.zero, Vector3.up)).toThrow(/look-at/i);
+
+    const verticalView = Matrix4.lookAt(new Vector3(0, 10, 0), Vector3.zero, Vector3.up);
+    expect([...verticalView.elements].every(Number.isFinite)).toBe(true);
+    expect(verticalView.transformPoint(Vector3.zero).equals(new Vector3(0, 0, -10), 1e-9)).toBe(true);
+
+    const zeroUpView = Matrix4.lookAt(new Vector3(0, 0, 5), Vector3.zero, Vector3.zero);
+    expect([...zeroUpView.elements].every(Number.isFinite)).toBe(true);
+    expect(zeroUpView.transformPoint(Vector3.zero).equals(new Vector3(0, 0, -5), 1e-9)).toBe(true);
+  });
 });

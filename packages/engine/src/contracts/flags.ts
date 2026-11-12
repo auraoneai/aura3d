@@ -61,7 +61,10 @@ const LANE_FLAGS = [...(Object.values(SHORT_NAMES) as QrFlagName[]), ...PARITY_F
 const DEFAULT_ON_SUB_FLAGS: Readonly<Partial<Record<QrFlagName, readonly QrFlagName[]>>> = {
   // GU47 E-G (WP-7): `A3D_QR_WORLD_WIND` gates the `prd10.wind` deform; the
   // world lane implies it, and it can run alone (`instances.*({ wind })`).
-  A3D_QR_WORLD: ["A3D_QR_WORLD_TERRAIN", "A3D_QR_WORLD_WATER", "A3D_QR_WORLD_BIOME", "A3D_QR_WORLD_WIND"]
+  A3D_QR_WORLD: ["A3D_QR_WORLD_TERRAIN", "A3D_QR_WORLD_WATER", "A3D_QR_WORLD_BIOME", "A3D_QR_WORLD_WIND"],
+  // WP-05 (GOV-1): `A3D_QR_TIERS` implies `A3D_QR_TIERS_GOVERNOR`, and the
+  // governor sub-flag is default-on unless `-tiers` / `-tiers.governor` / `none` turns it off.
+  A3D_QR_TIERS: ["A3D_QR_TIERS_GOVERNOR"]
 };
 
 function flagValueOn(v: QrFlagValue | undefined): boolean {

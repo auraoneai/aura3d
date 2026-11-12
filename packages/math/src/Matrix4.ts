@@ -148,14 +148,28 @@ export class Matrix4 {
   }
 
   static lookAt(eye: Vector3, target: Vector3, up: Vector3): Matrix4 {
-    const z = eye.subtract(target).normalize();
-    if (z.lengthSquared() === 0) throw new RangeError("Look-at eye and target must not be identical.");
-
-    let x = up.cross(z).normalize();
-    if (x.lengthSquared() === 0) {
-      const fallbackUp = Math.abs(z.z) > 0.9 ? Vector3.up : Vector3.forward;
-      x = fallbackUp.cross(z).normalize();
+    if (
+      !Number.isFinite(eye.x) || !Number.isFinite(eye.y) || !Number.isFinite(eye.z) ||
+      !Number.isFinite(target.x) || !Number.isFinite(target.y) || !Number.isFinite(target.z) ||
+      !Number.isFinite(up.x) || !Number.isFinite(up.y) || !Number.isFinite(up.z)
+    ) {
+      throw new RangeError("Look-at eye, target, and up vectors must be finite.");
     }
+    const forward = eye.subtract(target);
+    const forwardLenSq = forward.lengthSquared();
+    if (!Number.isFinite(forwardLenSq) || forwardLenSq < 1e-12) {
+      throw new RangeError("Look-at eye and target must not be identical.");
+    }
+    const z = forward.multiplyScalar(1 / Math.sqrt(forwardLenSq));
+
+    let rightRaw = up.lengthSquared() < 1e-12 ? Vector3.zero : up.cross(z);
+    let rightLenSq = rightRaw.lengthSquared();
+    if (!Number.isFinite(rightLenSq) || rightLenSq < 1e-12) {
+      const fallbackUp = Math.abs(z.y) > 0.98 ? new Vector3(0, 0, 1) : Vector3.up;
+      rightRaw = fallbackUp.cross(z);
+      rightLenSq = rightRaw.lengthSquared();
+    }
+    const x = rightRaw.multiplyScalar(1 / Math.sqrt(rightLenSq));
     const y = z.cross(x).normalize();
 
     return new Matrix4([

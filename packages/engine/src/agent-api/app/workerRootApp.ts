@@ -1,8 +1,11 @@
-import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraApp, AuraAppTarget, AuraBackend, AuraCameraSpec, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraLabelNode, AuraSceneSnapshot } from "../nodes/types.js";
 import type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "../nodes/types/runtime.js";
 import { createGameInput } from "../GameRuntimeCore.js";
 import { createShaderFailureStore } from "@aura3d/rendering";
 import { analyzeProductionBridgeEligibility } from "../compiler/observations.js";
+import { resolveCameraFrame } from "../compiler/camera.js";
+import { createSceneLabelLayer, createSceneLabelOcclusionTest, worldLabelsFromSnapshot } from "../compiler/labels.js";
+import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { normalizeSceneSnapshot } from "../sceneMath.js";
@@ -13,9 +16,10 @@ import { computeRuntimeAlpha } from "./frameAlpha.js";
 import { createFrameRateMeter } from "./frameLoop.js";
 import { AURA_APP_CANVAS } from "./screenshot.js";
 import { normalizeCreateAppRendererOptions, resolveBackendOptions, resolveDrawingPathOptions } from "./rendererOptions.js";
-import { AuraWorkerError, createWorkerRenderer, measureWorkerCanvas, supportsWorkerRendering, validateWorkerSceneGroups, workerCanvasTransferAttempted } from "./workerRuntime.js";
+import { AuraWorkerError, createWorkerRenderer, measureWorkerCanvas, readWorkerCanvasCssSize, supportsWorkerRendering, validateWorkerSceneGroups, workerCanvasTransferAttempted } from "./workerRuntime.js";
 import type { AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerNodePatchOp, AuraWorkerRenderFlags } from "./workerProtocol.js";
-import type { AuraWorkerAppCall } from "./workerPatch.js";
+import { coalesceKey, type AuraWorkerAppCall } from "./workerPatch.js";
+import { isCoarsePointerDevice } from "../platform.js";
 import { normalizeOutputToneMapping } from "./toneMappingNames.js";
 import type { AuraPostSurface } from "../../contracts/post.js";
 import { StubAppAtmosphere, type AuraAppAtmosphere } from "../../contracts/atmosphere.js";
@@ -128,13 +132,53 @@ function validateWorkerScene(snapshot: AuraSceneSnapshot, diagnostics: AuraCreat
     const node = nodes.pop()!;
     if (node.kind === "group") nodes.push(...node.children);
     if ("physics" in node && node.physics) unsupported("Scene physics", "Run physics on the main thread.");
-    if (node.kind === "label") unsupported("DOM labels", "Use a supported worker-rendered scene without DOM overlays.");
   }
   const eligibility = analyzeProductionBridgeEligibility(groups.flatten(snapshot.nodes));
   if (!eligibility.eligible) {
     throw new AuraWorkerError(`Worker renderer rejected this scene: ${eligibility.reasons.join("; ")}`, "backend-fallback", "recoverable");
   }
 }
+
+function cameraValuesEqual(a: unknown, b: unknown, depth = 0): boolean {
+  if (Object.is(a, b)) return true;
+  if (!a || !b || typeof a !== "object" || typeof b !== "object" || depth > 3) return false;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      if (!cameraValuesEqual(a[i], b[i], depth + 1)) return false;
+    }
+    return true;
+  }
+  const recA = a as Record<string, unknown>;
+  const recB = b as Record<string, unknown>;
+  const keysA = Object.keys(recA);
+  const keysB = Object.keys(recB);
+  if (keysA.length !== keysB.length) return false;
+  for (let i = 0; i < keysA.length; i += 1) {
+    const k = keysA[i]!;
+    if (!Object.prototype.hasOwnProperty.call(recB, k) || !cameraValuesEqual(recA[k], recB[k], depth + 1)) return false;
+  }
+  return true;
+}
+
+function cloneCameraValue<T>(value: T, depth = 0): T {
+  if (!value || typeof value !== "object" || depth > 3) return value;
+  if (Array.isArray(value)) return value.map((item) => cloneCameraValue(item, depth + 1)) as unknown as T;
+  const out: Record<string, unknown> = {};
+  const rec = value as Record<string, unknown>;
+  const keys = Object.keys(rec);
+  for (let i = 0; i < keys.length; i += 1) {
+    const k = keys[i]!;
+    out[k] = cloneCameraValue(rec[k], depth + 1);
+  }
+  return out as T;
+}
+
+function cloneCameraSpec(camera: AuraCameraSpec | undefined): AuraCameraSpec | undefined {
+  return camera ? cloneCameraValue(camera) : undefined;
+}
+
+const MAX_PATCHES_IN_FLIGHT = 2;
 
 function backendOf(value: AuraBackend | string | undefined): ReadyBackend | undefined {
   return value === "webgl2" || value === "webgpu" ? value : undefined;
@@ -321,6 +365,7 @@ export function createWorkerRootApp(
     diagnostics.backend = actual;
     diagnostics.drawCalls = result.drawCalls;
     diagnostics.renderSize = [result.width, result.height];
+    syncLabelLayer(result.time, result.viewProjection);
     readiness.firstFrame.settle({ state: "ready", stage: "first-frame", backend: actual });
   };
   const onDevice = (state: "lost" | "restored") => {
@@ -380,8 +425,10 @@ export function createWorkerRootApp(
 
   let worker: ReturnType<typeof createWorkerRenderer>;
   try {
+    const hostCoarsePointer = isCoarsePointerDevice();
     worker = createWorkerRenderer({
       canvas, worker: endpoint, scene: snapshot, renderer: rendererOptions, assets: options.assets, ...(renderFlags ? { flags: renderFlags } : {}),
+      ...(hostCoarsePointer ? { coarsePointer: true } : {}),
       autoStart: options.autoStart, resize: options.resize, size: measureSize(), measureSize,
       disposeTimeoutMs: workerOptions?.disposeTimeoutMs,
       onFrame: present, onCaptureFrame: (result) => present(result, false), onDevice, onBackend: syncWorkerBackend,
@@ -412,6 +459,7 @@ export function createWorkerRootApp(
           if (!mountPending) {
             currentScene = mountedScene;
             diagnostics = mountedDiagnostics;
+            rebindLabelLayer(currentScene);
             if (!mounting && !lost && !failure && !restoredAfterRecoveryFailure) {
               readiness.settle({ state: "superseded" });
               revision += 1;
@@ -497,12 +545,46 @@ export function createWorkerRootApp(
 
   // ── K1: host mirror + patch queue ─────────────────────────────────────────
   let mirror: AuraWorkerNodeMirror = createWorkerNodeMirror(snapshot, hostFlags);
-  let sentCamera = JSON.stringify(snapshot.camera ?? null);
+  let sentCamera = cloneCameraSpec(snapshot.camera);
+  let labelLayer = !isOffscreenCanvas(canvas) ? createSceneLabelLayer(canvas as HTMLCanvasElement, snapshot) : undefined;
+  const rebindLabelLayer = (nextSnapshot: AuraSceneSnapshot): void => {
+    try { labelLayer?.dispose(); } catch { /* overlay cleanup is best effort */ }
+    labelLayer = !disposed && !isOffscreenCanvas(canvas)
+      ? createSceneLabelLayer(canvas as HTMLCanvasElement, nextSnapshot)
+      : undefined;
+  };
+  const syncLabelLayer = (renderTimeMs: number, vp?: Float32Array | readonly number[]): void => {
+    if (!labelLayer || disposed) return;
+    try {
+      labelLayer.setLabels(worldLabelsFromSnapshot(currentScene, mirror.registry));
+      labelLayer.setOcclusionTest(createSceneLabelOcclusionTest(
+        currentScene,
+        resolveCameraFrame(currentScene, currentScene.camera, renderTimeMs, mirror.registry).eye,
+        mirror.registry
+      ));
+      const matrix = vp instanceof Float32Array
+        ? vp
+        : Array.isArray(vp) && vp.length === 16
+          ? Float32Array.from(vp)
+          : app.viewProjection!();
+      labelLayer.update(matrix);
+      diagnostics.labels = labelLayer.snapshot();
+      const flatNodes = groups.flatten(currentScene.nodes);
+      const labelNodes = flatNodes.filter((node): node is AuraLabelNode => node.kind === "label");
+      diagnostics.labelTelemetry = collectLabelTelemetry(labelNodes, diagnostics.labels);
+      diagnostics.textBuckets = summarizeTextBuckets({
+        accessibleDom: labelNodes.filter((node) => node.label === "hud").length,
+        worldAnchoredPlaced: diagnostics.labels.filter((label) => label.visible).length,
+        sdfTexts: flatNodes.filter((node) => node.kind === "primitive" && node.text3D?.backend === "sdf").length
+      });
+    } catch {
+      /* host DOM overlay projection is best-effort and never terminates worker rendering */
+    }
+  };
   /** Queue the mirror's ops (and a changed camera spec) as one patch message, in call order. */
   // Backpressure: while a patch is in flight, host frames keep coalescing
   // into the mirror queue instead of posting (a slow worker would otherwise
-  // fill its request queue). Explicit steps force a flush so their frame
-  // always sees every change.
+  // fill its request queue). Explicit steps force a flush up to MAX_PATCHES_IN_FLIGHT.
   let patchesInFlight = 0;
   // A scene replacement is posted through the request queue, so it can still
   // be waiting there when new-scene ops are recorded. Those ops are held until
@@ -512,18 +594,43 @@ export function createWorkerRootApp(
   // 5.4: app-level calls (setOutput, post.setEffect/setEffectEnabled) ride the patch stream after the node ops.
   // They are not scene-scoped, so a scene replacement keeps them.
   let appOps: AuraWorkerNodePatchOp[] = [];
+  const syncCameraIntoMirror = (): void => {
+    const currentCamera = mirror.scene.camera;
+    if (!cameraValuesEqual(currentCamera, sentCamera)) {
+      sentCamera = cloneCameraSpec(currentCamera);
+      mirror.setCamera(currentCamera);
+    }
+  };
   const queueAppCall = (call: AuraWorkerAppCall, args: readonly unknown[]): void => {
     if (disposed) return;
-    appOps.push({ app: call, args: structuredClone(args) });
+    const op: AuraWorkerNodePatchOp = { app: call, args: structuredClone(args) };
+    const key = coalesceKey(op);
+    if (key !== undefined) {
+      for (let i = appOps.length - 1; i >= 0; i -= 1) {
+        if (coalesceKey(appOps[i]!) === key) {
+          appOps.splice(i, 1);
+          break;
+        }
+      }
+    }
+    appOps.push(op);
     flushPatches();
+  };
+  const drainPendingPatchOps = (): AuraWorkerNodePatchOp[] => {
+    syncCameraIntoMirror();
+    if (mirror.pending === 0 && appOps.length === 0) return [];
+    const ops = mirror.drain();
+    if (appOps.length) { ops.push(...appOps); appOps = []; }
+    return ops;
   };
   const flushPatches = (force = false): Promise<void> | undefined => {
     if (disposed) return undefined;
-    const camera = JSON.stringify(mirror.scene.camera ?? null);
-    if (camera !== sentCamera) { sentCamera = camera; mirror.setCamera(mirror.scene.camera); }
-    if ((mirror.pending === 0 && appOps.length === 0) || sceneReplacementsPending > 0 || (!force && patchesInFlight > 0)) return undefined;
-    const ops = mirror.drain();
-    if (appOps.length) { ops.push(...appOps); appOps = []; }
+    syncCameraIntoMirror();
+    if ((mirror.pending === 0 && appOps.length === 0) || sceneReplacementsPending > 0) return undefined;
+    if (!force && patchesInFlight > 0) return undefined;
+    if (force && patchesInFlight >= MAX_PATCHES_IN_FLIGHT) return undefined;
+    const ops = drainPendingPatchOps();
+    if (ops.length === 0) return undefined;
     // Posted now (not when the queue reaches it) so ops always precede any
     // later scene replacement; earlier replacements are awaited above.
     // createWorkerRenderer always provides patch (optional only in the public interface type).
@@ -564,6 +671,10 @@ export function createWorkerRootApp(
     flushPatches(true);
     void enqueue(async () => {
       requireRenderer();
+      if (sceneReplacementsPending === 0) {
+        const remaining = drainPendingPatchOps();
+        if (remaining.length > 0) await worker.patch!(remaining);
+      }
       await worker.flushInput();
       const result = await worker.step(dt, (time + dt) * 1000);
       present(result);
@@ -601,6 +712,8 @@ export function createWorkerRootApp(
     hostLoopLast = undefined;
   };
   const canvasCssSize = (): { width: number; height: number } => {
+    const cached = readWorkerCanvasCssSize(canvas);
+    if (cached && cached.width > 0 && cached.height > 0) return cached;
     const rect = typeof (canvas as HTMLCanvasElement).getBoundingClientRect === "function" ? (canvas as HTMLCanvasElement).getBoundingClientRect() : undefined;
     const width = rect?.width || (canvas as HTMLCanvasElement).clientWidth || diagnostics.renderSize?.[0] || canvas.width;
     const height = rect?.height || (canvas as HTMLCanvasElement).clientHeight || diagnostics.renderSize?.[1] || canvas.height;
@@ -643,7 +756,7 @@ export function createWorkerRootApp(
       // Queued ops target the old scene; the worker drops its registry with it.
       mirror.dispose();
       mirror = createWorkerNodeMirror(nextSnapshot, hostFlags);
-      sentCamera = JSON.stringify(nextSnapshot.camera ?? null);
+      sentCamera = cloneCameraSpec(nextSnapshot.camera);
       publishTermination({ state: "superseded", revision: previousRevision }, false);
       sceneReplacementsPending += 1;
       // Release held ops inside the queued operation, so they are posted
@@ -659,7 +772,10 @@ export function createWorkerRootApp(
               mountedSceneRevision = sceneVersion;
               mountedScene = nextSnapshot;
               mountedDiagnostics = nextDiagnostics;
-              if (!disposed && serial === sceneSerial) currentScene = nextSnapshot;
+              if (!disposed && serial === sceneSerial) {
+                currentScene = nextSnapshot;
+                rebindLabelLayer(nextSnapshot);
+              }
             }
           });
         } catch (error) {
@@ -684,6 +800,7 @@ export function createWorkerRootApp(
         // A superseded request can still have reached the worker. Its versioned
         // commit above remains the rollback owner unless a newer local commit
         // has already arrived.
+        if (!disposed && serial === sceneSerial && currentScene !== nextSnapshot) rebindLabelLayer(nextSnapshot);
         markReady(serial);
        } finally { releaseHeldPatches(); }
       }).catch((error: unknown) => {
@@ -786,7 +903,7 @@ export function createWorkerRootApp(
       if (!Number.isFinite(dt) || dt < 0) throw new RangeError("advance requires a finite non-negative delta.");
       if (disposed) throw new AuraWorkerError("Worker app is disposed.", "disposed");
       runCallbacks(dt, "manual");
-      flushPatches(true);
+      flushPatches(false);
     },
     /**
      * Run frame callbacks synchronously, then present asynchronously: a
@@ -808,6 +925,10 @@ export function createWorkerRootApp(
       flushPatches(true);
       return enqueue(async () => {
         requireRenderer();
+        if (sceneReplacementsPending === 0) {
+          const remaining = drainPendingPatchOps();
+          if (remaining.length > 0) await worker.patch!(remaining);
+        }
         await worker.flushInput();
         requireRenderer();
         const result = await worker.step(dt, (time + dt) * 1000);
@@ -850,6 +971,8 @@ export function createWorkerRootApp(
       disposed = true;
       stopHostLoop();
       releaseAuthoredSize?.();
+      try { labelLayer?.dispose(); } catch (error) { cleanupFailures.push(error); }
+      labelLayer = undefined;
       frameCallbacks.clear();
       for (const release of extensionDisposers.splice(0)) { try { release(); } catch (error) { cleanupFailures.push(error); } }
       mirror.dispose();

@@ -1194,7 +1194,7 @@ export function createCanyonResonanceGate(name: string, position: V3, yaw: numbe
     slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 15.5, 0] }), materialIndex: s.materialIndex });
   }
   slots.push({
-    mesh: transformMesh(latticeTrussMesh({ span: [34, 2.8, 3.2], bays: 8, chordRadius: 0.18, braceRadius: 0.1, axis: "x" }), { pos: [0, 37.8, 0] }),
+    mesh: transformMesh(latticeTrussMesh({ span: [34, 2.8, 3.2], bays: 8, chordRadius: 0.18, braceRadius: 0.1 }), { pos: [0, 37.8, 0] }),
     materialIndex: 4
   });
   slots.push({ mesh: transformMesh(latheMesh([[0, -2.2], [2.1, -0.8], [2.2, 0.8], [0, 2.2]], 18), { pos: [0, 38.2, 0] }), materialIndex: 11 });

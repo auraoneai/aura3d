@@ -4,7 +4,7 @@ import type { WebGLRenderController } from "../../../packages/engine/src/agent-a
 type Hooks = NonNullable<Parameters<typeof import("../../../packages/engine/src/agent-api/app/frameLoop")["startProductionRender"]>[12]>;
 
 const harness = vi.hoisted(() => ({
-  queue: [] as Array<{ controller: WebGLRenderController; mount?: Promise<WebGLRenderController> }>,
+  queue: [] as Array<{ controller: WebGLRenderController & { backend?: "webgl2" | "webgpu" }; mount?: Promise<WebGLRenderController>; onStart?: () => void }>,
   hooks: [] as Hooks[]
 }));
 
@@ -20,8 +20,10 @@ vi.mock("../../../packages/engine/src/agent-api/app/frameLoop", async (original)
       if (!entry) throw new Error("Missing synthetic controller");
       const hooks = args[12]!;
       harness.hooks.push(hooks);
-      hooks.onRendererReady("webgl2", entry.controller);
-      hooks.onFirstFrame("webgl2");
+      entry.onStart?.();
+      const backend = entry.controller.backend ?? "webgl2";
+      hooks.onRendererReady(backend, entry.controller);
+      hooks.onFirstFrame(backend);
       return entry.mount ?? Promise.resolve(entry.controller);
     }
   };
@@ -36,7 +38,7 @@ class FakeCanvas {
   style = {}; dataset = {}; parentElement = null;
   getBoundingClientRect() { return { width: 64, height: 64, left: 0, top: 0 }; }
   hasAttribute() { return false; }
-  getContext() { return null; }
+  getContext(_kind?: string): unknown { return null; }
   addEventListener() {}
   removeEventListener() {}
 }
@@ -307,5 +309,62 @@ describe("app controller retirement ordering", () => {
     expect(dispose).toHaveBeenCalledTimes(1);
     await app.disposeAsync();
     expect(dispose).toHaveBeenCalledTimes(2);
+  });
+
+  it("defers WebGPU canvas retirement across setScene and skips blanking unconfigure when the incoming scene reconfigures", async () => {
+    const events: string[] = [];
+    const gpuCtx = {
+      configure: () => { events.push("configure"); },
+      unconfigure: () => { events.push("unconfigure"); }
+    };
+    class WebGPUCanvas extends FakeCanvas {
+      override getContext(kind?: string) {
+        return kind === "webgpu" ? gpuCtx : null;
+      }
+    }
+    const firstMount = deferred<WebGLRenderController>();
+    const firstController: WebGLRenderController & { backend: "webgpu" } = {
+      backend: "webgpu",
+      render() {},
+      pause: () => { events.push("pause:first"); },
+      dispose: () => { events.push("dispose:first"); gpuCtx.unconfigure(); },
+      whenIdle: () => { events.push("idle:first"); return Promise.resolve(); },
+      diagnostics: () => undefined
+    };
+    const secondMount = deferred<WebGLRenderController>();
+    const secondController: WebGLRenderController & { backend: "webgpu" } = {
+      backend: "webgpu",
+      render() {},
+      pause: () => { events.push("pause:second"); },
+      dispose: () => { events.push("dispose:second"); gpuCtx.unconfigure(); },
+      whenIdle: () => { events.push("idle:second"); return Promise.resolve(); },
+      diagnostics: () => undefined
+    };
+
+    harness.queue.push(
+      { controller: firstController, onStart: () => gpuCtx.configure() },
+      { controller: secondController, onStart: () => gpuCtx.configure() }
+    );
+    const canvas = new WebGPUCanvas();
+
+    const app = createAuraApp(canvas as unknown as HTMLCanvasElement, {
+      scene: scene().add(primitives.box({ name: "first" })), autoStart: false, resize: false, diagnostics: false
+    });
+    apps.push(app);
+    await app.ready();
+    events.length = 0;
+
+    app.setScene(scene().add(primitives.sphere({ name: "second" })));
+    await app.ready();
+
+    expect(events).toContain("pause:first");
+    expect(events).toContain("dispose:first");
+    expect(events).toContain("configure");
+    expect(events).not.toContain("unconfigure");
+
+    // Final app disposal still calls unconfigure() cleanly because no replacement scene configures the swapchain.
+    await app.disposeAsync();
+    expect(events).toContain("dispose:second");
+    expect(events).toContain("unconfigure");
   });
 });

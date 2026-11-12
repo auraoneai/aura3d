@@ -86,6 +86,13 @@ export interface TextureDescriptor {
    * cube attachments carry no `cubeFaces` and may use `depth24`.
    */
   readonly renderAttachment?: boolean;
+  /**
+   * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+   * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+   * Defaults to `true` so callers that mutate input buffers after construction
+   * keep isolated snapshots.
+   */
+  readonly copyCpuData?: boolean;
 }
 
 /**
@@ -195,15 +202,31 @@ export class Texture {
     if (descriptor.data && descriptor.mipLevels) {
       throw new Error("Texture cannot define both data and mipLevels");
     }
-    this.data = descriptor.data ? clonePixelData(descriptor.data) : null;
-    this.mipLevels = descriptor.mipLevels ? cloneMipLevels(descriptor.mipLevels, "mipLevels") : [];
-    this.cubeFaces = descriptor.cubeFaces ? cloneCubeFaces(descriptor.cubeFaces) : [];
+    const copyCpuData = descriptor.copyCpuData !== false;
+    this.data = descriptor.data ? (copyCpuData ? clonePixelData(descriptor.data) : descriptor.data) : null;
+    this.mipLevels = descriptor.mipLevels
+      ? (copyCpuData ? cloneMipLevels(descriptor.mipLevels, "mipLevels") : Object.freeze(descriptor.mipLevels.map((level) => ({ ...level }))))
+      : [];
+    this.cubeFaces = descriptor.cubeFaces
+      ? (copyCpuData ? cloneCubeFaces(descriptor.cubeFaces) : Object.freeze(descriptor.cubeFaces.map((face) => ({
+          face: face.face,
+          mipLevels: Object.freeze(face.mipLevels.map((level) => ({ ...level })))
+        }))))
+      : [];
     this.source = descriptor.source ?? null;
     if (this.source && this.dimension !== "2d") throw new Error("Image source uploads require a 2d texture");
     this.flipY = descriptor.flipY === true;
     this.generateMipmaps = descriptor.generateMipmaps ?? true;
-    this.fallbackData = descriptor.fallbackData ? new Uint8Array(descriptor.fallbackData) : null;
-    this.fallbackMipLevels = descriptor.fallbackMipLevels ? cloneMipLevels(descriptor.fallbackMipLevels, "fallbackMipLevels") : [];
+    this.fallbackData = descriptor.fallbackData
+      ? (copyCpuData
+          ? new Uint8Array(descriptor.fallbackData)
+          : descriptor.fallbackData instanceof Uint8Array
+            ? descriptor.fallbackData
+            : new Uint8Array(descriptor.fallbackData.buffer, descriptor.fallbackData.byteOffset, descriptor.fallbackData.byteLength))
+      : null;
+    this.fallbackMipLevels = descriptor.fallbackMipLevels
+      ? (copyCpuData ? cloneMipLevels(descriptor.fallbackMipLevels, "fallbackMipLevels") : Object.freeze(descriptor.fallbackMipLevels.map((level) => ({ ...level }))))
+      : [];
     this.dynamic = descriptor.dynamic === true;
     this.layers = descriptor.layers ?? 1;
     this.depth = descriptor.depth ?? 1;
@@ -366,6 +389,33 @@ export class Texture {
     this.fullContentRevision = 0;
     this.contentMarkPending = false;
     this.pendingUpdateRegion = null;
+  }
+
+  /**
+   * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+   * readback or context-loss re-upload is not required, while keeping the
+   * texture live (`disposed === false`) and preserving layout metadata.
+   */
+  releaseCpuData(options?: { readonly keepFallback?: boolean }): void {
+    if (this.disposed || this.dynamic) return;
+    (this as { data: TexturePixelData | null }).data = null;
+    (this as { mipLevels: readonly TextureMipLevel[] }).mipLevels = [];
+    (this as { cubeFaces: readonly TextureCubeFaceLevel[] }).cubeFaces = [];
+    this.mipOverrides.clear();
+    if (!options?.keepFallback) {
+      this.releaseFallbackCpuData();
+    }
+  }
+
+  /**
+   * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+   * upload succeeds on a device that never needs software fallback upload.
+   */
+  releaseFallbackCpuData(): void {
+    if (this.disposed) return;
+    (this as { fallbackData: Uint8Array | null }).fallbackData = null;
+    (this as { fallbackMipLevels: readonly TextureMipLevel[] }).fallbackMipLevels = [];
+    this.fallbackReplacement = null;
   }
 
   /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */

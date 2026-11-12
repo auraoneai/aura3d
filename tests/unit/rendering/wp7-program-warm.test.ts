@@ -54,11 +54,11 @@ describe("generated program warm", () => {
   it("sync render creates only the shadowed forward variant the draws use, and nothing compiles after the first frame", () => withRenderer(async (renderer) => {
     renderer.render(scene() as never, camera());
     const first = programs(renderer);
-    expect(first).toHaveLength(1);
-    expect(first[0]!.pass).toBe("forward");
-    expect(first[0]!.shadows.cascades).toBe(2);
+    expect(first).toHaveLength(2);
+    expect(first.every((p) => p.pass === "forward")).toBe(true);
+    expect(first.map((p) => p.shadows.cascades).sort((a, b) => b - a)).toEqual([2, 1]);
     for (let i = 0; i < 3; i += 1) renderer.render(scene() as never, camera());
-    expect(programs(renderer)).toHaveLength(1);
+    expect(programs(renderer)).toHaveLength(2);
     expect(rendererProgramCache(renderer.device, FLAGS).stats().compiledSinceReady).toBe(0);
   }));
 

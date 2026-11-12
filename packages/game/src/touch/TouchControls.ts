@@ -52,6 +52,8 @@ export interface TouchControlsOptions {
   readonly bindings: Readonly<Record<string, string>>;
   /** Force visibility (overrides the §6.11 rule). */
   readonly show?: boolean;
+  /** Alias for `show` — `false` explicitly disables coarse-pointer auto-enable. */
+  readonly visible?: boolean;
   /** Android-style tick on press — calls `navigator.vibrate(ms)`. */
   readonly haptics?: boolean | { ms?: number };
   /** Uniform scale multiplier for rect size (default 1). */
@@ -102,6 +104,82 @@ const STICK_DIRS = [
   ["stick.down", 0, 1]
 ] as const;
 
+interface TouchContactLike {
+  readonly identifier?: number;
+  readonly clientX: number;
+  readonly clientY: number;
+}
+
+interface TouchEventLike {
+  readonly changedTouches?: ArrayLike<TouchContactLike>;
+  readonly touches?: ArrayLike<TouchContactLike>;
+  preventDefault?(): void;
+  stopPropagation?(): void;
+}
+
+function listenNonPassive(el: HudElement, type: string, cb: (ev: unknown) => void): void {
+  (el as unknown as { addEventListener(t: string, c: (ev: unknown) => void, o?: { passive?: boolean }): void })
+    .addEventListener(type, cb, { passive: false });
+}
+
+function defaultCoarsePointer(): boolean {
+  if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+    try {
+      if (window.matchMedia("(pointer: coarse)").matches) return true;
+    } catch { /* ignore unsupported media query environments */ }
+  }
+  if (typeof navigator !== "undefined" && typeof navigator.maxTouchPoints === "number" && navigator.maxTouchPoints > 0) {
+    return true;
+  }
+  return false;
+}
+
+function adaptControlRect(
+  base: TouchLayoutRect,
+  isStick: boolean,
+  vw: number,
+  vh: number,
+  scale: number
+): TouchLayoutRect {
+  // Portrait (including 390×844 baseline): preserve authored safe-area ratios.
+  if (vw <= vh) {
+    return { x: base.x, y: base.y, w: base.w * scale, h: base.h * scale };
+  }
+  // Landscape: adapt portrait-authored rects so sticks remain square and buttons
+  // stay >= 48 CSS px without overlapping or overflowing [0, 1].
+  const safeW = Math.max(1, vw);
+  const safeH = Math.max(1, vh);
+  if (isStick) {
+    const sidePx = Math.max(96, Math.min(safeW, safeH) * 0.32) * scale;
+    const w = Math.min(0.42, sidePx / safeW);
+    const h = Math.min(0.48, sidePx / safeH);
+    const rMargin = Math.max(0.02, 1 - (base.x + base.w));
+    const bMargin = Math.max(0.04, (1 - (base.y + base.h)) * 0.85);
+    const x = base.x < 0.5
+      ? Math.max(0.02, base.x * 0.75)
+      : Math.max(0.45, Math.min(1 - w - 0.02, 1 - w - rMargin * 0.75));
+    const y = Math.max(0.04, Math.min(1 - h - 0.02, 1 - h - bMargin));
+    return { x, y, w, h };
+  }
+  // Wide swipe/flipper zones keep their broad coverage in landscape.
+  if (base.w >= 0.3 || base.h >= 0.3) {
+    const w = Math.min(1 - base.x, Math.max(base.w * scale, 48 / safeW));
+    const h = Math.min(1 - base.y, Math.max(base.h * scale, 48 / safeH));
+    return { x: base.x, y: base.y, w, h };
+  }
+  const w = Math.min(0.35, Math.max(base.w * (safeH / safeW) * 1.8, 48 / safeW) * scale);
+  const h = Math.min(0.35, Math.max(base.h * (safeW / safeH) * 0.65, 48 / safeH) * scale);
+  const wRatio = w / Math.max(0.01, base.w * scale);
+  const hRatio = h / Math.max(0.01, base.h * scale);
+  const rMargin = Math.max(0, 1 - (base.x + base.w));
+  const bMargin = Math.max(0, 1 - (base.y + base.h));
+  const x = base.x < 0.5
+    ? Math.max(0.02, Math.min(0.5 - w, base.x * Math.max(0.65, wRatio)))
+    : Math.max(0.45, Math.min(1 - w - 0.02, 1 - w - rMargin * Math.max(0.65, wRatio)));
+  const y = Math.max(0.02, Math.min(1 - h - 0.02, 1 - h - bMargin * Math.min(2.2, hRatio)));
+  return { x, y, w, h };
+}
+
 export function mountTouchControls(
   input: TouchInputSink,
   options: TouchControlsOptions,
@@ -109,7 +187,6 @@ export function mountTouchControls(
 ): TouchControls {
   const { doc } = deps;
   const genre = TOUCH_PRESET_GENRE[options.preset];
-  const viewport = deps.viewport ?? { width: 390, height: 844 };
   const scale = options.scale ?? 1;
   const warn = deps.warn ?? ((m: string) => console.warn(m));
   const vibrate =
@@ -117,6 +194,22 @@ export function mountTouchControls(
     ((ms: number) => {
       (navigator as unknown as { vibrate?: (p: number) => boolean })?.vibrate?.(ms);
     });
+
+  const measureViewport = (): { width: number; height: number } => {
+    if (deps.viewport) return { width: Math.max(1, deps.viewport.width), height: Math.max(1, deps.viewport.height) };
+    const rootRect = deps.root.getBoundingClientRect?.();
+    if (rootRect && rootRect.width > 0 && rootRect.height > 0) {
+      return { width: rootRect.width, height: rootRect.height };
+    }
+    if (typeof window !== "undefined") {
+      const vv = window.visualViewport;
+      if (vv && vv.width > 0 && vv.height > 0) return { width: vv.width, height: vv.height };
+      if (window.innerWidth > 0 && window.innerHeight > 0) return { width: window.innerWidth, height: window.innerHeight };
+    }
+    return { width: 390, height: 844 };
+  };
+
+  let viewport = measureViewport();
 
   const preset = createTouchLayoutPreset(genre, {
     width: viewport.width,
@@ -126,47 +219,104 @@ export function mountTouchControls(
 
   injectTouchBaseCss(doc);
   const host = doc.createElement("div");
-  host.className = `a3g-touch a3g-touch-${options.preset} a3g-hidden`;
+  host.className = `a3g-touch a3g-touch-safe a3g-touch-${options.preset} a3g-hidden`;
   deps.root.appendChild(host);
 
   const bound: string[] = [];
-  const sticks: { name: string; stick: VirtualTouchJoystick; rect: TouchLayoutRect; nub: HudElement }[] = [];
+  const placedControls: { el: HudElement; baseRect: TouchLayoutRect; isStick: boolean; applied: TouchLayoutRect }[] = [];
+  const buttonReleases: (() => void)[] = [];
+  const sticks: {
+    name: string;
+    stick: VirtualTouchJoystick;
+    baseRect: TouchLayoutRect;
+    appliedRect: TouchLayoutRect;
+    el: HudElement;
+    nub: HudElement;
+    deadZone: number;
+    fixed?: boolean;
+    returnToCenter?: boolean;
+    cachedRect: { left: number; top: number; width: number; height: number } | null;
+    reset(): void;
+    rebuildJoystick(applied: TouchLayoutRect): void;
+  }[] = [];
   const stickHeld = new Map<string, string>();
 
-  const place = (name: string, rect: TouchLayoutRect, extra = ""): HudElement => {
+  const applyRectStyle = (el: HudElement, applied: TouchLayoutRect): void => {
+    el.style.left = `${applied.x * 100}%`;
+    el.style.top = `${applied.y * 100}%`;
+    el.style.width = `${applied.w * 100}%`;
+    el.style.height = `${applied.h * 100}%`;
+  };
+
+  const place = (name: string, baseRect: TouchLayoutRect, isStick: boolean, extra = ""): { el: HudElement; applied: TouchLayoutRect } => {
     const el = doc.createElement("div");
     el.className = `a3g-tc ${extra}`.trim();
     el.dataset.control = name;
-    el.style.left = `${rect.x * 100}%`;
-    el.style.top = `${rect.y * 100}%`;
-    el.style.width = `${rect.w * scale * 100}%`;
-    el.style.height = `${rect.h * scale * 100}%`;
+    const applied = adaptControlRect(baseRect, isStick, viewport.width, viewport.height, scale);
+    applyRectStyle(el, applied);
     host.appendChild(el);
-    return el;
+    placedControls.push({ el, baseRect, isStick, applied });
+    return { el, applied };
   };
 
   const bindButton = (suffix: string, action: string | undefined): void => {
     const rect = preset.rects[suffix];
     if (!rect) { warn(`a3g-touch: no rect for "${suffix}" in preset ${options.preset}`); return; }
     if (!action) return; // unbound controls are not rendered
-    const el = place(suffix, rect, "a3g-tc-btn");
+    const { el } = place(suffix, rect, false, "a3g-tc-btn");
     el.setAttribute("role", "button");
     el.setAttribute("aria-label", action);
+    const activeIds = new Set<number>();
     let down = false;
-    el.addEventListener("touchstart", () => {
-      down = true;
-      input.setAction(action, true);
-      el.classList.add("a3g-tc-down");
-      if (options.haptics) vibrate(typeof options.haptics === "object" ? options.haptics.ms ?? 12 : 12);
+    listenNonPassive(el, "touchstart", (raw) => {
+      const ev = raw as TouchEventLike | undefined;
+      ev?.preventDefault?.();
+      ev?.stopPropagation?.();
+      const changed = ev?.changedTouches;
+      if (changed && changed.length > 0) {
+        for (let i = 0; i < changed.length; i += 1) {
+          const t = changed[i]!;
+          activeIds.add(typeof t.identifier === "number" ? t.identifier : 0);
+        }
+      } else {
+        activeIds.add(0);
+      }
+      if (!down) {
+        down = true;
+        input.setAction(action, true);
+        el.classList.add("a3g-tc-down");
+        if (options.haptics) vibrate(typeof options.haptics === "object" ? options.haptics.ms ?? 12 : 12);
+      }
     });
-    const release = () => {
+    const releaseMatching = (raw: unknown) => {
+      const ev = raw as TouchEventLike | undefined;
+      ev?.preventDefault?.();
+      ev?.stopPropagation?.();
+      if (!down) return;
+      const changed = ev?.changedTouches;
+      if (changed && changed.length > 0) {
+        for (let i = 0; i < changed.length; i += 1) {
+          const t = changed[i]!;
+          activeIds.delete(typeof t.identifier === "number" ? t.identifier : 0);
+        }
+        if (activeIds.size > 0) return;
+      } else {
+        activeIds.clear();
+      }
+      down = false;
+      input.setAction(action, false);
+      el.classList.remove("a3g-tc-down");
+    };
+    const forceRelease = () => {
+      activeIds.clear();
       if (!down) return;
       down = false;
       input.setAction(action, false);
       el.classList.remove("a3g-tc-down");
     };
-    el.addEventListener("touchend", release);
-    el.addEventListener("touchcancel", release);
+    listenNonPassive(el, "touchend", releaseMatching);
+    listenNonPassive(el, "touchcancel", releaseMatching);
+    buttonReleases.push(forceRelease);
     bound.push(suffix);
   };
 
@@ -188,39 +338,191 @@ export function mountTouchControls(
     const rect = preset.rects[rectKey];
     if (!cfg || !rect || cfg.radius <= 0) continue;
     if (!STICK_DIRS.some(([dir]) => options.bindings[`${name}.${dir.split(".").pop()}`])) continue;
-    const el = place(name, rect, "a3g-tc-stick");
+    const { el, applied } = place(name, rect, true, "a3g-tc-stick");
     const nub = doc.createElement("div");
     nub.className = "a3g-tc-stick-nub";
     el.appendChild(nub);
-    const pxW = rect.w * scale * viewport.width;
-    const pxH = rect.h * scale * viewport.height;
-    const joystick = new VirtualTouchJoystick({
-      center: [pxW / 2, pxH / 2],
-      radius: Math.min(pxW, pxH) / 2,
-      deadZone: cfg.deadZone ?? 0.18,
-      fixed: cfg.fixed,
-      returnToCenter: cfg.returnToCenter
-    });
-    let nextId = 0;
-    el.addEventListener("touchstart", (ev) => {
-      const t = (ev as { changedTouches?: { clientX: number; clientY: number }[] }).changedTouches?.[0];
-      const r = el.getBoundingClientRect();
-      joystick.touchStart({
-        id: ++nextId,
-        x: (t?.clientX ?? r.left + pxW / 2) - r.left,
-        y: (t?.clientY ?? r.top + pxH / 2) - r.top
+    const deadZone = cfg.deadZone ?? 0.18;
+    const makeJoystick = (w: number, h: number) =>
+      new VirtualTouchJoystick({
+        center: [w / 2, h / 2],
+        radius: Math.max(1, Math.min(w, h) / 2),
+        deadZone,
+        fixed: cfg.fixed,
+        returnToCenter: cfg.returnToCenter
       });
-    });
-    el.addEventListener("touchmove", (ev) => {
-      const t = (ev as { changedTouches?: { clientX: number; clientY: number }[] }).changedTouches?.[0];
-      if (!t) return;
+    let pxW = applied.w * viewport.width;
+    let pxH = applied.h * viewport.height;
+    let joystick = makeJoystick(pxW, pxH);
+    let activeTouchId: number | null = null;
+
+    const entry = {
+      name,
+      get stick() { return joystick; },
+      baseRect: rect,
+      appliedRect: applied,
+      el,
+      nub,
+      deadZone,
+      fixed: cfg.fixed,
+      returnToCenter: cfg.returnToCenter,
+      cachedRect: null as { left: number; top: number; width: number; height: number } | null,
+      reset() {
+        if (activeTouchId !== null) {
+          joystick.touchEnd({ id: activeTouchId, x: 0, y: 0 });
+          activeTouchId = null;
+        }
+        nub.style.transform = "translate(calc(-50% + 0.0%), calc(-50% + 0.0%))";
+      },
+      rebuildJoystick(nextApplied: TouchLayoutRect) {
+        entry.appliedRect = nextApplied;
+        entry.cachedRect = null;
+        const measured = el.getBoundingClientRect?.();
+        if (measured && measured.width > 0 && measured.height > 0) {
+          entry.cachedRect = { left: measured.left, top: measured.top, width: measured.width, height: measured.height };
+          pxW = measured.width;
+          pxH = measured.height;
+        } else {
+          pxW = nextApplied.w * viewport.width;
+          pxH = nextApplied.h * viewport.height;
+        }
+        activeTouchId = null;
+        joystick = makeJoystick(pxW, pxH);
+      }
+    };
+
+    const resolveZoneRect = (): { left: number; top: number; width: number; height: number } => {
+      if (entry.cachedRect && entry.cachedRect.width > 0 && entry.cachedRect.height > 0) {
+        return entry.cachedRect;
+      }
       const r = el.getBoundingClientRect();
-      joystick.touchMove({ id: nextId, x: t.clientX - r.left, y: t.clientY - r.top });
+      if (r.width > 0 && r.height > 0) {
+        entry.cachedRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+        if (Math.abs(r.width - pxW) > 0.5 || Math.abs(r.height - pxH) > 0.5) {
+          pxW = r.width;
+          pxH = r.height;
+          joystick = makeJoystick(pxW, pxH);
+        }
+        return entry.cachedRect;
+      }
+      return { left: r.left, top: r.top, width: pxW, height: pxH };
+    };
+
+    listenNonPassive(el, "touchstart", (raw) => {
+      const ev = raw as TouchEventLike | undefined;
+      ev?.preventDefault?.();
+      ev?.stopPropagation?.();
+      if (activeTouchId !== null) return;
+      const t = ev?.changedTouches?.[0];
+      const id = typeof t?.identifier === "number" ? t.identifier : 0;
+      activeTouchId = id;
+      const r = resolveZoneRect();
+      const p: VirtualTouchPoint = {
+        id,
+        x: (t?.clientX ?? r.left + r.width / 2) - r.left,
+        y: (t?.clientY ?? r.top + r.height / 2) - r.top
+      };
+      joystick.touchStart(p);
     });
-    el.addEventListener("touchend", () => joystick.touchEnd({ id: nextId, x: 0, y: 0 }));
-    el.addEventListener("touchcancel", () => joystick.touchEnd({ id: nextId, x: 0, y: 0 }));
-    sticks.push({ name, stick: joystick, rect, nub });
+    listenNonPassive(el, "touchmove", (raw) => {
+      const ev = raw as TouchEventLike | undefined;
+      ev?.preventDefault?.();
+      ev?.stopPropagation?.();
+      if (activeTouchId === null) return;
+      const changed = ev?.changedTouches;
+      if (!changed || changed.length === 0) return;
+      let matched: TouchContactLike | undefined;
+      for (let i = 0; i < changed.length; i += 1) {
+        const candidate = changed[i]!;
+        const cid = typeof candidate.identifier === "number" ? candidate.identifier : 0;
+        if (cid === activeTouchId) { matched = candidate; break; }
+      }
+      if (!matched) return;
+      // Zero getBoundingClientRect() during touchmove — uses cached zone rect!
+      const r = entry.cachedRect ?? { left: 0, top: 0, width: pxW, height: pxH };
+      joystick.touchMove({ id: activeTouchId, x: matched.clientX - r.left, y: matched.clientY - r.top });
+    });
+    const endStickTouch = (raw: unknown) => {
+      const ev = raw as TouchEventLike | undefined;
+      ev?.preventDefault?.();
+      ev?.stopPropagation?.();
+      if (activeTouchId === null) return;
+      const changed = ev?.changedTouches;
+      if (changed && changed.length > 0) {
+        let matched = false;
+        for (let i = 0; i < changed.length; i += 1) {
+          const cid = typeof changed[i]!.identifier === "number" ? changed[i]!.identifier! : 0;
+          if (cid === activeTouchId) { matched = true; break; }
+        }
+        if (!matched) return;
+      }
+      const endedId = activeTouchId;
+      activeTouchId = null;
+      joystick.touchEnd({ id: endedId, x: 0, y: 0 });
+    };
+    listenNonPassive(el, "touchend", endStickTouch);
+    listenNonPassive(el, "touchcancel", endStickTouch);
+    sticks.push(entry);
     bound.push(name);
+  }
+
+  const releaseAllHeld = (): void => {
+    for (const rel of buttonReleases) rel();
+    for (const s of sticks) s.reset();
+    for (const [key, action] of stickHeld) {
+      input.setAction(action, false);
+      stickHeld.delete(key);
+    }
+  };
+
+  const refreshLayout = (): void => {
+    const next = measureViewport();
+    const sizeChanged = Math.abs(next.width - viewport.width) > 0.5 || Math.abs(next.height - viewport.height) > 0.5;
+    viewport = next;
+    for (const item of placedControls) {
+      const nextApplied = adaptControlRect(item.baseRect, item.isStick, viewport.width, viewport.height, scale);
+      item.applied = nextApplied;
+      applyRectStyle(item.el, nextApplied);
+    }
+    for (const s of sticks) {
+      const nextApplied = adaptControlRect(s.baseRect, true, viewport.width, viewport.height, scale);
+      if (sizeChanged) {
+        s.rebuildJoystick(nextApplied);
+      } else {
+        const measured = s.el.getBoundingClientRect?.();
+        if (measured && measured.width > 0 && measured.height > 0) {
+          s.cachedRect = { left: measured.left, top: measured.top, width: measured.width, height: measured.height };
+        }
+      }
+    }
+  };
+
+  let resizeObserver: ResizeObserver | null = null;
+  if (typeof ResizeObserver !== "undefined" && !deps.viewport) {
+    try {
+      resizeObserver = new ResizeObserver(() => refreshLayout());
+      if (typeof Element !== "undefined" && host instanceof Element) resizeObserver.observe(host);
+      if (typeof Element !== "undefined" && deps.root instanceof Element) resizeObserver.observe(deps.root);
+    } catch {
+      resizeObserver = null;
+    }
+  }
+  const onWindowResize = () => refreshLayout();
+  const onVisibilityChange = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      releaseAllHeld();
+    }
+  };
+  if (typeof window !== "undefined") {
+    if (!deps.viewport) {
+      window.addEventListener("resize", onWindowResize);
+      window.addEventListener("orientationchange", onWindowResize);
+      window.visualViewport?.addEventListener("resize", onWindowResize);
+    }
+    window.addEventListener("blur", releaseAllHeld);
+  }
+  if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+    document.addEventListener("visibilitychange", onVisibilityChange);
   }
 
   const syncStick = (name: string, stick: VirtualTouchJoystick, nub: HudElement) => {
@@ -241,18 +543,24 @@ export function mountTouchControls(
 
   let visible = false;
   const applyVisibility = (v: boolean) => {
+    if (!v && visible) releaseAllHeld();
     visible = v;
     host.classList.toggle("a3g-hidden", !v);
+    if (v) refreshLayout();
     // §6.11: keyboard-hint strips hide whenever touch controls are visible.
     doc.body?.children?.forEach?.(() => {});
     for (const hint of keyhints(doc)) hint.classList.toggle("a3g-hidden", v);
   };
 
-  const onFirstTouch = () => { if (!visible) applyVisibility(true); };
-  // First touchstart anywhere reveals the controls (§6.11).
-  doc.body.addEventListener("touchstart", onFirstTouch);
+  const explicitVisible = options.show ?? options.visible;
+  const onFirstTouch = () => { if (!visible && explicitVisible !== false) applyVisibility(true); };
+  // First touchstart anywhere reveals the controls unless explicitly disabled (§6.11).
+  if (explicitVisible !== false) {
+    doc.body.addEventListener("touchstart", onFirstTouch);
+  }
 
-  applyVisibility(options.show ?? deps.coarsePointer?.() ?? false);
+  const isCoarse = (deps.coarsePointer ?? defaultCoarsePointer)();
+  applyVisibility(explicitVisible ?? isCoarse);
 
   return {
     get visible() { return visible; },
@@ -262,7 +570,18 @@ export function mountTouchControls(
       for (const s of sticks) syncStick(s.name, s.stick, s.nub);
     },
     dispose() {
+      releaseAllHeld();
       doc.body.removeEventListener("touchstart", onFirstTouch);
+      resizeObserver?.disconnect();
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", onWindowResize);
+        window.removeEventListener("orientationchange", onWindowResize);
+        window.visualViewport?.removeEventListener("resize", onWindowResize);
+        window.removeEventListener("blur", releaseAllHeld);
+      }
+      if (typeof document !== "undefined" && typeof document.removeEventListener === "function") {
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      }
       host.remove();
     },
     evidence: () => ({
@@ -285,8 +604,9 @@ export function mountTouchControls(
 const TOUCH_BASE_CSS = [
   ".a3g-touch.a3g-hidden { display: none; }",
   ":where(.a3g-touch) { position: absolute; inset: 0; pointer-events: none; z-index: 45; }",
+  ":where(.a3g-touch-safe) { inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }",
   ":where(.a3g-tc) { position: absolute; box-sizing: border-box; pointer-events: auto; touch-action: none;",
-  "  user-select: none; -webkit-user-select: none; border-radius: 12px;",
+  "  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; border-radius: 12px;",
   "  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); }",
   ":where(.a3g-tc-stick) { border-radius: 50%; }",
   ":where(.a3g-tc-stick-nub) { position: absolute; left: 50%; top: 50%; width: 40%; aspect-ratio: 1;",

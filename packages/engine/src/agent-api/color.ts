@@ -110,28 +110,40 @@ const NAMED_COLORS: Readonly<Record<string, number>> = {
   white: 0xffffff, whitesmoke: 0xf5f5f5, yellow: 0xffff00, yellowgreen: 0x9acd32
 };
 
-function parseChannel(token: string): number {
+const CSS_NUMBER_RE = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
+
+function parseStrictNumber(token: string): number {
   const t = token.trim();
-  if (t.endsWith("%")) {
-    const pct = Number(t.slice(0, -1));
-    if (!Number.isFinite(pct)) throw new AuraColorParseError(token);
-    return Math.max(0, Math.min(1, pct / 100));
-  }
+  if (!CSS_NUMBER_RE.test(t)) throw new AuraColorParseError(token);
   const value = Number(t);
   if (!Number.isFinite(value)) throw new AuraColorParseError(token);
+  return value;
+}
+
+function isNoneToken(token: string): boolean {
+  return token.trim().toLowerCase() === "none";
+}
+
+function parseChannel(token: string): number {
+  const t = token.trim();
+  if (isNoneToken(t)) return 0;
+  if (t.endsWith("%")) {
+    const pct = parseStrictNumber(t.slice(0, -1));
+    return Math.max(0, Math.min(1, pct / 100));
+  }
+  const value = parseStrictNumber(t);
   return Math.max(0, Math.min(1, value / 255));
 }
 
 function parseAlpha(token: string | undefined): number {
   if (token === undefined) return 1;
   const t = token.trim();
+  if (isNoneToken(t)) return 0;
   if (t.endsWith("%")) {
-    const pct = Number(t.slice(0, -1));
-    if (!Number.isFinite(pct)) throw new AuraColorParseError(token);
+    const pct = parseStrictNumber(t.slice(0, -1));
     return Math.max(0, Math.min(1, pct / 100));
   }
-  const value = Number(t);
-  if (!Number.isFinite(value)) throw new AuraColorParseError(token);
+  const value = parseStrictNumber(t);
   return Math.max(0, Math.min(1, value));
 }
 
@@ -151,34 +163,43 @@ function splitFunctionArgs(body: string): string[] {
   return args;
 }
 
-/** CSS hue: bare degrees or `deg` / `turn` / `rad` / `grad`. */
+/** CSS hue: bare degrees, `none` (`0`), or `deg` / `turn` / `rad` / `grad`. */
 function parseHue(token: string): number {
   const t = token.trim().toLowerCase();
-  if (t.endsWith("deg")) return Number(t.slice(0, -3));
-  if (t.endsWith("grad")) return Number(t.slice(0, -4)) * 0.9;
-  if (t.endsWith("rad")) return (Number(t.slice(0, -3)) * 180) / Math.PI;
-  if (t.endsWith("turn")) return Number(t.slice(0, -4)) * 360;
-  return Number(t);
+  if (t === "none") return 0;
+  if (t.endsWith("deg")) return parseStrictNumber(t.slice(0, -3));
+  if (t.endsWith("grad")) return parseStrictNumber(t.slice(0, -4)) * 0.9;
+  if (t.endsWith("rad")) return (parseStrictNumber(t.slice(0, -3)) * 180) / Math.PI;
+  if (t.endsWith("turn")) return parseStrictNumber(t.slice(0, -4)) * 360;
+  return parseStrictNumber(t);
 }
 
-function parseFunctionColor(name: string, body: string): readonly [number, number, number, number] {
-  const args = splitFunctionArgs(body);
-  if (name === "rgb" || name === "rgba") {
-    if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
-    return [parseChannel(args[0]), parseChannel(args[1]), parseChannel(args[2]), parseAlpha(args[3])];
-  }
-  if (name === "oklch") return parseOklch(name, body);
-  if (name === "hsl" || name === "hsla") {
-    if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
-    const hDeg = parseHue(args[0]);
-    const s = args[1].trim().endsWith("%") ? Number(args[1].trim().slice(0, -1)) / 100 : Number(args[1]);
-    const l = args[2].trim().endsWith("%") ? Number(args[2].trim().slice(0, -1)) / 100 : Number(args[2]);
-    if (!Number.isFinite(hDeg) || !Number.isFinite(s) || !Number.isFinite(l)) throw new AuraColorParseError(`${name}(${body})`);
-    const a = parseAlpha(args[3]);
-    return hslToRgb(hDeg, Math.max(0, Math.min(1, s)), Math.max(0, Math.min(1, l)), a);
-  }
-  throw new AuraColorParseError(`${name}(${body})`);
+function parsePercentOrHundredNumber(token: string): number {
+  const t = token.trim();
+  if (isNoneToken(t)) return 0;
+  const raw = t.endsWith("%") ? parseStrictNumber(t.slice(0, -1)) : parseStrictNumber(t);
+  return raw / 100;
 }
+
+function parseNumberOrScaledPercent(token: string, pctScale: number): number {
+  const t = token.trim();
+  if (isNoneToken(t)) return 0;
+  return t.endsWith("%") ? (parseStrictNumber(t.slice(0, -1)) / 100) * pctScale : parseStrictNumber(t);
+}
+
+function signedSrgbToLinear(channel: number): number {
+  if (channel < 0) return -srgbToLinearChannel(-channel);
+  return srgbToLinearChannel(channel);
+}
+
+function linearToClampedSrgbChannel(value: number): number {
+  const x = Math.max(0, Math.min(1, value));
+  return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
+}
+
+type ParsedColor =
+  | { readonly kind: "srgb"; readonly rgba: readonly [number, number, number, number] }
+  | { readonly kind: "linear"; readonly rgba: readonly [number, number, number, number] };
 
 /** `hsl()`/`hsla()` conversion — delegates to `@aura3d/math`'s canonical HSL→RGB (SM-04). */
 function hslToRgb(hDeg: number, s: number, l: number, a: number): readonly [number, number, number, number] {
@@ -186,34 +207,162 @@ function hslToRgb(hDeg: number, s: number, l: number, a: number): readonly [numb
   return [r, g, b, a];
 }
 
-function oklchToSrgb(l: number, c: number, hDeg: number, a: number): readonly [number, number, number, number] {
-  const h = (hDeg * Math.PI) / 180;
-  const A = c * Math.cos(h), B = c * Math.sin(h);
+function hwbToRgb(hDeg: number, w: number, b: number, a: number): readonly [number, number, number, number] {
+  const wn = Math.max(0, w);
+  const bn = Math.max(0, b);
+  if (wn + bn >= 1) {
+    const gray = wn / (wn + bn);
+    return [gray, gray, gray, a];
+  }
+  const [r, g, bl] = hslToRgbMath(hDeg, 1, 0.5);
+  const scale = 1 - wn - bn;
+  return [r * scale + wn, g * scale + wn, bl * scale + wn, a];
+}
+
+function oklabToLinearSrgb(l: number, A: number, B: number, a: number): readonly [number, number, number, number] {
   const l_ = (l + 0.3963377774 * A + 0.2158037573 * B) ** 3;
   const m_ = (l - 0.1055613458 * A - 0.0638541728 * B) ** 3;
   const s_ = (l - 0.0894841775 * A - 1.291485548 * B) ** 3;
-  const lin = [
+  return [
     4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
     -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
-    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_
-  ].map((v) => {
-    const x = Math.max(0, Math.min(1, v));
-    return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
-  });
-  return [lin[0]!, lin[1]!, lin[2]!, a];
+    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_,
+    a
+  ];
 }
 
-function parseOklch(name: string, body: string): readonly [number, number, number, number] {
+function parseOklchLinear(name: string, body: string): readonly [number, number, number, number] {
   const args = splitFunctionArgs(body);
   if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
-  const num = (t: string, pctScale: number): number => {
-    const v = t.trim();
-    return v.endsWith("%") ? (Number(v.slice(0, -1)) / 100) * pctScale : Number(v);
-  };
+  const l = Math.max(0, Math.min(1, parseNumberOrScaledPercent(args[0]!, 1)));
+  const c = Math.max(0, parseNumberOrScaledPercent(args[1]!, 0.4));
   const hue = parseHue(args[2]!);
-  const l = num(args[0]!, 1), c = num(args[1]!, 0.4);
-  if (!Number.isFinite(l) || !Number.isFinite(c) || !Number.isFinite(hue)) throw new AuraColorParseError(`${name}(${body})`);
-  return oklchToSrgb(Math.max(0, Math.min(1, l)), Math.max(0, c), hue, parseAlpha(args[3]));
+  const h = (hue * Math.PI) / 180;
+  return oklabToLinearSrgb(l, c * Math.cos(h), c * Math.sin(h), parseAlpha(args[3]));
+}
+
+function parseOklabLinear(name: string, body: string): readonly [number, number, number, number] {
+  const args = splitFunctionArgs(body);
+  if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
+  const l = Math.max(0, Math.min(1, parseNumberOrScaledPercent(args[0]!, 1)));
+  const A = parseNumberOrScaledPercent(args[1]!, 0.4);
+  const B = parseNumberOrScaledPercent(args[2]!, 0.4);
+  return oklabToLinearSrgb(l, A, B, parseAlpha(args[3]));
+}
+
+/**
+ * CSS Color 4 `color(<colorspace> c1 c2 c3 [/ a])`. Supports `display-p3`, `srgb`, `srgb-linear`, `a98-rgb`,
+ * `rec2020`, and `xyz` / `xyz-d65`, preserving wide-gamut linear Rec.709 coordinates in `parseAuraColor` /
+ * `parseAuraColorLinear` while clamping to `[0, 1]` sRGB in `parseAuraColorSrgb`.
+ */
+function parseColorSpaceFunction(body: string): ParsedColor {
+  if (body.includes(",")) throw new AuraColorParseError(`color(${body})`);
+  const slash = body.split("/").map((part) => part.trim());
+  if (slash.length > 2 || (slash.length === 2 && slash[1]!.length === 0)) throw new AuraColorParseError(`color(${body})`);
+  const tokens = slash[0]!.split(/\s+/).filter((part) => part.length > 0);
+  if (tokens.length !== 4) throw new AuraColorParseError(`color(${body})`);
+  const space = tokens[0]!.toLowerCase();
+  const c0 = parseNumberOrScaledPercent(tokens[1]!, 1);
+  const c1 = parseNumberOrScaledPercent(tokens[2]!, 1);
+  const c2 = parseNumberOrScaledPercent(tokens[3]!, 1);
+  const alpha = parseAlpha(slash[1]);
+  if (space === "srgb") {
+    if (c0 >= 0 && c0 <= 1 && c1 >= 0 && c1 <= 1 && c2 >= 0 && c2 <= 1) {
+      return { kind: "srgb", rgba: [c0, c1, c2, alpha] };
+    }
+    return { kind: "linear", rgba: [signedSrgbToLinear(c0), signedSrgbToLinear(c1), signedSrgbToLinear(c2), alpha] };
+  }
+  if (space === "srgb-linear") {
+    return { kind: "linear", rgba: [c0, c1, c2, alpha] };
+  }
+  if (space === "display-p3") {
+    // Exact D65 Display-P3 -> Linear Rec.709 matrix matching `packages/rendering/src/post/shaders/displayGrade.glsl.ts`.
+    const lr = signedSrgbToLinear(c0);
+    const lg = signedSrgbToLinear(c1);
+    const lb = signedSrgbToLinear(c2);
+    return {
+      kind: "linear",
+      rgba: [
+        1.2249401762805596 * lr - 0.2249401762805601 * lg,
+        -0.0420569547096882 * lr + 1.042056954709688 * lg,
+        -0.0196375545903344 * lr - 0.0786360455506318 * lg + 1.0982736001409663 * lb,
+        alpha
+      ]
+    };
+  }
+  if (space === "a98-rgb") {
+    const decodeA98 = (v: number): number => (v < 0 ? -((-v) ** (563 / 256)) : v ** (563 / 256));
+    const lr = decodeA98(c0), lg = decodeA98(c1), lb = decodeA98(c2);
+    return {
+      kind: "linear",
+      rgba: [
+        1.3983557489578196 * lr - 0.39835574895781975 * lg,
+        lg,
+        -0.04292884889122026 * lg + 1.0429288488912203 * lb,
+        alpha
+      ]
+    };
+  }
+  if (space === "rec2020") {
+    const decode2020 = (v: number): number => {
+      const s = v < 0 ? -1 : 1;
+      const a = Math.abs(v);
+      const alpha2020 = 1.09929682680944;
+      const beta2020 = 0.018053968510807;
+      return s * (a < beta2020 * 4.5 ? a / 4.5 : ((a + alpha2020 - 1) / alpha2020) ** (1 / 0.45));
+    };
+    const lr = decode2020(c0), lg = decode2020(c1), lb = decode2020(c2);
+    return {
+      kind: "linear",
+      rgba: [
+        1.6604910021084355 * lr - 0.5876411387885495 * lg - 0.07284986331988574 * lb,
+        -0.12455047452159074 * lr + 1.1328998971259603 * lg - 0.008349422604369515 * lb,
+        -0.01815076335490526 * lr - 0.10057889800800739 * lg + 1.1187296613629127 * lb,
+        alpha
+      ]
+    };
+  }
+  if (space === "xyz" || space === "xyz-d65") {
+    return {
+      kind: "linear",
+      rgba: [
+        3.2404541621141054 * c0 - 1.5371385127977166 * c1 - 0.4985314095560162 * c2,
+        -0.9692660305051868 * c0 + 1.8760108454466942 * c1 + 0.04155601753034984 * c2,
+        0.0556434309591147 * c0 - 0.2040259135167538 * c1 + 1.0572251882231791 * c2,
+        alpha
+      ]
+    };
+  }
+  throw new AuraColorParseError(`color(${body})`);
+}
+
+function parseFunctionColor(name: string, body: string): ParsedColor {
+  if (name === "color") return parseColorSpaceFunction(body);
+  if (name === "oklch") return { kind: "linear", rgba: parseOklchLinear(name, body) };
+  if (name === "oklab") return { kind: "linear", rgba: parseOklabLinear(name, body) };
+  const args = splitFunctionArgs(body);
+  if (name === "rgb" || name === "rgba") {
+    if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
+    return { kind: "srgb", rgba: [parseChannel(args[0]!), parseChannel(args[1]!), parseChannel(args[2]!), parseAlpha(args[3])] };
+  }
+  if (name === "hsl" || name === "hsla") {
+    if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
+    const hDeg = parseHue(args[0]!);
+    const s = parsePercentOrHundredNumber(args[1]!);
+    const l = parsePercentOrHundredNumber(args[2]!);
+    const a = parseAlpha(args[3]);
+    return { kind: "srgb", rgba: hslToRgb(hDeg, Math.max(0, Math.min(1, s)), Math.max(0, Math.min(1, l)), a) };
+  }
+  if (name === "hwb") {
+    if (body.includes(",")) throw new AuraColorParseError(`${name}(${body})`);
+    if (args.length !== 3 && args.length !== 4) throw new AuraColorParseError(`${name}(${body})`);
+    const hDeg = parseHue(args[0]!);
+    const w = parsePercentOrHundredNumber(args[1]!);
+    const b = parsePercentOrHundredNumber(args[2]!);
+    const a = parseAlpha(args[3]);
+    return { kind: "srgb", rgba: hwbToRgb(hDeg, w, b, a) };
+  }
+  throw new AuraColorParseError(`${name}(${body})`);
 }
 
 function parseHex(body: string): readonly [number, number, number, number] {
@@ -246,36 +395,54 @@ function parseHex(body: string): readonly [number, number, number, number] {
   }
 }
 
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
-export function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number] {
-  if (typeof color === "number" && Number.isFinite(color)) {
+function parseRawAuraColor(color: AuraColorInput): ParsedColor {
+  if (typeof color === "number" && Number.isFinite(color) && color >= 0) {
     const v = color >>> 0;
     // 0xRRGGBBAA when the top byte is non-zero-opaque meaningful; heuristic:
     // treat > 0xFFFFFF as RGBA, else RGB (matches the PR 0a stub semantics).
     if (color > 0xffffff) {
-      return [((v >> 24) & 0xff) / 255, ((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255];
+      return { kind: "srgb", rgba: [((v >> 24) & 0xff) / 255, ((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255] };
     }
-    return [((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255, 1];
+    return { kind: "srgb", rgba: [((v >> 16) & 0xff) / 255, ((v >> 8) & 0xff) / 255, (v & 0xff) / 255, 1] };
   }
   if (typeof color !== "string") throw new AuraColorParseError(color);
   const input = color.trim();
   const hexMatch = /^#([0-9a-f]+)$/i.exec(input);
-  if (hexMatch) return parseHex(hexMatch[1]);
-  const fnMatch = /^(rgb|rgba|hsl|hsla|oklch)\((.+)\)$/i.exec(input);
+  if (hexMatch) return { kind: "srgb", rgba: parseHex(hexMatch[1]!) };
+  const fnMatch = /^(rgb|rgba|hsl|hsla|hwb|oklch|oklab|color)\((.+)\)$/i.exec(input);
   if (fnMatch) {
     // Report the whole authored value, not the inner token that failed.
-    try { return parseFunctionColor(fnMatch[1].toLowerCase(), fnMatch[2]); } catch { throw new AuraColorParseError(color); }
+    try { return parseFunctionColor(fnMatch[1]!.toLowerCase(), fnMatch[2]!); } catch { throw new AuraColorParseError(color); }
   }
-  if (input.toLowerCase() === "transparent") return [0, 0, 0, 0];
+  if (input.toLowerCase() === "transparent") return { kind: "srgb", rgba: [0, 0, 0, 0] };
   const named = NAMED_COLORS[input.toLowerCase()];
   if (named !== undefined) {
-    return [((named >> 16) & 0xff) / 255, ((named >> 8) & 0xff) / 255, (named & 0xff) / 255, 1];
+    return { kind: "srgb", rgba: [((named >> 16) & 0xff) / 255, ((named >> 8) & 0xff) / 255, (named & 0xff) / 255, 1] };
   }
   throw new AuraColorParseError(color);
 }
 
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
-export function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number] {
-  const [r, g, b, a] = parseAuraColorSrgb(color);
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
+export function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number] {
+  const parsed = parseRawAuraColor(color);
+  if (parsed.kind === "srgb") return parsed.rgba;
+  const [r, g, b, a] = parsed.rgba;
+  return [linearToClampedSrgbChannel(r), linearToClampedSrgbChannel(g), linearToClampedSrgbChannel(b), a];
+}
+
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number] {
+  const parsed = parseRawAuraColor(color);
+  if (parsed.kind === "linear") return parsed.rgba;
+  const [r, g, b, a] = parsed.rgba;
   return [srgbToLinearChannel(r), srgbToLinearChannel(g), srgbToLinearChannel(b), a];
+}
+
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
+export function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number] {
+  return parseAuraColorLinear(color);
 }

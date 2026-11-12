@@ -66,7 +66,7 @@ export interface QualityGovernorOptions {
   readonly floor?: AuraQualityTier;
   readonly overrides?: Partial<AuraQualityTierSettings>;
   readonly mobile?: boolean;
-  /** Governor budget. Mobile default is 33.3 unless the app asked for 60. */
+  /** Governor budget. Mobile default is 16.67 ms (60 fps) unless overridden. */
   readonly targetFrameMs?: number;
   readonly scaleSource: RenderScaleSource;
   readonly devicePixelRatio?: number;
@@ -96,7 +96,7 @@ export class QualityGovernor {
     this.floor = options.floor ?? "low";
     this.baseOverrides = options.overrides;
     this.mobile = options.mobile === true;
-    this.targetFrameMs = options.targetFrameMs ?? (this.mobile ? 33.3 : QUALITY_TIERS[this.tier].targetFrameMs);
+    this.targetFrameMs = options.targetFrameMs ?? (this.mobile ? 16.67 : QUALITY_TIERS[this.tier].targetFrameMs);
     this.scaleSource = options.scaleSource;
     this.floor2 = effectiveRenderScaleFloor(
       QUALITY_TIERS[this.tier].minRenderScale,

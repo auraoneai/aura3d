@@ -49,7 +49,7 @@ interface Slot {
   elapsed: number;
   duration: number;
   easeFn: (t: number) => number;
-  channels: { channel: Channel; from: number[]; to: number[] }[];
+  channels: { channel: Channel; from: number[]; to: number[]; scratch: number[] }[];
   resolve: () => void;
   token: object;
   markCancelled: () => void;
@@ -81,8 +81,12 @@ export function createTweenEngine(): TweenEngine {
 
   function applyProgress(slot: Slot, t: number): void {
     const e = slot.easeFn(t);
-    for (const { channel, from, to } of slot.channels) {
-      channel.apply(from.map((f, i) => f + (to[i] - f) * e));
+    for (let c = 0; c < slot.channels.length; c += 1) {
+      const { channel, from, to, scratch } = slot.channels[c]!;
+      for (let i = 0; i < from.length; i += 1) {
+        scratch[i] = from[i]! + (to[i]! - from[i]!) * e;
+      }
+      channel.apply(scratch);
     }
   }
 
@@ -185,12 +189,15 @@ const NODE_PATHS: Record<string, { get(n: TweenableNode): readonly number[]; set
       const s = n.scale;
       return typeof s === "number" ? [s, s, s] : [s[0], s[1], s[2]];
     },
-    set: (n, v) => n.setScale([v[0], v[1], v[2]])
+    set: (n, v) => n.setScale(v as unknown as readonly [number, number, number])
   }
 };
 
-function buildChannels(target: object | TweenableNode, to: Partial<Record<string, number | readonly number[]>>): { channel: Channel; from: number[]; to: number[] }[] {
-  const channels: { channel: Channel; from: number[]; to: number[] }[] = [];
+function buildChannels(
+  target: object | TweenableNode,
+  to: Partial<Record<string, number | readonly number[]>>
+): { channel: Channel; from: number[]; to: number[]; scratch: number[] }[] {
+  const channels: { channel: Channel; from: number[]; to: number[]; scratch: number[] }[] = [];
   const node = isTweenableNode(target) ? target : undefined;
   for (const [path, rawTo] of Object.entries(to)) {
     if (rawTo === undefined) continue;
@@ -198,10 +205,14 @@ function buildChannels(target: object | TweenableNode, to: Partial<Record<string
     const nodePath = node ? NODE_PATHS[path] : undefined;
     if (node && nodePath) {
       const path_ = nodePath;
+      const from = [...path_.get(node)];
+      // Normalize scalar scale target (e.g. `scale: 1.5`) to 3-tuple so scratch has length 3.
+      const normalizedTo = from.length === 3 && toArr.length === 1 ? [toArr[0]!, toArr[0]!, toArr[0]!] : toArr;
       channels.push({
         channel: { target, apply: (v) => path_.set(node, v) },
-        from: [...path_.get(node)],
-        to: toArr
+        from,
+        to: normalizedTo,
+        scratch: from.slice()
       });
       continue;
     }
@@ -212,9 +223,10 @@ function buildChannels(target: object | TweenableNode, to: Partial<Record<string
       if (toArr.length !== 1) throw new RangeError(`tween field "${path}" expects a scalar target`);
       const rec = obj as Record<string, number>;
       channels.push({
-        channel: { target, apply: (v) => (rec[field] = v[0]) },
+        channel: { target, apply: (v) => (rec[field] = v[0]!) },
         from: [cur],
-        to: toArr
+        to: toArr,
+        scratch: [cur]
       });
     } else if (Array.isArray(cur) && cur.every((x) => typeof x === "number")) {
       const arr = cur as number[];
@@ -222,16 +234,18 @@ function buildChannels(target: object | TweenableNode, to: Partial<Record<string
         throw new RangeError(`tween path "${path}" index out of range`);
       }
       const idx = index;
+      const from = idx === undefined ? [...arr] : [arr[idx]!];
       channels.push({
         channel: {
           target,
           apply: (v) => {
-            if (idx === undefined) for (let i = 0; i < v.length && i < arr.length; i++) arr[i] = v[i];
-            else arr[idx] = v[0];
+            if (idx === undefined) for (let i = 0; i < v.length && i < arr.length; i++) arr[i] = v[i]!;
+            else arr[idx] = v[0]!;
           }
         },
-        from: idx === undefined ? [...arr] : [arr[idx]],
-        to: toArr
+        from,
+        to: toArr,
+        scratch: from.slice()
       });
     } else {
       throw new RangeError(`tween target field "${path}" is not numeric`);

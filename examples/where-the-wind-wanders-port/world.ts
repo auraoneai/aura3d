@@ -905,7 +905,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const squash = state.hop.phase === "takeoff" ? -0.08 : state.hop.phase === "landing" ? -0.1 : state.hop.phase === "air" ? 0.06 : 0;
           const onBoat = epilogue !== null;
           const tr = node(set.hero ? "hero" : "traveller");
-          const cloakNode = app.nodes.find?.("bellkeeper-cloak") ?? null;
+          const cloakNode = app.nodes.get("bellkeeper-cloak") ?? null;
           if (onBoat) {
             const b = boatPose(epilogue!);
             tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0);

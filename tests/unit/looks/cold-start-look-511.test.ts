@@ -95,20 +95,33 @@ describe("withColdStartLook", () => {
 describe("coldStartLookApplies (path gating)", () => {
   const holder = globalThis as { WebGL2RenderingContext?: unknown };
   const prior = holder.WebGL2RenderingContext;
-  it("is off without a WebGL2 context class, and for webgpu/auto, deferred, worker and residency apps", () => {
+  const priorNavigatorDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  it("is off without a browser GPU context, and off for deferred, worker and residency apps while supporting webgl2/webgpu/auto", () => {
     try {
       holder.WebGL2RenderingContext = undefined;
+      Object.defineProperty(globalThis, "navigator", { value: {}, configurable: true, writable: true });
       expect(coldStartLookApplies({})).toBe(false);
       holder.WebGL2RenderingContext = class {};
       expect(coldStartLookApplies({})).toBe(true);
       expect(coldStartLookApplies({ renderer: { backend: "webgl2" } })).toBe(true);
-      expect(coldStartLookApplies({ renderer: { backend: "webgpu" } })).toBe(false);
-      expect(coldStartLookApplies({ renderer: { backend: "auto" } })).toBe(false);
+      expect(coldStartLookApplies({ renderer: { backend: "webgpu" } })).toBe(true);
+      expect(coldStartLookApplies({ renderer: { backend: "auto" } })).toBe(true);
+      expect(coldStartLookApplies({ renderer: { backend: "mock" } })).toBe(false);
       expect(coldStartLookApplies({ renderer: { drawingPath: { mode: "deferred" } } })).toBe(false);
       expect(coldStartLookApplies({ renderer: { qualityProfile: "experimental-webgpu" } })).toBe(false);
       expect(coldStartLookApplies({ renderer: { textureResidency: { budgetBytes: 1 } } })).toBe(false);
       expect(coldStartLookApplies({ worker: { createWorker: () => ({}) } })).toBe(false);
       expect(coldStartLookApplies({ frameMode: "async" })).toBe(false);
-    } finally { holder.WebGL2RenderingContext = prior; }
+      holder.WebGL2RenderingContext = undefined;
+      Object.defineProperty(globalThis, "navigator", { value: { gpu: {} }, configurable: true, writable: true });
+      expect(coldStartLookApplies({ renderer: { backend: "webgpu" } })).toBe(true);
+    } finally {
+      holder.WebGL2RenderingContext = prior;
+      if (priorNavigatorDesc) {
+        Object.defineProperty(globalThis, "navigator", priorNavigatorDesc);
+      } else {
+        delete (globalThis as { navigator?: unknown }).navigator;
+      }
+    }
   });
 });

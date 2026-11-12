@@ -151,4 +151,74 @@ describe("mountTouchControls base layout", () => {
     expect(Number(m![1])).toBeGreaterThan(20);
     expect(Math.abs(Number(m![2]))).toBeLessThan(1);
   });
+
+  it("tracks real Touch.identifier across simultaneous stick + button multi-touch with zero touchmove reflows", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div") as FakeEl;
+    doc.body.appendChild(root);
+    const actions = new Map<string, boolean>();
+    const pressed: string[] = [];
+    const released: string[] = [];
+    const input = {
+      press: (a: string) => { pressed.push(a); },
+      release: (a: string) => { released.push(a); },
+      setAction: (a: string, held: boolean) => { actions.set(a, held); }
+    };
+    const tc = mountTouchControls(
+      input,
+      { preset: "dpad-4btn", bindings: FIGHT_BINDINGS, show: true },
+      { doc, root, viewport: { width: 844, height: 390 } }
+    );
+    const host = root.children[0]!;
+    const stick = host.children.find((c) => c.dataset.control === "stick")!;
+    const light = host.children.find((c) => c.dataset.control === "light")!;
+
+    // Landscape 844x390 adaptation keeps stick square in pixels and all targets >= 48px inside [0, 100]%.
+    const stickPxW = (parseFloat(stick.style.width!) / 100) * 844;
+    const stickPxH = (parseFloat(stick.style.height!) / 100) * 390;
+    expect(stickPxW).toBeCloseTo(stickPxH, 2);
+    for (const child of host.children) {
+      const pxW = (parseFloat(child.style.width!) / 100) * 844;
+      const pxH = (parseFloat(child.style.height!) / 100) * 390;
+      const leftPct = parseFloat(child.style.left!);
+      const topPct = parseFloat(child.style.top!);
+      expect(pxW).toBeGreaterThanOrEqual(47.9);
+      expect(pxH).toBeGreaterThanOrEqual(47.9);
+      expect(leftPct).toBeGreaterThanOrEqual(0);
+      expect(topPct).toBeGreaterThanOrEqual(0);
+      expect(leftPct + parseFloat(child.style.width!)).toBeLessThanOrEqual(100.01);
+      expect(topPct + parseFloat(child.style.height!)).toBeLessThanOrEqual(100.01);
+    }
+
+    stick.rect = { left: 20, top: 200, width: stickPxW, height: stickPxH };
+    let rectReads = 0;
+    stick.getBoundingClientRect = () => {
+      rectReads++;
+      return stick.rect;
+    };
+
+    const cx = stick.rect.left + stick.rect.width * 0.5;
+    const cy = stick.rect.top + stick.rect.height * 0.5;
+    stick.emit("touchstart", { changedTouches: [{ identifier: 1, clientX: cx, clientY: cy }] });
+    rectReads = 0;
+    stick.emit("touchmove", { changedTouches: [{ identifier: 1, clientX: cx + 40, clientY: cy }] });
+    expect(rectReads).toBe(0);
+    tc.update();
+    expect(actions.get("right")).toBe(true);
+
+    // Pressing and releasing action button with finger #2 must not drop finger #1 on the stick.
+    light.emit("touchstart", { changedTouches: [{ identifier: 2, clientX: 700, clientY: 300 }] });
+    expect(actions.get("shoot")).toBe(true);
+    stick.emit("touchend", { changedTouches: [{ identifier: 2, clientX: 700, clientY: 300 }] });
+    light.emit("touchend", { changedTouches: [{ identifier: 2, clientX: 700, clientY: 300 }] });
+    expect(actions.get("shoot")).toBe(false);
+    tc.update();
+    expect(actions.get("right")).toBe(true);
+
+    // Ending finger #1 releases the stick cleanly.
+    stick.emit("touchend", { changedTouches: [{ identifier: 1, clientX: cx + 40, clientY: cy }] });
+    tc.update();
+    expect(actions.get("right")).toBe(false);
+    tc.dispose();
+  });
 });

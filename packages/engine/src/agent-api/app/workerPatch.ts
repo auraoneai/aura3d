@@ -2,7 +2,7 @@
  * K1 patch ops shared by the host mirror (workerNodes.ts) and the render
  * worker. Kept free of registry/query imports so the worker entry stays small.
  */
-import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { AuraWorkerError } from "./workerError.js";
 import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
 import { batchedStateFor, type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
@@ -42,7 +42,11 @@ export type AuraWorkerNodePatchOp =
   /** 5.4: the host's current copy of a batched / instanced mesh state (`setMatrixAt`, `addInstance`, `setCount` writes). */
   | { readonly batched: string; readonly state: BatchedMeshStateSnapshot }
   /** 5.4: an app-level runtime control replayed in the worker (see {@link WORKER_APP_CALLS}). */
-  | { readonly app: AuraWorkerAppCall; readonly args: readonly unknown[] };
+  | { readonly app: AuraWorkerAppCall; readonly args: readonly unknown[] }
+  /** 5.5.3: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+  | { readonly structural: "add"; readonly node: AuraSceneNode; readonly options?: { readonly parent?: string } }
+  | { readonly structural: "remove"; readonly id: string }
+  | { readonly structural: "clear" };
 
 /**
  * 5.4: app members a worker app forwards to the render worker: the output (tone mapping, exposure), the runtime
@@ -80,10 +84,75 @@ export const WORKER_HOST_READS = new Set<string>([
   "getWorldPosition", "getWorldQuaternion", "getWorldScale", "toJSON", "then"
 ]);
 
+const ownedPatchBuffers = new WeakSet<ArrayBuffer>();
+
+/**
+ * Mark a privately cloned `ArrayBuffer` as owned by the worker patch queue so
+ * `postMessage` can transfer it zero-copy without detaching caller-retained views.
+ */
+export function markWorkerOwnedBuffer(buffer: ArrayBufferLike | undefined): void {
+  if (buffer instanceof ArrayBuffer && buffer.byteLength > 0) ownedPatchBuffers.add(buffer);
+}
+
+/** Collect unique patch-owned `ArrayBuffer`s safe to pass in the `postMessage` transfer list. */
+export function collectWorkerPatchTransferables(ops: readonly AuraWorkerNodePatchOp[]): Transferable[] {
+  const seen = new Set<ArrayBuffer>();
+  const addView = (view: unknown): void => {
+    if (!ArrayBuffer.isView(view)) return;
+    const { buffer } = view;
+    if (buffer instanceof ArrayBuffer && buffer.byteLength > 0 && ownedPatchBuffers.has(buffer)) {
+      seen.add(buffer);
+    }
+  };
+  const walkOwnedArgs = (value: unknown): void => {
+    if (!value || typeof value !== "object") return;
+    if (ArrayBuffer.isView(value)) { addView(value); return; }
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i += 1) walkOwnedArgs(value[i]);
+      return;
+    }
+    const proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) return;
+    const record = value as Record<string, unknown>;
+    for (const key of Object.keys(record)) walkOwnedArgs(record[key]);
+  };
+  for (let i = 0; i < ops.length; i += 1) {
+    const op = ops[i];
+    if (!op || typeof op !== "object") continue;
+    if ("texture" in op) {
+      addView(op.data);
+    } else if ("batched" in op) {
+      const s = op.state;
+      if (s && typeof s === "object") {
+        addView(s.matrices);
+        addView(s.colors);
+        addView(s.geometryIds);
+        addView(s.alive);
+        addView(s.visible);
+      }
+    } else if ("call" in op) {
+      walkOwnedArgs(op.args);
+    }
+  }
+  return seen.size > 0 ? [...seen] : [];
+}
+
 /** Absolute writes: a later op with the same key makes an earlier one redundant. */
 export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
   if ("camera" in op) return "camera";
-  if ("app" in op) return undefined;
+  if ("structural" in op) return undefined;
+  if ("app" in op) {
+    switch (op.app) {
+      case "setOutput": return "\u0000app\u0000setOutput";
+      case "post.setQualityTier": return "\u0000app\u0000post.setQualityTier";
+      case "post.setEffectEnabled": return `\u0000app\u0000post.setEffectEnabled\u0000${String(op.args[0])}`;
+      case "post.setPassUniform": return `\u0000app\u0000post.setPassUniform\u0000${String(op.args[0])}\u0000${String(op.args[1])}`;
+      case "atmosphere.setWetness": return op.args.length <= 1 ? "\u0000app\u0000atmosphere.setWetness" : undefined;
+      case "lighting.setEnvironmentIntensity": return "\u0000app\u0000lighting.setEnvironmentIntensity";
+      case "lighting.setEnvironmentRotation": return "\u0000app\u0000lighting.setEnvironmentRotation";
+      default: return undefined;
+    }
+  }
   if ("batched" in op) return `\u0000batched\u0000${op.batched}`;
   if ("texture" in op) return `\u0000texture\u0000${op.texture}`;
   if ("set" in op) {
@@ -95,6 +164,19 @@ export function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined {
     case "setRotation": return `${op.id}\u0000rotation`;
     case "setScale": return `${op.id}\u0000scale`;
     case "setVisible": return `${op.id}\u0000visible`;
+    case "setMaterial": return `${op.id}\u0000material`;
+    case "setColor": return `${op.id}\u0000color`;
+    case "setOpacity": return `${op.id}\u0000opacity`;
+    case "setEmissive": return `${op.id}\u0000emissive`;
+    case "setIntensity": return `${op.id}\u0000intensity`;
+    case "setLight": {
+      const transition = (op.args[1] as { readonly transitionSeconds?: number } | undefined)?.transitionSeconds ?? 0;
+      return `${op.id}\u0000light\u0000${String(transition)}`;
+    }
+    case "updateAttribute": {
+      const offset = (op.args[1] as { readonly offset?: number } | undefined)?.offset ?? 0;
+      return `${op.id}\u0000attr\u0000${String(op.args[0])}\u0000${String(offset)}`;
+    }
     case "setInstanceMatrices":
     case "setInstanceTransforms": return `${op.id}\u0000instanceMatrices`;
     case "setAnimationPose": return `${op.id}\u0000animationPose`;
@@ -149,6 +231,32 @@ export function applyWorkerNodePatch(registry: AuraRuntimeNodeRegistry | undefin
         continue;
       }
       if (!registry) throw new AuraWorkerError("This worker renderer does not expose runtime nodes; node patches are unavailable.", "patch-unsupported", "recoverable");
+      if ("structural" in op) {
+        const mutableRegistry = registry as AuraRuntimeNodeRegistry & {
+          add?: (node: AuraSceneNode, options?: { readonly parent?: string }) => unknown;
+          remove?: (id: string) => boolean;
+          clear?: () => void;
+        };
+        if (op.structural === "add") {
+          if (typeof mutableRegistry.add !== "function") throw new AuraWorkerError("This worker renderer does not support runtime node additions.", "patch-unsupported", "recoverable");
+          mutableRegistry.add(op.node, op.options);
+        } else if (op.structural === "remove") {
+          if (typeof mutableRegistry.remove !== "function") throw new AuraWorkerError("This worker renderer does not support runtime node removals.", "patch-unsupported", "recoverable");
+          mutableRegistry.remove(op.id);
+        } else if (op.structural === "clear") {
+          if (typeof mutableRegistry.clear === "function") {
+            mutableRegistry.clear();
+          } else if (typeof mutableRegistry.remove === "function") {
+            for (const id of [...registry.ids()]) mutableRegistry.remove(id);
+          } else {
+            throw new AuraWorkerError("This worker renderer does not support runtime node removals.", "patch-unsupported", "recoverable");
+          }
+        } else {
+          throw new Error("Unknown structural worker patch op.");
+        }
+        applied += 1;
+        continue;
+      }
       if (typeof op.id !== "string") throw new Error("Worker patch op needs a node id.");
       const handle = registry.require(op.id);
       if ("set" in op) {

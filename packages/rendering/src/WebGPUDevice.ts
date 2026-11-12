@@ -36,7 +36,16 @@ import {
 } from "./RenderDevice";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle";
 import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
-import { normalizeWebGPUTemporalOptions, WEBGPU_TAA_FRAGMENT, WEBGPU_TAA_OUTPUT_FRAGMENT, type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal";
+import {
+  normalizeWebGPUTemporalOptions,
+  validateWebGPUTemporalInputs,
+  webgpuTaaResolveUniforms,
+  WEBGPU_TAA_FRAGMENT,
+  WEBGPU_TAA_OUTPUT_FRAGMENT,
+  WEBGPU_TAA_V2_RESOLVE_FRAGMENT,
+  WEBGPU_TAA_V2_UPSCALE_FRAGMENT,
+  type WebGPUTemporalInputs
+} from "./webgpu/WebGPUTemporal";
 import {
   resolveWebGPUVolumetricLight, webgpuGodRaysFragment, webgpuGodRaysUniforms, webgpuMotionReconstructFragment, webgpuMotionReconstructUniforms,
   webgpuMotionTileUniforms, webgpuMotionVelocityFragment, webgpuMotionVelocityUniforms, webgpuVolumetricLightFragment, webgpuVolumetricLightUniforms,
@@ -49,21 +58,30 @@ import {
   normalizeWebGPUColorGradeOptions,
   normalizeWebGPUBloomOptions,
   normalizeWebGPUBloomV2Options,
+  normalizeWebGPUOutlineOptions,
+  packWebGPUOutlineUniforms,
   WEBGPU_BLOOM_V2_ACCUMULATE_FRAGMENT,
   WEBGPU_BLOOM_V2_BLUR_FRAGMENT,
   WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT,
   WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT,
   WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT,
   WEBGPU_HDR_GRADE_FRAGMENT,
+  WEBGPU_OUTLINE_FRAGMENT,
+  WEBGPU_SMAA_BLEND_FRAGMENT,
+  WEBGPU_SMAA_EDGES_FRAGMENT,
+  WEBGPU_SMAA_WEIGHTS_FRAGMENT,
   webgpuBlurFragment,
   webgpuBloomCompositeFragment,
   webgpuBrightExtractFragment,
   webgpuColorGradeFragment,
+  webgpuFilterableLinearDepthFragment,
   WEBGPU_POST_VERTEX_WGSL,
   type WebGPUBloomDiagnostics,
   type WebGPUBloomOptions,
-  type WebGPUColorGradeOptions
+  type WebGPUColorGradeOptions,
+  type WebGPUOutlineOptions
 } from "./webgpu/WebGPUPostShaders";
+import { generateSmaaAreaData, generateSmaaSearchData } from "./post/smaa/textures";
 import { DEFAULT_DEPTH_SHADER_MARKER } from "./ShaderLibraryCore";
 import { resolveBloomPyramidPlan, resolveBloomPyramidV2Response } from "./postprocess/NativeBloomPyramid";
 import { FXAA_NATIVE_INTERMEDIATE_WGSL } from "./post/shaders/fxaa.wgsl";
@@ -258,17 +276,42 @@ const WEBGPU_SCENE_DOF_COLOR_FRAGMENT = /* wgsl */ `@group(0) @binding(2) var u_
 /**
  * The WebGL2 S10b user-LUT fetch on display-referred colour: the `.cube` rows are lattice samples at i/(N-1), so the
  * coordinate gets the half-texel remap, and `bypass` (1 - intensity) keeps that much of the ungraded colour.
+ * When `lut_p3 > 0.5`, converts Display-P3 <-> sRGB around the sRGB-authored `.cube` lookup (`DISPLAY_LUT_FETCH_GLSL`).
  */
-const WEBGPU_DISPLAY_LUT_FRAGMENT = /* wgsl */ `struct LutParams { size: f32, bypass: f32, _pad: vec2<f32> };
+const WEBGPU_DISPLAY_LUT_FRAGMENT = /* wgsl */ `struct LutParams { size: f32, bypass: f32, lut_p3: f32, _pad: f32 };
 @group(0) @binding(0) var<uniform> u_params: LutParams;
 @group(0) @binding(1) var u_sampler: sampler;
 @group(0) @binding(2) var u_color: texture_2d<f32>;
 @group(0) @binding(3) var u_lut: texture_3d<f32>;
+fn a3d_lut_decode(c: vec3<f32>) -> vec3<f32> {
+  return mix(c / 12.92, pow(max((c + vec3<f32>(0.055)) / 1.055, vec3<f32>(0.0)), vec3<f32>(2.4)), step(vec3<f32>(0.04045), c));
+}
+fn a3d_lut_encode(input: vec3<f32>) -> vec3<f32> {
+  let c = max(input, vec3<f32>(0.0));
+  return mix(12.92 * c, 1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055), step(vec3<f32>(0.0031308), c));
+}
+fn a3d_linear_p3_to_srgb(c: vec3<f32>) -> vec3<f32> {
+  return vec3<f32>(
+    dot(c, vec3<f32>(1.224940176, -0.224940176, 0.0)),
+    dot(c, vec3<f32>(-0.042056955, 1.042056955, 0.0)),
+    dot(c, vec3<f32>(-0.019637555, -0.078636046, 1.098273600))
+  );
+}
+fn a3d_linear_srgb_to_p3(c: vec3<f32>) -> vec3<f32> {
+  return vec3<f32>(
+    dot(c, vec3<f32>(0.822461969, 0.177538031, 0.0)),
+    dot(c, vec3<f32>(0.033194199, 0.966805801, 0.0)),
+    dot(c, vec3<f32>(0.017082631, 0.072397441, 0.910519929))
+  );
+}
 @fragment fn fs_display_lut(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
   let source = textureLoad(u_color, vec2<i32>(position.xy), 0);
+  let p3 = u_params.lut_p3 > 0.5;
+  let lut_input = select(source.rgb, a3d_lut_encode(a3d_linear_p3_to_srgb(a3d_lut_decode(source.rgb))), p3);
   let n = u_params.size;
-  let coord = clamp(source.rgb, vec3<f32>(0.0), vec3<f32>(1.0)) * ((n - 1.0) / n) + vec3<f32>(0.5 / n);
-  let graded = textureSampleLevel(u_lut, u_sampler, coord, 0.0).rgb;
+  let coord = clamp(lut_input, vec3<f32>(0.0), vec3<f32>(1.0)) * ((n - 1.0) / n) + vec3<f32>(0.5 / n);
+  let sampled = textureSampleLevel(u_lut, u_sampler, coord, 0.0).rgb;
+  let graded = select(sampled, a3d_lut_encode(a3d_linear_srgb_to_p3(a3d_lut_decode(sampled))), p3);
   return vec4<f32>(mix(graded, source.rgb, u_params.bypass), source.a);
 }
 `;
@@ -368,15 +411,17 @@ fn a3dLinearSrgbToDisplayP3(c: vec3<f32>) -> vec3<f32> {
 }
 ${WEBGPU_NATIVE_TONE_FRAGMENT.replace(" if (params.z > 0.5)", " c = a3dLinearSrgbToDisplayP3(c);\n if (params.z > 0.5)")}`;
 
-/** Recognize only the existing independently generated opaque P3 output variant. */
+/** Recognize the independently generated opaque P3 output variants (including overlay and `|grade`). */
 function isNativeP3OutputSources(sources: ShaderSources): boolean {
   if (sources.marker !== "a3d.output" || !sources.label.startsWith("prd01-output-") || !sources.webgpu || !sources.portableBindings || sources.webgpu.storageBindings?.length) return false;
   const parts = sources.label.slice("prd01-output-".length).split("|");
-  if (parts.length !== 7 || parts.slice(1, 5).some(value => value !== "0" && value !== "1") ||
-      parts[2] !== "0" || parts[5] !== "display-p3" || parts[6] !== "opaque") return false;
+  const hasGrade = parts.length === 8 && parts[7] === "grade";
+  if ((parts.length !== 7 && !hasGrade) || parts.slice(1, 5).some(value => value !== "0" && value !== "1") ||
+      parts[5] !== "display-p3" || parts[6] !== "opaque") return false;
   try {
-    const expected = createOutputWgsl({ toneMapping: parts[0]!, backgroundCoverage: parts[1] === "1", overlay: false,
-      vignette: parts[3] === "1", fullCoverage: parts[4] === "1", outputColorSpace: "display-p3", alphaMode: "opaque" });
+    const expected = createOutputWgsl({ toneMapping: parts[0]!, backgroundCoverage: parts[1] === "1", overlay: parts[2] === "1",
+      vignette: parts[3] === "1", fullCoverage: parts[4] === "1", outputColorSpace: "display-p3", alphaMode: "opaque",
+      ...(hasGrade ? { colorGrade: true } : {}) });
     return sources.webgpu.vertex === expected.webgpu.vertex && sources.webgpu.fragment === expected.webgpu.fragment &&
       JSON.stringify(sources.portableBindings) === JSON.stringify(expected.portableBindings);
   } catch { return false; }
@@ -631,6 +676,7 @@ interface WebGPUDrawBatch {
   readonly accesses: Map<object, "read" | "write" | "readwrite">;
   readonly releaseUniforms: TransientUniform[];
   readonly retirements: { destroy(): void }[];
+  readonly beforeSubmitChecks: (() => void)[];
   draws: number;
 }
 
@@ -710,16 +756,16 @@ export interface WebGPURenderPassDescriptorLike {
     readonly resolveTarget?: unknown;
     readonly clearValue?: readonly [number, number, number, number];
     readonly loadOp: "clear" | "load";
-    readonly storeOp: "store";
+    readonly storeOp: "store" | "discard";
   }[];
   readonly depthStencilAttachment?: {
     readonly view: unknown;
     readonly depthClearValue?: number;
     readonly depthLoadOp: "clear" | "load";
-    readonly depthStoreOp: "store";
+    readonly depthStoreOp: "store" | "discard";
     readonly stencilClearValue?: number;
     readonly stencilLoadOp?: "clear" | "load";
-    readonly stencilStoreOp?: "store";
+    readonly stencilStoreOp?: "store" | "discard";
   };
 }
 
@@ -836,6 +882,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
   readonly nativeEffects?: readonly NativePostEffect[];
   readonly postFrameContext?: WebGPUNativePostFrame;
+  readonly nativeSmaa?: boolean;
+  readonly customPasses?: readonly PostPassDescriptor[];
+  readonly cameraFrame?: {
+    readonly near: number;
+    readonly far: number;
+    readonly projection?: "perspective" | "orthographic";
+    readonly projectionMatrix?: Float32Array | readonly number[];
+    readonly projectionMatrixInverse?: Float32Array | readonly number[];
+  };
 }
 
 interface WebGPUPostHistoryTransaction {
@@ -1114,12 +1169,26 @@ class WebGPURenderTarget implements RenderTarget {
   get colorTextures(): readonly Texture[] | undefined { return this.allColors; }
   private needsClear = true;
   public nativeMipsReady = false;
+  /** True when the depth attachment is render-only (`transientDepth: true`), never sampled by downstream passes. */
+  public transientDepth = false;
+  /** Tracks TBDR MSAA tile discard across sub-passes within a single clear cycle. */
+  public msaaColorDiscarded = false;
+  public msaaPassesInCurrentClear = 0;
+  public multiPassMsaaHint = false;
   get nativeNeedsClear(): boolean { return this.needsClear; }
   set nativeNeedsClear(value: boolean) {
+    if (value) {
+      if (this.msaaPassesInCurrentClear > 1) this.multiPassMsaaHint = true;
+      else if (this.msaaPassesInCurrentClear === 1) this.multiPassMsaaHint = false;
+      this.msaaPassesInCurrentClear = 0;
+      this.msaaColorDiscarded = false;
+    }
     this.needsClear = value;
     if (!value && this.colorTexture.mipLevelCount > 1) this.nativeMipsReady = false;
   }
   public nativeClearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
+  /** Native color texture format (allows internal single/dual-channel overrides such as r32float / rg32float). */
+  public nativeColorFormat: string | null = null;
   /** Native depth/stencil format; every pipeline drawing into this target must match it. */
   public nativeDepthFormat: string = DEPTH_TEXTURE_FORMAT;
   /** "float" for depth32float and depth32float-stencil8 attachments. */
@@ -1684,6 +1753,16 @@ export class WebGPUDevice implements RenderDevice {
   readonly #postTargetsInUse = new Set<RenderTarget>();
   #postTransactionDepth = 0;
   #postTransactionSerial = 0;
+  #postLastRootSize: { readonly width: number; readonly height: number } | null = null;
+  #smaaLookupTextures: {
+    readonly generation: number;
+    readonly areaTexture: ({ destroy(): void }) | null;
+    readonly areaView: unknown;
+    readonly searchTexture: ({ destroy(): void }) | null;
+    readonly searchView: unknown;
+    readonly fallbackTargets?: RenderTarget[];
+  } | null = null;
+  #dummyLinearDepthTarget: RenderTarget | null = null;
   /** Draw batching (see `WebGPUDeviceOptions.nativeDrawBatching`). */
   readonly #drawBatchingEnabled: boolean;
   #drawBatchWindows = 0;
@@ -1849,10 +1928,18 @@ export class WebGPUDevice implements RenderDevice {
       const missingLimits = Object.entries(requiredLimits).filter(([name, value]) => (limitOwner.limits?.[name] ?? -1) < value).map(([name]) => name);
       if (missingLimits.length) throw new RenderDeviceError("Required WebGPU limits are unavailable", "WEBGPU_LIMITS_UNAVAILABLE", { missingLimits });
       // Reversed-Z frames need floating-point depth with a stencil aspect for
-      // renderer-owned scene targets; request it whenever the adapter offers
-      // it (an optional feature, never a creation requirement).
-      const requestedFeatures = !options.device && adapter.features?.has(FLOAT_DEPTH_STENCIL_FEATURE) && !requiredFeatures.includes(FLOAT_DEPTH_STENCIL_FEATURE)
-        ? [...requiredFeatures, FLOAT_DEPTH_STENCIL_FEATURE] : requiredFeatures;
+      // renderer-owned scene targets, and iOS/desktop KTX2 uploads need hardware
+      // block-compressed texture formats; request optional features whenever the
+      // adapter offers them (never a creation requirement).
+      const optionalFeatures = [
+        FLOAT_DEPTH_STENCIL_FEATURE,
+        "texture-compression-astc",
+        "texture-compression-etc2",
+        "texture-compression-bc"
+      ];
+      const requestedFeatures = !options.device
+        ? [...requiredFeatures, ...optionalFeatures.filter((feature) => Boolean(adapter.features?.has(feature)) && !requiredFeatures.includes(feature))]
+        : requiredFeatures;
       device = await requestDevice(adapter, options.device, requestedFeatures, requiredLimits);
       if (device && typeof device === "object") {
         const managedOwner = managedNativeDevices.get(device);
@@ -3364,17 +3451,25 @@ export class WebGPUDevice implements RenderDevice {
         label: descriptor.label
       });
     }
-    const textureFormat = webgpuTextureFormat(descriptor.format ?? "rgba8");
+    const nativeFormatOverride = (descriptor as { readonly nativeFormatOverride?: "r32float" | "rg16float" | "rg32float" }).nativeFormatOverride;
+    const transientDepth = (descriptor as { readonly transientDepth?: boolean }).transientDepth === true;
+    const textureFormat = nativeFormatOverride ?? webgpuTextureFormat(descriptor.format ?? "rgba8");
     const hasDepth = descriptor.depth !== false;
     const hasSampleableDepth = descriptor.depth === "texture";
+    const depthIsTransient = hasDepth && !hasSampleableDepth && transientDepth;
     const depthSelection = this.selectDepthFormat(descriptor);
+    const formatBytes = nativeFormatOverride === "r32float" || nativeFormatOverride === "rg16float"
+      ? 4
+      : nativeFormatOverride === "rg32float"
+        ? 8
+        : bytesPerPixel(descriptor.format ?? "rgba8");
     let colorBytes = 0;
     for (let level = 0; level < requestedMipCount; level += 1) colorBytes += Math.max(1, Math.floor(descriptor.width / 2 ** level))
-      * Math.max(1, Math.floor(descriptor.height / 2 ** level)) * bytesPerPixel(descriptor.format ?? "rgba8");
+      * Math.max(1, Math.floor(descriptor.height / 2 ** level)) * formatBytes;
     // Account for the sampled resolve and the distinct multisampled color
     // attachment separately. Depth storage is implementation-defined and is
     // modeled as four bytes per sample.
-    const multisampleColorBytes = sampleCount > 1 ? descriptor.width * descriptor.height * bytesPerPixel(descriptor.format ?? "rgba8") * sampleCount : 0;
+    const multisampleColorBytes = sampleCount > 1 ? descriptor.width * descriptor.height * formatBytes * sampleCount : 0;
     const depthBytes = hasDepth ? descriptor.width * descriptor.height * 4 * sampleCount : 0;
     if (![colorBytes, multisampleColorBytes, depthBytes].every(Number.isSafeInteger)) throw new TextureBudgetExceededError("Render target exceeds safe texture byte accounting.");
     const policy = this.options.textureBudgetPolicy;
@@ -3412,9 +3507,9 @@ export class WebGPUDevice implements RenderDevice {
         label: `${descriptor.label ?? "aura3d-webgpu-render-target"}-depth`,
         size: [descriptor.width, descriptor.height],
         format: depthSelection.format,
-        // Internal deferred work may sample this same depth attachment; a
-        // 4x attachment still does not expose a resolved public depth texture.
-        usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.TEXTURE_BINDING,
+        // Internal deferred work may sample this same depth attachment unless
+        // the caller explicitly marked depth transient (`transientDepth: true`).
+        usage: depthIsTransient ? TEXTURE_USAGE.RENDER_ATTACHMENT : (TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.TEXTURE_BINDING),
         sampleCount
       }) ?? null
       : null;
@@ -3438,7 +3533,7 @@ export class WebGPUDevice implements RenderDevice {
       : undefined;
     // This alias names the actual 4x attachment, never a resolved depth
     // texture. Only the dedicated multisampled portable binding accepts it.
-    const multisampledDepthTexture = nativeDepthTexture && hasDepth && sampleCount === 4
+    const multisampledDepthTexture = nativeDepthTexture && hasDepth && !depthIsTransient && sampleCount === 4
       ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", renderAttachment: true, label: `${descriptor.label ?? "render-target"}-multisampled-depth` })
       : undefined;
     const nativeView = nativeTexture?.createView(requestedMipCount > 1 ? { baseMipLevel: 0, mipLevelCount: 1 } : undefined) ?? null;
@@ -3483,7 +3578,9 @@ export class WebGPUDevice implements RenderDevice {
       resource => this.retryFailedNativeRetirement(resource),
       resource => this.activeNativeCleanups.has(resource)
     );
+    target.nativeColorFormat = textureFormat;
     target.nativeDepthFormat = depthSelection.format;
+    target.transientDepth = depthIsTransient;
     if (hasDepth && depthSelection.storage === "float") target.depthStorage = "float";
     this.#p3ResolvedColors.set(target, {
       color: target.colorTexture, texture: target.nativeTexture, view: target.nativeView,
@@ -4062,7 +4159,9 @@ export class WebGPUDevice implements RenderDevice {
       });
     }
     if (target && target instanceof WebGPURenderTarget && target.nativeExtraColors.length) this.requireRenderTarget(target);
-    if (this.activeRenderTarget && target !== this.activeRenderTarget && this.activeRenderTarget.nativeNeedsClear) this.flushNativeRenderTargetClear(this.activeRenderTarget);
+    if (this.activeRenderTarget && target !== this.activeRenderTarget && !this.activeRenderTarget.disposed && this.activeRenderTarget.nativeNeedsClear) {
+      this.flushNativeRenderTargetClear(this.activeRenderTarget);
+    }
     this.activeRenderTarget = target as WebGPURenderTarget | null;
   }
 
@@ -5632,7 +5731,7 @@ export class WebGPUDevice implements RenderDevice {
           Array.from({ length: 5 }, (_, level) => mips[level < mipCount ? level : 0]!), bloom);
         passes += 1;
       }
-      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-bloom-composite" }));
       pass("webgpu-bloom-v2-composite", WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT, "fs_bloom_composite",
         new Float32Array([request.intensity, 0, 0, 0]), [src, bloom], composite);
       passes += 1;
@@ -5693,7 +5792,7 @@ export class WebGPUDevice implements RenderDevice {
       };
     };
     try {
-      const bright = track(this.createRenderTarget({ width, height, format: mipFormat, label: "a3d-webgpu-bloom-bright" }));
+      const bright = track(this.createRenderTarget({ width, height, format: mipFormat, depth: false, label: "a3d-webgpu-bloom-bright" }));
       this.runWebGPUFullscreenPass({
         label: "webgpu-bloom-bright",
         fragment: webgpuBrightExtractFragment(),
@@ -5710,8 +5809,8 @@ export class WebGPUDevice implements RenderDevice {
       for (let mip = 0; mip < normalized.mipCount; mip += 1) {
         levelWidth = Math.max(1, levelWidth >> 1);
         levelHeight = Math.max(1, levelHeight >> 1);
-        const scratch = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, label: `a3d-webgpu-bloom-mip${mip}-scratch` }));
-        const mipTarget = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, label: `a3d-webgpu-bloom-mip${mip}` }));
+        const scratch = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, depth: false, label: `a3d-webgpu-bloom-mip${mip}-scratch` }));
+        const mipTarget = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, depth: false, label: `a3d-webgpu-bloom-mip${mip}` }));
         const levelView = this.requireRenderTarget(level).nativeView;
         const scratchView = this.requireRenderTarget(scratch).nativeView;
         if (!levelView || !scratchView) {
@@ -5739,7 +5838,7 @@ export class WebGPUDevice implements RenderDevice {
         level = mipTarget;
       }
       const weights = defaultWebGPUBloomWeights(normalized.mipCount);
-      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.transientPostTarget({ width, height, format: "rgba16f", depth: false, label: "a3d-webgpu-bloom-composite" }));
       const mipViews = mips.map((mipTarget) => {
         const view = this.requireRenderTarget(mipTarget).nativeView;
         if (!view) throw new RenderDeviceError("WebGPU bloom mip has no native view", "NATIVE_POST_UNSUPPORTED", {});
@@ -5805,7 +5904,7 @@ export class WebGPUDevice implements RenderDevice {
     const src = this.requireRenderTarget(source);
     if (!src.nativeView) throw new RenderDeviceError("WebGPU HDR grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     const format = src.colorTexture.format === "rgba32f" ? "rgba32f" : src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f";
-    const out = this.transientPostTarget({ width: src.width, height: src.height, format, label: "a3d-webgpu-hdr-grade" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-hdr-grade" });
     const rows = [grade.whiteBalance, grade.lift, grade.gamma, grade.gain, grade.shadows, grade.midtones, grade.highlights];
     const uniforms = new Float32Array(28);
     rows.forEach((row, index) => uniforms.set([row[0], row[1], row[2], 0], index * 4));
@@ -5813,32 +5912,32 @@ export class WebGPUDevice implements RenderDevice {
       this.runWebGPUFullscreenPass({ label: "webgpu-hdr-grade", fragment: WEBGPU_HDR_GRADE_FRAGMENT, entryPoint: "fs_hdr_grade", uniforms, views: [src.nativeView], target: out });
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
     }
   }
 
-  executeWebGPUColorGrade(source: RenderTarget, options: WebGPUColorGradeOptions = {}): RenderTarget {
+  executeWebGPUColorGrade(source: RenderTarget, options: WebGPUColorGradeOptions = {}, displayP3 = false): RenderTarget {
     const normalized = normalizeWebGPUColorGradeOptions(options);
     const src = this.requireRenderTarget(source);
     const srcView = src.nativeView;
     if (!srcView) {
       throw new RenderDeviceError("WebGPU color-grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
-    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-color-grade" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", depth: false, label: "a3d-webgpu-color-grade" });
     try {
       this.runWebGPUFullscreenPass({
         label: "webgpu-color-grade",
         fragment: webgpuColorGradeFragment(),
         entryPoint: "fs_grade",
-        uniforms: new Float32Array([normalized.exposure, normalized.contrast, normalized.saturation, 0]),
+        uniforms: new Float32Array([normalized.exposure, normalized.contrast, normalized.saturation, displayP3 ? 1 : 0]),
         views: [srcView],
         target: out
       });
       this.nativeColorGradePasses += 1;
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
     }
   }
@@ -5903,7 +6002,7 @@ export class WebGPUDevice implements RenderDevice {
     if (!srcView) {
       throw new RenderDeviceError("WebGPU FXAA source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
-    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-fxaa" });
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format: "rgba8", depth: false, label: "a3d-webgpu-fxaa" });
     try {
       this.runWebGPUFullscreenPass({
         label: "webgpu-fxaa",
@@ -5916,8 +6015,174 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeFxaaPasses += 1;
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
+    }
+  }
+
+  private ensureDummyLinearDepthView(): unknown {
+    if (this.#dummyLinearDepthTarget && !this.#dummyLinearDepthTarget.disposed && this.renderTargets.has(this.#dummyLinearDepthTarget as WebGPURenderTarget)) {
+      const view = this.requireRenderTarget(this.#dummyLinearDepthTarget).nativeView;
+      if (view) return view;
+    }
+    const created = this.createRenderTarget({ width: 1, height: 1, format: "rgba16f", depth: false, label: "a3d-webgpu-dummy-linear-depth" });
+    this.nativePostOwnedTargets.add(created);
+    this.#dummyLinearDepthTarget = created;
+    const view = this.requireRenderTarget(created).nativeView;
+    if (!view) throw new RenderDeviceError("WebGPU dummy linear depth target has no native view", "NATIVE_POST_UNSUPPORTED");
+    return view;
+  }
+
+  /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+  executeWebGPUOutline(source: RenderTarget, options: WebGPUOutlineOptions = {}, linearDepthView?: unknown | null, farPlane = 1000): RenderTarget {
+    let normalized: ReturnType<typeof normalizeWebGPUOutlineOptions>;
+    try { normalized = normalizeWebGPUOutlineOptions(options); }
+    catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "INVALID_POSTPROCESS_OPTIONS"); }
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView) {
+      throw new RenderDeviceError("WebGPU outline source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    const format = src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f" ? "rgba16f" : "rgba8";
+    const depthView = linearDepthView ?? this.ensureDummyLinearDepthView();
+    const out = this.transientPostTarget({ width: src.width, height: src.height, format, depth: false, label: "a3d-webgpu-outline" });
+    try {
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-outline",
+        fragment: WEBGPU_OUTLINE_FRAGMENT,
+        entryPoint: "fs_outline",
+        uniforms: packWebGPUOutlineUniforms(src.width, src.height, normalized, Boolean(linearDepthView), farPlane),
+        views: [src.nativeView, depthView],
+        target: out
+      });
+      return out;
+    } catch (error) {
+      this.releaseTransientPostTarget(out);
+      throw error;
+    }
+  }
+
+  private ensureSmaaLookupViews(): { readonly areaView: unknown; readonly searchView: unknown } {
+    if (this.#smaaLookupTextures && this.#smaaLookupTextures.generation === this.generation) {
+      return { areaView: this.#smaaLookupTextures.areaView, searchView: this.#smaaLookupTextures.searchView };
+    }
+    const areaR8 = generateSmaaAreaData();
+    const searchR8 = generateSmaaSearchData();
+    const areaBytes = new Uint8Array(areaR8.length * 4);
+    for (let i = 0; i < areaR8.length; i += 1) {
+      const v = areaR8[i]!;
+      const o = i * 4;
+      areaBytes[o] = v;
+      areaBytes[o + 1] = v;
+      areaBytes[o + 2] = v;
+      areaBytes[o + 3] = 255;
+    }
+    const searchBytes = new Uint8Array(searchR8.length * 4);
+    for (let i = 0; i < searchR8.length; i += 1) {
+      const v = searchR8[i]!;
+      const o = i * 4;
+      searchBytes[o] = v;
+      searchBytes[o + 1] = v;
+      searchBytes[o + 2] = v;
+      searchBytes[o + 3] = 255;
+    }
+    if (this.device.createTexture) {
+      const areaTexture = this.device.createTexture({
+        label: "a3d-webgpu-smaa-area-lut",
+        size: [81, 1],
+        format: "rgba8unorm",
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST
+      }) as WebGPUTextureLike & { destroy(): void };
+      this.registerNativeCleanup(areaTexture, []);
+      this.device.queue.writeTexture?.({ texture: areaTexture }, areaBytes, { bytesPerRow: 81 * 4, rowsPerImage: 1 }, [81, 1, 1]);
+      const searchTexture = this.device.createTexture({
+        label: "a3d-webgpu-smaa-search-lut",
+        size: [256, 1],
+        format: "rgba8unorm",
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST
+      }) as WebGPUTextureLike & { destroy(): void };
+      this.registerNativeCleanup(searchTexture, []);
+      this.device.queue.writeTexture?.({ texture: searchTexture }, searchBytes, { bytesPerRow: 256 * 4, rowsPerImage: 1 }, [256, 1, 1]);
+      const entry = {
+        areaTexture,
+        areaView: areaTexture.createView(),
+        searchTexture,
+        searchView: searchTexture.createView(),
+        generation: this.generation
+      };
+      this.#smaaLookupTextures = entry;
+      return { areaView: entry.areaView, searchView: entry.searchView };
+    }
+    const areaTarget = this.createRenderTarget({ width: 81, height: 1, format: "rgba8", depth: false, label: "a3d-webgpu-smaa-area-lut" });
+    const searchTarget = this.createRenderTarget({ width: 256, height: 1, format: "rgba8", depth: false, label: "a3d-webgpu-smaa-search-lut" });
+    this.nativePostOwnedTargets.add(areaTarget);
+    this.nativePostOwnedTargets.add(searchTarget);
+    const areaView = this.requireRenderTarget(areaTarget).nativeView;
+    const searchView = this.requireRenderTarget(searchTarget).nativeView;
+    if (!areaView || !searchView) {
+      throw new RenderDeviceError("WebGPU SMAA lookup textures have no native view", "NATIVE_POST_UNSUPPORTED");
+    }
+    this.#smaaLookupTextures = {
+      areaTexture: null,
+      areaView,
+      searchTexture: null,
+      searchView,
+      fallbackTargets: [areaTarget, searchTarget],
+      generation: this.generation
+    };
+    return { areaView, searchView };
+  }
+
+  /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+  executeWebGPUSmaa(source: RenderTarget): RenderTarget {
+    const src = this.requireRenderTarget(source);
+    if (!src.nativeView) {
+      throw new RenderDeviceError("WebGPU SMAA source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    const { areaView, searchView } = this.ensureSmaaLookupViews();
+    const w = src.width, h = src.height;
+    const texelUniforms = new Float32Array([1 / w, 1 / h, w, h]);
+    const edges = this.transientPostTarget({ width: w, height: h, format: "rgba8", depth: false, label: "a3d-webgpu-smaa-edges" });
+    const weights = this.transientPostTarget({ width: w, height: h, format: "rgba8", depth: false, label: "a3d-webgpu-smaa-weights" });
+    const format = src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f" ? "rgba16f" : "rgba8";
+    let out: RenderTarget | undefined;
+    try {
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-smaa-edges",
+        fragment: WEBGPU_SMAA_EDGES_FRAGMENT,
+        entryPoint: "fs_smaa_edges",
+        uniforms: texelUniforms,
+        views: [src.nativeView],
+        target: edges
+      });
+      const edgesView = this.requireRenderTarget(edges).nativeView;
+      if (!edgesView) throw new RenderDeviceError("WebGPU SMAA edges target has no native view", "NATIVE_POST_UNSUPPORTED");
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-smaa-weights",
+        fragment: WEBGPU_SMAA_WEIGHTS_FRAGMENT,
+        entryPoint: "fs_smaa_weights",
+        uniforms: texelUniforms,
+        views: [edgesView, areaView, searchView],
+        target: weights
+      });
+      const weightsView = this.requireRenderTarget(weights).nativeView;
+      if (!weightsView) throw new RenderDeviceError("WebGPU SMAA weights target has no native view", "NATIVE_POST_UNSUPPORTED");
+      out = this.transientPostTarget({ width: w, height: h, format, depth: false, label: "a3d-webgpu-smaa-blend" });
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-smaa-blend",
+        fragment: WEBGPU_SMAA_BLEND_FRAGMENT,
+        entryPoint: "fs_smaa_blend",
+        uniforms: texelUniforms,
+        views: [weightsView, src.nativeView],
+        target: out
+      });
+      this.nativeFxaaPasses += 1;
+      return out;
+    } catch (error) {
+      if (out) this.releaseTransientPostTarget(out);
+      throw error;
+    } finally {
+      this.releaseTransientPostTarget(weights);
+      this.releaseTransientPostTarget(edges);
     }
   }
 
@@ -5968,7 +6233,7 @@ export class WebGPUDevice implements RenderDevice {
    * on HDR, vignette or finalize on display-referred color). Caller-owned output.
    */
   private executeNativeDofDisplayStage(source: RenderTarget, stage: "ca" | "vignette" | "finalize",
-    stages: NativeDofDisplayStages, frameIndex: number): RenderTarget {
+    stages: NativeDofDisplayStages, frameIndex: number, displayP3 = false): RenderTarget {
     const src = this.requireRenderTarget(source);
     // `nativeView` is the single-sample (resolved) color of a multisampled target, as the other post stages sample it.
     if (!src.nativeView) {
@@ -5984,8 +6249,23 @@ export class WebGPUDevice implements RenderDevice {
         uniforms = new Float32Array([stages.chromaticAberration?.intensity ?? 0, 0, 0, 0]);
       } else if (stage === "vignette") {
         const v = stages.vignette!;
+        const srgbToLinear = (c: number): number => {
+          const x = Math.min(1, Math.max(0, c));
+          return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+        };
+        const linearToSrgb = (c: number): number => {
+          const x = Math.min(1, Math.max(0, c));
+          return x <= 0.0031308 ? x * 12.92 : 1.055 * x ** (1 / 2.4) - 0.055;
+        };
+        let vr = v.color[0], vg = v.color[1], vb = v.color[2];
+        if (displayP3) {
+          const lr = srgbToLinear(vr), lg = srgbToLinear(vg), lb = srgbToLinear(vb);
+          vr = linearToSrgb(0.8224621 * lr + 0.1775380 * lg);
+          vg = linearToSrgb(0.0331941 * lr + 0.9668058 * lg);
+          vb = linearToSrgb(0.0170827 * lr + 0.0723974 * lg + 0.9105199 * lb);
+        }
         fragment = NATIVE_DOF_VIGNETTE_WGSL; entryPoint = "fs_dof_vignette";
-        uniforms = new Float32Array([v.intensity, v.smoothness, v.roundness, 0, v.color[0], v.color[1], v.color[2], 0, src.width, src.height, 0, 0]);
+        uniforms = new Float32Array([v.intensity, v.smoothness, v.roundness, 0, vr, vg, vb, 0, src.width, src.height, 0, 0]);
       } else {
         const f = stages.finalize!;
         fragment = NATIVE_DOF_FINALIZE_WGSL; entryPoint = "fs_dof_finalize";
@@ -5994,7 +6274,7 @@ export class WebGPUDevice implements RenderDevice {
       this.runWebGPUFullscreenPass({ label: `webgpu-dof-${stage}`, fragment, entryPoint, uniforms, views: [src.nativeView], target: out });
       return out;
     } catch (error) {
-      out.dispose();
+      this.releaseTransientPostTarget(out);
       throw error;
     }
   }
@@ -6028,8 +6308,21 @@ export class WebGPUDevice implements RenderDevice {
     }
     const w = src.width, h = src.height, hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
     const scratch: RenderTarget[] = [];
-    const scratchTarget = (width: number, height: number, format: "rgba32f" | "rgba8", label: string): WebGPURenderTarget => {
-      const target = this.transientPostTarget({ width, height, format, depth: false, label });
+    const scratchTarget = (
+      width: number,
+      height: number,
+      format: "rgba32f" | "rgba8",
+      label: string,
+      nativeFormatOverride?: "r32float" | "rg32float"
+    ): WebGPURenderTarget => {
+      const target = this.transientPostTarget({
+        width,
+        height,
+        format,
+        depth: false,
+        label,
+        ...(nativeFormatOverride ? { nativeFormatOverride } : {})
+      } as RenderTargetDescriptor & { readonly label: string });
       scratch.push(target);
       return this.requireRenderTarget(target);
     };
@@ -6037,10 +6330,10 @@ export class WebGPUDevice implements RenderDevice {
     // overwrites its whole target); outside one they are created and disposed as before.
     const out = this.transientPostTarget({ width: w, height: h, format: nativeAmbientOcclusionFormat(src.colorTexture.format), depth: false, label: "a3d-webgpu-ao-apply" });
     try {
-      const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth");
+      const linear = scratchTarget(w, h, "rgba32f", "a3d-webgpu-ao-linear-depth", "r32float");
       this.runWebGPUFullscreenPass({ label: "webgpu-ao-linear-depth", fragment: webgpuAoLinearDepthFragment(depth.multisampled), entryPoint: "fs_ao_linear_depth",
         uniforms: linearUniforms, views: [depth.view], target: linear, textureLoadBindings: true, ...(depth.multisampled ? { multisampledDepthViews: [0] } : {}) });
-      const minmax = scratchTarget(hw, hh, "rgba32f", "a3d-webgpu-ao-minmax-half");
+      const minmax = scratchTarget(hw, hh, "rgba32f", "a3d-webgpu-ao-minmax-half", "rg32float");
       this.runWebGPUFullscreenPass({ label: "webgpu-ao-minmax-half", fragment: WEBGPU_AO_MINMAX_HALF_FRAGMENT, entryPoint: "fs_ao_minmax_half",
         uniforms: new Float32Array(4), views: [linear.nativeView], target: minmax, textureLoadBindings: true });
       if (diagnosticToken) recordPostStage("S1:depth-prep", diagnosticToken);
@@ -6090,11 +6383,25 @@ export class WebGPUDevice implements RenderDevice {
     for (const pass of options.passes) {
       // SSR runs as the S3 stage before depth of field; a legacy ssao (no native S2 this frame) reads the frame depth in place.
       if (pass.name === "ssr" || pass.name === "ssao") continue;
-      const stage = pass.name === "bloom" ? 0 : pass.name === "tone-mapping" ? 1 : pass.name === "color-grade" ? 2 : pass.name === "fxaa" ? 3 : -1;
+      const stage = pass.name === "bloom"
+        ? 0
+        : pass.name === "tone-mapping"
+          ? 1
+          : pass.name === "color-grade"
+            ? 2
+            : pass.name === "outline"
+              ? 3
+              : (pass.name === "fxaa" || (pass.name as string) === "smaa")
+                ? 4
+                : -1;
       if (stage < previousStage || stage < 0) throw new RenderDeviceError("Native depth-of-field post stages are unsupported or out of order", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
       previousStage = stage;
       if (pass.name === "bloom") normalizeWebGPUBloomOptions(pass.options);
       if (pass.name === "color-grade") normalizeWebGPUColorGradeOptions(pass.options);
+      if (pass.name === "outline") {
+        try { normalizeWebGPUOutlineOptions(pass.options as WebGPUOutlineOptions); }
+        catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "INVALID_POSTPROCESS_OPTIONS"); }
+      }
       if (pass.name === "tone-mapping") {
         const tone = { ...options.toneMappingDefaults, ...pass.options };
         const operator = tone.operator ?? "reinhard", exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
@@ -6165,12 +6472,12 @@ export class WebGPUDevice implements RenderDevice {
     if (active !== "display-p3") return false;
     this.assertVerifiedP3Canvas();
     const owned = this.requireRenderTarget(source);
+    const toneIndex = options.passes.findIndex(pass => pass.name === "tone-mapping");
     if ((owned.colorTexture.format !== "rgba16f" && owned.colorTexture.format !== "rgba32f") || owned.colorTexture.colorSpace !== "linear" ||
         (options.toneMappingDefaults?.alphaMode !== undefined && options.toneMappingDefaults.alphaMode !== "opaque") ||
-        declared !== "display-p3" || tones.length !== 1 || options.passes.at(-1)?.name !== "tone-mapping" ||
-        options.passes.some(pass => pass.name !== "bloom" && pass.name !== "tone-mapping") || options.nativeEffects?.length ||
-        registeredPostPasses().some(pass => pass.postScopeMatches?.(options.postFrameContext?.scopeId) !== false)) {
-      throw new RenderDeviceError("Display-P3 postprocessing requires opaque linear HDR, optional bloom, and one final tone pass", "WEBGPU_P3_POST_UNSUPPORTED");
+        declared !== "display-p3" || tones.length !== 1 || toneIndex < 0 ||
+        options.passes.slice(toneIndex + 1).some(pass => pass.name === "bloom")) {
+      throw new RenderDeviceError("Display-P3 postprocessing requires opaque linear HDR and one tone-mapping pass", "WEBGPU_P3_POST_UNSUPPORTED");
     }
     this.requireP3ResolvedColor(owned, false);
     if (owned.colorTexture.format === "rgba32f" && !this.device.features?.has("float32-filterable")) {
@@ -6183,7 +6490,14 @@ export class WebGPUDevice implements RenderDevice {
         !Number.isFinite(exposure) || exposure < 0 || !Number.isFinite(whitePoint) || whitePoint <= 0) {
       throw new RenderDeviceError("Display-P3 tone options are unsupported", "WEBGPU_POSTPROCESS_UNSUPPORTED");
     }
-    for (const pass of options.passes) if (pass.name === "bloom") normalizeWebGPUBloomOptions(pass.options);
+    for (const pass of options.passes) {
+      if (pass.name === "bloom") normalizeWebGPUBloomOptions(pass.options);
+      if (pass.name === "color-grade") normalizeWebGPUColorGradeOptions(pass.options);
+      if (pass.name === "outline") {
+        try { normalizeWebGPUOutlineOptions(pass.options as WebGPUOutlineOptions); }
+        catch (error) { throw new RenderDeviceError(error instanceof Error ? error.message : String(error), "INVALID_POSTPROCESS_OPTIONS"); }
+      }
+    }
     if (options.autoExposure !== undefined) normalizeWebGPUAutoExposure(options.autoExposure);
     return true;
   }
@@ -6383,12 +6697,9 @@ export class WebGPUDevice implements RenderDevice {
       }
       exposureFrame = { ...frame, timeSeconds: frame.timeSeconds };
     }
-    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa", "ssao", "ssr", "volumetric-light"]);
+    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "smaa", "outline", "taa", "ssao", "ssr", "volumetric-light"]);
     for (const pass of options.passes) {
       if (!supported.has(pass.name)) throw new RenderDeviceError(`Native WebGPU postprocess does not support ${pass.name}`, "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: pass.name });
-      if (pass.name === "taa" && (pass.options.temporal as WebGPUTemporalInputs | undefined)?.v2) {
-        throw new RenderDeviceError("WebGPU temporal reconstruction v2 is not connected to the native resolve", "WEBGPU_TEMPORAL_V2_UNSUPPORTED");
-      }
     }
     // The native authored list may place TAA after tone mapping. Exposure
     // requires TAA first; refuse that ordering until it is explicitly routed.
@@ -6430,21 +6741,18 @@ export class WebGPUDevice implements RenderDevice {
      * WGSL fragment is recorded `WGSL_PROGRAM_MISSING:<id>` and skipped — never
      * silently, never as a GLSL fallback.
      */
-    const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId);
+    const customAt = this.webgpuCustomPassPositions(options.passes, options.postFrameContext?.scopeId, options.customPasses);
     // Native depth of field: passes anchored before S6 (after-depth, before-taa, after-taa) leave the chain slots and
     // run around the HDR depth stages in the v2 graph order instead (see the try block below).
     const anyNativeDof = !!(options.nativeDepthOfField || options.nativeSceneDepthOfField);
     const preDofCustoms = anyNativeDof ? takeNativeDofPrecedingCustoms(customAt) : undefined;
-    // CA / vignette / finalize (the v2 display stages) run with or without native depth of field; without it a
-    // Display-P3 chain omits them as before, with it P3 stays refused.
-    if (anyNativeDof && options.nativeDofDisplay && displayP3) throw new RenderDeviceError("Native depth-of-field display stages are not admitted on Display-P3 output", "WEBGPU_DOF_COMBINATION_UNSUPPORTED");
-    const dofDisplay = displayP3 ? undefined : options.nativeDofDisplay;
+    const dofDisplay = options.nativeDofDisplay;
     const dofFrameIndex = Number.isSafeInteger(options.postFrameContext?.frameId) ? options.postFrameContext!.frameId : 0;
     let vignetteRun = false;
     const runDofVignette = (): void => {
       if (vignetteRun || !dofDisplay?.vignette) return;
       vignetteRun = true;
-      track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex));
+      track(this.executeNativeDofDisplayStage(current, "vignette", dofDisplay, dofFrameIndex, displayP3));
       if (diagnosticToken) recordPostStage("S10b:display-grade:vignette", diagnosticToken);
     };
     let hdrGradeRun = false;
@@ -6452,7 +6760,6 @@ export class WebGPUDevice implements RenderDevice {
     const runHdrGrade = (): void => {
       if (hdrGradeRun || !options.nativeHdrGrade) return;
       hdrGradeRun = true;
-      if (displayP3) { recordPostSkipped("WEBGPU_HDR_GRADE_P3_UNSUPPORTED", diagnosticToken); return; }
       track(this.executeWebGPUHdrGrade(current, options.nativeHdrGrade));
       if (diagnosticToken) recordPostStage(exposureFrame ? "S10:hdr-grade:folded-s8" : "S10:hdr-grade", diagnosticToken);
     };
@@ -6460,8 +6767,7 @@ export class WebGPUDevice implements RenderDevice {
     const runLut = (): void => {
       if (lutRun || !options.nativeLut) return;
       lutRun = true;
-      if (displayP3) { recordPostSkipped(`WEBGPU_LUT_P3_UNSUPPORTED:${options.nativeLut.source}`, diagnosticToken); return; }
-      const out = this.executeWebGPUDisplayLut(current, options.nativeLut, diagnosticToken);
+      const out = this.executeWebGPUDisplayLut(current, options.nativeLut, diagnosticToken, displayP3);
       if (out) { track(out); if (diagnosticToken) recordPostStage("S10b:display-grade:lut", diagnosticToken); }
     };
     let effectsRun = false;
@@ -6470,9 +6776,53 @@ export class WebGPUDevice implements RenderDevice {
       effectsRun = true;
       track(this.executeWebGPUNativeEffectsTransaction(current, effects, options.postFrameContext, transaction));
     };
+    let chainLinearDepthTarget: RenderTarget | null = null;
+    let chainLinearDepthFar = 1000;
+    const canProvideLinearDepth = Boolean(
+      postSource.nativeDepthTexture
+      && ((postSource.sampleCount === 1 && postSource.depthTexture && !postSource.depthTexture.disposed)
+        || (postSource.sampleCount === 4 && postSource.multisampledDepthTexture && !postSource.multisampledDepthTexture.disposed))
+      && (this.depthConvention.mode === "standard" || this.depthConvention.mode === "reversed")
+    );
+    const resolveChainLinearDepth = (): { readonly view: unknown; readonly far: number } | null => {
+      if (!canProvideLinearDepth) return null;
+      if (chainLinearDepthTarget) {
+        const existing = this.requireRenderTarget(chainLinearDepthTarget).nativeView;
+        return existing ? { view: existing, far: chainLinearDepthFar } : null;
+      }
+      const camNear = options.cameraFrame?.near ?? options.depthRange?.near ?? options.nativeAmbientOcclusion?.camera.near ?? options.nativeSceneDepthOfField?.camera.near;
+      const camFar = options.cameraFrame?.far ?? options.depthRange?.far ?? options.nativeAmbientOcclusion?.camera.far ?? options.nativeSceneDepthOfField?.camera.far ?? options.nativeDepthOfField?.frame.skyDepthMeters;
+      const near = typeof camNear === "number" && Number.isFinite(camNear) && camNear > 0 ? camNear : 0.1;
+      const far = typeof camFar === "number" && Number.isFinite(camFar) && camFar > near ? camFar : 1000;
+      const ortho = (options.cameraFrame?.projection === "orthographic" ? true : options.cameraFrame?.projection === "perspective" ? false : undefined) ?? options.nativeAmbientOcclusion?.camera.orthographic ?? options.nativeSceneDepthOfField?.camera.orthographic ?? false;
+      const reversed = this.depthConvention.mode === "reversed";
+      const multisampled = postSource.sampleCount === 4;
+      const linearUniforms = packWebGPUAoLinearDepthUniforms({ near, far, orthographic: ortho, reversed });
+      const target = this.transientPostTarget({ width: postSource.width, height: postSource.height, format: "rgba16f", depth: false, label: "a3d-webgpu-chain-linear-depth" });
+      owned.push(target);
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-chain-linear-depth",
+        fragment: webgpuFilterableLinearDepthFragment(multisampled),
+        entryPoint: "fs_chain_linear_depth",
+        uniforms: linearUniforms,
+        views: [this.depthOnlyView(postSource.nativeDepthTexture!)],
+        target,
+        textureLoadBindings: true,
+        ...(multisampled ? { multisampledDepthViews: [0] } : {})
+      });
+      chainLinearDepthTarget = target;
+      chainLinearDepthFar = far;
+      const view = this.requireRenderTarget(target).nativeView;
+      return view ? { view, far } : null;
+    };
+    const customFrameWithDepth = {
+      ...customFrame,
+      canProvideLinearDepth,
+      resolveLinearDepthView: () => resolveChainLinearDepth()?.view ?? null
+    };
     const runCustoms = (customs: readonly PostPassDescriptor[]): void => {
       for (const custom of customs) {
-        const out = this.executeWebGPUCustomPass(custom, current, diagnosticToken, customFrame);
+        const out = this.executeWebGPUCustomPass(custom, current, diagnosticToken, customFrameWithDepth);
         if (out) track(out);
       }
     };
@@ -6501,6 +6851,7 @@ export class WebGPUDevice implements RenderDevice {
         runCustoms(customs.filter(custom => !before.includes(custom)));
       } else runCustoms(customs);
     };
+    this.trimPostTargetPoolForRootSize(source.width, source.height);
     this.beginPostTargetTransaction();
     try {
       // Consume the sealed native DoF frame before any pre-DoF stage submits (a sealed proof is valid only until the
@@ -6538,10 +6889,8 @@ export class WebGPUDevice implements RenderDevice {
         track(this.executeWebGPUSsr(current, ssrPass.options, source));
         if (diagnosticToken) recordPostStage(`S3:ssr-${resolveWebGPUSsrOptions(ssrPass.options).steps}`, diagnosticToken);
       }
-      const depthStagesP3 = Boolean((options.nativeGodRays || options.nativeMotionBlur) && displayP3);
-      if (depthStagesP3) recordPostSkipped("WEBGPU_DEPTH_STAGES_P3_UNSUPPORTED", diagnosticToken);
       // v2 S4: god rays precede TAA and depth of field.
-      if (options.nativeGodRays && !depthStagesP3) {
+      if (options.nativeGodRays) {
         track(this.executeWebGPUGodRays(current, source, options.nativeGodRays));
         recordPostStage(`S4:god-rays-${options.nativeGodRays.samples}`, diagnosticToken);
       }
@@ -6580,13 +6929,13 @@ export class WebGPUDevice implements RenderDevice {
         if (diagnosticToken) { recordPostStage("S1:depth-prep", diagnosticToken); recordPostStage("S6:dof", diagnosticToken); }
       }
       // v2 S7: motion blur follows depth of field, on HDR before bloom.
-      if (options.nativeMotionBlur && !depthStagesP3) {
+      if (options.nativeMotionBlur) {
         track(this.executeWebGPUMotionBlur(current, source, options.nativeMotionBlur));
         recordPostStage(`S7:motion-blur-${options.nativeMotionBlur.samples}x${options.nativeMotionBlur.tileSize}`, diagnosticToken);
       }
       // The native DoF chain's chromatic aberration follows S7 (HDR, before bloom).
       if (dofDisplay?.chromaticAberration) {
-        track(this.executeNativeDofDisplayStage(current, "ca", dofDisplay, dofFrameIndex));
+        track(this.executeNativeDofDisplayStage(current, "ca", dofDisplay, dofFrameIndex, displayP3));
         if (diagnosticToken) recordPostStage("CA:chromatic-aberration", diagnosticToken);
       }
       if (exposureFrame) {
@@ -6607,10 +6956,19 @@ export class WebGPUDevice implements RenderDevice {
         assertDofCurrent?.();
         runCustomsAt(passIndex);
         const pass = options.passes[passIndex]!;
-        if (pass.name === "fxaa") { runDofVignette(); runEffects(); }
+        if (pass.name === "fxaa" || (pass.name as string) === "smaa") { runDofVignette(); runEffects(); }
         if (pass.name === "bloom") track(this.executeNativeWebGPUBloom(current, pass.options, displayP3));
-        else if (pass.name === "color-grade") { track(this.executeWebGPUColorGrade(current, pass.options)); runLut(); }
+        else if (pass.name === "color-grade") { track(this.executeWebGPUColorGrade(current, pass.options, displayP3)); runLut(); }
+        else if (pass.name === "outline") {
+          const depthInfo = resolveChainLinearDepth();
+          track(this.executeWebGPUOutline(current, pass.options as WebGPUOutlineOptions, depthInfo?.view ?? null, depthInfo?.far ?? 1000));
+          if (diagnosticToken) recordPostStage("S11:outline", diagnosticToken);
+        }
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
+        else if ((pass.name as string) === "smaa") {
+          track(this.executeWebGPUSmaa(current));
+          if (diagnosticToken) recordPostStage("S11:smaa", diagnosticToken);
+        }
         else if (pass.name === "ssao") track(this.executeWebGPUSsao(current, source, pass.options));
         // The renderer offers legacy volumetric light only to this WebGPU chain (outside the shared LDR pass-name union).
         else if ((pass.name as string) === "volumetric-light") track(this.executeWebGPUVolumetricLight(current, source, pass.options, options.depthRange));
@@ -6628,7 +6986,7 @@ export class WebGPUDevice implements RenderDevice {
           if (!Number.isFinite(whitePoint) || whitePoint <= 0) throw new RenderDeviceError("Invalid tone white point", "WEBGPU_POSTPROCESS_UNSUPPORTED");
           if (!Number.isFinite(exposure) || exposure < 0) throw new RenderDeviceError("Invalid tone exposure", "WEBGPU_POSTPROCESS_UNSUPPORTED");
           // Display-P3 output keeps a fresh target: its resolved P3 companions are checked per submission.
-          const toneDescriptor = { width: source.width, height: source.height, format: "rgba8" as const, label: "a3d-webgpu-tone" };
+          const toneDescriptor = { width: source.width, height: source.height, format: "rgba8" as const, depth: false as const, label: "a3d-webgpu-tone" };
           const target = displayP3 ? this.createRenderTarget(toneDescriptor) : this.transientPostTarget(toneDescriptor);
           owned.push(target);
           const toneSource = this.requireRenderTarget(current);
@@ -6654,8 +7012,12 @@ export class WebGPUDevice implements RenderDevice {
       runCustomsAt(options.passes.length);
       runHdrGrade();
       runEffects();
+      if (options.nativeSmaa && !options.passes.some(candidate => (candidate.name as string) === "smaa" || candidate.name === "fxaa")) {
+        track(this.executeWebGPUSmaa(current));
+        if (diagnosticToken) recordPostStage("S11:smaa", diagnosticToken);
+      }
       if (dofDisplay?.finalize) {
-        track(this.executeNativeDofDisplayStage(current, "finalize", dofDisplay, dofFrameIndex));
+        track(this.executeNativeDofDisplayStage(current, "finalize", dofDisplay, dofFrameIndex, displayP3));
         if (diagnosticToken) recordPostStage("S12:film-grain", diagnosticToken);
       }
       assertDofCurrent?.();
@@ -6749,7 +7111,7 @@ export class WebGPUDevice implements RenderDevice {
 
   /** The S10b user LUT on the display-referred chain; null (recorded) when the `.cube` is not loaded or invalid. */
   private executeWebGPUDisplayLut(color: RenderTarget, lut: NonNullable<WebGPUNativePostPresentationOptions["nativeLut"]>,
-    diagnosticToken?: PostDiagnosticToken): RenderTarget | null {
+    diagnosticToken?: PostDiagnosticToken, displayP3 = false): RenderTarget | null {
     const source = lut.source;
     if (typeof source !== "string" || (typeof lut.cube !== "string" && !lut.data) || this.webgpuLutFailed.has(source)) return null;
     let entry = this.webgpuLuts.get(source);
@@ -6788,8 +7150,8 @@ export class WebGPUDevice implements RenderDevice {
     const out = this.transientPostTarget({ width: src.width, height: src.height, format: src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f", depth: false, label: "a3d-webgpu-display-lut-out" });
     try {
       this.runWebGPUFullscreenPass({ label: "webgpu-display-lut", fragment: WEBGPU_DISPLAY_LUT_FRAGMENT, entryPoint: "fs_display_lut",
-        uniforms: new Float32Array([size, 1 - intensity, 0, 0]), views: [src.nativeView, entry.view], target: out });
-    } catch (error) { out.dispose(); throw error; }
+        uniforms: new Float32Array([size, 1 - intensity, displayP3 ? 1 : 0, 0]), views: [src.nativeView, entry.view], target: out });
+    } catch (error) { this.releaseTransientPostTarget(out); throw error; }
     return out;
   }
 
@@ -7150,7 +7512,8 @@ export class WebGPUDevice implements RenderDevice {
    */
   private transientPostTarget(descriptor: RenderTargetDescriptor & { readonly label: string }): RenderTarget {
     if (this.#postTransactionDepth === 0) return this.createRenderTarget(descriptor);
-    const key = `${descriptor.label}|${descriptor.width}x${descriptor.height}|${descriptor.format ?? ""}|${descriptor.depth === false ? 0 : 1}|${descriptor.sampleCount ?? 1}`;
+    const nativeFormatOverride = (descriptor as { readonly nativeFormatOverride?: string }).nativeFormatOverride ?? "";
+    const key = `${descriptor.label}|${descriptor.width}x${descriptor.height}|${descriptor.format ?? ""}|${nativeFormatOverride}|${descriptor.depth === false ? 0 : 1}|${descriptor.sampleCount ?? 1}`;
     let entry = this.#postTargetPool.get(key);
     if (!entry) { entry = { targets: [], lastUsed: this.#postTransactionSerial }; this.#postTargetPool.set(key, entry); }
     entry.lastUsed = this.#postTransactionSerial;
@@ -7169,6 +7532,28 @@ export class WebGPUDevice implements RenderDevice {
     if (!this.#postTargetPoolMembers.has(target) || target.disposed) target.dispose();
   }
 
+  /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+  private trimPostTargetPoolForRootSize(width: number, height: number): void {
+    const previous = this.#postLastRootSize;
+    this.#postLastRootSize = { width, height };
+    if (!previous || (previous.width === width && previous.height === height)) return;
+    if (this.#postTransactionDepth > 0) return;
+    const failures: unknown[] = [];
+    for (const [key, entry] of this.#postTargetPool) {
+      this.#postTargetPool.delete(key);
+      for (const target of entry.targets) {
+        if (this.#postTargetsInUse.has(target)) continue;
+        this.#postTargetPoolMembers.delete(target);
+        try { if (!target.disposed) target.dispose(); } catch (error) { failures.push(error); }
+      }
+    }
+    for (const [label, target] of this.#bloomTargetPool) {
+      this.#bloomTargetPool.delete(label);
+      try { if (!target.disposed) target.dispose(); } catch (error) { failures.push(error); }
+    }
+    if (failures.length) throw new AggregateError(failures, "Failed to trim stale WebGPU post targets on resize");
+  }
+
   private beginPostTargetTransaction(): void {
     if (this.#postTransactionDepth++ === 0) this.#postTransactionSerial += 1;
   }
@@ -7176,12 +7561,15 @@ export class WebGPUDevice implements RenderDevice {
   private endPostTargetTransaction(): void {
     if (--this.#postTransactionDepth > 0) return;
     this.#postTargetsInUse.clear();
-    // A size or format change strands the old descriptor's targets; drop pools idle for a second or so of frames.
+    // Drop pools idle for more than 12 frames so toggled stages do not retain GPU memory indefinitely.
     const failures: unknown[] = [];
     for (const [key, entry] of this.#postTargetPool) {
-      if (this.#postTransactionSerial - entry.lastUsed < 120) continue;
+      if (this.#postTransactionSerial - entry.lastUsed < 12) continue;
       this.#postTargetPool.delete(key);
-      for (const target of entry.targets) { try { if (!target.disposed) target.dispose(); } catch (error) { failures.push(error); } }
+      for (const target of entry.targets) {
+        this.#postTargetPoolMembers.delete(target);
+        try { if (!target.disposed) target.dispose(); } catch (error) { failures.push(error); }
+      }
     }
     if (failures.length) throw new AggregateError(failures, "Failed to release idle WebGPU post targets");
   }
@@ -7364,7 +7752,59 @@ export class WebGPUDevice implements RenderDevice {
   /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
   executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget {
     this.assertAlive();
-    if (options.v2) throw new RenderDeviceError("WebGPU temporal reconstruction v2 is not connected to the native resolve", "WEBGPU_TEMPORAL_V2_UNSUPPORTED");
+    if (options.v2) {
+      validateWebGPUTemporalInputs(source, options);
+      const v2 = options.v2;
+      const src = this.requireRenderTarget(source);
+      const velocity = this.requireRenderTarget(options.velocity);
+      const history = this.requireRenderTarget(options.history);
+      const historyOut = this.requireRenderTarget(options.historyOutput);
+      const linZ = this.requireRenderTarget(v2.linZ);
+      const linZOut = this.requireRenderTarget(v2.linZOutput);
+      const reactive = v2.reactive ? this.requireRenderTarget(v2.reactive) : null;
+      if (
+        !src.nativeView ||
+        !velocity.nativeView ||
+        !history.nativeView ||
+        !historyOut.nativeView ||
+        !linZ.nativeView ||
+        !linZOut.nativeView ||
+        (reactive && !reactive.nativeView)
+      ) {
+        throw new RenderDeviceError("WebGPU v2 TAA requires native views on all temporal inputs", "NATIVE_POST_UNSUPPORTED");
+      }
+      const resolveUniforms = webgpuTaaResolveUniforms(options);
+      const reactiveView = reactive ? reactive.nativeView : this.ensureDummyLinearDepthView();
+      const outWidth = historyOut.width, outHeight = historyOut.height;
+      const outFormat = src.colorTexture.format === "rgba32f" ? "rgba32f" : src.colorTexture.format === "rgba8" ? "rgba8" : "rgba16f";
+      const out = this.transientPostTarget({ width: outWidth, height: outHeight, format: outFormat, depth: false, label: "a3d-webgpu-taa-v2-color" });
+      try {
+        this.runWebGPUFullscreenPass({
+          label: "webgpu-taa-v2-resolve",
+          fragment: WEBGPU_TAA_V2_RESOLVE_FRAGMENT,
+          entryPoint: "fs_taa_v2_resolve",
+          uniforms: resolveUniforms,
+          views: [src.nativeView, history.nativeView, velocity.nativeView, linZ.nativeView, reactiveView],
+          target: options.historyOutput,
+          textureLoadBindings: true
+        });
+        this.runWebGPUFullscreenPass({
+          label: "webgpu-taa-v2-upscale",
+          fragment: WEBGPU_TAA_V2_UPSCALE_FRAGMENT,
+          entryPoint: "fs_taa_v2_upscale",
+          uniforms: new Float32Array([outWidth, outHeight, 1 / outWidth, 1 / outHeight]),
+          views: [historyOut.nativeView, src.nativeView],
+          target: out,
+          textureLoadBindings: true
+        });
+        this.nativeTaaPasses += 2;
+        this.nativeTemporalBindings += reactive ? 5 : 4;
+        return out;
+      } catch (error) {
+        this.releaseTransientPostTarget(out);
+        throw error;
+      }
+    }
     const [blend, depthThreshold] = normalizeWebGPUTemporalOptions(options);
     const targets = [source, options.velocity, options.history, options.historyOutput];
     if (new Set(targets).size !== targets.length) throw new RenderDeviceError("TAA targets must not alias", "NATIVE_POST_UNSUPPORTED");
@@ -7375,7 +7815,7 @@ export class WebGPUDevice implements RenderDevice {
     if (targets.slice(1).some((target) => target.colorTexture.format !== "rgba16f")) {
       throw new RenderDeviceError("TAA velocity/history targets require rgba16f", "NATIVE_POST_UNSUPPORTED");
     }
-    const out = this.createRenderTarget({ width: source.width, height: source.height, format: "rgba16f", label: "a3d-webgpu-taa-color" });
+    const out = this.transientPostTarget({ width: source.width, height: source.height, format: "rgba16f", depth: false, label: "a3d-webgpu-taa-color" });
     try {
       this.runWebGPUFullscreenPass({ label: "webgpu-taa", fragment: WEBGPU_TAA_FRAGMENT, entryPoint: "fs_taa",
         uniforms: new Float32Array([1 / source.width, 1 / source.height, blend, options.historyValid ? 1 : 0, depthThreshold, 0, 0, 0]),
@@ -7386,7 +7826,7 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeTaaPasses += 2;
       this.nativeTemporalBindings += 3;
       return out;
-    } catch (error) { out.dispose(); throw error; }
+    } catch (error) { this.releaseTransientPostTarget(out); throw error; }
   }
 
   /**
@@ -7397,10 +7837,27 @@ export class WebGPUDevice implements RenderDevice {
    * in the submitted chain. Passes sharing a position sort by `order` ascending
    * (stable — registration order preserved for omitted keys).
    */
-  private webgpuCustomPassPositions(passes: readonly { readonly name: string }[], scopeId?: object): Map<number, PostPassDescriptor[]> {
+  private webgpuCustomPassPositions(
+    passes: readonly { readonly name: string }[],
+    scopeId?: object,
+    pipelineCustoms?: readonly PostPassDescriptor[]
+  ): Map<number, PostPassDescriptor[]> {
     const positions = new Map<number, PostPassDescriptor[]>();
-    const customs = registeredPostPasses().filter(pass => pass.postScopeMatches?.(scopeId) !== false);
-    if (!customs.length) return positions;
+    const seenIds = new Set<string>();
+    const merged: PostPassDescriptor[] = [];
+    for (const pass of pipelineCustoms ?? []) {
+      if (seenIds.has(pass.id)) continue;
+      if (pass.postScopeMatches?.(scopeId) === false) continue;
+      seenIds.add(pass.id);
+      merged.push(pass);
+    }
+    for (const pass of registeredPostPasses()) {
+      if (seenIds.has(pass.id)) continue;
+      if (pass.postScopeMatches?.(scopeId) === false) continue;
+      seenIds.add(pass.id);
+      merged.push(pass);
+    }
+    if (!merged.length) return positions;
     const indexOf = (...names: readonly string[]): number => passes.findIndex((pass) => names.includes(pass.name));
     const anchorPosition = (insertAt: PostPassDescriptor["insertAt"]): number => {
       switch (insertAt) {
@@ -7424,15 +7881,15 @@ export class WebGPUDevice implements RenderDevice {
         }
         case "after-tonemap": {
           const tone = indexOf("tone-mapping");
-          const fxaa = indexOf("fxaa");
-          return tone >= 0 ? tone + 1 : fxaa >= 0 ? fxaa : passes.length;
+          const aa = indexOf("fxaa", "smaa");
+          return tone >= 0 ? tone + 1 : aa >= 0 ? aa : passes.length;
         }
         default: return passes.length;
       }
     };
     const orderKey = (pass: PostPassDescriptor): number =>
       typeof pass.order === "number" && Number.isFinite(pass.order) ? pass.order : Number.MAX_SAFE_INTEGER;
-    for (const pass of [...customs].sort((a, b) => orderKey(a) - orderKey(b))) {
+    for (const pass of [...merged].sort((a, b) => orderKey(a) - orderKey(b))) {
       const position = anchorPosition(pass.insertAt);
       const list = positions.get(position) ?? [];
       list.push(pass);
@@ -7442,21 +7899,28 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   /**
-   * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+   * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
    *
    * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
    * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
    * declared uniforms follow in registration order, one vec4 each), binding 1 =
-   * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-   * into this custom-pass chain and must not be replaced with fabricated data.
-   * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-   * entry point is detected or defaults to `fs_main`.
-   *
-   * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-   * the latter two cases are recorded in the post skipped-reasons channel.
+   * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+   * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+   * `fragment.wgsl` declares `@binding(3)`.
    */
-  private executeWebGPUCustomPass(pass: PostPassDescriptor, source: RenderTarget, diagnosticToken: PostDiagnosticToken | undefined,
-    frame: { readonly timeSeconds: number; readonly frameIndex: number; readonly postScopeId?: object; readonly blackboard: Map<string, unknown> }): RenderTarget | null {
+  private executeWebGPUCustomPass(
+    pass: PostPassDescriptor,
+    source: RenderTarget,
+    diagnosticToken: PostDiagnosticToken | undefined,
+    frame: {
+      readonly timeSeconds: number;
+      readonly frameIndex: number;
+      readonly postScopeId?: object;
+      readonly blackboard: Map<string, unknown>;
+      readonly canProvideLinearDepth?: boolean;
+      readonly resolveLinearDepthView?: () => unknown | null;
+    }
+  ): RenderTarget | null {
     const timeSeconds = frame.timeSeconds;
     const frameContext = {
       device: this,
@@ -7476,6 +7940,15 @@ export class WebGPUDevice implements RenderDevice {
     let missingInput = false;
     for (const input of pass.inputs) {
       if (input === "color") continue;
+      if (input === "depth") {
+        if (frame.canProvideLinearDepth) {
+          clearPostSkipped(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`, diagnosticToken);
+          continue;
+        }
+        recordPostSkipped(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`, diagnosticToken);
+        missingInput = true;
+        continue;
+      }
       recordPostSkipped(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:${input}`, diagnosticToken);
       missingInput = true;
     }
@@ -7490,16 +7963,28 @@ export class WebGPUDevice implements RenderDevice {
     if (!srcView) {
       throw new RenderDeviceError("WebGPU custom pass source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
     }
-    this.flushNativeRenderTargetClear(src);
+    if (typeof this.flushNativeRenderTargetClear === "function") this.flushNativeRenderTargetClear(src);
+    const wantsBinding3 = pass.inputs.includes("depth") && /@binding\(\s*3\s*\)/.test(wgsl);
+    let depthView: unknown | null = null;
+    if (wantsBinding3) {
+      depthView = frame.resolveLinearDepthView?.() ?? null;
+      if (!depthView) {
+        recordPostSkipped(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`, diagnosticToken);
+        return null;
+      }
+    }
     recordPostStage(`custom:${pass.id}@${pass.insertAt}`, diagnosticToken);
-    const target = this.transientPostTarget({
+    const targetDescriptor = {
       width: src.width,
       height: src.height,
-      format: pass.space === "display" ? "rgba8" : "rgba16f",
+      format: pass.space === "display" ? "rgba8" as const : "rgba16f" as const,
       label: `a3d-webgpu-custom-${pass.id}`,
       depth: false
-    });
-    const views: unknown[] = [srcView];
+    };
+    const target = typeof this.transientPostTarget === "function"
+      ? this.transientPostTarget(targetDescriptor)
+      : this.createRenderTarget(targetDescriptor);
+    const views: unknown[] = wantsBinding3 && depthView ? [srcView, depthView] : [srcView];
     const declared = pass.uniforms?.(frameContext) ?? {};
     const packed: number[] = [1 / src.width, 1 / src.height, timeSeconds, 0];
     for (const value of Object.values(declared)) {
@@ -7520,7 +8005,8 @@ export class WebGPUDevice implements RenderDevice {
       });
       return target;
     } catch (error) {
-      this.releaseTransientPostTarget(target);
+      if (typeof this.releaseTransientPostTarget === "function") this.releaseTransientPostTarget(target);
+      else target.dispose();
       throw error;
     }
   }
@@ -7565,7 +8051,7 @@ export class WebGPUDevice implements RenderDevice {
     if (args.exposureBindings && (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || args.views.length < 1 || args.views.length > 2)) {
       throw new RenderDeviceError("Auto exposure requires explicit texture-load layouts", "WEBGPU_AUTO_EXPOSURE_LAYOUT_UNAVAILABLE");
     }
-    if (args.textureLoadBindings && (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || args.views.length < 1 || args.views.length > 4)) {
+    if (args.textureLoadBindings && (!this.device.createBindGroupLayout || !this.device.createPipelineLayout || args.views.length < 1 || args.views.length > 6)) {
       throw new RenderDeviceError("This post pass requires explicit texture-load layouts", "WEBGPU_TEXTURE_LOAD_LAYOUT_UNAVAILABLE", { label: args.label });
     }
     const scopeDevice = this.device as unknown as {
@@ -7586,7 +8072,7 @@ export class WebGPUDevice implements RenderDevice {
     if (!batched && this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
     if (scopedErrors) scopeDevice.pushErrorScope?.("validation");
     try {
-      const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
+      const format = target ? (target.nativeColorFormat ?? webgpuTextureFormat(target.colorTexture.format)) : this.presentationFormat;
       // Bind convention and source count change the pipeline layout.
       const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.exposureBindings ? `exposure:${args.views.length}` : args.textureLoadBindings ? `load:${args.views.length}:${(args.multisampledDepthViews ?? []).join(",")}` : args.nativeEffectBindings ? "effect" : "sampled"}:${args.fragment}`;
       let pipeline = this.webgpuPostPipelines.get(cacheKey);
@@ -7826,6 +8312,19 @@ export class WebGPUDevice implements RenderDevice {
       attempt(() => this.flushNativeForwardBundleRetirements());
       attempt(() => this.releaseWebGPUAutoExposure());
       attempt(() => this.releaseNativeEffectHistory());
+      attempt(() => {
+        if (this.#dummyLinearDepthTarget && !this.#dummyLinearDepthTarget.disposed) this.releaseNativePostTarget(this.#dummyLinearDepthTarget);
+        this.#dummyLinearDepthTarget = null;
+      });
+      attempt(() => {
+        const smaa = this.#smaaLookupTextures;
+        this.#smaaLookupTextures = null;
+        if (smaa?.areaTexture) this.retireNative(smaa.areaTexture);
+        if (smaa?.searchTexture) this.retireNative(smaa.searchTexture);
+        for (const fallback of smaa?.fallbackTargets ?? []) {
+          if (!fallback.disposed) this.releaseNativePostTarget(fallback);
+        }
+      });
       for (const buffer of [...this.buffers]) {
         // The outer disposer still owns its callback and will restore the
         // buffer to this set if it fails. Avoid reentering wrapper side effects.
@@ -9461,9 +9960,12 @@ export class WebGPUDevice implements RenderDevice {
       nativeView, resolveView, depthView, hasDepthStencil, shouldClear, resolvedState,
       pointCheck, p3Surface, generatedCoverage
     })) return;
+    if (!shouldClear && this.activeRenderTarget?.msaaColorDiscarded) {
+      this.reseedDiscardedMsaaColor(this.activeRenderTarget);
+    }
     // Batched draws share one encoder (and one pass while the attachments match) and submit together at the flush.
-    const batchable = this.#drawBatchingEnabled && this.#drawBatchWindows > 0 && !pointCheck && !p3Surface && !morphPacket
-      && !dofProof && !checkDofDraw && !checkP3Draw && !this.gaussianSplatBorrowedDepth && !this.forwardPassProfiler
+    const batchable = this.#drawBatchingEnabled && this.#drawBatchWindows > 0 && !pointCheck
+      && !this.gaussianSplatBorrowedDepth && !this.forwardPassProfiler
       && !(command.nativeStorageBindings?.length) && !this.vertexConversionCheck;
     if (!batchable) this.flushDrawBatch();
     // Every uniform block below is acquired after this point of this call; batched draws in a frame take arena ranges.
@@ -9575,17 +10077,44 @@ export class WebGPUDevice implements RenderDevice {
         const stride = uniformNumber(command.uniforms?.get("u_morphStride"), 0);
         const count = uniformNumber(command.uniforms?.get("u_morphActiveCount"), 0);
         const indicesValue = command.uniforms?.get("u_morphActiveIndex4"), weightsValue = command.uniforms?.get("u_morphActiveWeight4");
-        const indices = Array.isArray(indicesValue) || ArrayBuffer.isView(indicesValue) ? Array.from(indicesValue as ArrayLike<number>) : [];
-        const weights = Array.isArray(weightsValue) || ArrayBuffer.isView(weightsValue) ? Array.from(weightsValue as ArrayLike<number>) : [];
+        const indices = Array.isArray(indicesValue) || (ArrayBuffer.isView(indicesValue) && !(indicesValue instanceof DataView))
+          ? indicesValue as ArrayLike<number>
+          : [];
+        const weights = Array.isArray(weightsValue) || (ArrayBuffer.isView(weightsValue) && !(weightsValue instanceof DataView))
+          ? weightsValue as ArrayLike<number>
+          : [];
         let lastVertex = 0;
-        for (const index of this.indicesFor(command)) lastVertex = Math.max(lastVertex, index);
+        if (command.indexBuffer) {
+          const idxBuffer = this.requireBuffer(command.indexBuffer);
+          const bpi = command.indexType === "uint32" ? 4 : 2;
+          const idxCount = command.indexCount ?? Math.floor(idxBuffer.byteLength / bpi);
+          const firstIdx = command.firstIndex ?? 0;
+          if (idxCount > 0 && (firstIdx + idxCount) * bpi <= idxBuffer.byteLength) {
+            lastVertex = this.maxIndexInRange(idxBuffer, firstIdx, idxCount, bpi);
+          }
+        } else if (command.vertexCount > 0) {
+          lastVertex = (command.firstVertex ?? 0) + command.vertexCount - 1;
+        }
+        let finiteActive = true;
+        for (let mi = 0; mi < indices.length && finiteActive; mi += 1) {
+          if (!Number.isFinite(indices[mi])) finiteActive = false;
+        }
+        for (let mw = 0; mw < weights.length && finiteActive; mw += 1) {
+          if (!Number.isFinite(weights[mw])) finiteActive = false;
+        }
+        let validActiveLayers = true;
+        if (texture) {
+          for (let mi = 0; mi < Math.min(count, indices.length); mi += 1) {
+            const idx = indices[mi]!;
+            if (!Number.isSafeInteger(idx) || idx < 0 || idx >= texture.layers) { validActiveLayers = false; break; }
+          }
+        }
         if (!morph || !texture || texture.disposed || !["rgba16f", "rgba32f"].includes(texture.format) || texture.colorSpace !== "linear" || !texture.usage.includes("sampled")
           || width !== texture.width || !Number.isSafeInteger(width) || width < 1 || stride !== (morph.tangents ? 3 : morph.normals ? 2 : 1)
           || texture.layers !== morph.bucket || texture.width * texture.height < (lastVertex + 1) * stride
           || !Number.isSafeInteger(count) || count < 0 || count > morph.maxActive || indices.length < count || weights.length < count
           || indices.length > morph.maxActive || weights.length > morph.maxActive || indices.length % 4 !== 0 || weights.length % 4 !== 0
-          || !indices.every(Number.isFinite) || !weights.every(Number.isFinite)
-          || indices.slice(0, count).some(index => !Number.isSafeInteger(index) || index < 0 || index >= texture.layers)) {
+          || !finiteActive || !validActiveLayers) {
           throw new RenderDeviceError("Generated PBR morph texture or active weights are invalid", "WEBGPU_MORPH_TEXTURE_INVALID");
         }
         const native = this.getNativeSampledTexture(texture);
@@ -9873,34 +10402,44 @@ export class WebGPUDevice implements RenderDevice {
         assertMrtCurrent();
         if (checkMrtShader) checkShaderIdentity();
       }
-      const passDescriptor = (): WebGPURenderPassDescriptorLike => ({
-        label: `${command.label ?? "draw"}-pass`,
-        ...(passTimer?.timestampWrites ? { timestampWrites: passTimer.timestampWrites } : {}),
-        colorAttachments: [...(nativeView ? [{
-          view: nativeView,
-          ...nativeColorSlice(this.activeRenderTarget),
-          ...(sampleCount > 1 && resolveView ? { resolveTarget: resolveView } : {}),
-          clearValue: this.activeRenderTarget?.nativeClearColor ?? this.clearColor,
-          loadOp: shouldClear ? "clear" as const : "load" as const,
-          storeOp: "store" as const
-        }] : []), ...(this.activeRenderTarget?.nativeExtraColors.map((color) => ({
-          view: color.multisampleView ?? color.view, ...(color.multisampleView ? { resolveTarget: color.view } : {}), clearValue: this.activeRenderTarget!.nativeClearColor,
-          loadOp: shouldClear ? "clear" as const : "load" as const, storeOp: "store" as const
-        })) ?? [])],
-        ...(hasDepthStencil
-          ? {
-              depthStencilAttachment: {
-                view: depthView,
-                depthClearValue: this.depthConvention.clearValue,
-                depthLoadOp: shouldClear ? "clear" as const : "load" as const,
-                depthStoreOp: "store" as const,
-                stencilClearValue: 0,
-                stencilLoadOp: shouldClear ? "clear" as const : "load" as const,
-                stencilStoreOp: "store" as const
+      const activeTarget = this.activeRenderTarget;
+      const discardMsaaColor = sampleCount > 1 && Boolean(resolveView) && !activeTarget?.multiPassMsaaHint && !activeTarget?.nativeExtraColors.length;
+      const discardTransientDepth = Boolean(activeTarget?.transientDepth && !activeTarget.multiPassMsaaHint);
+      const passDescriptor = (): WebGPURenderPassDescriptorLike => {
+        if (activeTarget && sampleCount > 1 && resolveView) {
+          activeTarget.msaaPassesInCurrentClear += 1;
+          activeTarget.msaaColorDiscarded = discardMsaaColor;
+        }
+        return {
+          label: `${command.label ?? "draw"}-pass`,
+          ...(passTimer?.timestampWrites ? { timestampWrites: passTimer.timestampWrites } : {}),
+          colorAttachments: [...(nativeView ? [{
+            view: nativeView,
+            ...nativeColorSlice(activeTarget),
+            ...(sampleCount > 1 && resolveView ? { resolveTarget: resolveView } : {}),
+            clearValue: activeTarget?.nativeClearColor ?? this.clearColor,
+            loadOp: shouldClear ? "clear" as const : "load" as const,
+            storeOp: discardMsaaColor ? "discard" as const : "store" as const
+          }] : []), ...(activeTarget?.nativeExtraColors.map((color) => ({
+            view: color.multisampleView ?? color.view, ...(color.multisampleView ? { resolveTarget: color.view } : {}), clearValue: activeTarget.nativeClearColor,
+            loadOp: shouldClear ? "clear" as const : "load" as const,
+            storeOp: (color.multisampleView && !activeTarget.multiPassMsaaHint) ? "discard" as const : "store" as const
+          })) ?? [])],
+          ...(hasDepthStencil
+            ? {
+                depthStencilAttachment: {
+                  view: depthView,
+                  depthClearValue: this.depthConvention.clearValue,
+                  depthLoadOp: shouldClear ? "clear" as const : "load" as const,
+                  depthStoreOp: discardTransientDepth ? "discard" as const : "store" as const,
+                  stencilClearValue: 0,
+                  stencilLoadOp: shouldClear ? "clear" as const : "load" as const,
+                  stencilStoreOp: discardTransientDepth ? "discard" as const : "store" as const
+                }
               }
-            }
-          : {})
-      });
+            : {})
+        };
+      };
       let pass: WebGPURenderPassEncoderLike;
       if (encoder) {
         pass = encoder.beginRenderPass(passDescriptor());
@@ -9919,7 +10458,10 @@ export class WebGPUDevice implements RenderDevice {
         }
         const passKey = memo.key;
         pass = this.drawBatchPass(passKey, shouldClear, passDescriptor);
-        if (mrtTarget) this.#drawBatch!.mrt = true;
+        if (mrtTarget || p3Surface || morphPacket || dofProof) this.#drawBatch!.mrt = true;
+        if (checkDofDraw) this.#drawBatch!.beforeSubmitChecks.push(checkDofDraw);
+        if (checkP3Draw) this.#drawBatch!.beforeSubmitChecks.push(checkP3Draw);
+        if (morphPacket) this.#drawBatch!.beforeSubmitChecks.push(morphPacket.check);
         this.#drawBatchRecording = true;
       }
       const endPass = (): void => {
@@ -10112,6 +10654,85 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
+  private reseedDiscardedMsaaColor(target: WebGPURenderTarget): void {
+    target.multiPassMsaaHint = true;
+    target.msaaColorDiscarded = false;
+    if (
+      target.sampleCount <= 1 ||
+      !target.nativeView ||
+      !target.nativeMultisampleView ||
+      !this.device.createShaderModule ||
+      !this.device.createRenderPipeline ||
+      !this.device.createCommandEncoder ||
+      !this.device.createSampler ||
+      !this.device.createBuffer ||
+      !this.device.createBindGroup
+    ) {
+      return;
+    }
+    if (this.#drawBatch && !this.#drawBatchDrawActive && !this.#drawBatchRecording) this.flushDrawBatch();
+    const format = target.nativeColorFormat ?? webgpuTextureFormat(target.colorTexture.format);
+    const cacheKey = `webgpu-msaa-reseed:${format}:${target.sampleCount}`;
+    let pipeline = this.webgpuPostPipelines.get(cacheKey);
+    if (!pipeline) {
+      const vertexModule = this.device.createShaderModule({ label: "webgpu-msaa-reseed-vs", code: WEBGPU_POST_VERTEX_WGSL });
+      const fragmentModule = this.device.createShaderModule({ label: "webgpu-msaa-reseed-fs", code: WEBGPU_NATIVE_COPY_FRAGMENT });
+      pipeline = this.device.createRenderPipeline({
+        label: "webgpu-msaa-reseed-pipeline",
+        layout: "auto",
+        vertex: { module: vertexModule, entryPoint: "vs_post" },
+        fragment: { module: fragmentModule, entryPoint: "fs_copy", targets: [{ format }] },
+        primitive: { topology: "triangle-list" },
+        multisample: { count: target.sampleCount }
+      });
+      this.webgpuPostPipelines.set(cacheKey, pipeline);
+    }
+    if (!this.webgpuPostLinearSampler) {
+      this.webgpuPostLinearSampler = this.device.createSampler({
+        minFilter: "linear", magFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge"
+      });
+    }
+    const uniformKey = "webgpu-msaa-reseed:16";
+    let uniformBuffer = this.webgpuExposureUniformBuffers.get(uniformKey);
+    if (!uniformBuffer) {
+      uniformBuffer = this.device.createBuffer({ label: "webgpu-msaa-reseed-uniforms", size: 16, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
+      this.registerNativeCleanup(uniformBuffer, []);
+      this.webgpuExposureUniformBuffers.set(uniformKey, uniformBuffer);
+    }
+    this.device.queue.writeBuffer(uniformBuffer, 0, new Float32Array([1 / target.width, 1 / target.height, 0, 0]));
+    const layout = pipeline.getBindGroupLayout ? this.pipelineGroupLayout(pipeline, 0) : null;
+    if (!layout) return;
+    const group = this.cachedBindGroup({
+      label: "webgpu-msaa-reseed-bind",
+      layout,
+      entries: [
+        { binding: 0, resource: { buffer: uniformBuffer } },
+        { binding: 1, resource: this.webgpuPostLinearSampler },
+        { binding: 2, resource: target.nativeView }
+      ]
+    });
+    const encoder = this.device.createCommandEncoder({ label: `${target.label}-msaa-reseed-encoder` });
+    const pass = encoder.beginRenderPass({
+      label: `${target.label}-msaa-reseed-pass`,
+      colorAttachments: [{
+        view: target.nativeMultisampleView,
+        clearValue: target.nativeClearColor,
+        loadOp: "clear",
+        storeOp: "store"
+      }]
+    });
+    pass.setPipeline(pipeline);
+    pass.setBindGroup?.(0, group);
+    pass.draw(3, 1, 0);
+    pass.end();
+    const accesses = [
+      ...(target.nativeTexture ? [{ resource: target.nativeTexture, mode: "read" as const }] : []),
+      ...(target.nativeMultisampleTexture ? [{ resource: target.nativeMultisampleTexture, mode: "write" as const }] : []),
+      { resource: uniformBuffer, mode: "read" as const }
+    ];
+    this.submitMrtAware([encoder.finish()], accesses, false);
+  }
+
   private flushNativeRenderTargetClear(target: WebGPURenderTarget): void {
     this.requireRenderTarget(target);
     const drawView = target.nativeMultisampleView ?? target.nativeView;
@@ -10240,6 +10861,7 @@ export class WebGPUDevice implements RenderDevice {
       batch.pass = null;
       const finished = batch.encoder.finish();
       if (!this.disposed && !this.contextLost) {
+        for (const check of batch.beforeSubmitChecks) check();
         this.submitMrtAware([finished], [...batch.accesses].map(([resource, mode]) => ({ resource, mode })), batch.mrt);
       }
     } finally {
@@ -10255,7 +10877,8 @@ export class WebGPUDevice implements RenderDevice {
     let batch = this.#drawBatch;
     if (!batch) {
       batch = { encoder: this.device.createCommandEncoder!({ label: "aura3d-draw-batch-encoder" }), pass: null, passKey: null,
-        bound: emptyBatchPassBindings(), postPasses: 0, mrt: false, accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0 };
+        bound: emptyBatchPassBindings(), postPasses: 0, mrt: false, accesses: new Map(), releaseUniforms: [], retirements: [], draws: 0,
+        beforeSubmitChecks: [] };
       this.#drawBatch = batch;
     }
     if (batch.pass && batch.passKey === key && !clear) return batch.pass;
@@ -11455,11 +12078,7 @@ export class WebGPUDevice implements RenderDevice {
       if (!Number.isSafeInteger(end) || end > index.byteLength) {
         throw new RenderDeviceError("Native morph index range is invalid", "WEBGPU_MORPH_VERTEX_RANGE");
       }
-      const view = new DataView(index.bytes.buffer, index.bytes.byteOffset, index.bytes.byteLength);
-      lastVertex = 0;
-      for (let offset = firstIndex * stride; offset < end; offset += stride) {
-        lastVertex = Math.max(lastVertex, stride === 4 ? view.getUint32(offset, true) : view.getUint16(offset, true));
-      }
+      lastVertex = this.maxIndexInRange(index, firstIndex, indexCount, stride);
       epoch = this.#morphBufferEpochs.get(index);
       if (!epoch) { epoch = {}; this.#morphBufferEpochs.set(index, epoch); }
     }
@@ -11479,13 +12098,19 @@ export class WebGPUDevice implements RenderDevice {
           rawDeltas.length > NATIVE_MORPH_MAX_TARGETS * NATIVE_MORPH_MAX_VERTICES * 4) {
         throw new RenderDeviceError("Native morph weights or target-major position deltas are invalid", "WEBGPU_MORPH_UNIFORM_INVALID");
       }
-      const weights = Array.from(rawWeights), deltas = Array.from(rawDeltas);
-      const finiteFloat = (value: number): boolean => typeof value === "number" && Number.isFinite(value) && Number.isFinite(Math.fround(value));
-      if (!weights.every(finiteFloat) || !deltas.every(finiteFloat)) {
-        throw new RenderDeviceError("Native morph weights or target-major position deltas are invalid", "WEBGPU_MORPH_UNIFORM_INVALID");
+      const finiteFloat = (value: unknown): boolean => typeof value === "number" && Number.isFinite(value) && Number.isFinite(Math.fround(value));
+      for (let wi = 0; wi < rawWeights.length; wi += 1) {
+        if (!finiteFloat(rawWeights[wi])) {
+          throw new RenderDeviceError("Native morph weights or target-major position deltas are invalid", "WEBGPU_MORPH_UNIFORM_INVALID");
+        }
       }
-      data.set(weights, 20);
-      data.set(deltas, 28);
+      for (let di = 0; di < rawDeltas.length; di += 1) {
+        if (!finiteFloat(rawDeltas[di])) {
+          throw new RenderDeviceError("Native morph weights or target-major position deltas are invalid", "WEBGPU_MORPH_UNIFORM_INVALID");
+        }
+      }
+      data.set(rawWeights, 20);
+      data.set(rawDeltas, 28);
     }
     const check = (): void => {
       if (command.shader !== shader || command.vertexCount !== vertexCount || (command.firstVertex ?? 0) !== firstVertex ||

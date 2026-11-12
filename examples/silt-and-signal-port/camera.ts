@@ -21,23 +21,41 @@ export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra
  */
 export const INKED_CHASE: ChaseFraming = { back: 8.5, perSpeed: 0.06, maxExtra: 6, height: 3.4, lookAhead: 11, lookLift: 1.7, side: 1.6 };
 
+const CHASE_YAW_DAMP_RATE = 14;
+const chaseYawState = new WeakMap<CameraClearance, { yaw: number }>();
+
+function dampAngle(current: number, target: number, dt: number, rate: number = CHASE_YAW_DAMP_RATE): number {
+  if (!(dt > 0) || !Number.isFinite(current) || !Number.isFinite(target)) return target;
+  const tau = Math.PI * 2;
+  const delta = (((target - current + Math.PI) % tau) + tau) % tau - Math.PI;
+  const alpha = 1 - Math.exp(-Math.min(dt, 0.25) * rate);
+  return current + delta * alpha;
+}
+
 /** The chase eye the camera wants: behind the rider along the heading, above the board, further back at speed. */
-export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">, framing: ChaseFraming = ORIGINAL_CHASE): Eye {
+export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">, framing: ChaseFraming = ORIGINAL_CHASE, yaw: number = sim.state.yaw): Eye {
   const { state, flight } = sim;
-  const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
   const back = framing.back + Math.min(framing.maxExtra, Math.abs(flight.speed) * framing.perSpeed);
   // right of the heading: (-fz, fx)
   return [state.x - fx * back - fz * framing.side, state.y + framing.height + Math.abs(flight.vertical) * 0.05, state.z - fz * back + fx * framing.side];
 }
 
-/** Native sizes of the tree model (0.927 x 1.684 x 0.883) and the rock models (about 1 unit) scaled by the placement. */
-const TREE_RADIUS = 0.46, TREE_HEIGHT = 1.684, ROCK_RADIUS = 0.5, ROCK_HEIGHT = 1;
+/** Native sizes of the tree model (0.927 x 1.684 x 0.883), rock models (about 1 unit), and procedural houses (1.64 x 0.88 x 0.98) scaled by placement. */
+const TREE_RADIUS = 0.46, TREE_HEIGHT = 1.684, ROCK_RADIUS = 0.5, ROCK_HEIGHT = 1, HOUSE_RADIUS = 0.82, HOUSE_HEIGHT = 0.88;
 
-/** Trees, rocks and piers have no sim collider, but a camera inside a crown or boulder fills the view with it: model them as columns. */
-export function sceneryColumns(props: { readonly trees: readonly Placement[]; readonly rocks: readonly Placement[]; readonly stone: readonly Column[]; readonly brass: readonly Column[] }): Column[] {
+/** Trees, rocks, houses and piers have no sim collider, but a camera inside a crown, boulder or roof fills the view with it: model them as columns. */
+export function sceneryColumns(props: {
+  readonly trees: readonly Placement[];
+  readonly rocks: readonly Placement[];
+  readonly houses?: readonly Placement[];
+  readonly stone: readonly Column[];
+  readonly brass: readonly Column[];
+}): Column[] {
   return [
     ...props.trees.map((t) => ({ x: t.x, z: t.z, r: TREE_RADIUS * t.scale, bottom: t.y, top: t.y + TREE_HEIGHT * t.scale })),
     ...props.rocks.map((r) => ({ x: r.x, z: r.z, r: ROCK_RADIUS * r.scale, bottom: r.y, top: r.y + ROCK_HEIGHT * r.scale })),
+    ...(props.houses ?? []).map((h) => ({ x: h.x, z: h.z, r: HOUSE_RADIUS * h.scale, bottom: h.y, top: h.y + HOUSE_HEIGHT * h.scale })),
     ...props.stone,
     ...props.brass
   ];
@@ -59,14 +77,27 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
 }
 
 export function createChaseClearance(): CameraClearance {
-  return createCameraClearance({ pullRate: 18, releaseRate: 1.6 });
+  const inner = createCameraClearance({ pullRate: 18, releaseRate: 1.6 });
+  const wrapped: CameraClearance = {
+    get factor() { return inner.factor; },
+    update(dt, options) { return inner.update(dt, options); },
+    reset() {
+      inner.reset();
+      chaseYawState.delete(wrapped);
+    }
+  };
+  return wrapped;
 }
 
-/** The eye the camera should use this frame: the wanted chase eye, pulled in toward the rider before it reaches scenery. */
+/** The eye the camera should use this frame: the damped wanted chase eye, pulled in toward the rider before it reaches scenery. */
 export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clearance: CameraClearance, dt: number, scenery: readonly Column[] = [], framing: ChaseFraming = ORIGINAL_CHASE): Eye {
+  const prev = chaseYawState.get(clearance);
+  const dampedYaw = prev === undefined ? sim.state.yaw : dampAngle(prev.yaw, sim.state.yaw, dt);
+  if (prev === undefined) chaseYawState.set(clearance, { yaw: dampedYaw });
+  else prev.yaw = dampedYaw;
   return clearance.update(dt, {
     focus: [sim.state.x, sim.state.y + 2.2, sim.state.z],
-    eye: wantedChaseEye(sim, framing),
+    eye: wantedChaseEye(sim, framing, dampedYaw),
     minDistance: CAMERA_MIN_DISTANCE,
     blocked: chaseEyeBlocked(sim.world, scenery)
   });

@@ -9,13 +9,15 @@
 import {
   type AuraCustomGeometrySpec,
   type AuraCustomMaterialSpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
+  type AuraSceneNode,
   geometry,
   group,
   material
 } from "@aura3d/engine";
+
+type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }>;
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,

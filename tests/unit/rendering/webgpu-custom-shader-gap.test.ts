@@ -36,8 +36,15 @@ describe("WebGPU pre-check: material.custom with GLSL and no WGSL twin", () => {
     expect(webgpuCustomShaderGap(snapshot)).toEqual({ code: "CUSTOM_SHADER_WGSL_MISSING", missing: ["wgsl:half"] });
   });
 
-  it("flags built-in materials that lower to GLSL-only custom programs (material.toon)", () => {
-    const snapshot = scene().add(primitives.box({ name: "toon", material: material.toon({ color: "#88aaff" }) })).toJSON();
-    expect(webgpuCustomShaderGap(snapshot)?.code).toBe("CUSTOM_SHADER_WGSL_MISSING");
+  it("passes all built-in custom material helpers (toon, strata, caustics, lightBeam, distance, shadow)", () => {
+    const snapshot = scene()
+      .add(primitives.box({ name: "toon", material: material.toon({ color: "#88aaff", rim: { color: "#ffffff" } }) }))
+      .add(primitives.box({ name: "strata", material: material.strata({ slope: { angle: 40 } }) }))
+      .add(primitives.box({ name: "caustics", material: material.caustics({ surfaceY: 2 }) }))
+      .add(primitives.cone({ name: "beam", material: material.lightBeam() }))
+      .add(primitives.box({ name: "distance", material: material.distance() }))
+      .add(primitives.plane({ name: "shadow", material: material.shadow() }))
+      .toJSON();
+    expect(webgpuCustomShaderGap(snapshot)).toBeUndefined();
   });
 });

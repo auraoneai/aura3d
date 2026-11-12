@@ -13,12 +13,12 @@
  */
 
 /** Below this many instances the GPU handles the draw trivially and the scan would cost more than it saves. */
-export const MIN_CULLED_INSTANCES = 512;
+export const MIN_CULLED_INSTANCES = 32;
 /** Conservative inflation of each instance's bounding sphere (covers wind sway, rounding and TAA jitter). */
 const RADIUS_INFLATION = 1.15;
 
 export interface InstanceFrustumCullInput {
-  /** Column-major view-projection of the camera that rasterises this draw (GL clip space, -w..w). */
+  /** Column-major view-projection of the camera that rasterises this draw (`[-w, w]` GL or `[0, w]` WebGPU / reversed-Z). */
   readonly viewProjection: ArrayLike<number>;
   /** The item's model matrix (column-major), or undefined for identity. */
   readonly modelMatrix?: ArrayLike<number> | undefined;
@@ -27,6 +27,10 @@ export interface InstanceFrustumCullInput {
   readonly transforms: Float32Array;
   /** Optional per-instance RGBA (4 floats each), compacted alongside. */
   readonly colors?: Float32Array | undefined;
+  /** Optional explicit clip-space coordinate system; auto-detected for `[0, 1]` reversed-Z perspective when omitted. */
+  readonly coordinateSystem?: "webgl" | "webgpu" | undefined;
+  /** Optional explicit reversed-Z flag; auto-detected for `[0, 1]` reversed-Z perspective when omitted. */
+  readonly reversedDepth?: boolean | undefined;
 }
 
 export interface InstanceFrustumCullResult {
@@ -45,24 +49,76 @@ function grown(current: Float32Array<ArrayBuffer>, length: number): Float32Array
 }
 const planes = new Float64Array(24);
 
-function extractPlanes(vp: ArrayLike<number>): boolean {
+function detectZeroToOneReversedVp(vp: ArrayLike<number>): boolean {
+  const r20 = vp[2]!, r21 = vp[6]!, r22 = vp[10]!, r23 = vp[14]!;
+  const r30 = vp[3]!, r31 = vp[7]!, r32 = vp[11]!, r33 = vp[15]!;
+  const len3Sq = r30 * r30 + r31 * r31 + r32 * r32;
+  if (!(len3Sq > 1e-12)) return false;
+  const p22 = -(r20 * r30 + r21 * r31 + r22 * r32) / len3Sq;
+  const d0 = r20 + p22 * r30;
+  const d1 = r21 + p22 * r31;
+  const d2 = r22 + p22 * r32;
+  if (d0 * d0 + d1 * d1 + d2 * d2 > 1e-5 * len3Sq * Math.max(1, p22 * p22)) return false;
+  const p23 = r23 + p22 * r33;
+  return p22 >= -1e-6 && p23 > 1e-9;
+}
+
+function extractPlanes(
+  vp: ArrayLike<number>,
+  coordinateSystem?: "webgl" | "webgpu",
+  reversedDepth?: boolean
+): boolean {
+  if (vp.length < 16) return false;
   // Gribb-Hartmann on a column-major matrix: row i = (m[i], m[4+i], m[8+i], m[12+i]).
   const r = (row: number, col: number): number => vp[col * 4 + row]!;
-  const set = (index: number, a: number, b: number, c: number, d: number): boolean => {
+  const set = (index: number, a: number, b: number, c: number, d: number, allowUnbounded = false): boolean => {
     const length = Math.hypot(a, b, c);
-    if (!(length > 1e-12) || !Number.isFinite(d)) return false;
+    if (!(length > 1e-12)) {
+      if (allowUnbounded && Number.isFinite(d) && d > 0) {
+        // Infinite far plane (`0·x + d >= 0` with `d > 0`): always-pass sentinel.
+        const o = index * 4;
+        planes[o] = 0; planes[o + 1] = 0; planes[o + 2] = 0; planes[o + 3] = Infinity;
+        return true;
+      }
+      return false;
+    }
+    if (!Number.isFinite(d)) return false;
     const o = index * 4;
     planes[o] = a / length; planes[o + 1] = b / length; planes[o + 2] = c / length; planes[o + 3] = d / length;
     return true;
   };
   for (let i = 0; i < 16; i += 1) if (!Number.isFinite(vp[i]!)) return false;
+  const autoReversedZeroToOne =
+    coordinateSystem === undefined && reversedDepth === undefined
+      ? detectZeroToOneReversedVp(vp)
+      : false;
+  const resolvedCoord = coordinateSystem ?? (autoReversedZeroToOne ? "webgpu" : "webgl");
+  const resolvedReversed = reversedDepth ?? autoReversedZeroToOne;
+  // Lower clip boundary (`z >= -w` on WebGL `[-1, 1]`, `z >= 0` on WebGPU `[0, 1]`):
+  // - Standard depth: lower = near, upper (`w - z >= 0`) = far.
+  // - Reversed depth (`[0, 1]` WebGPU): lower (`r2`) = far (`z_ndc = 0`), upper (`r3 - r2`) = near (`z_ndc = 1`).
+  //   Note that when `far === 2 * near` on `[0, 1]` reversed-Z, `r3 + r2` vanishes identically while `r2` and `r3 - r2` remain valid!
+  const lower0 = resolvedCoord === "webgpu" ? r(2, 0) : r(3, 0) + r(2, 0);
+  const lower1 = resolvedCoord === "webgpu" ? r(2, 1) : r(3, 1) + r(2, 1);
+  const lower2 = resolvedCoord === "webgpu" ? r(2, 2) : r(3, 2) + r(2, 2);
+  const lower3 = resolvedCoord === "webgpu" ? r(2, 3) : r(3, 3) + r(2, 3);
+  const upper0 = r(3, 0) - r(2, 0);
+  const upper1 = r(3, 1) - r(2, 1);
+  const upper2 = r(3, 2) - r(2, 2);
+  const upper3 = r(3, 3) - r(2, 3);
+  const nearOk = resolvedReversed
+    ? set(4, upper0, upper1, upper2, upper3, false)
+    : set(4, lower0, lower1, lower2, lower3, false);
+  const farOk = resolvedReversed
+    ? set(5, lower0, lower1, lower2, lower3, true)
+    : set(5, upper0, upper1, upper2, upper3, true);
   return (
     set(0, r(3, 0) + r(0, 0), r(3, 1) + r(0, 1), r(3, 2) + r(0, 2), r(3, 3) + r(0, 3)) && // left
     set(1, r(3, 0) - r(0, 0), r(3, 1) - r(0, 1), r(3, 2) - r(0, 2), r(3, 3) - r(0, 3)) && // right
     set(2, r(3, 0) + r(1, 0), r(3, 1) + r(1, 1), r(3, 2) + r(1, 2), r(3, 3) + r(1, 3)) && // bottom
     set(3, r(3, 0) - r(1, 0), r(3, 1) - r(1, 1), r(3, 2) - r(1, 2), r(3, 3) - r(1, 3)) && // top
-    set(4, r(3, 0) + r(2, 0), r(3, 1) + r(2, 1), r(3, 2) + r(2, 2), r(3, 3) + r(2, 3)) && // near (GL; looser than a 0..1 near)
-    set(5, r(3, 0) - r(2, 0), r(3, 1) - r(2, 1), r(3, 2) - r(2, 2), r(3, 3) - r(2, 3))    // far
+    nearOk &&
+    farOk
   );
 }
 
@@ -83,7 +139,7 @@ export function cullInstancesToFrustum(input: InstanceFrustumCullInput): Instanc
   const total = Math.floor(transforms.length / 16);
   if (total < MIN_CULLED_INSTANCES || transforms.length % 16 !== 0) return null;
   if (colors !== undefined && colors.length < total * 4) return null;
-  if (!extractPlanes(input.viewProjection)) return null;
+  if (!extractPlanes(input.viewProjection, input.coordinateSystem, input.reversedDepth)) return null;
 
   const cx = (bounds.min[0]! + bounds.max[0]!) / 2, cy = (bounds.min[1]! + bounds.max[1]!) / 2, cz = (bounds.min[2]! + bounds.max[2]!) / 2;
   const radius = Math.hypot(bounds.max[0]! - bounds.min[0]!, bounds.max[1]! - bounds.min[1]!, bounds.max[2]! - bounds.min[2]!) / 2 * RADIUS_INFLATION;

@@ -52,12 +52,13 @@ export function guardPose(pose: GuardPose, last: GuardPose | null, fallback: Gua
     dir = [unit[0] * MIN_EYE_TARGET_DISTANCE, unit[1] * MIN_EYE_TARGET_DISTANCE, unit[2] * MIN_EYE_TARGET_DISTANCE];
     dist = MIN_EYE_TARGET_DISTANCE;
   }
+  const verticalFallbackUp: Vec3 = Math.abs(dir[1] / dist) > 0.98 ? [0, 0, 1] : [0, 1, 0];
   let up: Vec3 = pose.up;
   const ul = isFinite3(up) ? len(up) : 0;
-  if (ul < 1e-6) up = [0, 1, 0];
+  if (ul < 1e-6) up = verticalFallbackUp;
   else {
     const cosAngle = Math.abs((up[0] * dir[0] + up[1] * dir[1] + up[2] * dir[2]) / (ul * dist));
-    if (cosAngle > 0.9998) up = [0, 1, 0];
+    if (cosAngle > 0.9998) up = verticalFallbackUp;
   }
   return { position, target, up, fov };
 }

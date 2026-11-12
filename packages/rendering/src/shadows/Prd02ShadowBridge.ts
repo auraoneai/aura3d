@@ -41,6 +41,7 @@ import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/
 import { sceneFromSource } from "../renderer/RenderShared";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
 import { cameraDepthOf, clipRangeFromViewProjection, type CascadeFitterCameraDepth } from "./DirectionalCascadeFitter";
+import { runtimeQualityDeviceStateFor } from "../quality/RuntimeQualityGovernor";
 
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
@@ -210,15 +211,24 @@ const shadowSystems = new WeakMap<RenderDevice, { config: ShadowSystemConfigInpu
  * frame; keying on them rebuilt the system, its shader library and every depth program each frame.
  */
 export function shadowSystemStructuralKey(config: ShadowSystemConfigInput): string {
-  return `${config.enabled}|${config.mapSize}|${config.cascades}|${config.maxDistance}|${config.splitLambda}|${config.filter}`;
+  return `${config.enabled}|${config.maxDistance}|${config.splitLambda}|${config.filter}`;
 }
 
 export function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem {
   const existing = shadowSystems.get(device);
   const key = shadowSystemStructuralKey(config);
   if (existing && existing.key === key) {
-    if (existing.config !== config) { existing.config = config; existing.system.retune(config); }
-    return existing.system;
+    if (existing.config !== config) {
+      try {
+        existing.system.retune(config);
+        existing.config = config;
+        return existing.system;
+      } catch (error) {
+        if ((error as { code?: string })?.code !== "SHADOW_CONFIG_STRUCTURAL_CHANGE") throw error;
+      }
+    } else {
+      return existing.system;
+    }
   }
   existing?.system.dispose();
   const system = new Prd02ShadowSystem(device, config);
@@ -389,7 +399,19 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const localLights = prd02LocalShadowLights(input.source);
   if (!sun && localLights.length === 0) return bail("no-sun");
   const tier = input.tier ?? QUALITY_TIERS.high;
-  const config = prd02ShadowConfig(input.source, input.flags, tier, camera.far);
+  const rawConfig = prd02ShadowConfig(input.source, input.flags, tier, camera.far);
+  const runtimeClamp = runtimeQualityDeviceStateFor(input.device);
+  const config: ShadowSystemConfigInput = runtimeClamp && (runtimeClamp.maxShadowCascades !== undefined || runtimeClamp.maxShadowMapSize !== undefined)
+    ? {
+      ...rawConfig,
+      cascades: runtimeClamp.maxShadowCascades !== undefined
+        ? (Math.min(rawConfig.cascades, runtimeClamp.maxShadowCascades) as 1 | 2 | 3 | 4)
+        : rawConfig.cascades,
+      mapSize: runtimeClamp.maxShadowMapSize !== undefined
+        ? Math.min(rawConfig.mapSize, runtimeClamp.maxShadowMapSize)
+        : rawConfig.mapSize
+    }
+    : rawConfig;
   if (!config.enabled) return bail("config-disabled");
   bridgeReasons.set(input.device, "rendered");
   const system = shadowSystemForDevice(input.device, config);

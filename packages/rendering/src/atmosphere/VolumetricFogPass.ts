@@ -13,7 +13,7 @@
 import { Geometry } from "../Geometry";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
-import type { RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice";
+import type { NativeShaderStages, PortableShaderBinding, RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice";
 import type { FrameContributorContext } from "../contracts/frameGraph";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
@@ -95,6 +95,229 @@ function fullscreenTriangle(): Geometry {
 
 const FULL_SCREEN = { depthTest: false, depthWrite: false, cullMode: "none" as const, blend: false, depthCompare: "always" as const };
 
+const VOLUMETRIC_INJECT_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_tileSize", kind: "vec2" },
+  { name: "u_projTan", kind: "vec2" },
+  { name: "u_invView", kind: "mat4" },
+  { name: "u_cameraPosition", kind: "vec3" },
+  { name: "u_near", kind: "float" },
+  { name: "u_far", kind: "float" },
+  { name: "u_slice", kind: "float" },
+  { name: "u_slices", kind: "float" },
+  { name: "u_jitter", kind: "float" },
+  { name: "u_fogDensity", kind: "vec4" },
+  { name: "u_fogVolumes", kind: "vec4", arrayLength: 16 },
+  { name: "u_noiseScale", kind: "float" },
+  { name: "u_noiseSpeed", kind: "float" },
+  { name: "u_noiseStrength", kind: "float" },
+  { name: "u_time", kind: "float" },
+  { name: "u_sunDirection", kind: "vec3" },
+  { name: "u_sunColor", kind: "vec3" },
+  { name: "u_anisotropy", kind: "float" },
+  { name: "u_ambientColor", kind: "vec3" },
+  { name: "u_localLights", kind: "vec4", arrayLength: 8 }
+];
+
+const VOLUMETRIC_INTEGRATE_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_atlasSize", kind: "vec2" },
+  { name: "u_tileSize", kind: "vec2" },
+  { name: "u_tilesX", kind: "float" },
+  { name: "u_near", kind: "float" },
+  { name: "u_far", kind: "float" },
+  { name: "u_slices", kind: "float" },
+  { name: "u_injectAtlas", kind: "texture2d" }
+];
+
+const VOLUMETRIC_APPLY_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_depthLinearize", kind: "vec4" },
+  { name: "u_atlasSize", kind: "vec2" },
+  { name: "u_tileSize", kind: "vec2" },
+  { name: "u_tilesX", kind: "float" },
+  { name: "u_near", kind: "float" },
+  { name: "u_far", kind: "float" },
+  { name: "u_slices", kind: "float" },
+  { name: "u_integrateAtlas", kind: "texture2d" },
+  { name: "u_sceneDepth", kind: "depth2d", required: true }
+];
+
+const VOLUMETRIC_INJECT_WGSL: NativeShaderStages = {
+  vertex: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} inject vertex
+/* @aura3d-bindings */
+struct VolumetricInjectVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) ndc: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_pos: vec3<f32>) -> VolumetricInjectVarying {
+  var out: VolumetricInjectVarying;
+  out.ndc = a_pos.xy;
+  out.position = vec4<f32>(a_pos.xy, 0.0, 1.0);
+  return out;
+}`,
+  fragment: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} inject fragment
+/* @aura3d-bindings */
+struct VolumetricInjectVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) ndc: vec2<f32>,
+};
+fn a3dInjectHeightDensity(p: vec3<f32>) -> f32 {
+  return aura.u_fogDensity.y * exp(-aura.u_fogDensity.z * (p.y - aura.u_fogDensity.w)) + aura.u_fogDensity.x;
+}
+fn a3dInjectVolumeDensity(p: vec3<f32>) -> f32 {
+  var d = 0.0;
+  for (var i = 0u; i < 8u; i += 1u) {
+    let a = aura.u_fogVolumes[i * 2u];
+    let b = aura.u_fogVolumes[i * 2u + 1u];
+    if (b.w <= 0.0) { continue; }
+    let q = (p - a.xyz) / max(b.xyz, vec3<f32>(1e-9));
+    let metric = select(max(max(abs(q.x), abs(q.y)), abs(q.z)), dot(q, q), a.w > 0.5);
+    let inside = 1.0 - smoothstep(0.85, 1.0, metric);
+    d += inside * b.w;
+  }
+  return d;
+}
+fn a3dVolHash(xIn: u32) -> u32 {
+  let x = xIn + 0x6d2b79f5u;
+  var t = (x ^ (x >> 15u)) * (1u | x);
+  t = (t + ((t ^ (t >> 7u)) * (61u | t))) ^ t;
+  return t ^ (t >> 14u);
+}
+fn a3dVolRand01(h: u32) -> f32 { return f32(h) * (1.0 / 4294967296.0); }
+fn a3dVolLattice(c: vec3<i32>) -> f32 {
+  let key = bitcast<u32>((c.x * 3) ^ (c.y * 7) ^ (c.z * 13));
+  return a3dVolRand01(a3dVolHash(key));
+}
+fn a3dVolNoise(p: vec3<f32>) -> f32 {
+  let ip = vec3<i32>(floor(p));
+  let fp = fract(p);
+  let u = fp * fp * (vec3<f32>(3.0) - 2.0 * fp);
+  let n000 = a3dVolLattice(ip);
+  let n100 = a3dVolLattice(ip + vec3<i32>(1, 0, 0));
+  let n010 = a3dVolLattice(ip + vec3<i32>(0, 1, 0));
+  let n110 = a3dVolLattice(ip + vec3<i32>(1, 1, 0));
+  let n001 = a3dVolLattice(ip + vec3<i32>(0, 0, 1));
+  let n101 = a3dVolLattice(ip + vec3<i32>(1, 0, 1));
+  let n011 = a3dVolLattice(ip + vec3<i32>(0, 1, 1));
+  let n111 = a3dVolLattice(ip + vec3<i32>(1, 1, 1));
+  let nx00 = mix(n000, n100, u.x);
+  let nx10 = mix(n010, n110, u.x);
+  let nx01 = mix(n001, n101, u.x);
+  let nx11 = mix(n011, n111, u.x);
+  return mix(mix(nx00, nx10, u.y), mix(nx01, nx11, u.y), u.z);
+}
+fn a3dHG(mu: f32, g: f32) -> f32 {
+  let g2 = g * g;
+  return (1.0 - g2) / (12.5663706 * pow(max(1.0 + g2 - 2.0 * g * mu, 1e-4), 1.5));
+}
+@fragment fn fs_main(in: VolumetricInjectVarying) -> @location(0) vec4<f32> {
+  let uv = fract(in.position.xy / aura.u_tileSize);
+  let ndc = vec2<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
+  let zk = aura.u_near * pow(aura.u_far / aura.u_near, (aura.u_slice + aura.u_jitter) / aura.u_slices);
+  let viewDir = vec3<f32>(ndc * aura.u_projTan, -1.0);
+  let p = aura.u_cameraPosition + (aura.u_invView * vec4<f32>(viewDir * zk, 0.0)).xyz;
+  var sigma = a3dInjectHeightDensity(p) + a3dInjectVolumeDensity(p);
+  sigma += (a3dVolNoise(p * aura.u_noiseScale + vec3<f32>(0.0, 0.0, -aura.u_time * aura.u_noiseSpeed)) * 2.0 - 1.0) * aura.u_noiseStrength;
+  sigma = max(sigma, 0.0);
+  let v = normalize(p - aura.u_cameraPosition);
+  let mu = dot(v, aura.u_sunDirection);
+  var L = aura.u_sunColor * a3dHG(mu, aura.u_anisotropy) + aura.u_ambientColor;
+  for (var i = 0u; i < 4u; i += 1u) {
+    let la = aura.u_localLights[i * 2u];
+    let lb = aura.u_localLights[i * 2u + 1u];
+    if (la.w <= 0.0) { continue; }
+    let toLight = la.xyz - p;
+    let d = max(length(toLight), 1e-4);
+    L += lb.rgb * (la.w / (d * d)) * a3dHG(dot(v, toLight / d), aura.u_anisotropy);
+  }
+  return vec4<f32>(L * sigma, sigma);
+}`
+};
+
+const VOLUMETRIC_INTEGRATE_WGSL: NativeShaderStages = {
+  vertex: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} integrate vertex
+/* @aura3d-bindings */
+@vertex fn vs_main(@location(0) a_pos: vec3<f32>) -> @builtin(position) vec4<f32> {
+  return vec4<f32>(a_pos.xy, 0.0, 1.0);
+}`,
+  fragment: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} integrate fragment
+/* @aura3d-bindings */
+fn a3dSliceZ(k: f32) -> f32 {
+  return aura.u_near * pow(aura.u_far / aura.u_near, k / aura.u_slices);
+}
+@fragment fn fs_main(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
+  let tileF = floor(fragPos.xy / aura.u_tileSize);
+  let tilesX = max(i32(aura.u_tilesX), 1);
+  let k = i32(tileF.y) * tilesX + i32(tileF.x);
+  let uv = fract(fragPos.xy / aura.u_tileSize);
+  var S = vec3<f32>(0.0);
+  var T = 1.0;
+  for (var j = 0; j <= k; j += 1) {
+    let tile = vec2<f32>(f32(j % tilesX), f32(j / tilesX));
+    let sampleUv = (tile * aura.u_tileSize + uv * aura.u_tileSize) / aura.u_atlasSize;
+    let inj = textureSampleLevel(u_injectAtlasTexture, u_injectAtlasSampler, sampleUv, 0.0);
+    let sigma = inj.a;
+    let dz = a3dSliceZ(f32(j) + 1.0) - a3dSliceZ(f32(j));
+    S += inj.rgb * ((1.0 - exp(-sigma * dz)) / max(sigma, 1e-5)) * T;
+    T *= exp(-sigma * dz);
+  }
+  return vec4<f32>(S, T);
+}`
+};
+
+const VOLUMETRIC_APPLY_WGSL: NativeShaderStages = {
+  vertex: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} apply vertex
+/* @aura3d-bindings */
+struct VolumetricApplyVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_pos: vec3<f32>) -> VolumetricApplyVarying {
+  var out: VolumetricApplyVarying;
+  out.uv = a_pos.xy * 0.5 + vec2<f32>(0.5);
+  out.position = vec4<f32>(a_pos.xy, 0.0, 1.0);
+  return out;
+}`,
+  fragment: /* wgsl */ `
+// ${PRD07_VOLUMETRIC_MARKER} apply fragment
+/* @aura3d-bindings */
+struct VolumetricApplyVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+fn a3dSceneViewZ(depthIn: f32) -> f32 {
+  let lin = aura.u_depthLinearize;
+  let depth = select(depthIn, 1.0 - depthIn, lin.w > 0.5);
+  if (lin.z > 0.5) { return mix(lin.x, lin.y, depth); }
+  return lin.x * lin.y / max(lin.y - depth * (lin.y - lin.x), 1e-4);
+}
+fn a3dSampleSlice(k: i32, uv: vec2<f32>) -> vec4<f32> {
+  let slices = i32(aura.u_slices);
+  if (k < 0 || k >= slices) { return vec4<f32>(0.0, 0.0, 0.0, 1.0); }
+  let tilesX = max(i32(aura.u_tilesX), 1);
+  let tile = vec2<f32>(f32(k % tilesX), f32(k / tilesX));
+  let sampleUv = (tile * aura.u_tileSize + uv * aura.u_tileSize) / aura.u_atlasSize;
+  return textureSampleLevel(u_integrateAtlasTexture, u_integrateAtlasSampler, sampleUv, 0.0);
+}
+@fragment fn fs_main(in: VolumetricApplyVarying) -> @location(0) vec4<f32> {
+  let depthSize = vec2<i32>(textureDimensions(u_sceneDepthTexture));
+  let texel = clamp(vec2<i32>(in.position.xy), vec2<i32>(0), depthSize - vec2<i32>(1));
+  let depth = textureLoad(u_sceneDepthTexture, texel, 0);
+  let viewZ = a3dSceneViewZ(depth);
+  let fslice = clamp(log(max(viewZ, 1e-4) / aura.u_near) / log(aura.u_far / aura.u_near) * aura.u_slices - 0.5, 0.0, aura.u_slices - 1.0);
+  let k0 = i32(floor(fslice));
+  let k1 = min(k0 + 1, i32(aura.u_slices) - 1);
+  let uv = vec2<f32>(in.uv.x, 1.0 - in.uv.y);
+  let s0 = a3dSampleSlice(k0, uv);
+  let s1 = a3dSampleSlice(k1, uv);
+  let s = mix(s0, s1, fslice - f32(k0));
+  return vec4<f32>(s.rgb, 1.0 - s.a);
+}`
+};
+
 export class VolumetricFogPass {
   private injectProgram: RenderShaderProgram | null = null;
   private integrateProgram: RenderShaderProgram | null = null;
@@ -122,6 +345,13 @@ export class VolumetricFogPass {
   private program(kind: "inject" | "integrate" | "apply"): RenderShaderProgram {
     const cached = kind === "inject" ? this.injectProgram : kind === "integrate" ? this.integrateProgram : this.applyProgram;
     if (cached) return cached;
+    const webgpuProps = this.device.kind === "webgpu"
+      ? (kind === "inject"
+          ? { webgpu: VOLUMETRIC_INJECT_WGSL, portableBindings: VOLUMETRIC_INJECT_PORTABLE_BINDINGS }
+          : kind === "integrate"
+            ? { webgpu: VOLUMETRIC_INTEGRATE_WGSL, portableBindings: VOLUMETRIC_INTEGRATE_PORTABLE_BINDINGS }
+            : { webgpu: VOLUMETRIC_APPLY_WGSL, portableBindings: VOLUMETRIC_APPLY_PORTABLE_BINDINGS })
+      : {};
     const program = this.device.createShaderProgram({
       label: `prd07.volumetric.${kind}`,
       vertex: kind === "inject" ? volumetricInjectVertexSource()
@@ -130,7 +360,8 @@ export class VolumetricFogPass {
       fragment: kind === "inject" ? volumetricInjectFragmentSource()
         : kind === "integrate" ? volumetricIntegrateFragmentSource()
         : volumetricApplyFragmentSource(),
-      marker: PRD07_VOLUMETRIC_MARKER
+      marker: PRD07_VOLUMETRIC_MARKER,
+      ...webgpuProps
     });
     if (kind === "inject") this.injectProgram = program;
     else if (kind === "integrate") this.integrateProgram = program;

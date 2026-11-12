@@ -19,6 +19,20 @@ void main() {
 export const ACES_FILMIC_GLSL = `vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {
   return vec3(dot(r0, v), dot(r1, v), dot(r2, v));
 }
+#ifdef OUTPUT_DISPLAY_P3
+vec3 a3dSceneSrgbToP3(vec3 c) {
+  return a3dToneRows(c,
+    vec3(0.8224619687143624, 0.17753803128563794, 0.0),
+    vec3(0.03319419885096169, 0.9668058011490385, 0.0),
+    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));
+}
+vec3 a3dSceneP3ToSrgb(vec3 c) {
+  return a3dToneRows(c,
+    vec3(1.2249401762805586, -0.2249401762805588, 0.0),
+    vec3(-0.04205695470968808, 1.042056954709688, 0.0),
+    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));
+}
+#endif
 // Hill's published rational approximation, used in the ACES working gamut.
 vec3 RRTAndODTFit(vec3 x) {
   vec3 numerator = (x + 0.0245786) * x - 0.000090537;
@@ -26,6 +40,17 @@ vec3 RRTAndODTFit(vec3 x) {
   return numerator / denominator;
 }
 vec3 ACESFilmicToneMapping(vec3 color) {
+#ifdef OUTPUT_DISPLAY_P3
+  vec3 working = max(a3dToneRows(color / 0.6,
+    vec3(0.59719, 0.35458, 0.04823),
+    vec3(0.07600, 0.90834, 0.01566),
+    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));
+  vec3 fitted = RRTAndODTFit(working);
+  return a3dToneRows(fitted,
+    vec3(1.60475, -0.53108, -0.07367),
+    vec3(-0.10208, 1.10813, -0.00605),
+    vec3(-0.00327, -0.07276, 1.07602));
+#else
   vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,
     vec3(0.59719, 0.35458, 0.04823),
     vec3(0.07600, 0.90834, 0.01566),
@@ -35,6 +60,7 @@ vec3 ACESFilmicToneMapping(vec3 color) {
     vec3(1.60475, -0.53108, -0.07367),
     vec3(-0.10208, 1.10813, -0.00605),
     vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);
+#endif
 }
 
 `;
@@ -42,14 +68,25 @@ vec3 ACESFilmicToneMapping(vec3 color) {
 export const TONE_MAPPING_OPERATORS_GLSL = `// Independent Aura3D display transforms, paired with post/ToneOperators.ts.
 ${ACES_FILMIC_GLSL}
 vec3 NoneToneMapping(vec3 color) { return color; }
-vec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }
+vec3 LinearToneMapping(vec3 color) {
+#ifdef OUTPUT_DISPLAY_P3
+  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));
+#else
+  return clamp(color, 0.0, 1.0);
+#endif
+}
 // Preserve out-of-gamut negatives for the destination-primary transform;
 // gamut clipping happens afterward. Avoid the x = -1 singularity.
 float a3dReinhardChannel(float value) {
   return value >= 0.0 ? value / (1.0 + value) : value;
 }
 vec3 ReinhardToneMapping(vec3 color) {
+#ifdef OUTPUT_DISPLAY_P3
+  vec3 p3 = a3dSceneSrgbToP3(color);
+  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));
+#else
   return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));
+#endif
 }
 
 // AgX log window and sixth-degree contrast approximation.
@@ -57,6 +94,20 @@ vec3 a3dAgxContrast(vec3 x) {
   return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;
 }
 vec3 AgXToneMapping(vec3 color) {
+#ifdef OUTPUT_DISPLAY_P3
+  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));
+  vec3 inset = a3dToneRows(p3,
+    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),
+    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),
+    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));
+  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);
+  vec3 graded = a3dAgxContrast(logExposure);
+  vec3 outset = a3dToneRows(graded,
+    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),
+    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),
+    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));
+  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));
+#else
   vec3 wide = a3dToneRows(max(color, vec3(0.0)),
     vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));
   vec3 inset = a3dToneRows(wide,
@@ -72,6 +123,7 @@ vec3 AgXToneMapping(vec3 color) {
   vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));
   return clamp(a3dToneRows(display,
     vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);
+#endif
 }
 
 // Filmic Cineon fit, with its inverse display gamma returning linear light.
@@ -82,6 +134,20 @@ vec3 CineonToneMapping(vec3 color) {
 
 // Khronos PBR Neutral's dark offset and highlight shoulder.
 vec3 NeutralToneMapping(vec3 color) {
+#ifdef OUTPUT_DISPLAY_P3
+  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));
+  float minimum = min(p3.r, min(p3.g, p3.b));
+  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;
+  vec3 shifted = p3 - offset;
+  float peak = max(shifted.r, max(shifted.g, shifted.b));
+  float knee = 0.76;
+  if (peak < knee) return a3dSceneP3ToSrgb(shifted);
+  float shoulder = 1.0 - knee;
+  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);
+  vec3 scaled = shifted * (compressed / peak);
+  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));
+  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);
+#else
   color = max(color, vec3(0.0));
   float minimum = min(color.r, min(color.g, color.b));
   float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;
@@ -94,6 +160,7 @@ vec3 NeutralToneMapping(vec3 color) {
   vec3 scaled = shifted * (compressed / peak);
   float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));
   return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;
+#endif
 }
 `;
 
@@ -239,7 +306,14 @@ export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
  * `OUTPUT_FRAGMENT_EPILOGUE_GLSL` so that published constant keeps its 5.2 text (its literal type is public API);
  * both pieces are guarded by `OUTPUT_COLOR_GRADE`, so a shader without that define is unchanged.
  */
-const OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL = `#ifdef OUTPUT_COLOR_GRADE
+const OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL = `vec3 a3dClampClear(vec3 hdr) {
+#ifdef OUTPUT_DISPLAY_P3
+  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(hdr), 0.0, 1.0));
+#else
+  return clamp(hdr, 0.0, 1.0);
+#endif
+}
+#ifdef OUTPUT_COLOR_GRADE
 uniform vec4 u_gradeA; // x = contrast, y = temperature, z = tint, w = saturation
 uniform vec4 u_gradeB; // x = vibrance, y = display vignette
 vec3 a3dGradeSrgbToLinear(vec3 c) {
@@ -247,10 +321,14 @@ vec3 a3dGradeSrgbToLinear(vec3 c) {
 }
 // The legacy fused present's colour grade (webgl2/LdrPostprocessShader.ts applyColorGrade). It is authored on
 // sRGB-encoded display values, so it runs on the sRGB transfer of the tone-mapped linear-sRGB colour and decodes
-// back; the destination gamut transform and final encode follow. On an sRGB destination this reproduces the
-// fused grade; on Display-P3 the same graded colours land on P3 primaries.
+// back; the destination gamut transform and final encode follow. On Display-P3, grading operates in Display-P3
+// transfer space so wide-gamut colours are never clipped to the sRGB unit cube beforehand.
 vec3 a3dOutputColorGrade(vec3 linearSrgb, vec2 uv) {
+#ifdef OUTPUT_DISPLAY_P3
+  vec3 color = a3dLinearToSRGB(clamp(a3dOutputGamut(linearSrgb), 0.0, 1.0));
+#else
   vec3 color = a3dLinearToSRGB(clamp(linearSrgb, 0.0, 1.0));
+#endif
   float contrast = u_gradeA.x;
   float contrastOffset = 0.5 - 0.5 * contrast;
   float redShift = u_gradeA.y * 0.08 - u_gradeA.z * 0.02;
@@ -264,7 +342,12 @@ vec3 a3dOutputColorGrade(vec3 linearSrgb, vec2 uv) {
   graded = vec3(luma) + (graded - vec3(luma)) * saturation;
   vec2 centered = uv * 2.0 - 1.0;
   float vignette = 1.0 - u_gradeB.y * clamp((length(centered) - 0.28) / 1.12, 0.0, 1.0);
-  return a3dGradeSrgbToLinear(clamp(graded * vignette, 0.0, 1.0));
+  vec3 linearGraded = a3dGradeSrgbToLinear(clamp(graded * vignette, 0.0, 1.0));
+#ifdef OUTPUT_DISPLAY_P3
+  return a3dSceneP3ToSrgb(linearGraded);
+#else
+  return linearGraded;
+#endif
 }
 #endif
 `;
@@ -273,15 +356,26 @@ const OUTPUT_COLOR_GRADE_CALL_GLSL = `#ifdef OUTPUT_COLOR_GRADE
 #endif
 `;
 const OUTPUT_MAIN_ANCHOR = "void main() {\n";
+const OUTPUT_CLEAR_CLAMP_ANCHOR = "  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n";
+const OUTPUT_CLEAR_CLAMP_REPLACEMENT = "  vec3 display = mix(a3dClampClear(hdr), TONE_MAP(hdr * u_exposure), a3dCoverage);\n";
 const OUTPUT_ENCODE_ANCHOR = "  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n";
 function spliceOnce(source: string, anchor: string, insert: string): string {
   const index = source.indexOf(anchor);
   if (index < 0 || source.indexOf(anchor, index + 1) >= 0) throw new Error(`Output epilogue anchor must appear exactly once: ${anchor.trim()}`);
   return source.slice(0, index) + insert + source.slice(index);
 }
+function replaceOnce(source: string, anchor: string, replacement: string): string {
+  const index = source.indexOf(anchor);
+  if (index < 0 || source.indexOf(anchor, index + 1) >= 0) throw new Error(`Output epilogue anchor must appear exactly once: ${anchor.trim()}`);
+  return source.slice(0, index) + replacement + source.slice(index + anchor.length);
+}
 /** The epilogue `outputFragmentGlsl` emits: the published epilogue plus the guarded colour grade. */
 const OUTPUT_FRAGMENT_EPILOGUE_WITH_GRADE_GLSL = spliceOnce(
-  spliceOnce(OUTPUT_FRAGMENT_EPILOGUE_GLSL, OUTPUT_MAIN_ANCHOR, OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL),
+  replaceOnce(
+    spliceOnce(OUTPUT_FRAGMENT_EPILOGUE_GLSL, OUTPUT_MAIN_ANCHOR, OUTPUT_COLOR_GRADE_FUNCTIONS_GLSL),
+    OUTPUT_CLEAR_CLAMP_ANCHOR,
+    OUTPUT_CLEAR_CLAMP_REPLACEMENT
+  ),
   OUTPUT_ENCODE_ANCHOR,
   OUTPUT_COLOR_GRADE_CALL_GLSL
 );

@@ -26,6 +26,8 @@ export interface GameAudioContextLike {
   close?(): Promise<void>;
   createGain(): GainNode;
   createOscillator?(): OscillatorNode;
+  addEventListener?(type: "statechange", listener: () => void): void;
+  removeEventListener?(type: "statechange", listener: () => void): void;
 }
 
 export interface GameAudioBusDefinition {
@@ -196,6 +198,8 @@ export interface GameAudio<TCue extends string = string> {
   setMuted(muted: boolean): GameAudioEvidence<TCue>;
   setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
   onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+  /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+  onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
   /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
   recordMaster(seconds?: number): Promise<Blob | null>;
   dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -355,6 +359,45 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     errors.push("Game audio cue playback failed.");
   };
   const listeners = new Set<(event: GameAudioCueEvent<TCue>) => void>();
+  const stateListeners = new Set<(state: string, isUnlocked: boolean) => void>();
+  let attachedContext: GameAudioContextLike | null = null;
+  let unlockPending = 0;
+  let lastNotifiedState: string | undefined;
+  let lastNotifiedUnlocked: boolean | undefined;
+  const emitStateChange = (state: string, isUnlocked: boolean): void => {
+    if (lastNotifiedState === state && lastNotifiedUnlocked === isUnlocked) return;
+    lastNotifiedState = state;
+    lastNotifiedUnlocked = isUnlocked;
+    for (const cb of [...stateListeners]) cb(state, isUnlocked);
+  };
+  const syncUnlocked = (ctx: GameAudioContextLike | null | undefined): boolean => {
+    if (!ctx) {
+      unlocked = false;
+      return false;
+    }
+    if (unlockPending > 0 && ctx.state === "running") {
+      unlocked = true;
+    } else if (unlocked && ctx.state !== "running") {
+      // iOS Safari transitions running contexts to "interrupted" or "suspended"
+      // on phone calls, Siri, lock screen, or tab switch; re-arm gesture unlock.
+      unlocked = false;
+    }
+    return unlocked;
+  };
+  const handleContextStateChange = (): void => {
+    const current = context ?? null;
+    syncUnlocked(current);
+    const currentState = current?.state ?? "unavailable";
+    emitStateChange(currentState, unlocked);
+  };
+  const bindContextEvents = (ctx: GameAudioContextLike | null): void => {
+    const target = disposed ? null : ctx;
+    if (attachedContext === target) return;
+    attachedContext?.removeEventListener?.("statechange", handleContextStateChange);
+    attachedContext = target;
+    target?.addEventListener?.("statechange", handleContextStateChange);
+  };
+  if (context) bindContextEvents(context);
   const buses = new Map<GameAudioBusId, GameAudioBusState>();
 
   // ---- C-25 cue validation (PRD-09 1734) -----------------------------------
@@ -432,8 +475,13 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   }
 
   const getContext = (): GameAudioContextLike | null => {
-    if (context === undefined) context = contextManager ? (contextManager.context as unknown as GameAudioContextLike) : options.createContext?.() ?? null;
-    return context ?? null;
+    if (context === undefined && !disposed) {
+      context = contextManager ? (contextManager.context as unknown as GameAudioContextLike) : options.createContext?.() ?? null;
+    }
+    const resolved = context ?? null;
+    bindContextEvents(disposed ? null : resolved);
+    syncUnlocked(resolved);
+    return resolved;
   };
 
   const getEngine = (): ReturnType<typeof createGameSoundEngine> | null => {
@@ -691,10 +739,22 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     async unlock() {
       const audioContext = getContext();
       if (!audioContext) return snapshot();
-      if (contextManager) await contextManager.unlock();
-      else await audioContext.resume();
-      unlocked = true;
-      await getEngine()?.unlock();
+      const wasUnlocked = unlocked;
+      unlockPending += 1;
+      try {
+        if (contextManager) await contextManager.unlock();
+        else await audioContext.resume();
+        // Only confirm unlocked once WebKit/Web Audio actually transitions to "running".
+        unlocked = audioContext.state === "running";
+      } finally {
+        unlockPending = Math.max(0, unlockPending - 1);
+      }
+      if (unlocked) {
+        await getEngine()?.unlock();
+      }
+      if (unlocked !== wasUnlocked) {
+        emitStateChange(audioContext.state, unlocked);
+      }
       return snapshot();
     },
     async cue(cue) {
@@ -817,11 +877,18 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       listeners.add(callback);
       return () => listeners.delete(callback);
     },
+    onStateChange(callback) {
+      stateListeners.add(callback);
+      return () => stateListeners.delete(callback);
+    },
     recordMaster(seconds) {
       return getEngine()?.recordMaster?.(seconds) ?? Promise.resolve(null);
     },
     async dispose() {
       disposed = true;
+      unlocked = false;
+      bindContextEvents(null);
+      stateListeners.clear();
       engine?.dispose();
       liveVoices.clear();
       playingNodes.length = 0;

@@ -204,4 +204,53 @@ describe("createGameAudio", () => {
       console.warn = originalWarn;
     }
   });
+
+  it("defers unlocked until context.state === 'running' and recovers from iOS Safari 'interrupted' statechange", async () => {
+    const stateListeners = new Set<() => void>();
+    let allowRunning = false;
+    const context = new FakeAudioContext() as FakeAudioContext & {
+      addEventListener(type: "statechange", listener: () => void): void;
+      removeEventListener(type: "statechange", listener: () => void): void;
+    };
+    context.addEventListener = (_type, listener) => { stateListeners.add(listener); };
+    context.removeEventListener = (_type, listener) => { stateListeners.delete(listener); };
+    context.resume = async () => {
+      if (allowRunning) {
+        context.state = "running";
+        stateListeners.forEach((cb) => cb());
+      }
+    };
+
+    const transitions: boolean[] = [];
+    const audio = createGameAudio({
+      context,
+      cues: { hit: { id: "hit", play: oscPlay } }
+    });
+    const off = audio.onStateChange!((_state, isUnlocked) => transitions.push(isUnlocked));
+
+    // Non-gesture unlock on iOS Safari: resume() resolves while context stays "suspended".
+    await audio.unlock();
+    expect(audio.evidence.unlocked).toBe(false);
+
+    // Real user gesture: resume() transitions to "running".
+    allowRunning = true;
+    await audio.unlock();
+    expect(audio.evidence.unlocked).toBe(true);
+
+    // Phone call / Siri / tab switch puts WebKit AudioContext into "interrupted".
+    allowRunning = false;
+    context.state = "interrupted";
+    stateListeners.forEach((cb) => cb());
+    expect(audio.evidence.unlocked).toBe(false);
+
+    // Next user gesture resumes back to "running".
+    allowRunning = true;
+    await audio.unlock();
+    expect(audio.evidence.unlocked).toBe(true);
+    expect(transitions).toEqual([true, false, true]);
+
+    off();
+    await audio.dispose();
+    expect(stateListeners.size).toBe(0);
+  });
 });

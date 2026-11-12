@@ -14,7 +14,7 @@ float a3dPrd04VGGXAnisotropic(float alphaT, float alphaB, float tv, float bv,
   return 0.5 / max(nl * length(projectedView) + nv * length(projectedLight), 1e-6);
 }
 float a3dPrd04DGGXAnisotropic(float alphaT, float alphaB, float nh, float th, float bh) {
-  float at = max(alphaT, 1e-4), ab = max(alphaB, 1e-4);
+  float at = max(alphaT, 0.002), ab = max(alphaB, 0.002);
   float slope = pow2(th / at) + pow2(bh / ab) + nh * nh;
   return 1.0 / max(PI * at * ab * slope * slope, 1e-12);
 }
@@ -31,7 +31,7 @@ void a3dPrd04AnisotropyInit(inout A3DPrd04Lobes lobes, vec2 factor, vec4 texel,
   float strength = length(direction);
   vec2 axis = strength > 1e-6 ? direction / strength : vec2(1.0, 0.0);
   lobes.anisotropy = saturate(strength);
-  lobes.alphaT = mix(pow2(clamp(roughness, 0.0, 1.0)), 1.0, pow2(lobes.anisotropy));
+  lobes.alphaT = max(mix(pow2(clamp(roughness, 0.0, 1.0)), 1.0, pow2(lobes.anisotropy)), 0.002);
   lobes.anisotropyT = tangent * axis.x + bitangent * axis.y;
   lobes.anisotropyB = bitangent * axis.x - tangent * axis.y;
 }
@@ -40,13 +40,13 @@ vec3 a3dPrd04AnisotropyDirect(vec3 lightDir, vec3 viewDir, vec3 normal, vec3 f0,
   float nl = saturate(dot(normal, lightDir)), nv = saturate(dot(normal, viewDir));
   if (nl <= 0.0 || nv <= 0.0) return vec3(0.0);
   vec3 h = a3dHalfVector(lightDir, viewDir, normal);
-  float alphaB = max(roughness * roughness, 1e-4);
+  float alphaB = max(roughness * roughness, 0.002);
   float d = a3dPrd04DGGXAnisotropic(lobes.alphaT, alphaB, saturate(dot(normal, h)),
     dot(lobes.anisotropyT, h), dot(lobes.anisotropyB, h));
   float vis = a3dPrd04VGGXAnisotropic(lobes.alphaT, alphaB, dot(lobes.anisotropyT, viewDir),
     dot(lobes.anisotropyB, viewDir), dot(lobes.anisotropyT, lightDir),
     dot(lobes.anisotropyB, lightDir), nv, nl);
-  return F_Schlick(f0, f90, dot(viewDir, h)) * (d * vis);
+  return clamp(F_Schlick(f0, f90, saturate(dot(viewDir, h))) * min(d * vis, 65504.0), vec3(0.0), vec3(65504.0));
 }
 vec3 a3dPrd04AnisotropyBentNormal(vec3 viewDir, vec3 normal, float roughness, vec3 bitangent, float anisotropy) {
   vec3 projected = viewDir - bitangent * dot(viewDir, bitangent);

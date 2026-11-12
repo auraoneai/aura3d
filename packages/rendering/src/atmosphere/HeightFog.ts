@@ -238,6 +238,138 @@ export function skyHorizonRadiance(sky: unknown, azimuth: number): Vec3 | null {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
 
+const CSS_NAMED_FOG_COLORS: Readonly<Record<string, number>> = {
+  aliceblue: 0xf0f8ff, antiquewhite: 0xfaebd7, aqua: 0x00ffff, aquamarine: 0x7fffd4, azure: 0xf0ffff,
+  beige: 0xf5f5dc, bisque: 0xffe4c4, black: 0x000000, blanchedalmond: 0xffebcd, blue: 0x0000ff,
+  blueviolet: 0x8a2be2, brown: 0xa52a2a, burlywood: 0xdeb887, cadetblue: 0x5f9ea0, chartreuse: 0x7fff00,
+  chocolate: 0xd2691e, coral: 0xff7f50, cornflowerblue: 0x6495ed, cornsilk: 0xfff8dc, crimson: 0xdc143c,
+  cyan: 0x00ffff, darkblue: 0x00008b, darkcyan: 0x008b8b, darkgoldenrod: 0xb8860b, darkgray: 0xa9a9a9,
+  darkgreen: 0x006400, darkgrey: 0xa9a9a9, darkkhaki: 0xbdb76b, darkmagenta: 0x8b008b, darkolivegreen: 0x556b2f,
+  darkorange: 0xff8c00, darkorchid: 0x9932cc, darkred: 0x8b0000, darksalmon: 0xe9967a, darkseagreen: 0x8fbc8f,
+  darkslateblue: 0x483d8b, darkslategray: 0x2f4f4f, darkslategrey: 0x2f4f4f, darkturquoise: 0x00ced1,
+  darkviolet: 0x9400d3, deeppink: 0xff1493, deepskyblue: 0x00bfff, dimgray: 0x696969, dimgrey: 0x696969,
+  dodgerblue: 0x1e90ff, firebrick: 0xb22222, floralwhite: 0xfffaf0, forestgreen: 0x228b22, fuchsia: 0xff00ff,
+  gainsboro: 0xdcdcdc, ghostwhite: 0xf8f8ff, gold: 0xffd700, goldenrod: 0xdaa520, gray: 0x808080,
+  green: 0x008000, greenyellow: 0xadff2f, grey: 0x808080, honeydew: 0xf0fff0, hotpink: 0xff69b4,
+  indianred: 0xcd5c5c, indigo: 0x4b0082, ivory: 0xfffff0, khaki: 0xf0e68c, lavender: 0xe6e6fa,
+  lavenderblush: 0xfff0f5, lawngreen: 0x7cfc00, lemonchiffon: 0xfffacd, lightblue: 0xadd8e6, lightcoral: 0xf08080,
+  lightcyan: 0xe0ffff, lightgoldenrodyellow: 0xfafad2, lightgray: 0xd3d3d3, lightgreen: 0x90ee90,
+  lightgrey: 0xd3d3d3, lightpink: 0xffb6c1, lightsalmon: 0xffa07a, lightseagreen: 0x20b2aa, lightskyblue: 0x87cefa,
+  lightslategray: 0x778899, lightslategrey: 0x778899, lightsteelblue: 0xb0c4de, lightyellow: 0xffffe0,
+  lime: 0x00ff00, limegreen: 0x32cd32, linen: 0xfaf0e6, magenta: 0xff00ff, maroon: 0x800000,
+  mediumaquamarine: 0x66cdaa, mediumblue: 0x0000cd, mediumorchid: 0xba55d3, mediumpurple: 0x9370db,
+  mediumseagreen: 0x3cb371, mediumslateblue: 0x7b68ee, mediumspringgreen: 0x00fa9a, mediumturquoise: 0x48d1cc,
+  mediumvioletred: 0xc71585, midnightblue: 0x191970, mintcream: 0xf5fffa, mistyrose: 0xffe4e1, moccasin: 0xffe4b5,
+  navajowhite: 0xffdead, navy: 0x000080, oldlace: 0xfdf5e6, olive: 0x808000, olivedrab: 0x6b8e23,
+  orange: 0xffa500, orangered: 0xff4500, orchid: 0xda70d6, palegoldenrod: 0xeee8aa, palegreen: 0x98fb98,
+  paleturquoise: 0xafeeee, palevioletred: 0xdb7093, papayawhip: 0xffefd5, peachpuff: 0xffdab9, peru: 0xcd853f,
+  pink: 0xffc0cb, plum: 0xdda0dd, powderblue: 0xb0e0e6, purple: 0x800080, rebeccapurple: 0x663399,
+  red: 0xff0000, rosybrown: 0xbc8f8f, royalblue: 0x4169e1, saddlebrown: 0x8b4513, salmon: 0xfa8072,
+  sandybrown: 0xf4a460, seagreen: 0x2e8b57, seashell: 0xfff5ee, sienna: 0xa0522d, silver: 0xc0c0c0,
+  skyblue: 0x87ceeb, slateblue: 0x6a5acd, slategray: 0x708090, slategrey: 0x708090, snow: 0xfffafa,
+  springgreen: 0x00ff7f, steelblue: 0x4682b4, tan: 0xd2b48c, teal: 0x008080, thistle: 0xd8bfd8,
+  tomato: 0xff6347, transparent: 0x000000, turquoise: 0x40e0d0, violet: 0xee82ee, wheat: 0xf5deb3,
+  white: 0xffffff, whitesmoke: 0xf5f5f5, yellow: 0xffff00, yellowgreen: 0x9acd32
+};
+
+const CSS_NUM_RE = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
+
+function parseCssNumber(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!CSS_NUM_RE.test(trimmed)) return null;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : null;
+}
+
+function splitCssColorArgs(body: string): string[] | null {
+  const slashIdx = body.indexOf("/");
+  const main = (slashIdx >= 0 ? body.slice(0, slashIdx) : body).trim();
+  if (!main) return null;
+  const parts = main.includes(",") ? main.split(",").map((p) => p.trim()) : main.split(/\s+/).filter(Boolean);
+  return parts.length >= 3 ? parts.slice(0, 3) : null;
+}
+
+function parseCssRgbChannel(token: string): number | null {
+  if (token.endsWith("%")) {
+    const pct = parseCssNumber(token.slice(0, -1));
+    return pct === null ? null : Math.min(Math.max(pct / 100, 0), 1);
+  }
+  const n = parseCssNumber(token);
+  return n === null ? null : Math.min(Math.max(n / 255, 0), 1);
+}
+
+function parseCssHueDegrees(token: string): number | null {
+  const lower = token.trim().toLowerCase();
+  let scale = 1;
+  let numStr = lower;
+  if (lower.endsWith("deg")) { numStr = lower.slice(0, -3); scale = 1; }
+  else if (lower.endsWith("grad")) { numStr = lower.slice(0, -4); scale = 0.9; }
+  else if (lower.endsWith("rad")) { numStr = lower.slice(0, -3); scale = 180 / Math.PI; }
+  else if (lower.endsWith("turn")) { numStr = lower.slice(0, -4); scale = 360; }
+  const n = parseCssNumber(numStr);
+  return n === null ? null : (((n * scale) % 360) + 360) % 360;
+}
+
+function parseCssPercentOrHundred(token: string): number | null {
+  const trimmed = token.trim();
+  const numStr = trimmed.endsWith("%") ? trimmed.slice(0, -1) : trimmed;
+  const n = parseCssNumber(numStr);
+  return n === null ? null : Math.min(Math.max(n / 100, 0), 1);
+}
+
+function hslToSrgb(hDeg: number, s: number, l: number): [number, number, number] {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((hDeg / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r1 = 0, g1 = 0, b1 = 0;
+  if (hDeg < 60) { r1 = c; g1 = x; }
+  else if (hDeg < 120) { r1 = x; g1 = c; }
+  else if (hDeg < 180) { g1 = c; b1 = x; }
+  else if (hDeg < 240) { g1 = x; b1 = c; }
+  else if (hDeg < 300) { r1 = x; b1 = c; }
+  else { r1 = c; b1 = x; }
+  return [r1 + m, g1 + m, b1 + m];
+}
+
+function parseFogCssString(input: string): [number, number, number] | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+  const named = CSS_NAMED_FOG_COLORS[lower];
+  if (named !== undefined) {
+    return [((named >> 16) & 0xff) / 255, ((named >> 8) & 0xff) / 255, (named & 0xff) / 255];
+  }
+  const fnMatch = /^(rgba?|hsla?)\(([^)]*)\)$/i.exec(trimmed);
+  if (fnMatch) {
+    const fn = fnMatch[1]!.toLowerCase();
+    const args = splitCssColorArgs(fnMatch[2]!);
+    if (!args) return null;
+    if (fn === "rgb" || fn === "rgba") {
+      const cr = parseCssRgbChannel(args[0]!);
+      const cg = parseCssRgbChannel(args[1]!);
+      const cb = parseCssRgbChannel(args[2]!);
+      return cr !== null && cg !== null && cb !== null ? [cr, cg, cb] : null;
+    }
+    const h = parseCssHueDegrees(args[0]!);
+    const s = parseCssPercentOrHundred(args[1]!);
+    const l = parseCssPercentOrHundred(args[2]!);
+    return h !== null && s !== null && l !== null ? hslToSrgb(h, s, l) : null;
+  }
+  const hex = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
+  if (/^[0-9a-f]{3}$/i.test(hex) || /^[0-9a-f]{4}$/i.test(hex)) {
+    const r = Number.parseInt(hex[0]! + hex[0]!, 16) / 255;
+    const g = Number.parseInt(hex[1]! + hex[1]!, 16) / 255;
+    const b = Number.parseInt(hex[2]! + hex[2]!, 16) / 255;
+    return [r, g, b];
+  }
+  if (/^[0-9a-f]{6}$/i.test(hex) || /^[0-9a-f]{8}$/i.test(hex)) {
+    const rgbHex = hex.slice(0, 6);
+    const parsed = Number.parseInt(rgbHex, 16);
+    return [((parsed >> 16) & 0xff) / 255, ((parsed >> 8) & 0xff) / 255, (parsed & 0xff) / 255];
+  }
+  return null;
+}
+
 /**
  * §6.6 — authored color → linear fog RGB. `"sky"` resolves elsewhere (to the
  * horizon sample or `PRD07_FOG_DEFAULTS.fallbackColor`); authored values are
@@ -249,13 +381,9 @@ export function parseFogColor(color: Prd07FogSpec["color"] | { readonly r: numbe
   let g = 1;
   let b = 1;
   if (typeof color === "string") {
-    const hex = color.startsWith("#") ? color.slice(1) : color;
-    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
-    const parsed = Number.parseInt(full, 16);
-    if (!Number.isFinite(parsed)) return fallback;
-    r = ((parsed >> 16) & 0xff) / 255;
-    g = ((parsed >> 8) & 0xff) / 255;
-    b = (parsed & 0xff) / 255;
+    const parsed = parseFogCssString(color);
+    if (!parsed) return fallback;
+    [r, g, b] = parsed;
   } else if (Array.isArray(color)) {
     r = color[0] ?? 1;
     g = color[1] ?? r;
@@ -267,6 +395,7 @@ export function parseFogColor(color: Prd07FogSpec["color"] | { readonly r: numbe
   } else {
     return fallback;
   }
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return fallback;
   return [srgbToLinearChannel(r), srgbToLinearChannel(g), srgbToLinearChannel(b)];
 }
 

@@ -191,7 +191,7 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
     expect(ridgeSpec.bounds!.max[0] - ridgeSpec.bounds!.min[0]).toBeCloseTo(1, 3);
     const strataMat = buildBayRidgeStrataMaterial();
     expect(strataMat.kind).toBe("custom");
-    if (strataMat.kind === "custom") {
+    if (strataMat.kind === "custom" && strataMat.custom) {
       checkWgslTwin("coastal-bay-ridge", strataMat.custom, true);
     }
     expect(webgpuCustomShaderGap(strataMat)).toBeUndefined();
@@ -200,7 +200,7 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
   it("uses smooth shared-vertex automotive normals, +Z rear taillight/shutter detail, and mounts /hdri in vite.config.ts", () => {
     const canopyJson = buildHeroCanopyVisorNode().toJSON();
     expect(canopyJson.kind).toBe("primitive");
-    expect(canopyJson.geometry.kind).toBe("aura-custom-geometry");
+    expect(canopyJson.geometry?.kind).toBe("aura-custom-geometry");
     const canopyGeo = canopyJson.geometry as unknown as { positions: ArrayLike<number>; indices?: ArrayLike<number> };
     // Smooth-indexed loft shares ~6 indices per vertex (vs exactly 1 index/vertex on flat-shaded triangle soup)
     expect(canopyGeo.indices!.length).toBeGreaterThan((canopyGeo.positions.length / 3) * 3);
@@ -216,7 +216,8 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
     const sedan = buildTrafficClassGeometries("sedan");
     expect(sedan.nearBody.indices!.length).toBeGreaterThan((sedan.nearBody.positions.length / 3) * 3);
 
-    const hasRearCrimsonLamps = (spec: { positions: ArrayLike<number>; colors?: ArrayLike<number> }, minRearZ: number): boolean => {
+    const hasRearCrimsonLamps = (rawSpec: unknown, minRearZ: number): boolean => {
+      const spec = rawSpec as { positions: ArrayLike<number>; colors?: ArrayLike<number> };
       if (!spec.colors) return false;
       for (let v = 0; v < spec.positions.length / 3; v += 1) {
         const z = spec.positions[v * 3 + 2]!;

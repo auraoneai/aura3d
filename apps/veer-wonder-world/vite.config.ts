@@ -1,4 +1,4 @@
-// Wonder World Vite config (PRD 04 A03; upgraded for @aura3d/engine 5.5.1).
+// Wonder World Vite config (PRD 04 A03; upgraded for @aura3d/engine 5.5.3).
 //
 // Extends the repo root config the way apps/showcase-pips-big-leap/vite.config.ts
 // does: the root plugins and aliases (inside the monorepo `@aura3d/*` resolves
@@ -174,6 +174,7 @@ export default defineConfig({
     copySharedPublicFiles
   ],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
+  worker: rootConfig.worker,
   optimizeDeps: { ...rootConfig.optimizeDeps, entries: ["index.html"] },
   publicDir: false,
   server: { host: "127.0.0.1", port: 5191, strictPort: false, fs: { allow: [repoRoot] } },

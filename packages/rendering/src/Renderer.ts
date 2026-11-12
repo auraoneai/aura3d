@@ -83,6 +83,7 @@ import { shaderFeaturesFor } from "./contracts/program";
 import { featuresForGeometry, materialRoutesToGeneratedProgram, withLiveAlphaCutoff } from "./program/MaterialFeatures";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
 import { DEPTH_COVERAGE_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
+import { programKey } from "./program/ProgramKey";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD01_FORWARD_TARGET, PRD03_EXPOSURE, beginRendererQrFlagBinding, rendererQrFlags, setRendererQrFlags, withRendererQrFlags, withRendererQrFrameBegin, withRendererQrProofAccess,
@@ -1154,6 +1155,9 @@ export class Renderer {
     }
     addRendererDeviceOwner(device, this);
     deviceOwnerAdded = true;
+    if (device.kind === "webgpu") {
+      (globalThis as Record<symbol, unknown>)[Symbol.for("@aura3d/rendering/activeWebGPUFeatures/v1")] = device;
+    }
     constructionComplete = true;
     if (lossDuringConstruction) this.releaseLostDeviceResources();
     } catch (error) {
@@ -1348,7 +1352,7 @@ export class Renderer {
       const checkedView = checkedViews?.[index];
       const resolvedCamera = this.assertSupportedCameraDepth(checkedView ? checkedView.resolved : resolveCamera(source, inputCamera, viewport ?? { width: this.width, height: this.height }, { allowSceneCamera: true }));
       const cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-      const collected = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, false, resolvedCamera?.layerMask, this, undefined, rendererQrFlags(this.device), this.device, cullingFrustums?.[index]);
+      const collected = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, false, resolvedCamera?.layerMask, this, undefined, rendererQrFlags(this.device), this.device, cullingFrustums?.[index], !views);
       assertWarmupActive([signal]);
       const frameCamera = checkedView
         ? checkedView.frameCamera && { ...checkedView.frameCamera, position: collectSourceCameraPosition(source) ?? checkedView.frameCamera.position }
@@ -1477,7 +1481,8 @@ export class Renderer {
     if (width <= 0 || height <= 0 || !Number.isInteger(width) || !Number.isInteger(height)) {
       throw new RenderDeviceError("Renderer dimensions must be positive integers", "INVALID_FRAME_SIZE", { width, height });
     }
-    if (this.width !== width || this.height !== height) {
+    const resized = this.width !== width || this.height !== height;
+    if (resized) {
       this.disposeNativeDrawingPipeline();
       this.lastDrawingPath = null;
       this.selectiveBloomTarget?.dispose();
@@ -1486,6 +1491,14 @@ export class Renderer {
     this.width = width;
     this.height = height;
     this.resizeCanvas(width, height);
+    if (resized && (rendererDeviceOwners.get(this.device)?.size ?? 0) <= 1) {
+      const scale = Math.min(Math.max(this.renderScale, 0.01), 1);
+      notifyDevicePostResourcesResize(
+        this.device,
+        Math.max(1, Math.round(width * scale)),
+        Math.max(1, Math.round(height * scale))
+      );
+    }
   }
   resizeToDisplay(options: ResizeToDisplayOptions = {}): ResizeToDisplayResult {
     this.assertAlive();
@@ -2275,11 +2288,11 @@ export class Renderer {
     if ((forward.sampleCount ?? 1) === 1) return forward;
     const format = forward.colorTexture.format as Extract<TextureFormat, "rgba16f">;
     const depthPrecision = this.frameDepthPrecision();
-    const key = `${this.width}x${this.height}:${format}:${depthPrecision.depthPrecision ?? "fixed"}`;
+    const key = `${forward.width}x${forward.height}:${format}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.nativeDofResolveTarget;
     if (cached && cached.key === key && !cached.target.disposed) return cached.target;
     cached?.target.dispose();
-    const target = this.device.createRenderTarget({ width: this.width, height: this.height, label: "renderer-native-dof-resolve",
+    const target = this.device.createRenderTarget({ width: forward.width, height: forward.height, label: "renderer-native-dof-resolve",
       format, depth: "texture", sampleCount: 1, ...depthPrecision, colorAttachments: [{ format }, { format: "rgba8" as const }] });
     this.nativeDofResolveTarget = { target, key };
     return target;
@@ -3918,7 +3931,8 @@ export class Renderer {
       }
       // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
       const forwardDepthTexture = requiresDepthTexture && !(nativeDofPlan && sampleCount > 1) && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
-      let forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      const postScale = this.postSceneScale(postprocess, explicitRenderTarget, deferredInFrame);
+      let forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan), postScale);
       // Native depth of field (5.0) owns colour attachment 1 for coverage, so
       // the 4.7.x selective signal (also attachment 1) declines on those frames.
       if (selectiveRequested && !selectiveEarlyReason && nativeDofPlan) selectiveEarlyReason = "native-depth-of-field";
@@ -4062,7 +4076,8 @@ export class Renderer {
       const contactReads = shadowWrites.includes("prd02.contactShadowMask") ? ["prd02.contactShadowMask"] : [];
       // C-02/T0-06 sync-path warm, keyed on the shadow map this frame actually draws with (warming before it existed compiled no-shadow
       // variants nothing draws: 2 dead programs on a one-material scene, 4 with a skinned model).
-      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, Boolean(nativeDofPlan));
+      const bootUnculledSync = this.takeBootUnculledItems(source, resolvedCamera?.layerMask, collectionDiagnostics.culledObjects, logicalItems);
+      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection, shadowOptions, false, prd07WarmupContext, Boolean(nativeDofPlan), bootUnculledSync);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -4144,8 +4159,10 @@ export class Renderer {
       }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
+        const temporalTargetWidth = ownedTargets[0]?.width ?? this.width;
+        const temporalTargetHeight = ownedTargets[0]?.height ?? this.height;
         const temporal = withRendererQrProofAccess(this.device, this.#rendererFlagOwner, this.temporalHistory, this.activeViewId, this.authoredFrameId, "prepare",
-          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
+          () => this.temporalHistory.prepare(this.device, temporalTargetWidth, temporalTargetHeight, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
         temporalPrevVp = temporal.v2?.previous;
         if (temporal.v2) this.temporalViews.set(this.activeTemporalReportId, { motionSource: temporal.v2.motionSource, unsupportedMotion: [...temporal.v2.unsupportedMotion], coverage: { ...temporal.v2.coverage } });
         // PRD-03 §8.6 (flag-on): generated programs project through the
@@ -4441,6 +4458,7 @@ export class Renderer {
           if (nativeDofFrame) assertNativeDofCurrent!();
           assertScalarVolumeFrameCurrent(scalarVolumes, this.device, scalarVolumeGeneration);
           postprocess = this.finishSelectiveBloom(postprocess!, selectiveFrame, selectiveRequested, route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device), Boolean(environmentBackground), ownedTargets[0], source);
+          postprocess = this.withPostRenderScale(postprocess!, ownedTargets[0]);
           this.withNativePostRendererPass(diagnosticToken, () => this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget));
         });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.stageTemporalHistory(Boolean(postprocess.taa));
@@ -4740,8 +4758,9 @@ export class Renderer {
     const cleanupFrameContext = frameHooks.frameContext(items);
     const inspectionTiming = this.activeFrameTrace && this.inspectionTimingByTrace.get(this.activeFrameTrace);
     if (inspectionTiming) bindFrameInspectionView(cleanupFrameContext.blackboard, this.inspectionTiming, inspectionTiming, this.activeTemporalReportId);
+    const bootUnculledAsync = this.takeBootUnculledItems(source, resolvedCamera?.layerMask, collectionDiagnostics.culledObjects, logicalItems);
     await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection,
-      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, Boolean(nativeDofPlan));
+      shadowOptions, clippingWasPrewarmed, prd07WarmupContext, Boolean(nativeDofPlan), undefined, bootUnculledAsync);
     if (prd07View) assertPrd07RendererOperation(prd07View.operation);
     this.assertAuthoredFrameCurrent();
     if (this.disposed || this.device.disposed) {
@@ -4851,7 +4870,8 @@ export class Renderer {
       }
       // W3: a WebGPU 4x target whose only depth reader is SSR keeps MSAA and a plain depth attachment (the trace reads it).
       const forwardDepthTexture = requiresDepthTexture && !(nativeDofPlan && sampleCount > 1) && ((scalarVolumes.length > 0 && scalarVolumeToneMap) || !webgpuMultisampledDepthServesPost(this.device, postprocess, sampleCount, this.viewScopeId));
-      const forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan));
+      const postScale = this.postSceneScale(postprocess, explicitRenderTarget, deferredInFrame);
+      const forwardTarget = this.ensureForwardColorTarget(format, forwardDepthTexture, sampleCount, Boolean(nativeDofPlan), postScale);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
       frameHooks.setForwardTarget(forwardTarget);
@@ -5037,8 +5057,10 @@ export class Renderer {
       }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
+        const temporalTargetWidth = ownedTargets[0]?.width ?? this.width;
+        const temporalTargetHeight = ownedTargets[0]?.height ?? this.height;
         const temporal = withRendererQrProofAccess(this.device, this.#rendererFlagOwner, this.temporalHistory, this.activeViewId, this.authoredFrameId, "prepare",
-          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
+          () => this.temporalHistory.prepare(this.device, temporalTargetWidth, temporalTargetHeight, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
         temporalPrevVp = temporal.v2?.previous;
         if (temporal.v2) this.temporalViews.set(this.activeTemporalReportId, { motionSource: temporal.v2.motionSource, unsupportedMotion: [...temporal.v2.unsupportedMotion], coverage: { ...temporal.v2.coverage } });
         // PRD-03 §8.6 (flag-on): generated programs project through the
@@ -5332,6 +5354,7 @@ export class Renderer {
           if (prd07View) assertPrd07RendererOperation(prd07View.operation);
           if (this.disposed || this.device.disposed) return;
           postprocess = this.finishSelectiveBloom(postprocess!, selectiveFrame, selectiveRequested, route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device), Boolean(environmentBackground), ownedTargets[0], source);
+          postprocess = this.withPostRenderScale(postprocess!, ownedTargets[0]);
           assertScalarVolumeFrameCurrent(scalarVolumes, this.device, scalarVolumeGeneration);
           await this.withNativePostRendererPassAsync(diagnosticToken, () => this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget));
           if (prd07View) assertPrd07RendererOperation(prd07View.operation);
@@ -5503,7 +5526,7 @@ export class Renderer {
         : [record];
       perItem?.set(item, variants);
       for (const variant of variants) {
-        const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${variant.vertexColors ? 1 : 0}:${variant.alphaMode ?? "opaque"}:${canonicalWarmupFeaturesKey(variant.features)}`;
+        const key = programKey(variant);
         if (!records.has(key)) records.set(key, variant);
       }
     }
@@ -5533,6 +5556,47 @@ export class Renderer {
     };
   }
 
+  private bootSceneWarmed = false;
+
+  /**
+   * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+   * frustum culling once per renderer lifetime (never re-invoking a one-shot
+   * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+   * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+   * rapid first camera turn.
+   */
+  private takeBootUnculledItems(
+    source: RenderSource | Iterable<RenderItem> | Scene,
+    cameraLayerMask?: number,
+    culledObjects = 0,
+    visibleLogicalItems?: readonly RenderItem[]
+  ): readonly RenderItem[] | undefined {
+    if (this.bootSceneWarmed) return undefined;
+    this.bootSceneWarmed = true;
+    if (culledObjects <= 0) return undefined;
+    try {
+      if (isIterable(source)) return undefined;
+      const visibleSet = visibleLogicalItems ? new Set<RenderItem>(visibleLogicalItems) : undefined;
+      if (source instanceof Scene) {
+        return collectSceneRenderItems(source, {}, undefined, undefined, undefined, undefined, cameraLayerMask, undefined);
+      }
+      const unculled: RenderItem[] = [];
+      if (source.scene) {
+        unculled.push(...collectSceneRenderItems(source.scene, source, undefined, undefined, undefined, undefined, cameraLayerMask, undefined));
+      }
+      if (source.renderItems) {
+        for (const item of source.renderItems) {
+          if (visibleSet?.has(item)) continue;
+          if (cameraLayerMask !== undefined && item.layerMask !== undefined && (item.layerMask & cameraLayerMask) === 0) continue;
+          unculled.push(item);
+        }
+      }
+      return unculled.length > 0 ? unculled : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   private async warmGeneratedPrograms(
     items: readonly RenderItem[],
     lights: readonly CollectedLight[],
@@ -5544,7 +5608,8 @@ export class Renderer {
     prewarmClipping = false,
     frameContext?: FrameContributorContext,
     nativeDepthCoverage = false,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    bootUnculledItems?: readonly RenderItem[]
   ): Promise<{ readonly input: WarmupInput; readonly perItem: ReadonlyMap<RenderItem, readonly Partial<ProgramFeatures>[]>; readonly tier: AuraQualityTier; readonly cache: ReturnType<typeof rendererProgramCache> } | undefined> {
     const flags = rendererQrFlags(this.device);
     if (!qrGeneratedProgramsOn(flags)) return undefined;
@@ -5556,6 +5621,17 @@ export class Renderer {
       const warmup = (this.programWarmup ??= new ProgramWarmup(cache));
       await warmup.warm(input, tier);
     }
+    if (bootUnculledItems && bootUnculledItems.length > 0) {
+      try {
+        const bootInput = this.collectWarmupInput(bootUnculledItems, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier, shadowOptions, prewarmClipping, frameContext, nativeDepthCoverage);
+        if (bootInput.materials.length > 0) {
+          const warmup = (this.programWarmup ??= new ProgramWarmup(cache));
+          await warmup.warm(bootInput, tier);
+        }
+      } catch {
+        /* Off-frustum boot warmup is best-effort and never blocks valid visible draws. */
+      }
+    }
     assertWarmupActive([signal]);
     // T0-06: the ready barrier for `programsCompiledSinceReady` — compiles
     // completing after the first warm count as steady-state leaks.
@@ -5564,10 +5640,10 @@ export class Renderer {
   }
 
   /**
-   * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-   * exact draw feature records — async-compile devices start pending entries
-   * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-   * the per-frame bound and converge over the next frames.
+   * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+   * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+   * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+   * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
    */
   private warmGeneratedProgramsSync(
     items: readonly RenderItem[],
@@ -5579,14 +5655,29 @@ export class Renderer {
     shadowOptions?: RendererShadowOptions,
     prewarmClipping = false,
     frameContext?: FrameContributorContext,
-    nativeDepthCoverage = false
+    nativeDepthCoverage = false,
+    bootUnculledItems?: readonly RenderItem[]
   ): void {
     const flags = rendererQrFlags(this.device);
     if (!qrGeneratedProgramsOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? prd11LiveQualityTier(flags)?.tier ?? "high";
     const cache = rendererProgramCache(this.device, flags);
     const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier, shadowOptions, prewarmClipping, frameContext, nativeDepthCoverage);
-    for (const features of collectWarmupFeatures(input, tier)) cache.acquire(features);
+    const featuresList = collectWarmupFeatures(input, tier);
+    if (featuresList.length > 0) {
+      void cache.precompile(featuresList).catch(() => {});
+    }
+    if (bootUnculledItems && bootUnculledItems.length > 0) {
+      try {
+        const bootInput = this.collectWarmupInput(bootUnculledItems, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier, shadowOptions, prewarmClipping, frameContext, nativeDepthCoverage);
+        const bootFeatures = collectWarmupFeatures(bootInput, tier);
+        if (bootFeatures.length > 0) {
+          void cache.precompile(bootFeatures).catch(() => {});
+        }
+      } catch {
+        /* Off-frustum boot warmup is best-effort and never blocks valid visible draws. */
+      }
+    }
     cache.markReady?.();
   }
 
@@ -5762,7 +5853,15 @@ export class Renderer {
     // this dispose call. Retired peers survive until the final device owner.
     release(() => this.host.post.drainRetiredChainTargets(false));
     if (rendererDeviceDisposalOwners.get(this.device) === this.deviceDisposalOwner
-        && !rendererDeviceOwners.has(this.device)) release(() => disposeBatchPlanCacheFor(this.device));
+        && !rendererDeviceOwners.has(this.device)) {
+      release(() => {
+        const store = globalThis as Record<symbol, unknown>;
+        const key = Symbol.for("@aura3d/rendering/activeWebGPUFeatures/v1");
+        if (store[key] === this.device) delete store[key];
+      });
+      release(() => notifyDevicePostResourcesResize(this.device, 0, 0));
+      release(() => disposeBatchPlanCacheFor(this.device));
+    }
     // A cleanup callback can construct another renderer on this device.
     // Never dispose its shared caches or device after ownership returns.
     if (rendererDeviceDisposalOwners.get(this.device) === this.deviceDisposalOwner && !rendererDeviceOwners.has(this.device)) {
@@ -5971,19 +6070,57 @@ export class Renderer {
       degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : this.hdrMsaaMrtDegraded ? "hdr-msaa-mrt-unsupported" : this.hdrMsaaDepthDegraded ? "hdr-msaa-depth-unsupported" : undefined
     };
   }
+  private postSceneScale(
+    postprocess: RendererPostProcessOptions | undefined,
+    explicitRenderTarget: RenderTarget | undefined,
+    deferredInFrame: boolean
+  ): number {
+    if (
+      !postprocess ||
+      explicitRenderTarget ||
+      deferredInFrame ||
+      postprocess.execution === "cpu-deterministic" ||
+      !this.device.presentLdrPostprocess ||
+      this.renderScale >= 1
+    ) {
+      return 1;
+    }
+    return Math.min(Math.max(this.renderScale, 0.01), 1);
+  }
+
+  private withPostRenderScale(
+    postprocess: RendererPostProcessOptions,
+    forwardTarget: RenderTarget | undefined
+  ): RendererPostProcessOptions {
+    if (!forwardTarget || (forwardTarget.width === this.width && forwardTarget.height === this.height)) {
+      return postprocess;
+    }
+    const pipeline = postprocess.pipeline;
+    if (!pipeline || typeof pipeline !== "object" || "renderScale" in pipeline) {
+      return postprocess;
+    }
+    const scale = Math.min(Math.max(this.renderScale, 0.01), 1);
+    return {
+      ...postprocess,
+      pipeline: { ...(pipeline as unknown as Record<string, unknown>), renderScale: scale } as unknown as RendererPostProcessOptions["pipeline"]
+    };
+  }
+
   /** Allocates the shared forward-color target once per distinct configuration. */
-  private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number, nativeDepthCoverage = false): RenderTarget {
+  private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number, nativeDepthCoverage = false, scale = 1): RenderTarget {
     // WebGPU cannot resolve depth into a public sampleable texture. Its 4x depth attachment stays
     // bindable, and the native depth readers (ambient occlusion) load it as a multisampled texture.
     if (requiresDepthTexture && sampleCount > 1 && this.device.kind === "webgpu") requiresDepthTexture = false;
+    const targetWidth = scale < 1 ? Math.max(1, Math.round(this.width * scale)) : this.width;
+    const targetHeight = scale < 1 ? Math.max(1, Math.round(this.height * scale)) : this.height;
     const depthPrecision = this.frameDepthPrecision();
-    const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}:${depthPrecision.depthPrecision ?? "fixed"}`;
+    const key = `${targetWidth}x${targetHeight}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.forwardColorTarget;
     if (cached && cached.key === key && !cached.target.disposed) return cached.target;
     cached?.target.dispose();
     const target = this.device.createRenderTarget({
-      width: this.width,
-      height: this.height,
+      width: targetWidth,
+      height: targetHeight,
       label: "renderer-forward-color",
       format,
       depth: requiresDepthTexture ? "texture" : true,
@@ -6001,11 +6138,11 @@ export class Renderer {
     if (format !== "rgba16f" && format !== "rgba32f") return null;
     const samples = original.sampleCount ?? 1;
     const depthPrecision = original.depthStorage ?? "fixed";
-    const key = `${this.width}x${this.height}:${format}:${original.depthTexture ? "texture" : "renderbuffer"}:${samples}:${depthPrecision}`;
+    const key = `${original.width}x${original.height}:${format}:${original.depthTexture ? "texture" : "renderbuffer"}:${samples}:${depthPrecision}`;
     let target = this.selectiveBloomTarget?.key === key && !this.selectiveBloomTarget.target.disposed
       ? this.selectiveBloomTarget.target : undefined;
     if (!target) {
-      const created = createSelectiveBloomTarget(this.device, this.width, this.height, format, Boolean(original.depthTexture), samples, depthPrecision);
+      const created = createSelectiveBloomTarget(this.device, original.width, original.height, format, Boolean(original.depthTexture), samples, depthPrecision);
       if (!created) return null;
       this.selectiveBloomTarget?.dispose();
       this.selectiveBloomTarget = { ...created, key };
@@ -6894,6 +7031,19 @@ export function collectRenderItems(
 ): readonly RenderItem[] {
   return collectRenderItemsWithDiagnostics(source, cameraViewProjection, camera).items;
 }
+function notifyDevicePostResourcesResize(device: RenderDevice, width: number, height: number): void {
+  const store = globalThis as unknown as Record<
+    symbol,
+    WeakMap<object, Set<{ resize(width: number, height: number): void; trim(maxIdleFrames: number): void }>> | undefined
+  >;
+  const hooks = store[Symbol.for("@aura3d/rendering/device-post-resources/v1")]?.get(device);
+  if (!hooks) return;
+  for (const hook of [...hooks]) {
+    hook.resize(width, height);
+    hook.trim(0);
+  }
+}
+
 function collectRenderItemsWithDiagnostics(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
@@ -6904,7 +7054,8 @@ function collectRenderItemsWithDiagnostics(
   prepareAdvancedItems?: (items: readonly RenderItem[]) => readonly RenderItem[],
   batchFlags?: QrFlags,
   batchDevice?: RenderDevice,
-  cameraFrustum?: Frustum
+  cameraFrustum?: Frustum,
+  skipFrustumCulling = false
 ): { readonly items: readonly RenderItem[]; readonly logicalItems: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly mergedIdentities: boolean; readonly cullingFrustum?: Frustum; readonly bloomRequestedBeforeBatching?: boolean; readonly bloomMetadataUnsafe?: boolean; readonly bloomWeightAssignments?: WeakMap<RenderItem, number> } {
   const diagnostics = createRenderCollectionDiagnostics();
   // 02-S5 (A3D_QR_LIGHTING): frustum-culled items that still cast. A caster
@@ -6920,8 +7071,8 @@ function collectRenderItemsWithDiagnostics(
     return { items, logicalItems: items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], mergedIdentities: false };
   }
   if (source instanceof Scene) {
-    const cullingFrustum = cameraFrustum ?? camera?.frustum.clone();
-    const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics, culledShadowCasters, cameraLayerMask, cullingFrustum);
+    const cullingFrustum = skipFrustumCulling ? undefined : cameraFrustum ?? camera?.frustum.clone();
+    const items = collectSceneRenderItems(source, {}, cameraViewProjection, skipFrustumCulling ? undefined : camera, diagnostics, culledShadowCasters, cameraLayerMask ?? camera?.layerMask, cullingFrustum);
     return { items, logicalItems: items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], mergedIdentities: false, ...(cullingFrustum ? { cullingFrustum } : {}) };
   }
   const items: RenderItem[] = [];
@@ -6930,14 +7081,14 @@ function collectRenderItemsWithDiagnostics(
   let cullingFrustum: Frustum | undefined;
   // Collection can update the live camera; keep culling aligned with the
   // camera matrices already captured for this frame.
-  const frameFrustum = (source.frustumCulling === true || (source.scene && source.frustumCulling !== false))
+  const frameFrustum = !skipFrustumCulling && (source.frustumCulling === true || (source.scene && source.frustumCulling !== false))
     ? cameraFrustum ?? camera?.frustum.clone() : undefined;
-  const explicitFrustum = source.frustumCulling === true
+  const explicitFrustum = !skipFrustumCulling && source.frustumCulling === true
     ? frameFrustum ?? explicitCullingFrustum(source, cameraViewProjection, undefined) : undefined;
   if (source.scene) {
     if (prepareAdvancedItems) throw new RenderDeviceError("Advanced lighting requires explicit source items", "ADVANCED_LIGHTING_SOURCE_UNSUPPORTED");
     cullingFrustum = frameFrustum;
-    const sceneItems = collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters, cameraLayerMask, cullingFrustum);
+    const sceneItems = collectSceneRenderItems(source.scene, source, cameraViewProjection, skipFrustumCulling || source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters, cameraLayerMask ?? camera?.layerMask, cullingFrustum);
     items.push(...sceneItems);
     logicalItems.push(...sceneItems);
   }

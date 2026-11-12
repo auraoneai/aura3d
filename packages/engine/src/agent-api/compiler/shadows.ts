@@ -29,6 +29,96 @@ export interface Prd02ShadowOptions extends RendererShadowOptions {
   readonly prd02KillSwitches?: Prd02LightingKillSwitches;
 }
 
+function isNodeExcludedFromShadowBounds(node: AuraSceneSnapshot["nodes"][number]): boolean {
+  if (
+    node.kind === "light" ||
+    node.kind === "effect" ||
+    node.kind === "environment" ||
+    node.kind === "interaction"
+  ) {
+    return true;
+  }
+  const castShadow = "castShadow" in node ? node.castShadow : undefined;
+  const receiveShadow = "receiveShadow" in node ? node.receiveShadow : undefined;
+  if (castShadow === false && receiveShadow === false) return true;
+  if (castShadow === false && node.kind === "primitive") {
+    if (node.material?.unlit === true) return true;
+    const position: AuraVec3 = Array.isArray(node.position) ? node.position : [0, 0, 0];
+    const nodeScale = node.scale;
+    const scale = typeof nodeScale === "number"
+      ? Math.abs(nodeScale)
+      : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
+    const nodeSize = node.size;
+    const sizeExtent = typeof nodeSize === "number"
+      ? Math.abs(nodeSize)
+      : Array.isArray(nodeSize) ? Math.max(...nodeSize.map(Math.abs)) : 1;
+    const effectiveExtent = scale * sizeExtent;
+    // Exclude non-casting sky domes / celestial spheres / distant backdrop props
+    // so a 500 m sky shell or distant planet never inflates cascade fitting.
+    if (node.primitive !== "plane" && (effectiveExtent >= 80 || Math.hypot(...position) >= 150)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function nodeShadowBoundsRadius(node: AuraSceneSnapshot["nodes"][number]): number {
+  if (isNodeExcludedFromShadowBounds(node)) return 0;
+  const position: AuraVec3 = "position" in node && Array.isArray(node.position) ? node.position : [0, 0, 0];
+  if (position[1] <= -50) return 0;
+  const nodeScale = "scale" in node ? node.scale : undefined;
+  const scale = typeof nodeScale === "number"
+    ? Math.abs(nodeScale)
+    : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
+  const nodeSize = "size" in node ? (node as { readonly size?: number | readonly number[] }).size : undefined;
+  const halfSize = typeof nodeSize === "number"
+    ? Math.max(1, 0.5 * Math.abs(nodeSize))
+    : Array.isArray(nodeSize)
+      ? Math.max(1, 0.5 * Math.max(...nodeSize.map(Math.abs)))
+      : 1;
+  let best = 0;
+  const instancesList = "instances" in node && Array.isArray(node.instances) ? node.instances : undefined;
+  if (instancesList && instancesList.length > 0) {
+    for (let i = 0; i < instancesList.length; i += 1) {
+      const inst = instancesList[i]!;
+      const instScaleRaw = inst.scale;
+      if (instScaleRaw === 0 || (Array.isArray(instScaleRaw) && instScaleRaw.every((v) => v === 0))) continue;
+      const ip = inst.position;
+      const wx = position[0] + (ip ? ip[0] : 0);
+      const wy = position[1] + (ip ? ip[1] : 0);
+      const wz = position[2] + (ip ? ip[2] : 0);
+      if (wy <= -50 || !Number.isFinite(wx + wy + wz)) continue;
+      const instScale = typeof instScaleRaw === "number"
+        ? Math.abs(instScaleRaw)
+        : Array.isArray(instScaleRaw) ? Math.max(...instScaleRaw.map(Math.abs)) : 1;
+      const r = Math.hypot(wx, wy, wz) + scale * instScale * halfSize;
+      if (r > best) best = r;
+    }
+    return best;
+  }
+  const denseMatrices = "instanceMatrices" in node && node.instanceMatrices instanceof Float32Array
+    ? node.instanceMatrices
+    : undefined;
+  if (denseMatrices && denseMatrices.length >= 16) {
+    for (let o = 0; o + 15 < denseMatrices.length; o += 16) {
+      const wx = position[0] + denseMatrices[o + 12]!;
+      const wy = position[1] + denseMatrices[o + 13]!;
+      const wz = position[2] + denseMatrices[o + 14]!;
+      if (wy <= -50 || !Number.isFinite(wx + wy + wz)) continue;
+      const s0 = Math.hypot(denseMatrices[o]!, denseMatrices[o + 1]!, denseMatrices[o + 2]!);
+      const s1 = Math.hypot(denseMatrices[o + 4]!, denseMatrices[o + 5]!, denseMatrices[o + 6]!);
+      const s2 = Math.hypot(denseMatrices[o + 8]!, denseMatrices[o + 9]!, denseMatrices[o + 10]!);
+      const maxS = Math.max(s0, s1, s2);
+      if (!(maxS > 0) || !Number.isFinite(maxS)) continue;
+      const r = Math.hypot(wx, wy, wz) + scale * maxS * halfSize;
+      if (r > best) best = r;
+    }
+    return best;
+  }
+  const r = Math.hypot(...position) + scale * halfSize;
+  return Number.isFinite(r) ? r : 0;
+}
+
 export function createProductionRuntimeShadowOptions(
   snapshot: AuraSceneSnapshot,
   collectedLights: readonly CollectedLight[],
@@ -40,16 +130,7 @@ export function createProductionRuntimeShadowOptions(
   const nodes = groups.flatten(snapshot.nodes);
   const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const category = resolveRendererSceneCategory(snapshot, names);
-  const sceneRadius = nodes.reduce((radius, node) => {
-    const position: AuraVec3 = "position" in node && Array.isArray(node.position)
-      ? node.position
-      : [0, 0, 0];
-    const nodeScale = "scale" in node ? node.scale : undefined;
-    const scale = typeof nodeScale === "number"
-      ? Math.abs(nodeScale)
-      : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
-    return Math.max(radius, Math.hypot(...position) + scale);
-  }, 1);
+  const sceneRadius = nodes.reduce((radius, node) => Math.max(radius, nodeShadowBoundsRadius(node)), 1);
   const shadowCaster = collectedLights.find((light) => light.castsShadow);
   const size = sceneRadius > 30 ? 4096 : sceneRadius > 10 ? 2048 : 1024;
   const tuning = resolveProductionRuntimeShadowTuning(shadowCaster?.kind, size, sceneRadius);
@@ -235,15 +316,7 @@ export function shadowCastingInstanceCount(snapshot: AuraSceneSnapshot): number 
  */
 export function sceneShadowRadius(snapshot: AuraSceneSnapshot): number {
   const nodes = groups.flatten(snapshot.nodes);
-  return nodes.reduce((radius, node) => {
-    const position: AuraVec3 = "position" in node && Array.isArray(node.position) ? node.position : [0, 0, 0];
-    if (position[1] <= -50) return radius;
-    const nodeScale = "scale" in node ? node.scale : undefined;
-    const scale = typeof nodeScale === "number"
-      ? Math.abs(nodeScale)
-      : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
-    return Math.max(radius, Math.hypot(...position) + scale);
-  }, 1);
+  return nodes.reduce((radius, node) => Math.max(radius, nodeShadowBoundsRadius(node)), 1);
 }
 
 /**

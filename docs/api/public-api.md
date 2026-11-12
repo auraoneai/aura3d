@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.5.2` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.5.2` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.5.2` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.5.2` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.2` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.5.2` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.5.2` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.2` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.5.2` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.5.2` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.5.2` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.5.2` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.5.2` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.5.2` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.5.2` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.5.2` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.5.2` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.5.2` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.5.2` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.5.2` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.5.2` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.5.2` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.5.2` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.5.2` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.5.2` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.5.2` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.5.2` | `./dist/index.d.ts` | 309 |
-| `@aura3d/cli` | `5.5.2` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.5.2` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.5.2` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.5.2` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.5.2` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.5.2` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.5.2` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.5.2` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.2` | `./dist/engine/public/index.d.ts` | 11093 |
-| `@aura3d/engine/animation` | `5.5.2` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.5.2` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.5.2` | `./dist/audio/index.d.ts` | 309 |
-| `@aura3d/engine/controls` | `5.5.2` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.2` | `./dist/engine/public/devtools.d.ts` | 10770 |
-| `@aura3d/engine/ecs` | `5.5.2` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.5.2` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.2` | `./dist/game/index.d.ts` | 11522 |
-| `@aura3d/engine/game/art` | `5.5.2` | `./dist/game/art/index.d.ts` | 333 |
-| `@aura3d/engine/game/capture` | `5.5.2` | `./dist/game/capture/index.d.ts` | 11051 |
-| `@aura3d/engine/game/styles.css` | `5.5.2` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.5.2` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.5.2` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.5.2` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.5.2` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.5.2` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.5.2` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.5.2` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.5.2` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.5.2` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.5.2` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.2` | `./dist/engine/public/renderer.d.ts` | 11029 |
-| `@aura3d/engine/scatter` | `5.5.2` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.5.2` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.5.2` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.5.2` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.5.2` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.2` | `./dist/engine/public/v5.d.ts` | 8529 |
-| `@aura3d/engine/v5/context` | `5.5.2` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.2` | `./dist/game/v5.d.ts` | 11518 |
-| `@aura3d/engine/v5/internal` | `5.5.2` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.5.2` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.5.2` | `./dist/engine/public/worker.d.ts` | 85 |
-| `@aura3d/engine/workflows` | `5.5.2` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.5.2` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.5.2` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.5.2` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.5.2` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.5.2` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.5.2` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.5.2` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.5.2` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.5.2` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.5.2` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.2` | `./dist/index.d.ts` | 4318 |
-| `@aura3d/rendering/contracts` | `5.5.2` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.5.2` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.5.2` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.5.2` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.5.2` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.5.2` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.5.2` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.5.2` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.5.2` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.5.2` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.5.2` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.5.2` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.5.2` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.5.2` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.5.2` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.5.2` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.5.2` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.5.2` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.5.2` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.5.2` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.5.2` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.5.2` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.5.2` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.5.2` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.2` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.5.2` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.5.2` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.5.2` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.2` | `./dist/lanes/index.d.ts` | 1026 |
-| `@aura3d/rendering/lighting` | `5.5.2` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.5.2` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.5.2` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.5.2` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.5.2` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.5.2` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.5.2` | `./dist/webgpu.d.ts` | 214 |
-| `@aura3d/rendering/world` | `5.5.2` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.5.2` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.5.2` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.5.2` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.5.2` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.5.3` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.5.3` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.5.3` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.5.3` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.3` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.5.3` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.5.3` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.3` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.5.3` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.5.3` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.5.3` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.5.3` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.5.3` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.5.3` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.5.3` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.5.3` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.5.3` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.5.3` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.5.3` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.5.3` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.5.3` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.5.3` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.5.3` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.5.3` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.5.3` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.5.3` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.5.3` | `./dist/index.d.ts` | 309 |
+| `@aura3d/cli` | `5.5.3` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.5.3` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.5.3` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.5.3` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.5.3` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.5.3` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.5.3` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.5.3` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.5.3` | `./dist/engine/public/index.d.ts` | 11134 |
+| `@aura3d/engine/animation` | `5.5.3` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.5.3` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.5.3` | `./dist/audio/index.d.ts` | 309 |
+| `@aura3d/engine/controls` | `5.5.3` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.5.3` | `./dist/engine/public/devtools.d.ts` | 10811 |
+| `@aura3d/engine/ecs` | `5.5.3` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.5.3` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.5.3` | `./dist/game/index.d.ts` | 11563 |
+| `@aura3d/engine/game/art` | `5.5.3` | `./dist/game/art/index.d.ts` | 334 |
+| `@aura3d/engine/game/capture` | `5.5.3` | `./dist/game/capture/index.d.ts` | 11092 |
+| `@aura3d/engine/game/styles.css` | `5.5.3` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.5.3` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.5.3` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.5.3` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.5.3` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.5.3` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.5.3` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.5.3` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.5.3` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.5.3` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.5.3` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.5.3` | `./dist/engine/public/renderer.d.ts` | 11070 |
+| `@aura3d/engine/scatter` | `5.5.3` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.5.3` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.5.3` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.5.3` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.5.3` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.5.3` | `./dist/engine/public/v5.d.ts` | 8556 |
+| `@aura3d/engine/v5/context` | `5.5.3` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.5.3` | `./dist/game/v5.d.ts` | 11559 |
+| `@aura3d/engine/v5/internal` | `5.5.3` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.5.3` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.5.3` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.5.3` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.5.3` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.5.3` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.5.3` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.5.3` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.5.3` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.5.3` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.5.3` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.5.3` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.5.3` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.5.3` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.5.3` | `./dist/index.d.ts` | 4343 |
+| `@aura3d/rendering/contracts` | `5.5.3` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.5.3` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.5.3` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.5.3` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.5.3` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.5.3` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.5.3` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.5.3` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.5.3` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.5.3` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.5.3` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.5.3` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.5.3` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.5.3` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.5.3` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.5.3` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.5.3` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.5.3` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.5.3` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.5.3` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.5.3` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.5.3` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.5.3` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.5.3` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.3` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.5.3` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.5.3` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.5.3` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.5.3` | `./dist/lanes/index.d.ts` | 1046 |
+| `@aura3d/rendering/lighting` | `5.5.3` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.5.3` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.5.3` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.5.3` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.5.3` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.5.3` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.5.3` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.5.3` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.5.3` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.5.3` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.5.3` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.5.3` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/addons@5.5.1#sha256=f46abc3f068e680f63aceaeb4a28c59b76bf36e0dfc30184f0e84dd356af4b27`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/addons@5.5.3#sha256=42b438d914ed7352d3ba472ad6429717ab0eaf7a26ea391117dc1a789f41ef90`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/animation@5.5.1#sha256=3a0c0dea008c680f2b1594420636c95ff183b87d637706ff51cca39f3f874fdb`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
 
 ### Export conditions
 
@@ -3172,11 +3172,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -5386,8 +5398,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/animation@5.5.1#sha256=3a0c0dea008c680f2b1594420636c95ff183b87d637706ff51cca39f3f874fdb`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
 
 ### Export conditions
 
@@ -5433,8 +5445,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/animation@5.5.1#sha256=3a0c0dea008c680f2b1594420636c95ff183b87d637706ff51cca39f3f874fdb`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
 
 ### Export conditions
 
@@ -7207,8 +7219,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/animation@5.5.1#sha256=3a0c0dea008c680f2b1594420636c95ff183b87d637706ff51cca39f3f874fdb`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/animation@5.5.3#sha256=4cee18cbaf685df17706fb38dcb46d69298609b31ac163c48e4e83cd2b7be44e`
 
 ### Export conditions
 
@@ -7247,8 +7259,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/apps@5.5.1#sha256=594ca6c1ec0bb5b42e55f3a8ea99f7209d1276cff035fe0575216a428f330726`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/apps@5.5.3#sha256=0ca5d7904999c0522f720162cce0015baec2b7ab9a12585162b4e47e6260f8af`
 
 ### Export conditions
 
@@ -7312,8 +7324,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/asset-index@5.5.1#sha256=0cd0a9968a470fff99d2dccea692f3097f71fbc7a0780bc65f14859eb1161c93`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/asset-index@5.5.3#sha256=9576eb5fca112734c1355a7706f168835895c9ab8cd74c8bf729f301f8074e66`
 
 ### Export conditions
 
@@ -8050,8 +8062,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -13775,8 +13787,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -18478,8 +18490,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -19387,8 +19399,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -21822,8 +21834,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -23582,8 +23594,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -23868,8 +23880,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/assets@5.5.1#sha256=5f287dd4c6bb2070f82bea7cbc426b1089ce76aa3a398cd4813f81401d1b9b6a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/assets@5.5.3#sha256=ae7a4c3fad3a64b2c9293d049dd020d40e958293ca630470493d2e259bc650e9`
 
 ### Export conditions
 
@@ -23888,8 +23900,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/audio@5.5.1#sha256=a140f9bb94d12c3adc205fcc7f16a3766d95a3e1a03a6192683b1bc8b157005f`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/audio@5.5.3#sha256=e4a7d2a8e80ffe818123972ac9afa17ed72edff6b1eadb9dd0bcd89fb3961249`
 
 ### Export conditions
 
@@ -24422,6 +24434,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -24430,10 +24444,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -26514,8 +26534,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/cli@5.5.1#sha256=b19d57442a54096a1624eb966502562c902a9ea491e417f7d0b11683f210bf35`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/cli@5.5.3#sha256=3f027d4ab68fada714338174719c54815c7a4f8d47156f0ab359b0c2fe84b1c5`
 
 ### Export conditions
 
@@ -28685,8 +28705,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/controls@5.5.1#sha256=a525b2cd61745a48416507b3ed27a341ab9eae3eb2f3809b39540724a955e99e`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/controls@5.5.3#sha256=cfac23e368484792d42cc7fc8e9670048ab4971b1fdfe09597cf422a23fe1418`
 
 ### Export conditions
 
@@ -30488,8 +30508,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/core@5.5.1#sha256=2e2a3f89f3aaf07a2248d4c3f423dadeb7e6aced0a8654c660d62a9c9567422e`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/core@5.5.3#sha256=ef1edc892bca8ecdcf81d74b0011c418f7c28820ce4a74db53bb39ab9f7b0ab2`
 
 ### Export conditions
 
@@ -31003,8 +31023,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.5.2`
-- Packed identity: `archive:create-aura3d@5.5.1#sha256=fe29b918ef08d4306289939b6fba18d2bce6d15cf9f6e646b57cfb5b83fc9bd8`
+- Version: `5.5.3`
+- Packed identity: `archive:create-aura3d@5.5.3#sha256=b4ead8c3ab120b35100be6a04b9773c759528da2586d2f3c958962095d8f09d0`
 
 ### Export conditions
 
@@ -31773,8 +31793,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/debug@5.5.1#sha256=1140eb18e6d4369a313aacfc2808c8148a7acf178e419e448f7d154f1330c3d6`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/debug@5.5.3#sha256=dd6b659c144b1e250798762304963f2be7a1b914c6ccbdbd85dca5299ad42a6f`
 
 ### Export conditions
 
@@ -33153,8 +33173,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/debug@5.5.1#sha256=1140eb18e6d4369a313aacfc2808c8148a7acf178e419e448f7d154f1330c3d6`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/debug@5.5.3#sha256=dd6b659c144b1e250798762304963f2be7a1b914c6ccbdbd85dca5299ad42a6f`
 
 ### Export conditions
 
@@ -33361,8 +33381,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/ecs@5.5.1#sha256=2eed1128722b67cfd728ae9aae38aa812a34b818225ac77e9078a1329493988d`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/ecs@5.5.3#sha256=810f69cd075e169efa6e11396a77dddc944c8e661da9480b52971e863765d9d1`
 
 ### Export conditions
 
@@ -34029,8 +34049,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.1#sha256=dc4d2ff4ab1eb000254e5d9d3dade54432c5810c47ae5023e6b2c2887ba9b559`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.3#sha256=0c5ced09dd8672f4b88b19e08a08a7d078a0413b81952a804caed4819f4cb790`
 
 ### Export conditions
 
@@ -36612,8 +36632,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -37037,6 +37057,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -37202,6 +37224,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -38576,11 +38600,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -41703,10 +41739,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -41767,10 +41810,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -45081,7 +45150,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -45157,6 +45226,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -50526,6 +50597,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -54361,6 +54438,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -57936,6 +58015,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -58285,6 +58365,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -58516,8 +58601,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -58839,16 +58925,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -58971,6 +59057,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -59239,6 +59334,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -59537,7 +59634,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -59553,6 +59650,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -59604,6 +59707,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -59623,6 +59728,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -59656,18 +59763,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -59741,6 +59844,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -59856,11 +59960,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -60585,6 +60687,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -60935,12 +61038,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -60972,6 +61084,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -61283,6 +61397,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -61387,6 +61502,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -61401,6 +61520,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -61414,9 +61536,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -61591,6 +61717,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -61759,6 +61886,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -61781,6 +61909,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -61788,12 +61925,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -61926,6 +62063,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -62200,6 +62339,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -62771,7 +62917,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -62834,7 +62980,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -63829,7 +63975,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -64086,7 +64232,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -64399,8 +64545,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -64825,6 +64971,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -64873,6 +65026,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -68514,7 +68680,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -69841,6 +70007,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -69848,10 +70015,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -69951,6 +70123,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -73546,6 +73740,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -80538,7 +80748,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -80668,6 +80879,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -80756,13 +80987,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -80893,13 +81127,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -80926,13 +81161,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -80947,7 +81175,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -80993,8 +81221,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -82858,6 +83091,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -85169,17 +85408,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -85273,16 +85514,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -85307,15 +85551,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -85497,16 +85746,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -85893,6 +86144,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -86000,6 +86253,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -92865,7 +93271,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -92908,9 +93314,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -102026,7 +102438,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -106180,6 +106592,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -106188,10 +106602,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -116088,6 +116508,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -116138,9 +116560,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -116303,44 +116726,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -122776,8 +123204,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -123433,11 +123861,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -125647,8 +126087,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -131373,8 +131813,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -131906,6 +132346,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -131914,10 +132356,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -133998,8 +134446,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -135800,8 +136248,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -136169,6 +136617,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -136334,6 +136784,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -137708,11 +138160,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -140835,10 +141299,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -140899,10 +141370,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -144213,7 +144710,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -144289,6 +144786,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -149658,6 +150157,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -153493,6 +153998,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -157068,6 +157575,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -157417,6 +157925,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -157648,8 +158161,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -157971,16 +158485,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -158103,6 +158617,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -158371,6 +158894,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -158669,7 +159194,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -158685,6 +159210,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -158736,6 +159267,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -158755,6 +159288,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -158788,18 +159323,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -158873,6 +159404,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -158988,11 +159520,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -159717,6 +160247,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -160067,12 +160598,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -160104,6 +160644,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -160415,6 +160957,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -160519,6 +161062,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -160533,6 +161080,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -160546,9 +161096,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -160723,6 +161277,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -160891,6 +161446,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -160913,6 +161469,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -160920,12 +161485,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -161058,6 +161623,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -161332,6 +161899,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -161903,7 +162477,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -161966,7 +162540,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -162961,7 +163535,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -163218,7 +163792,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -163531,8 +164105,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -163957,6 +164531,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -164005,6 +164586,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -167646,7 +168240,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -168973,6 +169567,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -168980,10 +169575,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -169083,6 +169683,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -172678,6 +173300,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -179670,7 +180308,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -179800,6 +180439,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -179888,13 +180547,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -180025,13 +180687,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -180058,13 +180721,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -180079,7 +180735,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -180125,8 +180781,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -181990,6 +182651,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -184301,17 +184968,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -184405,16 +185074,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -184439,15 +185111,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -184629,16 +185306,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -185025,6 +185704,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -185132,6 +185813,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -191997,7 +192831,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -192040,9 +192874,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -201115,7 +201955,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -205269,6 +206109,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -205277,10 +206119,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -215177,6 +216025,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -215227,9 +216077,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -215392,44 +216243,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -219446,8 +220302,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -220113,8 +220969,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -222695,8 +223551,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -222766,6 +223622,7 @@ import { GameSessionImpl } from "./session/GameSession.js";
 import { type LifecycleSound } from "./session/lifecycle.js";
 import { type LookSource } from "./capture/lookSignature.js";
 import { type EvidenceChannelContract } from "./evidence/channel.js";
+import { type TouchControlsOptions } from "./touch/TouchControls.js";
 import { type Juice } from "./juice/Juice.js";
 export interface Prd09Game<TCue extends string, TEvent extends string> extends Game<TCue, TEvent> {
     /** SHA-256 look signature over the last authored snapshot. */
@@ -222804,9 +223661,10 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
 export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): NonNullable<CreateGameOptions<string, string>["worker"]> | undefined;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
-export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
+export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target" | "touch"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
+    readonly touch?: TouchControlsOptions;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
     /** Wired into the session lifecycle (suspend/dispose/unlock on tab events). */
     readonly soundAdapter?: LifecycleSound;
@@ -225377,6 +226235,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -225726,6 +226585,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -225957,8 +226821,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -226280,16 +227145,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -226412,6 +227277,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -226680,6 +227554,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -226978,7 +227854,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -226994,6 +227870,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -227045,6 +227927,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -227064,6 +227948,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -227097,18 +227983,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -227182,6 +228064,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -227297,11 +228180,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -228026,6 +228907,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -228376,12 +229258,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -228413,6 +229304,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -228724,6 +229617,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -228828,6 +229722,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -228842,6 +229740,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -228855,9 +229756,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -229032,6 +229937,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -229200,6 +230106,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -229222,6 +230129,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -229229,12 +230145,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -229367,6 +230283,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -229641,6 +230559,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -230212,7 +231137,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -230275,7 +231200,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -231270,7 +232195,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -231527,7 +232452,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -231840,8 +232765,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -232266,6 +233191,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -232314,6 +233246,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -235955,7 +236900,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -237282,6 +238227,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -237289,10 +238235,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -237392,6 +238343,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -240987,6 +241960,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -247979,7 +248968,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -248109,6 +249099,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -248197,13 +249207,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -248334,13 +249347,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -248367,13 +249381,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -248388,7 +249395,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -248434,8 +249441,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -250299,6 +251311,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -252610,17 +253628,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -252714,16 +253734,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -252748,15 +253771,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -252938,16 +253966,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -253334,6 +254364,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -253441,6 +254473,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -262683,6 +263868,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -262848,6 +264035,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -264222,11 +265411,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -267349,10 +268550,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -267413,10 +268621,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -270727,7 +271961,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -270803,6 +272037,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -276172,6 +277408,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -280007,6 +281249,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -286348,7 +287592,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -286391,9 +287635,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -289940,7 +291190,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -294094,6 +295344,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -294102,10 +295354,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -303497,6 +304755,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -303547,9 +304807,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -303712,44 +304973,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -310190,11 +311456,11 @@ export declare const sfxAsset: (id: SfxId | string) => {
 import type { HudDocument, HudElement, HudRect, HudScheduler } from "./dom.js";
 import { type HudThemePreset, type HudThemeVars } from "./themes.js";
 import { type HudWidgetSpec, type HudValue } from "./widgets/index.js";
-export interface Vec3Like {
+export type Vec3Like = readonly [number, number, number] | {
     readonly x: number;
     readonly y: number;
     readonly z: number;
-}
+};
 export interface HudMountOptions {
     /** Preset name or a custom `--a3g-*` var record (preset + overrides). */
     theme?: HudThemePreset | HudThemeVars;
@@ -310265,9 +311531,9 @@ export interface HudMediaQuery {
     removeEventListener?(type: "change", cb: () => void): void;
 }
 /** Same breakpoint as `styles/hud-base.css` (mobile anchors + `.a3g-mobile-hidden`). */
-export declare const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px)";
-/** Dev guard (PRD-09 1758): wrap innerHTML so a write under `.a3g-hud` throws. */
-export declare function assertNoInnerHtml(doc: HudDocument, warn: (m: string) => void): () => void;
+export declare const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px), (orientation: landscape) and (max-height: 500px)";
+/** Retained as a no-op for API compatibility; avoids global Element.prototype.innerHTML monkeypatching. */
+export declare function assertNoInnerHtml(_doc: HudDocument, _warn: (m: string) => void): () => void;
 export declare function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud;
 //# sourceMappingURL=HudKit.d.ts.map
 ```
@@ -310473,6 +311739,8 @@ export interface HudWidgetInstance {
     apply(value: HudValue): void;
     /** Advance widget-internal animation (score roll, ghost trail). */
     tick(dt: number): void;
+    /** Whether this widget currently requires future animation frames. */
+    isAnimating?(): boolean;
     /** Last applied value for `hud.snapshot()`. */
     value(): HudValue | undefined;
 }
@@ -310981,6 +312249,8 @@ export interface TouchControlsOptions {
     readonly bindings: Readonly<Record<string, string>>;
     /** Force visibility (overrides the §6.11 rule). */
     readonly show?: boolean;
+    /** Alias for `show` — `false` explicitly disables coarse-pointer auto-enable. */
+    readonly visible?: boolean;
     /** Android-style tick on press — calls `navigator.vibrate(ms)`. */
     readonly haptics?: boolean | {
         ms?: number;
@@ -311161,8 +312431,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -311363,7 +312633,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -311406,9 +312676,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -314331,8 +315607,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -316801,6 +318077,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -317150,6 +318427,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -317381,8 +318663,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -317704,16 +318987,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -317836,6 +319119,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -318104,6 +319396,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -318402,7 +319696,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -318418,6 +319712,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -318469,6 +319769,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -318488,6 +319790,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -318521,18 +319825,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -318606,6 +319906,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -318721,11 +320022,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -319450,6 +320749,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -319800,12 +321100,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -319837,6 +321146,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -320148,6 +321459,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -320252,6 +321564,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -320266,6 +321582,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -320279,9 +321598,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -320456,6 +321779,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -320624,6 +321948,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -320646,6 +321971,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -320653,12 +321987,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -320791,6 +322125,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -321065,6 +322401,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -321636,7 +322979,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -321699,7 +323042,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -322694,7 +324037,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -322951,7 +324294,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -323264,8 +324607,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -323690,6 +325033,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -323738,6 +325088,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -327379,7 +328742,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -328706,6 +330069,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -328713,10 +330077,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -328816,6 +330185,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -332411,6 +333802,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -339403,7 +340810,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -339533,6 +340941,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -339621,13 +341049,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -339758,13 +341189,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -339791,13 +341223,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -339812,7 +341237,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -339858,8 +341283,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -341723,6 +343153,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -344034,17 +345470,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -344138,16 +345576,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -344172,15 +345613,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -344362,16 +345808,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -344758,6 +346206,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -344865,6 +346315,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -354107,6 +355710,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -354272,6 +355877,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -355646,11 +357253,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -358773,10 +360392,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -358837,10 +360463,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -362151,7 +363803,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -362227,6 +363879,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -367596,6 +369250,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -371431,6 +373091,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -377772,7 +379434,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -377815,9 +379477,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -381364,7 +383032,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -385518,6 +387186,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -385526,10 +387196,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -394921,6 +396597,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -394971,9 +396649,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -395136,44 +396815,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -399435,8 +401119,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -399446,8 +401130,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -399472,8 +401156,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -400199,8 +401883,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -401440,8 +403124,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -402079,8 +403763,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -404069,8 +405753,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -404694,8 +406378,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -407366,8 +409050,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -408618,8 +410302,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -408881,8 +410565,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -409178,8 +410862,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -411025,6 +412709,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -411374,6 +413059,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -411605,8 +413295,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -411928,16 +413619,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -412060,6 +413751,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -412328,6 +414028,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -412626,7 +414328,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -412642,6 +414344,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -412693,6 +414401,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -412712,6 +414422,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -412745,18 +414457,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -412830,6 +414538,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -412945,11 +414654,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -413674,6 +415381,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -414024,12 +415732,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -414061,6 +415778,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -414372,6 +416091,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -414476,6 +416196,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -414490,6 +416214,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -414503,9 +416230,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -414680,6 +416411,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -414848,6 +416580,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -414870,6 +416603,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -414877,12 +416619,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -415015,6 +416757,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -415289,6 +417033,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -415860,7 +417611,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -415923,7 +417674,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -416918,7 +418669,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -417175,7 +418926,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -417488,8 +419239,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -417914,6 +419665,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -417962,6 +419720,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -421603,7 +423374,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -422930,6 +424701,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -422937,10 +424709,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -423040,6 +424817,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -426635,6 +428434,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -433627,7 +435442,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -433757,6 +435573,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -433845,13 +435681,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -433982,13 +435821,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -434015,13 +435855,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -434036,7 +435869,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -434082,8 +435915,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -435947,6 +437785,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -438258,17 +440102,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -438362,16 +440208,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -438396,15 +440245,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -438586,16 +440440,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -438982,6 +440838,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -439089,6 +440947,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -442818,6 +444829,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -442983,6 +444996,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -444357,11 +446372,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -447484,10 +449511,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -447548,10 +449582,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -450862,7 +452922,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -450938,6 +452998,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -456307,6 +458369,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -460142,6 +462210,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -466514,7 +468584,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -466557,9 +468627,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -475675,7 +477751,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -479829,6 +481905,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -479837,10 +481915,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -489737,6 +491821,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -489787,9 +491873,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -489952,44 +492039,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -494752,8 +496844,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -494885,8 +496977,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -496010,8 +498102,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -496094,8 +498186,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -497274,8 +499366,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -500167,6 +502259,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -501577,8 +503671,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -503779,6 +505873,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -506023,6 +508123,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -506372,6 +508473,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -506603,8 +508709,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -506926,16 +509033,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -507058,6 +509165,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -507326,6 +509442,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -507624,7 +509742,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -507640,6 +509758,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -507691,6 +509815,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -507710,6 +509836,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -507743,18 +509871,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -507828,6 +509952,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -507943,11 +510068,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -508672,6 +510795,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -509022,12 +511146,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -509059,6 +511192,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -509370,6 +511505,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -509474,6 +511610,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -509488,6 +511628,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -509501,9 +511644,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -509678,6 +511825,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -509846,6 +511994,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -509868,6 +512017,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -509875,12 +512033,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -510013,6 +512171,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -510287,6 +512447,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -510858,7 +513025,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -510921,7 +513088,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -511916,7 +514083,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -512173,7 +514340,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -512486,8 +514653,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -512912,6 +515079,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -512960,6 +515134,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -516601,7 +518788,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -517928,6 +520115,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -517935,10 +520123,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -518038,6 +520231,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -521633,6 +523848,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -528625,7 +530856,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -528755,6 +530987,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -528843,13 +531095,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -528980,13 +531235,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -529013,13 +531269,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -529034,7 +531283,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -529080,8 +531329,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -530945,6 +533199,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -533256,17 +535516,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -533360,16 +535622,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -533394,15 +535659,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -533584,16 +535854,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -533980,6 +536252,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -534087,6 +536361,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -539998,11 +542425,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -542411,6 +544850,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -542576,6 +545017,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -549532,7 +551975,7 @@ export declare const fighting: {
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -549608,6 +552051,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -553635,7 +556080,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -556491,7 +558936,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -556534,9 +558979,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -566555,6 +569006,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -570249,8 +572702,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -570495,8 +572948,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -573050,6 +575503,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -573399,6 +575853,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -573630,8 +576089,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -573953,16 +576413,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -574085,6 +576545,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -574353,6 +576822,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -574651,7 +577122,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -574667,6 +577138,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -574718,6 +577195,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -574737,6 +577216,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -574770,18 +577251,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -574855,6 +577332,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -574970,11 +577448,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -575699,6 +578175,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -576049,12 +578526,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -576086,6 +578572,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -576397,6 +578885,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -576501,6 +578990,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -576515,6 +579008,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -576528,9 +579024,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -576705,6 +579205,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -576873,6 +579374,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -576895,6 +579397,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -576902,12 +579413,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -577040,6 +579551,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -577314,6 +579827,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -577885,7 +580405,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -577948,7 +580468,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -578943,7 +581463,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -579200,7 +581720,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -579513,8 +582033,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -579939,6 +582459,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -579987,6 +582514,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -583628,7 +586168,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -584955,6 +587495,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -584962,10 +587503,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -585065,6 +587611,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -588660,6 +591228,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -595652,7 +598236,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -595782,6 +598367,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -595870,13 +598475,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -596007,13 +598615,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -596040,13 +598649,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -596061,7 +598663,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -596107,8 +598709,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -597972,6 +600579,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -600283,17 +602896,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -600387,16 +603002,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -600421,15 +603039,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -600611,16 +603234,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -601007,6 +603632,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -601114,6 +603741,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/rendering/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/rendering/resources/ResourceRegistry.d.ts`
@@ -610356,6 +613136,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -610521,6 +613303,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -611895,11 +614679,23 @@ export declare class Bone {
 
 ```ts
 import { Bone, type BoneDescriptor } from "./Bone.js";
-import { type Mat4, type Vec3 } from "./Keyframe.js";
+import type { Mat4, Vec3 } from "./Keyframe.js";
 export declare class Skeleton {
     readonly bones: readonly Bone[];
+    private readonly localScratch;
+    private readonly worldBuffer;
+    private readonly worldViews;
+    private readonly paletteBuffer;
+    private readonly paletteViews;
+    private readonly positionBuffer;
+    private readonly positionViews;
     constructor(bones: readonly (Bone | BoneDescriptor)[]);
+    private computeWorldBuffer;
+    /** Contiguous `boneCount * 16` column-major world matrices reused across frames. */
+    worldMatricesBuffer(): Float32Array;
     worldMatrices(): readonly Mat4[];
+    /** Contiguous `boneCount * 16` column-major skinning palette reused across frames. */
+    matrixPaletteBuffer(): Float32Array;
     matrixPalette(): readonly Mat4[];
     /** World-space positions (translation component of each bone's world matrix). */
     boneWorldPositions(): readonly Vec3[];
@@ -615022,10 +617818,17 @@ export declare const auraAppRegistry: AuraAppRegistry;
 ```ts
 export declare function devicePixelRatioSafe(): number;
 /**
+ * Install the host page's coarse-pointer capability inside an OffscreenCanvas
+ * render worker where `matchMedia` and `navigator.maxTouchPoints` are absent or
+ * do not reflect the touch screen.
+ */
+export declare function setWorkerCoarsePointer(value: boolean | undefined): void;
+/**
  * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
  * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
  */
 export declare function mediaMatches(query: string): boolean;
+export declare function isCoarsePointerDevice(): boolean;
 export declare function performanceNow(): number;
 /**
  * T0-12 (PRD-16 §2): mount-phase timing marks. `performance.mark` is a no-op
@@ -615086,10 +617889,36 @@ import type { AuraQualityTierSettings } from "../../rendering/contracts/index.js
  * a model that needs a disabled decoder fails `prepareModelDecoders` with
  * `AssetDecoderUnavailable`.
  *
- * Q-11-1: WebGPU has no compressed-upload path yet — callers pass
- * `WEBGPU_COMPRESSED_CAPS` (all-false) there so KTX2 selection falls through
- * to rgba8 until the WebGPU format table lands (tracked by Q-11-1).
+ * MEM-1: WebGPU hardware block-compressed texture capability detection from
+ * active/supplied `GPUDevice.features` (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`). In headless Node
+ * when no WebGPU device features are active, `WEBGPU_COMPRESSED_CAPS` resolves
+ * to all-`false` so KTX2 selection falls through cleanly to `rgba8`.
  */
+export interface WebGPUFeatureSetLike {
+    has(feature: string): boolean;
+}
+export type WebGPUCompressedCapabilitySource = WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | {
+    readonly kind?: string;
+    readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    readonly nativeGpuDevice?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+    readonly device?: {
+        readonly features?: WebGPUFeatureSetLike | ReadonlySet<string> | readonly string[] | null;
+    } | null;
+};
+/**
+ * Detect `CompressedTextureCapabilities` from a WebGPU `RenderDevice`, native
+ * `GPUDevice`/`GPUAdapter`, or feature set (`"texture-compression-astc"`,
+ * `"texture-compression-etc2"`, `"texture-compression-bc"`).
+ * Note: WebGPU `"texture-compression-bc"` enables BC7 (`bptc: true`) for UASTC;
+ * `s3tc`/`s3tcSrgb` remain `false` unless `"bc1-rgb-unorm"` is explicitly listed
+ * because WebGPU has no 3-channel `bc1-rgb-unorm` format without RGBA8 fallback.
+ */
+export declare function detectWebGPUCompressedTextureCapabilities(source?: WebGPUCompressedCapabilitySource | null): CompressedTextureCapabilities;
+/** Register or clear the active WebGPU feature set for default `WEBGPU_COMPRESSED_CAPS` lookups. */
+export declare function setActiveWebGPUCompressedFeatureSource(source: WebGPUCompressedCapabilitySource | (() => WebGPUCompressedCapabilitySource | null | undefined) | null | undefined): void;
 export declare const WEBGPU_COMPRESSED_CAPS: CompressedTextureCapabilities;
 export interface AppAssetDecoders {
     readonly registry: AssetDecoderRegistry;
@@ -618400,7 +621229,7 @@ export declare const racketAthleteRig: RacketAthleteRigKit;
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -618476,6 +621305,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -623845,6 +626676,12 @@ export declare function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | 
  * the selected level's subtree each frame.
  */
 export declare function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode>;
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export declare function withFrameFlattenMemo<T>(action: () => T): T;
 export declare const groups: {
     readonly create: typeof group;
     readonly lod: typeof lod;
@@ -627680,6 +630517,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -634021,7 +636860,7 @@ export declare function decomposeMatrix(m: Float32Array): AuraWorldTransform;
 /** PR 0a stub: delegates to the existing `eulerToQuat` (index.ts:5345) ZYX math; other orders lower to ZYX. */
 export declare function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder): AuraQuat;
 export { AuraColorParseError } from "../agent-api/color.js";
-/** PR 0a stub: linear RGBA, delegating to the existing hex parser semantics. */
+/** Linear Rec.709 / linear-sRGB RGBA, preserving wide-gamut Display-P3 / oklch coordinates for CSS colour strings. */
 export declare function parseAuraColor(color: AuraColor): readonly [number, number, number, number];
 /** sRGB-encoded RGBA. */
 export declare function parseAuraColorSrgb(color: AuraColor): readonly [number, number, number, number];
@@ -634064,9 +636903,15 @@ export declare function assertAuraColorOption(value: unknown, where: string): vo
  * byte-identical); every other CSS form is parsed and re-encoded; an invalid value throws `COLOR_INVALID` naming `where`.
  */
 export declare function auraColorToHex<T>(value: T, where: string): T | string;
-/** sRGB-encoded [r,g,b,a] each 0..1. Throws AuraColorParseError on unknown input. */
+/** sRGB-encoded [r,g,b,a] each clamped to 0..1. Throws AuraColorParseError on unknown input. */
 export declare function parseAuraColorSrgb(color: AuraColorInput): readonly [number, number, number, number];
-/** Linear-light RGBA — sRGB channels passed through the exact piecewise transfer. */
+/**
+ * Unclamped linear Rec.709 / linear-sRGB RGBA — sRGB forms pass through the exact piecewise transfer, while wide-gamut
+ * forms (`color(display-p3 ...)`, `color(rec2020 ...)`, `color(srgb-linear ...)`, `oklch(...)`, `oklab(...)`) preserve
+ * out-of-sRGB-gamut linear Rec.709 coordinates (`< 0` or `> 1`) for wide-gamut Display-P3 / HDR rendering.
+ */
+export declare function parseAuraColorLinear(color: AuraColorInput): readonly [number, number, number, number];
+/** Linear-light RGBA — delegates to {@link parseAuraColorLinear}, preserving wide-gamut linear Rec.709 coordinates. */
 export declare function parseAuraColor(color: AuraColorInput): readonly [number, number, number, number];
 //# sourceMappingURL=color.d.ts.map
 ```
@@ -637613,7 +640458,7 @@ export declare function createRootPostPipeline(snapshot: AuraSceneSnapshot, came
     readonly near?: number;
     readonly far?: number;
     readonly mode?: string;
-} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas): {
+} | undefined, output: AuraOutputOptions | undefined, tierSettings: AuraQualityTierSettings, lights?: readonly CollectedLight[], tierResolution?: PostTierResolution, canvas?: PostCanvas, renderScale?: number): {
     readonly options: PostPipelineOptions;
     readonly diagnostics: readonly PostFieldDiagnostic[];
 };
@@ -641767,6 +644612,8 @@ export interface AudioContextLike {
      * `AudioAnalyser` throws a clear error when it is absent.
      */
     createAnalyser?(): AnalyserNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface AudioContextManagerOptions {
     readonly context?: AudioContextLike;
@@ -641775,10 +644622,16 @@ export interface AudioContextManagerOptions {
 export declare class AudioContextManager {
     private readonly options;
     private contextRef?;
+    private attachedContext?;
     private unlocked;
+    private intentionalSuspend;
+    private readonly stateListeners;
+    private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
+    private bindContext;
     get context(): AudioContextLike;
     get state(): AudioContextState;
+    onStateChange(listener: (state: AudioContextState) => void): () => void;
     unlock(): Promise<void>;
     suspend(): Promise<void>;
     resume(): Promise<void>;
@@ -651170,6 +654023,8 @@ export interface PrimitiveMaterialObserver {
     beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
     afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
 }
+/** Release a primitive resource's material lease (or dispose unpooled materials directly). */
+export declare function disposeProductionPrimitiveMaterial(resource: ProductionRuntimePrimitiveResource): void;
 /** Validate raw and live inputs before constructing or mutating resources. */
 export declare function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot?: boolean): void;
 /** Revision already installed on this resource, for mount-owned job admission. */
@@ -651220,9 +654075,10 @@ export declare function upgradeProductionEnvironmentHdri(source: ProductionEnvir
     readonly dualProbe: boolean;
 }>;
 import { Geometry, InstancedPBRMaterial, PBRMaterial } from "../../../rendering/index.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { QrPrimitiveGeometryPool, type QrPrimitiveGeometryOptions } from "./geometry.js";
 /**
  * Build the production `PBRMaterial` for a primitive node.
  *
@@ -651385,44 +654241,49 @@ export interface AuraL2AttributeUpdate {
     readonly name: string;
     readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
     readonly offset: number;
+    readonly skipBoundsRefresh?: boolean;
+}
+export declare function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean;
+/**
+ * Deterministic 64-bit content digest across normalized custom-geometry
+ * attributes, indices, topology, groups, drawRange, and bounds.
+ */
+export declare function customGeometryContentKey(spec: AuraCustomGeometrySpec): string;
+/**
+ * Per-mount custom-geometry buffer pool backed by `QrPrimitiveGeometryPool`
+ * (shares GPU `VertexBuffer`/`IndexBuffer` while preserving copy-on-write and
+ * idempotent per-handle `dispose()`).
+ */
+export declare class CustomGeometryPool {
+    private readonly inner;
+    constructor(inner?: QrPrimitiveGeometryPool);
+    get size(): number;
+    refCount(spec: AuraCustomGeometrySpec): number;
+    acquire(spec: AuraCustomGeometrySpec): Geometry;
+}
+export type PooledProductionMaterial = ReturnType<typeof createProductionPrimitiveMaterial>;
+/**
+ * Strictly excludes runtime-addressable (`app.nodes`), animated, interactive,
+ * physics, LOD, SDF-text, custom-shader, clipped, and textured nodes so
+ * runtime mutations on a handle never affect a shared material instance.
+ */
+export declare function isPoolableStaticPrimitiveMaterialNode(node: AuraPrimitiveNode): boolean;
+export declare function productionPrimitiveMaterialPoolKey(node: AuraPrimitiveNode): string;
+/**
+ * Per-mount scalar material pool for non-addressable static primitive nodes.
+ * Preserves exact `PBRMaterial` / `UnlitMaterial` / `Instanced*` prototypes and
+ * zero extra own properties on the material instance (`builtinParticipantSafe`).
+ */
+export declare class ProductionMaterialPool {
+    private readonly entries;
+    get size(): number;
+    refCount(key: string): number;
+    acquireNode(node: AuraPrimitiveNode): {
+        readonly material: PooledProductionMaterial;
+        readonly release: () => void;
+    };
 }
 export {};
-/**
- * Build the production `PBRMaterial` for a primitive node.
- *
- * ## WS-2.1a — the parameter drop this function used to be
- *
- * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
- * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
- * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
- * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
- * for every one of them and binds them all. The bridge between the two dropped them on the floor.
- *
- * How that presented, measured by `tools/material-structural-parity` before the fix:
- *
- * ```
- * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
- * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
- * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
- * ```
- *
- * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
- * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
- * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
- * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
- * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
- * and has no way to find out why.
- *
- * The reason this survived so long is worth stating: three of the four lobes are scalar
- * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
- * arrived. The plumbing defect concealed the shading defect.
- */
-/**
- * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
- * generators that provide them opt into textured materials; uv1 is a
- * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
- * selector has two distinct sets to choose between.
- */
 //# sourceMappingURL=primitives.d.ts.map
 ```
 
@@ -655703,6 +658564,7 @@ import { GameSessionImpl } from "./session/GameSession.js";
 import { type LifecycleSound } from "./session/lifecycle.js";
 import { type LookSource } from "./capture/lookSignature.js";
 import { type EvidenceChannelContract } from "./evidence/channel.js";
+import { type TouchControlsOptions } from "./touch/TouchControls.js";
 import { type Juice } from "./juice/Juice.js";
 export interface Prd09Game<TCue extends string, TEvent extends string> extends Game<TCue, TEvent> {
     /** SHA-256 look signature over the last authored snapshot. */
@@ -655741,9 +658603,10 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
 export declare function assertGameWorkerRequest(worker: CreateGameOptions<string, string>["worker"]): NonNullable<CreateGameOptions<string, string>["worker"]> | undefined;
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
-export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
+export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> = Omit<CreateGameOptions<TCue, TEvent>, "target" | "touch"> & Omit<AuraCreateGameAppOptions, "scene" | "worker"> & {
     /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
     readonly target: AuraAppTarget;
+    readonly touch?: TouchControlsOptions;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
     /** Wired into the session lifecycle (suspend/dispose/unlock on tab events). */
     readonly soundAdapter?: LifecycleSound;
@@ -657962,11 +660825,11 @@ export declare const sfxAsset: (id: SfxId | string) => {
 import type { HudDocument, HudElement, HudRect, HudScheduler } from "./dom.js";
 import { type HudThemePreset, type HudThemeVars } from "./themes.js";
 import { type HudWidgetSpec, type HudValue } from "./widgets/index.js";
-export interface Vec3Like {
+export type Vec3Like = readonly [number, number, number] | {
     readonly x: number;
     readonly y: number;
     readonly z: number;
-}
+};
 export interface HudMountOptions {
     /** Preset name or a custom `--a3g-*` var record (preset + overrides). */
     theme?: HudThemePreset | HudThemeVars;
@@ -658037,9 +660900,9 @@ export interface HudMediaQuery {
     removeEventListener?(type: "change", cb: () => void): void;
 }
 /** Same breakpoint as `styles/hud-base.css` (mobile anchors + `.a3g-mobile-hidden`). */
-export declare const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px)";
-/** Dev guard (PRD-09 1758): wrap innerHTML so a write under `.a3g-hud` throws. */
-export declare function assertNoInnerHtml(doc: HudDocument, warn: (m: string) => void): () => void;
+export declare const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px), (orientation: landscape) and (max-height: 500px)";
+/** Retained as a no-op for API compatibility; avoids global Element.prototype.innerHTML monkeypatching. */
+export declare function assertNoInnerHtml(_doc: HudDocument, _warn: (m: string) => void): () => void;
 export declare function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud;
 //# sourceMappingURL=HudKit.d.ts.map
 ```
@@ -658245,6 +661108,8 @@ export interface HudWidgetInstance {
     apply(value: HudValue): void;
     /** Advance widget-internal animation (score roll, ghost trail). */
     tick(dt: number): void;
+    /** Whether this widget currently requires future animation frames. */
+    isAnimating?(): boolean;
     /** Last applied value for `hud.snapshot()`. */
     value(): HudValue | undefined;
 }
@@ -658753,6 +661618,8 @@ export interface TouchControlsOptions {
     readonly bindings: Readonly<Record<string, string>>;
     /** Force visibility (overrides the §6.11 rule). */
     readonly show?: boolean;
+    /** Alias for `show` — `false` explicitly disables coarse-pointer auto-enable. */
+    readonly visible?: boolean;
     /** Android-style tick on press — calls `navigator.vibrate(ms)`. */
     readonly haptics?: boolean | {
         ms?: number;
@@ -658933,8 +661800,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -659823,6 +662690,8 @@ export interface GameAudioContextLike {
     close?(): Promise<void>;
     createGain(): GainNode;
     createOscillator?(): OscillatorNode;
+    addEventListener?(type: "statechange", listener: () => void): void;
+    removeEventListener?(type: "statechange", listener: () => void): void;
 }
 export interface GameAudioBusDefinition {
     readonly id: GameAudioBusId;
@@ -659988,6 +662857,8 @@ export interface GameAudio<TCue extends string = string> {
     setMuted(muted: boolean): GameAudioEvidence<TCue>;
     setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
     onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+    /** Subscribe to AudioContext state changes (e.g. WebKit `"interrupted"` / `"suspended"` recovery). */
+    onStateChange?(callback: (state: string, unlocked: boolean) => void): () => void;
     /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
     recordMaster(seconds?: number): Promise<Blob | null>;
     dispose(): Promise<GameAudioEvidence<TCue>>;
@@ -664048,6 +666919,8 @@ export interface AuraAttributeUpdate {
     readonly array: AuraCustomVertexAttributeData;
     /** Element offset into the attribute (default 0). */
     readonly offset?: number;
+    /** Skip full-buffer CPU bounds recalculation when pre-authored `bounds` already enclose dynamic vertices. */
+    readonly skipBoundsRefresh?: boolean;
 }
 /** three's `Layers` shape, frozen for the node handle (SR-04). */
 export interface AuraLayerMask {
@@ -664159,7 +667032,7 @@ export type { AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRenderTer
 import type { AuraAppFrameCallback, AuraAppHandle, AuraAppScreenshot } from "./AuraAppHandle.js";
 import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence.js";
-import { type FrameLoopOptions, type FrameLoopSnapshot } from "./FrameLoop.js";
+import { type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopTickCallback } from "./FrameLoop.js";
 import { resolveQrFlags } from "../contracts/flags.js";
 import { type GamePerFramePerfTelemetry, type GamePerformanceGovernorMode, type GamePerformanceGovernorSettings, type SideViewGamePerformanceBudget } from "../production-runtime/GameRenderPreset.js";
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
@@ -664235,6 +667108,8 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
     resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
     onFrame(callback: AuraAppFrameCallback): () => void;
     offFrame(callback: AuraAppFrameCallback): void;
+    /** Subscribe to once-per-tick emissions (including 0-substep hitStop/slowMo ticks). */
+    onTick?(callback: FrameLoopTickCallback): () => void;
     inputController(options: GameInputOptions): GameInputController;
     screenshot(): AuraAppScreenshot;
     /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
@@ -664265,8 +667140,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -664453,8 +667328,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -664524,6 +667399,8 @@ export interface AuraWorkerRendererOptions {
     readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
     /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
     readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
+    /** 5.5.3: override host coarse-pointer detection forwarded to the worker's `init` request. */
+    readonly coarsePointer?: boolean;
     /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
     readonly disposeTimeoutMs?: number;
 }
@@ -664564,6 +667441,11 @@ export interface AuraWorkerRenderer {
 /** A pre-transfer capability check; an unsupported canvas can still be used by a fallback. */
 export declare function supportsWorkerRendering(canvas: HTMLCanvasElement | OffscreenCanvas): boolean;
 export declare function workerCanvasTransferAttempted(canvas: HTMLCanvasElement | OffscreenCanvas): boolean;
+/** Latest tracked CSS/viewport dimensions for a worker-managed canvas (unaffected by frozen `300x150` transferred attributes). */
+export declare function readWorkerCanvasCssSize(canvas: object): {
+    readonly width: number;
+    readonly height: number;
+} | undefined;
 /** Raw direct-module URL; bundled applications should use createWorkerRendererWorker instead. */
 export declare function workerRendererUrl(): URL;
 /** Choose the explicit fallback before transferring ownership. */
@@ -664768,7 +667650,8 @@ export type AuraWorkerRequest = {
     readonly syncLocalScenes?: boolean;
     readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */
     readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */
-    readonly globals?: Readonly<Record<string, string | number | boolean>>;
+    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.3: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
+    readonly coarsePointer?: boolean;
 } | {
     readonly type: "scene";
     readonly id: number;
@@ -664843,6 +667726,11 @@ export interface AuraWorkerFrameResult {
      * sent on a presented frame only when it changed since the last one sent.
      */
     readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
+    /**
+     * 5.5.3: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
+     * `label` overlays on the host thread.
+     */
+    readonly viewProjection?: Float32Array | readonly number[];
 }
 export interface AuraWorkerScreenshotPayload {
     readonly blob: Blob;
@@ -664930,7 +667818,7 @@ export interface AuraWorkerHostEndpoint {
  * K1 patch ops shared by the host mirror (workerNodes.ts) and the render
  * worker. Kept free of registry/query imports so the worker entry stays small.
  */
-import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { type BatchedMeshStateSnapshot } from "../nodes/batchedState.js";
 /**
  * Function-valued node-handle extension members (for example prd09
@@ -664972,6 +667860,19 @@ export type AuraWorkerNodePatchOp = {
  | {
     readonly app: AuraWorkerAppCall;
     readonly args: readonly unknown[];
+}
+/** 5.5.3: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+ | {
+    readonly structural: "add";
+    readonly node: AuraSceneNode;
+    readonly options?: {
+        readonly parent?: string;
+    };
+} | {
+    readonly structural: "remove";
+    readonly id: string;
+} | {
+    readonly structural: "clear";
 };
 /**
  * 5.4: app members a worker app forwards to the render worker: the output (tone mapping, exposure), the runtime
@@ -664989,6 +667890,13 @@ export declare const WORKER_PATCH_METHOD_SET: Set<string>;
 export declare const WORKER_PATCH_PROPERTY_SET: Set<string>;
 /** Reads that are answered by the host mirror without a patch. */
 export declare const WORKER_HOST_READS: Set<string>;
+/**
+ * Mark a privately cloned `ArrayBuffer` as owned by the worker patch queue so
+ * `postMessage` can transfer it zero-copy without detaching caller-retained views.
+ */
+export declare function markWorkerOwnedBuffer(buffer: ArrayBufferLike | undefined): void;
+/** Collect unique patch-owned `ArrayBuffer`s safe to pass in the `postMessage` transfer list. */
+export declare function collectWorkerPatchTransferables(ops: readonly AuraWorkerNodePatchOp[]): Transferable[];
 /** Absolute writes: a later op with the same key makes an earlier one redundant. */
 export declare function coalesceKey(op: AuraWorkerNodePatchOp): string | undefined;
 /**
@@ -665154,8 +668062,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/engine@5.5.2#sha256=6debdd5edafd95be79d1c70fd90d812185c67382145ec7c5c00c17115d581f00`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/engine@5.5.3#sha256=d64bdd8ea5c2cf52e724232baee0ecae471b1b159e3dacb8be2bdf9144928b88`
 
 ### Export conditions
 
@@ -665612,8 +668520,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/input@5.5.1#sha256=31a1ed31ab364afc1aeaee46f0ef547157b03b19ec6fd68f4cc68ba54e38e4bb`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/input@5.5.3#sha256=a977e964449de99d88ee2622f02bdb3171b584740f56c0c410b9f77c19a2223d`
 
 ### Export conditions
 
@@ -666854,8 +669762,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/math@5.5.1#sha256=cadadda550af31a7de7f58040c982e365492b7fc6c6864ce2fec7c14e476681f`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/math@5.5.3#sha256=a14c58fb3e2691e653971a832b6ff673e435bc8312cf3a2fb85e22d0cf555f45`
 
 ### Export conditions
 
@@ -668841,8 +671749,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/math@5.5.1#sha256=cadadda550af31a7de7f58040c982e365492b7fc6c6864ce2fec7c14e476681f`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/math@5.5.3#sha256=a14c58fb3e2691e653971a832b6ff673e435bc8312cf3a2fb85e22d0cf555f45`
 
 ### Export conditions
 
@@ -670089,8 +672997,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.1#sha256=46ae1f9bcea80628320d5e5d71ae3c70546ebbf6512addbaf0e53b9ba8fb7a5b`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.3#sha256=53edc3a3f494ea06c263a706cf98a23ff503fd2809468f05afc9f6f3d15b10f4`
 
 ### Export conditions
 
@@ -670220,8 +673128,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/physics@5.5.1#sha256=6f39fbe294b888e81549d3977d0c0811f59ad98f91f5c3319a68e3d586cacdfe`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
 
 ### Export conditions
 
@@ -672444,8 +675352,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.1#sha256=0612b9f4e30e38bf343178932a4768bd8b8786f75639a52161f2cd36dbe6cc51`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.3#sha256=95bb5f54d03482ca0b120e3587d724ded66d0ac49ba8b1faf135633c74bd86ed`
 
 ### Export conditions
 
@@ -672903,8 +675811,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/physics@5.5.1#sha256=6f39fbe294b888e81549d3977d0c0811f59ad98f91f5c3319a68e3d586cacdfe`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
 
 ### Export conditions
 
@@ -674156,8 +677064,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/physics@5.5.1#sha256=6f39fbe294b888e81549d3977d0c0811f59ad98f91f5c3319a68e3d586cacdfe`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/physics@5.5.3#sha256=2d76f580e12e448636a005e48e18a882f3f877c0073d67db930beaa362fc0afc`
 
 ### Export conditions
 
@@ -674420,8 +677328,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/product-studio@5.5.1#sha256=44e433a7d6a0839ae4efcfa6f0fc4457b518713cd16735e25bfe06d6f7001d44`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/product-studio@5.5.3#sha256=94d1d58bec2ad5109c053164ffb3d419cf92bd8006e510d54fc4a1d031057412`
 
 ### Export conditions
 
@@ -674702,8 +677610,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/react@5.5.1#sha256=db5fd07b05fb8dd388f4e4db414aa8095b1ce922c9b739be90a97b28d7137706`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/react@5.5.3#sha256=13806206aaa21527a04f23aa46085650b0b6920730157edffa47f2811a36aca4`
 
 ### Export conditions
 
@@ -675104,8 +678012,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -676911,6 +679819,7 @@ export declare class WebGL2RenderTarget implements RenderTarget {
     private readonly gl;
     disposed: boolean;
     needsResolve: boolean;
+    multisampleDirty: boolean;
     /** Native names from a lost context cannot be deleted after restoration. */
     nativeInvalid: boolean;
     /** Removes owned handles from the device registry before releasing them. */
@@ -677260,6 +680169,11 @@ export declare class WebGL2Device implements RenderDevice {
     readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
     private requireTransferTarget;
     private forgetRenderTargetTextures;
+    private readonly cachedAllDrawBuffers;
+    private readonly cachedSingleSlotDrawBuffers;
+    private getAllDrawBuffers;
+    private getSingleSlotDrawBuffers;
+    private getMultisampleInvalidateAttachments;
     private resolveMultisampleTarget;
     captureState(): ReadonlyMap<string, string | number | boolean | null>;
     getLiveTextures(): readonly Texture[];
@@ -677491,8 +680405,9 @@ export declare function decideSkinningPalettePath(options: {
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -677814,16 +680729,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -677946,6 +680861,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -678214,6 +681138,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -678512,7 +681438,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -678528,6 +681454,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -678579,6 +681511,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -678598,6 +681532,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -678631,18 +681567,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -678716,6 +681648,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -678831,11 +681764,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -679560,6 +682491,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -679910,12 +682842,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -679947,6 +682888,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -680258,6 +683201,7 @@ import { type RecursiveUniformValue, type UniformValue } from "./RenderDevice.js
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout.js";
 import { type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend.js";
 import type { RenderColorAttachmentState } from "./RenderDevice.js";
+import { TextureBinding } from "./TextureBinding.js";
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
 export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
@@ -680362,6 +683306,10 @@ export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = Uni
     readonly fog?: boolean;
 }
 export declare const DEFAULT_RENDER_STATE: RenderState;
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export declare function isPassFrameUniformName(name: string): boolean;
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export declare function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean;
 export declare class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     disposed: boolean;
     readonly name: string;
@@ -680376,6 +683324,9 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     protected readonly parameters: Map<string, RecursiveUniformValue>;
     private dirty;
     private revision;
+    private featureRevision;
+    private textureBindingsCache;
+    private snapshotBase;
     constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>);
     setParameter(name: string, value: TUniform): void;
     /** Shared owned storage; subclasses validate their expanded value type first. */
@@ -680389,9 +683340,13 @@ export declare class Material<TUniform extends RecursiveUniformValue = UniformVa
     private parameterSnapshotCache;
     /**
      * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-     * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+     * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
      */
     parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue>;
+    /** Revision incremented only when non-pass-frame material parameters change. */
+    getFeatureRevision(): number;
+    /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+    textureBindingsSnapshot(): readonly TextureBinding[];
     isDirty(): boolean;
     /**
      * C-02 (PRD-01): the feature record this material contributes to a program
@@ -680566,6 +683521,7 @@ export declare class ShaderLibrary {
     unregister(name: string): boolean;
     getRevision(): number;
     registerChunk(name: string, source: string): void;
+    has(name: string): boolean;
     get(name: string): ShaderSourcePair;
     compileSource(name: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
     compileVariant(name: string, variantName: string, options?: ShaderPreprocessOptions): CompiledShaderSource;
@@ -680734,6 +683690,7 @@ import { TextureBinding } from "./TextureBinding.js";
 import { type RenderQueueBucket } from "./performance/RenderItemSorting.js";
 import { type RenderItem } from "./contracts/renderItem.js";
 import { type FrameContributorContext } from "./contracts/frameGraph.js";
+import { type ClusteredForwardTexturePool } from "./ClusteredForwardLighting.js";
 import { type ProgramFeatures } from "./contracts/program.js";
 import { type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency.js";
 import { type AuraQualityTierSettings } from "./contracts/quality.js";
@@ -680756,6 +683713,15 @@ export interface ForwardDrawHook {
 }
 /** Frame replay must not invoke caller-provided draw hooks a second time. */
 export declare function hasForwardDrawHooks(): boolean;
+export interface ReplayProofMemo {
+    readonly geometries: WeakMap<Geometry, boolean>;
+    readonly pooledGeometries: WeakMap<Geometry, boolean>;
+    readonly materials: WeakMap<object, boolean>;
+    readonly materialTextures: WeakMap<object, boolean>;
+    readonly passLightMaterials: WeakMap<object, boolean>;
+    readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+export declare function createReplayProofMemo(): ReplayProofMemo;
 /** Callback-free proof of the providers that may run during a forward draw. */
 export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders?: boolean): boolean;
 /** A repeated opaque draw may only use built-in callbacks with unchanged
@@ -680763,12 +683729,12 @@ export declare function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedPr
 export declare function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean;
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean): boolean;
+export declare function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified?: boolean, memo?: ReplayProofMemo): boolean;
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export declare function registerForwardDrawHook(hook: ForwardDrawHook): () => void;
 export interface RenderItemDrawRange {
@@ -680901,6 +683867,8 @@ export interface ForwardPassOptions {
         readonly leases: PhotometricFrameLease[];
         readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
     };
+    /** Internal renderer-owned pool for WebGPU clustered-forward light textures. */
+    readonly clusteredLightingPool?: ClusteredForwardTexturePool;
     /** Internal per-view projected-light admission, cache and frame leases. */
     readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
     readonly lights?: readonly CollectedLight[];
@@ -681175,6 +684143,13 @@ export declare class ForwardPass extends BaseRenderPass {
     private readonly customFrameCache;
     /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
     private shadedLightsMemo;
+    private packedLightsMemo;
+    private passHasPhotometricLight;
+    private photometricPassVerified;
+    private passReplayMemo;
+    private allDrawsSoFarCallbackFree;
+    private passLightsStable;
+    private plainPassLightSources;
     private shadedLights;
     private photometricCache?;
     private photometricUnsupported;
@@ -681746,7 +684721,7 @@ export {};
 ```ts
 import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { type ClusteredForwardLightingResources, type ClusteredForwardTexturePool } from "../ClusteredForwardLighting.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { type ShadowFilterKernel } from "../ShadowMap.js";
@@ -681809,7 +684784,7 @@ export declare function validatePointShadowFaceRects(faceRects: Float32Array, la
 export declare const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL: ShadowFilterKernel;
 export declare function renderItemWorldCenter(item: RenderItem): readonly [number, number, number];
 /** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
-export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined): ClusteredForwardLightingResources | null;
+export declare function resolveForwardClusteredLighting(lights: readonly CollectedLight[] | undefined, width: number, height: number, cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined, pool?: ClusteredForwardTexturePool): ClusteredForwardLightingResources | null;
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
 export declare const FORWARD_DIRECT_LIGHT_CAPACITY = 16;
 /**
@@ -682804,7 +685779,7 @@ export declare function generatedProgramSupportsSelectiveBloom(program: Generate
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
  * Importing the implementation keeps direct and postprocessed output in sync.
  */
-export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
+export declare const OUTPUT_SRGB_CHUNK_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 a3dEncodeForCanvas(vec3 linear) {\n  vec3 c = clamp(ACESFilmicToneMapping(max(linear, vec3(0.0))), 0.0, 1.0);\n  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));\n}";
 export interface ProgramDegradation {
     readonly code: "extension-lobe-pending" | "program-compile-failed";
     readonly message: string;
@@ -683061,7 +686036,7 @@ export declare class ProgramWarmup {
  * (the ForwardPass flag-off path). `materialFeatureWarning` returns the
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
-import type { Material } from "../Material.js";
+import { Material } from "../Material.js";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program.js";
 import type { MaterialFeatureContext } from "../contracts/materialLobes.js";
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
@@ -683374,8 +686349,8 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  */
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
-export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n";
-export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n}\n";
+export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
+export declare const TONE_MAPPING_OPERATORS_GLSL = "// Independent Aura3D display transforms, paired with post/ToneOperators.ts.\nvec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n\nvec3 NoneToneMapping(vec3 color) { return color; }\nvec3 LinearToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(color), 0.0, 1.0));\n#else\n  return clamp(color, 0.0, 1.0);\n#endif\n}\n// Preserve out-of-gamut negatives for the destination-primary transform;\n// gamut clipping happens afterward. Avoid the x = -1 singularity.\nfloat a3dReinhardChannel(float value) {\n  return value >= 0.0 ? value / (1.0 + value) : value;\n}\nvec3 ReinhardToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = a3dSceneSrgbToP3(color);\n  return a3dSceneP3ToSrgb(vec3(a3dReinhardChannel(p3.r), a3dReinhardChannel(p3.g), a3dReinhardChannel(p3.b)));\n#else\n  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));\n#endif\n}\n\n// AgX log window and sixth-degree contrast approximation.\nvec3 a3dAgxContrast(vec3 x) {\n  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;\n}\nvec3 AgXToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  vec3 inset = a3dToneRows(p3,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  return a3dSceneP3ToSrgb(clamp(pow(max(outset, vec3(0.0)), vec3(2.2)), 0.0, 1.0));\n#else\n  vec3 wide = a3dToneRows(max(color, vec3(0.0)),\n    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));\n  vec3 inset = a3dToneRows(wide,\n    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),\n    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),\n    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));\n  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);\n  vec3 graded = a3dAgxContrast(logExposure);\n  vec3 outset = a3dToneRows(graded,\n    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),\n    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),\n    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));\n  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));\n  return clamp(a3dToneRows(display,\n    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);\n#endif\n}\n\n// Filmic Cineon fit, with its inverse display gamma returning linear light.\nvec3 CineonToneMapping(vec3 color) {\n  vec3 x = max(color - 0.004, vec3(0.0));\n  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));\n}\n\n// Khronos PBR Neutral's dark offset and highlight shoulder.\nvec3 NeutralToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 p3 = max(a3dSceneSrgbToP3(color), vec3(0.0));\n  float minimum = min(p3.r, min(p3.g, p3.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = p3 - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return a3dSceneP3ToSrgb(shifted);\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return a3dSceneP3ToSrgb(vec3(compressed) + (scaled - vec3(compressed)) * keepColor);\n#else\n  color = max(color, vec3(0.0));\n  float minimum = min(color.r, min(color.g, color.b));\n  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;\n  vec3 shifted = color - offset;\n  float peak = max(shifted.r, max(shifted.g, shifted.b));\n  float knee = 0.76;\n  if (peak < knee) return shifted;\n  float shoulder = 1.0 - knee;\n  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);\n  vec3 scaled = shifted * (compressed / peak);\n  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));\n  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;\n#endif\n}\n";
 export declare const OUTPUT_FRAGMENT_PROLOGUE_GLSL = "// a3d.output\nprecision highp float;\nuniform sampler2D u_scene;\n#ifdef BACKGROUND_COVERAGE\nuniform sampler2D u_coverage;\n#endif\nuniform float u_exposure;\n// float, not int: the device uploads numeric uniforms with uniform1f, and\n// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).\nuniform float u_dither;\nin vec2 v_uv;\nlayout(location = 0) out vec4 outColor;\n#define saturate( a ) clamp( a, 0.0, 1.0 )\n";
 export declare const OUTPUT_FRAGMENT_EPILOGUE_GLSL = "vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }\n#ifdef OUTPUT_ALPHA_PRESERVE\n// Source-over stores premultiplied scene-linear light. Nonlinear tone and\n// transfer functions must operate on unassociated light, not on RGB * alpha.\nvec3 a3dUnassociateScene(vec4 scene) {\n  if (scene.a <= 0.0) return vec3(0.0);\n  return scene.rgb / min(scene.a, 1.0);\n}\n#endif\n// The output colour transform follows the scene-linear tone curve. Both\n// destinations use the same transfer curve; P3 differs in its primaries.\nvec3 a3dOutputGamut(vec3 linearSrgb) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dToneRows(linearSrgb,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n#else\n  return linearSrgb;\n#endif\n}\n// PRD-01 triangular output dither (\u00B11 LSB, \u00A78.4 output step): the inverse triangular CDF of\n// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,\n// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding\n// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).\nfloat a3dTriangularNoise(vec2 p) {\n  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));\n  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);\n}\n#ifdef OUTPUT_VIGNETTE\nuniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)\nuniform vec3 u_vignetteColor; // linear multiplier at the frame edge\n// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.\nvec3 a3dLinearVignette(vec3 color, vec2 uv) {\n  vec2 p = (uv - 0.5) * 2.0;\n  p.x *= u_vignette.w * u_vignette.z;\n  float len = length(p) * u_vignette.x;\n  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));\n}\n#endif\n#ifdef OUTPUT_OVERLAY\nuniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)\nuniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1\nuniform vec4 u_overlayShape;    // x = inner radius, y = softness, z = aspect (w/h), w = enabled 0/1\nuniform vec4 u_overlayFade;     // rgb = linear color, a = amount 0..1 (mix)\nvec3 a3dSrgbToLinear(vec3 c) {\n  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));\n}\n// Q-01-1 reference (PRD 09 \u00A78): decode \u2192 flash/vignette/fade \u2192 encode once.\n// Juice amounts are perceptual, applied in display-referred linear.\nvec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {\n  if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical\n  vec3 c = a3dSrgbToLinear(encoded);\n  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;\n  vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);\n  float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));\n  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);\n  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);\n  return a3dLinearToSRGB(clamp(c, 0.0, 1.0));\n}\n#endif\nvoid main() {\n  vec4 scene = texture(u_scene, v_uv);\n  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.\n  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);\n#ifdef OUTPUT_ALPHA_PRESERVE\n  vec3 hdr = a3dUnassociateScene(scene);\n  // Even finite channels may overflow when divided by an extremely small alpha.\n  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);\n#else\n  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.\n  vec3 hdr = scene.rgb;\n#endif\n#ifdef OUTPUT_VIGNETTE\n  hdr = a3dLinearVignette(hdr, v_uv);\n#endif\n  // Coverage: drawn content is tone-mapped, the clear colour is not (three\n  // r185: the clear is a raw glClear, tone mapping is per material). Without\n  // the coverage attachment, HDR alpha carries it \u2014 cleared alpha 0, drawn 1.\n#ifdef BACKGROUND_COVERAGE\n  float a3dCoverage = texture(u_coverage, v_uv).r;\n#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)\n  // In alpha-preserving output scene.a is opacity, not a coverage mask.\n  float a3dCoverage = 1.0;\n#else\n  float a3dCoverage = clamp(scene.a, 0.0, 1.0);\n#endif\n  // The legacy opaque coverage mix operates on already-composited RGB. It\n  // cannot independently tone-map translucent foreground and a raw background.\n  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);\n  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));\n  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;\n#ifdef OUTPUT_OVERLAY\n  encoded = a3dApplyOutputOverlay(encoded, v_uv);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  // No hidden color in transparent pixels, including after dither/overlay.\n  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.\n  if (scene.a <= 0.0) encoded = vec3(0.0);\n  else encoded = clamp(encoded, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PREMULTIPLIED\n  encoded *= clamp(scene.a, 0.0, 1.0);\n#endif\n#ifdef OUTPUT_ALPHA_PRESERVE\n  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));\n#else\n  outColor = vec4(encoded, 1.0);\n#endif\n}\n";
 export declare const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>>;
@@ -683800,6 +686775,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -683848,6 +686830,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -687489,7 +690484,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -688816,6 +691811,7 @@ export declare const A3D_AUTHOR_GLSL_CHUNK_NAMES: readonly string[];
 ```ts
 import { Material } from "./Material.js";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice.js";
+import { type TextureBinding } from "./TextureBinding.js";
 export declare class MaterialInstance {
     readonly baseMaterial: Material;
     private readonly overrides;
@@ -688823,10 +691819,15 @@ export declare class MaterialInstance {
     private baseRevision;
     /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
     private overrideRevision;
+    private featureOverrideRevision;
+    private textureOverrideRevision;
+    private textureBindingsCache;
     private snapshotCache;
     constructor(baseMaterial: Material);
     setOverride(name: string, value: RecursiveUniformValue): void;
     clearOverride(name: string): void;
+    getFeatureOverrideRevision(): number;
+    textureBindingsSnapshot(): readonly TextureBinding[];
     getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined;
     getRecursiveParameter(name: string): RecursiveUniformValue | undefined;
     getParameters<T extends RecursiveUniformValue = UniformValue>(): ReadonlyMap<string, T>;
@@ -688926,6 +691927,28 @@ export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
     readonly environmentBrdfLutTexture?: TextureBinding;
     readonly emissiveColor?: readonly [number, number, number];
     readonly emissiveStrength?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly clearcoatNormalScale?: number;
+    readonly transmissionFactor?: number;
+    readonly diffuseTransmissionFactor?: number;
+    readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+    readonly transmissionFallbackEnergy?: number;
+    readonly volumeThicknessFactor?: number;
+    readonly volumeAttenuationDistance?: number;
+    readonly volumeAttenuationColor?: readonly [number, number, number];
+    readonly ior?: number;
+    readonly specularFactor?: number;
+    readonly specularColorFactor?: readonly [number, number, number];
+    readonly sheenColorFactor?: readonly [number, number, number];
+    readonly sheenRoughnessFactor?: number;
+    readonly anisotropyStrength?: number;
+    readonly anisotropyRotation?: number;
+    readonly iridescenceFactor?: number;
+    readonly iridescenceIor?: number;
+    readonly iridescenceThicknessMinimum?: number;
+    readonly iridescenceThicknessMaximum?: number;
+    readonly dispersion?: number;
     /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
     readonly fog?: boolean;
 }
@@ -692521,6 +695544,22 @@ export interface ClusteredForwardLightingOptions {
      * grid configuration so per-frame clustered builds do not spam the console.
      */
     readonly onWarning?: (message: string) => void;
+    /**
+     * Optional renderer-owned pool for WebGPU frames so per-pass clustered light
+     * textures update in-place via `Texture.update()` instead of allocating and
+     * fence-retiring two `GPUTexture`s on every forward pass.
+     */
+    readonly pool?: ClusteredForwardTexturePool;
+}
+export declare class ClusteredForwardTexturePool {
+    private readonly slots;
+    private disposed;
+    acquire(lightHeight: number, lightPixels: Float32Array, clusterCount: number, indexPixels: Float32Array): {
+        readonly lightData: TextureBinding;
+        readonly lightIndices: TextureBinding;
+        release(): void;
+    };
+    dispose(): void;
 }
 export interface ClusteredForwardLightingDiagnostics {
     readonly source: "createClusteredForwardLighting";
@@ -699513,7 +702552,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -699643,6 +702683,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -699731,13 +702791,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -699868,13 +702931,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -699901,13 +702965,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -699922,7 +702979,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -699968,8 +703025,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -701833,6 +704895,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -704144,17 +707212,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -704248,16 +707318,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -704282,15 +707355,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -704472,16 +707550,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -704868,6 +707948,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -704975,6 +708057,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/resources/ResourceRegistry.d.ts`
@@ -707246,8 +710481,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -708848,8 +712083,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -708893,8 +712128,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -708938,8 +712173,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709008,8 +712243,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709061,8 +712296,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709147,8 +712382,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709217,8 +712452,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709247,8 +712482,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709391,8 +712626,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709449,8 +712684,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -709497,8 +712732,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711099,8 +714334,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711159,8 +714394,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711244,8 +714479,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711301,8 +714536,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711409,8 +714644,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711615,8 +714850,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711744,8 +714979,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711804,8 +715039,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -711922,8 +715157,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712018,8 +715253,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712079,8 +715314,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712155,8 +715390,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712175,15 +715410,16 @@ export declare function sameStructure(a: unknown, b: unknown): boolean;
 /** Plain-data deep copy (objects, arrays, primitives): a memo must not alias a record the caller may mutate later. */
 export declare function snapshotOf<T>(value: T): T;
 /**
- * A small ring of recent (record snapshot, result) pairs for a pure function of a plain-data record. A frame asks for the
- * same few records in the same order every time, so the search starts after the last hit.
+ * A small ring of recent (record snapshot, result) pairs for a pure function of a plain-data record.
+ * Indexed by an order-independent structural hash so steady-state lookups check only matching hash bucket entries.
  */
 export declare class StructuralMemo<V> {
     private readonly capacity;
     private readonly records;
     private readonly values;
+    private readonly hashes;
+    private readonly buckets;
     private next;
-    private cursor;
     constructor(capacity: number);
     /** Compute `compute(record)` once per structurally distinct record. */
     resolve(record: unknown, compute: () => V): V;
@@ -712193,8 +715429,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712226,8 +715462,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712259,8 +715495,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712331,8 +715567,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -712372,8 +715608,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -713194,7 +716430,8 @@ import type { ShadowPcfTapTier } from "./ShadowFilterTier.js";
 import { type RenderDevice } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { RenderItem } from "../contracts/renderItem.js";
-import type { ShadowFrameUniforms } from "../contracts/shadows.js";
+import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows.js";
+import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
@@ -713324,6 +716561,26 @@ export declare class Prd02ShadowSystem {
     private frameUniforms;
 }
 export declare function createShadowSystem(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem;
+interface CascadeCasterCullEntry {
+    readonly caster: RenderItem;
+    readonly alwaysKeep: boolean;
+    readonly cx: number;
+    readonly cy: number;
+    readonly cz: number;
+    readonly hx: number;
+    readonly hy: number;
+    readonly hz: number;
+    readonly footprintRadius: number;
+}
+/**
+ * Quality-tier sub-texel shadow caster diameter threshold `k`:
+ * casters with `2 * r_world < k * fit.texelWorld` sub-sample below ~1.5–3 texels
+ * and cause shimmering shadow acne without contributing coherent silhouettes.
+ */
+export declare function cascadeSubTexelThreshold(tier: AuraQualityTierSettings | "pcf2" | "pcf3" | "pcf5" | "low" | "medium" | "high" | "ultra" | undefined): number;
+export declare function buildCascadeCasterCullEntries(casters: readonly RenderItem[], resolve?: (item: RenderItem) => ShadowCasterVariantKey, depthFeatures?: readonly DepthVariantFeature[]): readonly CascadeCasterCullEntry[];
+export declare function filterCastersForCascade(entries: readonly CascadeCasterCullEntry[], fit: DirectionalCascadeFit, subTexelK: number): readonly RenderItem[];
+export {};
 //# sourceMappingURL=ShadowSystem.d.ts.map
 ```
 
@@ -713412,13 +716669,16 @@ type LightBasis = {
 };
 /**
  * #1141 caster-rectangle fit: the light-space rectangle of all casters
- * (padded), when it lies inside the slice footprint, plus the depth interval
- * covering the casters and every in-slice receiver they can shadow.
+ * (padded), clamped to the slice footprint when the caster set itself is
+ * bounded relative to the slice (so a 1 mm caster overhang on Cascade 0
+ * clamps/intersects cleanly instead of returning `null` and inflating the
+ * cascade to the full frustum sphere, while unbounded/scene-spanning caster
+ * sets still defer to the rotationally yaw-stable sphere fit).
  */
 export declare function casterRectClamp(slicePts: readonly Vec3Tuple[], casterBounds: readonly {
     min: Vec3Tuple;
     max: Vec3Tuple;
-}[], basis: LightBasis, padding: number): {
+}[], basis: LightBasis, padding: number, clampOverhang?: boolean): {
     extent: number;
     centerX: number;
     centerY: number;
@@ -713549,13 +716809,14 @@ export declare const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export declare const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export declare const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export declare const COMPILER_AUTO_INSTANCED_SYMBOL: unique symbol;
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export declare function depthUsesInstanceAttributes(item: {
     readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -713582,13 +716843,6 @@ export declare function prd02DepthFeatures(): readonly DepthVariantFeature[];
 export declare function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[];
 /** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
 export declare function depthDeformIncompatibility(feature: DepthVariantFeature): string | null;
-/**
- * 02-DEPTH: splice the selected `vertex:deform` features into the depth
- * vertex source — chunk closure at global scope before `main`, and the
- * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
- * position. Features without an `a3dDeform` entry point are not spliced; the
- * caller reports them (C-31 droppedFeatures).
- */
 export declare function composeDepthDeformVertex(vertex: string, key: ShadowCasterVariantKey, depthFeatures: readonly DepthVariantFeature[]): string;
 /** Alpha-cutoff set on the caster material's parameter map, or null. */
 export declare function casterAlphaCutoff(item: RenderItem): number | null;
@@ -713603,7 +716857,7 @@ export declare function prd02DepthVariantForVertexFormat(key: ShadowCasterVarian
  * depth-variant features whose `select` returns a value for this item.
  */
 export declare function resolvePrd02ShadowCasterVariant(item: RenderItem, flags: QrFlags, tier: AuraQualityTierSettings, depthFeatures?: readonly DepthVariantFeature[]): ShadowCasterVariantKey;
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export declare function prd02ShadowCasterEligible(item: RenderItem): boolean;
@@ -713649,8 +716903,13 @@ import type { RenderMaterial } from "../ForwardPass.js";
 import type { Prd02ShadowFrameUniforms, ShadowSystemConfigInput } from "./ShadowSystem.js";
 /** The base `Material` an item's RenderMaterial resolves to. */
 export declare function shadowBindingMaterial(material: RenderMaterial): Material;
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">): void;
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -715664,6 +718923,12 @@ export interface PostAntiAliasInput {
         readonly moving: number;
         readonly movingWithHistory: number;
     };
+    /**
+     * WP-05 (Trap A): optional mount-time sample count pin (`1` or `4`).
+     * Keeps the forward-target `sampleCount` invariant across runtime quality
+     * governor steps so WebGPU `GPURenderPipeline` caches never invalidate mid-game.
+     */
+    readonly pinnedSampleCount?: 1 | 4;
 }
 export interface PostAntiAliasResolution {
     readonly mode: PostPipelineOptions["antiAliasing"];
@@ -716079,7 +719344,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -718370,17 +721635,19 @@ export declare const RIBBON_VERTEX_FORMAT: VertexFormat;
 export declare class RibbonPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     /** Set once a WebGPU device still rejects the ribbon program (WGSL twin: shaders/ribbon.wgsl.ts). */
     private wgslUnavailable;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 contributor: one queue item per populated orientation group. */
     transparentItems(batch: RibbonBatch, ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -718474,16 +721741,19 @@ export interface BeamDrawSpec {
 export declare class BeamPass {
     private readonly device;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** C-01 transparent-phase items: one draw per beam-family node. */
     transparentItems(specs: readonly BeamDrawSpec[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
+    dispose(): void;
 }
 //# sourceMappingURL=BeamPass.d.ts.map
 ```
@@ -718508,15 +721778,20 @@ export declare class MeshParticlePass {
     private meshVertex;
     private meshIndex;
     private meshIndexCount;
-    private instanceBuffer;
-    private instanceCapacity;
+    private readonly instanceSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     constructor(device: RenderDevice);
+    private beginBatch;
     /** One instanced draw per live batch (opaque-style draw in the transparent queue — alpha comes from instance color). */
     transparentItems(feeds: readonly MeshParticleFeed[], ctx: FrameContributorContext): TransparentQueueItem[];
     private drawInstances;
     private ensureMesh;
     private ensureInstanceBuffer;
     private getProgram;
+    dispose(): void;
 }
 //# sourceMappingURL=MeshParticlePass.d.ts.map
 ```
@@ -718698,16 +721973,18 @@ export declare class DecalPass {
     private readonly device;
     private readonly options;
     private readonly programs;
-    private vertexBuffer;
-    private indexBuffer;
-    private vertexCapacity;
-    private indexCapacity;
+    private readonly bufferSlots;
+    private readonly retiredBuffers;
+    private slotCursor;
+    private lastFrameIndex;
+    private lastCameraRef;
     private readonly blendFallbackNoted;
     constructor(device: RenderDevice, options?: DecalPassOptions);
+    private beginBatch;
     /** Draws every populated (page, blend) group — one draw each. Returns draw count for tests/diagnostics. */
     draw(batch: DecalBatch, ctx: FrameContributorContext, now: number): number;
     private drawGeometry;
-    private ensureBuffer;
+    private ensureSlotBuffer;
     private program;
     dispose(): void;
 }
@@ -719094,6 +722371,8 @@ export { prd11LatestBatchPlanReport };
  * decision/steps via `prd11LatestQualityDiagnostics`. */
 export { AuraQuality, prd11LatestQualityDiagnostics, registerAuraQualityController } from "../quality/QualityController.js";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController.js";
+export { RUNTIME_QUALITY_LADDER, RuntimeQualityGovernor, bindRuntimeQualityDevice, clearRuntimeQualityState, ensureRuntimeQualityState, runtimeQualityDeviceStateFor, runtimeQualityStateFor } from "../quality/RuntimeQualityGovernor.js";
+export type { RuntimeQualityCanvasState, RuntimeQualityGovernorOptions, RuntimeQualityRung, RuntimeQualityRungAllocation, RuntimeQualitySample, RuntimeQualityStepResult } from "../quality/RuntimeQualityGovernor.js";
 /** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
  * memory policy helper, the restore-ordering installer, and the pool's
  * rebuild method for tests/engine diagnostics. */
@@ -719201,6 +722480,159 @@ export declare function prd11TickQualityControllers(probe: DeviceProbe | undefin
 /** C-31 `quality` diagnostics: latest registered controller, if any. */
 export declare function prd11LatestQualityDiagnostics(): QualityDiagnostics | null;
 //# sourceMappingURL=QualityController.d.ts.map
+```
+
+### `./dist/quality/RuntimeQualityGovernor.d.ts`
+
+```ts
+/**
+ * WP-05 (`GOV-1`): Zero-remount dynamic thermal & VSync-aware `RuntimeQualityGovernor`.
+ *
+ * Operates across a 5-rung monotonic degradation ladder (`0` = mount ceiling .. `4` = floor)
+ * without ever remounting the scene or invalidating WebGPU `GPURenderPipeline` MSAA caches:
+ *  - Skips the first 45 frames and first 1.0 s warmup window.
+ *  - Skips `> 100 ms` tab-background / visibility gaps (+ 5 resume settle frames).
+ *  - Skips shader-compilation frames (`programCompileCount` delta > 0).
+ *  - Detects **iOS Low Power Mode 30 Hz VSync Lock** (`rafDeltaMs` tightly clustered around
+ *    `33.33 ms` while `cpuBodyMs < 5.0 ms` and `gpuMs == null`) and holds the current rung
+ *    instead of stepping quality down to the floor.
+ *  - Asymmetric hysteresis:
+ *    - Step down 1 rung when `p75(last 30) > 18.5 ms` AND `>= 20/30` frames exceed budget,
+ *      with a `1.5 s` (`1500 ms`) inter-step settle cooldown.
+ *    - Step up 1 rung after `8.0 s` (`8000 ms`) post-drop cooldown when `p75(last 180) < 12.5 ms`
+ *      AND `p90(last 180) < 14.5 ms`.
+ *    - Bounce ceiling lock: if stepping up `R -> R - 1` triggers a step-down within `12.0 s`,
+ *      locks ceiling at `R` (`60 s` on first bounce, session-permanent on second bounce).
+ */
+import type { AuraQualityTier } from "../contracts/quality.js";
+export type RuntimeQualityRung = 0 | 1 | 2 | 3 | 4;
+export interface RuntimeQualityRungAllocation {
+    readonly rung: RuntimeQualityRung;
+    /** Cap applied to devicePixelRatio on resize (`Infinity` = mount tier cap). */
+    readonly maxPixelRatioCap: number;
+    /** Backing-store resolution scale (`1.0` at ceiling -> `0.67` at floor). */
+    readonly resolutionScale: number;
+    /** Dynamic render scale passed into the v2 post chain (`1.0` at ceiling). */
+    readonly renderScale: number;
+    /** Maximum post-processing quality tier allowed at this rung. */
+    readonly maxPostTier: AuraQualityTier;
+    /** Maximum directional shadow cascade count (`4 -> 3 -> 2 -> 1 -> 1`). */
+    readonly maxShadowCascades: 1 | 2 | 3 | 4;
+    /** Maximum directional shadow map edge in texels. */
+    readonly maxShadowMapSize: 512 | 1024 | 2048 | 4096;
+    /** Root performance-quality preset for LOD/particle distance scaling. */
+    readonly performancePreset: "high" | "balanced" | "low";
+}
+export declare const RUNTIME_QUALITY_LADDER: readonly [
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation,
+    RuntimeQualityRungAllocation
+];
+export interface RuntimeQualityGovernorOptions {
+    /** Initial tier resolved at mount (`"ultra" | "high" | "medium" | "low"`). Default `"high"`. */
+    readonly mountTier?: AuraQualityTier;
+    /** Target frame budget in ms. Default `16.67` (`60 fps`, including mobile). */
+    readonly targetFrameMs?: number;
+    /** Warmup frame count ignored after mount. Default `45`. */
+    readonly warmupFrames?: number;
+    /** Warmup elapsed duration in ms ignored after mount. Default `1000`. */
+    readonly warmupMs?: number;
+    /** Maximum valid rAF delta before classifying as a background/tab stall. Default `100`. */
+    readonly maxValidDeltaMs?: number;
+    /** Minimum cooldown between consecutive step-downs in ms. Default `1500`. */
+    readonly stepDownCooldownMs?: number;
+    /** Minimum cooldown after a step-down before any step-up in ms. Default `8000`. */
+    readonly stepUpCooldownMs?: number;
+    /** Window in ms within which a step-down after a step-up counts as a bounce. Default `12000`. */
+    readonly bounceWindowMs?: number;
+    /** Duration in ms to lock the ceiling on the first bounce (second bounce is permanent). Default `60000`. */
+    readonly firstBounceLockMs?: number;
+}
+export interface RuntimeQualitySample {
+    /** Wall-clock timestamp in ms (e.g. `performance.now()`). */
+    readonly nowMs: number;
+    /** Inter-frame rAF delta in ms. */
+    readonly rafDeltaMs: number;
+    /** Synchronous CPU frame-body work duration in ms. */
+    readonly cpuBodyMs: number;
+    /** Optional GPU frame duration in ms when timer queries are supported. */
+    readonly gpuMs?: number | null;
+    /** Optional cumulative compiled shader count to ignore shader-compile spikes. */
+    readonly compiledPrograms?: number | null;
+}
+export interface RuntimeQualityStepResult {
+    readonly changed: boolean;
+    readonly direction: "down" | "up" | null;
+    readonly previousRung: RuntimeQualityRung;
+    readonly rung: RuntimeQualityRung;
+    readonly vsyncLocked30Hz: boolean;
+    readonly ceilingRung: RuntimeQualityRung;
+    readonly allocation: RuntimeQualityRungAllocation;
+    readonly effectivePostTier: AuraQualityTier;
+}
+export declare class RuntimeQualityGovernor {
+    private readonly mountTier;
+    private readonly budgetScale;
+    private readonly stepDownThresholdMs;
+    private readonly stepUpP75Ms;
+    private readonly stepUpP90Ms;
+    private readonly warmupFrames;
+    private readonly warmupMs;
+    private readonly maxValidDeltaMs;
+    private readonly stepDownCooldownMs;
+    private readonly stepUpCooldownMs;
+    private readonly bounceWindowMs;
+    private readonly firstBounceLockMs;
+    private currentRung;
+    private mountStartMs;
+    private framesSeen;
+    private resumeSkipFrames;
+    private settleFramesRemaining;
+    private lastCompiledPrograms;
+    private vsyncLocked;
+    private readonly shortFrameMs;
+    private readonly shortRafMs;
+    private readonly shortCpuMs;
+    private readonly longFrameMs;
+    private lastStepMs;
+    private lastStepDownMs;
+    private lastStepUpMs;
+    private lastStepDirection;
+    private lockedCeilingRung;
+    private ceilingLockUntilMs;
+    private bounceCount;
+    constructor(options?: RuntimeQualityGovernorOptions);
+    get rung(): RuntimeQualityRung;
+    get vsyncLocked30Hz(): boolean;
+    get allocation(): RuntimeQualityRungAllocation;
+    get effectivePostTier(): AuraQualityTier;
+    effectiveCeilingRung(nowMs: number): RuntimeQualityRung;
+    /** Notify the governor that page visibility resumed so resumption spikes are ignored. */
+    notifyVisibilityResume(): void;
+    private unchangedResult;
+    sample(input: RuntimeQualitySample): RuntimeQualityStepResult;
+}
+/**
+ * Per-canvas / per-device zero-remount runtime quality state shared between
+ * `frameLoop.ts`, `compiler/postprocess.ts`, `postBridge.ts`, and `Prd02ShadowBridge.ts`.
+ */
+export interface RuntimeQualityCanvasState {
+    rung: RuntimeQualityRung;
+    pinnedSampleCount?: 1 | 4;
+    postTier?: AuraQualityTier;
+    renderScale?: number;
+    maxPixelRatioCap?: number;
+    maxShadowCascades?: 1 | 2 | 3 | 4;
+    maxShadowMapSize?: number;
+}
+export declare function ensureRuntimeQualityState(canvas: object): RuntimeQualityCanvasState;
+export declare function runtimeQualityStateFor(canvas: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function bindRuntimeQualityDevice(device: object | null | undefined, state: RuntimeQualityCanvasState): void;
+export declare function runtimeQualityDeviceStateFor(device: object | null | undefined): RuntimeQualityCanvasState | undefined;
+export declare function clearRuntimeQualityState(canvas: object | null | undefined, device?: object | null): void;
+//# sourceMappingURL=RuntimeQualityGovernor.d.ts.map
 ```
 
 ### `./dist/resources/ResourceRegistry.d.ts`
@@ -719353,8 +722785,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -719992,8 +723424,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -720792,6 +724224,7 @@ export declare class Renderer {
     private probeShaderLibrary?;
     private readonly photometricProfiles?;
     private photometricResources?;
+    private clusteredLightingPool?;
     private readonly projectedSpotImages?;
     /**
      * Takes exclusive renderer ownership of `temporalHistory` until disposal and
@@ -721142,12 +724575,21 @@ export declare class Renderer {
     private ensureWebGPUCanvasSrgb;
     private frameOutputsSrgb;
     private collectWarmupInput;
+    private bootSceneWarmed;
+    /**
+     * Frame-0 boot warmup helper: collects all scene/explicit `RenderItem`s without
+     * frustum culling once per renderer lifetime (never re-invoking a one-shot
+     * `collectRenderItems` callback) so off-frustum meshes behind the initial camera
+     * are pre-warmed before `cache.markReady()` and never suffer draw-skips on a
+     * rapid first camera turn.
+     */
+    private takeBootUnculledItems;
     private warmGeneratedPrograms;
     /**
-     * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
-     * exact draw feature records — async-compile devices start pending entries
-     * (`precompile`/`app.ready` settle them); sync-compile devices compile under
-     * the per-frame bound and converge over the next frames.
+     * T0-06 / FLASH-1: the sync `render` half of warm-then-block. Uses `cache.precompile`
+     * so `ProgramCache` invokes `acquireEntry(features, true)` synchronously
+     * before its first `await`, bypassing `maxSyncCompilesPerFrame = 8` on sync backends
+     * (`WebGPUDevice`, sync WebGL2) and preventing rapid-turn foreground mesh skips.
      */
     private warmGeneratedProgramsSync;
     renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -721179,6 +724621,8 @@ export declare class Renderer {
      * until lane 03 publishes it — Q-03-1).
      */
     private executeOutputPass;
+    private postSceneScale;
+    private withPostRenderScale;
     /** Allocates the shared forward-color target once per distinct configuration. */
     private ensureForwardColorTarget;
     /** Select a candidate before contributors see the target or scene depth. */
@@ -722253,7 +725697,7 @@ export declare function physicalFeatureSet(descriptor: PhysicalMaterialDescripto
     readonly skinning?: ProgramFeatures["skinning"];
     readonly instancing?: ProgramFeatures["instancing"];
 }): PhysicalFeatureSet;
-import type { RenderState } from "../Material.js";
+import { type RenderState } from "../Material.js";
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
     readonly baseColor?: readonly [number, number, number, number];
@@ -723506,8 +726950,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -724239,8 +727683,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -724374,8 +727818,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -724617,8 +728061,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -725173,8 +728617,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -725235,8 +728679,9 @@ export type { GaussianSplatPrepareOptions } from "./GaussianSplatRenderer.js";
 import { type BufferUsage, type DrawCommand, type RecursiveUniformValue, type PortableShaderBinding, type RenderBuffer, type RenderCommandState, type RenderDevice, type RenderDeviceDiagnostics, type RenderDeviceInfo, type RenderResourceCopyOptions, type RenderResourceReadbackOptions, type RenderShaderProgram, type PrimitiveTopology, type RenderTarget, type RenderTargetColorRegion, type RenderTargetDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameDescriptor, type NativeAmbientOcclusionRequest, type ShaderCompilationDiagnostic, type ShaderSources } from "./RenderDevice.js";
 import { resourceDisposalInProgress, resourceDisposalPending } from "./ResourceLifecycle.js";
 import { type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal.js";
-import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions } from "./webgpu/WebGPUPostShaders.js";
+import { type WebGPUBloomDiagnostics, type WebGPUBloomOptions, type WebGPUColorGradeOptions, type WebGPUOutlineOptions } from "./webgpu/WebGPUPostShaders.js";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope.js";
+import { type PostPassDescriptor } from "./contracts/post.js";
 import { Texture, type TexturePixelData } from "./Texture.js";
 import { VertexFormat } from "./VertexFormat.js";
 import { WebGPUResourceInterop } from "./webgpu/ResourceInterop.js";
@@ -725558,16 +729003,16 @@ export interface WebGPURenderPassDescriptorLike {
         readonly resolveTarget?: unknown;
         readonly clearValue?: readonly [number, number, number, number];
         readonly loadOp: "clear" | "load";
-        readonly storeOp: "store";
+        readonly storeOp: "store" | "discard";
     }[];
     readonly depthStencilAttachment?: {
         readonly view: unknown;
         readonly depthClearValue?: number;
         readonly depthLoadOp: "clear" | "load";
-        readonly depthStoreOp: "store";
+        readonly depthStoreOp: "store" | "discard";
         readonly stencilClearValue?: number;
         readonly stencilLoadOp?: "clear" | "load";
-        readonly stencilStoreOp?: "store";
+        readonly stencilStoreOp?: "store" | "discard";
     };
 }
 /** A pass observer is owned by its caller and must use this renderer's native device. */
@@ -725690,6 +729135,15 @@ export interface WebGPUNativePostFrame {
 export interface WebGPUNativePostPresentationOptions extends LdrPostprocessPresentationOptions {
     readonly nativeEffects?: readonly NativePostEffect[];
     readonly postFrameContext?: WebGPUNativePostFrame;
+    readonly nativeSmaa?: boolean;
+    readonly customPasses?: readonly PostPassDescriptor[];
+    readonly cameraFrame?: {
+        readonly near: number;
+        readonly far: number;
+        readonly projection?: "perspective" | "orthographic";
+        readonly projectionMatrix?: Float32Array | readonly number[];
+        readonly projectionMatrixInverse?: Float32Array | readonly number[];
+    };
 }
 /** Borrowed attachments valid only until this frame/target changes or one submission succeeds. */
 export interface WebGPUNativeDeferredSurface {
@@ -725958,6 +729412,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private static createInternal;
     /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
     get nativeGpuDevice(): WebGPUDeviceLike;
+    /** Check completion-fence capability without flushing an open draw batch or invalidating active stages. */
+    supportsSubmittedWorkCompletion(): boolean;
     /** Opt into timing the first native forward draw with this exact label in each frame. */
     setForwardPassProfiler(observer: WebGPUForwardPassProfiler | null, options?: {
         readonly drawLabel: string;
@@ -726256,7 +729712,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     /** The v2 S10 linear grade on an HDR target (`WEBGPU_HDR_GRADE_FRAGMENT`); returns a caller-owned target of the source format. */
     private executeWebGPUHdrGrade;
-    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions): RenderTarget;
+    executeWebGPUColorGrade(source: RenderTarget, options?: WebGPUColorGradeOptions, displayP3?: boolean): RenderTarget;
     /**
      * W3 — native WebGPU screen-space reflections (`post/shaders/ssr.wgsl.ts`):
      * a half-res trace against the source's sampleable depth attachment, then a
@@ -726272,6 +729728,12 @@ export declare class WebGPUDevice implements RenderDevice {
      * antialiasing has a separate GPU history contract in executeWebGPUTaa.
      */
     executeWebGPUFxaa(source: RenderTarget): RenderTarget;
+    private ensureDummyLinearDepthView;
+    /** Full-frame 3x3 Sobel depth/luma/normal-crease WGSL outline stage. */
+    executeWebGPUOutline(source: RenderTarget, options?: WebGPUOutlineOptions, linearDepthView?: unknown | null, farPlane?: number): RenderTarget;
+    private ensureSmaaLookupViews;
+    /** Native WebGPU SMAA 1x (luma edge detection -> diagonal/corner area+search weights -> neighborhood blend). */
+    executeWebGPUSmaa(source: RenderTarget): RenderTarget;
     /**
      * Depth-only view of a single-sample hardware depth attachment, for the
      * native ambient-occlusion passes, plus the attachment's encoding.
@@ -726323,6 +729785,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private submitNativeDofPassNow;
     /** A depth-only view of a native depth texture, created once per texture (views are immutable). */
     private depthOnlyView;
+    /** An immutable view of a native texture, created once per texture and descriptor key. */
+    private cachedTextureView;
     private executeNativeLinearDepthPass;
     private executeNativeDofPass;
     /**
@@ -726342,6 +729806,8 @@ export declare class WebGPUDevice implements RenderDevice {
     private transientPostTarget;
     /** Dispose a chain-owned stage output unless it is a pool member, which stays for the next frame. */
     private releaseTransientPostTarget;
+    /** Immediately evict stale-size pooled post & bloom targets when the root post source resizes. */
+    private trimPostTargetPoolForRootSize;
     private beginPostTargetTransaction;
     private endPostTargetTransaction;
     private createNativePostTarget;
@@ -726375,18 +729841,14 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private webgpuCustomPassPositions;
     /**
-     * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+     * SH-03/SH-06 + WP-06: one C-13 custom pass as a native WGSL fullscreen draw.
      *
      * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
      * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
      * declared uniforms follow in registration order, one vec4 each), binding 1 =
-     * linear sampler, and binding 2 = `u_color`. Auxiliary inputs are not wired
-     * into this custom-pass chain and must not be replaced with fabricated data.
-     * The authored `fragment.wgsl` is a complete fragment stage; its `@fragment`
-     * entry point is detected or defaults to `fs_main`.
-     *
-     * Returns null when disabled, missing WGSL, or requesting unavailable inputs;
-     * the latter two cases are recorded in the post skipped-reasons channel.
+     * linear sampler, binding 2 = `u_color`, and optional binding 3 = linearized
+     * scene depth (`texture_2d<f32>`) when `pass.inputs` includes `"depth"` and
+     * `fragment.wgsl` declares `@binding(3)`.
      */
     private executeWebGPUCustomPass;
     private runWebGPUFullscreenPass;
@@ -726460,6 +729922,7 @@ export declare class WebGPUDevice implements RenderDevice {
      */
     private tryNativeForwardBundle;
     private submitNativeRenderPass;
+    private reseedDiscardedMsaaColor;
     private flushNativeRenderTargetClear;
     private createNativeStorageGroups;
     /**
@@ -726575,11 +730038,9 @@ export declare class WebGPUDevice implements RenderDevice {
     private createNativeGeneratedAmbientUniformBuffer;
     private createNativeGeneratedPbrUniformBuffer;
     /**
-     * `packGeneratedPbrMaterialUniforms` for the nth draw of `shader` in this frame, reusing the bytes that slot packed
-     * last frame. The slot keeps a snapshot of every uniform the packer read: when all are unchanged the bytes are reused
-     * as they are; when only uniforms the packer copies straight into one place changed (model, normal and shadow
-     * matrices, light rows, ...), those places are rewritten with the packer's own f32 checks. Anything else repacks. A
-     * failed pack or rewrite drops the slot, so invalid values always reach the validating packer.
+     * `packGeneratedPbrMaterialUniforms` for the nth draw of `(shader, meshKey, submeshOffset)` in this frame, reusing the
+     * bytes that slot packed last frame. Scoping slots by `(vertexBuffer, firstIndex)` prevents frustum culling or visibility
+     * toggles on one mesh from shifting slot ordinals across unrelated meshes sharing the shader.
      */
     private packGeneratedPbrForSlot;
     /**
@@ -726729,6 +730190,15 @@ export declare function normalizeWebGPUTemporalOptions(options: Pick<WebGPUTempo
 export declare const WEBGPU_TAA_FRAGMENT = "\nstruct TemporalUniforms { texel: vec2<f32>, blend: f32, valid: f32, depthThreshold: f32, _pad0: f32, _pad1: f32, _pad2: f32 };\n@group(0) @binding(0) var<uniform> temporal: TemporalUniforms;\n@group(0) @binding(1) var linearSampler: sampler;\n@group(0) @binding(2) var source: texture_2d<f32>;\n@group(0) @binding(3) var velocity: texture_2d<f32>;\n@group(0) @binding(4) var history: texture_2d<f32>;\n@fragment fn fs_taa(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  let current = textureSampleLevel(source, linearSampler, uv, 0.0);\n  let dimensions = vec2<i32>(textureDimensions(velocity));\n  let coord = clamp(vec2<i32>(uv * vec2<f32>(dimensions)), vec2<i32>(0), dimensions - vec2<i32>(1));\n  let motion = textureLoad(velocity, coord, 0);\n  let previousUV = uv - motion.rg;\n  let previous = textureSampleLevel(history, linearSampler, previousUV, 0.0);\n  var lo = current.rgb;\n  var hi = current.rgb;\n  for (var y = -1; y <= 1; y = y + 1) {\n    for (var x = -1; x <= 1; x = x + 1) {\n      let neighbor = textureSampleLevel(source, linearSampler, uv + vec2<f32>(f32(x), f32(y)) * temporal.texel, 0.0).rgb;\n      lo = min(lo, neighbor); hi = max(hi, neighbor);\n    }\n  }\n  let inBounds = all(previousUV >= vec2<f32>(0.0)) && all(previousUV < vec2<f32>(1.0));\n  // Filtered history alpha mixes categorical foreground/background depths.\n  // Validate the actual contributing surfaces instead of a nonexistent\n  // interpolated surface; filtered RGB remains neighborhood-clipped below.\n  let previousBase = vec2<i32>(floor(previousUV * vec2<f32>(dimensions) - vec2<f32>(0.5)));\n  var depthError = 1.0;\n  for (var y = 0; y < 2; y = y + 1) {\n    for (var x = 0; x < 2; x = x + 1) {\n      let tap = clamp(previousBase + vec2<i32>(x, y), vec2<i32>(0), dimensions - vec2<i32>(1));\n      depthError = min(depthError, abs(textureLoad(history, tap, 0).a - motion.a));\n    }\n  }\n  let depthMatches = depthError <= temporal.depthThreshold;\n  let accept = temporal.valid > 0.5 && inBounds && depthMatches;\n  let weight = select(0.0, temporal.blend * 0.90, accept);\n  return vec4<f32>(mix(current.rgb, clamp(previous.rgb, lo, hi), weight), motion.b);\n}";
 /** Separate output restores scene alpha: history alpha contains depth. */
 export declare const WEBGPU_TAA_OUTPUT_FRAGMENT = "\nstruct OutputUniforms { texel: vec2<f32>, _pad: vec2<f32> };\n@group(0) @binding(0) var<uniform> output: OutputUniforms;\n@group(0) @binding(1) var linearSampler: sampler;\n@group(0) @binding(2) var resolved: texture_2d<f32>;\n@group(0) @binding(3) var source: texture_2d<f32>;\n@fragment fn fs_taa_output(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  let p = clamp(uv, output.texel * 0.5, vec2<f32>(1.0) - output.texel * 0.5);\n  let current = textureSample(source, linearSampler, p);\n  let accumulated = textureSample(resolved, linearSampler, p);\n  return vec4<f32>(accumulated.rgb, current.a);\n}";
+/**
+ * Native WebGPU v2 HDR/LDR temporal resolve (`TAA_RESOLVE_WGSL` adapted to
+ * `runWebGPUFullscreenPass` with `textureLoadBindings: true` so `rgba32f` /
+ * `r32f` linear depth and HDR targets work without `float32-filterable`).
+ * Bindings: 0 = 48-byte `TaaResolveParams`, 2 = current, 3 = history,
+ * 4 = velocity, 5 = previous linear depth, 6 = reactive mask (or dummy).
+ */
+export declare const WEBGPU_TAA_V2_RESOLVE_FRAGMENT = "struct TaaResolveParams {\n  has_reactive: i32,\n  has_history: i32,\n  feedback_min: f32,\n  feedback_max: f32,\n  variance_gamma: f32,\n  has_expected_depth: i32,\n  jitter_uv: vec2<f32>,\n  previous_jitter_uv: vec2<f32>,\n  depth_near: f32,\n  _pad: f32,\n};\n\n@group(0) @binding(0) var<uniform> u_params: TaaResolveParams;\n@group(0) @binding(2) var u_current_tex: texture_2d<f32>;\n@group(0) @binding(3) var u_history_tex: texture_2d<f32>;\n@group(0) @binding(4) var u_velocity_dilate_tex: texture_2d<f32>;\n@group(0) @binding(5) var u_lin_z_prev_tex: texture_2d<f32>;\n@group(0) @binding(6) var u_reactive_tex: texture_2d<f32>;\n\nfn a3d_taa_sanitize_rgb(c: vec3<f32>) -> vec3<f32> {\n  let bits = bitcast<vec3<u32>>(c);\n  let finite_mask = (bits & vec3<u32>(0x7f800000u)) != vec3<u32>(0x7f800000u);\n  return clamp(select(vec3<f32>(0.0), c, finite_mask), vec3<f32>(0.0), vec3<f32>(65504.0));\n}\n\nfn a3d_cubic_weights(f: f32) -> vec4<f32> {\n  let f2 = f * f;\n  let f3 = f2 * f;\n  return vec4<f32>(-0.5 * f + f2 - 0.5 * f3, 1.0 - 2.5 * f2 + 1.5 * f3,\n                   0.5 * f + 2.0 * f2 - 1.5 * f3, -0.5 * f2 + 0.5 * f3);\n}\n\nfn a3d_history_at(uv: vec2<f32>) -> vec4<f32> {\n  let size = vec2<i32>(textureDimensions(u_history_tex));\n  let position = uv * vec2<f32>(size) - vec2<f32>(0.5);\n  let base = vec2<i32>(floor(position));\n  let wx = a3d_cubic_weights(fract(position.x));\n  let wy = a3d_cubic_weights(fract(position.y));\n  var result = vec4<f32>(0.0);\n  for (var y = 0; y < 4; y = y + 1) {\n    for (var x = 0; x < 4; x = x + 1) {\n      let sample_val = textureLoad(u_history_tex,\n        clamp(base + vec2<i32>(x - 1, y - 1), vec2<i32>(0), size - vec2<i32>(1)), 0);\n      result = result + vec4<f32>(a3d_taa_sanitize_rgb(sample_val.rgb), sample_val.a) * wx[x] * wy[y];\n    }\n  }\n  return result;\n}\n\nfn a3d_current_at(uv: vec2<f32>) -> vec4<f32> {\n  let size = vec2<i32>(textureDimensions(u_current_tex));\n  let p = uv * vec2<f32>(size) - vec2<f32>(0.5);\n  let base = vec2<i32>(floor(p));\n  let f = fract(p);\n  let a = textureLoad(u_current_tex, clamp(base, vec2<i32>(0), size - vec2<i32>(1)), 0);\n  let b = textureLoad(u_current_tex, clamp(base + vec2<i32>(1, 0), vec2<i32>(0), size - vec2<i32>(1)), 0);\n  let c = textureLoad(u_current_tex, clamp(base + vec2<i32>(0, 1), vec2<i32>(0), size - vec2<i32>(1)), 0);\n  let d = textureLoad(u_current_tex, clamp(base + vec2<i32>(1, 1), vec2<i32>(0), size - vec2<i32>(1)), 0);\n  let blended = mix(mix(a, b, f.x), mix(c, d, f.x), f.y);\n  return vec4<f32>(a3d_taa_sanitize_rgb(blended.rgb), blended.a);\n}\n\nfn a3d_rgb_to_ycocg(c: vec3<f32>) -> vec3<f32> {\n  return vec3<f32>(c.r * 0.25 + c.g * 0.5 + c.b * 0.25,\n                   c.r * 0.5 - c.b * 0.5,\n                   -c.r * 0.25 + c.g * 0.5 - c.b * 0.25);\n}\nfn a3d_ycocg_to_rgb(c: vec3<f32>) -> vec3<f32> {\n  return vec3<f32>(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);\n}\nfn a3d_taa_luma(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }\nfn a3d_valid_depth(z: f32) -> bool { return z >= u_params.depth_near && z < 3.0e38; }\n\n@fragment\nfn fs_taa_v2_resolve(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {\n  let pixel = vec2<i32>(frag_coord.xy);\n  let output_size = vec2<i32>(textureDimensions(u_history_tex));\n  let current_size = vec2<i32>(textureDimensions(u_current_tex));\n  let uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) / vec2<f32>(output_size);\n  let current_uv = uv + u_params.jitter_uv;\n  let current_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(current_size))), vec2<i32>(0), current_size - vec2<i32>(1));\n  let velocity_size = vec2<i32>(textureDimensions(u_velocity_dilate_tex));\n  let velocity_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(velocity_size))), vec2<i32>(0), velocity_size - vec2<i32>(1));\n  let vel_tex = textureLoad(u_velocity_dilate_tex, velocity_pixel, 0);\n  let velocity = vel_tex.rg;\n  let uv_prev = uv - velocity;\n  let current = a3d_current_at(current_uv);\n  let reactive_size = vec2<i32>(textureDimensions(u_reactive_tex));\n  let reactive_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(reactive_size))), vec2<i32>(0), reactive_size - vec2<i32>(1));\n  let reactive_raw = textureLoad(u_reactive_tex, reactive_pixel, 0).r;\n  let z_size = vec2<i32>(textureDimensions(u_lin_z_prev_tex));\n  let z_touch = textureLoad(u_lin_z_prev_tex, vec2<i32>(0), 0).r;\n  if (u_params.has_history == 0 || any(velocity != velocity) || any(abs(velocity) > vec2<f32>(2.0))) {\n    return vec4<f32>(current.rgb + vec3<f32>(0.0 * (reactive_raw + z_touch)), current.a);\n  }\n\n  var mu = vec3<f32>(0.0);\n  var m2 = vec3<f32>(0.0);\n  var wsum = 0.0;\n  for (var y = -1; y <= 1; y = y + 1) {\n    for (var x = -1; x <= 1; x = x + 1) {\n      let tap = a3d_taa_sanitize_rgb(textureLoad(u_current_tex,\n        clamp(current_pixel + vec2<i32>(x, y), vec2<i32>(0), current_size - vec2<i32>(1)), 0).rgb);\n      let w = 1.0 / (1.0 + max(a3d_taa_luma(tap), 0.0));\n      let yc = a3d_rgb_to_ycocg(tap);\n      mu = mu + yc * w;\n      m2 = m2 + yc * yc * w;\n      wsum = wsum + w;\n    }\n  }\n  mu = mu / wsum;\n  let sigma = sqrt(max(m2 / wsum - mu * mu, vec3<f32>(0.0)));\n  let motion_px = length(velocity * vec2<f32>(output_size));\n  var history = a3d_history_at(uv_prev);\n  if (motion_px < 1e-3) {\n    let exact_h = textureLoad(u_history_tex, clamp(pixel, vec2<i32>(0), output_size - vec2<i32>(1)), 0);\n    history = vec4<f32>(a3d_taa_sanitize_rgb(exact_h.rgb), exact_h.a);\n  }\n  let motion_factor = clamp(motion_px / 2.0, 0.0, 1.0);\n  let gamma = mix(0.5, max(u_params.variance_gamma, 0.0), (1.0 - motion_factor) * (1.0 - motion_factor));\n  let history_rgb = max(a3d_ycocg_to_rgb(clamp(a3d_rgb_to_ycocg(history.rgb), mu - gamma * sigma, mu + gamma * sigma)), vec3<f32>(0.0));\n\n  let out_of_bounds = any(uv_prev < vec2<f32>(0.0)) || any(uv_prev >= vec2<f32>(1.0));\n  let expected_z = select(vel_tex.b, vel_tex.a, u_params.has_expected_depth != 0);\n  let previous_depth_uv = uv_prev + u_params.previous_jitter_uv;\n  let depth_out_of_bounds = any(previous_depth_uv < vec2<f32>(0.0)) || any(previous_depth_uv >= vec2<f32>(1.0));\n  let prev_pixel = vec2<i32>(floor(previous_depth_uv * vec2<f32>(z_size)));\n  var nearest_error = 3.0e38;\n  for (var y = -1; y <= 1; y = y + 1) {\n    for (var x = -1; x <= 1; x = x + 1) {\n      let z = textureLoad(u_lin_z_prev_tex,\n        clamp(prev_pixel + vec2<i32>(x, y), vec2<i32>(0), z_size - vec2<i32>(1)), 0).r;\n      if (a3d_valid_depth(z)) { nearest_error = min(nearest_error, abs(z - expected_z)); }\n    }\n  }\n  let disoccluded = depth_out_of_bounds || !a3d_valid_depth(expected_z) || nearest_error > max(0.001, 0.1 * max(expected_z - u_params.depth_near, 0.0));\n  var reactive = reactive_raw;\n  if (u_params.has_reactive == 0) {\n    reactive = select(0.0, 1.0, abs(a3d_taa_luma(current.rgb) - a3d_taa_luma(history.rgb)) > 0.5);\n  }\n  let current_tagged = current.a > 1.0;\n  let history_tagged = history.a > 1.0;\n  var coverage_change = clamp(abs(current.a - history.a) * 4.0, 0.0, 1.0);\n  if (current_tagged && history_tagged) { coverage_change = 0.0; }\n  if (current_tagged != history_tagged) { coverage_change = 1.0; }\n  reactive = max(clamp(reactive, 0.0, 1.0), coverage_change);\n  var feedback = mix(u_params.feedback_min, u_params.feedback_max, 1.0 - motion_factor) * (1.0 - reactive);\n  if (out_of_bounds || disoccluded) { feedback = 0.0; }\n  return vec4<f32>(mix(current.rgb, history_rgb, clamp(feedback, 0.0, 1.0)), current.a);\n}\n";
+export declare const WEBGPU_TAA_V2_UPSCALE_FRAGMENT = "@group(0) @binding(0) var<uniform> u_params: vec4<f32>;\n@group(0) @binding(2) var u_resolved_tex: texture_2d<f32>;\n\nfn a3d_blackman_harris(x: f32) -> f32 {\n  let ax = abs(x) / 1.5;\n  if (ax >= 1.0) { return 0.0; }\n  return 0.35875 + 0.48829 * cos(3.14159265 * ax)\n    + 0.14128 * cos(2.0 * 3.14159265 * ax)\n    + 0.01168 * cos(3.0 * 3.14159265 * ax);\n}\n\n@fragment\nfn fs_taa_v2_upscale(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {\n  let render_size = u_params.xy;\n  let output_size = u_params.zw;\n  let src_pos = (frag_coord.xy / output_size) * render_size - vec2<f32>(0.5);\n  let base = vec2<i32>(floor(src_pos));\n  let f = src_pos - vec2<f32>(base);\n  var sum = vec4<f32>(0.0);\n  var wsum = 0.0;\n  let r_size = vec2<i32>(render_size);\n  for (var y = -1; y <= 1; y = y + 1) {\n    for (var x = -1; x <= 1; x = x + 1) {\n      let w = a3d_blackman_harris(f32(x) - f.x) * a3d_blackman_harris(f32(y) - f.y);\n      sum = sum + textureLoad(u_resolved_tex,\n        clamp(base + vec2<i32>(x, y), vec2<i32>(0), r_size - vec2<i32>(1)), 0) * w;\n      wsum = wsum + w;\n    }\n  }\n  return sum / max(wsum, 1e-6);\n}\n";
 //# sourceMappingURL=WebGPUTemporal.d.ts.map
 ```
 
@@ -726892,7 +730362,7 @@ export interface WebGPUBloomV2Request {
 export declare function isWebGPUBloomV2(options: unknown): boolean;
 export declare function normalizeWebGPUBloomV2Options(options: Readonly<Record<string, unknown>>): WebGPUBloomV2Request;
 /** v2 excess prefilter (BLOOM_BRIGHT_EXTRACT_GLSL, `u_hdr = 1`, `u_excess = 1`). Uniforms: threshold, softKnee. */
-export declare const WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\n@fragment\nfn fs_bloom_prefilter(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let size = vec2<f32>(textureDimensions(u_source));\n  let source = textureSampleLevel(u_source, u_sampler, position.xy / size, 0.0);\n  let luma = dot(source.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));\n  let knee = max(params.y, 0.0);\n  var soft = clamp(luma - params.x + knee, 0.0, 2.0 * knee);\n  soft = soft * soft / (4.0 * knee + 1e-5);\n  let excessWeight = max(soft, luma - params.x) / max(luma, 1e-5);\n  return vec4<f32>(source.rgb * excessWeight, source.a);\n}\n";
+export declare const WEBGPU_BLOOM_V2_PREFILTER_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\nfn a3d_prefilter_sanitize(c: vec3<f32>) -> vec3<f32> {\n  let bits = bitcast<vec3<u32>>(c);\n  let finite_mask = (bits & vec3<u32>(0x7f800000u)) != vec3<u32>(0x7f800000u);\n  let clean = select(vec3<f32>(0.0), c, finite_mask);\n  return clamp(clean, vec3<f32>(0.0), vec3<f32>(65504.0));\n}\n@fragment\nfn fs_bloom_prefilter(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let size = vec2<f32>(textureDimensions(u_source));\n  let source = textureSampleLevel(u_source, u_sampler, position.xy / size, 0.0);\n  let rgb = a3d_prefilter_sanitize(source.rgb);\n  let luma = dot(rgb, vec3<f32>(0.2126, 0.7152, 0.0722));\n  let knee = max(params.y, 1e-4);\n  let soft_raw = clamp(luma - params.x + knee, 0.0, 2.0 * knee);\n  let soft = select(0.0, soft_raw * soft_raw / (4.0 * knee), params.y > 0.0);\n  let excessWeight = max(soft, max(luma - params.x, 0.0)) / max(luma, 1e-5);\n  return vec4<f32>(rgb * excessWeight, source.a);\n}\n";
 /** Four-tap box downsample (webgl2-bloom-downsample). Uniforms: source texel size (xy). */
 export declare const WEBGPU_BLOOM_V2_DOWNSAMPLE_FRAGMENT = "@group(0) @binding(0) var<uniform> params: vec4<f32>;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\nfn a3dFinite(c: vec4<f32>) -> vec4<f32> {\n  let bad = (c != c) | (abs(c) > vec4<f32>(3.0e38));\n  return select(c, vec4<f32>(0.0), any(bad));\n}\n@fragment\nfn fs_bloom_downsample(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let uv = position.xy / params.zw;\n  let e = params.xy * 0.5;\n  let sum = a3dFinite(textureSampleLevel(u_source, u_sampler, uv - e, 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(e.x, -e.y), 0.0))\n    + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + vec2<f32>(-e.x, e.y), 0.0)) + a3dFinite(textureSampleLevel(u_source, u_sampler, uv + e, 0.0));\n  return sum * 0.25;\n}\n";
 /**
@@ -726915,6 +730385,43 @@ export declare const WEBGPU_BLOOM_V2_COMPOSITE_FRAGMENT = "@group(0) @binding(0)
  * (whiteBalance, lift, gamma, gain, shadows, midtones, highlights; w unused).
  */
 export declare const WEBGPU_HDR_GRADE_FRAGMENT = "struct HdrGrade { whiteBalance: vec4<f32>, lift: vec4<f32>, gamma: vec4<f32>, gain: vec4<f32>,\n  shadows: vec4<f32>, midtones: vec4<f32>, highlights: vec4<f32> };\n@group(0) @binding(0) var<uniform> grade: HdrGrade;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_hdr: texture_2d<f32>;\n@fragment\nfn fs_hdr_grade(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {\n  let src = textureSampleLevel(u_hdr, u_sampler, position.xy / vec2<f32>(textureDimensions(u_hdr)), 0.0);\n  var c = src.rgb * grade.whiteBalance.rgb;\n  let safeGamma = max(grade.gamma.rgb, vec3<f32>(1e-3));\n  c = pow(max(c * grade.gain.rgb + grade.lift.rgb, vec3<f32>(0.0)), vec3<f32>(1.0) / safeGamma);\n  let s = clamp(log2(max(dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)), 1e-6) / 0.18) / 8.0 + 0.5, 0.0, 1.0);\n  c = c * (grade.shadows.rgb * (1.0 - s) * (1.0 - s) + grade.midtones.rgb * 2.0 * s * (1.0 - s) + grade.highlights.rgb * s * s);\n  return vec4<f32>(c, src.a);\n}\n";
+export interface WebGPUOutlineOptions {
+    readonly threshold?: number;
+    readonly width?: number;
+    readonly radius?: number;
+    readonly opacity?: number;
+    readonly color?: readonly number[];
+    readonly depthThreshold?: number;
+    readonly normalThreshold?: number;
+}
+export interface NormalizedWebGPUOutline {
+    readonly threshold: number;
+    readonly radius: number;
+    readonly opacity: number;
+    readonly color: readonly [number, number, number];
+    readonly depthThreshold: number;
+    readonly normalThreshold: number;
+}
+export declare function normalizeWebGPUOutlineOptions(options?: WebGPUOutlineOptions | Readonly<Record<string, unknown>>): NormalizedWebGPUOutline;
+export declare function packWebGPUOutlineUniforms(width: number, height: number, options: NormalizedWebGPUOutline, hasDepth: boolean, farPlane?: number): Float32Array;
+/**
+ * Full-frame 3x3 Sobel depth, surface-normal crease, and luma/chroma outline pass.
+ * Binding 2 = display/linear color, Binding 3 = clamped linear view depth (or 1x1 dummy when `depth.x <= 0.5`).
+ */
+export declare const WEBGPU_OUTLINE_FRAGMENT = "struct OutlineUniforms {\n  texel_radius_threshold: vec4<f32>,\n  color_opacity: vec4<f32>,\n  depth_params: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_outline: OutlineUniforms;\n@group(0) @binding(1) var u_sampler: sampler;\n@group(0) @binding(2) var u_source: texture_2d<f32>;\n@group(0) @binding(3) var u_linear_depth: texture_2d<f32>;\n\nfn a3d_outline_luma(uv: vec2<f32>) -> f32 {\n  let c = textureSampleLevel(u_source, u_sampler, clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).rgb;\n  return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722));\n}\n\nfn a3d_outline_depth(uv: vec2<f32>) -> f32 {\n  return textureSampleLevel(u_linear_depth, u_sampler, clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).r;\n}\n\n@fragment\nfn fs_outline(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  let center = textureSampleLevel(u_source, u_sampler, uv, 0.0);\n  let step_uv = u_outline.texel_radius_threshold.xy * max(u_outline.texel_radius_threshold.z, 0.0);\n  let threshold = u_outline.texel_radius_threshold.w;\n\n  let l00 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, -step_uv.y));\n  let l10 = a3d_outline_luma(uv + vec2<f32>(0.0, -step_uv.y));\n  let l20 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, -step_uv.y));\n  let l01 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, 0.0));\n  let l21 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, 0.0));\n  let l02 = a3d_outline_luma(uv + vec2<f32>(-step_uv.x, step_uv.y));\n  let l12 = a3d_outline_luma(uv + vec2<f32>(0.0, step_uv.y));\n  let l22 = a3d_outline_luma(uv + vec2<f32>(step_uv.x, step_uv.y));\n\n  let gx = -l00 + l20 - 2.0 * l01 + 2.0 * l21 - l02 + l22;\n  let gy = -l00 - 2.0 * l10 - l20 + l02 + 2.0 * l12 + l22;\n  let luma_grad = length(vec2<f32>(gx, gy)) * 0.25;\n  let lo_edge = max(threshold * 0.75, 0.0);\n  let hi_edge = max(threshold * 1.25, lo_edge + 1e-4);\n  let color_edge = smoothstep(lo_edge, hi_edge, luma_grad);\n\n  let zc = a3d_outline_depth(uv);\n  let z00 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, -step_uv.y));\n  let z10 = a3d_outline_depth(uv + vec2<f32>(0.0, -step_uv.y));\n  let z20 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, -step_uv.y));\n  let z01 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, 0.0));\n  let z21 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, 0.0));\n  let z02 = a3d_outline_depth(uv + vec2<f32>(-step_uv.x, step_uv.y));\n  let z12 = a3d_outline_depth(uv + vec2<f32>(0.0, step_uv.y));\n  let z22 = a3d_outline_depth(uv + vec2<f32>(step_uv.x, step_uv.y));\n\n  let inv_z = 1.0 / max(min(zc, u_outline.depth_params.w), 0.1);\n  let dzx = (-z00 + z20 - 2.0 * z01 + 2.0 * z21 - z02 + z22) * 0.25 * inv_z;\n  let dzy = (-z00 - 2.0 * z10 - z20 + z02 + 2.0 * z12 + z22) * 0.25 * inv_z;\n  let depth_grad = length(vec2<f32>(dzx, dzy));\n  let d_thresh = max(u_outline.depth_params.y, 1e-4);\n  let depth_edge = smoothstep(d_thresh * 0.75, d_thresh * 1.35, depth_grad);\n\n  // Second-order depth Laplacian detects surface-normal creases while vanishing on tilted planes.\n  let crease = abs(z10 + z12 + z01 + z21 - 4.0 * zc) * inv_z;\n  let n_thresh = max(u_outline.depth_params.z, 1e-4);\n  let normal_edge = smoothstep(n_thresh * 0.5, n_thresh, crease * 4.0);\n  let geo_edge = select(0.0, max(depth_edge, normal_edge), u_outline.depth_params.x > 0.5);\n\n  let enabled = select(0.0, 1.0, u_outline.texel_radius_threshold.z > 0.0 && u_outline.color_opacity.a > 0.0);\n  let edge = clamp(max(color_edge, geo_edge) * u_outline.color_opacity.a * enabled, 0.0, 1.0);\n  return vec4<f32>(mix(center.rgb, u_outline.color_opacity.rgb, edge), center.a);\n}\n";
+/**
+ * Filterable fp16 linear view-space depth pass for custom `@binding(3)` depth consumers
+ * and full-frame Sobel outlines. Clamps sky depth to 65000.0 so `rgba16float` never overflows to +Inf.
+ */
+export declare function webgpuFilterableLinearDepthFragment(multisampled: boolean): string;
+/**
+ * Native WebGPU SMAA 1x three-pass shaders adapted to `runWebGPUFullscreenPass`
+ * (`@binding(0)` uniform, `@binding(1)` linear sampler, `@binding(2..4)` textures).
+ * Matches `post/shaders/smaa.wgsl.ts` and `post/smaa/textures.ts` (`81x1` area, `256x1` search).
+ */
+export declare const WEBGPU_SMAA_EDGES_FRAGMENT = "struct SmaaParams {\n  resolution: vec2<f32>,\n  _pad: vec2<f32>,\n};\n@group(0) @binding(0) var<uniform> u_params: SmaaParams;\n@group(0) @binding(1) var u_color_smp: sampler;\n@group(0) @binding(2) var u_color_tex: texture_2d<f32>;\n\nfn a3d_smaa_diff(a: vec4<f32>, b: vec4<f32>) -> f32 {\n  let d = abs(a - b);\n  return max(max(d.r, d.g), max(d.b, d.a));\n}\n\n@fragment\nfn fs_smaa_edges(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  let center = textureSampleLevel(u_color_tex, u_color_smp, uv, 0.0);\n  let dx = vec2<f32>(u_params.resolution.x, 0.0);\n  let dy = vec2<f32>(0.0, u_params.resolution.y);\n  let left = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv - dx, 0.0));\n  let right = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv + dx, 0.0));\n  let down = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv - dy, 0.0));\n  let up = a3d_smaa_diff(center, textureSampleLevel(u_color_tex, u_color_smp, uv + dy, 0.0));\n  let local_max = max(max(left, right), max(down, up));\n  let contrast = vec2<f32>(left, down);\n  let strength = smoothstep(vec2<f32>(0.04), vec2<f32>(0.10), contrast)\n    * step(vec2<f32>(local_max * 0.35), contrast);\n  return vec4<f32>(strength, 0.0, 1.0);\n}\n";
+export declare const WEBGPU_SMAA_WEIGHTS_FRAGMENT = "struct SmaaParams {\n  resolution: vec2<f32>,\n  _pad: vec2<f32>,\n};\n@group(0) @binding(0) var<uniform> u_params: SmaaParams;\n@group(0) @binding(1) var u_linear_smp: sampler;\n@group(0) @binding(2) var u_edges_tex: texture_2d<f32>;\n@group(0) @binding(3) var u_area_tex: texture_2d<f32>;\n@group(0) @binding(4) var u_search_tex: texture_2d<f32>;\n\nconst A3D_SMAA_MAX_EDGE_RUN: i32 = 8;\nfn a3d_smaa_edge(uv: vec2<f32>, vertical: bool) -> f32 {\n  if (any(uv < vec2<f32>(0.0)) || any(uv > vec2<f32>(1.0))) { return 0.0; }\n  let edge = textureSampleLevel(u_edges_tex, u_linear_smp, uv, 0.0).rg;\n  return select(edge.g, edge.r, vertical);\n}\n\nfn a3d_smaa_edge_weight(uv: vec2<f32>, vertical: bool) -> f32 {\n  let strength = a3d_smaa_edge(uv, vertical);\n  let area_zero = textureSampleLevel(u_area_tex, u_linear_smp, vec2<f32>(0.5 / 81.0, 0.5), 0.0).r;\n  let search_zero = textureSampleLevel(u_search_tex, u_linear_smp, vec2<f32>(0.5 / 256.0, 0.5), 0.0).r;\n  if (strength <= 0.0) { return 0.0 * (area_zero + search_zero); }\n  let tangent = select(vec2<f32>(u_params.resolution.x, 0.0),\n                       vec2<f32>(0.0, u_params.resolution.y), vertical);\n  var negative: i32 = 0;\n  var positive: i32 = 0;\n  for (var i: i32 = 1; i <= A3D_SMAA_MAX_EDGE_RUN; i = i + 1) {\n    if (a3d_smaa_edge(uv - tangent * f32(i), vertical) <= 0.0) { break; }\n    negative = i;\n  }\n  for (var i: i32 = 1; i <= A3D_SMAA_MAX_EDGE_RUN; i = i + 1) {\n    if (a3d_smaa_edge(uv + tangent * f32(i), vertical) <= 0.0) { break; }\n    positive = i;\n  }\n  if (negative == A3D_SMAA_MAX_EDGE_RUN && positive == A3D_SMAA_MAX_EDGE_RUN) { return 0.0; }\n  let index = f32(negative + (A3D_SMAA_MAX_EDGE_RUN + 1) * positive);\n  let area = textureSampleLevel(u_area_tex, u_linear_smp, vec2<f32>((index + 0.5) / 81.0, 0.5), 0.0).r;\n  let response = textureSampleLevel(u_search_tex, u_linear_smp, vec2<f32>((strength * 255.0 + 0.5) / 256.0, 0.5), 0.0).r;\n  return 0.25 * area * response;\n}\n\n@fragment\nfn fs_smaa_weights(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  return vec4<f32>(a3d_smaa_edge_weight(uv, true), a3d_smaa_edge_weight(uv, false), 0.0, 0.0);\n}\n";
+export declare const WEBGPU_SMAA_BLEND_FRAGMENT = "struct SmaaParams {\n  resolution: vec2<f32>,\n  _pad: vec2<f32>,\n};\n@group(0) @binding(0) var<uniform> u_params: SmaaParams;\n@group(0) @binding(1) var u_linear_smp: sampler;\n@group(0) @binding(2) var u_weights_tex: texture_2d<f32>;\n@group(0) @binding(3) var u_color_tex: texture_2d<f32>;\n\nfn a3d_smaa_to_linear(c: vec3<f32>) -> vec3<f32> {\n  return mix(c / 12.92, pow(max((c + vec3<f32>(0.055)) / 1.055, vec3<f32>(0.0)), vec3<f32>(2.4)),\n             step(vec3<f32>(0.04045), c));\n}\nfn a3d_smaa_to_display(input: vec3<f32>) -> vec3<f32> {\n  let c = max(input, vec3<f32>(0.0));\n  return mix(12.92 * c, 1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055),\n             step(vec3<f32>(0.0031308), c));\n}\n\n@fragment\nfn fs_smaa_blend(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\n  let center = textureSampleLevel(u_color_tex, u_linear_smp, uv, 0.0);\n  let here = textureSampleLevel(u_weights_tex, u_linear_smp, uv, 0.0).rg;\n  let right = textureSampleLevel(u_weights_tex, u_linear_smp, uv + vec2<f32>(u_params.resolution.x, 0.0), 0.0).r;\n  let up = textureSampleLevel(u_weights_tex, u_linear_smp, uv + vec2<f32>(0.0, u_params.resolution.y), 0.0).g;\n  var weight = here.r;\n  var offset = vec2<f32>(-u_params.resolution.x, 0.0);\n  if (right > weight) { weight = right; offset = vec2<f32>(u_params.resolution.x, 0.0); }\n  if (here.g > weight) { weight = here.g; offset = vec2<f32>(0.0, -u_params.resolution.y); }\n  if (up > weight) { weight = up; offset = vec2<f32>(0.0, u_params.resolution.y); }\n  if (weight <= 0.0) { return center; }\n  let other = textureSampleLevel(u_color_tex, u_linear_smp, uv + offset, 0.0);\n  let alpha = mix(center.a, other.a, weight);\n  if (alpha <= 1e-8) { return vec4<f32>(0.0); }\n  let premultiplied = mix(a3d_smaa_to_linear(center.rgb) * center.a,\n                          a3d_smaa_to_linear(other.rgb) * other.a, weight);\n  return vec4<f32>(a3d_smaa_to_display(premultiplied / alpha), alpha);\n}\n";
 //# sourceMappingURL=WebGPUPostShaders.d.ts.map
 ```
 
@@ -727019,6 +730526,13 @@ export interface TextureDescriptor {
      * cube attachments carry no `cubeFaces` and may use `depth24`.
      */
     readonly renderAttachment?: boolean;
+    /**
+     * MEM-1: When `false`, retain caller-supplied immutable CPU pixel/mip buffers
+     * by reference instead of cloning multi-megabyte `Uint8Array` mip chains.
+     * Defaults to `true` so callers that mutate input buffers after construction
+     * keep isolated snapshots.
+     */
+    readonly copyCpuData?: boolean;
 }
 export declare function currentTextureDisposeEpoch(): number;
 /** @internal Claim a device-created attachment once; ownership survives disposal and loss. */
@@ -727067,6 +730581,19 @@ export declare class Texture {
      * dimensions and {@link byteLength} still describe the original layout.
      */
     dispose(): void;
+    /**
+     * MEM-1: Release retained CPU pixel/mip buffers after GPU upload when CPU
+     * readback or context-loss re-upload is not required, while keeping the
+     * texture live (`disposed === false`) and preserving layout metadata.
+     */
+    releaseCpuData(options?: {
+        readonly keepFallback?: boolean;
+    }): void;
+    /**
+     * MEM-1: Release decoded RGBA8 fallback buffers once native compressed GPU
+     * upload succeeds on a device that never needs software fallback upload.
+     */
+    releaseFallbackCpuData(): void;
     /** Subscribe to resource disposal. Registering on a disposed texture fires immediately. */
     onDispose(listener: () => void): () => void;
     get byteLength(): number;
@@ -728102,8 +731629,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/rendering@5.5.1#sha256=d493aa55023aed8a9f5c6804418784fb89ef12d98110877752031f39004f4bfc`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/rendering@5.5.3#sha256=f8e6eaa565b232df9ada36c51192003ea3a4640e20d34bcf4951ce1d1bfdd0be`
 
 ### Export conditions
 
@@ -729216,8 +732743,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/scene@5.5.1#sha256=3a02487a53d97818d70478d9d72678ee69ce35d92f4bdddf2e61aa116651ba9a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/scene@5.5.3#sha256=e2cd4ce55c035d08ffa550fb7eb2b786ee831ddbde6bf5d21063b3bdc7078a92`
 
 ### Export conditions
 
@@ -730342,8 +733869,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/scene@5.5.1#sha256=3a02487a53d97818d70478d9d72678ee69ce35d92f4bdddf2e61aa116651ba9a`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/scene@5.5.3#sha256=e2cd4ce55c035d08ffa550fb7eb2b786ee831ddbde6bf5d21063b3bdc7078a92`
 
 ### Export conditions
 
@@ -730427,8 +733954,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/scripting@5.5.1#sha256=3c3e414e01eeca8235ee21704dc3448a58618d9fcc743c19f0786851cf801d28`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/scripting@5.5.3#sha256=899ae75d71410f36647937ff7f451cd223cdb85e19ea3906455574d60b916f53`
 
 ### Export conditions
 
@@ -731608,8 +735135,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.5.2`
-- Packed identity: `archive:@aura3d/workflows@5.5.1#sha256=0157488f6ec5626abb19509642e51ea4b4bf9897561c38ea46760d29bb015246`
+- Version: `5.5.3`
+- Packed identity: `archive:@aura3d/workflows@5.5.3#sha256=cf5088a7ec863f1d60c79bc449035e609ce771601eaa3242390cecfd2cddb39f`
 
 ### Export conditions
 

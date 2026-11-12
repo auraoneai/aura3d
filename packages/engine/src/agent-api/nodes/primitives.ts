@@ -100,7 +100,12 @@ export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options
     ...ignored,
     material: options.material,
     size: options.size,
-    castShadow: options.castShadow ?? (primitiveName !== "plane" && options.material?.emissive === undefined),
+    castShadow: options.castShadow ?? (
+      primitiveName !== "plane" &&
+      (primitiveName as string) !== "points" &&
+      options.geometry?.topology !== "points" &&
+      options.material?.emissive === undefined
+    ),
     receiveShadow: options.receiveShadow ?? true,
     physics: options.physics,
     instances: options.instances,

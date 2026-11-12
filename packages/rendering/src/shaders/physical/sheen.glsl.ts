@@ -17,10 +17,13 @@ void a3dPrd04SheenInit(inout A3DPrd04Lobes lobes, vec3 color, float roughness,
 }
 // Charlie microfacet distribution, Estevez and Kulla (2017).
 float a3dPrd04DCharlie(float roughness, float nDotH) {
-  float alpha = max(roughness * roughness, 1e-4);
+  float alpha = max(roughness * roughness, 0.002);
   float inverseAlpha = 1.0 / alpha;
-  float sinSquared = max(1.0 - nDotH * nDotH, 0.0);
-  return (2.0 + inverseAlpha) * pow(sinSquared, 0.5 * inverseAlpha) / (2.0 * PI);
+  float nh = saturate(nDotH);
+  float oneMinusNh2 = 1.0 - nh * nh;
+  if (oneMinusNh2 <= 0.0) return 0.0;
+  float sinSquared = max(oneMinusNh2, 0.0078125);
+  return min((2.0 + inverseAlpha) * pow(sinSquared, 0.5 * inverseAlpha) / (2.0 * PI), 65504.0);
 }
 float a3dPrd04VNeubelt(float nDotV, float nDotL) {
   float denominator = 4.0 * (nDotL + nDotV - nDotL * nDotV);
@@ -30,7 +33,7 @@ vec3 a3dPrd04SheenDirect(vec3 lightDir, vec3 viewDir, vec3 normal, vec3 color, f
   float nl = saturate(dot(normal, lightDir)), nv = saturate(dot(normal, viewDir));
   if (nl <= 0.0 || nv <= 0.0) return vec3(0.0);
   vec3 h = a3dHalfVector(lightDir, viewDir, normal);
-  return color * a3dPrd04DCharlie(roughness, saturate(dot(normal, h))) * a3dPrd04VNeubelt(nv, nl);
+  return clamp(color * a3dPrd04DCharlie(roughness, saturate(dot(normal, h))) * a3dPrd04VNeubelt(nv, nl), vec3(0.0), vec3(65504.0));
 }
 // Bilinear interpolation of the bounded directional albedo preintegration.
 const float a3dPrd04SheenAlbedo[256] = float[256](${A3D_SHEEN_ALBEDO_LUT.map((value) => value.toFixed(8)).join(", ")});

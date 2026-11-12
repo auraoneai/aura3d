@@ -43,10 +43,10 @@
 .a3g-toast { background: var(--a3g-bg); border: 1px solid var(--a3g-edge); border-radius: var(--a3g-radius);
   padding: 4px 12px; font-size: 13px; }
 .a3g-damage { position: absolute; inset: 0; overflow: hidden; }
-.a3g-dmg { position: absolute; font-weight: 800; font-size: 18px; color: var(--a3g-fg);
+.a3g-dmg { position: absolute; left: 0; top: 0; font-weight: 800; font-size: 18px; color: var(--a3g-fg);
   text-shadow: 0 1px 2px rgba(0,0,0,.7); will-change: transform, opacity; }
 .a3g-dmg-crit { font-size: 26px; color: var(--a3g-danger); }
-@media (orientation: portrait) and (max-width: 480px) {
+@media (orientation: portrait) and (max-width: 480px), (orientation: landscape) and (max-height: 500px) {
   .a3g-mobile-hidden { display: none; }
   .a3g-w { font-size: 13px; padding: 3px 8px; }
 }

@@ -51,9 +51,23 @@ describe("resolvePlainLook", () => {
     expect(resolvePlainLook(alone, {})!.snapshot).toBe(alone);
   });
 
-  it("allows fog and sky in a plain scene", () => {
-    const snap = scene().add(sky.gradient({ zenith: "#8fb9e3", horizon: "#e6f0f7" } as never)).add(effects.fog({ mode: "exp", color: "#999999", density: 0.01 })).add(key()).add(cube()).toJSON();
-    expect(resolvePlainLook(snap, {})?.source).toBe("default");
+  it("allows fog, sky and orthogonal post effects (bloom, AA, vignette, AO) in a plain scene while preserving plainDiffuseYield", () => {
+    const snap = scene()
+      .add(sky.gradient({ zenith: "#8fb9e3", horizon: "#e6f0f7" } as never))
+      .add(environments.neutral({ intensity: 0.55, background: false }))
+      .add(lights.hemisphere({ skyColor: "#ffffff", groundColor: "#9a9ea6", intensity: 0.9 }))
+      .add(effects.fog({ mode: "exp", color: "#999999", density: 0.01 }))
+      .add(effects.bloom({ intensity: 0.25 }))
+      .add(effects.antiAlias({ mode: "fxaa" } as never))
+      .add(effects.vignette({ intensity: 0.2 }))
+      .add(effects.ambientOcclusion({ intensity: 0.5 }))
+      .add(key())
+      .add(cube())
+      .toJSON();
+    const resolved = resolvePlainLook(snap, {});
+    expect(resolved?.source).toBe("default");
+    expect(resolved?.output).toEqual({ toneMapping: "neutral", exposure: 1 });
+    expect(env(resolved!.snapshot.nodes).plainDiffuseYield).toBe(true);
   });
 
   const authored: Record<string, () => ReturnType<typeof scene>> = {
@@ -61,7 +75,6 @@ describe("resolvePlainLook", () => {
     "a look preset": () => scene().add(cube()).add(looks.preset("outdoor-day")),
     "a hero rig": () => scene().add(cube()).add(looks.heroRig()),
     "a hero stage": () => scene().add(cube()).add(looks.heroStage()),
-    "a bloom effect": () => scene().add(cube()).add(key()).add(effects.bloom({})),
     "a colour grade": () => scene().add(cube()).add(key()).add(effects.colorGrade({ saturation: 1.1 })),
     "an hdri environment": () => scene().add(cube()).add(key()).add(environments.hdri({ texture: "/hdri/x.hdr" } as never)),
     "a nested look": () => scene().add(group("g", [cube(), key(), looks.preset("product-studio")]))
@@ -72,18 +85,23 @@ describe("resolvePlainLook", () => {
     });
   }
 
-  it("does nothing when the app authors output, quality or a renderer profile", () => {
+  it("applies on webgl2/webgpu/auto and explicit quality tiers, and does nothing when the app authors output, lighting or worker", () => {
     const snap = scene().add(cube()).add(key()).toJSON();
     expect(resolvePlainLook(snap, { output: { toneMapping: "aces" } })).toBeNull();
     expect(resolvePlainLook(snap, { renderer: { output: { exposure: 1.2 } } })).toBeNull();
-    expect(resolvePlainLook(snap, { quality: "production" })).toBeNull();
-    expect(resolvePlainLook(snap, { renderer: { qualityProfile: "production" } })).toBeNull();
-    expect(resolvePlainLook(snap, { renderer: { backend: "webgpu" } })).toBeNull();
+    expect(resolvePlainLook(snap, { quality: "production" })?.source).toBe("default");
+    expect(resolvePlainLook(snap, { quality: "medium" })?.source).toBe("default");
+    expect(resolvePlainLook(snap, { renderer: { qualityProfile: "production" } })?.source).toBe("default");
+    expect(resolvePlainLook(snap, { renderer: { qualityProfile: "experimental-webgpu" } })).toBeNull();
+    expect(resolvePlainLook(snap, { renderer: { backend: "webgpu" } })?.source).toBe("default");
+    expect(resolvePlainLook(snap, { renderer: { backend: "auto" } })?.source).toBe("default");
+    expect(resolvePlainLook(snap, { renderer: { backend: "mock" } })).toBeNull();
     expect(resolvePlainLook(snap, { worker: {} })).toBeNull();
     expect(resolvePlainLook(snap, { plainLook: false })).toBeNull();
     expect(resolvePlainLook(snap, { lighting: {} })).toBeNull();
     expect(resolvePlainLook(scene().add(cube()).add(looks.preset("plain")).toJSON(), { plainLook: false })).toBeNull();
     expect(plainLookOptionsApply({ quality: "auto", renderer: { backend: "webgl2" } })).toBe(true);
+    expect(plainLookOptionsApply({ quality: "high", renderer: { backend: "webgpu" } })).toBe(true);
   });
 
   it("does nothing for a background image or an untone-mapped background", () => {
@@ -142,7 +160,9 @@ describe("plain output on the render path", () => {
     expect(dropped.output).toBeUndefined();
     expect(dropped.snapshot).toBe(lookNext);
     const bloomNext = scene().add(cube()).add(key()).add(effects.bloom({ intensity: 0.3 })).toJSON();
-    expect(plainLookForNextScene(bloomNext, {}).output).toBeUndefined();
+    expect(isPlainDefaultOutput(plainLookForNextScene(bloomNext, {}).output)).toBe(true);
+    const gradedNext = scene().add(cube()).add(key()).add(effects.colorGrade({ saturation: 1.2 })).toJSON();
+    expect(plainLookForNextScene(gradedNext, {}).output).toBeUndefined();
     const plainNext = scene().add(environments.neutral({ intensity: 1 })).add(lights.hemisphere({ intensity: 1 })).add(cube()).toJSON();
     const kept = plainLookForNextScene(plainNext, {});
     expect(isPlainDefaultOutput(kept.output)).toBe(true);
@@ -160,9 +180,10 @@ describe("plain output on the render path", () => {
     const output = coldStartPlainOutput({});
     expect(output).toEqual({ toneMapping: "neutral", exposure: 1 });
     expect(isPlainDefaultOutput(output)).toBe(true);
-    // Authored output, plainLook: false or a non-WebGL2 backend keep the earlier default.
+    expect(coldStartPlainOutput({ renderer: { backend: "webgpu" } })).toEqual({ toneMapping: "neutral", exposure: 1 });
+    // Authored output, plainLook: false or an unsupported mock backend keep the earlier default.
     expect(coldStartPlainOutput({ output: { toneMapping: "aces" } })).toBeNull();
     expect(coldStartPlainOutput({ plainLook: false })).toBeNull();
-    expect(coldStartPlainOutput({ renderer: { backend: "webgpu" } })).toBeNull();
+    expect(coldStartPlainOutput({ renderer: { backend: "mock" } })).toBeNull();
   });
 });

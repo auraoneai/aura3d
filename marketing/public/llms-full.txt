@@ -8,12 +8,12 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 5.5.2 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 5.5.3 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-11-11
+- Last updated: 2026-11-12
 
 ## Pages
 

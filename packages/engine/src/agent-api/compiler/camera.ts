@@ -177,10 +177,76 @@ export function sampleCameraFrame(
   const deltaSeconds = (time - previous.time) / 1000;
   const responsePerSecond = -Math.log(1 - smoothing) * 60;
   const amount = 1 - Math.exp(-responsePerSecond * deltaSeconds);
+  const target = mixCameraVector(previous.target, rawTarget, amount);
+  const linEye = mixCameraVector(previous.eye, rawEye, amount);
+
+  const prevArmX = previous.eye[0] - previous.target[0];
+  const prevArmY = previous.eye[1] - previous.target[1];
+  const prevArmZ = previous.eye[2] - previous.target[2];
+  const prevDist = Math.hypot(prevArmX, prevArmY, prevArmZ);
+  const rawArmX = rawEye[0] - rawTarget[0];
+  const rawArmY = rawEye[1] - rawTarget[1];
+  const rawArmZ = rawEye[2] - rawTarget[2];
+  const rawDist = Math.hypot(rawArmX, rawArmY, rawArmZ);
+
+  if (prevDist >= 0.05 && rawDist >= 0.05) {
+    const linDist = Math.hypot(linEye[0] - target[0], linEye[1] - target[1], linEye[2] - target[2]);
+    const cos = (prevArmX * rawArmX + prevArmY * rawArmY + prevArmZ * rawArmZ) / (prevDist * rawDist);
+    const minSafeDist = Math.max(0.05, Math.min(prevDist, rawDist) * 0.5);
+    if (cos < -0.5 || linDist < minSafeDist) {
+      const desiredDist = Math.max(0.05, prevDist + (rawDist - prevDist) * amount);
+      const prevHoriz = Math.hypot(prevArmX, prevArmZ);
+      const rawHoriz = Math.hypot(rawArmX, rawArmZ);
+      let armX: number;
+      let armY: number;
+      let armZ: number;
+      if (prevHoriz > 1e-4 && rawHoriz > 1e-4) {
+        const a0 = Math.atan2(prevArmX, prevArmZ);
+        const a1 = Math.atan2(rawArmX, rawArmZ);
+        let da = ((a1 - a0 + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+        if (Math.abs(Math.abs(da) - Math.PI) < 1e-4) da = Math.PI;
+        const angle = a0 + da * amount;
+        const horiz = prevHoriz + (rawHoriz - prevHoriz) * amount;
+        armX = Math.sin(angle) * horiz;
+        armY = prevArmY + (rawArmY - prevArmY) * amount;
+        armZ = Math.cos(angle) * horiz;
+      } else {
+        // Purely vertical 180-degree arm flip: swing through an orthogonal horizontal axis.
+        const uX = prevArmX / prevDist;
+        const uY = prevArmY / prevDist;
+        const uZ = prevArmZ / prevDist;
+        let orthoX = -uZ;
+        let orthoY = 0;
+        let orthoZ = uX;
+        let orthoLen = Math.hypot(orthoX, orthoY, orthoZ);
+        if (orthoLen < 1e-4) {
+          orthoX = 1;
+          orthoY = 0;
+          orthoZ = 0;
+          orthoLen = 1;
+        }
+        orthoX /= orthoLen;
+        orthoZ /= orthoLen;
+        const theta = Math.acos(Math.max(-1, Math.min(1, cos))) * amount;
+        const c = Math.cos(theta);
+        const s = Math.sin(theta);
+        armX = uX * c + orthoX * s;
+        armY = uY * c + orthoY * s;
+        armZ = uZ * c + orthoZ * s;
+      }
+      const armLen = Math.hypot(armX, armY, armZ);
+      const scale = armLen > 1e-6 ? desiredDist / armLen : desiredDist;
+      const eye: AuraVec3 = armLen > 1e-6
+        ? [target[0] + armX * scale, target[1] + armY * scale, target[2] + armZ * scale]
+        : [target[0], target[1], target[2] + desiredDist];
+      return { time, target, eye };
+    }
+  }
+
   return {
     time,
-    target: mixCameraVector(previous.target, rawTarget, amount),
-    eye: mixCameraVector(previous.eye, rawEye, amount)
+    target,
+    eye: linEye
   };
 }
 

@@ -79,17 +79,74 @@ function rawShadowBinding(texture: Prd02ShadowFrameUniforms["atlasTexture"]): Te
   return binding;
 }
 
+interface CachedMaterialShadowBinding {
+  readonly normalBias: number;
+  readonly strength: number;
+  readonly mapSize: number;
+  readonly cascade0: Prd02ShadowFrameUniforms["cascadeTexture"];
+  readonly cascade1: Prd02ShadowFrameUniforms["cascadeTexture"];
+  readonly cascade2: Prd02ShadowFrameUniforms["cascadeTexture"];
+  readonly cascade3: Prd02ShadowFrameUniforms["cascadeTexture"];
+  readonly atlasTexture: Prd02ShadowFrameUniforms["atlasTexture"];
+}
+
+const boundMaterialsByFrame = new WeakMap<Prd02ShadowFrameUniforms, WeakMap<Material, CachedMaterialShadowBinding>>();
+
 /** The base `Material` an item's RenderMaterial resolves to. */
 export function shadowBindingMaterial(material: RenderMaterial): Material {
   return material instanceof MaterialInstance ? material.baseMaterial : material;
 }
 
-/** Binds every `u_prd02*` shadow uniform the chunk declares onto `material`. */
+/**
+ * Binds every `u_prd02*` shadow uniform the chunk declares onto `material`.
+ * Deduplicates per unique `Material` within a frame (via optional caller `seen`
+ * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
+ * the 16 parameters once per frame instead of `N * M` times.
+ */
 export function bindShadowFrameUniforms(
   material: Material,
   uniforms: Prd02ShadowFrameUniforms,
-  config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">
+  config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">,
+  seen?: Set<Material>
 ): void {
+  if (seen) {
+    if (seen.has(material)) return;
+    seen.add(material);
+  } else {
+    let perFrame = boundMaterialsByFrame.get(uniforms);
+    if (!perFrame) {
+      perFrame = new WeakMap();
+      boundMaterialsByFrame.set(uniforms, perFrame);
+    }
+    const c0 = uniforms.cascadeTextures[0] ?? null;
+    const c1 = uniforms.cascadeTextures[1] ?? null;
+    const c2 = uniforms.cascadeTextures[2] ?? null;
+    const c3 = uniforms.cascadeTextures[3] ?? null;
+    const prev = perFrame.get(material);
+    if (
+      prev &&
+      prev.normalBias === config.normalBias &&
+      prev.strength === config.strength &&
+      prev.mapSize === uniforms.mapSize &&
+      prev.cascade0 === c0 &&
+      prev.cascade1 === c1 &&
+      prev.cascade2 === c2 &&
+      prev.cascade3 === c3 &&
+      prev.atlasTexture === uniforms.atlasTexture
+    ) {
+      return;
+    }
+    perFrame.set(material, {
+      normalBias: config.normalBias,
+      strength: config.strength,
+      mapSize: uniforms.mapSize,
+      cascade0: c0,
+      cascade1: c1,
+      cascade2: c2,
+      cascade3: c3,
+      atlasTexture: uniforms.atlasTexture
+    });
+  }
   for (let i = 0; i < 4; i += 1) {
     const name = `u_prd02CascadeCompare${i}`;
     material.setParameter(name, compareBinding(name, uniforms.cascadeTextures[i] ?? null));

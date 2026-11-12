@@ -537,6 +537,23 @@ export {
   registerAuraQualityController
 } from "../quality/QualityController";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController";
+export {
+  RUNTIME_QUALITY_LADDER,
+  RuntimeQualityGovernor,
+  bindRuntimeQualityDevice,
+  clearRuntimeQualityState,
+  ensureRuntimeQualityState,
+  runtimeQualityDeviceStateFor,
+  runtimeQualityStateFor
+} from "../quality/RuntimeQualityGovernor";
+export type {
+  RuntimeQualityCanvasState,
+  RuntimeQualityGovernorOptions,
+  RuntimeQualityRung,
+  RuntimeQualityRungAllocation,
+  RuntimeQualitySample,
+  RuntimeQualityStepResult
+} from "../quality/RuntimeQualityGovernor";
 
 /**
  * Phase 5 (§6.9): `prd11.contextRestore` contributor (flag `A3D_QR_TIERS`).

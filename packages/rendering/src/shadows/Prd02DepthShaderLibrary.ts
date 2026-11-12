@@ -36,14 +36,15 @@ export const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export const PRD02_DEPTH_MAX_INSTANCES = 64;
+/** Marks compiler-coalesced static auto-instanced RenderItems so >64 instances draw in 1 depth call. */
+export const COMPILER_AUTO_INSTANCED_SYMBOL = Symbol.for("aura3d.compilerAutoInstanced");
 
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
  * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
  * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
- * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
- * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
- * a draw range) keeps the 4.2.0 uniform-array batches exactly.
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) or
+ * compiler-coalesced static auto-instanced batches use it. Every other instanced caster keeps the 4.2.0 uniform-array batches.
  */
 export function depthUsesInstanceAttributes(item: {
   readonly instanceTransforms?: ArrayLike<number> | undefined;
@@ -52,6 +53,9 @@ export function depthUsesInstanceAttributes(item: {
 }): boolean {
   const count = (item.instanceTransforms?.length ?? 0) / 16;
   if (count <= PRD02_DEPTH_MAX_INSTANCES) return false;
+  if ((item as Record<symbol, unknown>)[COMPILER_AUTO_INSTANCED_SYMBOL] === true && item.drawRange === undefined) {
+    return true;
+  }
   if (!shadowFitLegacy()) return true;
   return count >= DENSE_DEPTH_INSTANCE_MIN && item.shadowGeometry !== undefined && item.drawRange === undefined && denseDepthDrawsEnabled();
 }
@@ -430,12 +434,36 @@ export function depthDeformIncompatibility(feature: DepthVariantFeature): string
  * position. Features without an `a3dDeform` entry point are not spliced; the
  * caller reports them (C-31 droppedFeatures).
  */
+function isStockPrd06DepthDeform(feature: DepthVariantFeature): boolean {
+  return (
+    feature.id === "prd06.deform" &&
+    feature.owner === "prd06" &&
+    feature.chunks.length === 2 &&
+    feature.chunks[0] === "a3d_prd06_skinning_common" &&
+    feature.chunks[1] === "a3d_prd06_deform"
+  );
+}
+
+function prd06DepthSkinInfluences(key: ShadowCasterVariantKey): 0 | 4 | 8 {
+  if (key.skinning !== 0 || key.features["prd06.deform"] === undefined) return 0;
+  const depthSkinning = key.features["prd02.depthSkinning"];
+  return depthSkinning === 8 ? 8 : depthSkinning === 4 ? 4 : 0;
+}
+
 export function composeDepthDeformVertex(
   vertex: string,
   key: ShadowCasterVariantKey,
   depthFeatures: readonly DepthVariantFeature[]
 ): string {
-  const deform = selectedDeformFeatures(key, depthFeatures).filter((feature) => depthDeformIncompatibility(feature) === null);
+  const deform = selectedDeformFeatures(key, depthFeatures)
+    .filter((feature) => depthDeformIncompatibility(feature) === null)
+    .slice()
+    .sort((a, b) => {
+      // Ensure `prd06.deform` (`A3D_DEFORM_ENTRY` / `a3dDeformBeforeWind`) always
+      // precedes `prd10.wind` (`#ifdef A3D_DEFORM_ENTRY`) so both compose sequentially.
+      const rank = (f: DepthVariantFeature): number => (isStockPrd06DepthDeform(f) ? 0 : isStockPrd10WindDeform(f) ? 2 : 1);
+      return rank(a) - rank(b);
+    });
   if (deform.length === 0) return vertex;
   const chunks: ShaderChunk[] = [];
   const seen = new Set<string>();
@@ -522,10 +550,11 @@ function withDepthJointInputs(key: ShadowCasterVariantKey, format: VertexFormat)
   const features = { ...key.features };
   delete features[DEPTH_JOINT_INPUT];
   delete features[DEPTH_JOINT1_INPUT];
-  if (key.skinning) {
+  const skinInfluences = key.skinning || prd06DepthSkinInfluences(key);
+  if (skinInfluences) {
     const first = jointInput(format.attributes.find((attribute) => attribute.semantic === "joints"));
     if (first !== "float") features[DEPTH_JOINT_INPUT] = first;
-    if (key.skinning === 8) {
+    if (skinInfluences === 8) {
       const second = jointInput(format.attributes.find((attribute) => attribute.semantic === "joints1"));
       if (second !== "float") features[DEPTH_JOINT1_INPUT] = second;
     }
@@ -546,16 +575,17 @@ export function prd02DepthVariantForVertexFormat(
     { semantic: "position", location: 0, components: 3, integerAllowed: false }
   ];
   const alpha = depthAlphaOptions(key);
+  const skinInfluences = key.skinning || prd06DepthSkinInfluences(key);
   if (alpha.map !== undefined) required.push(alpha.map === 1
     ? { semantic: "uv1", location: 7, components: 2, integerAllowed: false }
     : { semantic: "uv", location: 2, components: 2, integerAllowed: false });
   if (alpha.vertex) required.push({ semantic: "color", location: 4, components: 4, integerAllowed: false });
-  if (key.skinning) {
+  if (skinInfluences) {
     required.push(
       { semantic: "joints", location: 5, components: 4, integerAllowed: true },
       { semantic: "weights", location: 6, components: 4, integerAllowed: false }
     );
-    if (key.skinning === 8) required.push(
+    if (skinInfluences === 8) required.push(
       { semantic: "joints1", location: 8, components: 4, integerAllowed: true },
       { semantic: "weights1", location: 9, components: 4, integerAllowed: false }
     );
@@ -587,7 +617,7 @@ export function prd02DepthVariantForVertexFormat(
       locations.add(attribute.shaderLocation);
     }
     if (key.instanced && key.features["prd02.depthInstanceAttr"] !== undefined) {
-      const start = key.skinning === 8 ? 10 : 8;
+      const start = skinInfluences === 8 ? 10 : 8;
       for (let location = start; location < start + 4; location += 1) {
         if (locations.has(location)) {
           throw new RenderDeviceError("Native depth instance attributes overlap the vertex format", "DEPTH_VERTEX_FORMAT_INVALID", { location });
@@ -637,8 +667,13 @@ export function resolvePrd02ShadowCasterVariant(
     /^static-batch-/.test(item.label ?? "");
   // A spliced vertex:deform feature (e.g. prd06.deform) owns skinning/morph
   // in object space, so the built-in prd02 skinning path stays off for it.
+  // Additive wind (`prd10.wind`) composes AFTER skinning rather than owning it.
   const deformOwnsSkinning = depthFeatures.some(
-    (feature) => features[feature.id] !== undefined && feature.hooks.includes("vertex:deform") && depthDeformIncompatibility(feature) === null
+    (feature) =>
+      features[feature.id] !== undefined &&
+      feature.hooks.includes("vertex:deform") &&
+      !isStockPrd10WindDeform(feature) &&
+      depthDeformIncompatibility(feature) === null
   );
   const key: ShadowCasterVariantKey = {
     skinning: skinning && !deformOwnsSkinning ? (skinning.extraInfluences ? 8 : 4) : 0,
@@ -650,19 +685,20 @@ export function resolvePrd02ShadowCasterVariant(
     // BLEND + explicit castShadow requires the alpha-hash variant. Program
     // generation rejects it until forward and shadow coverage are aligned.
     alphaHash: blended && item.castShadow === true,
-    doubleSided: base ? base.renderState.cullMode === "none" : false,
+    doubleSided: item.geometry?.topology !== "triangles" || (base ? base.renderState.cullMode === "none" : false),
     features
   };
   // Record joint numeric types for shadow warm-up too. The draw validates
   // the final format, which may be a CPU-morphed scratch geometry.
-  return key.skinning ? withDepthJointInputs(key, item.geometry.vertexBuffer.format) : key;
+  return (key.skinning || prd06DepthSkinInfluences(key)) ? withDepthJointInputs(key, item.geometry.vertexBuffer.format) : key;
 }
 
-/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`.
+/** §6.4 caster rule: BLEND and point-cloud items are excluded unless `castShadow === true`.
  * Explicit blended casters still require the currently unsupported alpha-hash
  * variant; `castShadow === false` always excludes. Everything else casts. */
 export function prd02ShadowCasterEligible(item: RenderItem): boolean {
   if (item.castShadow === false) return false;
+  if (item.geometry?.topology === "points" && item.castShadow !== true) return false;
   const base = item.material ? baseOf(item.material) : null;
   if ((base?.renderState.blend === true || (base?.renderState.blendMode !== undefined && base.renderState.blendMode !== "opaque")) && item.castShadow !== true) return false;
   return true;
@@ -677,8 +713,10 @@ export function prd02DepthVariantDefines(
   const clipping = key.features["a3d.clipping"] === true;
   const logarithmic = key.features["a3d.logarithmicDepth"] === true;
   const alpha = depthAlphaOptions(key);
-  const primaryJointInput = key.skinning ? jointInputForKey(key, DEPTH_JOINT_INPUT) : "float";
-  const secondaryJointInput = key.skinning === 8 ? jointInputForKey(key, DEPTH_JOINT1_INPUT) : "float";
+  const prd06Skin = prd06DepthSkinInfluences(key);
+  const skinInfluences = key.skinning || prd06Skin;
+  const primaryJointInput = skinInfluences ? jointInputForKey(key, DEPTH_JOINT_INPUT) : "float";
+  const secondaryJointInput = skinInfluences === 8 ? jointInputForKey(key, DEPTH_JOINT1_INPUT) : "float";
   const defines: Record<string, string | number | true> = {
     A3D_DEPTH_INSTANCED: 0,
     A3D_DEPTH_SKINNED: 0,
@@ -701,6 +739,15 @@ export function prd02DepthVariantDefines(
   if (key.instanced) defines.A3D_DEPTH_INSTANCED = 1;
   if (key.skinning > 0) defines.A3D_DEPTH_SKINNED = 1;
   if (key.skinning === 8) defines.A3D_DEPTH_EIGHT_INFLUENCES = 1;
+  if (prd06Skin > 0) {
+    defines.A3D_SKINNING = prd06Skin;
+    if (primaryJointInput === "uint") defines.A3D_JOINT0_UINT = 1;
+    else if (primaryJointInput === "sint") defines.A3D_JOINT0_SINT = 1;
+    if (prd06Skin === 8) {
+      if (secondaryJointInput === "uint") defines.A3D_JOINT1_UINT = 1;
+      else if (secondaryJointInput === "sint") defines.A3D_JOINT1_SINT = 1;
+    }
+  }
   if (key.alphaTest) defines.A3D_DEPTH_ALPHA = 1;
   for (const feature of depthFeatures) {
     const value = key.features[feature.id];
@@ -715,21 +762,25 @@ export function prd02DepthWgsl(
   depthFeatures: readonly DepthVariantFeature[] = []
 ): { readonly webgpu: { readonly vertex: string; readonly fragment: string }; readonly portableBindings: readonly PortableShaderBinding[] } {
   // The generic C-18 GLSL hook can contain arbitrary declarations and code.
-  // Until its owner supplies a native hook, reject instead of dropping it.
+  // Stock `prd06.deform` (bone-texture skinning) and stock `prd10.wind`
+  // compose sequentially (`deform` then `wind`); any unknown C-18 hook is rejected.
   const deform = selectedDeformFeatures(key, depthFeatures).filter((feature) => depthDeformIncompatibility(feature) === null);
-  // The stock prd10.wind deform has a native twin (nativeDepthWindDeform); any other C-18 hook is rejected, not dropped.
-  const wind = deform.length === 1 && isStockPrd10WindDeform(deform[0]!);
-  if (deform.length && !wind) {
-    throw new RenderDeviceError("Native depth shader cannot lower the selected vertex deformation", "WGSL_DEPTH_DEFORM_UNSUPPORTED", { features: deform.map((feature) => feature.id) });
+  const wind = deform.some((feature) => isStockPrd10WindDeform(feature));
+  const prd06 = deform.some((feature) => isStockPrd06DepthDeform(feature));
+  const unsupportedDeform = deform.filter((feature) => !isStockPrd10WindDeform(feature) && !isStockPrd06DepthDeform(feature));
+  if (unsupportedDeform.length > 0) {
+    throw new RenderDeviceError("Native depth shader cannot lower the selected vertex deformation", "WGSL_DEPTH_DEFORM_UNSUPPORTED", { features: unsupportedDeform.map((feature) => feature.id) });
   }
+  const prd06Skin = prd06 ? prd06DepthSkinInfluences(key) : 0;
+  const effectiveSkin = key.skinning || prd06Skin;
   const clipping = key.features["a3d.clipping"] === true;
   const logarithmic = key.features["a3d.logarithmicDepth"] === true;
   const alpha = key.alphaTest;
   const alphaOptions = depthAlphaOptions(key);
   const attrInstancing = key.instanced && key.features["prd02.depthInstanceAttr"] !== undefined;
   const world = clipping || logarithmic;
-  const primaryJointInput = key.skinning ? jointInputForKey(key, DEPTH_JOINT_INPUT) : "float";
-  const secondaryJointInput = key.skinning === 8 ? jointInputForKey(key, DEPTH_JOINT1_INPUT) : "float";
+  const primaryJointInput = effectiveSkin ? jointInputForKey(key, DEPTH_JOINT_INPUT) : "float";
+  const secondaryJointInput = effectiveSkin === 8 ? jointInputForKey(key, DEPTH_JOINT1_INPUT) : "float";
   const bindings: PortableShaderBinding[] = [
     { name: "u_modelViewProjection", kind: "mat4" },
     { name: "u_geometryMatrix", kind: "mat4" },
@@ -753,6 +804,11 @@ export function prd02DepthWgsl(
       { name: "u_jointPaletteTexture", kind: "texture2d" }
     );
     else bindings.push({ name: "u_jointMatrices", kind: "mat4", arrayLength: MAX_UNIFORM_SKINNING_JOINTS });
+  } else if (prd06Skin) {
+    bindings.push(
+      { name: "u_boneTextureWidth", kind: "float" },
+      { name: "u_boneTexture", kind: "texture2d" }
+    );
   }
   if (wind) bindings.push(...NATIVE_DEPTH_WIND_BINDINGS);
   if (alpha) {
@@ -766,7 +822,7 @@ export function prd02DepthWgsl(
     );
   }
 
-  const instanceLocation = key.skinning === 8 ? 10 : 8;
+  const instanceLocation = effectiveSkin === 8 ? 10 : 8;
   const skinDeclarations = key.skinning ? `
 fn a3dJointMatrix(rawIndex: u32) -> mat4x4<f32> {
   let joint = min(rawIndex, u32(max(aura.u_jointCount - 1.0, 0.0)));
@@ -783,7 +839,23 @@ fn a3dJointMatrix(rawIndex: u32) -> mat4x4<f32> {
 }
 fn a3dSkin4(j: vec4<u32>, w: vec4<f32>) -> mat4x4<f32> {
   return a3dJointMatrix(j.x) * w.x + a3dJointMatrix(j.y) * w.y + a3dJointMatrix(j.z) * w.z + a3dJointMatrix(j.w) * w.w;
+}` : prd06Skin ? `
+fn a3dJointMatrix(rawIndex: u32) -> mat4x4<f32> {
+  let width = max(u32(aura.u_boneTextureWidth + 0.5), 4u);
+  let base = rawIndex * 4u;
+  let row = base / width;
+  let column = base - row * width;
+  return mat4x4<f32>(
+    textureLoad(u_boneTextureTexture, vec2<i32>(i32(column), i32(row)), 0),
+    textureLoad(u_boneTextureTexture, vec2<i32>(i32(column + 1u), i32(row)), 0),
+    textureLoad(u_boneTextureTexture, vec2<i32>(i32(column + 2u), i32(row)), 0),
+    textureLoad(u_boneTextureTexture, vec2<i32>(i32(column + 3u), i32(row)), 0));
+}
+fn a3dSkin4(j: vec4<u32>, w: vec4<f32>) -> mat4x4<f32> {
+  return a3dJointMatrix(j.x) * w.x + a3dJointMatrix(j.y) * w.y + a3dJointMatrix(j.z) * w.z + a3dJointMatrix(j.w) * w.w;
 }` : "";
+  const unsignedJointExpr = (name: string, input: DepthJointInput): string =>
+    prd06Skin && input === "float" ? `vec4<u32>(max(${name} + vec4<f32>(0.5), vec4<f32>(0.0)))` : unsignedJointIndices(name, input);
   const vertex = `// ${PRD02_DEPTH_SHADER_MARKER}
 /* @aura3d-bindings */
 struct DepthOutput {
@@ -796,14 +868,14 @@ struct DepthOutput {
 ${skinDeclarations}
 ${wind ? NATIVE_DEPTH_WIND_WGSL : ""}
 @vertex fn vs_main(
-  @location(0) position: vec3<f32>${alphaOptions.map !== undefined ? `, @location(${alphaOptions.map === 1 ? 7 : 2}) uv: vec2<f32>` : ""}${alphaOptions.vertex ? ", @location(4) color: vec4<f32>" : ""}${key.skinning ? `, @location(5) joints: vec4<${jointInputWgslType(primaryJointInput)}>, @location(6) weights: vec4<f32>` : ""}${key.skinning === 8 ? `, @location(8) joints1: vec4<${jointInputWgslType(secondaryJointInput)}>, @location(9) weights1: vec4<f32>` : ""}${key.instanced ? ", @builtin(instance_index) instanceIndex: u32" : ""}${attrInstancing ? `, @location(${instanceLocation}) instance0: vec4<f32>, @location(${instanceLocation + 1}) instance1: vec4<f32>, @location(${instanceLocation + 2}) instance2: vec4<f32>, @location(${instanceLocation + 3}) instance3: vec4<f32>` : ""}
+  @location(0) position: vec3<f32>${alphaOptions.map !== undefined ? `, @location(${alphaOptions.map === 1 ? 7 : 2}) uv: vec2<f32>` : ""}${alphaOptions.vertex ? ", @location(4) color: vec4<f32>" : ""}${effectiveSkin ? `, @location(5) joints: vec4<${jointInputWgslType(primaryJointInput)}>, @location(6) weights: vec4<f32>` : ""}${effectiveSkin === 8 ? `, @location(8) joints1: vec4<${jointInputWgslType(secondaryJointInput)}>, @location(9) weights1: vec4<f32>` : ""}${key.instanced ? ", @builtin(instance_index) instanceIndex: u32" : ""}${attrInstancing ? `, @location(${instanceLocation}) instance0: vec4<f32>, @location(${instanceLocation + 1}) instance1: vec4<f32>, @location(${instanceLocation + 2}) instance2: vec4<f32>, @location(${instanceLocation + 3}) instance3: vec4<f32>` : ""}
 ) -> DepthOutput {
   var output: DepthOutput;
   var local = vec4<f32>(position, 1.0);
-  ${key.skinning ? `var weightSum = dot(weights, vec4<f32>(1.0));
-  var skin = a3dSkin4(${unsignedJointIndices("joints", primaryJointInput)}, weights);
-  ${key.skinning === 8 ? `weightSum += dot(weights1, vec4<f32>(1.0));\n  skin += a3dSkin4(${unsignedJointIndices("joints1", secondaryJointInput)}, weights1);` : ""}
-  if (weightSum > 0.0001) { local = skin * local; }` : ""}
+  ${effectiveSkin ? `var weightSum = dot(weights, vec4<f32>(1.0));
+  var skin = a3dSkin4(${unsignedJointExpr("joints", primaryJointInput)}, weights);
+  ${effectiveSkin === 8 ? `weightSum += dot(weights1, vec4<f32>(1.0));\n  skin += a3dSkin4(${unsignedJointExpr("joints1", secondaryJointInput)}, weights1);` : ""}
+  if (weightSum > 0.0001) { local = vec4<f32>((skin * local).xyz, 1.0); }` : ""}
   ${wind ? "local = vec4<f32>(local.xyz + a3dDepthWindOffset(local.xyz, max(aura.u_windAssetHeight, 0.01)), local.w);" : ""}
   let geometryLocal = aura.u_geometryMatrix * vec4<f32>(local.xyz, 1.0);
   var placed = geometryLocal;

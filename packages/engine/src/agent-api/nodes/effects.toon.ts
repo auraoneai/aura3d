@@ -68,6 +68,45 @@ void main() {
 }`;
 
 /**
+ * WGSL twin of {@link TOON_FRAGMENT} for `executeWebGPUCustomPass` / `runWebGPUFullscreenPass`:
+ * `@binding(0)` uniform array (`values[0]` = `[1/w, 1/h, time, 0]`, `values[1..6]` = `u_texel`, `u_bands`,
+ * `u_band_mix`, `u_outline`, `u_ink`, `u_edge`), `@binding(1)` linear clamp sampler, `@binding(2)` `u_color`.
+ */
+export const TOON_FRAGMENT_WGSL = /* wgsl */ `
+struct ToonUniforms { values: array<vec4<f32>, 7>, };
+@group(0) @binding(0) var<uniform> u_toon: ToonUniforms;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+
+fn lum(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }
+
+@fragment fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let texel = u_toon.values[1].xy;
+  let bands = u_toon.values[2].x;
+  let bandMix = u_toon.values[3].x;
+  let outline = u_toon.values[4].x;
+  let ink = u_toon.values[5].xyz;
+  let edgeRange = u_toon.values[6].xy;
+  let c = textureSampleLevel(u_color, u_sampler, uv, 0.0);
+  let l = lum(c.rgb);
+  let banded = floor(l * bands + 0.5) / bands;
+  let targetLum = mix(l, banded, bandMix);
+  let col = c.rgb * (targetLum / max(l, 0.02));
+  let tl = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, 1.0), 0.0).rgb);
+  let t = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(0.0, 1.0), 0.0).rgb);
+  let tr = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, 1.0), 0.0).rgb);
+  let lf = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, 0.0), 0.0).rgb);
+  let rt = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, 0.0), 0.0).rgb);
+  let bl = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, -1.0), 0.0).rgb);
+  let b = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(0.0, -1.0), 0.0).rgb);
+  let br = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, -1.0), 0.0).rgb);
+  let gx = (tr + 2.0 * rt + br) - (tl + 2.0 * lf + bl);
+  let gy = (tl + 2.0 * t + tr) - (bl + 2.0 * b + br);
+  let edge = smoothstep(edgeRange.x, edgeRange.y, sqrt(gx * gx + gy * gy));
+  return vec4<f32>(mix(col, ink, edge * outline), c.a);
+}`;
+
+/**
  * GU47 E-E: the toon fragment with depth-aware ink, used only when `inkSource` is `"depth"`/`"both"` or
  * `fadeDistance` is set (every other option set keeps {@link TOON_FRAGMENT}). Reads the C-13 built-in
  * `u_depthLinear` (view-space metres, 0 where no depth is bound):
@@ -129,6 +168,71 @@ void main() {
   outColor = vec4(mix(col, u_ink, edge * u_outline * fade), c.a);
 }`;
 
+/**
+ * WGSL twin of {@link TOON_INK_FRAGMENT} for `executeWebGPUCustomPass` / `runWebGPUFullscreenPass`:
+ * `@binding(0)` uniform array (`values[0]` = `[1/w, 1/h, time, 0]`, `values[1..9]` = `u_texel`, `u_bands`,
+ * `u_band_mix`, `u_outline`, `u_ink`, `u_edge`, `u_ink_mix`, `u_depth_edge`, `u_fade`), `@binding(1)` linear sampler,
+ * `@binding(2)` `u_color`, and `@binding(3)` `u_depthLinear` (linear view-space depth in metres).
+ */
+export const TOON_INK_FRAGMENT_WGSL = /* wgsl */ `
+struct ToonInkUniforms { values: array<vec4<f32>, 10>, };
+@group(0) @binding(0) var<uniform> u_toon: ToonInkUniforms;
+@group(0) @binding(1) var u_sampler: sampler;
+@group(0) @binding(2) var u_color: texture_2d<f32>;
+@group(0) @binding(3) var u_depthLinear: texture_2d<f32>;
+
+fn lum(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }
+fn viewZ(p: vec2<i32>) -> f32 {
+  let size = vec2<i32>(textureDimensions(u_depthLinear, 0));
+  return textureLoad(u_depthLinear, clamp(p, vec2<i32>(0), max(size - vec2<i32>(1), vec2<i32>(0))), 0).r;
+}
+fn invZ(z: f32) -> f32 { return 1.0 / max(z, 0.0001); }
+
+@fragment fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  let texel = u_toon.values[1].xy;
+  let bands = u_toon.values[2].x;
+  let bandMix = u_toon.values[3].x;
+  let outline = u_toon.values[4].x;
+  let ink = u_toon.values[5].xyz;
+  let edgeRange = u_toon.values[6].xy;
+  let inkMix = u_toon.values[7].xy;
+  let depthEdge = u_toon.values[8].xy;
+  let fadeRange = u_toon.values[9].xy;
+  let c = textureSampleLevel(u_color, u_sampler, uv, 0.0);
+  let l = lum(c.rgb);
+  let banded = floor(l * bands + 0.5) / bands;
+  let targetLum = mix(l, banded, bandMix);
+  let col = c.rgb * (targetLum / max(l, 0.02));
+  let tl = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, 1.0), 0.0).rgb);
+  let t = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(0.0, 1.0), 0.0).rgb);
+  let tr = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, 1.0), 0.0).rgb);
+  let lf = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, 0.0), 0.0).rgb);
+  let rt = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, 0.0), 0.0).rgb);
+  let bl = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(-1.0, -1.0), 0.0).rgb);
+  let b = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(0.0, -1.0), 0.0).rgb);
+  let br = lum(textureSampleLevel(u_color, u_sampler, uv + texel * vec2<f32>(1.0, -1.0), 0.0).rgb);
+  let gx = (tr + 2.0 * rt + br) - (tl + 2.0 * lf + bl);
+  let gy = (tl + 2.0 * t + tr) - (bl + 2.0 * b + br);
+  let edgeColor = smoothstep(edgeRange.x, edgeRange.y, sqrt(gx * gx + gy * gy));
+  let p = vec2<i32>(uv * vec2<f32>(textureDimensions(u_depthLinear, 0)));
+  let zc = viewZ(p);
+  let hasDepth = zc > 0.0;
+  var edgeDepth = 0.0;
+  if (hasDepth) {
+    let wc = invZ(zc);
+    let wl = invZ(viewZ(p + vec2<i32>(-1, 0)));
+    let wr = invZ(viewZ(p + vec2<i32>(1, 0)));
+    let wt = invZ(viewZ(p + vec2<i32>(0, 1)));
+    let wb = invZ(viewZ(p + vec2<i32>(0, -1)));
+    let lap = max(abs(wl + wr - 2.0 * wc), abs(wt + wb - 2.0 * wc)) / wc;
+    edgeDepth = smoothstep(depthEdge.x, depthEdge.y, lap);
+  }
+  let mixWeights = select(vec2<f32>(max(inkMix.x, inkMix.y), 0.0), inkMix, hasDepth);
+  let edge = max(edgeColor * mixWeights.x, edgeDepth * mixWeights.y);
+  let fade = select(1.0, 1.0 - smoothstep(fadeRange.x, fadeRange.y, zc), hasDepth && fadeRange.y > 0.0);
+  return vec4<f32>(mix(col, ink, edge * outline * fade), c.a);
+}`;
+
 /** Relative inverse-depth Laplacian where depth ink starts and where it is fully on (`u_depth_edge`). */
 export const TOON_DEPTH_EDGE_DEFAULT: readonly [number, number] = [0.04, 0.12];
 
@@ -177,9 +281,10 @@ export function toonInkColor(inkColor: string, linear = false): [number, number,
   return [out[0]!, out[1]!, out[2]!];
 }
 
-/** Resolved toon pass inputs: the fragment, its uniforms and whether it reads depth. */
+/** Resolved toon pass inputs: the GLSL + WGSL fragments, uniforms and whether it reads depth. */
 export interface ResolvedToonPass {
   readonly glsl: string;
+  readonly wgsl: string;
   readonly uniforms: Readonly<Record<string, number | readonly number[]>>;
   readonly usesDepth: boolean;
   readonly order: AuraPostPassOrder;
@@ -213,9 +318,10 @@ export function resolveToonPass(options: AuraToonOptions = {}): ResolvedToonPass
     u_edge: [edgeStart, edgeEnd]
   };
   const usesDepth = inkSource !== "color" || fadeDistance !== undefined;
-  if (!usesDepth) return { glsl: TOON_FRAGMENT, uniforms, usesDepth, order };
+  if (!usesDepth) return { glsl: TOON_FRAGMENT, wgsl: TOON_FRAGMENT_WGSL, uniforms, usesDepth, order };
   return {
     glsl: TOON_INK_FRAGMENT,
+    wgsl: TOON_INK_FRAGMENT_WGSL,
     uniforms: {
       ...uniforms,
       u_ink_mix: toonInkMix(inkSource),
@@ -301,6 +407,7 @@ export const toonEffectBuilders = {
       name: options.name ?? "toon",
       order: resolved.order,
       glsl: resolved.glsl,
+      wgsl: resolved.wgsl,
       uniforms: resolved.uniforms,
       ...(resolved.usesDepth ? { inputs: ["color", "depth"] as const } : {})
     });

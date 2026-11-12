@@ -113,8 +113,8 @@ describe("native WebGPU ambient occlusion", () => {
       expect(textureViews(linear)[0]?.viewDescriptor?.aspect).toBe("depth-only");
       expect(textureViews(linear)[0]?.resource.format).toMatch(/^depth/);
       expect(sampleTypes(apply)).toEqual(["unfilterable-float", "unfilterable-float", "unfilterable-float", "unfilterable-float"]);
-      // The linear-depth targets are rgba32float; the AO targets rgba8; apply keeps the HDR source format.
-      expect(linear.pipeline?.descriptor.fragment?.targets[0]?.format).toBe("rgba32float");
+      // The linear-depth target is downsized to r32float (WP-06 MEM-1); the AO targets rgba8; apply keeps the HDR source format.
+      expect(linear.pipeline?.descriptor.fragment?.targets[0]?.format).toBe("r32float");
       expect(draws[start + 2]!.pipeline?.descriptor.fragment?.targets[0]?.format).toBe("rgba8unorm");
       expect(apply.pipeline?.descriptor.fragment?.targets[0]?.format).toBe("rgba16float");
       expect(f.renderer.device.captureState().get("nativeAmbientOcclusionPasses")).toBe(1);

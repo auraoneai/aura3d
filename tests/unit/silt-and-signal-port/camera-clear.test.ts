@@ -71,4 +71,32 @@ describe("Duneglide chase camera clearance", () => {
     const eye = clearChaseEye(sim, clearance, 1 / 60, SCENERY);
     expect(Math.hypot(eye[0] - wanted[0], eye[1] - wanted[1], eye[2] - wanted[2])).toBeLessThan(1e-6);
   });
+
+  it("includes houses in sceneryColumns and smoothly damps chase arm yaw across rapid turns", () => {
+    const props = createTerrain(0).props();
+    expect(props.houses.length).toBeGreaterThan(0);
+    const cols = sceneryColumns(props);
+    const colsWithoutHouses = sceneryColumns({ trees: props.trees, rocks: props.rocks, stone: props.stone, brass: props.brass });
+    expect(cols.length).toBe(colsWithoutHouses.length + props.houses.length);
+    const firstHouse = props.houses[0]!;
+    const sim = createSim(2, 0);
+    expect(chaseEyeBlocked({ floor: () => -100, colliders: [] }, cols)(firstHouse.x, firstHouse.y + 0.4, firstHouse.z)).toBe(true);
+
+    const clearance = createChaseClearance();
+    sim.state.yaw = 0;
+    const eye0 = clearChaseEye(sim, clearance, 1 / 60);
+    expect(eye0).toEqual(wantedChaseEye(sim));
+
+    sim.state.yaw = Math.PI / 2;
+    const rawWanted = wantedChaseEye(sim);
+    const damped = clearChaseEye(sim, clearance, 1 / 120);
+    const stepFromPrev = Math.hypot(damped[0] - eye0[0], damped[2] - eye0[2]);
+    const rawJump = Math.hypot(rawWanted[0] - eye0[0], rawWanted[2] - eye0[2]);
+    expect(stepFromPrev).toBeGreaterThan(0);
+    expect(stepFromPrev).toBeLessThan(rawJump * 0.3);
+
+    clearance.reset();
+    const afterReset = clearChaseEye(sim, clearance, 1 / 120);
+    expect(Math.hypot(afterReset[0] - rawWanted[0], afterReset[1] - rawWanted[1], afterReset[2] - rawWanted[2])).toBeLessThan(1e-6);
+  });
 });

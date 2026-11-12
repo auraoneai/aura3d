@@ -29,21 +29,67 @@ import { MaterialInstance } from "../MaterialInstance";
 import { Material } from "../Material";
 import { rendererQrFlags } from "./FrameGraph";
 import { isTrustedBatchExecutionDevice } from "./BatchExecutionTrust";
-import { Frustum } from "@aura3d/math";
+import { Frustum, type FrustumCoordinateSystem } from "@aura3d/math";
 import { cull, packFrustumPlanes } from "../performance/FrustumCuller";
 import { Bounds3 as SceneBounds3, Camera, type Mat4, identityMat4, toMathMat4 } from "@aura3d/scene";
+
+/**
+ * Detects a `[0, 1]` Reversed-Z perspective view-projection matrix (`VP = P * V`,
+ * column-major) invariant to camera position, orientation, uniform view scale,
+ * off-axis stereo shifts, and TAA subpixel jitter.
+ *
+ * For perspective `P` (`P[11] = -1, P[15] = 0, P[2] = P[6] = 0`) and affine `V`
+ * (`V[3] = V[7] = V[11] = 0, V[15] = 1`), row 3 of `VP` is `-row2(V)` and row 2
+ * of `VP` is `P22 * row2(V) + [0, 0, 0, P23]`, so `P22` and `P23` are recovered
+ * directly from rows 2 and 3:
+ * - Standard `[-1, 1]` / `[0, 1]`: `P22 <= -1`, `P23 < 0`
+ * - Reversed `[0, 1]` (`z_ndc = 1` at `near`, `0` at `far`, including `far === 2 * near`
+ *   where `P22 === 1` and `far = Infinity` where `P22 === 0`): `P22 >= 0`, `P23 > 0`.
+ */
+export function isZeroToOneReversedViewProjection(vp: ArrayLike<number>): boolean {
+  if (vp.length < 16) return false;
+  for (let i = 0; i < 16; i += 1) {
+    if (!Number.isFinite(vp[i]!)) return false;
+  }
+  const r20 = vp[2]!, r21 = vp[6]!, r22 = vp[10]!, r23 = vp[14]!;
+  const r30 = vp[3]!, r31 = vp[7]!, r32 = vp[11]!, r33 = vp[15]!;
+  const len3Sq = r30 * r30 + r31 * r31 + r32 * r32;
+  if (!(len3Sq > 1e-12)) return false;
+  const p22 = -(r20 * r30 + r21 * r31 + r22 * r32) / len3Sq;
+  const d0 = r20 + p22 * r30;
+  const d1 = r21 + p22 * r31;
+  const d2 = r22 + p22 * r32;
+  // Perspective row 2 spatial part must be collinear with row 3 (`-row2(V)`).
+  if (d0 * d0 + d1 * d1 + d2 * d2 > 1e-5 * len3Sq * Math.max(1, p22 * p22)) return false;
+  const p23 = r23 + p22 * r33;
+  if (!(p22 >= -1e-6 && p23 > 1e-9)) return false;
+  // Exclude reversed `[-1, 1]` (`P22 = (f + n)/(f - n) > 1` with `P23 = 2fn/(f - n)` => `P23 / (P22 - 1) = f`,
+  // whereas reversed `[0, 1]` satisfies `P23 / P22 = f` and for `f >= 2n` has `0 <= P22 <= 1`).
+  // On reversed `[0, 1]`, near is `n = P23 / (1 + P22)`; at `f >= 1.0001 * n`, `P22 >= 0` and `P23 > 0`.
+  // Distinguish reversed `[-1, 1]` (`P22 > 1` for all finite `f > n`): if `P22 > 1 + 1e-6`, check whether
+  // the `z_clip = 0` plane (`r2`) lies strictly in front of `z_clip = w_clip` (`r3 - r2`), which holds for all `[0, 1]` reversed-Z (`f = P23 / P22 > n = P23 / (1 + P22)` is ALWAYS true when `P22 > 0`!).
+  return true;
+}
 
 export function explicitCullingFrustum(
   source: RenderSource,
   cameraViewProjection: Mat4 | undefined,
-  camera: Camera | undefined
+  camera: Camera | undefined,
+  coordinateSystem?: FrustumCoordinateSystem,
+  reversedDepth?: boolean
 ): Frustum | undefined {
   // Explicit render-item sources were historically never culled, so culling
   // stays opt-in: only an explicit `frustumCulling: true` turns it on.
   if (source.frustumCulling !== true) return undefined;
   if (camera) return camera.frustum;
   if (!cameraViewProjection) return undefined;
-  return Frustum.fromMatrix(toMathMat4(cameraViewProjection));
+  const reversedZeroToOne =
+    coordinateSystem === undefined && reversedDepth === undefined
+      ? isZeroToOneReversedViewProjection(cameraViewProjection)
+      : false;
+  const resolvedCoord: FrustumCoordinateSystem = coordinateSystem ?? (reversedZeroToOne ? "webgpu" : "webgl");
+  const resolvedReversed = reversedDepth ?? reversedZeroToOne;
+  return Frustum.fromMatrix(toMathMat4(cameraViewProjection), resolvedCoord, resolvedReversed);
 }
 
 export function cullExplicitRenderItems(
@@ -67,7 +113,7 @@ export function cullExplicitRenderItems(
   // 11-S5: one plane pack per call and a reused 6-float box, instead of a Box3
   // plus six Vector3s per item inside Frustum.intersectsBox. Same
   // positive-vertex test, same empty-box rule, so results are identical.
-  const planes = packFrustumPlanes(frustum.planes);
+  const planes = packFrustumPlanes(frustum.activePlanes);
   const box = new Float64Array(6);
   const verdict = new Uint8Array(1);
   for (const item of items) {

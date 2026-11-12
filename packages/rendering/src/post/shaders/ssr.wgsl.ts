@@ -101,8 +101,18 @@ fn fs_ssr_trace(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f3
   let zyNeg = linearDepthAt(uvyNeg);
   let dx = select(p - viewPosition(uvxNeg, zxNeg), viewPosition(uvxPos, zxPos) - p, abs(zxPos - z) <= abs(z - zxNeg));
   let dy = select(p - viewPosition(uvyNeg, zyNeg), viewPosition(uvyPos, zyPos) - p, abs(zyPos - z) <= abs(z - zyNeg));
-  // Guard silhouette depth discontinuities so pillars/trusses never emit grazing white noise.
-  if (length(dx) > max(0.35, z * 0.08) || length(dy) > max(0.35, z * 0.08)) { return vec4<f32>(0.0); }
+  // Guard true silhouette depth discontinuities via second-difference planarity scaled by perspective depth
+  // (z^2 * pixelAngle), so low chase-camera grazing roads (16-60 m) reflect cleanly to the horizon while
+  // pillars, cars and thin trusses still reject cleanly.
+  let pixelAngle = 2.0 / max(u_ssr.size.y * abs(u_ssr.projection[1][1]), 1.0);
+  let perspectiveScale = select(z * z * pixelAngle, 0.0, u_ssr.ortho > 0.5);
+  let ddx = abs((zxPos - z) - (z - zxNeg));
+  let ddy = abs((zyPos - z) - (z - zyNeg));
+  let stepX = min(abs(zxPos - z), abs(z - zxNeg));
+  let stepY = min(abs(zyPos - z), abs(z - zyNeg));
+  let planarTol = max(0.35, z * 0.03 + perspectiveScale * 0.85);
+  let stepTol = max(0.35, z * 0.08 + perspectiveScale * 1.35);
+  if (ddx > planarTol || ddy > planarTol || stepX > stepTol || stepY > stepTol) { return vec4<f32>(0.0); }
   var n = normalize(cross(dx, dy));
   let v = select(normalize(p), vec3<f32>(0.0, 0.0, -1.0), u_ssr.ortho > 0.5);
   if (dot(n, v) > 0.0) { n = -n; }

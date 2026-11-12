@@ -30,11 +30,14 @@ describe("guardPose", () => {
     expect(out.target[2]).toBeLessThan(out.position[2]);
   });
 
-  it("replaces an up vector that is zero, non-finite or parallel to the view with world up", () => {
+  it("replaces an up vector that is zero, non-finite or parallel to the view with a non-collinear axis", () => {
     const base = { position: [0, 5, 10], target: [0, 2, -10], fov: 62 } as const;
     expect(guardPose({ ...base, up: [0, 0, 0] }, null, FALLBACK).up).toEqual([0, 1, 0]);
     expect(guardPose({ ...base, up: [Number.NaN, 1, 0] }, null, FALLBACK).up).toEqual([0, 1, 0]);
     expect(guardPose({ ...base, up: [0, -3, -20] }, null, FALLBACK).up).toEqual([0, 1, 0]);
+    const vertical = { position: [0, 10, 0], target: [0, 0, 0], fov: 62 } as const;
+    expect(guardPose({ ...vertical, up: [0, 1, 0] }, null, FALLBACK).up).toEqual([0, 0, 1]);
+    expect(guardPose({ ...vertical, up: [0, 0, 0] }, null, FALLBACK).up).toEqual([0, 0, 1]);
   });
 
   it("clamps the field of view", () => {

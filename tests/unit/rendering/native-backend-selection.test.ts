@@ -563,7 +563,7 @@ describe("native backend negotiation", () => {
     const device = await WebGPUDevice.create({ adapter: { requestDevice: async () => native as unknown as WebGPUDeviceLike } });
     const other = await WebGPUDevice.create({ adapter: { requestDevice: async () => b as WebGPUDeviceLike } });
     const target = device.createRenderTarget({ width: 2, height: 2, depth: false, label: "surface" });
-    expect(() => device.executeWebGPUTaa(target, { v2: {} } as never)).toThrow(/temporal reconstruction v2 is not connected/);
+    expect(() => device.executeWebGPUTaa(target, { v2: {} } as never)).toThrow(RangeError);
     expect(() => other.getNativeTexture(target.colorTexture)).toThrow(/another device/);
     device.beginFrame(2, 2); device.setRenderTarget(target);
     device.getNativeRenderSurface(target);

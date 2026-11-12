@@ -1319,7 +1319,7 @@ export function runV2HdrStages(
     effectIndex: 0, width: source.width, height: source.height,
     cameraCut: scopedFrame ? frameContext!.cameraCut : undefined,
     deviceGeneration: scopedFrame ? frameContext!.deviceGeneration : undefined
-  }, () => host.device.createRenderTarget({ width: 1, height: 1, format: "rgba32f", depth: false, label: "post.ev" }),
+  }, () => host.device.createRenderTarget({ width: 1, height: 1, format: "rgba16f", depth: false, label: "post.ev" }),
   target => target.dispose()) : undefined;
   const drawGuard = expectedDepth ? (target: GlTarget) => assertExpectedDepth([source, target as unknown as RenderTarget]) : undefined;
   if (drawGuard) {
@@ -1335,7 +1335,10 @@ export function runV2HdrStages(
   // legacy presents resolve their source themselves; the v2 stage driver
   // never did and sampled the untouched resolve textures (black HDR). This
   // is a no-op when the source is single-sampled or already resolved.
-  host.resolveMultisampleTarget(source as Parameters<WebGL2DeviceHost["resolveMultisampleTarget"]>[0]);
+  (host.resolveMultisampleTarget as (target: Parameters<WebGL2DeviceHost["resolveMultisampleTarget"]>[0], discardMultisample?: boolean) => void)(
+    source as Parameters<WebGL2DeviceHost["resolveMultisampleTarget"]>[0],
+    true
+  );
   const src = asGlTarget(source);
   if ((needsLinZ || needsVelocity) && !src.depthTextureHandle) {
     // T0-17/FLAG-ON-4: no per-frame throw — a depth-less HDR source degrades
@@ -1364,7 +1367,17 @@ export function runV2HdrStages(
       ?? (camera ? Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4)) : undefined)
   };
 
-  // ── S1-A: linearized depth (RGBA32F .r = viewZ) ──────────────────────────
+  // ── S1-A: linearized depth (.r = viewZ; compact rgba16f unless a downstream
+  // pass divides/cross-products raw 3e38 sky sentinel without Inf guards or far > 65km)
+  const linZFormat = (
+    wantsDof ||
+    wantsSsr ||
+    wantsMb ||
+    wantsGodRays ||
+    exactPreviousDepth ||
+    far > 65000 ||
+    hdrCustoms.some((pass) => pass.inputs.includes("depth"))
+  ) ? "rgba32f" : "rgba16f";
   let linZFull: RenderTarget | null = null;
   let minmaxLease: PostTargetLease | null = null;
   let minmaxHalf: RenderTarget | null = null;
@@ -1374,7 +1387,7 @@ export function runV2HdrStages(
     // `linZOutput` slot so commit() promotes it for next frame's disocclusion.
     linZFull = temporal?.v2?.linZOutput ?? null;
     if (!linZFull) {
-      linZLease = scratch.acquire({ width: w, height: h, format: "rgba32f", samples: 1, depth: false });
+      linZLease = scratch.acquire({ width: w, height: h, format: linZFormat, samples: 1, depth: false });
       linZFull = linZLease.target;
     }
     const linProg = program(state, gl, "depth-linearize", DEPTH_LINEARIZE_GLSL);
@@ -1384,7 +1397,7 @@ export function runV2HdrStages(
       g.uniform2f(g.getUniformLocation(linProg, "u_jitterClip"), temporal?.v2?.jitterClip[0] ?? 0, temporal?.v2?.jitterClip[1] ?? 0);
       writeDepthUniforms(g, linProg, depthSettings);
     }, expectedDepth ? () => assertExpectedDepth([linZFull!]) : undefined);
-    minmaxLease = scratch.acquire({ width: hw, height: hh, format: "rgba32f", samples: 1, depth: false });
+    minmaxLease = scratch.acquire({ width: hw, height: hh, format: far > 65000 ? "rgba32f" : "rgba16f", samples: 1, depth: false });
     minmaxHalf = minmaxLease.target;
     const mmProg = program(state, gl, "depth-minmax", DEPTH_MINMAX_HALF_GLSL);
     draw(host, state, mmProg, asGlTarget(minmaxHalf), [asGlTarget(linZFull).colorHandle], (g) => {
@@ -2035,6 +2048,7 @@ export function runV2HdrStages(
     if (normalLease) scratch.take(normalLease);
   }
   scratch.releaseAll();
+  state.pool.trim(12);
   assertExpectedDepth([source, hdr]);
   if (expectedDepthTaaWritten && !afterBloom) markTaaHistoryWritten(frameContext?.scopeId, frameContext?.viewId, frameContext?.frameId);
   return { target: hdr, aoPending: wantsAo, skipped, ...(afterBloom ? { afterBloom } : {}),
@@ -2484,6 +2498,7 @@ export function runV2LdrTail(
     throw error;
   }
   scratch.releaseAll();
+  state.pool.trim(12);
   } catch (error) {
     try { scratch.releaseAll(); } catch { /* Preserve the frame failure. */ }
     throw error;
@@ -2605,8 +2620,10 @@ function bindOut(host: WebGL2DeviceHost, outTarget: RenderTarget | undefined, w:
     gl.bindFramebuffer(gl.FRAMEBUFFER, t.framebuffer);
     gl.viewport(0, 0, t.width, t.height);
   } else {
-    // SC-01/XR: the default output is the external framebuffer when set, and honours a persistent viewport.
-    host.lifecycle.bindOutput(null, w, h);
+    // SC-01/XR + GOV-1: default output uses the canvas/viewport dimensions so renderScale < 1 upscales cleanly.
+    const outW = host.lifecycle.viewportWidth || gl.drawingBufferWidth || w;
+    const outH = host.lifecycle.viewportHeight || gl.drawingBufferHeight || h;
+    host.lifecycle.bindOutput(null, outW, outH);
   }
 }
 
