@@ -14,7 +14,7 @@
 // panel (renderer string, draw calls, shader and context-loss errors).
 //
 // Page switches: `?story=<id>` `?mode=watch-sing|play-together` `?autostart=1`
-// `?manual=1` `?models=0` `?modelWaitMs=N` `?reducedMotion=1` `?audio=0` `?seed=N` `?diag=1`.
+// `?manual=1` `?backend=auto|webgpu|webgl2` `?reducedMotion=1` `?audio=0` `?seed=N` `?diag=1`.
 // None of them can turn on a microphone (src/runtime/feature-flags.ts).
 //
 // Nothing is logged to the console. A boot failure is recorded on
@@ -62,12 +62,12 @@ function markBootError(error: unknown): void {
  */
 const SPLASH_MAX_MS = 10_000;
 
-function removeSplashUnderFirstScreen(uiRoot: HTMLElement): void {
+function removeSplashUnderFirstScreen(uiRoot: HTMLElement): () => void {
   const splash = uiRoot.querySelector('[data-ui="boot"]');
-  if (!splash) return;
+  if (!splash) return () => undefined;
   if (document.documentElement.classList.contains(REDUCED_MOTION_CLASS) || prefersReducedMotion(window)) {
     splash.remove();
-    return;
+    return () => undefined;
   }
   // The first screen is already fading in: the splash's own content fades out under it (styles.css).
   splash.classList.add("ww-boot-leaving");
@@ -82,6 +82,7 @@ function removeSplashUnderFirstScreen(uiRoot: HTMLElement): void {
   };
   uiRoot.addEventListener("animationend", onAnimationEnd);
   timer = window.setTimeout(remove, SPLASH_MAX_MS);
+  return remove;
 }
 
 function boot(): void {
@@ -122,12 +123,18 @@ function boot(): void {
   });
   app = created;
   const qa = installWonderQaHooks(created, { seed: params.seed });
-  removeSplashUnderFirstScreen(uiRoot);
+  const clearBootSplash = removeSplashUnderFirstScreen(uiRoot);
 
-  created.whenReady().catch((error: unknown) => {
-    qa.reportError(error);
-    markBootError(error);
-  });
+  created
+    .whenReady()
+    .then(() => {
+      clearBootSplash();
+    })
+    .catch((error: unknown) => {
+      clearBootSplash();
+      qa.reportError(error);
+      markBootError(error);
+    });
   window.addEventListener("error", (event) => created.reportError(event.error ?? event.message));
   window.addEventListener("unhandledrejection", (event) => created.reportError(event.reason));
   // A page that is really leaving (not kept in the back/forward cache) stops every sound and timer.

@@ -1,52 +1,44 @@
 #!/usr/bin/env node
 // Generates src/assets/rights-manifest.ts (PRD 04 D14): one build-readable licence, owner and review record per
-// shipped media file, from provenance/models/*.json, provenance/audio/*.json, provenance/hdri.json,
-// provenance/portraits.json and the review and asset records in tools/. Fails when any admitted model, recorded audio
-// file, look HDRI or menu portrait has no record, or a record's file is missing. The module is read by tests and
+// shipped media file and procedural stage asset, from tools/wonder-assets.json, provenance/audio/*.json,
+// provenance/hdri.json and provenance/portraits.json. Fails when any recorded audio file, look HDRI or menu portrait
+// has no record, a record's file is missing, or a portrait file's SHA-256 diverges. The module is read by tests and
 // tooling only: nothing in the app imports it, so it never reaches the bundle. It names no person: owner and reviewer
 // fields are roles.
 //
 //   node tools/gen-rights-manifest.mjs
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+const sha256Hex = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const OWNER = "AuraOne (project owner)";
+const PROCEDURAL_STAGE_LICENSE = "Original procedural @aura3d/engine stage art owned by AuraOne";
 const failures = [];
 
-// ---- models
+// ---- procedural stage assets (all 65 ModelKeys; zero binary .glb models)
 const assets = readJson(join(app, "tools", "wonder-assets.json")).assets;
-const review = readJson(join(app, "tools", "model-review.json"));
-const models = [];
-const procedural = [];
-for (const asset of assets) {
-  const status = review[asset.key]?.status;
-  if (status === "procedural") {
-    procedural.push({ key: asset.key, note: "Drawn from scene geometry by design (src/scenes/stand-ins.ts); no external asset." });
-    continue;
-  }
-  const provPath = join(app, "provenance", "models", `${asset.key}.json`);
-  if (!existsSync(provPath)) {
-    failures.push(`model ${asset.key}: no provenance/models/${asset.key}.json`);
-    continue;
-  }
-  const p = readJson(provPath);
-  if (!existsSync(join(app, p.file))) failures.push(`model ${asset.key}: ${p.file} is missing`);
-  models.push({
-    key: asset.key,
-    file: p.file,
-    sha256: p.sha256,
-    license: p.license,
-    generator: p.source?.generator ?? "unknown",
-    owner: OWNER,
-    review: `${p.review?.status ?? "unreviewed"} by ${p.review?.reviewer ?? "nobody"} on ${p.review?.date ?? "-"}`
-  });
+if (!Array.isArray(assets) || assets.length !== 65) {
+  failures.push(`wonder-assets.json: expected 65 procedural assets, got ${Array.isArray(assets) ? assets.length : "non-array"}`);
 }
-for (const file of readdirSync(join(app, "src", "assets", "models")).filter((f) => f.endsWith(".glb"))) {
-  if (!models.some((m) => m.file.endsWith(`/${file}`))) failures.push(`model file ${file} has no provenance record`);
+const modelsDir = join(app, "src", "assets", "models");
+if (existsSync(modelsDir)) {
+  const strayGlbs = readdirSync(modelsDir).filter((f) => f.endsWith(".glb"));
+  if (strayGlbs.length > 0) {
+    failures.push(`src/assets/models contains ${strayGlbs.length} forbidden .glb file(s)`);
+  } else {
+    failures.push("src/assets/models directory must not exist");
+  }
 }
+const procedural = (Array.isArray(assets) ? assets : []).map((asset) => ({
+  key: asset.key,
+  license: PROCEDURAL_STAGE_LICENSE,
+  owner: OWNER,
+  note: "Drawn from @aura3d/engine procedural geometry; no external asset."
+}));
 
 // ---- audio
 const audioKinds = [
@@ -89,16 +81,42 @@ const environments = Object.entries(hdri.files).map(([file, p]) => {
   return { file, sha256: p.sha256, license: p.license, source: p.source, owner: "Poly Haven (CC0)" };
 });
 
-// ---- menu portraits (renders of the admitted character models, tools/make-portraits.sh)
+// ---- menu portraits (rendered from procedural character rigs via tools/render-character-portraits.mjs)
 const portraitDir = join(app, "src", "assets", "portraits");
 const portraitProvPath = join(app, "provenance", "portraits.json");
 const portraitProv = existsSync(portraitProvPath) ? readJson(portraitProvPath) : {};
 const portraits = Object.entries(portraitProv).map(([id, p]) => {
-  if (!existsSync(join(app, p.file))) failures.push(`portrait ${id}: ${p.file} is missing`);
-  return { id, file: p.file, sha256: p.sha256, license: p.license, source: p.source, owner: OWNER, review: `${p.review?.status ?? "unreviewed"} by ${p.review?.reviewer ?? "nobody"} on ${p.review?.date ?? "-"}` };
+  const expectedRel = `src/assets/portraits/${id}.webp`;
+  if (p.file !== expectedRel) {
+    failures.push(`portrait ${id}: expected file "${expectedRel}", got "${String(p.file)}"`);
+  }
+  const fullPath = join(app, p.file);
+  if (!existsSync(fullPath)) {
+    failures.push(`portrait ${id}: ${p.file} is missing`);
+  } else {
+    const actualSha = sha256Hex(readFileSync(fullPath));
+    if (actualSha !== p.sha256) {
+      failures.push(`portrait ${id}: sha256 mismatch for ${p.file} (provenance ${p.sha256}, disk ${actualSha})`);
+    }
+  }
+  if (typeof p.license !== "string" || p.license.trim() === "") {
+    failures.push(`portrait ${id}: missing license in provenance/portraits.json`);
+  }
+  return {
+    id,
+    file: p.file,
+    sha256: p.sha256,
+    license: p.license,
+    source: p.source,
+    generator: p.generator ?? "tools/render-character-portraits.mjs",
+    owner: OWNER,
+    review: `${p.review?.status ?? "unreviewed"} by ${p.review?.reviewer ?? "nobody"} on ${p.review?.date ?? "-"}`
+  };
 });
 for (const file of existsSync(portraitDir) ? readdirSync(portraitDir).filter((f) => f.endsWith(".webp")) : []) {
-  if (!portraits.some((p) => p.file.endsWith(`/${file}`))) failures.push(`portrait file ${file} has no record in provenance/portraits.json`);
+  if (!portraits.some((p) => p.file.endsWith(`/${file}`))) {
+    failures.push(`portrait file ${file} has no record in provenance/portraits.json`);
+  }
 }
 
 if (failures.length > 0) {
@@ -108,7 +126,7 @@ if (failures.length > 0) {
 
 const lines = [];
 lines.push("// Generated by tools/gen-rights-manifest.mjs from provenance/ and tools/ (PRD 04 D14). Do not edit.");
-lines.push("// Build-readable licence, owner and review records for every shipped model, audio file, look HDRI and portrait.");
+lines.push("// Build-readable licence, owner and review records for every procedural stage asset, audio file, look HDRI and portrait.");
 lines.push("// Nothing in the app imports this module, so it never reaches the bundle. No person is named: roles only.");
 lines.push("");
 lines.push("export interface ModelRightsRecord {");
@@ -121,6 +139,15 @@ lines.push("  readonly owner: string;");
 lines.push("  readonly review: string;");
 lines.push("}");
 lines.push("");
+lines.push("export type AssetRight = ModelRightsRecord;");
+lines.push("");
+lines.push("export interface ProceduralRightsRecord {");
+lines.push("  readonly key: string;");
+lines.push("  readonly license: string;");
+lines.push("  readonly owner: string;");
+lines.push("  readonly note: string;");
+lines.push("}");
+lines.push("");
 lines.push("export interface AudioRightsGroup {");
 lines.push("  readonly provider: string;");
 lines.push("  readonly license: string;");
@@ -130,16 +157,51 @@ lines.push("  readonly tiers: Readonly<Record<string, number>>;");
 lines.push("  readonly files: readonly { readonly id: string; readonly tier: string; readonly endpoint: string; readonly date: string }[];");
 lines.push("}");
 lines.push("");
-lines.push(`export const MODEL_RIGHTS: readonly ModelRightsRecord[] = ${JSON.stringify(models, null, 2)};`);
+lines.push("export interface EnvironmentRightsRecord {");
+lines.push("  readonly file: string;");
+lines.push("  readonly sha256: string;");
+lines.push("  readonly license: string;");
+lines.push("  readonly source: string;");
+lines.push("  readonly owner: string;");
+lines.push("}");
 lines.push("");
-lines.push(`export const PROCEDURAL_RIGHTS: readonly { readonly key: string; readonly note: string }[] = ${JSON.stringify(procedural, null, 2)};`);
+lines.push("export interface PortraitRightsRecord {");
+lines.push("  readonly id: string;");
+lines.push("  readonly file: string;");
+lines.push("  readonly sha256: string;");
+lines.push("  readonly license: string;");
+lines.push("  readonly source: string;");
+lines.push("  readonly generator: string;");
+lines.push("  readonly owner: string;");
+lines.push("  readonly review: string;");
+lines.push("}");
+lines.push("");
+lines.push("export interface AllAssetRights {");
+lines.push("  readonly models: readonly AssetRight[];");
+lines.push("  readonly procedural: readonly ProceduralRightsRecord[];");
+lines.push('  readonly audio: Readonly<Record<"lines" | "songs" | "beds" | "sfx", AudioRightsGroup>>;');
+lines.push("  readonly environments: readonly EnvironmentRightsRecord[];");
+lines.push("  readonly portraits: readonly PortraitRightsRecord[];");
+lines.push("}");
+lines.push("");
+lines.push("export const MODEL_RIGHTS: readonly AssetRight[] = [];");
+lines.push("");
+lines.push(`export const PROCEDURAL_RIGHTS: readonly ProceduralRightsRecord[] = ${JSON.stringify(procedural, null, 2)};`);
 lines.push("");
 lines.push(`export const AUDIO_RIGHTS: Readonly<Record<"lines" | "songs" | "beds" | "sfx", AudioRightsGroup>> = ${JSON.stringify(audio)};`);
 lines.push("");
-lines.push(`export const ENVIRONMENT_RIGHTS: readonly { readonly file: string; readonly sha256: string; readonly license: string; readonly source: string; readonly owner: string }[] = ${JSON.stringify(environments, null, 2)};`);
+lines.push(`export const ENVIRONMENT_RIGHTS: readonly EnvironmentRightsRecord[] = ${JSON.stringify(environments, null, 2)};`);
 lines.push("");
-lines.push(`export const PORTRAIT_RIGHTS: readonly { readonly id: string; readonly file: string; readonly sha256: string; readonly license: string; readonly source: string; readonly owner: string; readonly review: string }[] = ${JSON.stringify(portraits, null, 2)};`);
+lines.push(`export const PORTRAIT_RIGHTS: readonly PortraitRightsRecord[] = ${JSON.stringify(portraits, null, 2)};`);
+lines.push("");
+lines.push("export const ALL_ASSET_RIGHTS: AllAssetRights = {");
+lines.push("  models: MODEL_RIGHTS,");
+lines.push("  procedural: PROCEDURAL_RIGHTS,");
+lines.push("  audio: AUDIO_RIGHTS,");
+lines.push("  environments: ENVIRONMENT_RIGHTS,");
+lines.push("  portraits: PORTRAIT_RIGHTS");
+lines.push("};");
 lines.push("");
 writeFileSync(join(app, "src", "assets", "rights-manifest.ts"), lines.join("\n"));
 const audioCount = Object.values(audio).reduce((sum, group) => sum + group.files.length, 0);
-console.log(`rights-manifest.ts: ${models.length} models, ${procedural.length} procedural, ${audioCount} audio files, ${environments.length} HDRIs, ${portraits.length} portraits`);
+console.log(`rights-manifest.ts: 0 models, ${procedural.length} procedural, ${audioCount} audio files, ${environments.length} HDRIs, ${portraits.length} portraits`);

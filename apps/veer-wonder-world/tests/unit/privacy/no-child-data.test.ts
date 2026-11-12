@@ -140,16 +140,15 @@ describe("J07: no microphone, camera or speech input", () => {
 });
 
 describe("J07: no network calls or tracking", () => {
-  it("makes no request of its own besides fetching its same-origin model files", () => {
+  it("makes no network fetch requests at runtime", () => {
     expect(describeHits(codeHits(/\bXMLHttpRequest\b|\bsendBeacon\b|\bWebSocket\b|\bEventSource\b|\bRTCPeerConnection\b|\bnew\s+Image\s*\(/))).toBe("");
     expect(describeHits(codeHits(/\bimport\s*\(\s*["'`]https?:/))).toBe("");
-    // The one fetch is the model preloader's, on the URLs of the generated asset module.
     const fetchFiles = [...new Set(codeHits(/\bfetch\s*\(/).map((hit) => hit.file))];
-    expect(fetchFiles).toEqual(["src/runtime/asset-preloader.ts"]);
+    expect(fetchFiles).toEqual([]);
   });
 
-  it("names every model and sound by a module-relative, same-origin URL", () => {
-    for (const rel of ["src/aura-assets.ts", "src/audio-manifest.ts"]) {
+  it("names every sound and portrait by a module-relative, same-origin URL", () => {
+    for (const rel of ["src/audio-manifest.ts"]) {
       const file = SOURCES.find((source) => source.rel === rel);
       expect(file, rel).toBeDefined();
       const code = file?.code ?? "";
@@ -171,7 +170,7 @@ describe("J07: no network calls or tracking", () => {
     // import.meta.url)` resolves from src/ wherever it is written; the Vite build resolves it from its own module. The
     // two agree only for modules in src/ itself.
     const files = [...new Set(codeHits(/new URL\(\s*["'`]\.{1,2}\//).map((hit) => hit.file))].sort();
-    expect(files).toEqual(["src/audio-manifest.ts", "src/aura-assets.ts", "src/portrait-assets.ts"]);
+    expect(files).toEqual(["src/audio-manifest.ts", "src/portrait-assets.ts"]);
   });
 
   it("links out only to two parent reading pages, and loads nothing from another origin", () => {

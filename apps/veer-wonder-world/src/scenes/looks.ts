@@ -1,8 +1,11 @@
 import {
   effects,
+  geometry,
   lights,
   looks,
+  material,
   type AuraColor,
+  type AuraCustomGeometrySpec,
   type AuraHdriId,
   type AuraLookId,
   type AuraLookOverrides,
@@ -10,6 +13,8 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import type { WorldId } from "../types.js";
+import { getCraftTexture } from "./procedural-rigs/craft-textures.js";
+import { srgbHexToLinearRgba } from "./procedural-rigs/rig-kit.js";
 
 export type { WorldId };
 
@@ -64,6 +69,8 @@ export interface WorldLookOptions {
   readonly softwareRenderer?: boolean;
 }
 
+export type WorldLookNodeOptions = WorldLookOptions;
+
 const STORYBOOK_PCSS_SHADOW = {
   mapSize: 2048,
   cascades: 2,
@@ -84,10 +91,10 @@ const SOFTWARE_GL_SHADOW = {
 } as const;
 
 const STORYBOOK_BLOOM = {
-  intensity: 0.28,
-  threshold: 1.15,
-  knee: 0.45,
-  clampLuminance: 4.0
+  intensity: 0.16,
+  threshold: 1.55,
+  knee: 0.4,
+  clampLuminance: 3.5
 } as const;
 
 const STORYBOOK_POST = {
@@ -100,7 +107,7 @@ const STORYBOOK_POST = {
  * shadow, warm rim backlight, sky dome, bounce hemisphere fill, height fog,
  * multi-bounce AO, and AgX grade per world.
  *
- * `effects.vignette` is never emitted in any world.
+ * `effects.vignette` is omitted across every world.
  */
 export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
   meadow: {
@@ -229,13 +236,13 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     overrides: {
       hdri: "spruit_sunrise",
       sun: { azimuthDeg: -38, elevationDeg: 28 },
-      exposureEv: -0.26,
-      environmentIntensity: 0.86,
+      exposureEv: -0.34,
+      environmentIntensity: 0.84,
       environmentRotationDeg: 322,
       background: "#F5DCB8",
       key: {
         color: "#FFE7C2",
-        intensity: 2.18,
+        intensity: 1.92,
         shadow: STORYBOOK_PCSS_SHADOW
       },
       rim: {
@@ -407,7 +414,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     overrides: {
       hdri: "warm_bar",
       sun: { azimuthDeg: -32, elevationDeg: 36 },
-      exposureEv: -0.06,
+      exposureEv: -0.18,
       environmentIntensity: 0.86,
       environmentRotationDeg: 14,
       background: "#F2DFC6",
@@ -455,15 +462,142 @@ export function lookAppOptions(world: WorldId = "meadow"): ReturnType<typeof loo
   return looks.appOptions(WORLD_LOOKS[world].look);
 }
 
+const SKY_DOME_CACHE = new Map<WorldId, AuraCustomGeometrySpec>();
+
+function parseHexColor(color: AuraColor): string {
+  return typeof color === "string" ? color : "#FFFFFF";
+}
+
+function buildStorybookSkyDomeNode(world: WorldId, skySpec: WorldSkyGradientSpec): AuraNodeBuilder<AuraSceneNode> {
+  let domeSpec = SKY_DOME_CACHE.get(world);
+  if (!domeSpec) {
+    const radius = 68;
+    const rings = 22;
+    const segs = 44;
+    const phiMin = -0.22 * Math.PI;
+    const phiMax = 0.5 * Math.PI;
+    const zenith = srgbHexToLinearRgba(parseHexColor(skySpec.zenith));
+    const horizon = srgbHexToLinearRgba(parseHexColor(skySpec.horizon));
+    const ground = srgbHexToLinearRgba(parseHexColor(skySpec.ground));
+    const sunColor = srgbHexToLinearRgba(parseHexColor(skySpec.sun?.color ?? "#FFF4D8"));
+    const exponent = skySpec.exponent ?? 0.72;
+    const horizonGlow = skySpec.horizonGlow ?? 0.2;
+    const sunElevRad = ((skySpec.sun?.elevationDeg ?? 36) * Math.PI) / 180;
+    const sunAzimRad = ((skySpec.sun?.azimuthDeg ?? 38) * Math.PI) / 180;
+    const sunX = Math.cos(sunElevRad) * Math.sin(sunAzimRad);
+    const sunY = Math.sin(sunElevRad);
+    const sunZ = -Math.cos(sunElevRad) * Math.cos(sunAzimRad);
+    const sunStrength = skySpec.sun ? (skySpec.sun.intensity ?? 0.4) : 0;
+
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+
+    for (let r = 0; r <= rings; r += 1) {
+      const v = r / rings;
+      const phi = phiMin + (phiMax - phiMin) * v;
+      const cosPhi = Math.cos(phi);
+      const sinPhi = Math.sin(phi);
+      for (let s = 0; s <= segs; s += 1) {
+        const u = s / segs;
+        const theta = u * Math.PI * 2;
+        const dx = cosPhi * Math.sin(theta);
+        const dy = sinPhi;
+        const dz = cosPhi * Math.cos(theta);
+
+        positions.push(dx * radius, dy * radius, dz * radius);
+        normals.push(0, 1, 0);
+        uvs.push(u, v);
+
+        let cr: number;
+        let cg: number;
+        let cb: number;
+        if (dy >= 0) {
+          const t = Math.pow(Math.min(1, dy), exponent);
+          cr = horizon[0] + (zenith[0] - horizon[0]) * t;
+          cg = horizon[1] + (zenith[1] - horizon[1]) * t;
+          cb = horizon[2] + (zenith[2] - horizon[2]) * t;
+          const glow = Math.pow(1 - Math.min(1, dy), 3.4) * horizonGlow;
+          cr += sunColor[0] * glow * 0.45;
+          cg += sunColor[1] * glow * 0.42;
+          cb += sunColor[2] * glow * 0.36;
+        } else {
+          const t = Math.min(1, Math.pow(-dy / 0.65, 0.78));
+          cr = horizon[0] + (ground[0] - horizon[0]) * t;
+          cg = horizon[1] + (ground[1] - horizon[1]) * t;
+          cb = horizon[2] + (ground[2] - horizon[2]) * t;
+        }
+
+        if (sunStrength > 0 && dy > -0.08) {
+          const cosAng = Math.max(0, dx * sunX + dy * sunY + dz * sunZ);
+          const corona = Math.pow(cosAng, 14) * sunStrength * 0.55 + Math.pow(cosAng, 220) * sunStrength * 0.85;
+          const blend = Math.min(0.92, corona);
+          cr = cr + (sunColor[0] - cr) * blend;
+          cg = cg + (sunColor[1] - cg) * blend;
+          cb = cb + (sunColor[2] - cb) * blend;
+        }
+
+        colors.push(Math.min(1.5, cr), Math.min(1.5, cg), Math.min(1.5, cb), 1);
+      }
+    }
+
+    const stride = segs + 1;
+    for (let r = 0; r < rings; r += 1) {
+      const rowA = r * stride;
+      const rowB = rowA + stride;
+      for (let s = 0; s < segs; s += 1) {
+        const a = rowA + s;
+        const b = a + 1;
+        const c = rowB + s;
+        const d = c + 1;
+        // Inward-facing winding so the camera inside the 68 m dome sees the sky gradient.
+        indices.push(a, c, b, b, c, d);
+      }
+    }
+
+    domeSpec = {
+      kind: "aura-custom-geometry",
+      positions: Float32Array.from(positions),
+      normals: Float32Array.from(normals),
+      uvs: Float32Array.from(uvs),
+      colors: Float32Array.from(colors),
+      indices: Uint16Array.from(indices),
+      bounds: {
+        min: [-radius, Math.sin(phiMin) * radius, -radius],
+        max: [radius, radius, radius]
+      }
+    };
+    SKY_DOME_CACHE.set(world, domeSpec);
+  }
+
+  return geometry.custom(domeSpec, {
+    name: `${world} sky dome`,
+    material: material.standard({
+      color: "#FFFFFF",
+      roughness: 1,
+      metallic: 0,
+      diffuseRoughness: 0.9,
+      envMapIntensity: 0.85,
+      texture: getCraftTexture("glazedCeramicSpeckle")
+    }),
+    castShadow: false,
+    receiveShadow: false
+  });
+}
+
 /**
  * Scene nodes emitted for a world's look: `looks.preset` (HDRI IBL, PCSS key
- * shadow, rim light, height fog, AgX grade, soft bloom, SMAA) layered with a
- * sunlit horizon backdrop + soft storybook sky clouds, `lights.hemisphere`
- * bounce fill, and multi-bounce `effects.ambientOcclusion`.
+ * shadow, rim light, height fog, AgX grade, soft bloom, FXAA) layered with a
+ * WebGPU-native vertex-colored sunlit sky dome (`buildStorybookSkyDomeNode` so
+ * the real CC0 HDRI remains authoritative on both WebGPU and WebGL2),
+ * `lights.hemisphere` bounce fill, multi-bounce `effects.ambientOcclusion`,
+ * close-range `effects.contactShadows`, and subtle miniature-diorama `effects.depthOfField`.
  */
 export function worldLookNodes(
   world: WorldId,
-  options: WorldLookOptions = {}
+  options: WorldLookNodeOptions = {}
 ): readonly AuraNodeBuilder<AuraSceneNode>[] {
   const spec = WORLD_LOOKS[world];
   const overrides: AuraLookOverrides =
@@ -485,6 +619,9 @@ export function worldLookNodes(
     })
   ];
   if (options.softwareRenderer !== true) {
+    if (spec.sky !== null) {
+      nodes.push(buildStorybookSkyDomeNode(world, spec.sky));
+    }
     nodes.push(
       effects.ambientOcclusion({
         name: `${world} clay ambient occlusion`,
@@ -492,8 +629,28 @@ export function worldLookNodes(
         intensity: 0.65,
         falloff: 0.45,
         multiBounce: true
+      }),
+      effects.contactShadows({
+        length: spec.contactShadows.length,
+        thickness: 0.05,
+        steps: options.qualityTier === "medium" || options.qualityTier === "low" ? 12 : 16,
+        intensity: spec.contactShadows.intensity,
+        lights: "sun"
       })
     );
+    if (options.qualityTier !== "low") {
+      nodes.push(
+        effects.depthOfField({
+          name: `${world} miniature lens`,
+          focusDistance: 4.5,
+          fStop: 5.6,
+          focalLength: 50,
+          maxBlur: 1.5,
+          focus: 0.09,
+          aperture: 0.28
+        })
+      );
+    }
   }
   return nodes;
 }

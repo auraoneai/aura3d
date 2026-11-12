@@ -7,30 +7,23 @@
 // - `base: "./"`: the built JS, CSS and asset URLs are relative.
 // - Build-time physics stripping (`auraPhysicsPlugin({ physics: "auto" })`):
 //   Wonder World uses 0 Rapier physics bodies, stripping the 2.85 MB Rapier WASM chunk.
-// - Same-origin Basis/Draco/Meshopt decoder deployment under `/aura-decoders/`
-//   (`dist/aura-decoders/`) for KTX2 & meshopt GLB assets.
 // - Shared files from the repo's root public/ tree: the licensed fonts
 //   (`/fonts/local.css`, Whitney, Graphik Web, DIN Pro, Monument Grotesk Mono)
 //   and the six world look HDRIs (`/hdri/<file>.hdr`, CC0).
-// - No source maps in the build.
+// - No source maps and zero binary .glb / decoder bundles in the build.
 
 import fs from "node:fs";
-import fsp from "node:fs/promises";
 import type { ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig, transformWithEsbuild } from "vite";
+import { defineConfig } from "vite";
 import type { Connect, Plugin } from "vite";
-import { auraDecodersVendorRoot } from "../../packages/assets/src/vite/auraDecoders";
 import { auraPhysicsPlugin } from "../../packages/assets/src/vite/auraPhysics";
 import rootConfig from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appDir, "..", "..");
 const sharedPublicDir = path.join(repoRoot, "public");
-const decodersVendorDir = auraDecodersVendorRoot();
-const ktx2WorkerJs = path.join(repoRoot, "packages", "assets", "dist", "workers", "ktx2.worker.js");
-const ktx2WorkerTs = path.join(repoRoot, "packages", "assets", "src", "workers", "ktx2.worker.ts");
 
 const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 
@@ -68,14 +61,12 @@ const FONT_STYLESHEET = "fonts/local.css";
 
 /** Folders of the shared root public/ tree served at the origin root (dev and preview). */
 const SHARED_DIRS = ["fonts", "hdri"].map((dir) => path.join(sharedPublicDir, dir) + path.sep);
-const DECODER_CODECS = ["basis", "draco", "meshopt"] as const;
 
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
   ".cjs": "text/javascript; charset=utf-8",
-  ".wasm": "application/wasm",
   ".woff2": "font/woff2",
   ".woff": "font/woff",
   ".hdr": "application/octet-stream",
@@ -106,29 +97,6 @@ function serveSharedFile(req: Connect.IncomingMessage, res: ServerResponse, next
   } catch {
     next();
     return;
-  }
-  if (urlPath.startsWith("/aura-decoders/")) {
-    const rel = urlPath.slice("/aura-decoders/".length);
-    const distCandidate = path.resolve(appDir, "dist", "aura-decoders", rel);
-    const vendorCandidate = path.resolve(decodersVendorDir, rel);
-    const file =
-      distCandidate.startsWith(path.resolve(appDir, "dist", "aura-decoders") + path.sep) && fs.existsSync(distCandidate) && fs.statSync(distCandidate).isFile()
-        ? distCandidate
-        : vendorCandidate.startsWith(decodersVendorDir + path.sep) && fs.existsSync(vendorCandidate) && fs.statSync(vendorCandidate).isFile()
-          ? vendorCandidate
-          : null;
-    if (file) {
-      res.setHeader("content-type", CONTENT_TYPES[path.extname(file).toLowerCase()] ?? "application/octet-stream");
-      res.setHeader("content-length", String(fs.statSync(file).size));
-      fs.createReadStream(file).pipe(res);
-      return;
-    }
-    if (rel === "basis/ktx2.worker.js" && fs.existsSync(ktx2WorkerJs)) {
-      res.setHeader("content-type", "text/javascript; charset=utf-8");
-      res.setHeader("content-length", String(fs.statSync(ktx2WorkerJs).size));
-      fs.createReadStream(ktx2WorkerJs).pipe(res);
-      return;
-    }
   }
   const file = path.resolve(sharedPublicDir, `.${urlPath}`);
   if (!SHARED_DIRS.some((dir) => file.startsWith(dir)) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
@@ -171,47 +139,12 @@ const copySharedPublicFiles: Plugin = {
       }
       this.emitFile({ type: "asset", fileName: rel, source: fs.readFileSync(file) });
     }
-  },
-  async closeBundle() {
-    const targetRoot = path.resolve(appDir, "dist", "aura-decoders");
-    await fsp.mkdir(targetRoot, { recursive: true });
-    for (const codec of DECODER_CODECS) {
-      const srcDir = path.join(decodersVendorDir, codec);
-      if (fs.existsSync(srcDir)) {
-        await fsp.cp(srcDir, path.join(targetRoot, codec), { recursive: true });
-      }
-    }
-    for (const [relMjs, relJs, exportName] of [
-      [path.join("basis", "basis_transcoder.mjs"), path.join("basis", "basis_transcoder.js"), "BASIS"],
-      [path.join("draco", "draco_decoder.mjs"), path.join("draco", "draco_decoder.js"), "DracoDecoderModule"]
-    ] as const) {
-      const srcJs = path.join(decodersVendorDir, relJs);
-      if (fs.existsSync(srcJs)) {
-        const body = fs.readFileSync(srcJs, "utf8");
-        await fsp.writeFile(path.join(targetRoot, relMjs), `${body}\nexport default ${exportName};\n`);
-      }
-    }
-    const workerDest = path.join(targetRoot, "basis", "ktx2.worker.js");
-    if (fs.existsSync(ktx2WorkerJs)) {
-      await fsp.copyFile(ktx2WorkerJs, workerDest);
-    } else if (fs.existsSync(ktx2WorkerTs)) {
-      const compiled = await transformWithEsbuild(fs.readFileSync(ktx2WorkerTs, "utf8"), ktx2WorkerTs, {
-        loader: "ts",
-        format: "iife",
-        target: "es2020",
-        sourcemap: false
-      });
-      await fsp.writeFile(workerDest, compiled.code);
-    }
   }
 };
 
 export default defineConfig({
   root: appDir,
   base: "./",
-  define: {
-    "import.meta.env.AURA3D_DECODER_BASE_PATH": JSON.stringify("/aura-decoders/")
-  },
   plugins: [
     ...(rootConfig.plugins ?? []),
     auraPhysicsPlugin({ physics: "auto" }),

@@ -12,20 +12,20 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-/aura-decoders/*
-  Cache-Control: public, max-age=31536000, immutable
-
 /fonts/*
   Cache-Control: public, max-age=86400
 
 /hdri/*
   Cache-Control: public, max-age=86400
 
-/assets/*.glb
-  Content-Type: model/gltf-binary
+/assets/*.mp3
+  Content-Type: audio/mpeg
 
-/aura-decoders/*.wasm
-  Content-Type: application/wasm
+/assets/*.webp
+  Content-Type: image/webp
+
+/fonts/*.woff2
+  Content-Type: font/woff2
 
 /hdri/*.hdr
   Content-Type: application/octet-stream

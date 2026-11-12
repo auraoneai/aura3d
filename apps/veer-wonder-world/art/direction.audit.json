@@ -1,10 +1,10 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/veer-wonder-world/art/direction.ts",
-  "sourceSha256": "e49ce70aab14445f30ee7def34ca61eda536c63bb0437d3ef6a1d884686f86ee",
+  "sourceSha256": "9dcc448422c0867634b353af9951205c09c33babe6291b9ebedabb443e524a9b",
   "id": "wonder-world",
   "genre": "maze-arcade",
-  "signatureEffect": "Warm storybook miniature clay-and-beechwood diorama lighting: six world-matched CC0 HDRI IBL skies with a single 2048 PCSS key light, rim separation, soft contact shadows, and syllable-envelope articulated puppetry with zero vignette.",
+  "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
   "palette": {
     "primary": [
       "#FBF6EC",
@@ -47,86 +47,12 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "momo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "picnicBasket",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "apple",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "banana",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
+          {
+            "node": "meadow sky dome",
+            "practical": false
+          },
           {
             "name": "felt",
             "node": "meadow felt island plinth",
@@ -154,11 +80,37 @@
           },
           {
             "name": "matte clay",
+            "node": "meadow creek sandy bed",
+            "practical": false
+          },
+          {
+            "node": "meadow babbling brook surface",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow cobble timber footbridge-masonry",
+            "practical": false
+          },
+          {
+            "node": "meadow cobble timber footbridge-timber-deck",
+            "practical": false
+          },
+          {
+            "node": "meadow cobble timber footbridge-handrail-ropes",
+            "practical": false
+          },
+          {
+            "node": "meadow brook bank cobbles",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
             "node": "meadow winding clay path",
             "practical": false
           },
           {
-            "node": "meadow path stepping pebbles",
+            "node": "meadow stepping stone flags",
             "practical": false
           },
           {
@@ -166,185 +118,286 @@
             "practical": false
           },
           {
-            "node": "meadow daisy blossoms",
+            "node": "meadow multi petal wildflowers",
             "practical": false
           },
           {
-            "node": "meadow cedar picket posts",
+            "node": "meadow cedar fence posts",
             "practical": false
           },
           {
-            "node": "meadow cedar picket rails",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "meadow-cloud-drift-1-core",
+            "node": "meadow cedar split rails",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-1-left",
+            "node": "meadow-cloud-drift-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-1-right",
+            "node": "meadow-cloud-drift-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-2-core",
+            "node": "meadow-cloud-drift-3",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-0-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-2-left",
+            "node": "meadow:dressing-0-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-0-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-1-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-2-right",
+            "node": "meadow:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-1-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-2-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-3-core",
+            "node": "meadow:dressing-2-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-2-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-3-left",
+            "node": "meadow:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-3-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-3-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow-cloud-drift-3-right",
+            "node": "meadow:dressing-4-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-4-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-3",
+            "node": "meadow:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "meadow:dressing-5-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "meadow:dressing-5-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-6-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-3~1",
+            "node": "meadow:dressing-6-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "meadow:dressing-6-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-7-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-3~2",
+            "node": "meadow:dressing-7-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "meadow:dressing-7-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-8-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-3~3",
+            "node": "meadow:dressing-8-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "meadow:dressing-8-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-9-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-3~4",
+            "node": "meadow:dressing-9-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "meadow:dressing-9-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-4",
+            "node": "meadow:dressing-10-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-10-dressing1-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-4~1",
+            "node": "meadow:dressing-11-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "meadow:dressing-11-dressing1-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-4~2",
+            "node": "momo-body-plushTorso",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-4~3",
+            "node": "momo-body-tummyMedallion",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-4~4",
+            "node": "momo-head-plushHead",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-5",
+            "node": "momo-armL-plushArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-5~1",
+            "node": "momo-armR-plushArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-5~2",
+            "node": "momo-footL-plushFoot",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-5~3",
+            "node": "momo-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "momo-jaw-smileJaw",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-5~4",
+            "node": "momo-cheekPuff-cheekBlush",
+            "practical": false
+          },
+          {
+            "node": "basket-body-hamperWicker",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "meadow:dressing-10",
+            "node": "basket-body-ginghamTrim",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-10~1",
+            "node": "basket-lid-lidWicker",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-10~2",
+            "name": "brushed metal",
+            "node": "basket-lid-lidBuckle",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-10~3",
+            "name": "lacquer",
+            "node": "apple-body-appleSkin",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-10~4",
+            "name": "matte clay",
+            "node": "apple-body-stemAndLeaves",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-11",
+            "name": "matte clay",
+            "node": "banana-body-peel",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "meadow:dressing-11~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "meadow:dressing-11~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "meadow:dressing-11~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "meadow:dressing-11~4",
+            "node": "banana-body-stemAndTip",
             "practical": false
           },
           {
@@ -391,58 +444,12 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "lulu",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "momo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "drum",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
+          {
+            "node": "music-garden sky dome",
+            "practical": false
+          },
           {
             "name": "felt",
             "node": "music garden seafoam island plinth",
@@ -475,12 +482,52 @@
           },
           {
             "name": "matte clay",
-            "node": "music garden lower amphitheater terrace",
+            "node": "music garden lower amphitheater stone tier",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "music garden upper amphitheater stone tier",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music garden upper amphitheater terrace",
+            "node": "music garden amphitheater stone coping rim",
+            "practical": false
+          },
+          {
+            "node": "music garden amphitheater pergola-columns-and-beams",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "music garden amphitheater pergola-ivy-garlands",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "music garden amphitheater pergola-ivy-blossoms",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "music garden lotus pond basin",
+            "practical": false
+          },
+          {
+            "node": "music garden calm lotus pond",
+            "practical": false
+          },
+          {
+            "node": "music garden lotus pond cobbles",
+            "practical": false
+          },
+          {
+            "node": "music garden notched lily pads",
+            "practical": false
+          },
+          {
+            "node": "music garden sculpted lotus blossoms",
             "practical": false
           },
           {
@@ -511,7 +558,13 @@
             "practical": false
           },
           {
-            "node": "music garden wooden chime arch",
+            "name": "brushed metal",
+            "node": "music garden sculpted brass chime arch",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "music garden chime arch finials",
             "practical": false
           },
           {
@@ -540,132 +593,272 @@
             "practical": false
           },
           {
-            "node": "music garden pastel blooms",
+            "node": "music garden pastel blossoms",
             "practical": false
           },
           {
             "name": "matte clay",
-            "node": "music-garden:dressing-0",
+            "node": "music-garden:dressing-0-dressing0-0",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-0~1",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "music-garden:dressing-0~2",
+            "node": "music-garden:dressing-0-dressing1-1",
             "practical": false
           },
           {
             "name": "matte clay",
-            "node": "music-garden:dressing-1",
+            "node": "music-garden:dressing-1-dressing0-0",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-1~1",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "music-garden:dressing-1~2",
+            "node": "music-garden:dressing-1-dressing1-1",
             "practical": false
           },
           {
             "name": "matte clay",
-            "node": "music-garden:dressing-2",
+            "node": "music-garden:dressing-2-dressing0-0",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-2~1",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "music-garden:dressing-2~2",
+            "node": "music-garden:dressing-2-dressing1-1",
             "practical": false
           },
           {
             "name": "matte clay",
-            "node": "music-garden:dressing-3",
+            "node": "music-garden:dressing-3-dressing0-0",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-3~1",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "music-garden:dressing-3~2",
+            "node": "music-garden:dressing-3-dressing1-1",
             "practical": false
           },
           {
             "name": "matte clay",
-            "node": "music-garden:dressing-4",
+            "node": "music-garden:dressing-4-dressing0-0",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-4~1",
+            "node": "music-garden:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "node": "music-garden:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "music-garden:dressing-5-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "music-garden:dressing-5-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "music-garden:dressing-6-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "music-garden:dressing-6-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "music-garden:dressing-6-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "music-garden:dressing-7-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "music-garden:dressing-7-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "music-garden:dressing-7-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "music-garden:dressing-8-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "music-garden:dressing-8-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "music-garden:dressing-8-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "music-garden:dressing-9-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "music-garden:dressing-9-dressing1-1",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "music-garden:dressing-4~2",
+            "node": "music-garden:dressing-9-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "music-garden:dressing-10-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-7",
+            "node": "music-garden:dressing-10-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "music-garden:dressing-10-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-body-dinoTorso",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-head-dinoHead",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-7~1",
+            "node": "lulu-armL-dinoArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-7~2",
+            "node": "lulu-armR-dinoArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-7~3",
+            "node": "lulu-footL-dinoFoot",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-7~4",
+            "node": "lulu-footR-dinoFoot",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-tail-dinoTail",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-jaw-dinoJaw",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-8",
+            "node": "lulu-cheekPuff-dinoCheeks",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-8~1",
+            "node": "momo-body-plushTorso",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-8~2",
+            "node": "momo-body-tummyMedallion",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-8~3",
+            "node": "momo-head-plushHead",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "music-garden:dressing-8~4",
+            "node": "momo-armL-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-armR-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footL-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "momo-jaw-smileJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-cheekPuff-cheekBlush",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "drum-body-shell",
+            "practical": false
+          },
+          {
+            "node": "drum-body-hoops",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "drum-body-vellum",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "drum-body-brass",
             "practical": false
           },
           {
@@ -694,7 +887,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.18
+            "intensity": 1.92
           },
           {
             "type": "directional",
@@ -712,65 +905,12 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "barn",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "flower",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "momo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "peeko",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "door",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "door",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "duck",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
+          {
+            "node": "peekaboo-barn sky dome",
+            "practical": false
+          },
           {
             "name": "felt",
             "node": "barn golden pasture island plinth",
@@ -808,12 +948,48 @@
           },
           {
             "name": "clearcoat paint",
-            "node": "barn silo red band",
+            "node": "barn silo crimson band",
             "practical": false
           },
           {
             "name": "clearcoat paint",
             "node": "barn silo dome roof",
+            "practical": false
+          },
+          {
+            "node": "barn timber windmill tower",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "barn-windmill-rotor",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "barn tall milk churn",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "barn creamery milk churn",
+            "practical": false
+          },
+          {
+            "node": "barn oak water trough",
+            "practical": false
+          },
+          {
+            "node": "barn trough shimmering water",
+            "practical": false
+          },
+          {
+            "node": "barn wagon wheel spokes and felloe",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "barn wagon wheel iron band",
             "practical": false
           },
           {
@@ -830,6 +1006,10 @@
             "practical": false
           },
           {
+            "node": "barn duck pond cattail reeds",
+            "practical": false
+          },
+          {
             "node": "barn split rail cedar posts",
             "practical": false
           },
@@ -838,145 +1018,314 @@
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "barn felt straw bale 1",
+            "node": "barn golden straw bales",
+            "practical": false
+          },
+          {
+            "node": "barn golden wheat tufts",
+            "practical": false
+          },
+          {
+            "node": "barn swaying golden sunflowers",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn felt straw bale 2",
+            "node": "barn-cloud-drift-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn felt straw bale 3",
+            "node": "barn-cloud-drift-2",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "barn felt straw bale 4",
+            "node": "peekaboo-barn:dressing-0-dressing0-0",
             "practical": false
           },
           {
-            "node": "barn sunflower green stems",
-            "practical": false
-          },
-          {
-            "node": "barn sunflower golden petals",
-            "practical": false
-          },
-          {
-            "node": "barn sunflower cocoa centers",
+            "name": "matte clay",
+            "node": "peekaboo-barn:dressing-0-dressing1-1",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "barn ceramic milk jug",
+            "node": "peekaboo-barn:dressing-0-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "peekaboo-barn:dressing-0-dressing3-3",
+            "practical": false
+          },
+          {
+            "node": "peekaboo-barn:dressing-1-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-1-a",
+            "node": "peekaboo-barn:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peekaboo-barn:dressing-1-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-1-b",
+            "node": "peekaboo-barn:dressing-2-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "peekaboo-barn:dressing-2-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peekaboo-barn:dressing-2-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-1-c",
+            "node": "peekaboo-barn:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "peekaboo-barn:dressing-3-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peekaboo-barn:dressing-3-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "peekaboo-barn:dressing-4-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-2-a",
+            "node": "peekaboo-barn:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "peekaboo-barn:dressing-4-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-2-b",
+            "node": "peekaboo-barn:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "peekaboo-barn:dressing-5-dressing1-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "barn-cloud-drift-2-c",
+            "node": "momo-body-plushTorso",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-2",
+            "node": "momo-body-tummyMedallion",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-2~1",
+            "node": "momo-head-plushHead",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-2~2",
+            "node": "momo-armL-plushArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-2~3",
+            "node": "momo-armR-plushArm",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-2~4",
+            "node": "momo-footL-plushFoot",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-3",
+            "node": "momo-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "momo-jaw-smileJaw",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-3~1",
+            "node": "momo-cheekPuff-cheekBlush",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-3~2",
+            "node": "peeko-body-chickBody",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-3~3",
+            "node": "peeko-head-chickHead",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-head-upperBeak",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-3~4",
+            "node": "peeko-wingL-featherWing",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-5",
+            "node": "peeko-wingR-featherWing",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "peeko-tuft-crownTuft",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "peeko-footL-webbedFoot",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "peeko-footR-webbedFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-beakLower-lowerBeak",
+            "practical": false
+          },
+          {
+            "node": "door-left-body-archFrame",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "door-left-body-thresholdStep",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "door-left-hingeLeaf-doorPanel",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "door-left-hingeLeaf-brassKnobs",
+            "practical": false
+          },
+          {
+            "node": "door-right-body-archFrame",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "door-right-body-thresholdStep",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "door-right-hingeLeaf-doorPanel",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "door-right-hingeLeaf-brassKnobs",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-5~1",
+            "node": "duck-body-duckBody",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-5~2",
+            "node": "duck-head-duckHead",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "duck-head-duckBillUpper",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "duck-beakLower-duckBillLower",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-5~3",
+            "node": "duck-wingL-duckWing",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "peekaboo-barn:dressing-5~4",
+            "node": "duck-wingR-duckWing",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "duck-tail-duckTail",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "duck-footL-duckFoot",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "duck-footR-duckFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "duck-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "duck-eyelidR-eyeGloss",
             "practical": false
           },
           {
@@ -1016,6 +1365,11 @@
             "type": "hemisphere",
             "shadow": false,
             "intensity": 0.45
+          },
+          {
+            "type": "point",
+            "shadow": false,
+            "intensity": 1.45
           }
         ],
         "hasAmbient": false,
@@ -1023,86 +1377,12 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "station",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tunnel",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tree",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gogo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "lulu",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "peeko",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gogoCarriage",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "letterA",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "apple",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "tunnel",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
+          {
+            "node": "station sky dome",
+            "practical": false
+          },
           {
             "name": "felt",
             "node": "station sage island plinth",
@@ -1130,21 +1410,21 @@
           },
           {
             "name": "matte clay",
-            "node": "station limestone gravel ballast bed",
+            "node": "station scenic track loop-stone-ballast",
             "practical": false
           },
           {
-            "node": "station cedar track sleepers",
-            "practical": false
-          },
-          {
-            "name": "brushed metal",
-            "node": "station outer brushed steel rail",
+            "node": "station scenic track loop-oak-sleepers",
             "practical": false
           },
           {
             "name": "brushed metal",
-            "node": "station inner brushed steel rail",
+            "node": "station scenic track loop-inner-steel-rail",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "station scenic track loop-outer-steel-rail",
             "practical": false
           },
           {
@@ -1179,6 +1459,33 @@
             "name": "clearcoat paint",
             "node": "station canopy pitched roof",
             "practical": false
+          },
+          {
+            "node": "station trolley slatted oak deck",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "station trolley brass wheels and frame",
+            "practical": false
+          },
+          {
+            "node": "station stitched cognac suitcase",
+            "practical": false
+          },
+          {
+            "node": "station stitched teal suitcase",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "station lamppost fluted ironwork",
+            "practical": false
+          },
+          {
+            "node": "station lamppost warm lantern",
+            "emissiveIntensity": 1.35,
+            "practical": true
           },
           {
             "name": "clearcoat paint",
@@ -1226,117 +1533,373 @@
           },
           {
             "name": "felt",
-            "node": "station-cloud-drift-1-a",
+            "node": "station-cloud-drift-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "station-cloud-drift-1-b",
+            "node": "station-cloud-drift-2",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "station:dressing-0-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-0-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "station:dressing-0-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "station:dressing-0-dressing3-3",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "station:dressing-0-dressing4-4",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-0-dressing5-5",
+            "emissiveIntensity": 0.32,
+            "practical": true
+          },
+          {
+            "name": "matte clay",
+            "node": "station:dressing-1-dressing0-0",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "station-cloud-drift-1-c",
+            "node": "station:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-1-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "station:dressing-1-dressing3-3",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "station-cloud-drift-2-a",
+            "node": "station:dressing-2-dressing0-0",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "station-cloud-drift-2-b",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station-cloud-drift-2-c",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-2~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-2~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-2~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-2~4",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-3~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-3~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-3~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-3~4",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-6",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-6~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-6~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-6~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "station:dressing-6~4",
+            "node": "station:dressing-2-dressing1-1",
             "practical": false
           },
           {
             "name": "lacquer",
-            "node": "letter-a-lower",
+            "node": "station:dressing-2-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "station:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-3-dressing1-1",
             "practical": false
           },
           {
             "name": "lacquer",
-            "node": "letter-a-lower~1",
+            "node": "station:dressing-3-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-4-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "station:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "station:dressing-4-dressing2-2",
+            "practical": false
+          },
+          {
+            "node": "station:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "station:dressing-5-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "station:dressing-5-dressing2-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "station:dressing-6-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "station:dressing-6-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "car paint",
+            "node": "gogo-body-locomotiveBody",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "gogo-chimney-smokestack",
+            "practical": false
+          },
+          {
+            "node": "gogo-wheelFL-spokedWheel",
+            "practical": false
+          },
+          {
+            "node": "gogo-wheelFR-spokedWheel",
+            "practical": false
+          },
+          {
+            "node": "gogo-wheelRL-spokedWheel",
+            "practical": false
+          },
+          {
+            "node": "gogo-wheelRR-spokedWheel",
+            "practical": false
+          },
+          {
+            "name": "car paint",
+            "node": "gogo-cabDoorL-cabDoor",
+            "practical": false
+          },
+          {
+            "name": "car paint",
+            "node": "gogo-cabDoorR-cabDoor",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "gogo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "gogo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "gogo-jaw-smokeboxSmile",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-body-dinoTorso",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-head-dinoHead",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-armL-dinoArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-armR-dinoArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-footL-dinoFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-footR-dinoFoot",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-tail-dinoTail",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lulu-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "lulu-jaw-dinoJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lulu-cheekPuff-dinoCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-body-chickBody",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-head-chickHead",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-head-upperBeak",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-wingL-featherWing",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-wingR-featherWing",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "peeko-tuft-crownTuft",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "peeko-footL-webbedFoot",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "peeko-footR-webbedFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-beakLower-lowerBeak",
+            "practical": false
+          },
+          {
+            "name": "car paint",
+            "node": "carriage-body-coachPaint",
+            "practical": false
+          },
+          {
+            "node": "carriage-body-coachWood",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "carriage-body-coachBrass",
+            "practical": false
+          },
+          {
+            "node": "carriage-body-coachGlass",
+            "practical": false
+          },
+          {
+            "name": "car paint",
+            "node": "carriage-cabDoorL-boardingDoor",
+            "practical": false
+          },
+          {
+            "node": "carriage-wheelFL-flangedWheel",
+            "practical": false
+          },
+          {
+            "node": "carriage-wheelFR-flangedWheel",
+            "practical": false
+          },
+          {
+            "node": "carriage-wheelRL-flangedWheel",
+            "practical": false
+          },
+          {
+            "node": "carriage-wheelRR-flangedWheel",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "letter-a-body-letterBody",
+            "practical": false
+          },
+          {
+            "node": "letter-a-body-maplePins",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "letter-a-lower-body-letterBody",
+            "practical": false
+          },
+          {
+            "node": "letter-a-lower-body-maplePins",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "apple-body-appleSkin",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "apple-body-stemAndLeaves",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "tunnel-body-portalMasonry",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "tunnel-body-grassyHillock",
+            "practical": false
+          },
+          {
+            "node": "tunnel-body-timberFence",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "tunnel-body-brassMedallions",
             "practical": false
           },
           {
@@ -1383,44 +1946,12 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "lumi",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "peeko",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "letterB",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "door",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "teddy",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
+          {
+            "node": "learning-cloud sky dome",
+            "practical": false
+          },
           {
             "name": "felt",
             "node": "learning cloud plush quilted island",
@@ -1432,62 +1963,106 @@
             "practical": false
           },
           {
-            "node": "learning cloud rim billows",
+            "node": "learning cloud pearlescent rim puffs",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "learning cloud satin rainbow rose",
+            "node": "learning-cloud-pastel-prism-arch-pastel-band-1",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "learning cloud satin rainbow buttercup",
+            "node": "learning-cloud-pastel-prism-arch-pastel-band-2",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "learning cloud satin rainbow mint",
+            "node": "learning-cloud-pastel-prism-arch-pastel-band-3",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "learning cloud satin rainbow sky",
+            "node": "learning-cloud-pastel-prism-arch-pastel-band-4",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "learning cloud satin rainbow lavender",
+            "node": "learning-cloud-pastel-prism-arch-pastel-band-5",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "rainbow-anchor-core--1",
+            "node": "learning-cloud-pastel-prism-arch-cumulus-pedestal-left",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "rainbow-anchor-inner--1",
+            "node": "learning-cloud-pastel-prism-arch-cumulus-pedestal-right",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "rainbow-anchor-top--1",
+            "node": "learning cloud distant reading cloudlet",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "rainbow-anchor-core-1",
+            "name": "glazed ceramic",
+            "node": "learning cloud golden crescent cradle",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "rainbow-anchor-inner-1",
+            "node": "learning cloud quilted reading cushion",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "rainbow-anchor-top-1",
+            "name": "brushed metal",
+            "node": "cloud-mobile-left-brass-hoop",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-left-star-prism-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-left-star-prism-2",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-left-star-prism-3",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-left-star-prism-4",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "cloud-mobile-right-brass-hoop",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-right-star-prism-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-right-star-prism-2",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-right-star-prism-3",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "cloud-mobile-right-star-prism-4",
             "practical": false
           },
           {
@@ -1507,12 +2082,7 @@
           },
           {
             "name": "glazed ceramic",
-            "node": "cloud-pedestal-1-star-a",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "cloud-pedestal-1-star-b",
+            "node": "cloud-pedestal-1-star-emblem",
             "practical": false
           },
           {
@@ -1532,12 +2102,7 @@
           },
           {
             "name": "glazed ceramic",
-            "node": "cloud-pedestal-2-star-a",
-            "practical": false
-          },
-          {
-            "name": "glazed ceramic",
-            "node": "cloud-pedestal-2-star-b",
+            "node": "cloud-pedestal-2-star-emblem",
             "practical": false
           },
           {
@@ -1557,136 +2122,239 @@
           },
           {
             "name": "glazed ceramic",
-            "node": "cloud-pedestal-3-star-a",
+            "node": "cloud-pedestal-3-star-emblem",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloud-puff-drift-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cloud-puff-drift-2",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "learning-cloud:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "learning-cloud:dressing-3-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "learning-cloud:dressing-4-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "learning-cloud:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "learning-cloud:dressing-5-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "learning-cloud:dressing-5-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-body-starBabyCore",
+            "emissiveIntensity": 0.16,
+            "practical": true
+          },
+          {
+            "name": "matte clay",
+            "node": "lumi-body-starFiligree",
+            "practical": false
+          },
+          {
+            "node": "lumi-petals-starCrown",
+            "emissiveIntensity": 0.18,
+            "practical": true
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "lumi-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "lumi-cheekPuff-starCheeks",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-body-chickBody",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-head-chickHead",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "peeko-head-upperBeak",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-wingL-featherWing",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "peeko-wingR-featherWing",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "peeko-tuft-crownTuft",
             "practical": false
           },
           {
             "name": "glazed ceramic",
-            "node": "cloud-pedestal-3-star-b",
+            "node": "peeko-footL-webbedFoot",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "cloud-puff-drift-1-core",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "cloud-puff-drift-1-l",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "cloud-puff-drift-1-r",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "cloud-puff-drift-2-core",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "cloud-puff-drift-2-l",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "cloud-puff-drift-2-r",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-3~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-3~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-3~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-3~4",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-4",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-4~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-4~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-4~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-4~4",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-5",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-5~1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-5~2",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-5~3",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "learning-cloud:dressing-5~4",
+            "name": "glazed ceramic",
+            "node": "peeko-footR-webbedFoot",
             "practical": false
           },
           {
             "name": "lacquer",
-            "node": "letter-b-lower",
+            "node": "peeko-eyelidL-eyeCabochon",
             "practical": false
           },
           {
             "name": "lacquer",
-            "node": "letter-b-lower~1",
-            "practical": false
-          },
-          {
-            "node": "ball",
+            "node": "peeko-eyelidR-eyeCabochon",
             "practical": false
           },
           {
             "name": "lacquer",
-            "node": "ball~1",
+            "node": "peeko-beakLower-lowerBeak",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "letter-b-body-letterBody",
+            "practical": false
+          },
+          {
+            "node": "letter-b-body-maplePins",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "letter-b-lower-body-letterBody",
+            "practical": false
+          },
+          {
+            "node": "letter-b-lower-body-maplePins",
+            "practical": false
+          },
+          {
+            "node": "gate-body-archFrame",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "gate-body-thresholdStep",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "gate-hingeLeaf-doorPanel",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "gate-hingeLeaf-brassKnobs",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "ball-body-panels",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "ball-body-seams",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-body-teddyBodyFelt",
+            "practical": false
+          },
+          {
+            "node": "bear-body-teddyWoodButton",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-head-teddyHeadFelt",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "bear-head-teddyNoseGloss",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-earL-teddyEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-earR-teddyEar",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-armL-teddyArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-armR-teddyArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-footL-teddyFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "bear-footR-teddyFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "bear-eyelidL-eyeGloss",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "bear-eyelidR-eyeGloss",
             "practical": false
           },
           {
@@ -1743,57 +2411,7 @@
           "kind": "hdri",
           "background": true
         },
-        "models": [
-          {
-            "assetKey": "cushion",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "table",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "plate",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "momo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "mirror",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "cushion",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "momo",
-            "triangles": 4500,
-            "textures": 2,
-            "unlit": false,
-            "overridesTextures": false
-          }
-        ],
+        "models": [],
         "materials": [
           {
             "node": "nook subfloor plinth",
@@ -1816,6 +2434,14 @@
           {
             "name": "felt",
             "node": "nook woven sage rug center",
+            "practical": false
+          },
+          {
+            "node": "nook braided rug terracotta rings",
+            "practical": false
+          },
+          {
+            "node": "nook braided rug oatmeal stitch rings",
             "practical": false
           },
           {
@@ -1849,11 +2475,39 @@
             "practical": false
           },
           {
+            "node": "nook back baseboard moulding",
+            "practical": false
+          },
+          {
+            "node": "nook left baseboard moulding",
+            "practical": false
+          },
+          {
+            "node": "nook right baseboard moulding",
+            "practical": false
+          },
+          {
             "node": "nook back dado rail",
             "practical": false
           },
           {
-            "node": "nook back crown molding",
+            "node": "nook left dado rail",
+            "practical": false
+          },
+          {
+            "node": "nook right dado rail",
+            "practical": false
+          },
+          {
+            "node": "nook back crown cornice",
+            "practical": false
+          },
+          {
+            "node": "nook left crown cornice",
+            "practical": false
+          },
+          {
+            "node": "nook right crown cornice",
             "practical": false
           },
           {
@@ -1861,18 +2515,27 @@
             "practical": false
           },
           {
-            "node": "nook sunlit garden sky backdrop",
+            "node": "home-nook-outside-backdrop",
             "emissiveIntensity": 0.55,
             "practical": true
           },
           {
             "name": "felt",
-            "node": "nook exterior garden bush left",
+            "node": "nook exterior garden hedgerow",
             "practical": false
           },
           {
-            "name": "felt",
-            "node": "nook exterior garden bush right",
+            "node": "nook outdoor planter cedar box",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "nook outdoor planter leaf mound",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "nook outdoor planter petals",
             "practical": false
           },
           {
@@ -1903,39 +2566,46 @@
             "practical": false
           },
           {
-            "node": "nook-curtain-left-pleat-1",
+            "node": "nook-curtain-left-pleated-panel",
             "practical": false
           },
           {
-            "node": "nook-curtain-left-pleat-2",
+            "node": "nook-curtain-left-tieback-cord",
             "practical": false
           },
           {
-            "node": "nook-curtain-left-pleat-3",
+            "node": "nook-curtain-right-pleated-panel",
             "practical": false
           },
           {
-            "node": "nook-curtain-right-pleat-1",
+            "node": "nook-curtain-right-tieback-cord",
             "practical": false
           },
           {
-            "node": "nook-curtain-right-pleat-2",
+            "node": "nook wall clock walnut bezel",
             "practical": false
           },
           {
-            "node": "nook-curtain-right-pleat-3",
+            "name": "glazed ceramic",
+            "node": "nook wall clock enamel dial",
             "practical": false
           },
           {
-            "node": "nook floor lamp base",
+            "name": "clearcoat paint",
+            "node": "nook wall clock brass hands",
             "practical": false
           },
           {
-            "node": "nook floor lamp stem",
+            "name": "brushed metal",
+            "node": "nook-clock-pendulum",
             "practical": false
           },
           {
-            "node": "nook floor lamp warm linen shade",
+            "node": "nook floor lamp turned stand",
+            "practical": false
+          },
+          {
+            "node": "home-nook-lamp-shade",
             "emissiveIntensity": 1.15,
             "practical": true
           },
@@ -1945,7 +2615,7 @@
           },
           {
             "name": "matte clay",
-            "node": "nook art frame 1 sky mat",
+            "node": "nook art frame 1 azure mat",
             "practical": false
           },
           {
@@ -1969,7 +2639,7 @@
           },
           {
             "name": "glazed ceramic",
-            "node": "nook art frame 2 rainbow arc",
+            "node": "nook art frame 2 pastel arc",
             "practical": false
           },
           {
@@ -1998,12 +2668,7 @@
           },
           {
             "name": "felt",
-            "node": "nook plant leaf cluster 1",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "nook plant leaf cluster 2",
+            "node": "nook plant leaf cluster",
             "practical": false
           },
           {
@@ -2013,27 +2678,179 @@
           },
           {
             "name": "felt",
-            "node": "home-nook:dressing-4",
+            "node": "home-nook:dressing-1-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "home-nook:dressing-1-dressing1-1",
+            "practical": false
+          },
+          {
+            "node": "home-nook:dressing-2-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "brushed metal",
+            "node": "home-nook:dressing-2-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "home-nook:dressing-3-dressing0-0",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "home-nook:dressing-3-dressing1-1",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "home-nook:dressing-4~1",
+            "node": "home-nook:dressing-4-dressing0-0",
+            "practical": false
+          },
+          {
+            "node": "home-nook:dressing-4-dressing1-1",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "home-nook:dressing-4-dressing2-2",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "home-nook:dressing-4~2",
+            "node": "momo-body-plushTorso",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "home-nook:dressing-4~3",
+            "node": "momo-body-tummyMedallion",
             "practical": false
           },
           {
             "name": "felt",
-            "node": "home-nook:dressing-4~4",
+            "node": "momo-head-plushHead",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-armL-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-armR-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footL-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "momo-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "momo-jaw-smileJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "momo-cheekPuff-cheekBlush",
+            "practical": false
+          },
+          {
+            "node": "mirror-body-frameStand",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "mirror-body-mirrorDisc",
+            "practical": false
+          },
+          {
+            "name": "glazed ceramic",
+            "node": "mirror-body-finials",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "cushion-body-pouf",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "cushion-body-tassels",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-body-plushTorso",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-body-tummyMedallion",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-head-plushHead",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-armL-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-armR-plushArm",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-footL-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-footR-plushFoot",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "mirror~reflection-eyelidL-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "lacquer",
+            "node": "mirror~reflection-eyelidR-eyeCabochon",
+            "practical": false
+          },
+          {
+            "name": "matte clay",
+            "node": "mirror~reflection-jaw-smileJaw",
+            "practical": false
+          },
+          {
+            "name": "felt",
+            "node": "mirror~reflection-cheekPuff-cheekBlush",
             "practical": false
           },
           {
@@ -2062,15 +2879,15 @@
   "direction": {
     "id": "wonder-world",
     "genre": "maze-arcade",
-    "fantasy": "A handcrafted clay-and-beechwood picture-book diorama stage where toddler friends explore warm morning sets together.",
+    "fantasy": "A needle-felted wool, matte clay, and beechwood picture-book diorama stage where toddler friends explore warm morning sets.",
     "rebuildTier": "S-world",
     "wave": 4,
     "references": [
       {
         "file": "src/scenes/LOOK-BRIEF.md",
-        "source": "genre comparable: stop-motion clay and painted beechwood miniature picture-book sets lit by soft morning daylight",
+        "source": "genre comparable: stop-motion needle-felted wool, matte clay, and painted beechwood miniature picture-book sets lit by soft morning daylight",
         "licence": "reference-only",
-        "why": "Matte clay characters with crisp sclera/pupil contrast, warm beechwood bevels, and grounded contact shadows on raised diorama islands"
+        "why": "Procedural felt/clay/ceramic/lacquer rigs with crisp dual-catchlight eyes, warm beechwood bevels, and grounded contact shadows on raised diorama islands"
       },
       {
         "file": "provenance/hdri.json",
@@ -2082,7 +2899,7 @@
         "file": "src/scenes/diorama-terrain.ts",
         "source": "craft comparable: sculpted tabletop island bases with flat central play stages, rolling perimeter hills, and swept timber molding",
         "licence": "reference-only",
-        "why": "Every character and tap prop sits flush on a flat play stage framed by lush instanced meadow blades, pebbles, clouds, and pond ripples"
+        "why": "Every procedural character and tap prop sits flush on a flat play stage framed by lush instanced meadow blades, pebbles, clouds, and animated pond ripples"
       }
     ],
     "palette": {
@@ -2122,484 +2939,7 @@
       ],
       "mobile": "both"
     },
-    "assets": [
-      {
-        "role": "hero",
-        "assetKey": "momo",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "hero",
-        "assetKey": "lulu",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "hero",
-        "assetKey": "sheru",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "gogo",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "gogoCarriage",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "hero",
-        "assetKey": "lumi",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "hero",
-        "assetKey": "peeko",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "teddy",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "robot",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "cow",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "sheep",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "duck",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "horse",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "bird",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "character",
-        "assetKey": "butterfly",
-        "minTriangles": 2000,
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "ball",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "bubbleWand",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "cookie",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "plate",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "mirror",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "door",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "letterB",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "letterA",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "apple",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "banana",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "cake",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "drum",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "shaker",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "toyPiano",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "picnicBasket",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "car",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "sponge",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "towel",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "toyBlock",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "lift",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "flower",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "flowerBud",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "tree",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "bush",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "barn",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "station",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "tunnel",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "house",
-        "minTriangles": 2000,
-        "maxTriangles": 80000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "bed",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "sink",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "table",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "chair",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "cushion",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "toyBox",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "bench",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "colourMachine",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "storyBox",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "pastryCircle",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "pastrySquare",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "pastryTriangle",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "hat",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "stompStone",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "cloud",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "balloon",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "letterBLower",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "letterALower",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "toothbrush",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "sun",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "candleFlame",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "partyHat",
-        "maxTriangles": 50000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      }
-    ],
+    "assets": [],
     "vfx": [
       {
         "event": "bubblePop",
@@ -2665,7 +3005,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Warm storybook miniature clay-and-beechwood diorama lighting: six world-matched CC0 HDRI IBL skies with a single 2048 PCSS key light, rim separation, soft contact shadows, and syllable-envelope articulated puppetry with zero vignette.",
+    "signatureEffect": "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
     "criticalCategories": [
       "environment_world",
       "material_quality",

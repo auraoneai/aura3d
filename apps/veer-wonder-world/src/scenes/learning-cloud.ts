@@ -1,78 +1,231 @@
 import {
+  geometry,
   instances,
-  material,
   primitives,
   type AuraColor,
   type AuraNodeBuilder,
-  type AuraSceneNode,
-  type AuraTransformSpec
+  type AuraSceneNode
 } from "@aura3d/engine";
-import { type ProceduralVec3 } from "@aura3d/engine/procedural";
+import { type ComposePart, type ProceduralVec2, type ProceduralVec3 } from "@aura3d/engine/procedural";
 import {
+  brushedMetalMat,
   buildIslandPlinthNode,
+  cachedDioramaSpec,
   ceramicMat,
+  composeGeometry,
   createDeterministicRng,
+  cylinderSpec,
   dioramaGroup,
-  instanceClayMat,
+  ellipsoidSpec,
+  extrudeContourSpec,
+  fabricMat,
+  feltMat,
+  instanceFeltMat,
   lacquerMat,
+  pastelRainbowRibbons,
   plushCloudMat,
-  tubeAlongSpline
+  sculptCurvedLimb,
+  sculptFbmOrganicPuffs,
+  splitInstancePlacements,
+  torusSpec,
+  type AuraInstanceInput
 } from "./diorama-terrain.js";
 import type { Vec3 } from "./motion.js";
-import type { WorldAnimatedNodeSpec, WorldDefinition, WorldDioramaSlice } from "./worlds.js";
+import type {
+  WorldAnimatedNodeSpec,
+  WorldDefinition,
+  WorldDioramaContext,
+  WorldDioramaSlice
+} from "./worlds.js";
 
-const RAINBOW_BANDS: readonly {
-  readonly name: string;
-  readonly color: AuraColor;
-  readonly radiusX: number;
-  readonly radiusY: number;
-  readonly z: number;
-}[] = [
-  { name: "rose", color: "#F46BA2", radiusX: 7.45, radiusY: 5.55, z: -8.9 },
-  { name: "buttercup", color: "#FAC54B", radiusX: 7.06, radiusY: 5.18, z: -8.84 },
-  { name: "mint", color: "#6FD89C", radiusX: 6.67, radiusY: 4.81, z: -8.78 },
-  { name: "sky", color: "#5FAEF2", radiusX: 6.28, radiusY: 4.44, z: -8.72 },
-  { name: "lavender", color: "#AE88F2", radiusX: 5.89, radiusY: 4.07, z: -8.66 }
-];
-
-function rainbowSplinePoints(radiusX: number, radiusY: number, z: number): readonly ProceduralVec3[] {
-  const pts: ProceduralVec3[] = [];
-  const count = 13;
-  for (let i = 0; i < count; i += 1) {
-    const frac = i / (count - 1);
-    const angle = Math.PI * (1 - frac);
-    const x = Math.cos(angle) * radiusX;
-    const y = Math.sin(angle) * radiusY + 0.35;
-    pts.push([x, y, z]);
+function starPolygon2D(outerR: number, innerR: number, points = 5): readonly ProceduralVec2[] {
+  const ring: ProceduralVec2[] = [];
+  const total = points * 2;
+  for (let i = 0; i < total; i += 1) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const ang = (i / total) * Math.PI * 2 - Math.PI * 0.5;
+    ring.push([Math.cos(ang) * r, -Math.sin(ang) * r]);
   }
-  return pts;
+  return ring;
 }
 
-function buildLearningCloudDiorama(): WorldDioramaSlice {
+function buildCrescentReadingPerch(): AuraNodeBuilder<AuraSceneNode> {
+  const cloudletSpec = cachedDioramaSpec("learning-cloud-perch-cloudlet", () => {
+    const built = sculptFbmOrganicPuffs(
+      [
+        { position: [0, 0, 0], scale: [1.85, 0.88, 1.35] },
+        { position: [-0.68, 0.08, 0.12], scale: [1.18, 0.76, 1.02] },
+        { position: [0.7, 0.1, -0.08], scale: [1.22, 0.78, 1.04] },
+        { position: [0.05, 0.26, -0.15], scale: [1.05, 0.68, 0.92] }
+      ],
+      { seed: 641, amplitude: 0.028, frequency: 2.3 }
+    );
+    return built.geometry;
+  });
+
+  const crescentSpec = cachedDioramaSpec("learning-cloud-crescent-perch", () => {
+    const spine: ProceduralVec3[] = [];
+    const steps = 22;
+    const startAng = Math.PI * 0.24;
+    const endAng = Math.PI * 1.62;
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      const a = startAng + t * (endAng - startAng);
+      spine.push([Math.cos(a) * 0.78, Math.sin(a) * 0.78 + 0.82, 0]);
+    }
+    return sculptCurvedLimb(
+      spine,
+      (t) => {
+        const belly = Math.sin(t * Math.PI);
+        return 0.032 + belly * 0.165;
+      },
+      {
+        steps: 32,
+        radialSegments: 18,
+        profileScaleX: 1.0,
+        profileScaleY: 0.76
+      }
+    );
+  });
+
+  const cushionSpec = cachedDioramaSpec("learning-cloud-perch-cushion", () =>
+    ellipsoidSpec(0.32, 0.11, 0.26, 20, 14)
+  );
+
+  return dioramaGroup(
+    "learning cloud crescent moon perch",
+    [
+      geometry.custom(cloudletSpec, {
+        name: "learning cloud distant reading cloudlet",
+        material: plushCloudMat("#FFFBFD"),
+        castShadow: true,
+        receiveShadow: true
+      }),
+      geometry
+        .custom(crescentSpec, {
+          name: "learning cloud golden crescent cradle",
+          material: ceramicMat("#FAD36B", { color: "#FFF8DE", power: 2.6, intensity: 0.32 }),
+          castShadow: true,
+          receiveShadow: true
+        })
+        .position(0.08, 0.12, 0),
+      geometry
+        .custom(cushionSpec, {
+          name: "learning cloud quilted reading cushion",
+          material: fabricMat("#D8B8FA", undefined, "quiltedStitch"),
+          castShadow: true,
+          receiveShadow: true
+        })
+        .position(-0.08, 0.36, 0.04)
+    ],
+    { position: [4.65, 2.45, -6.95], rotation: [0, -0.34, 0] }
+  );
+}
+
+function buildStarPrismMobile(
+  id: "cloud-mobile-left" | "cloud-mobile-right",
+  pivot: Vec3,
+  phase: number,
+  animated: WorldAnimatedNodeSpec[]
+): AuraNodeBuilder<AuraSceneNode> {
+  const frameSpec = cachedDioramaSpec("learning-cloud-mobile-frame", () => {
+    const hoop = composeGeometry([
+      { geometry: torusSpec(0.42, 0.018, 28, 12), rotation: [Math.PI * 0.5, 0, 0] },
+      { geometry: cylinderSpec(0.012, 0.012, 0.84, 10), rotation: [0, 0, Math.PI * 0.5] },
+      { geometry: cylinderSpec(0.012, 0.012, 0.84, 10), rotation: [Math.PI * 0.5, 0, 0] },
+      { geometry: cylinderSpec(0.01, 0.01, 0.45, 8), position: [0, 0.22, 0] }
+    ]);
+    const cordLengths: readonly [number, number, number][] = [
+      [-0.36, 0, 0.38],
+      [0.36, 0, 0.48],
+      [0, 0.36, 0.32],
+      [0, -0.36, 0.44]
+    ];
+    const parts: ComposePart[] = [{ geometry: hoop }];
+    for (const [cx, cz, len] of cordLengths) {
+      parts.push({
+        geometry: cylinderSpec(0.006, 0.006, len, 8),
+        position: [cx, -len * 0.5, cz]
+      });
+    }
+    return composeGeometry(parts);
+  });
+
+  const starPrismSpec = cachedDioramaSpec("learning-cloud-faceted-star-prism", () =>
+    extrudeContourSpec({
+      outer: starPolygon2D(0.145, 0.068, 5),
+      depth: 0.065,
+      bevelSize: 0.018,
+      bevelThickness: 0.018,
+      bevelSegments: 2
+    })
+  );
+
+  const starDrops: readonly { readonly pos: Vec3; readonly color: AuraColor; readonly yaw: number }[] = [
+    { pos: [-0.36, -0.44, 0], color: "#FCE07E", yaw: 0.2 },
+    { pos: [0.36, -0.54, 0], color: "#F7A8C8", yaw: -0.35 },
+    { pos: [0, -0.38, 0.36], color: "#9CD4FF", yaw: 0.55 },
+    { pos: [0, -0.5, -0.36], color: "#C9B0FA", yaw: -0.5 }
+  ];
+
+  animated.push({
+    id,
+    restPosition: pivot,
+    restRotation: [0, 0, 0],
+    sample: (t) => ({
+      position: [pivot[0], pivot[1] + Math.sin(t * 0.9 + phase) * 0.04, pivot[2]],
+      rotation: [
+        Math.cos(t * 0.65 + phase) * 0.035,
+        t * 0.28 + phase,
+        Math.sin(t * 0.75 + phase) * 0.045
+      ]
+    })
+  });
+
+  return dioramaGroup(
+    id,
+    [
+      geometry.custom(frameSpec, {
+        name: `${id}-brass-hoop`,
+        material: brushedMetalMat("#ECCB74"),
+        castShadow: false,
+        receiveShadow: false
+      }),
+      ...starDrops.map((drop, idx) =>
+        geometry
+          .custom(starPrismSpec, {
+            name: `${id}-star-prism-${idx + 1}`,
+            material: ceramicMat(drop.color, { color: "#FFFFFF", power: 2.4, intensity: 0.32 }),
+            castShadow: true,
+            receiveShadow: false
+          })
+          .position(drop.pos[0], drop.pos[1], drop.pos[2])
+          .rotation(0, drop.yaw, 0)
+      )
+    ],
+    { position: pivot }
+  ).runtime({ id, tags: ["diorama", "mobile"], mutable: true });
+}
+
+export function learningCloudScene(_ctx?: WorldDioramaContext): WorldDioramaSlice {
   const rng = createDeterministicRng(0x636c6f75);
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
   const animated: WorldAnimatedNodeSpec[] = [];
 
-  const cloudIslandMat = {
-    ...material.felt({
-      color: "#9BB8FA",
-      roughness: 0.86,
-      sheen: 0.48,
-      sheenRoughness: 0.8,
-      sheenColor: "#E8B6FA"
-    }),
-    rim: { color: "#FFC6EB", power: 2.3, intensity: 0.38 }
-  };
+  const cloudIslandMat = feltMat("#9BB8FA", {
+    color: "#FFC6EB",
+    power: 2.3,
+    intensity: 0.38
+  });
 
-  // 1. Sculpted plush quilted cloud-island floor (`y = 0.000` inside `r <= 3.75m`,
-  //    soft quilted pillow swells around the outer deck — NO flat 90x40m box wall!)
+  // 1. Sculpted plush quilted cloud-island floor (`y = 0.000` inside `r <= 3.75m`)
   nodes.push(
     buildIslandPlinthNode({
       name: "learning cloud plush quilted island",
       seed: 606,
       material: cloudIslandMat,
       span: [27, 25],
-      segments: [56, 52],
+      segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 12.2,
       outerSwellAmplitude: 0.42,
@@ -89,101 +242,77 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
     })
   );
 
-  // 2. 16 Single-draw instanced fluffy cloud billows ringing the cloud-island perimeter
-  const billowTransforms: AuraTransformSpec[] = [];
-  const billowColors: AuraColor[] = [];
+  // 2. Soft pearlescent cloud-puff stage rim (single-draw `instances.custom` sculpted cumulus puffs)
+  const rimCloudPuffSpec = cachedDioramaSpec("learning-cloud-rim-puff", () => {
+    const built = sculptFbmOrganicPuffs(
+      [
+        { position: [0, 0, 0], scale: [1.35, 0.92, 1.15] },
+        { position: [-0.48, -0.06, 0.08], scale: [0.95, 0.74, 0.92] },
+        { position: [0.5, -0.05, -0.06], scale: [0.98, 0.76, 0.94] }
+      ],
+      { seed: 619, amplitude: 0.026, frequency: 2.3 }
+    );
+    return built.geometry;
+  });
+
+  const billowInstances: AuraInstanceInput[] = [];
   const billowPalette: readonly AuraColor[] = [
-    "#AFC8FF",
-    "#C8B4FF",
-    "#F8B6DF",
-    "#9ED2FF"
+    "#DCE6FF",
+    "#E4DAFF",
+    "#FCE0F2",
+    "#D4EBFF"
   ];
-  const billowCount = 16;
+  const billowCount = 18;
   for (let i = 0; i < billowCount; i += 1) {
     const angle = (i / billowCount) * Math.PI * 2 + 0.12;
-    const isFront = Math.sin(angle) > 0.45;
-    const radius = isFront ? 5.15 + rng() * 0.6 : 4.55 + rng() * 1.35;
-    const bx = Math.cos(angle) * radius * 1.14;
+    const isFront = Math.sin(angle) > 0.42;
+    const radius = isFront ? 5.15 + rng() * 0.55 : 4.55 + rng() * 1.3;
+    const bx = Math.cos(angle) * radius * 1.12;
     const bz = Math.sin(angle) * radius * 0.96 - 0.55;
-    const sy = isFront ? 0.52 + rng() * 0.16 : 0.88 + rng() * 0.42;
-    const sx = 1.25 + rng() * 0.55;
-    billowTransforms.push({
-      position: [bx, isFront ? -0.12 : 0.22 + rng() * 0.26, bz],
+    const sy = isFront ? 0.54 + rng() * 0.16 : 0.9 + rng() * 0.38;
+    const sx = 1.05 + rng() * 0.38;
+    billowInstances.push({
+      position: [bx, isFront ? -0.14 : 0.22 + rng() * 0.24, bz],
       rotation: [0, angle, 0],
-      scale: [sx, sy, 1.05 + rng() * 0.35]
+      scale: [sx, sy, 1.0 + rng() * 0.3],
+      color: billowPalette[i % billowPalette.length]!
     });
-    billowColors.push(billowPalette[i % billowPalette.length]!);
   }
   nodes.push(
-    instances.sphere({
-      name: "learning cloud rim billows",
-      size: [1.75, 1.25, 1.55],
-      material: instanceClayMat("#FFFFFF"),
-      transforms: billowTransforms,
-      colors: billowColors,
+    instances.custom(rimCloudPuffSpec, {
+      name: "learning cloud pearlescent rim puffs",
+      material: instanceFeltMat("#FFFFFF"),
+      ...splitInstancePlacements(billowInstances),
       castShadow: false,
       receiveShadow: true
     })
   );
 
-  // 3. Smooth 5-Band `tubeAlongSpline` Satin Ceramic Rainbow Arch + fluffy cloud anchors
-  for (const band of RAINBOW_BANDS) {
-    nodes.push(
-      tubeAlongSpline({
-        name: `learning cloud satin rainbow ${band.name}`,
-        points: rainbowSplinePoints(band.radiusX, band.radiusY, band.z),
-        radius: 0.21,
-        segments: 64,
-        radialSegments: 16,
-        material: ceramicMat(band.color, {
-          color: "#FFF6FC",
-          power: 2.6,
-          intensity: 0.28
-        }),
-        castShadow: false,
-        receiveShadow: false
-      })
-    );
-  }
+  // 3. 5 smooth `sculptCurvedLimb` pastel ribbons seated in cumulus cloud pedestals + crescent reading perch
+  nodes.push(
+    pastelRainbowRibbons({
+      name: "learning-cloud-pastel-prism-arch",
+      position: [0, 0.48, -8.8],
+      spanRadius: 6.75,
+      archHeight: 5.05,
+      colors: ["#F46BA2", "#FAC54B", "#6FD89C", "#5FAEF2", "#AE88F2"]
+    }),
+    buildCrescentReadingPerch(),
+    buildStarPrismMobile("cloud-mobile-left", [-3.82, 3.45, -4.55], 0.15, animated),
+    buildStarPrismMobile("cloud-mobile-right", [3.82, 3.45, -4.55], 1.75, animated)
+  );
 
-  const anchorCloudMat = plushCloudMat("#FFF9FE");
-  for (const side of [-1, 1] as const) {
-    const ax = side * 6.65;
-    const az = -8.75;
-    nodes.push(
-      dioramaGroup(
-        `learning cloud rainbow anchor ${side < 0 ? "left" : "right"}`,
-        [
-          primitives.sphere({
-            name: `rainbow-anchor-core-${side}`,
-            size: [2.75, 1.55, 1.95],
-            material: anchorCloudMat,
-            castShadow: false,
-            receiveShadow: true
-          }),
-          primitives.sphere({
-            name: `rainbow-anchor-inner-${side}`,
-            size: [2.05, 1.25, 1.65],
-            position: [-side * 0.95, -0.12, 0.22],
-            material: anchorCloudMat,
-            castShadow: false,
-            receiveShadow: true
-          }),
-          primitives.sphere({
-            name: `rainbow-anchor-top-${side}`,
-            size: [1.75, 1.15, 1.45],
-            position: [side * 0.35, 0.52, 0.1],
-            material: anchorCloudMat,
-            castShadow: false,
-            receiveShadow: true
-          })
-        ],
-        { position: [ax, 0.55, az] }
-      )
-    );
-  }
+  // 4. 3 Bevelled Lacquered Floating Storybook Pedestals with Faceted Golden Star Badges
+  const pedestalBadgeStar = cachedDioramaSpec("learning-cloud-pedestal-star", () =>
+    extrudeContourSpec({
+      outer: starPolygon2D(0.115, 0.054, 5),
+      depth: 0.036,
+      bevelSize: 0.008,
+      bevelThickness: 0.008,
+      bevelSegments: 2
+    })
+  );
 
-  // 4. 3 Bevelled Lacquered Floating Storybook Pedestals with Golden Star Trim
   const pedestalSpecs: readonly {
     readonly id: string;
     readonly at: Vec3;
@@ -245,23 +374,14 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
             castShadow: false,
             receiveShadow: false
           }),
-          primitives.box({
-            name: `${ped.id}-star-a`,
-            size: [0.18, 0.18, 0.04],
-            position: [0, 0.01, 0.44],
-            rotation: [0, 0, Math.PI * 0.25],
-            material: goldStarMat,
-            castShadow: false,
-            receiveShadow: false
-          }),
-          primitives.box({
-            name: `${ped.id}-star-b`,
-            size: [0.18, 0.18, 0.04],
-            position: [0, 0.01, 0.44],
-            material: goldStarMat,
-            castShadow: false,
-            receiveShadow: false
-          })
+          geometry
+            .custom(pedestalBadgeStar, {
+              name: `${ped.id}-star-emblem`,
+              material: goldStarMat,
+              castShadow: false,
+              receiveShadow: false
+            })
+            .position(0, 0.01, 0.45)
         ],
         { position: ped.at }
       ).runtime({ id: ped.id, tags: ["diorama", "pedestal"], mutable: true })
@@ -279,9 +399,21 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
     });
   }
 
-  // 5. High drifting pastel sky cloud puffs
-  const skyCloudMat = plushCloudMat("#FFFBFD", { color: "#FBDDF2", power: 2.4, intensity: 0.32 });
-  const skyClouds: readonly {
+  // 5. High drifting sculpted pastel cloud puffs
+  const highCloudMat = plushCloudMat("#FFFBFD", { color: "#FBDDF2", power: 2.4, intensity: 0.32 });
+  const highCloudSpec = cachedDioramaSpec("learning-cloud-high-puff", () => {
+    const built = sculptFbmOrganicPuffs(
+      [
+        { position: [0, 0, 0], scale: [1.55, 0.88, 1.02] },
+        { position: [-0.72, -0.07, 0.05], scale: [1.08, 0.72, 0.88] },
+        { position: [0.72, -0.06, -0.04], scale: [1.12, 0.74, 0.9] }
+      ],
+      { seed: 677, amplitude: 0.025, frequency: 2.4 }
+    );
+    return built.geometry;
+  });
+
+  const driftingClouds: readonly {
     readonly id: string;
     readonly at: Vec3;
     readonly scale: number;
@@ -291,17 +423,18 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
     { id: "cloud-puff-drift-1", at: [-4.4, 4.4, -7.2], scale: 1.05, amp: 0.44, speed: 0.16 },
     { id: "cloud-puff-drift-2", at: [4.5, 4.6, -7.4], scale: 1.08, amp: 0.46, speed: 0.14 }
   ];
-  skyClouds.forEach((c, idx) => {
+  driftingClouds.forEach((c, idx) => {
     nodes.push(
-      dioramaGroup(
-        c.id,
-        [
-          primitives.sphere({ name: `${c.id}-core`, size: [1.55, 0.88, 1.02], material: skyCloudMat, castShadow: false, receiveShadow: false }),
-          primitives.sphere({ name: `${c.id}-l`, size: [1.08, 0.72, 0.88], position: [-0.72, -0.07, 0.05], material: skyCloudMat, castShadow: false, receiveShadow: false }),
-          primitives.sphere({ name: `${c.id}-r`, size: [1.12, 0.74, 0.9], position: [0.72, -0.06, -0.04], material: skyCloudMat, castShadow: false, receiveShadow: false })
-        ],
-        { position: c.at, scale: c.scale }
-      ).runtime({ id: c.id, tags: ["diorama", "cloud"], mutable: true })
+      geometry
+        .custom(highCloudSpec, {
+          name: c.id,
+          material: highCloudMat,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(c.at[0], c.at[1], c.at[2])
+        .scale(c.scale)
+        .runtime({ id: c.id, tags: ["diorama", "cloud"], mutable: true })
     );
     animated.push({
       id: c.id,
@@ -324,20 +457,21 @@ function buildLearningCloudDiorama(): WorldDioramaSlice {
 }
 
 /**
- * Learning Cloud — sculpted plush quilted cloud-island floor surrounded by 16
- * single-draw instanced cloud billows, a smooth 5-band `tubeAlongSpline` satin
- * ceramic rainbow arch against a rich periwinkle & rose-gold sky, and 3
- * bevelled lacquered floating storybook pedestals with golden star badges.
+ * Learning Cloud — sculpted plush quilted cloud-island floor ringed by
+ * pearlescent cumulus puffs, 5 smooth `sculptCurvedLimb` pastel arch ribbons
+ * seated in cumulus pedestals, a crescent-moon reading perch on a distant
+ * cloudlet, faceted star prisms on `cloud-mobile-left` & `cloud-mobile-right`,
+ * and 3 floating storybook pedestals.
  */
 export const learningCloud: WorldDefinition = {
   id: "learning-cloud",
   workingTitle: "Lumi Learning Cloud",
   ground: { color: "#B8C6F4", size: 70 },
   musicBed: "cloudBed",
-  buildDiorama: buildLearningCloudDiorama,
+  buildDiorama: learningCloudScene,
   dressing: [
-    // Declarative concentric rainbow band metadata retained for layout/clearance
-    // inspection; superseded at build time by the 5-band `tubeAlongSpline` arch.
+    // Declarative concentric pastel arch metadata retained for layout/clearance
+    // inspection; superseded at build time by the 5-band sculpted pastel arch.
     {
       kind: "primitive",
       shape: "torus",

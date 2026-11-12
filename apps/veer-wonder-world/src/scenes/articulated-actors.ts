@@ -32,8 +32,10 @@ import {
   frac,
   lerp,
   phaseOf,
+  placePiece,
   rotateZYX,
   type PoseOffset,
+  type StagePose,
   type Vec3
 } from "./motion.js";
 
@@ -77,6 +79,103 @@ export const SUB_PART_IDS = [
 ] as const;
 
 export type SubPartId = (typeof SUB_PART_IDS)[number];
+
+/**
+ * Canonical 2-level kinematic parent hierarchy (`actorRoot -> body -> head -> leafPart`)
+ * so eyes, eyelids, jaws, beaks, cheeks, ears, and tufts stay locked onto the head
+ * during `computeHeadGaze`, `nod`, `tilt`, `sniff`, and `bow` without nested `groups.create` `pivot`s.
+ */
+export const SUB_PART_PARENT: Partial<Readonly<Record<SubPartId, SubPartId>>> = {
+  head: "body",
+  armL: "body",
+  armR: "body",
+  wingL: "body",
+  wingR: "body",
+  tail: "body",
+  chimney: "body",
+  cabDoorL: "body",
+  cabDoorR: "body",
+  eyelidL: "head",
+  eyelidR: "head",
+  jaw: "head",
+  beakLower: "head",
+  cheekPuff: "head",
+  earL: "head",
+  earR: "head",
+  tuft: "head"
+};
+
+export interface ResolvedPartWorldTransform {
+  readonly position: Vec3;
+  readonly rotation: Vec3;
+  readonly scale: Vec3;
+}
+
+/**
+ * Resolves a rigid `SubPartId`'s world transform by composing `actorStagePose -> body -> head -> part`
+ * around each part's baked `[0, 0, 0]` joint hinge (`partAnchorsM[part]`).
+ */
+export function resolveHierarchicalPartTransform(
+  actorStagePose: StagePose,
+  partsPose: ArticulatedPoseMap | undefined,
+  part: SubPartId,
+  baseAnchorM: Vec3,
+  partAnchorsM?: Partial<Readonly<Record<SubPartId, Vec3>>>,
+  explicitParent?: SubPartId
+): ResolvedPartWorldTransform {
+  // Build ancestor chain from shallowest (`body`) down to `part` (max depth 3, cycle-safe).
+  const chain: SubPartId[] = [part];
+  let cursor: SubPartId | undefined = explicitParent ?? SUB_PART_PARENT[part];
+  let guard = 4;
+  while (cursor && guard > 0) {
+    guard -= 1;
+    // Skip intermediate virtual parents absent on this rig (e.g. `gogo` has `eyelidL -> head -> body` with no `head`).
+    if (!partAnchorsM || partAnchorsM[cursor] !== undefined) {
+      chain.unshift(cursor);
+    }
+    cursor = SUB_PART_PARENT[cursor];
+  }
+
+  let curAnchor: Vec3 = [0, 0, 0];
+  let curPos: Vec3 = [0, 0, 0];
+  let curRot: Vec3 = [0, 0, 0];
+  let curScale: Vec3 = [1, 1, 1];
+
+  for (let i = 0; i < chain.length; i += 1) {
+    const id = chain[i]!;
+    const restAnchor: Vec3 =
+      id === part ? baseAnchorM : (partAnchorsM?.[id] ?? [0, 0, 0]);
+    const rel: Vec3 = [
+      (restAnchor[0] - curAnchor[0]) * curScale[0],
+      (restAnchor[1] - curAnchor[1]) * curScale[1],
+      (restAnchor[2] - curAnchor[2]) * curScale[2]
+    ];
+    const carried = addVec3(curPos, rotateZYX(curRot, rel));
+    const delta = partsPose?.[id];
+    const localOff = delta?.offset ?? [0, 0, 0];
+    const localRot = delta?.rotation ?? [0, 0, 0];
+    const localScale = delta?.scale ?? [1, 1, 1];
+
+    curPos = addVec3(carried, rotateZYX(curRot, localOff));
+    curRot = composeRotation(curRot, localRot);
+    curScale = [
+      curScale[0] * localScale[0],
+      curScale[1] * localScale[1],
+      curScale[2] * localScale[2]
+    ];
+    curAnchor = restAnchor;
+  }
+
+  return {
+    position: placePiece(actorStagePose, curPos),
+    rotation: composeRotation(actorStagePose.rotation, curRot),
+    scale: [
+      actorStagePose.scale[0] * curScale[0],
+      actorStagePose.scale[1] * curScale[1],
+      actorStagePose.scale[2] * curScale[2]
+    ]
+  };
+}
 
 const SUB_PART_SET: ReadonlySet<string> = new Set<string>(SUB_PART_IDS);
 
@@ -306,6 +405,10 @@ export function resolveSubPartHandle(
   }
   const standIn = app.nodes.get(`${actorId}__${partName}`);
   if (standIn) return { handle: standIn, source: "stand-in" };
+  if (partName === "body") {
+    const rootBody = app.nodes.get(actorId);
+    if (rootBody) return { handle: rootBody, source: "stand-in" };
+  }
   return undefined;
 }
 

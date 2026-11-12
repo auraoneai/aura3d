@@ -1,131 +1,22 @@
-// Wonder World art direction contract (C-35, Aura3D 5.5.1).
+// Wonder World art direction contract (C-35, Aura3D 5.5.1, 100% Procedural Craft Rigs).
 // Validated via `defineArtDirection` and audited across all 6 Wonder World storybook dioramas
 // in `tests/unit/stage/art-direction.test.ts`, which writes `art/direction.audit.json`.
-import { defineArtDirection, type ArtAssetRole, type GameArtDirection } from "@aura3d/engine/game/art";
-import { MODEL_KEYS, type ModelKey } from "../src/aura-assets.js";
+import { defineArtDirection, type GameArtDirection } from "@aura3d/engine/game/art";
 import { WONDER_VFX } from "../src/scenes/vfx-presets.js";
-
-const HERO_KEYS: ReadonlySet<ModelKey> = new Set([
-  "momo",
-  "lulu",
-  "sheru",
-  "peeko",
-  "lumi"
-]);
-
-const CHARACTER_KEYS: ReadonlySet<ModelKey> = new Set([
-  "teddy",
-  "robot",
-  "cow",
-  "sheep",
-  "duck",
-  "horse",
-  "bird",
-  "butterfly"
-]);
-
-const VEHICLE_KEYS: ReadonlySet<ModelKey> = new Set([
-  "gogo",
-  "gogoCarriage",
-  "car"
-]);
-
-const WORLD_KEYS: ReadonlySet<ModelKey> = new Set([
-  "barn",
-  "station",
-  "tunnel",
-  "house",
-  "tree"
-]);
-
-const SET_DRESSING_KEYS: ReadonlySet<ModelKey> = new Set([
-  "flower",
-  "flowerBud",
-  "bush",
-  "bed",
-  "sink",
-  "table",
-  "chair",
-  "cushion",
-  "toyBox",
-  "bench",
-  "stompStone",
-  "cloud",
-  "sun"
-]);
-
-function assetEntryForKey(assetKey: ModelKey): ArtAssetRole {
-  if (HERO_KEYS.has(assetKey)) {
-    return {
-      role: "hero",
-      assetKey,
-      minTriangles: 2000,
-      maxTriangles: 80000,
-      textureSet: "BC+N",
-      maxTextureSize: 2048
-    };
-  }
-  if (CHARACTER_KEYS.has(assetKey)) {
-    return {
-      role: "character",
-      assetKey,
-      minTriangles: 2000,
-      maxTriangles: 60000,
-      textureSet: "BC+N",
-      maxTextureSize: 2048
-    };
-  }
-  if (VEHICLE_KEYS.has(assetKey)) {
-    return {
-      role: "vehicle",
-      assetKey,
-      minTriangles: 2000,
-      maxTriangles: 80000,
-      textureSet: "BC+N",
-      maxTextureSize: 2048
-    };
-  }
-  if (WORLD_KEYS.has(assetKey)) {
-    return {
-      role: "world",
-      assetKey,
-      minTriangles: 2000,
-      maxTriangles: 80000,
-      textureSet: "BC+N",
-      maxTextureSize: 2048
-    };
-  }
-  if (SET_DRESSING_KEYS.has(assetKey)) {
-    return {
-      role: "set-dressing",
-      assetKey,
-      maxTriangles: 50000,
-      textureSet: "BC+N",
-      maxTextureSize: 2048
-    };
-  }
-  return {
-    role: "prop",
-    assetKey,
-    maxTriangles: 50000,
-    textureSet: "BC+N",
-    maxTextureSize: 2048
-  };
-}
 
 const directionSpec: GameArtDirection = {
   id: "wonder-world",
   genre: "maze-arcade",
   fantasy:
-    "A handcrafted clay-and-beechwood picture-book diorama stage where toddler friends explore warm morning sets together.",
+    "A needle-felted wool, matte clay, and beechwood picture-book diorama stage where toddler friends explore warm morning sets.",
   rebuildTier: "S-world",
   wave: 4,
   references: [
     {
       file: "src/scenes/LOOK-BRIEF.md",
-      source: "genre comparable: stop-motion clay and painted beechwood miniature picture-book sets lit by soft morning daylight",
+      source: "genre comparable: stop-motion needle-felted wool, matte clay, and painted beechwood miniature picture-book sets lit by soft morning daylight",
       licence: "reference-only",
-      why: "Matte clay characters with crisp sclera/pupil contrast, warm beechwood bevels, and grounded contact shadows on raised diorama islands"
+      why: "Procedural felt/clay/ceramic/lacquer rigs with crisp dual-catchlight eyes, warm beechwood bevels, and grounded contact shadows on raised diorama islands"
     },
     {
       file: "provenance/hdri.json",
@@ -137,7 +28,7 @@ const directionSpec: GameArtDirection = {
       file: "src/scenes/diorama-terrain.ts",
       source: "craft comparable: sculpted tabletop island bases with flat central play stages, rolling perimeter hills, and swept timber molding",
       licence: "reference-only",
-      why: "Every character and tap prop sits flush on a flat play stage framed by lush instanced meadow blades, pebbles, clouds, and pond ripples"
+      why: "Every procedural character and tap prop sits flush on a flat play stage framed by lush instanced meadow blades, pebbles, clouds, and animated pond ripples"
     }
   ],
   palette: {
@@ -166,7 +57,9 @@ const directionSpec: GameArtDirection = {
     fovDeg: [38, 48],
     mobile: "both"
   },
-  assets: MODEL_KEYS.map(assetEntryForKey),
+  // All 66 stage rigs are first-party procedural custom geometries (`PROCEDURAL_RIGS`, zero external `.glb`s);
+  // triangle & sub-shape budgets are enforced directly against `PROCEDURAL_RIGS` in `spots.test.ts` and `art-direction.test.ts`.
+  assets: [],
   vfx: Object.keys(WONDER_VFX).map((kind) => ({
     event: kind,
     kind
@@ -179,7 +72,7 @@ const directionSpec: GameArtDirection = {
     { event: "celebrate-turn", cue: "giggle_warm", variants: 1 }
   ],
   signatureEffect:
-    "Warm storybook miniature clay-and-beechwood diorama lighting: six world-matched CC0 HDRI IBL skies with a single 2048 PCSS key light, rim separation, soft contact shadows, and syllable-envelope articulated puppetry with zero vignette.",
+    "Warm storybook miniature felt-clay-and-beechwood diorama lighting: WebGPU-first live rendering, six world-matched CC0 HDRI IBL skies with gradient sky domes, 2048 PCSS key light, close-range contact shadows, animated ripples, and syllable-envelope articulated procedural puppetry with zero vignette.",
   criticalCategories: [
     "environment_world",
     "material_quality",

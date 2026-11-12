@@ -1,74 +1,74 @@
 {
- "momo": {
-  "file": "src/assets/portraits/momo.webp",
-  "sha256": "3b1a4e06f95efb6c554db6f9f73ef3a406f1f320e2fd894ed890d5a498529416",
-  "source": "wonder-551-portraits-20261110 capture char-momo-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/momo.12b8ed9c.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
+  "momo": {
+    "file": "src/assets/portraits/momo.webp",
+    "sha256": "430459f4bf06207324fe01397612754899a34c26eef030104178b7c482fb7c60",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
+  },
+  "lulu": {
+    "file": "src/assets/portraits/lulu.webp",
+    "sha256": "999eabcf1dcf1b919282057be2d71f583b3ddd47906e237992ed628fdcadd443",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
+  },
+  "sheru": {
+    "file": "src/assets/portraits/sheru.webp",
+    "sha256": "2310b68ef862ef185ff16111c8f43494ca84539a69252b522bbe7d04e81d6640",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
+  },
+  "gogo": {
+    "file": "src/assets/portraits/gogo.webp",
+    "sha256": "63d76124f40906ac7bc98c53459d5f9a0f7176184dfccd9a453009f286aa96bc",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
+  },
+  "lumi": {
+    "file": "src/assets/portraits/lumi.webp",
+    "sha256": "411fe321ab0ece2411b946f00a9ff43124bf1509233b644cb579e8fe07dfdecb",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
+  },
+  "peeko": {
+    "file": "src/assets/portraits/peeko.webp",
+    "sha256": "99e58798c1a0c4f2095dae6bc649efc03d920bdaf762c67e00a75ecc5b1437eb",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-11"
+    }
   }
- },
- "lulu": {
-  "file": "src/assets/portraits/lulu.webp",
-  "sha256": "2e83aa5f70ca58427ed6808982ec6757bef4d06ac3901a2eb2203adee86a71be",
-  "source": "wonder-551-portraits-20261110 capture char-lulu-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/lulu.45db956d.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
-  }
- },
- "sheru": {
-  "file": "src/assets/portraits/sheru.webp",
-  "sha256": "c9d3d2f4493333c9a30bfab13e37626c0e81b251763cce1fa0b58484f95f2b42",
-  "source": "wonder-551-portraits-20261110 capture char-sheru-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/sheru.2fc1329a.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
-  }
- },
- "gogo": {
-  "file": "src/assets/portraits/gogo.webp",
-  "sha256": "6c47acc224883290531c19b3cb9feab8ec4c622b4676407d3647fb6633a2dd79",
-  "source": "wonder-551-portraits-20261110 capture char-gogo-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/gogo.f9b85f6e.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
-  }
- },
- "lumi": {
-  "file": "src/assets/portraits/lumi.webp",
-  "sha256": "202967bdac38f959476891c4332b7da0972c12a00775bb95fba4fe56e99a0a1f",
-  "source": "wonder-551-portraits-20261110 capture char-lumi-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/lumi.d006ab93.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
-  }
- },
- "peeko": {
-  "file": "src/assets/portraits/peeko.webp",
-  "sha256": "2ea919045c61c5b71206bec37a2a29a307ff6e7839819009abcbc77d0ff0498e",
-  "source": "wonder-551-portraits-20261110 capture char-peeko-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/peeko.43caaea2.glb",
-  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-  "review": {
-   "status": "approved",
-   "reviewer": "agent:claude-opus-5.5",
-   "date": "2026-10-29"
-  }
- }
 }

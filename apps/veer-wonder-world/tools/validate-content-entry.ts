@@ -7,24 +7,27 @@
 // Checks every story with validateCatalog (src/content/schema.ts): story
 // shape, beats, lines and strings in the English pack, vocabulary, letters,
 // counting, songs, effects, beds, timing, review and the canonical 20 + 12
-// catalog. It also checks that each locale file only defines its own keys and
-// the rights references of the media: every model the content uses is in
-// tools/wonder-assets.json; every admitted model file has a provenance record
-// whose sha256 matches; every recorded audio clip exists, matches its sha256,
-// has a complete provenance record and was recorded from the current line text,
-// lyrics or prompt. Recorded audio is required for every line, song, effect and bed once
-// any line has been recorded (or always with --require-audio); while
-// generation is still running, --allow-missing-audio skips that requirement.
+// catalog. It also checks that each locale file only defines its own keys,
+// every story/world model key is registered as procedural in src/aura-assets.ts
+// (65 ModelKeys, 0 .glb files anywhere in the app source tree), and every
+// recorded audio clip exists, matches its sha256, has a complete provenance
+// record and was recorded from the current line text, lyrics or prompt.
+// Recorded audio is required for every line, song, effect and bed once any line
+// has been recorded (or always with --require-audio); while generation is still
+// running, --allow-missing-audio skips that requirement.
 //
 // Prints the problems per story and exits 1 when there are any.
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { ModelKey } from "../src/aura-assets.js";
+import type { StorySpec } from "../src/types.js";
 
 const app = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
+const SKIPPED_SCAN_DIRS: ReadonlySet<string> = new Set(["dist", "node_modules", ".git"]);
 
 /**
  * The child's name never appears in shipped source (MASTER-PROMPT section 6),
@@ -49,6 +52,110 @@ function record(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? Object.fromEntries(Object.entries(value)) : {};
 }
 
+function findGlbFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (SKIPPED_SCAN_DIRS.has(entry.name)) continue;
+      findGlbFiles(join(dir, entry.name), out);
+    } else if (entry.name.toLowerCase().endsWith(".glb")) {
+      out.push(relative(app, join(dir, entry.name)));
+    }
+  }
+  return out;
+}
+
+async function validateModels(
+  appRoot: string,
+  stories: readonly StorySpec[],
+  characterIds: readonly string[],
+  propAssetIds: readonly string[],
+  extra: string[]
+): Promise<number> {
+  const { MODEL_KEYS, MODEL_INFO, PROCEDURAL_MODELS } = await import("../src/aura-assets.js");
+  const [
+    { meadow },
+    { musicGarden },
+    { peekabooBarn },
+    { station },
+    { learningCloud },
+    { homeNook }
+  ] = await Promise.all([
+    import("../src/scenes/meadow.js"),
+    import("../src/scenes/music-garden.js"),
+    import("../src/scenes/peekaboo-barn.js"),
+    import("../src/scenes/station.js"),
+    import("../src/scenes/learning-cloud.js"),
+    import("../src/scenes/home-nook.js")
+  ]);
+
+  if (MODEL_KEYS.length !== 65) {
+    extra.push(`src/aura-assets.ts: expected 65 MODEL_KEYS, got ${MODEL_KEYS.length}`);
+  }
+  if (PROCEDURAL_MODELS.length !== 65) {
+    extra.push(`src/aura-assets.ts: expected 65 PROCEDURAL_MODELS, got ${PROCEDURAL_MODELS.length}`);
+  }
+
+  const assetList = record(readJson(join(appRoot, "tools", "wonder-assets.json")));
+  const assets = Array.isArray(assetList["assets"]) ? assetList["assets"] : [];
+  const catalogKeys = assets.map((entry) => String(record(entry)["key"] ?? ""));
+  if (catalogKeys.length !== 65) {
+    extra.push(`tools/wonder-assets.json: expected 65 asset entries, got ${catalogKeys.length}`);
+  }
+  if (JSON.stringify(catalogKeys) !== JSON.stringify(MODEL_KEYS)) {
+    extra.push("src/aura-assets.ts MODEL_KEYS is out of sync with tools/wonder-assets.json; rerun tools/gen-aura-assets.mjs");
+  }
+
+  const modelKeySet: ReadonlySet<string> = new Set<string>(MODEL_KEYS);
+  const isModelKey = (value: string): value is ModelKey => modelKeySet.has(value);
+
+  for (const key of MODEL_KEYS) {
+    const info = MODEL_INFO[key];
+    if (!info || info.procedural !== true) {
+      extra.push(`model ${key}: MODEL_INFO[${key}] is missing or procedural !== true`);
+    }
+  }
+
+  const usedModels = new Set<string>(characterIds);
+  for (const propId of propAssetIds) {
+    if (propId !== "bubble") usedModels.add(propId);
+  }
+  for (const story of stories) {
+    for (const prop of story.props) {
+      if (prop.asset !== "bubble") usedModels.add(prop.asset);
+    }
+  }
+  for (const world of [meadow, musicGarden, peekabooBarn, station, learningCloud, homeNook]) {
+    for (const item of world.dressing) {
+      if (item.kind === "model") usedModels.add(item.key);
+    }
+  }
+
+  for (const key of usedModels) {
+    if (!isModelKey(key)) {
+      extra.push(`model ${key} is used by story or world content but missing from MODEL_KEYS / tools/wonder-assets.json`);
+      continue;
+    }
+    const info = MODEL_INFO[key];
+    if (!info || info.procedural !== true) {
+      extra.push(`model ${key}: MODEL_INFO[${key}] must exist with procedural === true`);
+    }
+  }
+
+  if (existsSync(join(appRoot, "src/assets/models"))) {
+    extra.push("src/assets/models directory must not exist (all stage assets are procedural)");
+  }
+  if (existsSync(join(appRoot, "provenance/models"))) {
+    extra.push("provenance/models directory must not exist (all stage assets are procedural)");
+  }
+
+  const strayGlbs = findGlbFiles(appRoot);
+  if (strayGlbs.length > 0) {
+    extra.push(`found ${strayGlbs.length} forbidden .glb file(s): ${strayGlbs.join(", ")}`);
+  }
+
+  return MODEL_KEYS.length;
+}
+
 async function main(): Promise<number> {
   let catalogModule: typeof import("../src/content/catalog.js");
   let localeModule: typeof import("../src/localization/en/index.js");
@@ -62,7 +169,7 @@ async function main(): Promise<number> {
   }
   const { STORIES, storyCode } = catalogModule;
   const { en, EN_PARTS } = localeModule;
-  const { validateCatalogDetailed, CHARACTER_IDS } = await import("../src/content/schema.js");
+  const { validateCatalogDetailed, CHARACTER_IDS, PROP_ASSET_IDS } = await import("../src/content/schema.js");
   const { AUDIO_MANIFEST } = await import("../src/audio-manifest.js");
 
   const recordedLines = Object.keys(AUDIO_MANIFEST.lines).length;
@@ -88,35 +195,8 @@ async function main(): Promise<number> {
     }
   }
 
-  // Models: the content only uses known model keys; admitted files match their provenance.
-  const assetList = record(readJson(join(app, "tools", "wonder-assets.json")));
-  const assets = Array.isArray(assetList["assets"]) ? assetList["assets"] : [];
-  const modelKeys = new Set(assets.map((entry) => String(record(entry)["key"] ?? "")));
-  const usedModels = new Set<string>(CHARACTER_IDS);
-  for (const story of STORIES) for (const prop of story.props) if (prop.asset !== "bubble") usedModels.add(prop.asset);
-  for (const key of usedModels) if (!modelKeys.has(key)) extra.push(`model ${key} is used by the content but missing from tools/wonder-assets.json`);
-  const modelsDir = join(app, "src", "assets", "models");
-  let admitted = 0;
-  for (const file of existsSync(modelsDir) ? readdirSync(modelsDir).filter((f) => f.endsWith(".glb")) : []) {
-    const match = /^([A-Za-z0-9]+)\.([0-9a-f]{8})\.glb$/.exec(file);
-    if (!match || match[1] === undefined || match[2] === undefined) {
-      extra.push(`model file ${file} must be named <key>.<sha8>.glb`);
-      continue;
-    }
-    const [, key, sha8] = match;
-    admitted += 1;
-    if (!modelKeys.has(key)) extra.push(`model file ${file}: ${key} is not in tools/wonder-assets.json`);
-    const provFile = join(app, "provenance", "models", `${key}.json`);
-    if (!existsSync(provFile)) {
-      extra.push(`model ${key}: no provenance record (provenance/models/${key}.json)`);
-      continue;
-    }
-    const prov = record(readJson(provFile));
-    const hash = sha256(readFileSync(join(modelsDir, file)));
-    if (prov["sha256"] !== hash) extra.push(`model ${key}: provenance sha256 does not match ${file}`);
-    if (!hash.startsWith(sha8)) extra.push(`model ${key}: file name hash ${sha8} does not match the file contents`);
-    if (typeof prov["license"] !== "string" || prov["license"].trim() === "") extra.push(`model ${key}: provenance has no license`);
-  }
+  // Models: all 65 ModelKeys are procedural and zero .glb files exist.
+  const proceduralCount = await validateModels(app, STORIES, CHARACTER_IDS, PROP_ASSET_IDS, extra);
 
   // Audio: every recorded clip exists and matches its sha256, has a complete
   // provenance record (PRD 04 D16: provider, endpoint, prompt, Prism key id and
@@ -183,7 +263,7 @@ async function main(): Promise<number> {
 
   const lineCount = Object.keys(en.lines).length;
   const stringCount = Object.keys(en.strings).length;
-  console.log(`Wonder World content lint (J14): ${STORIES.length} stories, ${lineCount} lines, ${stringCount} strings, ${admitted} admitted models`);
+  console.log(`Wonder World content lint (J14): ${STORIES.length} stories, ${lineCount} lines, ${stringCount} strings, ${proceduralCount} procedural models`);
   if (recordedLines > 0 || clips > 0) console.log(`audio: ${clips} recorded clips; recorded audio is ${requireAudio ? "required" : "optional"}`);
   else if (requireAudio) console.log("audio: none recorded yet, and --require-audio requires every clip");
   else console.log("audio: none recorded yet (lines run on caption timing); pass --require-audio to require it");

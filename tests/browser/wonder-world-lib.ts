@@ -145,7 +145,7 @@ export interface WonderQaState {
   readonly spoken: readonly string[];
   readonly audio: { readonly unlocked: boolean; readonly available: boolean };
   readonly settings: { readonly mode: string; readonly reducedMotion: boolean; readonly captions: boolean; readonly music: boolean; readonly sound: boolean };
-  readonly stage: { readonly drawCalls: number; readonly nodes: number; readonly modelsEnabled: boolean };
+  readonly stage: { readonly drawCalls: number; readonly nodes: number; readonly proceduralNodes: number };
   /** Always false in this build (no microphone). Typed boolean so a spec can assert it. */
   readonly micRequested: boolean;
   readonly errors: readonly string[];
@@ -329,12 +329,12 @@ export function storySlugsOnDisk(kind: "episodes" | "activities"): string[] {
     .sort();
 }
 
-/** Model keys the generated src/aura-assets.ts marks admitted, or null when the file cannot be read. */
-export function admittedModelKeys(): ReadonlySet<string> | null {
+/** Model keys the generated src/aura-assets.ts marks procedural, or null when the file cannot be read. */
+export function proceduralModelKeys(): ReadonlySet<string> | null {
   try {
     const text = readFileSync(resolve(APP_DIR, "src", "aura-assets.ts"), "utf8");
     const keys = new Set<string>();
-    for (const match of text.matchAll(/^\s+([A-Za-z0-9]+): \{ admitted: (true|false)\b/gm)) {
+    for (const match of text.matchAll(/^\s+([A-Za-z0-9]+): \{ procedural: (true|false)\b/gm)) {
       if (match[2] === "true" && match[1]) keys.add(match[1]);
     }
     return keys;
@@ -1353,41 +1353,6 @@ export function silhouetteContrast(image: DecodedImage, box: Box): SilhouetteRep
     colourDistance: round3(Math.hypot(coreMean.r - groundMean.r, coreMean.g - groundMean.g, coreMean.b - groundMean.b)),
     separatedShare: round3(far / Math.max(1, total))
   };
-}
-
-/**
- * How long a late model may keep downloading before the story is mounted again. The app's own cap on a download is 15
- * minutes (src/runtime/asset-preloader.ts, raised from 120 s on 2026-10-29); on the runner every model has settled well
- * within this wait, and one still pending after it fails the spec here, with the wait's name.
- */
-export const DOWNLOADS_SETTLED_MS = 150_000;
-
-/**
- * Makes sure the story's admitted models are drawn. Software WebGL2 starves the page's main thread, so a GLB whose bytes
- * have arrived can still be unread when the preload's 10 s wait ends (07 B41); the app then draws its stand-in for that
- * mount and keeps loading it. When any of `ids` is
- * a stand-in, this waits for the downloads to settle and starts the story again (the app's own path for a late
- * model). Returns what the first mount drew, or null when it already drew every model.
- */
-export async function remountIfModelsLate(
-  page: Page,
-  log: PageLog,
-  storyId: string,
-  mode: PlayMode,
-  ids: readonly string[],
-  loadTimeoutMs: number = STORY_LOAD_TIMEOUT_MS
-): Promise<{ readonly standIns: readonly string[]; readonly modelStatus: unknown } | null> {
-  const late = (await liveNodes(page, ids)).nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
-  if (late.length === 0) return null;
-  const first = await qaDiagnostics(page);
-  const firstMount = { standIns: late, modelStatus: first?.["modelStatus"] ?? null };
-  await waitFor(page, log, "model downloads settled", DOWNLOADS_SETTLED_MS, async () => {
-    const status = (await qaDiagnostics(page))?.["modelStatus"] as Readonly<Record<string, number>> | undefined;
-    return status !== undefined && !((status["pending"] ?? 0) > 0);
-  });
-  await qaStartStory(page, storyId, mode, loadTimeoutMs);
-  await waitForStoryOnStage(page, log, storyId, loadTimeoutMs);
-  return firstMount;
 }
 
 export interface DecodedImage {

@@ -1,23 +1,36 @@
 import {
+  geometry,
   instances,
   primitives,
   type AuraColor,
   type AuraNodeBuilder,
-  type AuraSceneNode,
-  type AuraTransformSpec
+  type AuraSceneNode
 } from "@aura3d/engine";
+import { type ComposePart, type ProceduralVec3 } from "@aura3d/engine/procedural";
 import {
+  archStoneBridge,
+  buildAnimatedBrookNode,
   buildBackdropHillNode,
   buildIslandPlinthNode,
+  cachedDioramaSpec,
   clayMat,
+  composeGeometry,
+  coneSpec,
   createDeterministicRng,
-  dioramaGroup,
+  ellipsoidSpec,
   feltMat,
   gentleBreezeWind,
   instanceClayMat,
+  instanceStoneMat,
   instanceWoodMat,
   plushCloudMat,
-  ribbonAlongSpline
+  ribbonAlongSpline,
+  roundedBoxSpec,
+  sculptCurvedLimb,
+  sculptFbmOrganicPuffs,
+  splitInstancePlacements,
+  srgbHexToLinearRgba,
+  type AuraInstanceInput
 } from "./diorama-terrain.js";
 import type { Vec3 } from "./motion.js";
 import type {
@@ -27,63 +40,74 @@ import type {
   WorldDioramaSlice
 } from "./worlds.js";
 
-const DAISY_COLORS: readonly AuraColor[] = [
+const WILDFLOWER_COLORS: readonly AuraColor[] = [
   "#FFFDF6",
   "#FFE680",
-  "#FFD0DE",
-  "#FFF7CC",
-  "#E5D8FA"
+  "#FFB8CC",
+  "#FFF4B8",
+  "#D9C6FA",
+  "#FFAEC2"
 ];
 
-function buildCloudCluster(id: string, name: string, at: Vec3, scale = 1): AuraNodeBuilder<AuraSceneNode> {
+const BROOK_CHANNEL_2D: readonly (readonly [number, number])[] = [
+  [-7.8, -4.65],
+  [-4.9, -4.2],
+  [-1.95, -4.02],
+  [1.35, -4.18],
+  [4.55, -3.62],
+  [6.95, -1.95]
+];
+
+const BROOK_SPLINE_3D: readonly ProceduralVec3[] = BROOK_CHANNEL_2D.map(([x, z]) => [x, -0.025, z]);
+
+function buildSculptedCloudNode(id: string, at: Vec3, scale = 1): AuraNodeBuilder<AuraSceneNode> {
   const puffMat = plushCloudMat("#FFFDF9", { color: "#FFEBD2", power: 2.4, intensity: 0.28 });
-  return dioramaGroup(
-    name,
-    [
-      primitives.sphere({
-        name: `${name}-core`,
-        size: [1.55, 0.88, 1.05],
-        position: [0, 0, 0],
-        material: puffMat,
-        castShadow: false,
-        receiveShadow: false
-      }),
-      primitives.sphere({
-        name: `${name}-left`,
-        size: [1.08, 0.72, 0.88],
-        position: [-0.72, -0.08, 0.06],
-        material: puffMat,
-        castShadow: false,
-        receiveShadow: false
-      }),
-      primitives.sphere({
-        name: `${name}-right`,
-        size: [1.14, 0.76, 0.9],
-        position: [0.74, -0.06, -0.04],
-        material: puffMat,
-        castShadow: false,
-        receiveShadow: false
-      })
-    ],
-    { position: at, scale }
-  ).runtime({ id, tags: ["diorama", "cloud"], mutable: true });
+  const spec = cachedDioramaSpec("meadow-cumulus-puff", () => {
+    const built = sculptFbmOrganicPuffs(
+      [
+        { position: [0, 0, 0], scale: [1.58, 0.88, 1.04] },
+        { position: [-0.72, -0.08, 0.06], scale: [1.12, 0.72, 0.88] },
+        { position: [0.74, -0.06, -0.04], scale: [1.16, 0.76, 0.9] },
+        { position: [0.08, 0.28, 0.02], scale: [0.95, 0.68, 0.82] }
+      ],
+      { seed: 117, amplitude: 0.026, frequency: 2.4 }
+    );
+    return built.geometry;
+  });
+
+  return geometry
+    .custom(spec, {
+      name: id,
+      material: puffMat,
+      castShadow: false,
+      receiveShadow: false
+    })
+    .position(at[0], at[1], at[2])
+    .scale(scale)
+    .runtime({ id, tags: ["diorama", "cloud"], mutable: true });
 }
 
-function buildMeadowDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
+export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   const rng = createDeterministicRng(0x51a7e1);
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
 
   // 1. Sculpted felt clover-green island plinth (strictly y = 0.000 inside r <= 3.75m)
+  //    with a carved creek channel in the outer mid-ground for the animated brook.
   nodes.push(
     buildIslandPlinthNode({
       name: "meadow felt island plinth",
       seed: 101,
       material: feltMat("#7FBC6B"),
       span: [32, 30],
-      segments: [56, 52],
+      segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 14.2,
       outerSwellAmplitude: 0.38,
+      channel: {
+        points: BROOK_CHANNEL_2D,
+        halfWidth: 0.56,
+        depth: 0.22
+      },
       plinthBaseY: -1.1
     }),
     primitives.cylinder({
@@ -126,7 +150,70 @@ function buildMeadowDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   );
 
-  // 3. Winding cream-clay garden path curving gently around the outer meadow apron
+  // 3. Winding animated storybook brook + pebble banks + arched timber-and-cobble footbridge
+  nodes.push(
+    ribbonAlongSpline({
+      name: "meadow creek sandy bed",
+      points: BROOK_CHANNEL_2D.map(([x, z]): ProceduralVec3 => [x, -0.14, z]),
+      halfWidthBottom: 0.72,
+      halfWidthTop: 0.64,
+      height: 0.03,
+      baseY: -0.04,
+      segments: 48,
+      material: clayMat("#DFCAA6", false)
+    }),
+    buildAnimatedBrookNode({
+      name: "meadow babbling brook surface",
+      points: BROOK_SPLINE_3D,
+      halfWidth: 0.54,
+      segments: 52,
+      shallowColor: "#74DAEE",
+      deepColor: "#2E92BD",
+      reducedMotion: ctx.reducedMotion
+    }),
+    archStoneBridge({
+      name: "meadow cobble timber footbridge",
+      position: [-1.88, 0.02, -4.02],
+      rotationY: Math.PI * 0.48,
+      spanLength: 2.25,
+      deckWidth: 1.08,
+      archRise: 0.34
+    })
+  );
+
+  const brookPebbleSpec = cachedDioramaSpec("meadow-brook-pebble", () =>
+    ellipsoidSpec(0.14, 0.075, 0.11, 16, 12)
+  );
+  const brookPebbleInstances: AuraInstanceInput[] = [];
+  for (let i = 0; i < BROOK_CHANNEL_2D.length - 1; i += 1) {
+    const a = BROOK_CHANNEL_2D[i]!;
+    const b = BROOK_CHANNEL_2D[i + 1]!;
+    for (let sub = 0; sub < 4; sub += 1) {
+      const f = (sub + 0.3) / 4;
+      const cx = a[0] + (b[0] - a[0]) * f;
+      const cz = a[1] + (b[1] - a[1]) * f;
+      if (Math.abs(cx + 1.88) < 0.85) continue;
+      for (const bank of [-1, 1] as const) {
+        brookPebbleInstances.push({
+          position: [cx + (rng() - 0.5) * 0.22, 0.02, cz + bank * (0.58 + rng() * 0.14)],
+          rotation: [0, rng() * Math.PI * 2, 0],
+          scale: [0.8 + rng() * 0.45, 0.75 + rng() * 0.35, 0.8 + rng() * 0.4],
+          color: bank < 0 ? "#DED5C7" : "#CFC5B6"
+        });
+      }
+    }
+  }
+  nodes.push(
+    instances.custom(brookPebbleSpec, {
+      name: "meadow brook bank cobbles",
+      material: instanceStoneMat("#FFFFFF"),
+      ...splitInstancePlacements(brookPebbleInstances),
+      castShadow: false,
+      receiveShadow: true
+    })
+  );
+
+  // 4. Winding cream-clay garden path + sculpted stepping-stone flower path
   nodes.push(
     ribbonAlongSpline({
       name: "meadow winding clay path",
@@ -137,131 +224,227 @@ function buildMeadowDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
         [1.8, 0.004, 2.54],
         [4.5, 0.004, 2.15],
         [6.6, 0.004, -0.8],
-        [5.8, 0.004, -3.9]
+        [5.8, 0.004, -3.3]
       ],
       halfWidthBottom: 0.56,
       halfWidthTop: 0.46,
       height: 0.022,
       baseY: -0.015,
-      segments: 56,
+      segments: 48,
       material: clayMat("#F1E4CC", false)
     })
   );
 
-  // Stepping pebbles along the garden path (1 draw call)
-  const pebbleTransforms: AuraTransformSpec[] = [
-    { position: [-5.4, 0.014, 2.6], scale: [1.05, 1, 0.86], rotation: [0, 0.25, 0] },
-    { position: [-2.8, 0.014, 2.58], scale: [0.92, 1, 0.82], rotation: [0, -0.3, 0] },
-    { position: [0.3, 0.014, 2.62], scale: [1.08, 1, 0.88], rotation: [0, 0.14, 0] },
-    { position: [3.2, 0.014, 2.42], scale: [0.96, 1, 0.84], rotation: [0, -0.22, 0] },
-    { position: [5.6, 0.014, 0.65], scale: [1.02, 1, 0.86], rotation: [0, 0.48, 0] }
+  const steppingStoneSpec = cachedDioramaSpec("meadow-stepping-stone", () =>
+    roundedBoxSpec(0.46, 0.036, 0.36, 0.09, 3)
+  );
+  const steppingStones: readonly AuraInstanceInput[] = [
+    { position: [-6.1, 0.016, 2.66], scale: [1.04, 1, 0.9], rotation: [0, 0.18, 0], color: "#EAE0CE" },
+    { position: [-4.7, 0.016, 2.53], scale: [0.94, 1, 0.88], rotation: [0, -0.22, 0], color: "#DFD3BF" },
+    { position: [-3.3, 0.016, 2.58], scale: [1.02, 1, 0.86], rotation: [0, 0.28, 0], color: "#EDE3D2" },
+    { position: [-1.85, 0.018, -2.72], scale: [0.92, 1, 0.84], rotation: [0, 0.08, 0], color: "#E6DBC8" },
+    { position: [-1.88, 0.02, -3.12], scale: [0.96, 1, 0.86], rotation: [0, -0.12, 0], color: "#DFD3BF" },
+    { position: [0.3, 0.016, 2.62], scale: [1.06, 1, 0.88], rotation: [0, 0.14, 0], color: "#EAE0CE" },
+    { position: [2.5, 0.016, 2.48], scale: [0.96, 1, 0.84], rotation: [0, -0.2, 0], color: "#E2D6C2" },
+    { position: [4.35, 0.016, 2.16], scale: [1.02, 1, 0.88], rotation: [0, 0.36, 0], color: "#ECE2D0" },
+    { position: [5.85, 0.016, 0.42], scale: [0.98, 1, 0.86], rotation: [0, 0.62, 0], color: "#DFD3BF" }
   ];
   nodes.push(
-    instances.cylinder({
-      name: "meadow path stepping pebbles",
-      size: [0.44, 0.026, 0.44],
-      material: instanceClayMat("#E5D4B7"),
-      transforms: pebbleTransforms,
+    instances.custom(steppingStoneSpec, {
+      name: "meadow stepping stone flags",
+      material: instanceStoneMat("#FFFFFF"),
+      ...splitInstancePlacements(steppingStones),
       castShadow: false,
       receiveShadow: true
     })
   );
 
-  // 4. Instanced clover/grass tufts & daisy blossoms with GPU vertex wind (single draw per pool)
-  const grassTransforms: AuraTransformSpec[] = [];
-  const grassColors: AuraColor[] = [];
-  const daisyTransforms: AuraTransformSpec[] = [];
-  const daisyColors: AuraColor[] = [];
+  // 5. Multi-petal swaying wildflowers & sculpted clover grass tufts (single draw per pool)
+  const grassTuftSpec = cachedDioramaSpec("meadow-clover-grass-tuft", () => {
+    const blade = coneSpec(0.036, 0.26, 10, 0.008);
+    const leaf = ellipsoidSpec(0.048, 0.016, 0.038, 10, 8);
+    return composeGeometry([
+      { geometry: blade, position: [0, 0.13, 0], rotation: [0.08, 0, 0.1] },
+      { geometry: blade, position: [-0.035, 0.11, 0.02], rotation: [-0.12, 0.6, 0.22], scale: 0.86 },
+      { geometry: blade, position: [0.038, 0.115, -0.02], rotation: [0.14, -0.5, -0.2], scale: 0.9 },
+      { geometry: leaf, position: [-0.04, 0.04, 0.04], rotation: [0.2, 0.4, 0] },
+      { geometry: leaf, position: [0.04, 0.045, -0.03], rotation: [-0.2, -0.5, 0] }
+    ]);
+  });
+
+  const wildflowerSpec = cachedDioramaSpec("meadow-wildflower-blossom", () => {
+    const parts: ComposePart[] = [];
+    const stem = sculptCurvedLimb(
+      [
+        [0, 0, 0],
+        [0.012, 0.11, 0.008],
+        [0, 0.22, 0]
+      ],
+      0.015,
+      { steps: 8, radialSegments: 8 }
+    );
+    parts.push({
+      geometry: stem,
+      color: srgbHexToLinearRgba("#6AB05A")
+    });
+    const leaf = ellipsoidSpec(0.046, 0.014, 0.024, 10, 8);
+    parts.push(
+      {
+        geometry: leaf,
+        position: [0.035, 0.08, 0],
+        rotation: [0, 0.3, 0.38],
+        color: srgbHexToLinearRgba("#74B963")
+      },
+      {
+        geometry: leaf,
+        position: [-0.032, 0.11, 0.01],
+        rotation: [0, -0.4, -0.36],
+        color: srgbHexToLinearRgba("#68AD58")
+      }
+    );
+    const petal = ellipsoidSpec(0.046, 0.015, 0.026, 12, 8);
+    const petalCount = 6;
+    for (let p = 0; p < petalCount; p += 1) {
+      const ang = (p / petalCount) * Math.PI * 2;
+      parts.push({
+        geometry: petal,
+        position: [Math.cos(ang) * 0.052, 0.225, Math.sin(ang) * 0.052],
+        rotation: [0.12, -ang, 0],
+        color: srgbHexToLinearRgba("#FFFFFF")
+      });
+    }
+    const pollen = ellipsoidSpec(0.032, 0.022, 0.032, 12, 8);
+    parts.push({
+      geometry: pollen,
+      position: [0, 0.236, 0],
+      color: srgbHexToLinearRgba("#F9C642")
+    });
+    return composeGeometry(parts);
+  });
+
+  const grassInstances: AuraInstanceInput[] = [];
+  const flowerInstances: AuraInstanceInput[] = [];
   const grassPalette: readonly AuraColor[] = ["#6FB05B", "#7EC06A", "#63A352", "#8BC975"];
 
-  const ringCount = 34;
+  const ringCount = 40;
   for (let i = 0; i < ringCount; i += 1) {
     const angle = (i / ringCount) * Math.PI * 2 + (rng() - 0.5) * 0.12;
-    const radius = 3.65 + rng() * 3.8;
+    const radius = 3.72 + rng() * 3.75;
     const gx = Math.cos(angle) * radius;
     const gz = Math.sin(angle) * radius * 0.88 - 0.45;
-    if (Math.abs(gx) < 3.1 && gz > -2.35 && gz < 2.35) continue;
-    const scaleY = 0.78 + rng() * 0.48;
-    grassTransforms.push({
-      position: [gx, 0.11 * scaleY, gz],
-      rotation: [0, rng() * Math.PI * 2, (rng() - 0.5) * 0.14],
-      scale: [0.85 + rng() * 0.3, scaleY, 0.85 + rng() * 0.3]
-    });
-    grassColors.push(grassPalette[i % grassPalette.length]!);
+    // Keep stage play area and brook channel clear
+    if (Math.abs(gx) < 3.15 && gz > -2.4 && gz < 2.2) continue;
+    if (gz < -3.35 && gz > -4.75) continue;
 
-    if (i % 3 !== 2) {
-      const dx = gx + (rng() - 0.5) * 0.36;
-      const dz = gz + (rng() - 0.5) * 0.36;
-      if (Math.abs(dx) < 3.1 && dz > -2.35 && dz < 2.35) continue;
-      daisyTransforms.push({
-        position: [dx, 0.16 + rng() * 0.06, dz],
-        rotation: [0.08 * (rng() - 0.5), rng() * Math.PI * 2, 0.08 * (rng() - 0.5)],
-        scale: 0.85 + rng() * 0.35
+    const scaleY = 0.82 + rng() * 0.46;
+    grassInstances.push({
+      position: [gx, 0, gz],
+      rotation: [0, rng() * Math.PI * 2, (rng() - 0.5) * 0.1],
+      scale: [0.88 + rng() * 0.3, scaleY, 0.88 + rng() * 0.3],
+      color: grassPalette[i % grassPalette.length]!
+    });
+
+    if (i % 4 !== 3) {
+      const dx = gx + (rng() - 0.5) * 0.38;
+      const dz = gz + (rng() - 0.5) * 0.38;
+      if (Math.abs(dx) < 3.15 && dz > -2.4 && dz < 2.2) continue;
+      if (dz < -3.35 && dz > -4.75) continue;
+      flowerInstances.push({
+        position: [dx, 0, dz],
+        rotation: [0.06 * (rng() - 0.5), rng() * Math.PI * 2, 0.06 * (rng() - 0.5)],
+        scale: 0.88 + rng() * 0.38,
+        color: WILDFLOWER_COLORS[i % WILDFLOWER_COLORS.length]!
       });
-      daisyColors.push(DAISY_COLORS[i % DAISY_COLORS.length]!);
     }
   }
 
   const grassWind = gentleBreezeWind(ctx.reducedMotion, 0.24, 0.28, 40);
-  const daisyWind = gentleBreezeWind(ctx.reducedMotion, 0.26, 0.24, 40);
+  const flowerWind = gentleBreezeWind(ctx.reducedMotion, 0.26, 0.28, 40);
   nodes.push(
-    instances.cone({
+    instances.custom(grassTuftSpec, {
       name: "meadow clover grass tufts",
-      size: [0.16, 0.26, 0.16],
       material: instanceClayMat("#FFFFFF"),
-      transforms: grassTransforms,
-      colors: grassColors,
+      ...splitInstancePlacements(grassInstances),
       ...(grassWind ? { wind: grassWind } : {}),
       castShadow: false,
       receiveShadow: true
     }),
-    instances.cylinder({
-      name: "meadow daisy blossoms",
-      size: [0.18, 0.045, 0.18],
+    instances.custom(wildflowerSpec, {
+      name: "meadow multi petal wildflowers",
       material: instanceClayMat("#FFFFFF"),
-      transforms: daisyTransforms,
-      colors: daisyColors,
-      ...(daisyWind ? { wind: daisyWind } : {}),
+      ...splitInstancePlacements(flowerInstances),
+      ...(flowerWind ? { wind: flowerWind } : {}),
       castShadow: false,
       receiveShadow: true
     })
   );
 
-  // 5. Honey-cedar wooden picket edge posts framing the outer meadow wings
-  const picketPostTransforms: AuraTransformSpec[] = [
-    { position: [-4.85, 0.28, -1.95], rotation: [0, 0.18, 0] },
-    { position: [-4.65, 0.28, -0.85], rotation: [0, 0.12, 0] },
-    { position: [-4.55, 0.28, 0.25], rotation: [0, 0.06, 0] },
-    { position: [4.85, 0.28, -1.95], rotation: [0, -0.18, 0] },
-    { position: [4.65, 0.28, -0.85], rotation: [0, -0.12, 0] },
-    { position: [4.55, 0.28, 0.25], rotation: [0, -0.06, 0] }
+  // 6. Sculpted split-rail cedar timber fence framing the outer meadow wings (`instances.custom`)
+  const fencePostSpec = cachedDioramaSpec("meadow-split-rail-post", () =>
+    composeGeometry([
+      { geometry: roundedBoxSpec(0.115, 0.58, 0.115, 0.022), position: [0, 0.29, 0] },
+      { geometry: ellipsoidSpec(0.068, 0.045, 0.068, 14, 10), position: [0, 0.59, 0] }
+    ])
+  );
+  const fenceRailSpec = cachedDioramaSpec("meadow-split-rail-bar", () =>
+    roundedBoxSpec(0.058, 0.078, 1.0, 0.016)
+  );
+
+  const postCoords: readonly [number, number, number][] = [
+    [-4.95, -2.25, 0.2],
+    [-4.72, -1.05, 0.14],
+    [-4.55, 0.15, 0.07],
+    [-4.48, 1.32, 0.03],
+    [4.95, -2.25, -0.2],
+    [4.72, -1.05, -0.14],
+    [4.55, 0.15, -0.07],
+    [4.48, 1.32, -0.03]
   ];
-  const picketRailTransforms: AuraTransformSpec[] = [
-    { position: [-4.75, 0.36, -1.4], rotation: [0, 0.16, 0], scale: [1, 1, 1.15] },
-    { position: [-4.6, 0.36, -0.3], rotation: [0, 0.09, 0], scale: [1, 1, 1.15] },
-    { position: [4.75, 0.36, -1.4], rotation: [0, -0.16, 0], scale: [1, 1, 1.15] },
-    { position: [4.6, 0.36, -0.3], rotation: [0, -0.09, 0], scale: [1, 1, 1.15] }
+  const postInstances: AuraInstanceInput[] = postCoords.map(([px, pz, yaw]) => ({
+    position: [px, 0, pz],
+    rotation: [0, yaw, 0]
+  }));
+
+  const railPairs: readonly [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [4, 5],
+    [5, 6],
+    [6, 7]
   ];
+  const railInstances: AuraInstanceInput[] = [];
+  for (const [i0, i1] of railPairs) {
+    const a = postCoords[i0]!;
+    const b = postCoords[i1]!;
+    const mx = (a[0] + b[0]) * 0.5;
+    const mz = (a[1] + b[1]) * 0.5;
+    const span = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const yaw = Math.atan2(b[0] - a[0], b[1] - a[1]);
+    railInstances.push(
+      { position: [mx, 0.44, mz], rotation: [0, yaw, 0], scale: [1, 1, span] },
+      { position: [mx, 0.23, mz], rotation: [0, yaw, 0], scale: [1, 1, span] }
+    );
+  }
+
   nodes.push(
-    instances.roundedBox({
-      name: "meadow cedar picket posts",
-      size: [0.11, 0.56, 0.11],
+    instances.custom(fencePostSpec, {
+      name: "meadow cedar fence posts",
       material: instanceWoodMat("#DFBE93"),
-      transforms: picketPostTransforms,
+      ...splitInstancePlacements(postInstances),
       castShadow: true,
       receiveShadow: true
     }),
-    instances.roundedBox({
-      name: "meadow cedar picket rails",
-      size: [0.06, 0.08, 1.08],
+    instances.custom(fenceRailSpec, {
+      name: "meadow cedar split rails",
       material: instanceWoodMat("#E7CAA2"),
-      transforms: picketRailTransforms,
+      ...splitInstancePlacements(railInstances),
       castShadow: true,
       receiveShadow: true
     })
   );
 
-  // 6. Soft drifting storybook sky clouds
+  // 7. Soft drifting sculpted cumulus clouds
   const cloudSpecs: readonly {
     readonly id: string;
     readonly at: Vec3;
@@ -277,7 +460,7 @@ function buildMeadowDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
 
   const animated: WorldAnimatedNodeSpec[] = [];
   for (const c of cloudSpecs) {
-    nodes.push(buildCloudCluster(c.id, c.id, c.at, c.scale));
+    nodes.push(buildSculptedCloudNode(c.id, c.at, c.scale));
     animated.push({
       id: c.id,
       restPosition: c.at,
@@ -299,16 +482,16 @@ function buildMeadowDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
 }
 
 /**
- * Sunny Meadow — felt clover island, winding cream-clay path, rolling outer hills,
- * single-draw instanced daisies & grass tufts in a gentle breeze, cedar picket
- * posts, and drifting golden-hour clouds.
+ * Sunny Meadow — felt clover island, animated crystal brook with arched cobble
+ * & timber footbridge, stepping-stone flower path, split-rail cedar fence,
+ * single-draw multi-petal swaying wildflowers, and drifting cumulus clouds.
  */
 export const meadow: WorldDefinition = {
   id: "meadow",
   workingTitle: "Momo Meadow",
   ground: { color: "#7FBC6B", size: 70 },
   musicBed: "meadowBed",
-  buildDiorama: buildMeadowDiorama,
+  buildDiorama: meadowScene,
   dressing: [
     { kind: "model", key: "tree", at: [-3.9, 0, -3.5], yaw: 0.3, heightM: 2.65 },
     { kind: "model", key: "tree", at: [4.0, 0, -3.7], yaw: -0.42, heightM: 2.45 },

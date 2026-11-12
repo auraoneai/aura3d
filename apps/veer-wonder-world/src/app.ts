@@ -545,7 +545,7 @@ export interface WonderState {
     readonly music: boolean;
     readonly sound: boolean;
   };
-  readonly stage: { readonly drawCalls: number; readonly nodes: number; readonly modelsEnabled: boolean };
+  readonly stage: { readonly drawCalls: number; readonly nodes: number; readonly proceduralNodes: number };
   readonly micRequested: false;
   readonly errors: readonly string[];
 }
@@ -1226,8 +1226,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
       reducedMotion: reducedMotionNow(),
       manualClock: query.manual,
       backend: flags.backend,
-      models: flags.models,
-      ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
       ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
       // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
       onSongCue: (cue) => {
@@ -1325,7 +1323,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
           music: settings.music,
           sound: settings.sound
         },
-        stage: { drawCalls: diagnostics.drawCalls, nodes: diagnostics.nodes, modelsEnabled: flags.models },
+        stage: {
+          drawCalls: diagnostics.drawCalls,
+          nodes: diagnostics.nodes,
+          proceduralNodes: diagnostics.proceduralNodes ?? 0
+        },
         micRequested: false,
         errors: [...errors]
       };

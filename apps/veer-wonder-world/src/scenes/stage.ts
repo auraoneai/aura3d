@@ -1,50 +1,35 @@
-// Wonder World stage (PRD 04 A10, B07, B09, D01-D13): the StageAdapter the
-// app drives. One `createGame` (from `@aura3d/engine/game`) owns the canvas;
-// each story gets its own scene, built from its world, cast and props and
-// swapped in with `game.setScene` (the shipped Pip's Big Leap pattern), so only
-// that story's models load. Before a swap the story's models are preloaded with
-// a timeout; anything missing, slow or broken is drawn as its primitive
-// stand-in, and a scene that still fails to mount is rebuilt from stand-ins
-// only, so the stage never deadlocks or shows a black frame for a missing GLB.
+// Wonder World stage (PRD 04 A10, B07, B09, D01-D13; PRD 5.5.1 §3-§6): the
+// StageAdapter the app drives. One `createGame` (from `@aura3d/engine/game`)
+// owns the canvas with WebGPU-first live rendering (`backend: "auto"`, clean
+// WebGL2 fallback, and synchronous `"webgl2"` under `?manual=1` / software CI).
+// Every story mounts synchronously on Frame 0 from first-party sculpted
+// procedural craft rigs (`PROCEDURAL_RIGS`, zero external `.glb` files, zero
+// network preloads, zero programmer-art stand-ins).
 //
 // Child-safety rules this module enforces:
 // - Fixed child camera: authored framings only, eased (no whip pans), cuts in
 //   reduced motion. No orbit, no shake, no juice, no camera punch.
-// - Calm looks with an HDRI environment, no vignette, runtime particle effects
-//   off, `warmPrograms(app)` before a scene is shown (a soft veil covers swaps).
+// - Calm looks with an HDRI environment, gradient sky dome, close-range contact
+//   shadows, no vignette, `warmPrograms(app)` before a scene is shown (a soft
+//   veil covers swaps).
 // - Highlights are slow breathing rings, never flashing; at most two rings.
 // - Every motion is driven by `update(dt)` from the app clock (deterministic);
 //   reduced motion drops secondary motion and keeps the semantic action.
-// - "Talking" is a gentle squash/bob pulse while a line plays, never lip sync.
-//
-// Songs (PRD 04 C06; 07 B20). A `song` action starts a choreography on the
-// same story clock: lyric line i starts at `songCueTimesMs(song, recorded
-// duration)[i]`, and then every performer plays the line's motion (a
-// non-looping gesture; its calm variant in reduced motion), and the line's
-// `cues` are applied in order. Line 0 starts with the action itself, so actions
-// after it in the same list come after line 0. Performers default to the cast
-// characters on stage and shown when the song starts; `performers` overrides
-// that, and `[]` leaves the beat's own gestures alone. A new song, a story load
-// and dispose cancel it. A cue never starts a song, and cues naming unknown
-// nodes are reported as warnings and skipped; `onSongCue` hands each applied
-// cue to the app (its `sfx` and `music` actions are the mixer's to play).
+// - "Talking" is a gentle jaw/body pulse while a line plays, never phoneme lip sync.
 //
 // Mirror (PRD 05 E01). When a story has a `mirror` prop and Momo in its cast,
 // the mirror's glass shows Momo's reflection: a smaller, flattened copy of her
-// model (or her stand-in), tinted cooler and dimmer, facing out of the mirror,
-// playing Momo's gestures as a mirror image, sized to stay inside the frame,
-// and shown only while both the mirror and Momo are shown. It costs one draw
-// call as a model (her stand-in's pieces as a stand-in) and casts no shadow.
+// procedural rig, tinted cooler and dimmer, facing out of the mirror, playing
+// Momo's gestures and articulated sub-parts as a mirror image, sized to stay
+// inside the frame, and shown only while both the mirror and Momo are shown.
 
 import {
   camera,
   material,
-  model,
   primitives,
   raycastFirst,
   scene,
   type AuraApp,
-  type AuraModelMaterialHandle,
   type AuraNodeBuilder,
   type AuraRuntimeNodeHandle,
   type AuraSceneBuilder,
@@ -53,11 +38,10 @@ import {
 } from "@aura3d/engine";
 import { createGame, warmPrograms, type Prd09Game } from "@aura3d/engine/game";
 import { AUDIO_MANIFEST } from "../audio-manifest.js";
-import { modelRef, type ModelKey } from "../aura-assets.js";
-import { CHARACTERS, isGesture, type CharacterProfile } from "../characters/character-registry.js";
+import type { ModelKey } from "../aura-assets.js";
+import { CHARACTERS, isGesture } from "../characters/character-registry.js";
 import { SONGS, songCueTimesMs, songLengthSec } from "../content/songs.js";
 import { calmGesture, createAnimationDirector, propAnimationProfile, type AnimationDirector } from "../runtime/animation-director.js";
-import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelSummaryStatus, type PreloadResult } from "../runtime/asset-preloader.js";
 import type {
   CameraPresetId,
   CharacterId,
@@ -71,6 +55,13 @@ import type {
   StorySpec,
   WorldId
 } from "../types.js";
+import {
+  mergePartPoses,
+  mirrorPartPoses,
+  resolveHierarchicalPartTransform,
+  type ArticulatedPoseMap,
+  type SubPartId
+} from "./articulated-actors.js";
 import { lookAppOptions, worldLook, worldLookNodes } from "./looks.js";
 import {
   DOOR_OPEN_ANGLE,
@@ -107,6 +98,11 @@ import {
   type Vec3
 } from "./motion.js";
 import {
+  craftMaterial,
+  mountProceduralAsset,
+  type MountedRigPiece
+} from "./procedural-rigs/index.js";
+import {
   CAMERA_EASE_SEC,
   DEFAULT_CAMERA_PRESET,
   SPOTS,
@@ -128,30 +124,18 @@ import {
 } from "./spots.js";
 import {
   ASSET_TRAITS,
-  STAND_INS,
-  buildStandIn,
   defaultHeightM,
   footprintM,
-  primitiveParams,
-  standInPieceMaterial,
   type AssetTraits,
-  type StageAssetKey,
-  type StandInPiece
+  type StageAssetKey
 } from "./stand-ins.js";
-import {
-  applyArticulatedParts,
-  mergePartPoses,
-  mirrorPartPoses,
-  type ArticulatedPoseMap,
-  type SubPartId
-} from "./articulated-actors.js";
 import {
   createWonderVfxEmitter,
   registerWonderVfxPresets,
   targetRippleMaterial,
   type WonderVfxEmitter
 } from "./vfx-presets.js";
-import { buildWorldNodes, worldDressingKeys, type BuiltWorld } from "./worlds.js";
+import { buildWorldNodes, type BuiltWorld } from "./worlds.js";
 
 // ---------------------------------------------------------------- public types
 
@@ -166,10 +150,6 @@ export interface StageOptions {
   readonly backend?: "auto" | "webgpu" | "webgl2";
   /** Passed straight to `createGame({ sound })` (the audio mixer's `gameSoundOptions()`). */
   readonly sound?: unknown;
-  /** Per-model preload timeout before a stand-in is used. Default 10000 ms. */
-  readonly modelTimeoutMs?: number;
-  /** Load admitted GLBs (the app's `?models=0` flag). Default: the engine's `models.enabled` (also `?models=0`). */
-  readonly models?: boolean;
   /** Bound on each wait for a scene mount or a first drawn frame. Default 20000 ms. */
   readonly mountTimeoutMs?: number;
   /** Deterministic QA mode (`?manual=1`): pauses background rAF after warm-up so `app.step(0)` draws on demand. */
@@ -196,13 +176,7 @@ export interface StageDiagnostics {
   readonly renderPath?: string;
   readonly storyId: string | null;
   readonly world: WorldId | null;
-  /** Story nodes drawn from their GLB / as primitive stand-ins. */
-  readonly modelNodes: number;
-  readonly standInNodes: number;
-  /** Model results by status; `pending` counts downloads still running (a stand-in is drawn until the next mount). */
-  readonly modelStatus: Readonly<Partial<Record<ModelSummaryStatus, number>>>;
-  /** The last load's mount failed with models and was remounted with the failing (or all) models as stand-ins. */
-  readonly recoveredFromMountFailure: boolean;
+  readonly proceduralNodes: number;
   readonly warmed: boolean;
   readonly warnings: readonly string[];
 }
@@ -220,7 +194,7 @@ export interface StageNodeSnapshot {
   readonly visible: boolean;
   /** Where it stands as drawn: under the middle of its body, at its bottom (metres). */
   readonly position: Vec3;
-  readonly drawnAs: "model" | "stand-in";
+  readonly drawnAs: "procedural";
   readonly gesture: string | null;
   readonly moving: boolean;
 }
@@ -245,7 +219,7 @@ export interface StageReflectionSnapshot {
   readonly in: string;
   /** Shown: the mirror and the character are both shown. */
   readonly visible: boolean;
-  readonly drawnAs: "model" | "stand-in";
+  readonly drawnAs: "procedural";
   /** The reflected character's gesture, which the reflection plays as a mirror image. */
   readonly gesture: string | null;
 }
@@ -275,7 +249,7 @@ export interface WonderStage extends StageAdapter {
   /** The mounted `createGame` handle. */
   game(): Prd09Game<string, string>;
   snapshot(): StageSnapshot;
-  /** Warms the next story's models in the background (current + next preload). */
+  /** No-op on procedural rigs (all 66 unit geometries are memoized in memory with zero network fetches). */
   prefetch(story: StorySpec): void;
 }
 
@@ -304,17 +278,12 @@ const HALO_FADE_SEC = 0.6;
 /** A raised object that topples lands this many times its old height sideways, clear of the stack it fell from. */
 const TUMBLE_SPREAD = 1.25;
 const VEIL_COLOR = "#FBF6EC";
+
 /**
- * Yaw (radians) that turns a model's front to +Z, the stage's forward (every stand-in recipe faces +Z). Meshy made
- * the vehicles side-on with their front toward -X (GoGo's face is on its boiler end), so they get a quarter turn:
- * `face viewer` then shows GoGo's face, and a drive leads with the front instead of sliding broadside. Every other
- * model already faces +Z (Meshy's export convention).
+ * Every procedural rig in `PROCEDURAL_RIGS` is authored natively facing `+Z`
+ * (including `gogo`, `gogoCarriage`, and `car`), so zero yaw patches are needed.
  */
-export const MODEL_FRONT_YAW: Readonly<Partial<Record<ModelKey, number>>> = {
-  gogo: Math.PI / 2,
-  gogoCarriage: Math.PI / 2,
-  car: Math.PI / 2
-};
+export const MODEL_FRONT_YAW: Readonly<Partial<Record<ModelKey, number>>> = {};
 
 /** The character a mirror reflects (E01, "Mirror Momo"). */
 const REFLECTED_CHARACTER: CharacterId = "momo";
@@ -330,19 +299,6 @@ export const REFLECTION_TINT = "#B4C2E2";
 const REFLECTION_SCALE_HEADROOM = 1.15;
 
 // ---------------------------------------------------------------- internal state
-
-interface Piece {
-  readonly id: string;
-  /** Local centre relative to the node base (metres, unscaled). */
-  readonly center: Vec3;
-  readonly rotation: Vec3;
-  /** Stand-in recipe index (0 for a model node). */
-  readonly index: number;
-  /** Re-coloured by a "tint" action. */
-  readonly tinted: boolean;
-  /** Named articulated sub-part id on stand-ins (`${actorId}__${part}`). */
-  readonly part?: SubPartId;
-}
 
 interface MoveRun {
   readonly style: MoveStyle;
@@ -398,8 +354,10 @@ interface StageNode {
   /** Width, height, depth in metres (unscaled). */
   readonly size: Vec3;
   readonly traits: AssetTraits;
-  readonly drawnAs: "model" | "stand-in";
-  readonly pieces: readonly Piece[];
+  readonly drawnAs: "procedural";
+  readonly pieces: readonly MountedRigPiece[];
+  readonly partAnchorsM: Partial<Readonly<Record<SubPartId, Vec3>>>;
+  readonly tintableIds: readonly string[];
   /** Units of the height, in the node's own frame: where a carried item rides. */
   readonly carryOffset: Vec3;
   readonly defaultStyle: MoveStyle;
@@ -442,8 +400,9 @@ interface Reflection extends ReflectionLayout {
   readonly id: string;
   readonly mirrorId: string;
   readonly actorId: string;
-  readonly drawnAs: "model" | "stand-in";
-  readonly pieces: readonly Piece[];
+  readonly drawnAs: "procedural";
+  readonly pieces: readonly MountedRigPiece[];
+  readonly partAnchorsM: Partial<Readonly<Record<SubPartId, Vec3>>>;
   /** The pose drawn last frame (null before the first). */
   drawn: StagePose | null;
 }
@@ -454,8 +413,6 @@ interface BuiltStory {
   readonly nodes: readonly StageNode[];
   readonly reflections: readonly Reflection[];
   readonly world: BuiltWorld;
-  readonly modelKeys: readonly ModelKey[];
-  readonly clipInitial: ReadonlyMap<string, string | null>;
 }
 
 interface WrittenTransform {
@@ -466,16 +423,6 @@ interface WrittenTransform {
 }
 
 // ---------------------------------------------------------------- helpers
-
-function isMaterialHandle(value: unknown): value is AuraModelMaterialHandle {
-  return typeof value === "object" && value !== null && "setMaterialOverrides" in value && typeof value.setMaterialOverrides === "function";
-}
-
-function materialHandleOf(handle: AuraRuntimeNodeHandle): AuraModelMaterialHandle | null {
-  if (!("materials" in handle)) return null;
-  const candidate: unknown = handle.materials;
-  return isMaterialHandle(candidate) ? candidate : null;
-}
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | "timeout"> {
   return new Promise((resolve) => {
@@ -498,7 +445,7 @@ function resolveTarget(target: HTMLElement | string | null): HTMLElement | null 
   return found instanceof HTMLElement ? found : null;
 }
 
-/** Detects CPU software WebGL2 (`SwiftShader`/`llvmpipe`) so CI containers avoid 2048-PCSS + SSAO stalls while real GPUs keep full Cycles-grade settings. */
+/** Detects CPU software WebGL2 (`SwiftShader`/`llvmpipe`) so CI containers avoid 2048-PCSS + SSAO stalls while real GPUs keep full diorama settings. */
 function detectSoftwareWebGL(host: HTMLElement | null): boolean {
   if (host === null || typeof document === "undefined") return false;
   try {
@@ -539,6 +486,45 @@ function idleProfileFor(traits: AssetTraits): ReturnType<typeof propAnimationPro
   return propAnimationProfile(traits.idle);
 }
 
+function buildPartAnchorsMap(pieces: readonly MountedRigPiece[]): Partial<Readonly<Record<SubPartId, Vec3>>> {
+  const map: Partial<Record<SubPartId, Vec3>> = {};
+  for (const piece of pieces) {
+    if (map[piece.part] === undefined) {
+      map[piece.part] = piece.anchorM;
+    }
+  }
+  return map;
+}
+
+function scaleArticulatedPoses(poses: ArticulatedPoseMap | undefined, k: number): ArticulatedPoseMap | undefined {
+  if (!poses || Math.abs(k - 1) < 1e-6) return poses;
+  const scaled: Partial<Record<SubPartId, { readonly offset?: Vec3; readonly rotation?: Vec3; readonly scale?: Vec3 }>> = {};
+  for (const [partKey, delta] of Object.entries(poses)) {
+    if (!delta) continue;
+    const nextDelta = {
+      ...(delta.offset ? { offset: [delta.offset[0] * k, delta.offset[1] * k, delta.offset[2] * k] as const } : {}),
+      ...(delta.rotation ? { rotation: delta.rotation } : {}),
+      ...(delta.scale ? { scale: delta.scale } : {})
+    };
+    const subKey = findSubPartKey(partKey, poses);
+    if (subKey) scaled[subKey] = nextDelta;
+  }
+  return scaled;
+}
+
+function findSubPartKey(raw: string, poses: ArticulatedPoseMap): SubPartId | undefined {
+  const known: readonly SubPartId[] = [
+    "body", "head", "armL", "armR", "footL", "footR", "tail", "wingL", "wingR", "tuft",
+    "earL", "earR", "legFL", "legFR", "legBL", "legBR", "wheelFL", "wheelFR", "wheelRL", "wheelRR",
+    "chimney", "cabDoorL", "cabDoorR", "eyelidL", "eyelidR", "jaw", "beakLower", "cheekPuff",
+    "hingeLeaf", "hingeLeafR", "lid", "liftCab", "liftGate", "petals"
+  ];
+  for (const candidate of known) {
+    if (candidate === raw && Object.prototype.hasOwnProperty.call(poses, candidate)) return candidate;
+  }
+  return undefined;
+}
+
 // ---------------------------------------------------------------- mirror reflection (pure)
 
 /** Where a mirror's glass is, in units of the mirror's height, in its own frame (+Z is its front). */
@@ -552,14 +538,13 @@ export interface MirrorGlass {
 }
 
 /**
- * The admitted mirror GLB, a round frame on a stand, measured from its vertices (height 1, base at 0): a slightly
- * domed glass disc centred 0.627 up, its front at most 0.118 forward, and no frame vertex nearer the centre than
- * 0.31 (tests/unit/stage/mirror-reflection.test.ts measures the file again).
+ * The procedural `mirror` rig (`PROCEDURAL_RIGS.mirror`): oval wooden mirror frame on a pegged cheval stand
+ * with a `glassCoat` disc centred `0.627` up, front face at `0.030`, and clear inner radius `>= 0.305`.
  */
-export const MODEL_MIRROR_GLASS: MirrorGlass = { centerY: 0.627, frontZ: 0.118, radius: 0.3 };
+export const MODEL_MIRROR_GLASS: MirrorGlass = { centerY: 0.627, frontZ: 0.03, radius: 0.305 };
 
-/** The stand-in mirror (`STAND_INS.mirror`): a glass disc at 0.62 whose face is 0.025 forward, framed by a torus whose inner edge is 0.231 from its middle. */
-export const STAND_IN_MIRROR_GLASS: MirrorGlass = { centerY: 0.62, frontZ: 0.025, radius: 0.231 };
+/** Identical to `MODEL_MIRROR_GLASS` since all mirrors draw from `PROCEDURAL_RIGS.mirror`. */
+export const STAND_IN_MIRROR_GLASS: MirrorGlass = MODEL_MIRROR_GLASS;
 
 /** Size and place of a reflection, in metres, in the mirror's own frame (unscaled). */
 export interface ReflectionLayout {
@@ -577,12 +562,12 @@ export interface ReflectionLayout {
   readonly maxShift: number;
 }
 
-/** Lays out the reflection of a character (asset and fitted height) in a mirror drawn as a model or a stand-in. */
+/** Lays out the reflection of a character (asset and fitted height) in the procedural mirror's glass. */
 export function reflectionLayout(
-  mirror: { readonly drawnAs: "model" | "stand-in"; readonly heightM: number },
+  mirror: { readonly drawnAs?: "procedural" | "model" | "stand-in"; readonly heightM: number },
   actor: { readonly asset: StageAssetKey; readonly heightM: number }
 ): ReflectionLayout {
-  const glass = mirror.drawnAs === "model" ? MODEL_MIRROR_GLASS : STAND_IN_MIRROR_GLASS;
+  const glass = MODEL_MIRROR_GLASS;
   const glassRadius = glass.radius * mirror.heightM;
   const heightM = REFLECTION_FILL * glassRadius;
   const size = footprintM(actor.asset, heightM);
@@ -625,7 +610,7 @@ export function reflectionPose(mirror: StagePose, layout: ReflectionLayout, offs
   };
 }
 
-/** Channel-wise product of two `#RRGGBB` colours (the model's multiply tint, applied to a stand-in's own colours). */
+/** Channel-wise product of two `#RRGGBB` colours. */
 export function multiplyColor(color: string, tint: string): string {
   const parse = (hex: string): readonly [number, number, number] => {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
@@ -638,79 +623,62 @@ export function multiplyColor(color: string, tint: string): string {
   return `#${channel(0)}${channel(1)}${channel(2)}`.toUpperCase();
 }
 
-/** One stand-in piece as a primitive node (the recipe's shape and size at height `h`) with the given material. */
-function reflectionPrimitive(p: StandInPiece, h: number, pieceMaterial: ReturnType<typeof standInPieceMaterial>, name: string) {
-  const params = primitiveParams(p.shape, p.segments, p.tube);
-  const size: Vec3 = [p.size[0] * h, p.size[1] * h, p.size[2] * h];
-  const options = {
-    name,
-    size,
-    material: pieceMaterial,
-    castShadow: false,
-    receiveShadow: false,
-    ...(params ? { params } : {})
-  };
-  switch (p.shape) {
-    case "sphere":
-      return primitives.sphere(options);
-    case "capsule":
-      return primitives.capsule(options);
-    case "box":
-      return primitives.box(options);
-    case "cylinder":
-      return primitives.cylinder(options);
-    case "torus":
-      return primitives.torus(options);
-    case "cone":
-      return primitives.cone(options);
-  }
-}
-
 /**
- * Builds the reflection of `actor` in `mirror`: a copy of the actor's model (or of its stand-in when the actor is
- * drawn as one), fitted to the reflection's height, tinted cooler and dimmer, casting no shadow.
+ * Builds the reflection of `actor` in `mirror`: a scaled copy of the actor's procedural rig,
+ * tinted cooler and dimmer (`REFLECTION_TINT`), casting and receiving no shadows.
  */
-function buildReflection(mirror: StageNode, actor: StageNode): { readonly nodes: readonly AuraNodeBuilder<AuraSceneNode>[]; readonly reflection: Reflection } {
+function buildReflection(
+  mirror: StageNode,
+  actor: StageNode
+): { readonly nodes: readonly AuraNodeBuilder<AuraSceneNode>[]; readonly reflection: Reflection } {
   const id = `${mirror.id}~reflection`;
   const layout = reflectionLayout(mirror, actor);
-  const rest = reflectionPose({ base: mirror.base, rotation: [0, 0, 0], scale: [1, 1, 1], pivot: "base", centerHeight: mirror.heightM / 2 }, layout, NEUTRAL_POSE);
-  const tags = ["reflection", actor.asset];
-  const ref = actor.drawnAs === "model" && actor.modelKey ? modelRef(actor.modelKey) : undefined;
-  if (ref) {
-    const node = model(ref, {
-      name: id,
-      targetHeight: layout.heightM,
-      scaleMode: "fit",
-      castShadow: false,
-      receiveShadow: false,
-      visible: true,
-      materialOverrides: [{ color: REFLECTION_TINT, colorMode: "multiply" }]
-    })
-      .position(rest.base)
-      .rotate(0, 0, 0)
-      .runtime({ id, tags: [...tags, "model"], mutable: true });
-    const pieces: Piece[] = [{ id, center: [0, 0, 0], rotation: [0, 0, 0], index: 0, tinted: false }];
-    return { nodes: [node], reflection: { ...layout, id, mirrorId: mirror.id, actorId: actor.id, drawnAs: "model", pieces, drawn: null } };
-  }
-  const recipe = STAND_INS[actor.asset];
-  const h = layout.heightM;
-  const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
-  const pieces: Piece[] = [];
-  [recipe.main, ...recipe.parts].forEach((p, index) => {
-    const pieceId = index === 0 ? id : `${id}~${index}`;
-    const center: Vec3 = [p.center[0] * h, p.center[1] * h, p.center[2] * h];
-    const rotation: Vec3 = p.rotation ?? [0, 0, 0];
-    const placed = composeRotation(rest.rotation, rotation);
-    const pieceMaterial = standInPieceMaterial(actor.asset, index, multiplyColor(p.color, REFLECTION_TINT));
-    nodes.push(
-      reflectionPrimitive(p, h, pieceMaterial, pieceId)
-        .position(placePiece(rest, center))
-        .rotate(placed[0], placed[1], placed[2])
-        .runtime({ id: pieceId, tags: [...tags, index === 0 ? "stand-in" : "stand-in-part"], mutable: true })
-    );
-    pieces.push({ id: pieceId, center, rotation, index, tinted: false, ...(p.part ? { part: p.part } : {}) });
+  const rest = reflectionPose(
+    { base: mirror.base, rotation: [0, 0, 0], scale: [1, 1, 1], pivot: "base", centerHeight: mirror.heightM / 2 },
+    layout,
+    NEUTRAL_POSE
+  );
+  const built = mountProceduralAsset({
+    id,
+    key: actor.asset,
+    heightM: layout.heightM,
+    tintAll: REFLECTION_TINT,
+    castShadowOverride: false,
+    receiveShadowOverride: false,
+    rootTags: ["reflection", actor.asset],
+    partTags: ["reflection", actor.asset],
+    interactive: true
   });
-  return { nodes, reflection: { ...layout, id, mirrorId: mirror.id, actorId: actor.id, drawnAs: "stand-in", pieces, drawn: null } };
+  const partAnchorsM = buildPartAnchorsMap(built.pieces);
+  const placedNodes = built.nodes.map((node, idx) => {
+    const piece = built.pieces[idx];
+    if (!piece) return node;
+    const xform = resolveHierarchicalPartTransform(
+      rest,
+      undefined,
+      piece.part,
+      piece.anchorM,
+      partAnchorsM,
+      piece.parent
+    );
+    return node
+      .position(xform.position)
+      .rotate(xform.rotation[0], xform.rotation[1], xform.rotation[2])
+      .scale(xform.scale);
+  });
+  return {
+    nodes: placedNodes,
+    reflection: {
+      ...layout,
+      id,
+      mirrorId: mirror.id,
+      actorId: actor.id,
+      drawnAs: "procedural",
+      pieces: built.pieces,
+      partAnchorsM,
+      drawn: null
+    }
+  };
 }
 
 // ---------------------------------------------------------------- scene building
@@ -805,7 +773,12 @@ function haloNode(id: string): AuraNodeBuilder<AuraSceneNode> {
   }).runtime({ id, tags: ["halo"], mutable: true });
 }
 
-function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in", pieces: readonly Piece[]): StageNode {
+function newNode(
+  seed: NodeSeedInput,
+  base: Vec3,
+  pieces: readonly MountedRigPiece[],
+  tintableIds: readonly string[]
+): StageNode {
   const traits = ASSET_TRAITS[seed.asset];
   const size = footprintM(seed.asset, seed.heightM);
   return {
@@ -817,8 +790,10 @@ function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in",
     heightM: seed.heightM,
     size,
     traits,
-    drawnAs,
+    drawnAs: "procedural",
     pieces,
+    partAnchorsM: buildPartAnchorsMap(pieces),
+    tintableIds,
     carryOffset: seed.carryOffset,
     defaultStyle: seed.defaultStyle,
     home: seed.at,
@@ -851,7 +826,6 @@ function newNode(seed: NodeSeedInput, base: Vec3, drawnAs: "model" | "stand-in",
 
 function buildStory(
   story: StorySpec,
-  available: (key: ModelKey) => boolean,
   cameraPose: CameraPose,
   reducedMotion = false,
   softwareRenderer = false
@@ -859,57 +833,40 @@ function buildStory(
   const look = worldLook(story.world);
   const builder = scene().background(look.background);
   for (const node of worldLookNodes(story.world, { reducedMotion, softwareRenderer })) builder.add(node);
-  const world = buildWorldNodes(story.world, available, { reducedMotion });
+  const world = buildWorldNodes(story.world, { reducedMotion });
   builder.addMany(world.nodes);
+
   const seeds = nodeSeeds(story);
   const layout = resolveLayout(seeds.map(layoutEntryFor));
   const nodes: StageNode[] = [];
-  const modelKeys: ModelKey[] = [];
-  const clipInitial = new Map<string, string | null>();
-  for (const key of storyModelKeys(story)) if (available(key) && modelRef(key)) modelKeys.push(key);
   const seen = new Set<string>();
+
   for (const seed of seeds) {
     if (seen.has(seed.id)) continue;
     seen.add(seed.id);
     const base = layout.get(seed.id) ?? SPOTS[seed.at];
-    const ref = seed.modelKey ? modelRef(seed.modelKey) : undefined;
-    const tags = [seed.role, seed.asset];
-    if (seed.modelKey && ref && available(seed.modelKey)) {
-      const profile: CharacterProfile | null = seed.characterId ? CHARACTERS[seed.characterId] : null;
-      const idleClip = profile && profile.rigged ? profile.idleClip() : null;
-      const frontYaw = MODEL_FRONT_YAW[seed.modelKey] ?? 0;
-      let builderNode = model(ref, {
-        name: seed.id,
-        targetHeight: seed.heightM,
-        scaleMode: "fit",
-        castShadow: true,
-        receiveShadow: true,
-        visible: true,
-        ...(seed.tint
-          ? { materialOverrides: [{ color: seed.tint, colorMode: "multiply" }] }
-          : {})
-      })
-        .position(base)
-        .rotate(0, frontYaw, 0);
-      if (idleClip) builderNode = builderNode.animate({ clip: idleClip, loop: true });
-      builder.add(builderNode.runtime({ id: seed.id, tags: [...tags, "model"], mutable: true }));
-      clipInitial.set(seed.id, idleClip);
-      nodes.push(newNode(seed, base, "model", [{ id: seed.id, center: [0, 0, 0], rotation: [0, frontYaw, 0], index: 0, tinted: true }]));
-    } else {
-      const built = buildStandIn(seed.asset, {
-        id: seed.id,
-        heightM: seed.heightM,
-        ...(seed.tint ? { tint: seed.tint } : {}),
-        base,
-        yaw: 0,
-        movable: true,
-        tags
-      });
-      builder.addMany(built.nodes);
-      clipInitial.set(seed.id, null);
-      nodes.push(newNode(seed, base, "stand-in", built.pieces));
-    }
+    const built = mountProceduralAsset({
+      id: seed.id,
+      key: seed.asset,
+      heightM: seed.heightM,
+      ...(seed.tint ? { tint: seed.tint } : {}),
+      rootTags: ["wonder-node", seed.id, seed.role, seed.asset],
+      partTags: ["wonder-node-part", seed.id, seed.role, seed.asset],
+      interactive: true
+    });
+    const placedNodes = built.nodes.map((node, idx) => {
+      const piece = built.pieces[idx];
+      if (!piece) return node;
+      return node.position([
+        base[0] + piece.anchorM[0],
+        base[1] + piece.anchorM[1],
+        base[2] + piece.anchorM[2]
+      ]);
+    });
+    builder.addMany(placedNodes);
+    nodes.push(newNode(seed, base, built.pieces, built.tintableIds));
   }
+
   // E01's mirror shows Momo's reflection (a cast member, never a prop that happens to share the asset).
   const reflections: Reflection[] = [];
   const reflected = nodes.find((n) => n.role === "actor" && n.characterId === REFLECTED_CHARACTER);
@@ -930,7 +887,7 @@ function buildStory(
     near: cameraPose.near,
     far: cameraPose.far
   }));
-  return { story, builder, nodes, reflections, world, modelKeys, clipInitial };
+  return { story, builder, nodes, reflections, world };
 }
 
 /** A reflection a story's scene draws (QA and tests). */
@@ -939,35 +896,38 @@ export interface StorySceneReflection {
   /** The character it reflects and the mirror it is drawn in. */
   readonly of: string;
   readonly in: string;
-  readonly drawnAs: "model" | "stand-in";
-  /** Runtime ids of its drawn pieces (one for a model). */
+  readonly drawnAs: "procedural";
+  /** Runtime ids of its drawn pieces. */
   readonly pieceIds: readonly string[];
   readonly layout: ReflectionLayout;
 }
 
-/** Scene build of one story for QA and tests: the snapshot, plus which nodes draw as models or stand-ins. */
+/** Scene build of one story for QA and tests: the snapshot, plus synchronous procedural placement metadata. */
 export interface StorySceneBuild {
   readonly builder: AuraSceneBuilder;
   /** Runtime ids of the story's actors and props, in build order. */
   readonly nodeIds: readonly string[];
-  /** Every runtime id the stage moves (stand-in parts, reflections, highlight rings and halos included). */
+  /** Every runtime id the stage moves (procedural sub-parts, reflections, highlight rings and halos included). */
   readonly runtimeIds: readonly string[];
-  readonly drawnAs: ReadonlyMap<string, "model" | "stand-in">;
+  readonly drawnAs: ReadonlyMap<string, "procedural">;
   /** Rest positions after shared-spot layout. */
   readonly positions: ReadonlyMap<string, Vec3>;
   readonly reflections: readonly StorySceneReflection[];
-  readonly dressing: { readonly models: number; readonly standIns: number };
+  readonly dressing: { readonly proceduralProps: number };
 }
 
-/** Builds a story's scene exactly as `load` does (no mount). `modelAvailable` defaults to "no models" (all stand-ins). */
-export function buildStoryScene(story: StorySpec, options: { readonly modelAvailable?: (key: ModelKey) => boolean; readonly aspect?: number } = {}): StorySceneBuild {
-  const built = buildStory(story, options.modelAvailable ?? (() => false), frameCamera(DEFAULT_CAMERA_PRESET, options.aspect ?? 16 / 9));
+/** Builds a story's scene exactly as `load` does (no mount). */
+export function buildStoryScene(
+  story: StorySpec,
+  options: { readonly modelAvailable?: (key: ModelKey) => boolean; readonly aspect?: number } = {}
+): StorySceneBuild {
+  const built = buildStory(story, frameCamera(DEFAULT_CAMERA_PRESET, options.aspect ?? 16 / 9));
   return {
     builder: built.builder,
     nodeIds: built.nodes.map((n) => n.id),
     runtimeIds: [
-      ...built.nodes.flatMap((n) => n.pieces.map((p) => p.id)),
-      ...built.reflections.flatMap((r) => r.pieces.map((p) => p.id)),
+      ...built.nodes.flatMap((n) => n.pieces.map((p) => p.runtimeId)),
+      ...built.reflections.flatMap((r) => r.pieces.map((p) => p.runtimeId)),
       ...RING_IDS,
       ...HALO_IDS
     ],
@@ -978,10 +938,18 @@ export function buildStoryScene(story: StorySpec, options: { readonly modelAvail
       of: r.actorId,
       in: r.mirrorId,
       drawnAs: r.drawnAs,
-      pieceIds: r.pieces.map((p) => p.id),
-      layout: { heightM: r.heightM, size: r.size, k: r.k, glassCenterY: r.glassCenterY, glassRadius: r.glassRadius, baseZ: r.baseZ, maxShift: r.maxShift }
+      pieceIds: r.pieces.map((p) => p.runtimeId),
+      layout: {
+        heightM: r.heightM,
+        size: r.size,
+        k: r.k,
+        glassCenterY: r.glassCenterY,
+        glassRadius: r.glassRadius,
+        baseZ: r.baseZ,
+        maxShift: r.maxShift
+      }
     })),
-    dressing: { models: built.world.models, standIns: built.world.standIns }
+    dressing: { proceduralProps: built.world.proceduralProps }
   };
 }
 
@@ -1005,7 +973,14 @@ export function hitBox(candidate: PickCandidate): Box3 {
  * hit box, else the target whose projected centre is nearest, when it lies
  * within 64 CSS px or 1.4x the target's own on-screen half-size.
  */
-export function pickTargetAt(candidates: readonly PickCandidate[], camera: CameraPose, x: number, y: number, width: number, height: number): string | null {
+export function pickTargetAt(
+  candidates: readonly PickCandidate[],
+  cameraPose: CameraPose,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): string | null {
   if (candidates.length === 0 || !(width > 0) || !(height > 0)) return null;
   const aspect = width / height;
   const targets: SceneQueryTarget[] = candidates.map((c) => {
@@ -1015,7 +990,18 @@ export function pickTargetAt(candidates: readonly PickCandidate[], camera: Camer
     return { nodeName: c.id, bounds: { min: box.min, max: box.max, center, size, floorY: box.min[1] } };
   });
   const hit = raycastFirst(
-    { camera: { position: camera.position, target: camera.target, fov: camera.fov, aspect, near: camera.near, far: camera.far, up: [0, 1, 0] }, ndc: cssToNdc(x, y, width, height) },
+    {
+      camera: {
+        position: cameraPose.position,
+        target: cameraPose.target,
+        fov: cameraPose.fov,
+        aspect,
+        near: cameraPose.near,
+        far: cameraPose.far,
+        up: [0, 1, 0]
+      },
+      ndc: cssToNdc(x, y, width, height)
+    },
     { targets }
   );
   if (hit?.nodeName) return hit.nodeName;
@@ -1025,11 +1011,11 @@ export function pickTargetAt(candidates: readonly PickCandidate[], camera: Camer
   for (const c of candidates) {
     const box = standingBox(c.base, c.size, 1, 0);
     const center: Vec3 = [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2, (box.min[2] + box.max[2]) / 2];
-    const projected = projectToNdc(center, camera, aspect);
+    const projected = projectToNdc(center, cameraPose, aspect);
     if (!projected) continue;
     const cx = ((projected[0] + 1) / 2) * width;
     const cy = ((1 - projected[1]) / 2) * height;
-    const rect = boxToCssRect(box, camera, aspect, width, height);
+    const rect = boxToCssRect(box, cameraPose, aspect, width, height);
     const radius = Math.max(HIT_RADIUS_PX, rect ? (Math.max(rect.w, rect.h) / 2) * HIT_INFLATE : 0);
     const distance = Math.hypot(x - cx, y - cy);
     if (distance <= radius && distance < bestDistance) {
@@ -1041,9 +1027,14 @@ export function pickTargetAt(candidates: readonly PickCandidate[], camera: Camer
 }
 
 /** The CSS-px rectangle of a target's hit area: its hit box on screen, at least 128 px square, kept inside the canvas. */
-export function targetRectFor(candidate: PickCandidate, camera: CameraPose, width: number, height: number): TargetRect | null {
+export function targetRectFor(
+  candidate: PickCandidate,
+  cameraPose: CameraPose,
+  width: number,
+  height: number
+): TargetRect | null {
   if (!(width > 0) || !(height > 0)) return null;
-  const rect = boxToCssRect(hitBox(candidate), camera, width / height, width, height);
+  const rect = boxToCssRect(hitBox(candidate), cameraPose, width / height, width, height);
   if (!rect) return null;
   const minSide = HIT_RADIUS_PX * 2;
   const cx = rect.x + rect.w / 2;
@@ -1056,7 +1047,6 @@ export function targetRectFor(candidate: PickCandidate, camera: CameraPose, widt
 /** The calm scene shown before the first story loads: a world with no cast. */
 function buildIdleScene(
   world: WorldId,
-  available: (key: ModelKey) => boolean,
   cameraPose: CameraPose,
   reducedMotion = false,
   softwareRenderer = false
@@ -1064,9 +1054,15 @@ function buildIdleScene(
   const look = worldLook(world);
   const builder = scene().background(look.background);
   for (const node of worldLookNodes(world, { reducedMotion, softwareRenderer })) builder.add(node);
-  const builtWorld = buildWorldNodes(world, available, { reducedMotion });
+  const builtWorld = buildWorldNodes(world, { reducedMotion });
   builder.addMany(builtWorld.nodes);
-  builder.camera(camera.perspective({ position: cameraPose.position, target: cameraPose.target, fov: cameraPose.fov, near: cameraPose.near, far: cameraPose.far }));
+  builder.camera(camera.perspective({
+    position: cameraPose.position,
+    target: cameraPose.target,
+    fov: cameraPose.fov,
+    near: cameraPose.near,
+    far: cameraPose.far
+  }));
   return { builder, world: builtWorld };
 }
 
@@ -1076,10 +1072,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let reducedMotion = options.reducedMotion;
   const manualClock = options.manualClock === true;
   const director: AnimationDirector = createAnimationDirector({ reducedMotion });
-  const preloader: AssetPreloader = createAssetPreloader({
-    ...(options.modelTimeoutMs !== undefined ? { timeoutMs: options.modelTimeoutMs } : {}),
-    ...(options.models !== undefined ? { enabled: options.models } : {})
-  });
   const mountTimeoutMs = options.mountTimeoutMs !== undefined && options.mountTimeoutMs > 0 ? options.mountTimeoutMs : MOUNT_TIMEOUT_MS;
   const host = resolveTarget(options.target);
   const softwareRenderer = detectSoftwareWebGL(host);
@@ -1118,20 +1110,23 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     return w > 0 && h > 0 ? w / h : 16 / 9;
   };
   const initialWorld: WorldId = "meadow";
-  const initialPre = await preloader.preload(worldDressingKeys(initialWorld));
-  let initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion, softwareRenderer);
+  const initialIdle = buildIdleScene(
+    initialWorld,
+    frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()),
+    reducedMotion,
+    softwareRenderer
+  );
   let currentWorld: BuiltWorld | null = initialIdle.world;
 
-  // Wonder World's deterministic `advance(ms)` -> `app.step(0)` -> immediate canvas readback
-  // contract requires synchronous frame presentation (`hdr-msaa` RGBA16F WebGL2 pipeline:
-  // 2048 PCSS shadows, HDRI IBL, multi-bounce AO, AgX tone mapping, selective bloom, MSAA);
-  // `?backend=webgpu` remains available as an explicit opt-in.
+  // Live sessions (`!manualClock && !softwareRenderer`) select `"auto"` (WebGPU-first with clean
+  // WebGL2 fallback); deterministic `?manual=1` QA and SwiftShader CPU containers run synchronous
+  // `"webgl2"`; explicit `?backend=webgpu` / `?backend=webgl2` overrides are respected directly.
+  const explicitBackend =
+    options.backend === "webgpu" || options.backend === "webgl2" ? options.backend : undefined;
   const resolvedBackend: "auto" | "webgpu" | "webgl2" =
     host === null
       ? (options.backend ?? "auto")
-      : options.backend === "webgpu"
-        ? "webgpu"
-        : "webgl2";
+      : (explicitBackend ?? (manualClock || softwareRenderer ? "webgl2" : "auto"));
 
   const lookOpts = lookAppOptions(initialWorld);
   const gameOptions = {
@@ -1182,7 +1177,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let mounted = false;
   let warming = false;
   let warmed = false;
-  let recovered = false;
   let loadSeq = 0;
   let story: StorySpec | null = null;
   let worldId: WorldId | null = null;
@@ -1201,8 +1195,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   /** Which target each highlight ring circles, and since when (stage time), for the soft opening. */
   const ringOwner: (string | null)[] = RING_IDS.map(() => null);
   const ringSince: number[] = RING_IDS.map(() => 0);
-  let modelNodeCount = 0;
-  let standInNodeCount = 0;
+  let proceduralNodeCount = 0;
 
   const handle = (id: string): AuraRuntimeNodeHandle | undefined => {
     try {
@@ -1223,30 +1216,19 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const applyCamera = (pose: CameraPose, cut: boolean): void => {
     if (!cut && cameraApplied && sameCameraPose(pose, cameraApplied)) return;
     try {
-      app.camera?.setPose({ position: pose.position, target: pose.target, fov: pose.fov, near: pose.near, far: pose.far, up: [0, 1, 0] }, cut ? { cut: true } : undefined);
+      app.camera?.setPose(
+        { position: pose.position, target: pose.target, fov: pose.fov, near: pose.near, far: pose.far, up: [0, 1, 0] },
+        cut ? { cut: true } : undefined
+      );
       cameraApplied = pose;
     } catch (error) {
       warn(`camera: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
-  /** Model keys whose URL the engine names in its mount errors (the GLB that broke the mount), when it does. */
-  const modelsNamedInErrors = (keys: readonly ModelKey[]): ModelKey[] => {
-    let text = "";
-    try {
-      text = app.diagnostics().errors.join("\n");
-    } catch {
-      return [];
-    }
-    return keys.filter((key) => {
-      const url = modelRef(key)?.url;
-      return typeof url === "string" && url.length > 0 && text.includes(url);
-    });
-  };
-
   /**
-   * Stops the engine's own frames until the returned function runs (07 B41). A story's models load and warm behind the
-   * opaque veil, where nothing new needs drawing, preventing rAF overlap with `warmPrograms` device leases.
+   * Stops the engine's own frames until the returned function runs (07 B41), preventing rAF overlap
+   * with `warmPrograms` device leases behind the opaque veil.
    */
   const pauseDrawing = (): (() => void) => {
     const runtime = gameHandle?.runtime;
@@ -1266,36 +1248,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     };
   };
 
-  // ---- first frame: mount settled (a dressing model that breaks it is swapped for
-  // its stand-in), a drawn frame (bounded), runtime effects off, warm programs
   const settleFirstMount = async (): Promise<void> => {
     await withTimeout(app.ready(), mountTimeoutMs);
-    const dressingModels = worldDressingKeys(initialWorld).filter((key) => initialPre.available.has(key));
-    let dropped: ModelKey[] = [];
-    for (let attempt = 0; attempt < 2 && mountFailed(app) && !disposed; attempt += 1) {
-      const remaining = dressingModels.filter((key) => !dropped.includes(key));
-      if (remaining.length === 0) break;
-      const named = attempt === 0 ? modelsNamedInErrors(remaining) : [];
-      const drop = named.length > 0 && named.length < remaining.length ? named : remaining;
-      dropped = [...dropped, ...drop];
-      preloader.markFailed(drop);
-      warn(`first mount failed; ${drop.join(", ")} drawn as stand-ins`);
-      try {
-        initialIdle = buildIdleScene(initialWorld, (key) => initialPre.available.has(key) && !dropped.includes(key), frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()), reducedMotion, softwareRenderer);
-        currentWorld = initialIdle.world;
-        await created.setScene(initialIdle.builder.toJSON());
-        await withTimeout(app.ready(), mountTimeoutMs);
-      } catch (error) {
-        warn(`setScene: ${error instanceof Error ? error.message : String(error)}`);
-        break;
-      }
-    }
-    // No WebGL2, or a GPU that compiles nothing: the renderer still fails to mount
-    // with every dressing model already a stand-in, so nothing will ever draw. The
-    // stage fails (createStage rejects) and the app says so on the menu, instead of
-    // playing a story on a canvas that stays blank. Headless stages have no canvas.
     const failure = host !== null && !disposed ? mountFailureMessage(app) : null;
-    if (failure !== null && dressingModels.every((key) => dropped.includes(key))) {
+    if (failure !== null) {
       throw new Error(`The 3D renderer could not start: ${failure.slice(0, 200)}`);
     }
     const presented = await withTimeout(created.ready(), mountTimeoutMs);
@@ -1325,9 +1281,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   try {
     await readyPromise;
   } catch (error) {
-    // The renderer could not start: free the game and its canvas; the opaque veil stays as a calm backdrop.
     disposed = true;
-    preloader.dispose();
     void created.dispose().catch(() => undefined);
     throw error;
   }
@@ -1337,7 +1291,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const out: Occupant[] = [];
     for (const other of order) {
       if (other.id === mover.id || !other.visible || other.carriedBy) continue;
-      // Popped, eaten or fading out: it no longer holds its place.
       if (other.object.gone || (other.appear !== null && !other.appear.showing)) continue;
       out.push({
         id: other.id,
@@ -1382,7 +1335,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     detach(n);
     n.home = spot;
     const from = currentPosition(n);
-    const to = placeAtSpot(spot, { id: n.id, role: n.role === "actor" ? "actor" : n.traits.layout, width: n.size[0], height: n.size[1], from }, occupantsFor(n));
+    const to = placeAtSpot(
+      spot,
+      { id: n.id, role: n.role === "actor" ? "actor" : n.traits.layout, width: n.size[0], height: n.size[1], from },
+      occupantsFor(n)
+    );
     const moveStyle = style ?? n.defaultStyle;
     const distance = distance3(from, to);
     n.base = from;
@@ -1410,7 +1367,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   };
 
   const hide = (n: StageNode): void => {
-    // Already fading out: let that fade finish (restarting it would pop it back to full size).
     if (!n.visible || (n.appear !== null && !n.appear.showing)) return;
     if (reducedMotion) {
       n.visible = false;
@@ -1423,22 +1379,16 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const applyTint = (n: StageNode, tint: string): void => {
     n.tint = tint;
     try {
-      if (n.drawnAs === "model") {
-        const main = handle(n.id);
-        if (!main) return;
-        const materials = materialHandleOf(main);
-        if (materials) {
-          // Non-destructive multiply tint preserves normal & roughness maps on PBR GLBs.
-          materials.setMaterialOverrides([{ color: tint, colorMode: "multiply" }]);
-        } else {
-          main.setMaterial(material.pbr({ color: tint }));
-        }
-        return;
-      }
-      // Stand-in: every piece the recipe tints, with the material it was built with.
       for (const piece of n.pieces) {
-        if (!piece.tinted) continue;
-        handle(piece.id)?.setMaterial(standInPieceMaterial(n.asset, piece.index, tint));
+        if (!n.tintableIds.includes(piece.runtimeId)) continue;
+        const nextColor = n.traits.tintMode === "multiply" ? multiplyColor(piece.baseColor, tint) : tint;
+        handle(piece.runtimeId)?.setMaterial(
+          craftMaterial(piece.craft, nextColor, {
+            ...(piece.craftTexture ? { craftTexture: piece.craftTexture } : {}),
+            ...(piece.emissive !== undefined ? { emissive: piece.emissive } : {}),
+            ...(piece.emissiveIntensity !== undefined ? { emissiveIntensity: piece.emissiveIntensity } : {})
+          })
+        );
       }
     } catch (error) {
       warn(`tint ${n.id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -1457,22 +1407,22 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     };
     const spec = palette[state];
     try {
-      if (car.drawnAs === "model") {
-        const main = handle(car.id);
-        const materials = main ? materialHandleOf(main) : null;
-        materials?.setMaterialOverrides([{ color: spec.color, colorMode: "multiply", roughness: spec.roughness }]);
-      } else {
-        for (const piece of car.pieces) {
-          if (!piece.tinted) continue;
-          handle(piece.id)?.setMaterial(standInPieceMaterial(car.asset, piece.index, spec.color));
-        }
+      for (const piece of car.pieces) {
+        if (!car.tintableIds.includes(piece.runtimeId)) continue;
+        const nextColor = multiplyColor(piece.baseColor, spec.color);
+        handle(piece.runtimeId)?.setMaterial(
+          craftMaterial(piece.craft, nextColor, {
+            ...(piece.craftTexture ? { craftTexture: piece.craftTexture } : {}),
+            roughness: spec.roughness
+          })
+        );
       }
     } catch {
       // Material polish is best-effort.
     }
   };
 
-  /** Gentle time-of-day bounce-fill shift for `momos-day` (`E19`: morning -> midday -> cosy bedtime). */
+  /** Gentle time-of-day bounce-fill & window-beam shift for `momos-day` (`E19`: morning -> midday -> cosy bedtime). */
   const shiftHomeNookTimeOfDay = (phase: "morning" | "midday" | "bedtime"): void => {
     if (story?.id !== "momos-day") return;
     const palette: Record<typeof phase, { readonly color: string; readonly intensity: number }> = {
@@ -1483,21 +1433,20 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const next = palette[phase];
     try {
       handle("home-nook bounce fill")?.setLight?.({ color: next.color, intensity: next.intensity });
+      handle("home-nook-window-beam")?.setVisible(phase !== "bedtime");
     } catch {
       // Optional light transition.
     }
   };
 
-  /**
-   * "stack": stand a block on the blocks already standing at its own spot (the
-   * first one stands on the floor). A block that is only now appearing pops in
-   * on top and drops softly onto the stack; one already on show never jumps up:
-   * it stands up where it is, or hops over onto the stack.
-   */
   const stackOnSpot = (n: StageNode, appearing: boolean): void => {
     detach(n);
     const here = currentPosition(n);
-    const to = placeAtSpot(n.home, { id: n.id, role: "stackable", width: n.size[0], height: n.size[1], from: here }, occupantsFor(n));
+    const to = placeAtSpot(
+      n.home,
+      { id: n.id, role: "stackable", width: n.size[0], height: n.size[1], from: here },
+      occupantsFor(n)
+    );
     const distance = distance3(here, to);
     if (appearing) {
       if (distance > 0.01) {
@@ -1515,7 +1464,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const objectAction = (n: StageNode, action: ObjectAction, tint: string | undefined): void => {
     const position = currentPosition(n);
-    // Read before anything below changes it: shown in this same step (or still hidden).
     const appearing = !isShown(n) || n.shownAt === time || n.appear?.showing === true;
     const plan = planObjectAction(action, n.object, { door: n.traits.door === true, container: n.traits.container === true, x: position[0] });
     const settle = reducedMotion ? Math.min(plan.settleSec, 0.4) : plan.settleSec;
@@ -1535,17 +1483,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       n.move = null;
       director.setLocomotion(n.id, null);
     }
-    // "roll" on something already travelling (a `move ... style: "roll"` in the
-    // same step) just rolls along that path; on a resting object it rolls a metre
-    // toward the middle. A carried object stays in the carrier's hands.
     if (plan.rollBy !== 0 && !n.move && !n.carriedBy) {
       const to: Vec3 = [clamp(position[0] + plan.rollBy, -2.6, 2.6), position[1], position[2]];
       n.move = { style: "roll", from: position, to, duration: moveDurationSec("roll", Math.abs(to[0] - position[0])), hideOnArrival: false, rollStart: n.rollAngle, elapsed: 0 };
       n.base = position;
     }
-    // A raised object that tips over (a block on a tower, a toy on a table)
-    // tumbles down to the floor while it tips, landing clear of where it stood
-    // on the side it falls toward ("Uh-oh! Down!"), never left lying in mid-air.
     if (plan.next.toppled !== 0 && previous.toppled === 0 && !n.carriedBy && n.traits.floats !== true && position[1] > 0.01) {
       const to: Vec3 = [clamp(position[0] - plan.next.toppled * position[1] * TUMBLE_SPREAD, -2.6, 2.6), 0, position[2]];
       n.move = { style: "slide", from: position, to, duration: Math.max(0.3, settle), hideOnArrival: false, rollStart: n.rollAngle, elapsed: 0 };
@@ -1569,7 +1511,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       if (n.asset === "bed") shiftHomeNookTimeOfDay("bedtime");
     } else if (action === "wash") {
       if (story?.id === "splashy-car-wash") {
-        const carAt = nodes.get("car") ? currentPosition(nodes.get("car")!) : fxAt;
+        const carNode = nodes.get("car");
+        const carAt = carNode ? currentPosition(carNode) : fxAt;
         const burstPos: Vec3 = [carAt[0], carAt[1] + 0.45, carAt[2]];
         if (n.asset === "sponge") {
           applyCarWashState("foamy");
@@ -1584,7 +1527,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       if (n.asset === "sink") shiftHomeNookTimeOfDay("morning");
     } else if (action === "dry") {
       if (story?.id === "splashy-car-wash") {
-        const carAt = nodes.get("car") ? currentPosition(nodes.get("car")!) : fxAt;
+        const carNode = nodes.get("car");
+        const carAt = carNode ? currentPosition(carNode) : fxAt;
         applyCarWashState("gleaming");
         vfx?.fire("starDust", [carAt[0], carAt[1] + 0.5, carAt[2]]);
       }
@@ -1611,8 +1555,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       director.setCarrying(carrier.id, false);
       if (!item) return;
       item.carriedBy = null;
-      // Set down just in front of the carrier (clear of its body), lowered from
-      // the height it was carried at with a soft settle: no jump up first.
       const ahead = Math.max(carrier.carryOffset[2] * carrier.heightM, carrier.size[2] / 2 + item.size[2] / 2 + 0.05);
       const front = rotateYaw(carrier.yaw, [carrier.carryOffset[0] * carrier.heightM, 0, ahead]);
       const at = currentPosition(carrier);
@@ -1623,28 +1565,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       return;
     }
     const item = nodes.get(itemId);
-    if (!item) {
+    if (!item || item.id === carrier.id) {
       warn(`carry: no node "${itemId}"`);
       return;
     }
-    // Hands full: set the old item down in front first (it never jumps back to where it was picked up).
     if (carrier.carrying && carrier.carrying !== itemId) carry(carrierId, null);
     detach(item);
     item.move = null;
+    director.setLocomotion(item.id, null);
     item.carriedBy = carrier.id;
     carrier.carrying = item.id;
     director.setCarrying(carrier.id, true);
     if (!item.visible) show(item);
   };
 
-  const setCameraPreset = (preset: CameraPresetId): void => {
-    if (preset === cameraPreset && cameraElapsed >= cameraDuration) return;
-    cameraFrom = cameraPoseNow();
-    cameraPreset = preset;
-    cameraElapsed = 0;
-    cameraDuration = reducedMotion ? 0 : CAMERA_EASE_SEC;
-  };
-
+  // ---- actions
   const applyOne = (action: StageAction): void => {
     switch (action.do) {
       case "sfx":
@@ -1653,49 +1588,88 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       case "song":
         startSong(action);
         return;
-      case "camera":
-        setCameraPreset(action.preset);
+      case "camera": {
+        if (action.preset === cameraPreset) return;
+        const current = cameraPoseNow();
+        cameraPreset = action.preset;
+        if (reducedMotion) {
+          cameraFrom = null;
+          cameraElapsed = 0;
+          cameraDuration = 0;
+          applyCamera(frameCamera(action.preset, aspectNow()), true);
+          return;
+        }
+        cameraFrom = current;
+        cameraElapsed = 0;
+        cameraDuration = CAMERA_EASE_SEC;
         return;
-      case "carry":
-        carry(action.actor, action.item);
-        return;
+      }
       case "object": {
         const n = nodes.get(action.target);
-        if (!n) return warn(`object: no node "${action.target}"`);
+        if (!n) {
+          warn(`object: no node "${action.target}"`);
+          return;
+        }
         objectAction(n, action.action, action.tint);
         return;
       }
-      default:
-        break;
+      case "carry":
+        carry(action.actor, action.item);
+        return;
     }
     const n = nodes.get(action.actor);
-    if (!n) return warn(`${action.do}: no node "${action.actor}"`);
+    if (!n) {
+      warn(`${action.do}: no node "${action.actor}"`);
+      return;
+    }
     switch (action.do) {
       case "enter": {
         const from = action.from ?? defaultEntrySpot(action.at, n.traits.floats === true);
-        const wasHidden = !n.visible || n.object.gone;
-        detach(n);
-        n.move = null;
-        n.base = SPOTS[from];
-        n.visible = true;
-        // Entering from an on-stage spot fades in with a soft pop instead of appearing at once.
-        n.appear = wasHidden && !reducedMotion && !isOffStage(from) ? { showing: true, duration: SHOW_SEC, elapsed: 0 } : null;
-        if (n.object.gone) {
-          n.object = { ...n.object, gone: false };
-          n.scaleMul.jump(1);
+        if (from !== action.at) {
+          detach(n);
+          n.base = placeAtSpot(
+            from,
+            {
+              id: n.id,
+              role: n.role === "actor" ? "actor" : n.traits.layout,
+              width: n.size[0],
+              height: n.size[1],
+              from: SPOTS[from]
+            },
+            occupantsFor(n)
+          );
+          n.move = null;
         }
-        n.yaw = 0;
+        show(n);
         startMove(n, action.at, action.style, false);
         return;
       }
-      case "exit":
-        startMove(n, action.to, action.style, true);
+      case "exit": {
+        const to = action.to ?? defaultEntrySpot(n.home, n.traits.floats === true);
+        if (!n.visible) {
+          n.home = to;
+          n.base = SPOTS[to];
+          return;
+        }
+        startMove(n, to, action.style, true);
         return;
+      }
       case "move":
+        show(n);
         startMove(n, action.to, action.style, false);
         return;
       case "gesture":
         director.gesture(n.id, action.gesture, action.loop === true);
+        if (action.gesture === "clap") {
+          const p = currentPosition(n);
+          vfx?.fire("starDust", [p[0], p[1] + n.heightM * 0.55, p[2] + 0.12]);
+        } else if (action.gesture === "stomp") {
+          const p = currentPosition(n);
+          vfx?.fire("turfStep", [p[0], Math.max(0.04, p[1]), p[2]]);
+        } else if (action.gesture === "happy" || action.gesture === "cheer") {
+          const p = currentPosition(n);
+          vfx?.fire("starDust", [p[0], p[1] + n.heightM * 0.85, p[2]]);
+        }
         return;
       case "face":
         if (action.toward !== "viewer" && !nodes.has(action.toward)) warn(`face: no node "${action.toward}"`);
@@ -1721,7 +1695,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   // ---- songs (PRD 04 C06; 07 B20): lyric lines start on the story clock
 
-  /** The node ids an action names (none for sounds, music, the camera and songs). */
   const namedNodes = (action: StageAction): string[] => {
     switch (action.do) {
       case "enter":
@@ -1745,13 +1718,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
-  /** Who performs a song that names no performers: the cast characters on stage and shown (not fading out). */
   const defaultPerformers = (): string[] =>
     order
       .filter((n) => n.role === "actor" && n.characterId !== null && isShown(n) && !(n.appear !== null && !n.appear.showing) && !isOffStage(n.home))
       .map((n) => n.id);
 
-  /** Lyric line `index` starts: every performer plays its motion (the calm variant in reduced motion), then its cues apply in order. */
   const startSongLine = (run: SongRun, index: number): void => {
     const line = run.lines[index];
     if (!line) return;
@@ -1770,7 +1741,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
-  /** Moves the running song on by `dtMs` of story time, starting each line whose time has come, once and in order. */
   const advanceSong = (dtMs: number): void => {
     const run = songRun;
     if (!run) return;
@@ -1783,7 +1753,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (songRun === run && run.next >= run.lines.length && run.elapsedMs >= run.totalMs) songRun = null;
   };
 
-  /** A `song` action: cancels any running song and starts this one's choreography; line 0 starts now. */
   const startSong = (action: Extract<StageAction, { do: "song" }>): void => {
     songRun = null;
     const tag = `song ${action.song}`;
@@ -1894,15 +1863,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         n.base = run.to;
         n.move = null;
         director.setLocomotion(n.id, null);
-        // A vehicle (GoGo, its carriage, the car) stays facing the way it drove; a face action still turns it.
         if (n.traits.turns === "full") n.faceYaw = n.heading;
-        // Off stage this is unseen; on stage (an exit to "back") it is a soft shrink, never a blink.
         if (run.hideOnArrival) hide(n);
       }
     }
   };
 
-  /** The soft pop of a show (0.6 to 1, a little past) or the shrink of a hide (1 to 0.6); 1 otherwise. */
   const appearScaleOf = (n: StageNode): number => {
     if (!n.appear) return 1;
     const u = n.appear.elapsed / Math.max(0.01, n.appear.duration);
@@ -1926,10 +1892,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const carrier = nodes.get(n.carriedBy);
       if (carrier) {
         const cb = carrier.drawn.base;
-        const offset = rotateYaw(carrier.yaw, [carrier.carryOffset[0] * carrier.heightM, carrier.carryOffset[1] * carrier.heightM, carrier.carryOffset[2] * carrier.heightM]);
+        const offset = rotateYaw(
+          carrier.yaw,
+          [carrier.carryOffset[0] * carrier.heightM, carrier.carryOffset[1] * carrier.heightM, carrier.carryOffset[2] * carrier.heightM]
+        );
         position = [cb[0] + offset[0], cb[1] + offset[1] - n.heightM * 0.5, cb[2] + offset[2]];
         carrierYaw = carrier.yaw;
-        // A carried item goes where its carrier goes, hidden with it too.
         carrierVisible = carrier.visible;
       }
     }
@@ -1942,19 +1910,16 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const p = addPose(gesture, transient, moveOffset, running);
     const yaw = carrierYaw ?? n.yaw;
     const mul = n.scaleMul.value * breathing * appearScale;
-    const hasArticulatedLiftCab =
-      n.asset === "lift" &&
-      (n.drawnAs === "model" ? Boolean(handle(n.id)?.part?.("liftCab")) : n.pieces.some((piece) => piece.part === "liftCab"));
+    const hasArticulatedLiftCab = n.asset === "lift" && n.pieces.some((piece) => piece.part === "liftCab");
     const liftY = hasArticulatedLiftCab ? 0 : n.lift.value;
     let base: Vec3 = [position[0] + p.dx, position[1] + liftY + p.dy, position[2] + p.dz];
     let openYaw = 0;
-    const hasArticulatedDoorLeaf = n.drawnAs === "model" && Boolean(handle(n.id)?.part?.("hingeLeaf"));
+    const hasArticulatedDoorLeaf = n.pieces.some((piece) => piece.part === "hingeLeaf");
     if (n.traits.door && !hasArticulatedDoorLeaf) {
       openYaw = n.open.value;
       const hinge = rotateYaw(yaw, hingeSwingOffset(n.size[0] * mul, openYaw));
       base = [base[0] + hinge[0], base[1], base[2] + hinge[2]];
     }
-    // A toppled object tips over its bottom edge, so it lies on the floor instead of sinking into it.
     const tilt = n.topple.value;
     if (tilt !== 0 && !n.traits.round) {
       const facing = yaw + p.ry + openYaw;
@@ -2003,31 +1968,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const render = (n: StageNode, pose: StagePose, visible: boolean, partsPose?: ArticulatedPoseMap): void => {
     n.drawn = pose;
     n.center = placePiece(pose, [0, n.heightM / 2, 0]);
-    if (n.drawnAs === "model") {
-      for (const piece of n.pieces) {
-        const position = placePiece(pose, piece.center);
-        const rotation = composeRotation(pose.rotation, piece.rotation);
-        write(piece.id, position, rotation, pose.scale, visible);
-      }
-      applyArticulatedParts(app, n.id, n.id, visible ? partsPose : undefined);
-      return;
-    }
+    const activeParts = visible ? partsPose : undefined;
     for (const piece of n.pieces) {
-      const sub = piece.part && partsPose ? partsPose[piece.part] : undefined;
-      const localCenter: Vec3 = sub?.offset
-        ? [
-            piece.center[0] + sub.offset[0] * n.heightM,
-            piece.center[1] + sub.offset[1] * n.heightM,
-            piece.center[2] + sub.offset[2] * n.heightM
-          ]
-        : piece.center;
-      const localRot: Vec3 = sub?.rotation ? composeRotation(piece.rotation, sub.rotation) : piece.rotation;
-      const position = placePiece(pose, localCenter);
-      const rotation = composeRotation(pose.rotation, localRot);
-      const scale: Vec3 = sub?.scale
-        ? [pose.scale[0] * sub.scale[0], pose.scale[1] * sub.scale[1], pose.scale[2] * sub.scale[2]]
-        : pose.scale;
-      write(piece.id, position, rotation, scale, visible);
+      const resolved = resolveHierarchicalPartTransform(
+        pose,
+        activeParts,
+        piece.part,
+        piece.anchorM,
+        n.partAnchorsM,
+        piece.parent
+      );
+      write(piece.runtimeId, resolved.position, resolved.rotation, resolved.scale, visible);
     }
   };
 
@@ -2040,25 +1991,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const writeReflection = (r: Reflection, pose: StagePose, partsPose?: ArticulatedPoseMap): void => {
     r.drawn = pose;
-    if (r.drawnAs === "model") {
-      for (const piece of r.pieces) write(piece.id, placePiece(pose, piece.center), composeRotation(pose.rotation, piece.rotation), pose.scale, true);
-      applyArticulatedParts(app, r.id, r.id, partsPose);
-      return;
-    }
+    const scaledParts = scaleArticulatedPoses(partsPose, r.k);
     for (const piece of r.pieces) {
-      const sub = piece.part && partsPose ? partsPose[piece.part] : undefined;
-      const localCenter: Vec3 = sub?.offset
-        ? [
-            piece.center[0] + sub.offset[0] * r.heightM,
-            piece.center[1] + sub.offset[1] * r.heightM,
-            piece.center[2] + sub.offset[2] * r.heightM
-          ]
-        : piece.center;
-      const localRot: Vec3 = sub?.rotation ? composeRotation(piece.rotation, sub.rotation) : piece.rotation;
-      const scale: Vec3 = sub?.scale
-        ? [pose.scale[0] * sub.scale[0], pose.scale[1] * sub.scale[1], pose.scale[2] * sub.scale[2]]
-        : pose.scale;
-      write(piece.id, placePiece(pose, localCenter), composeRotation(pose.rotation, localRot), scale, true);
+      const resolved = resolveHierarchicalPartTransform(
+        pose,
+        scaledParts,
+        piece.part,
+        piece.anchorM,
+        r.partAnchorsM,
+        piece.parent
+      );
+      write(piece.runtimeId, resolved.position, resolved.rotation, resolved.scale, true);
     }
   };
 
@@ -2066,11 +2009,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const mirror = nodes.get(r.mirrorId);
     const actor = nodes.get(r.actorId);
     if (!mirror || !actor || !reflectionShown(r)) {
-      for (const piece of r.pieces) write(piece.id, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
-      if (r.drawnAs === "model") applyArticulatedParts(app, r.id, r.id, undefined);
+      for (const piece of r.pieces) write(piece.runtimeId, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
       return;
     }
-    // Momo's gesture, articulated limbs, idle and talking pulse as a mirror image; it shrinks with her own soft hide.
     const mirroredParts = mirrorPartPoses(director.partsPose(actor.id));
     writeReflection(r, reflectionPose(mirror.drawn, r, director.pose(actor.id), appearScaleOf(actor) * actor.scaleMul.value), mirroredParts);
   };
@@ -2081,11 +2022,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   /** A target as drawn last frame (the point under its middle and its scaled size) for picking and rectangles. */
   const candidateOf = (n: StageNode): PickCandidate => {
     const s = n.drawn.scale;
-    return { id: n.id, base: [n.center[0], floorOf(n), n.center[2]], size: [n.size[0] * Math.abs(s[0]), n.size[1] * Math.abs(s[1]), n.size[2] * Math.abs(s[2])] };
+    return {
+      id: n.id,
+      base: [n.center[0], floorOf(n), n.center[2]],
+      size: [n.size[0] * Math.abs(s[0]), n.size[1] * Math.abs(s[1]), n.size[2] * Math.abs(s[2])]
+    };
   };
 
   const renderHighlights = (dt: number): void => {
-    const highlighted = activeTargets.slice(0, MAX_HIGHLIGHTS).map((id) => nodes.get(id)).filter((n): n is StageNode => n !== undefined && isShown(n));
+    const highlighted = activeTargets
+      .slice(0, MAX_HIGHLIGHTS)
+      .map((id) => nodes.get(id))
+      .filter((n): n is StageNode => n !== undefined && isShown(n));
     const ripplePhase = reducedMotion ? 0.35 : (time * 0.45) % 1;
     RING_IDS.forEach((ringId, index) => {
       const n = highlighted[index];
@@ -2100,7 +2048,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       }
       const c = n.center;
       const floor = floorOf(n);
-      // A new ring opens out softly over RING_OPEN_SEC, then breathes slowly.
       const open = reducedMotion ? 1 : 0.6 + 0.4 * ease("outCubic", (time - (ringSince[index] ?? time)) / RING_OPEN_SEC);
       const breath = (reducedMotion ? 1 : breathe(time, 0.07, 2.6)) * open;
       const floating = floor > 0.3 || n.traits.floats === true;
@@ -2131,11 +2078,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       if (n.transient?.halo) {
         const { elapsed, duration } = n.transient;
         const u = elapsed / Math.max(0.01, duration);
-        // Reduced motion: steady, with the same soft 0.6 s fades in and out.
         const steady = 0.8 * Math.min(clamp(elapsed / 0.6, 0, 1), clamp((duration - elapsed) / 0.6, 0, 1));
         strength = Math.max(strength, reducedMotion ? steady : Math.sin(Math.PI * clamp(u, 0, 1)));
       }
-      // A glow cut short (a new gesture or object action) still fades out over HALO_FADE_SEC.
       strength = Math.max(strength, n.haloShown - dt / HALO_FADE_SEC);
       n.haloShown = strength;
       if (strength > 0.02) glowing.push({ n, strength });
@@ -2147,23 +2092,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         return;
       }
       const { n, strength } = entry;
-      // The halo grows out of the object as the glow rises (and sinks back into
-      // it), so the soft light never appears or vanishes at once.
       const d = Math.max(n.size[0], n.size[1]) * (0.55 + 0.85 * strength);
       write(haloId, [n.center[0], n.center[1], n.center[2]], [0, 0, 0], [d, d, d], true);
     });
-  };
-
-  const drainClips = (): void => {
-    for (const command of director.drainClipCommands()) {
-      const h = handle(command.actor);
-      if (!h) continue;
-      try {
-        h.play(command.clip, { loop: command.loop, crossFade: 0.25 });
-      } catch (error) {
-        warn(`clip ${command.actor}/${command.clip}: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
   };
 
   const partsPoseFor = (n: StageNode): ArticulatedPoseMap | undefined => {
@@ -2185,11 +2116,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const frame = (dt: number): void => {
     time += dt;
-    // Song lines whose time has come start first, as if their motions and cues were applied just before this frame.
     advanceSong(dt * 1000);
     director.update(dt);
     if (host !== null) currentWorld?.updateWorld(handle, time, reducedMotion);
-    // Carriers first so carried items follow this frame's pose.
     const carriers = order.filter((n) => !n.carriedBy);
     const carried = order.filter((n) => n.carriedBy);
     for (const n of order) step(n, dt);
@@ -2206,7 +2135,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     renderHighlights(dt);
     if (cameraElapsed < cameraDuration) cameraElapsed = Math.min(cameraDuration, cameraElapsed + dt);
     applyCamera(cameraPoseNow(), false);
-    drainClips();
+    director.drainClipCommands();
   };
 
   // ---- warming: everything visible and in frame behind the veil, so hidden and off-stage nodes compile too
@@ -2217,7 +2146,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const pose: StagePose = { base: inFrame, rotation: [0, 0, 0], scale: [1, 1, 1], pivot: "base", centerHeight: n.heightM / 2 };
       n.drawn = pose;
       n.center = placePiece(pose, [0, n.heightM / 2, 0]);
-      for (const piece of n.pieces) write(piece.id, placePiece(pose, piece.center), piece.rotation, [1, 1, 1], true);
+      for (const piece of n.pieces) {
+        const resolved = resolveHierarchicalPartTransform(
+          pose,
+          undefined,
+          piece.part,
+          piece.anchorM,
+          n.partAnchorsM,
+          piece.parent
+        );
+        write(piece.runtimeId, resolved.position, resolved.rotation, resolved.scale, true);
+      }
     }
     for (const r of reflections) {
       const mirror = nodes.get(r.mirrorId);
@@ -2238,15 +2177,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     reflections = [...built.reflections];
     songRun = null;
     activeTargets = [];
-    modelNodeCount = built.nodes.filter((n) => n.drawnAs === "model").length;
-    standInNodeCount = built.nodes.length - modelNodeCount;
+    proceduralNodeCount = built.nodes.length;
     for (const n of built.nodes) {
       const profile = n.characterId ? CHARACTERS[n.characterId] : null;
       director.register({
         id: n.id,
         profile: profile ?? idleProfileFor(n.traits),
-        canPlayClips: n.drawnAs === "model" && profile !== null && profile.rigged,
-        initialClip: built.clipInitial.get(n.id) ?? null
+        canPlayClips: false,
+        initialClip: null
       });
     }
     director.drainClipCommands();
@@ -2282,36 +2220,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     mounted = false;
     await setVeil(1);
     if (seq !== loadSeq || disposed) return;
-    const keys = storyModelKeys(next);
-    const resumeDrawing = pauseDrawing();
-    let pre: PreloadResult;
-    try {
-      pre = await preloader.preload(keys);
-    } finally {
-      resumeDrawing();
-    }
-    if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
-    let built = buildStory(next, (key) => pre.available.has(key), aspectPose, reducedMotion, softwareRenderer);
-    recovered = false;
-    let result = await mountScene(built, seq);
+    const built = buildStory(next, aspectPose, reducedMotion, softwareRenderer);
+    const result = await mountScene(built, seq);
     if (result === "stale") return;
-    // A model broke the mount after preload (for example a GLB that fetched and
-    // hashed fine but does not decode). When the engine names the GLB only that one
-    // becomes a stand-in; otherwise, or if the mount still fails, every model does.
-    // Dropped models stay dropped for the session.
-    let dropped: ModelKey[] = [];
-    for (let attempt = 0; attempt < 2 && result === "failed" && built.modelKeys.length > 0; attempt += 1) {
-      const named = attempt === 0 ? modelsNamedInErrors(built.modelKeys) : [];
-      const drop = named.length > 0 && named.length < built.modelKeys.length ? named : [...built.modelKeys];
-      dropped = [...dropped, ...drop];
-      preloader.markFailed(drop);
-      warn(`mount of ${next.id} failed; ${drop.join(", ")} drawn as stand-ins`);
-      built = buildStory(next, (key) => pre.available.has(key) && !dropped.includes(key), aspectPose, reducedMotion, softwareRenderer);
-      recovered = true;
-      result = await mountScene(built, seq);
-      if (result === "stale") return;
-    }
     if (result === "failed") warn(`mount of ${next.id} reported a renderer error`);
     adopt(built);
     story = next;
@@ -2358,14 +2270,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const pickableTargets = (): StageNode[] =>
     activeTargets.map((id) => nodes.get(id)).filter((n): n is StageNode => n !== undefined && isShown(n));
 
-  // Loads are chained so two `setScene` calls never overlap (a quick second
-  // story choice waits for the first load to finish or step aside).
   let loadChain: Promise<void> = readyPromise;
 
   const stage: WonderStage = {
     load(next) {
       if (disposed) return Promise.resolve();
-      // A new story is coming: the old one's song stops starting lines and cues now.
       songRun = null;
       const seq = ++loadSeq;
       const run = loadChain
@@ -2390,7 +2299,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     },
     setTargets(targets) {
       const unique = targets ? [...new Set(targets)] : [];
-      // Child-safety rule: at most two touch targets at a time (the content schema enforces it too).
       if (unique.length > MAX_HIGHLIGHTS) warn(`setTargets: ${unique.length} targets; only the first ${MAX_HIGHLIGHTS} are active`);
       activeTargets = unique.slice(0, MAX_HIGHLIGHTS);
       for (const id of activeTargets) if (!nodes.has(id)) warn(`setTargets: no node "${id}"`);
@@ -2418,7 +2326,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           // Best-effort clear.
         }
         cameraElapsed = cameraDuration;
-        // Soft pops end at once; a node that was fading out still ends hidden.
         for (const n of order) {
           if (n.appear !== null && !n.appear.showing) n.visible = false;
           n.appear = null;
@@ -2433,7 +2340,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       songRun = null;
       currentWorld = null;
       director.clear();
-      preloader.dispose();
       nodes.clear();
       order = [];
       reflections = [];
@@ -2471,10 +2377,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         ...(renderPath !== undefined ? { renderPath } : {}),
         storyId: story?.id ?? null,
         world: worldId,
-        modelNodes: modelNodeCount,
-        standInNodes: standInNodeCount,
-        modelStatus: preloader.summary(),
-        recoveredFromMountFailure: recovered,
+        proceduralNodes: proceduralNodeCount,
         warmed,
         warnings: [...warnings]
       };
@@ -2505,7 +2408,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           const c = candidateOf(n);
           box = standingBox(c.base, c.size);
         } else {
-          // A reflection: its drawn body in the glass.
           const r = reflections.find((candidate) => candidate.id === id);
           if (!r || !r.drawn || !reflectionShown(r)) continue;
           const s = r.drawn.scale;
@@ -2535,7 +2437,6 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           return {
             id: n.id,
             visible: n.visible,
-            // The point under the middle of its body, at the bottom of it (a toppled block reports the floor).
             position: [round(n.center[0]), round(floorOf(n)), round(n.center[2])] as const,
             drawnAs: n.drawnAs,
             gesture: anim?.gesture ?? null,
@@ -2555,9 +2456,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         }))
       };
     },
-    prefetch(next) {
-      if (disposed) return;
-      preloader.prefetch(storyModelKeys(next));
+    prefetch(_next) {
+      // No-op: all 66 procedural rigs are synchronously memoized in memory.
     }
   };
 

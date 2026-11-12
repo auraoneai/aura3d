@@ -1,28 +1,43 @@
-// Model orientation (07 B33): the stage's forward is +Z, as in every stand-in recipe. Meshy made the vehicles side-on
-// with their front toward -X, so the stage gives those models a quarter turn: `face viewer` shows GoGo's face, and a
-// drive leads with the front.
+// Model orientation (07 B33 & PRD 5.5.1 §3.4): the stage's forward axis is +Z.
+// Every procedural rig — including GoGo, GoGo's carriage, and the retro car — is
+// sculpted facing +Z natively so `MODEL_FRONT_YAW` is empty, `face viewer` turns
+// yaw to 0, and `style: "drive"` leads cleanly with the vehicle's front.
 
-import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { MODEL_KEYS, type ModelKey } from "../../../src/aura-assets.js";
 import { episode as E04 } from "../../../src/content/episodes/gogo-abc-train.js";
+import { PROCEDURAL_RIGS } from "../../../src/scenes/procedural-rigs/index.js";
 import { MODEL_FRONT_YAW, buildStoryScene, createStage } from "../../../src/scenes/stage.js";
 import type { EpisodeSpec } from "../../../src/types.js";
 
-const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-
-/** The admitted GLB's inspected bounds (width x, height y, depth z) from its provenance record. */
-function bounds(key: ModelKey): readonly [number, number, number] {
-  const record: unknown = JSON.parse(readFileSync(join(appRoot, "provenance", "models", `${key}.json`), "utf8"));
-  if (typeof record !== "object" || record === null || !("inspection" in record)) throw new Error(`${key}: no inspection`);
-  const inspection: unknown = record.inspection;
-  if (typeof inspection !== "object" || inspection === null || !("bounds" in inspection) || !Array.isArray(inspection.bounds)) {
-    throw new Error(`${key}: no bounds`);
+/** Assembled unit-height bounding box `[spanX, spanY, spanZ]` of a procedural rig. */
+function rigSpans(key: "gogo" | "gogoCarriage" | "car"): readonly [number, number, number] {
+  const rig = PROCEDURAL_RIGS[key];
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const part of rig.parts) {
+    for (const lobe of part.lobes) {
+      const pos = lobe.geometry.positions;
+      const ox = part.anchor[0];
+      const oy = part.anchor[1];
+      const oz = part.anchor[2];
+      for (let i = 0; i < pos.length; i += 3) {
+        const x = ox + Number(pos[i] ?? 0);
+        const y = oy + Number(pos[i + 1] ?? 0);
+        const z = oz + Number(pos[i + 2] ?? 0);
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+        if (z < minZ) minZ = z;
+        if (z > maxZ) maxZ = z;
+      }
+    }
   }
-  const [x, y, z] = inspection.bounds.map(Number);
-  return [x ?? 0, y ?? 0, z ?? 0];
+  return [maxX - minX, maxY - minY, maxZ - minZ];
 }
 
 /** Every node object in a scene snapshot whose runtime id is `id`. */
@@ -44,28 +59,21 @@ function nodesWithId(snapshot: unknown, id: string): Record<string, unknown>[] {
 }
 
 describe("model orientation (07 B33)", () => {
-  it("turns only side-on vehicle models, whose GLB runs along X", () => {
-    const turned = Object.keys(MODEL_FRONT_YAW).sort();
-    expect(turned).toEqual(["car", "gogo", "gogoCarriage"]);
-    for (const key of MODEL_KEYS) {
-      const yaw = MODEL_FRONT_YAW[key];
-      if (yaw === undefined) continue;
-      const [x, , z] = bounds(key);
-      expect(x / z, `${key} is longer along X than along Z`).toBeGreaterThan(1.4);
-      expect(yaw, key).toBeCloseTo(Math.PI / 2, 6);
+  it("sculpts every vehicle rig facing +Z natively so MODEL_FRONT_YAW needs zero yaw patches", () => {
+    expect(MODEL_FRONT_YAW).toEqual({});
+    for (const key of ["gogo", "gogoCarriage", "car"] as const) {
+      const [spanX, , spanZ] = rigSpans(key);
+      expect(spanZ, `${key} length along +Z exceeds width along X`).toBeGreaterThan(spanX * 1.15);
     }
   });
 
-  it("builds GoGo and its carriage a quarter turn round, and a stand-in GoGo unturned", () => {
-    for (const withModels of [true, false]) {
-      const snapshot = buildStoryScene(E04, { modelAvailable: () => withModels }).builder.toJSON();
-      const gogo = nodesWithId(snapshot, "gogo")[0];
-      if (!gogo) throw new Error("no gogo node");
-      const rotation = gogo["rotation"];
-      expect(Array.isArray(rotation), JSON.stringify(gogo).slice(0, 300)).toBe(true);
-      const yaw = Array.isArray(rotation) ? Number(rotation[1]) : NaN;
-      expect(yaw, withModels ? "the model is turned" : "the stand-in faces +Z already").toBeCloseTo(withModels ? Math.PI / 2 : 0, 6);
-    }
+  it("builds GoGo and its carriage unturned (+Z forward) at rest", () => {
+    const snapshot = buildStoryScene(E04).builder.toJSON();
+    const gogo = nodesWithId(snapshot, "gogo")[0];
+    if (!gogo) throw new Error("no gogo node");
+    const rotation = gogo["rotation"];
+    const yaw = Array.isArray(rotation) ? Number(rotation[1]) : 0;
+    expect(yaw).toBeCloseTo(0, 6);
   });
 
   it("keeps a vehicle facing the way it drove, and a face action still turns it", async () => {
@@ -76,7 +84,7 @@ describe("model orientation (07 B33)", () => {
       props: [{ id: "car", asset: "car", at: "offRight", size: 0.6 }],
       beats: []
     };
-    const stage = await createStage({ target: null, reducedMotion: false, models: false, mountTimeoutMs: 50 });
+    const stage = await createStage({ target: null, reducedMotion: false, mountTimeoutMs: 50 });
     const run = (seconds: number): void => {
       for (let i = 0; i < Math.round(seconds * 20); i += 1) stage.update(0.05);
     };
@@ -86,7 +94,6 @@ describe("model orientation (07 B33)", () => {
       const car = app.nodes.get("car");
       const gogo = app.nodes.get("gogo");
       if (!car || !gogo) throw new Error("missing nodes");
-      // Both drive in from the right, heading toward -X, and keep that heading once parked.
       stage.apply([
         { do: "enter", actor: "car", at: "left", from: "offRight", style: "drive" },
         { do: "enter", actor: "gogo", at: "right", from: "offRight", style: "drive" }
@@ -95,7 +102,6 @@ describe("model orientation (07 B33)", () => {
       expect(stage.snapshot().nodes.find((n) => n.id === "car")?.moving).toBe(false);
       expect(car.rotation[1]).toBeCloseTo(-Math.PI / 2, 2);
       expect(gogo.rotation[1]).toBeCloseTo(-Math.PI / 2, 2);
-      // Facing the viewer turns GoGo's front (+Z for the stand-in, the turned model) to the camera.
       stage.apply([{ do: "face", actor: "gogo", toward: "viewer" }]);
       run(3);
       expect(gogo.rotation[1]).toBeCloseTo(0, 2);

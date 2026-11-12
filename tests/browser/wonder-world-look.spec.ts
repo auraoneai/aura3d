@@ -28,7 +28,6 @@ import {
   qaStartStory,
   qaState,
   readBootError,
-  remountIfModelsLate,
   runContext,
   waitForStoryOnStage
 } from "./wonder-world-lib";
@@ -39,8 +38,6 @@ const PHONE = { width: 390, height: 844 } as const;
 const OPENING_MS = 4_000;
 /** Real time for the stage to re-frame and draw after a viewport change. */
 const RESIZE_SETTLE_MS = 3_000;
-/** The preload wait for each story's models (`?modelWaitMs`). */
-const MODEL_WAIT_MS = 180_000;
 
 /** One story per world, each with the cast its opening shows. */
 const WORLD_SHOTS = [
@@ -66,13 +63,12 @@ test.describe("Wonder World look-dev captures", () => {
     await page.setViewportSize(DESKTOP);
     const log = attachPageLog(page);
     const first = WORLD_SHOTS[0];
-    await openWonderWorld(page, server, log, { autostart: 1, story: first.story, manual: 1, mode: "watch-sing", modelWaitMs: MODEL_WAIT_MS });
+    await openWonderWorld(page, server, log, { autostart: 1, story: first.story, manual: 1, mode: "watch-sing" });
     const records: Record<string, unknown>[] = [];
     for (const shot of WORLD_SHOTS) {
       await page.setViewportSize(DESKTOP);
       if (shot !== first) await qaStartStory(page, shot.story, "watch-sing");
       await waitForStoryOnStage(page, log, shot.story);
-      const firstMount = await remountIfModelsLate(page, log, shot.story, "watch-sing", shot.cast);
       await qaAdvance(page, OPENING_MS);
       const frames: Record<string, unknown> = {};
       for (const [label, viewport] of [["desktop", DESKTOP], ["phone", PHONE]] as const) {
@@ -91,7 +87,6 @@ test.describe("Wonder World look-dev captures", () => {
         world: shot.world,
         story: shot.story,
         openingMs: OPENING_MS,
-        firstMount,
         director: state.director,
         frames,
         note: SOFTWARE_GL_NOTE
@@ -139,11 +134,9 @@ test.describe("Wonder World look-dev captures", () => {
       story: shot.story,
       manual: 1,
       mode: "watch-sing",
-      modelWaitMs: MODEL_WAIT_MS,
       backend: "webgl2"
     });
     await waitForStoryOnStage(page, log, shot.story);
-    await remountIfModelsLate(page, log, shot.story, "watch-sing", shot.cast);
     await qaAdvance(page, OPENING_MS);
     const png = decodePng(await captureCanvas(page, { canvasOnly: true }));
     const luma = lumaStats(png);

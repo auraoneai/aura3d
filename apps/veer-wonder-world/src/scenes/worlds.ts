@@ -1,24 +1,22 @@
 // Wonder World worlds (PRD 04 D08-D13, PRD 5.5.1 Section 4): the six sculpted
-// Blender-Cycles miniature dioramas on the toy island. Each world combines a
+// tactile miniature dioramas on the toy island. Each world combines a
 // procedural felt/wood/cloud plinth (`y = 0.000` across the entire play area),
-// spline paths/rails/rainbows, single-draw instanced flora/props, and real GLB
-// dressing models (falling back cleanly to procedural stand-ins when offline).
+// spline paths/rails/rainbows, single-draw instanced flora/props, and merged
+// procedural craft scenery (`mountStaticDressingAsset`, zero external `.glb`s).
 
 import {
   instances,
   material,
-  model,
   primitives,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { modelRef, type ModelKey } from "../aura-assets.js";
+import type { ModelKey } from "../aura-assets.js";
 import type { MusicBedId, WorldId } from "../types.js";
 import type { Vec3 } from "./motion.js";
+import { mountStaticDressingAsset } from "./procedural-rigs/index.js";
 import {
-  ASSET_TRAITS,
-  buildStandIn,
   defaultHeightM,
   primitiveParams,
   type StandInShape
@@ -38,7 +36,7 @@ import { musicGarden } from "./music-garden.js";
 import { peekabooBarn } from "./peekaboo-barn.js";
 import { station } from "./station.js";
 
-/** A generated model used as scenery (stand-in when it cannot be drawn). */
+/** A sculpted procedural rig placed as static scenery in a diorama world. */
 export interface DressingModel {
   readonly kind: "model";
   readonly key: ModelKey;
@@ -154,7 +152,7 @@ export function worldDefinition(id: WorldId): WorldDefinition {
   return WORLDS[id];
 }
 
-/** The model keys a world's dressing uses (for the preloader). Stable order, no duplicates. */
+/** The procedural rig keys a world's dressing places. Stable order, no duplicates. */
 export function worldDressingKeys(id: WorldId): readonly ModelKey[] {
   const keys: ModelKey[] = [];
   for (const item of WORLDS[id].dressing) {
@@ -176,12 +174,10 @@ export interface WorldRuntimeHandleLike {
 export interface BuiltWorld {
   readonly id: WorldId;
   readonly nodes: readonly (AuraNodeBuilder<AuraSceneNode> | AuraSceneNode)[];
-  /** Dressing items drawn from their GLB. */
-  readonly models: number;
-  /** Dressing items drawn as primitive stand-ins. */
-  readonly standIns: number;
-  /** Model keys mounted as GLBs in this world build. */
-  readonly modelKeys: readonly ModelKey[];
+  /** Dressing items mounted from merged procedural craft rigs. */
+  readonly proceduralProps: number;
+  /** Unique procedural rig keys mounted in this world build. */
+  readonly proceduralKeys: readonly ModelKey[];
   /** Runtime node ids exposed for gentle ambient diorama motion. */
   readonly animatedIds: readonly string[];
   readonly sampleWorldMotion: (timeSec: number, reducedMotion: boolean) => readonly WorldAnimatedPose[];
@@ -276,25 +272,30 @@ function instancesNode(
 }
 
 /**
- * Builds a world's diorama ground, procedural craft details, and dressing.
- * `available(key)` says whether a model may be mounted (admitted, preloaded
- * and not switched off); otherwise its stand-in is used.
+ * Builds a world's diorama ground, procedural craft details, and merged static dressing.
  */
+export function buildWorldNodes(id: WorldId, options?: BuildWorldOptions): BuiltWorld;
 export function buildWorldNodes(
   id: WorldId,
   available: (key: ModelKey) => boolean,
-  options: BuildWorldOptions = {}
+  options?: BuildWorldOptions
+): BuiltWorld;
+export function buildWorldNodes(
+  id: WorldId,
+  availableOrOptions?: ((key: ModelKey) => boolean) | BuildWorldOptions,
+  maybeOptions?: BuildWorldOptions
 ): BuiltWorld {
+  const options: BuildWorldOptions =
+    typeof availableOrOptions === "function" ? (maybeOptions ?? {}) : (availableOrOptions ?? {});
   const world = WORLDS[id];
   const reducedMotion = options.reducedMotion ?? false;
   const diorama = world.buildDiorama
-    ? world.buildDiorama({ reducedMotion, available })
+    ? world.buildDiorama({ reducedMotion, available: () => true })
     : { nodes: [], animated: [], replaceDefaultGround: false };
 
   const nodes: (AuraNodeBuilder<AuraSceneNode> | AuraSceneNode)[] = [];
-  let models = 0;
-  let standIns = 0;
-  const modelKeys: ModelKey[] = [];
+  let proceduralProps = 0;
+  const proceduralKeys: ModelKey[] = [];
 
   if (!diorama.replaceDefaultGround) {
     nodes.push(
@@ -322,46 +323,19 @@ export function buildWorldNodes(
       return;
     }
     const heightM = item.heightM ?? defaultHeightM(item.key);
-    const ref = modelRef(item.key);
-    if (ref && available(item.key)) {
-      const traits = ASSET_TRAITS[item.key];
-      nodes.push(
-        model(ref, {
-          name,
-          targetHeight: heightM,
-          scaleMode: "fit",
-          castShadow: item.castShadow ?? true,
-          receiveShadow: true,
-          ...(item.tint
-            ? {
-                materialOverrides: [
-                  {
-                    color: item.tint,
-                    colorMode: traits.tintMode,
-                    ...(traits.tintMode === "replace" ? { replaceTextures: true } : {})
-                  }
-                ]
-              }
-            : {})
-        })
-          .position(item.at)
-          .rotate(0, item.yaw ?? 0, 0)
-      );
-      models += 1;
-      if (!modelKeys.includes(item.key)) modelKeys.push(item.key);
-      return;
-    }
-    const built = buildStandIn(item.key, {
-      id: name,
-      heightM,
-      ...(item.tint ? { tint: item.tint } : {}),
-      base: item.at,
-      yaw: item.yaw ?? 0,
-      movable: false,
-      castShadow: item.castShadow ?? true
-    });
-    nodes.push(...built.nodes);
-    standIns += 1;
+    nodes.push(
+      ...mountStaticDressingAsset(
+        item.key,
+        heightM,
+        name,
+        item.at,
+        item.yaw ?? 0,
+        item.tint,
+        item.castShadow ?? true
+      )
+    );
+    proceduralProps += 1;
+    if (!proceduralKeys.includes(item.key)) proceduralKeys.push(item.key);
   });
 
   const animatedSpecs = diorama.animated ?? [];
@@ -420,9 +394,8 @@ export function buildWorldNodes(
   return {
     id,
     nodes,
-    models,
-    standIns,
-    modelKeys,
+    proceduralProps,
+    proceduralKeys,
     animatedIds,
     sampleWorldMotion,
     updateWorld

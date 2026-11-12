@@ -1,12 +1,8 @@
-// Momo (PRD 04 D01): small fuzzy purple monster, the warm host. Momo moves
-// procedurally (bounce, sway, point-lean, squash): the Meshy humanoid rig was
-// rejected in this build (MASTER-PROMPT section 3.6; MODEL_INFO.momo has
-// rigged: false and no clips). The clip names below (idle, walk, run, wave,
-// talk, happyJump, cheer, sway, mirror, pickUp, lookAround, sleep, drink,
-// wakeUp, jazzHands, shrug) are candidates for a later rig that passes
-// `aura3d assets validate --skin`: a clip plays only when MODEL_INFO lists it
-// for the admitted GLB, so until then the procedural motion below is what
-// plays. Momo points and waits rather than asking question after question.
+// Momo (PRD 04 D01): small fuzzy purple monster, the warm host. Momo is a
+// procedural needle-felted joint rig (`MODEL_INFO.momo.procedural === true`)
+// whose head, arms, feet, eyelids, jaw, and rosy cheeks move deterministically
+// via `sampleCharacterSubParts` and the calm gesture envelopes below. Momo
+// points and waits rather than asking question after question.
 
 import type { CharacterDefinition } from "./character-registry.js";
 import { gestureMotion, proc } from "../scenes/motion.js";

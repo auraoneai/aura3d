@@ -44,7 +44,7 @@ const PARENT_HOLD_MS = 2_600;
 // take it), so a step gets two minutes; a step that has not happened by then has failed.
 const UI_TIMEOUT_MS = 120_000;
 const VIEWPORT = { width: 800, height: 600 } as const;
-const QUERY = { autostart: 1, manual: 1, models: 0 } as const;
+const QUERY = { autostart: 1, manual: 1 } as const;
 
 /** What the grown-up picks, and the defaults Clear restores (src/ui/settings-store.ts defaultSettings). */
 const CHOSEN = { captions: false, music: false, highContrast: true, waitMs: 7_000, wordList: ["ball", "more"], sfxVolume: "soft" } as const;

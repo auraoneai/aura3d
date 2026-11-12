@@ -63,7 +63,6 @@ async function open(reducedMotion = false): Promise<Harness> {
   const stage = await createStage({
     target: null,
     reducedMotion,
-    models: false,
     mountTimeoutMs: 50,
     onSongCue: (cue) => cues.push({ ...cue, atMs: now })
   });

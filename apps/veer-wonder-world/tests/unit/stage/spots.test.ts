@@ -24,7 +24,8 @@ import {
 } from "../../../src/scenes/spots.js";
 import { WORLDS, WORLD_IDS, worldDressingKeys, type DressingPrimitive } from "../../../src/scenes/worlds.js";
 import { LOOK_HDRI_FILES, WORLD_LOOKS, lookHasEnvironment, lookHdriFile, worldLookNodes } from "../../../src/scenes/looks.js";
-import { ASSET_TRAITS, STAND_INS, footprintM, primitiveParams, standInPieceMaterial } from "../../../src/scenes/stand-ins.js";
+import { ASSET_TRAITS, footprintM, type StageAssetKey } from "../../../src/scenes/stand-ins.js";
+import { PROCEDURAL_RIGS, buildProceduralActor } from "../../../src/scenes/procedural-rigs/index.js";
 import { MODEL_KEYS } from "../../../src/aura-assets.js";
 import { createAuraApp, raycastFirst } from "@aura3d/engine";
 import {
@@ -442,62 +443,133 @@ describe("worlds and looks", () => {
   });
 });
 
-describe("stand-ins", () => {
-  it("has a stand-in recipe and traits for every model key and the procedural bubble", () => {
-    for (const key of [...MODEL_KEYS, "bubble" as const]) {
-      expect(STAND_INS[key], key).toBeDefined();
+describe("procedural rigs & quality floors (PRD 5.5.1 §3.6.1)", () => {
+  const ALL_STAGE_KEYS: readonly StageAssetKey[] = [...MODEL_KEYS, "bubble"];
+  const HERO_KEYS = new Set<StageAssetKey>(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"]);
+  const TIER2A_KEYS = new Set<StageAssetKey>([
+    "teddy",
+    "robot",
+    "cow",
+    "sheep",
+    "duck",
+    "horse",
+    "gogoCarriage",
+    "car",
+    "barn",
+    "station",
+    "tunnel",
+    "house",
+    "door",
+    "lift",
+    "colourMachine"
+  ]);
+  const TIER2B_KEYS = new Set<StageAssetKey>(["bird", "butterfly"]);
+  const TIER3B_KEYS = new Set<StageAssetKey>(["bubble", "candleFlame"]);
+
+  it("defines a valid procedural rig and layout traits for all 66 stage asset keys", () => {
+    expect(ALL_STAGE_KEYS).toHaveLength(66);
+    for (const key of ALL_STAGE_KEYS) {
+      const rig = PROCEDURAL_RIGS[key];
+      expect(rig, key).toBeDefined();
+      expect(rig.key).toBe(key);
       expect(ASSET_TRAITS[key], key).toBeDefined();
       const [w, h, d] = footprintM(key, 1);
       expect(w).toBeGreaterThan(0);
       expect(h).toBe(1);
       expect(d).toBeGreaterThan(0);
+
+      for (const part of rig.parts) {
+        expect(part.lobes.length, `${key} ${part.part} lobes`).toBeGreaterThan(0);
+        for (const lobe of part.lobes) {
+          const g = lobe.geometry;
+          const label = `${key} ${part.part}/${lobe.suffix}`;
+          const vertexCount = g.positions.length / 3;
+          expect(vertexCount, `${label} vertices`).toBeGreaterThan(2);
+          expect(g.normals?.length, `${label} normals`).toBe(g.positions.length);
+          expect(g.uvs?.length, `${label} uvs`).toBe(vertexCount * 2);
+          expect(g.indices.length, `${label} indices`).toBeGreaterThan(0);
+          expect(g.indices.length % 3, `${label} triangles`).toBe(0);
+          let badPos = -1;
+          let badNormal = -1;
+          for (let i = 0; i < g.positions.length; i += 1) {
+            if (!Number.isFinite(g.positions[i])) {
+              badPos = i;
+              break;
+            }
+            if (!Number.isFinite(g.normals?.[i])) {
+              badNormal = i;
+              break;
+            }
+          }
+          expect(badPos, `${label} finite pos`).toBe(-1);
+          expect(badNormal, `${label} finite normal`).toBe(-1);
+          let badIndex = -1;
+          for (let i = 0; i < g.indices.length; i += 1) {
+            if ((g.indices[i] ?? vertexCount) >= vertexCount) {
+              badIndex = i;
+              break;
+            }
+          }
+          expect(badIndex, `${label} index bound`).toBe(-1);
+        }
+      }
+      expect(rig.staticDressingLobes.length, `${key} staticDressingLobes`).toBeGreaterThan(0);
+      expect(rig.staticDressingLobes.length, `${key} staticDressingLobes cap`).toBeLessThanOrEqual(6);
     }
   });
 
-  it("round props roll and floating props float", () => {
+  it("enforces PRD §3.6.1 sub-shape, triangle, craft-diversity and draw-call bands across every tier", () => {
+    for (const key of ALL_STAGE_KEYS) {
+      const rig = PROCEDURAL_RIGS[key];
+      const lobes = rig.parts.flatMap((p) => p.lobes);
+      const crafts = new Set(lobes.map((l) => l.craft)).size;
+      const draws = lobes.length;
+
+      if (HERO_KEYS.has(key)) {
+        expect(rig.subShapeCount, `${key} subShapes`).toBeGreaterThanOrEqual(45);
+        expect(rig.triangleCount, `${key} min tris`).toBeGreaterThanOrEqual(1800);
+        expect(rig.triangleCount, `${key} max tris`).toBeLessThanOrEqual(8000);
+        expect(crafts, `${key} crafts`).toBeGreaterThanOrEqual(3);
+        expect(draws, `${key} draws`).toBeLessThanOrEqual(12);
+      } else if (TIER2A_KEYS.has(key)) {
+        expect(rig.subShapeCount, `${key} subShapes`).toBeGreaterThanOrEqual(28);
+        expect(rig.triangleCount, `${key} min tris`).toBeGreaterThanOrEqual(900);
+        expect(rig.triangleCount, `${key} max tris`).toBeLessThanOrEqual(3400);
+        expect(crafts, `${key} crafts`).toBeGreaterThanOrEqual(2);
+        expect(draws, `${key} draws`).toBeLessThanOrEqual(14);
+      } else if (TIER2B_KEYS.has(key)) {
+        expect(rig.subShapeCount, `${key} subShapes`).toBeGreaterThanOrEqual(18);
+        expect(rig.triangleCount, `${key} min tris`).toBeGreaterThanOrEqual(600);
+        expect(rig.triangleCount, `${key} max tris`).toBeLessThanOrEqual(2200);
+        expect(crafts, `${key} crafts`).toBeGreaterThanOrEqual(2);
+        expect(draws, `${key} draws`).toBeLessThanOrEqual(9);
+      } else if (TIER3B_KEYS.has(key)) {
+        expect(rig.subShapeCount, `${key} subShapes`).toBeGreaterThanOrEqual(key === "bubble" ? 3 : 4);
+        expect(rig.triangleCount, `${key} min tris`).toBeGreaterThanOrEqual(key === "bubble" ? 160 : 120);
+        expect(rig.triangleCount, `${key} max tris`).toBeLessThanOrEqual(key === "bubble" ? 900 : 600);
+        expect(crafts, `${key} crafts`).toBeGreaterThanOrEqual(1);
+        expect(draws, `${key} draws`).toBeLessThanOrEqual(2);
+      } else {
+        expect(rig.subShapeCount, `${key} subShapes`).toBeGreaterThanOrEqual(8);
+        expect(rig.triangleCount, `${key} min tris`).toBeGreaterThanOrEqual(240);
+        expect(rig.triangleCount, `${key} max tris`).toBeLessThanOrEqual(1800);
+        expect(crafts, `${key} crafts`).toBeGreaterThanOrEqual(1);
+        expect(draws, `${key} draws`).toBeLessThanOrEqual(6);
+      }
+    }
+  });
+
+  it("round props roll, floating props float, bubble is translucent soapBubble, and tintable props expose tintableIds", () => {
     expect(ASSET_TRAITS.ball.round).toBe(true);
     expect(ASSET_TRAITS.bubble.round).toBe(true);
     expect(ASSET_TRAITS.balloon.floats).toBe(true);
     expect(ASSET_TRAITS.lumi.floats).toBe(true);
     expect(ASSET_TRAITS.door.door).toBe(true);
     expect(ASSET_TRAITS.toyBlock.layout).toBe("stackable");
-  });
-
-  it("the bubble is a soft translucent sphere", () => {
-    expect(STAND_INS.bubble.main.shape).toBe("sphere");
-    expect(STAND_INS.bubble.main.opacity ?? 1).toBeLessThan(0.6);
-  });
-
-  it("asks the engine for unit cones (its generator defaults to radius 1) and passes torus tubes and cylinder segments", () => {
-    expect(primitiveParams("cone")).toEqual({ radius: 0.5 });
-    expect(primitiveParams("cylinder", 3)).toEqual({ radialSegments: 3 });
-    expect(primitiveParams("torus", undefined, 0.2)).toEqual({ tube: 0.2 });
-    expect(primitiveParams("sphere", 3)).toBeUndefined();
-    expect(primitiveParams("box")).toBeUndefined();
-  });
-
-  it("keeps every upright stand-in piece between the ground and a little above its height", () => {
-    // Unit shapes are 1 across; the engine torus is ring 0.43 + tube (0.045 unless set).
-    // Soft round shapes (bush lobes, feet) may settle a few centimetres into the ground.
-    for (const key of [...MODEL_KEYS, "bubble" as const]) {
-      const recipe = STAND_INS[key];
-      for (const p of [recipe.main, ...recipe.parts]) {
-        if (p.rotation) continue;
-        const half = p.shape === "torus" ? p.size[1] * (0.43 + (p.tube ?? 0.045)) : p.size[1] / 2;
-        // The tunnel is a half-buried mound by design.
-        if (key !== "tunnel") expect(p.center[1] - half, `${key} ${p.shape} bottom`).toBeGreaterThanOrEqual(-0.06);
-        expect(p.center[1] + half, `${key} ${p.shape} top`).toBeLessThanOrEqual(1.15);
-      }
-    }
-  });
-
-  it("re-colours exactly the pieces the recipe tints, keeping their material settings", () => {
-    const door = STAND_INS.door;
-    expect(door.main.tinted).toBe(true);
-    expect(door.parts.map((p) => p.tinted ?? false)).toEqual([false, false]);
-    const glass = standInPieceMaterial("bubble", 0, "#FFD6E8");
-    expect(glass.color).toBe("#FFD6E8");
-    expect(glass.opacity).toBeCloseTo(STAND_INS.bubble.main.opacity ?? 1, 6);
+    expect(PROCEDURAL_RIGS.bubble.parts[0]?.lobes[0]?.craft).toBe("soapBubble");
+    const builtDoor = buildProceduralActor(PROCEDURAL_RIGS.door, { id: "door", key: "door", heightM: 1.6, tint: "#F2A65A", interactive: true });
+    expect(builtDoor.tintableIds.length).toBeGreaterThan(0);
+    expect(builtDoor.subParts.has("hingeLeaf")).toBe(true);
   });
 });
 
@@ -537,36 +609,28 @@ describe("story scenes (headless engine mount)", () => {
     estimatedDurationSec: 150
   });
 
-  it("builds every world with models and with stand-ins only, and the engine registers every node the stage moves", () => {
+  it("builds every world synchronously from procedural geometry, and the engine registers every runtime node", () => {
     for (const world of WORLD_IDS) {
-      for (const withModels of [false, true]) {
-        const build = buildStoryScene(story(world), { modelAvailable: () => withModels });
-        const snapshot = build.builder.toJSON();
-        const app = createAuraApp(undefined, { scene: snapshot, autoStart: false });
-        try {
-          const ids = app.nodes.ids();
-          for (const id of build.runtimeIds) expect(ids, `${world} ${String(withModels)} ${id}`).toContain(id);
-          expect(new Set(build.runtimeIds).size).toBe(build.runtimeIds.length);
-          const momo = app.nodes.require("momo");
-          momo.setPosition(-1.3, 0.1, 0.1).setRotation(0, 0.3, 0.05).setScale([1, 1.04, 1]).setVisible(false);
-          expect(momo.visible).toBe(false);
-          expect(app.diagnostics().errors).toEqual([]);
-          const json = JSON.stringify(snapshot);
-          expect(json).not.toMatch(/"effect":"vignette"/);
-          if (withModels) {
-            expect(build.drawnAs.get("momo")).toBe("model");
-            expect(json).toMatch(/"scaleMode":"fit"/);
-          } else {
-            expect(build.drawnAs.get("momo")).toBe("stand-in");
-          }
-          // The procedural bubble and the by-design procedural ball never draw from a GLB.
-          expect(build.drawnAs.get("bubble-1")).toBe("stand-in");
-        } finally {
-          app.dispose();
-        }
+      const build = buildStoryScene(story(world));
+      const snapshot = build.builder.toJSON();
+      const app = createAuraApp(undefined, { scene: snapshot, autoStart: false });
+      try {
+        const ids = app.nodes.ids();
+        for (const id of build.runtimeIds) expect(ids, `${world} ${id}`).toContain(id);
+        expect(new Set(build.runtimeIds).size).toBe(build.runtimeIds.length);
+        const momo = app.nodes.require("momo");
+        momo.setPosition(-1.3, 0.1, 0.1).setRotation(0, 0.3, 0.05).setScale([1, 1.04, 1]).setVisible(false);
+        expect(momo.visible).toBe(false);
+        expect(app.diagnostics().errors).toEqual([]);
+        const json = JSON.stringify(snapshot);
+        expect(json).not.toMatch(/"effect":"vignette"/);
+        expect(build.drawnAs.get("momo")).toBe("procedural");
+        expect(build.drawnAs.get("bubble-1")).toBe("procedural");
+      } finally {
+        app.dispose();
       }
     }
-  });
+  }, 25_000);
 
   it("lays out shared spots: the hidden chick waits behind its door, the cake sits on the table, blocks stack", () => {
     const build = buildStoryScene(story("peekaboo-barn"));
@@ -614,7 +678,7 @@ describe("createStage (headless engine, no canvas)", () => {
   };
 
   const open = (reducedMotion = false): Promise<WonderStage> =>
-    createStage({ target: null, reducedMotion, models: false, mountTimeoutMs: 50 });
+    createStage({ target: null, reducedMotion, mountTimeoutMs: 50 });
 
   const run = (stage: WonderStage, seconds: number): void => {
     const steps = Math.round(seconds * 30);
@@ -639,8 +703,8 @@ describe("createStage (headless engine, no canvas)", () => {
       expect(first.world).toBe("meadow");
       expect(first.camera).toBe("medium");
       expect(nodeOf(stage, "peeko").visible).toBe(false);
-      expect(nodeOf(stage, "momo").drawnAs).toBe("stand-in");
-      expect(stage.diagnostics().standInNodes).toBe(8);
+      expect(nodeOf(stage, "momo").drawnAs).toBe("procedural");
+      expect(stage.diagnostics().proceduralNodes).toBe(8);
       expect(stage.diagnostics().warmed).toBe(true);
 
       // Enter from off stage; exit hides on arrival after a soft shrink.
@@ -743,21 +807,20 @@ describe("createStage (headless engine, no canvas)", () => {
     }
   });
 
-  it("stops the engine's frames while a story's models download, and runs them again after (07 B41)", async () => {
+  it("mounts procedural stories synchronously with zero network fetch calls", async () => {
     let stage: WonderStage | null = null;
-    const pausedAtFetch: boolean[] = [];
+    let fetchCalls = 0;
     vi.stubGlobal("fetch", async () => {
-      if (stage) pausedAtFetch.push(stage.game().runtime.paused);
-      throw new Error("offline");
+      fetchCalls += 1;
+      throw new Error("unexpected fetch");
     });
     try {
-      stage = await createStage({ target: null, reducedMotion: true, models: true, modelTimeoutMs: 50, mountTimeoutMs: 50 });
+      stage = await createStage({ target: null, reducedMotion: true, mountTimeoutMs: 50 });
       expect(stage.game().runtime.running).toBe(true);
       await stage.load(probe);
-      expect(pausedAtFetch.length).toBeGreaterThan(0);
-      expect(pausedAtFetch.every(Boolean)).toBe(true);
+      expect(fetchCalls).toBe(0);
       expect(stage.game().runtime.running).toBe(true);
-      expect(nodeOf(stage, "momo").drawnAs).toBe("stand-in");
+      expect(nodeOf(stage, "momo").drawnAs).toBe("procedural");
     } finally {
       stage?.dispose();
       vi.unstubAllGlobals();

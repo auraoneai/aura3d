@@ -1,4 +1,4 @@
-// Feature flags (PRD 04 B11, PRD 01 section 8, PRD 03 section 4).
+// Feature flags (PRD 04 B11, PRD 01 section 8, PRD 03 section 4, PRD 5.5.1 §3).
 //
 // Optional and future modules are OFF. The microphone modules (P3 voice
 // input and sound presence, 04 K01-K02) are locked off: no URL parameter,
@@ -6,9 +6,8 @@
 // trigger a microphone permission prompt.
 //
 // readFlags(search) adds the few page-load switches QA and parents need
-// (models, diagnostics, audio, reduced motion, renderer backend). It parses
-// them with the Aura3D QA kit's readQaParams and never reads a locked flag
-// from the URL.
+// (diagnostics, audio, reduced motion, renderer backend). It parses them with
+// the Aura3D QA kit's readQaParams and never reads a locked flag from the URL.
 
 import { readQaParams } from "@aura3d/engine";
 
@@ -32,35 +31,22 @@ export type RendererBackendPref = "auto" | "webgl2" | "webgpu";
 
 /** Effective flags for one page load. Locked flags are typed `false`. */
 export interface WonderFlags extends FeatureFlags {
-  /** Load admitted GLBs; `?models=0` forces the primitive stand-ins. */
-  readonly models: boolean;
   /** `?diag=1`: install diagnostics (safety net overlay). */
   readonly diag: boolean;
   /** Recorded audio on; `?audio=0` runs silent (caption timing, AUDIO_UNAVAILABLE path). */
   readonly audio: boolean;
   /** `?reducedMotion=1`: force reduced motion (QA captures); the parent setting still applies too. */
   readonly reducedMotion: boolean;
-  /**
-   * `?modelWaitMs=N`: how long a story load waits for its models before drawing stand-ins (default: the
-   * preloader's 10 s; clamped to 1-300 s). For captures on slow software WebGL2, where a model download can outlast
-   * the default wait; a device never needs it.
-   */
-  readonly modelWaitMs: number | null;
   /** `?backend=auto|webgl2|webgpu`: renderer preference (default `"auto"`). */
   readonly backend: RendererBackendPref;
 }
 
 const PAGE_PARAMS = {
-  models: { type: "string", default: "1" },
   diag: { type: "flag" },
   audio: { type: "string", default: "1" },
   reducedMotion: { type: "flag" },
-  modelWaitMs: { type: "int", default: -1 },
   backend: { type: "string", default: "auto" }
 } as const;
-
-const MODEL_WAIT_MIN_MS = 1_000;
-const MODEL_WAIT_MAX_MS = 300_000;
 
 const OFF_VALUES: readonly string[] = ["0", "false", "off", "no"];
 
@@ -83,11 +69,9 @@ export function readFlags(search: string): WonderFlags {
   const page = readQaParams(PAGE_PARAMS, search);
   return Object.freeze({
     ...FEATURE_FLAGS,
-    models: !switchedOff(page.models),
     diag: page.diag,
     audio: !switchedOff(page.audio),
     reducedMotion: page.reducedMotion,
-    modelWaitMs: page.modelWaitMs > 0 ? Math.min(MODEL_WAIT_MAX_MS, Math.max(MODEL_WAIT_MIN_MS, page.modelWaitMs)) : null,
     backend: parseBackendPref(page.backend)
   });
 }

@@ -512,7 +512,14 @@ describe("determinism guard", () => {
     "src/characters/peeko.ts",
     "src/characters/character-registry.ts",
     "src/runtime/animation-director.ts",
-    "src/runtime/asset-preloader.ts"
+    "src/scenes/procedural-rigs/craft-textures.ts",
+    "src/scenes/procedural-rigs/rig-kit.ts",
+    "src/scenes/procedural-rigs/cast-rigs.ts",
+    "src/scenes/procedural-rigs/companion-animal-rigs.ts",
+    "src/scenes/procedural-rigs/vehicle-architecture-rigs.ts",
+    "src/scenes/procedural-rigs/music-furniture-nature-rigs.ts",
+    "src/scenes/procedural-rigs/play-food-letter-rigs.ts",
+    "src/scenes/procedural-rigs/index.ts"
   ];
 
   it("stage code has no clocks, randomness, three.js, raw GLB URLs, unsafe casts or vignette", () => {

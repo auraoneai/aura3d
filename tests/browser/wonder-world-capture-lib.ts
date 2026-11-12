@@ -43,7 +43,6 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import {
   SOFTWARE_GL_NOTE,
   addedEntries,
-  admittedModelKeys,
   attachPageLog,
   authoredStory,
   canvasBox,
@@ -60,6 +59,7 @@ import {
   lumaStats,
   openWonderWorld,
   pngToJpeg,
+  proceduralModelKeys,
   qaAdvance,
   qaDiagnostics,
   qaNodeRects,
@@ -69,7 +69,6 @@ import {
   qaStartStory,
   qaState,
   redact,
-  remountIfModelsLate,
   runContext,
   silhouetteContrast,
   sleep,
@@ -88,9 +87,7 @@ import { jumpTo, openingWideShot, stillMoment, storyTimeline, type StoryTimeline
 
 // ---------------------------------------------------------------- shared settings
 
-/** Each story load waits this long for its models (`?modelWaitMs`): software WebGL2 slows the downloads past 10 s. */
-const MODEL_WAIT_MS = 180_000;
-/** In-page deadline for one startStory with that model wait and the program warm-up. */
+/** In-page deadline for one startStory and program warm-up. */
 const LOAD_TIMEOUT_MS = 420_000;
 /** One test runs a whole file; the runner kills a run at 60 minutes, so a slow file fails before that. */
 const SUITE_TIMEOUT_MS = 52 * 60_000;
@@ -106,23 +103,22 @@ function message(error: unknown): string {
   return redact(error instanceof Error ? error.message : String(error)).slice(0, 1_500);
 }
 
-/** The story nodes that should draw from an admitted GLB: the cast, and props whose model is admitted. */
+/** The story nodes drawn from procedural rigs: the cast and every story prop. */
 function modelNodeIds(storyId: string): string[] {
   const story = authoredStory(storyId);
-  const admitted = admittedModelKeys();
+  const procedural = proceduralModelKeys();
   return [
-    ...story.cast.filter((member) => admitted === null || admitted.has(member.id)).map((member) => member.id),
-    ...story.props.filter((prop) => admitted !== null && admitted.has(prop.asset)).map((prop) => prop.id)
+    ...story.cast.filter((member) => procedural === null || procedural.has(member.id)).map((member) => member.id),
+    ...story.props.filter((prop) => prop.asset === "bubble" || procedural === null || procedural.has(prop.asset)).map((prop) => prop.id)
   ];
 }
 
-/** Loads a story at the current viewport (the first one is already loading from the page URL) and remounts late models. */
-async function loadStory(page: Page, log: PageLog, storyId: string, alreadyLoading: boolean, modelIds: readonly string[]): Promise<{ readonly loadMs: number; readonly firstMount: unknown }> {
+/** Loads a story synchronously from procedural geometry at the current viewport. */
+async function loadStory(page: Page, log: PageLog, storyId: string, alreadyLoading: boolean): Promise<{ readonly loadMs: number }> {
   const started = Date.now();
   if (!alreadyLoading) await qaStartStory(page, storyId, "watch-sing", LOAD_TIMEOUT_MS);
   await waitForStoryOnStage(page, log, storyId, LOAD_TIMEOUT_MS);
-  const firstMount = await remountIfModelsLate(page, log, storyId, "watch-sing", modelIds, LOAD_TIMEOUT_MS);
-  return { loadMs: Date.now() - started, firstMount };
+  return { loadMs: Date.now() - started };
 }
 
 // ---------------------------------------------------------------- character sheets
@@ -311,10 +307,10 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
   try {
     // Load at phone size: the stage frames the story for the canvas it loads into.
     await page.setViewportSize(PHONE);
-    record["load"] = await loadStory(page, log, entry.story, alreadyLoading, [character]);
+    record["load"] = await loadStory(page, log, entry.story, alreadyLoading);
     const drawn = (await liveNodes(page, [character])).nodes[0] ?? null;
     record["drawnAs"] = drawn?.tags ?? null;
-    result.modelDrawn = drawn ? drawn.tags.includes("model") : false;
+    result.modelDrawn = drawn ? drawn.tags.includes("procedural") : false;
     const story = authoredStory(entry.story);
     const timeline = storyTimeline(entry.story);
     const context: SheetContext = {
@@ -583,7 +579,7 @@ export function defineCharacterSheetSuite(options: { readonly title: string; rea
       if (!first) throw new Error("no characters");
       await page.setViewportSize(PHONE);
       const log = attachPageLog(page, server.origin);
-      await openWonderWorld(page, server, log, { autostart: 1, story: first.story, manual: 1, mode: "watch-sing", models: 1, modelWaitMs: MODEL_WAIT_MS });
+      await openWonderWorld(page, server, log, { autostart: 1, story: first.story, manual: 1, mode: "watch-sing" });
       const context = await runContext(page, `chars-${names.join("-")}`);
       const summary: Record<string, unknown>[] = [];
       for (const entry of options.characters) {
@@ -628,7 +624,7 @@ async function storyStill(page: Page, log: PageLog, story: StoryEntry, alreadyLo
   const warningsBefore = (await qaDiagnostics(page).catch(() => null))?.warnings ?? [];
   const ids = modelNodeIds(story.id);
   try {
-    record["load"] = await loadStory(page, log, story.id, alreadyLoading, ids);
+    record["load"] = await loadStory(page, log, story.id, alreadyLoading);
     const timeline = storyTimeline(story.id);
     const moment = stillMoment(timeline);
     record["moment"] = { ...moment, camera: timeline.cameraAt(moment.t) };
@@ -642,16 +638,14 @@ async function storyStill(page: Page, log: PageLog, story: StoryEntry, alreadyLo
     if (!(luma.nonBlackRatio > 0.5 && luma.coarseColours > 12)) problems.push(`the frame is not drawn (${JSON.stringify(luma)})`);
     const nodes = await liveNodes(page, ids);
     record["nodes"] = nodes.nodes;
-    const standIns = nodes.nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
-    if (standIns.length > 0) problems.push(`drawn as stand-ins instead of their admitted GLBs: ${standIns.join(", ")}`);
+    const missingProcedural = nodes.nodes.filter((node) => !node.tags.includes("procedural")).map((node) => node.id);
+    if (missingProcedural.length > 0) problems.push(`missing procedural tag on: ${missingProcedural.join(", ")}`);
     const diagnostics = await qaDiagnostics(page);
     record["stage"] = {
       drawCalls: diagnostics?.drawCalls ?? null,
       nodes: diagnostics?.nodes ?? null,
       world: diagnostics?.["world"] ?? null,
-      modelNodes: diagnostics?.["modelNodes"] ?? null,
-      standInNodes: diagnostics?.["standInNodes"] ?? null,
-      modelStatus: diagnostics?.["modelStatus"] ?? null
+      proceduralNodes: diagnostics?.["proceduralNodes"] ?? null
     };
     const warningsAdded = addedEntries(warningsBefore, diagnostics?.warnings ?? []).map((warning) => redact(warning));
     record["stageWarnings"] = warningsAdded;
@@ -688,7 +682,7 @@ export function defineStillsSuite(options: { readonly title: string; readonly st
       if (!first) throw new Error("no stories");
       await page.setViewportSize(STILL);
       const log = attachPageLog(page, server.origin);
-      await openWonderWorld(page, server, log, { autostart: 1, story: first.id, manual: 1, mode: "watch-sing", models: 1, modelWaitMs: MODEL_WAIT_MS });
+      await openWonderWorld(page, server, log, { autostart: 1, story: first.id, manual: 1, mode: "watch-sing" });
       const context = await runContext(page, `stills-${range}`);
       const summary: Record<string, unknown>[] = [];
       for (const story of options.stories) {

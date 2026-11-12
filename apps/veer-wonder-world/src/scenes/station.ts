@@ -1,29 +1,44 @@
 import {
+  geometry,
   instances,
+  lights,
   primitives,
   type AuraColor,
   type AuraNodeBuilder,
-  type AuraSceneNode,
-  type AuraTransformSpec
+  type AuraSceneNode
 } from "@aura3d/engine";
-import { catmullRomCurve, path2d, sampleCurve, type ProceduralVec3 } from "@aura3d/engine/procedural";
+import { path2d, type ComposePart, type ProceduralVec2, type ProceduralVec3 } from "@aura3d/engine/procedural";
 import {
   brushedMetalMat,
   buildBackdropHillNode,
   buildIslandPlinthNode,
+  cachedDioramaSpec,
   ceramicMat,
   clayMat,
   clearcoatPaintMat,
+  clockDialMat,
+  composeGeometry,
+  coneSpec,
+  cylinderSpec,
   dioramaGroup,
   extrudeContour,
+  fabricMat,
   feltMat,
   gentleBreezeWind,
   instanceClayMat,
-  instanceWoodMat,
   plushCloudMat,
-  ribbonAlongSpline,
-  tubeAlongSpline,
-  woodMat
+  railTrackSleepers,
+  roundedBoxSpec,
+  sculptCurvedLimb,
+  sculptFbmOrganicPuffs,
+  sculptOrganicLathe,
+  splitInstancePlacements,
+  srgbHexToLinearRgba,
+  stoneMat,
+  torusSpec,
+  warmPracticalGlowMat,
+  woodMat,
+  type AuraInstanceInput
 } from "./diorama-terrain.js";
 import type { Vec3 } from "./motion.js";
 import type {
@@ -46,40 +61,247 @@ const PLATFORM_PROFILE = path2d()
   .close()
   .points({ curveSegments: 3 });
 
-function ovalTrackPoints(railOffset: number, y: number): readonly ProceduralVec3[] {
-  // Closed scenic railway loop: straight across the stage along z = TRACK_Z,
-  // entering the grassy brick tunnel on the left (-5.8) and looping behind the mountain!
-  const raw: readonly [number, number][] = [
-    [-5.8, TRACK_Z],
-    [-2.6, TRACK_Z],
-    [0, TRACK_Z],
-    [2.8, TRACK_Z],
-    [5.8, TRACK_Z],
-    [7.8, -2.65],
-    [8.2, -5.25],
-    [5.8, -7.75],
-    [0, -8.45],
-    [-5.8, -7.75],
-    [-8.2, -5.25],
-    [-7.8, -2.65]
-  ];
-  const centerX = 0;
-  const centerZ = -5.02;
-  return raw.map(([x, z]) => {
-    if (Math.abs(railOffset) < 1e-6) {
-      return [x, y, z];
+const OVAL_TRACK_CENTERLINE: readonly ProceduralVec3[] = [
+  [-5.8, 0.002, TRACK_Z],
+  [-2.6, 0.002, TRACK_Z],
+  [0, 0.002, TRACK_Z],
+  [2.8, 0.002, TRACK_Z],
+  [5.8, 0.002, TRACK_Z],
+  [7.8, 0.002, -2.65],
+  [8.2, 0.002, -5.25],
+  [5.8, 0.002, -7.75],
+  [0, 0.002, -8.45],
+  [-5.8, 0.002, -7.75],
+  [-8.2, 0.002, -5.25],
+  [-7.8, 0.002, -2.65]
+];
+
+function buildPlatformLuggageTrolley(): AuraNodeBuilder<AuraSceneNode> {
+  const woodDeckSpec = cachedDioramaSpec("station-luggage-trolley-deck", () => {
+    const parts: ComposePart[] = [];
+    for (let i = -2; i <= 2; i += 1) {
+      parts.push({
+        geometry: roundedBoxSpec(0.76, 0.032, 0.072, 0.008),
+        position: [0, 0.16, i * 0.082]
+      });
     }
-    if (Math.abs(z - TRACK_Z) < 1e-4 && Math.abs(x) <= 5.85) {
-      return [x, y, z + railOffset];
-    }
-    const dx = x - centerX;
-    const dz = z - centerZ;
-    const len = Math.hypot(dx, dz) || 1;
-    return [x + (dx / len) * railOffset, y, z + (dz / len) * railOffset];
+    parts.push(
+      { geometry: roundedBoxSpec(0.8, 0.042, 0.038, 0.008), position: [0, 0.16, 0.22] },
+      { geometry: roundedBoxSpec(0.8, 0.042, 0.038, 0.008), position: [0, 0.16, -0.22] }
+    );
+    return composeGeometry(parts);
   });
+
+  const brassHardwareSpec = cachedDioramaSpec("station-luggage-trolley-hardware", () => {
+    const parts: ComposePart[] = [];
+    const wheel = torusSpec(0.078, 0.016, 20, 10);
+    const hub = cylinderSpec(0.024, 0.024, 0.04, 14);
+    const spoke = cylinderSpec(0.007, 0.007, 0.145, 8);
+    const wheelLocs: readonly [number, number][] = [
+      [-0.27, 0.2],
+      [0.27, 0.2],
+      [-0.27, -0.2],
+      [0.27, -0.2]
+    ];
+    for (const [wx, wz] of wheelLocs) {
+      parts.push(
+        { geometry: wheel, position: [wx, 0.088, wz] },
+        { geometry: hub, position: [wx, 0.088, wz], rotation: [Math.PI * 0.5, 0, 0] },
+        { geometry: spoke, position: [wx, 0.088, wz] },
+        { geometry: spoke, position: [wx, 0.088, wz], rotation: [0, 0, Math.PI * 0.5] }
+      );
+    }
+    // Curved tubular push handle on right end + suitcase clasps/handles
+    parts.push(
+      {
+        geometry: sculptCurvedLimb(
+          [
+            [0.37, 0.17, -0.18],
+            [0.42, 0.56, -0.18],
+            [0.42, 0.58, 0],
+            [0.42, 0.56, 0.18],
+            [0.37, 0.17, 0.18]
+          ],
+          0.016,
+          { steps: 22, radialSegments: 10 }
+        )
+      },
+      // Lower suitcase arched handle & clasps
+      {
+        geometry: sculptCurvedLimb(
+          [
+            [-0.08, 0.36, 0.17],
+            [0, 0.4, 0.19],
+            [0.08, 0.36, 0.17]
+          ],
+          0.011,
+          { steps: 10, radialSegments: 8 }
+        )
+      },
+      { geometry: roundedBoxSpec(0.032, 0.045, 0.018, 0.004), position: [-0.13, 0.31, 0.175] },
+      { geometry: roundedBoxSpec(0.032, 0.045, 0.018, 0.004), position: [0.13, 0.31, 0.175] },
+      // Upper suitcase arched handle
+      {
+        geometry: sculptCurvedLimb(
+          [
+            [-0.08, 0.51, 0.13],
+            [-0.02, 0.55, 0.14],
+            [0.04, 0.51, 0.13]
+          ],
+          0.01,
+          { steps: 10, radialSegments: 8 }
+        )
+      }
+    );
+    return composeGeometry(parts);
+  });
+
+  const lowerSuitcaseSpec = cachedDioramaSpec("station-stitched-suitcase-lower", () =>
+    composeGeometry([
+      { geometry: roundedBoxSpec(0.48, 0.19, 0.33, 0.028), position: [-0.03, 0.275, 0] },
+      { geometry: roundedBoxSpec(0.042, 0.202, 0.344, 0.01), position: [-0.16, 0.275, 0] },
+      { geometry: roundedBoxSpec(0.042, 0.202, 0.344, 0.01), position: [0.1, 0.275, 0] }
+    ])
+  );
+
+  const upperSuitcaseSpec = cachedDioramaSpec("station-stitched-suitcase-upper", () =>
+    composeGeometry([
+      {
+        geometry: roundedBoxSpec(0.36, 0.15, 0.25, 0.024),
+        position: [-0.02, 0.445, -0.01],
+        rotation: [0, 0.18, 0]
+      },
+      {
+        geometry: roundedBoxSpec(0.036, 0.162, 0.262, 0.008),
+        position: [-0.12, 0.445, -0.028],
+        rotation: [0, 0.18, 0]
+      },
+      {
+        geometry: roundedBoxSpec(0.036, 0.162, 0.262, 0.008),
+        position: [0.08, 0.445, 0.008],
+        rotation: [0, 0.18, 0]
+      }
+    ])
+  );
+
+  return dioramaGroup(
+    "station platform luggage trolley",
+    [
+      geometry.custom(woodDeckSpec, {
+        name: "station trolley slatted oak deck",
+        material: woodMat("#B88452"),
+        castShadow: true,
+        receiveShadow: true
+      }),
+      geometry.custom(brassHardwareSpec, {
+        name: "station trolley brass wheels and frame",
+        material: brushedMetalMat("#D9B25F"),
+        castShadow: true,
+        receiveShadow: true
+      }),
+      geometry.custom(lowerSuitcaseSpec, {
+        name: "station stitched cognac suitcase",
+        material: fabricMat("#B96B43", undefined, "quiltedStitch"),
+        castShadow: true,
+        receiveShadow: true
+      }),
+      geometry.custom(upperSuitcaseSpec, {
+        name: "station stitched teal suitcase",
+        material: fabricMat("#5E98A8", undefined, "quiltedStitch"),
+        castShadow: true,
+        receiveShadow: true
+      })
+    ],
+    { position: [2.84, 0.22, -2.86], rotation: [0, -0.14, 0] }
+  );
 }
 
-function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
+function buildWroughtIronLamppost(): readonly AuraNodeBuilder<AuraSceneNode>[] {
+  const postPos: Vec3 = [0.96, 0.22, -2.92];
+  const lanternWorld: Vec3 = [postPos[0] + 0.26, postPos[1] + 2.02, postPos[2] + 0.14];
+
+  const ironworkSpec = cachedDioramaSpec("station-wrought-iron-lamppost", () => {
+    const postProfile: ProceduralVec2[] = [
+      [0, 0],
+      [0.135, 0],
+      [0.13, 0.12],
+      [0.095, 0.22],
+      [0.068, 0.34],
+      [0.056, 1.35],
+      [0.072, 1.42],
+      [0.048, 1.98],
+      [0.068, 2.08],
+      [0.032, 2.18],
+      [0, 2.22]
+    ];
+    const column = sculptOrganicLathe(postProfile, { segments: 22 });
+    const bracket = sculptCurvedLimb(
+      [
+        [0, 1.88, 0],
+        [0.14, 2.16, 0.08],
+        [0.26, 2.18, 0.14],
+        [0.26, 2.11, 0.14]
+      ],
+      0.018,
+      { steps: 16, radialSegments: 10 }
+    );
+    const scrollBrace = sculptCurvedLimb(
+      [
+        [0.03, 1.68, 0.02],
+        [0.15, 1.84, 0.08],
+        [0.2, 2.06, 0.11]
+      ],
+      0.012,
+      { steps: 12, radialSegments: 8 }
+    );
+    const lanternCap = coneSpec(0.155, 0.14, 8, 0.02);
+    const lanternBase = cylinderSpec(0.085, 0.055, 0.06, 8);
+    return composeGeometry([
+      { geometry: column },
+      { geometry: bracket },
+      { geometry: scrollBrace },
+      { geometry: lanternCap, position: [0.26, 2.13, 0.14] },
+      { geometry: lanternBase, position: [0.26, 1.89, 0.14] }
+    ]);
+  });
+
+  const lanternGlassSpec = cachedDioramaSpec("station-lantern-glass", () =>
+    cylinderSpec(0.105, 0.082, 0.19, 8)
+  );
+
+  return [
+    dioramaGroup(
+      "station wrought iron lamppost",
+      [
+        geometry.custom(ironworkSpec, {
+          name: "station lamppost fluted ironwork",
+          material: brushedMetalMat("#3B4D49"),
+          castShadow: true,
+          receiveShadow: true
+        }),
+        geometry
+          .custom(lanternGlassSpec, {
+            name: "station lamppost warm lantern",
+            material: warmPracticalGlowMat("#FFF5DC", "#FFD48A", 1.35),
+            castShadow: false,
+            receiveShadow: false
+          })
+          .position(0.26, 2.01, 0.14)
+      ],
+      { position: postPos }
+    ),
+    lights.point({
+      name: "station platform lantern fill",
+      position: [lanternWorld[0], lanternWorld[1] - 0.06, lanternWorld[2] + 0.05],
+      color: "#FFE2A8",
+      intensity: 1.45,
+      distance: 6.2,
+      decay: 2
+    })
+  ];
+}
+
+export function stationScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
   const animated: WorldAnimatedNodeSpec[] = [];
 
@@ -90,7 +312,7 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
       seed: 404,
       material: feltMat("#8FBB7D"),
       span: [34, 30],
-      segments: [56, 52],
+      segments: [38, 36],
       flatStageRadius: 3.75,
       islandRadius: 14.6,
       outerSwellAmplitude: 0.36,
@@ -136,77 +358,28 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   );
 
-  // 3. Continuous closed-oval limestone gravel ballast trackbed + cedar sleepers + brushed-steel rails
-  const centerLoop = ovalTrackPoints(0, 0.002);
+  // 3. Continuous closed-oval `railTrackSleepers` (stone ballast + `instances.custom` oak sleepers + swept steel I-rails)
   nodes.push(
-    ribbonAlongSpline({
-      name: "station limestone gravel ballast bed",
-      points: centerLoop,
-      halfWidthBottom: 0.62,
-      halfWidthTop: 0.48,
-      height: 0.028,
-      baseY: -0.02,
-      segments: 96,
+    railTrackSleepers({
+      name: "station scenic track loop",
+      points: OVAL_TRACK_CENTERLINE,
       closed: true,
-      material: clayMat("#CFC8BC", false),
-      castShadow: false,
-      receiveShadow: true
+      sleeperCount: 58,
+      gauge: 0.54,
+      ballastColor: "#CFC8BC",
+      sleeperColor: "#9A6B44",
+      railColor: "#CFD7E0"
     })
   );
 
-  const loopCurve = catmullRomCurve(centerLoop, { closed: true });
-  const sampled = sampleCurve(loopCurve, 56);
-  const sleeperTransforms: AuraTransformSpec[] = [];
-  for (let i = 0; i < sampled.points.length - 1; i += 1) {
-    const pt = sampled.points[i]!;
-    const tg = sampled.tangents[i]!;
-    const yaw = Math.atan2(tg[0], tg[2]);
-    sleeperTransforms.push({
-      position: [pt[0], 0.026, pt[2]],
-      rotation: [0, yaw, 0]
-    });
-  }
-  nodes.push(
-    instances.roundedBox({
-      name: "station cedar track sleepers",
-      size: [0.84, 0.028, 0.13],
-      material: instanceWoodMat("#A9784E"),
-      transforms: sleeperTransforms,
-      castShadow: false,
-      receiveShadow: true
-    }),
-    tubeAlongSpline({
-      name: "station outer brushed steel rail",
-      points: ovalTrackPoints(0.28, 0.052),
-      radius: 0.024,
-      segments: 104,
-      radialSegments: 10,
-      closed: true,
-      material: brushedMetalMat("#CFD7E0"),
-      castShadow: false,
-      receiveShadow: true
-    }),
-    tubeAlongSpline({
-      name: "station inner brushed steel rail",
-      points: ovalTrackPoints(-0.28, 0.052),
-      radius: 0.024,
-      segments: 104,
-      radialSegments: 10,
-      closed: true,
-      material: brushedMetalMat("#CFD7E0"),
-      castShadow: false,
-      receiveShadow: true
-    })
-  );
-
-  // 4. Bevelled limestone station platform on the right + yellow tactile safety stripe + canopy bench
+  // 4. Bevelled limestone station platform + safety stripe + canopy bench + luggage trolley + lamppost + clock
   nodes.push(
     extrudeContour({
       name: "station bevelled stone platform",
       profile: PLATFORM_PROFILE,
       from: [0.75, 0, -2.85],
       to: [5.75, 0, -2.85],
-      material: clayMat("#EAE0CE"),
+      material: stoneMat("#EAE0CE"),
       castShadow: true,
       receiveShadow: true
     }),
@@ -263,8 +436,10 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
           receiveShadow: true
         })
       ],
-      { position: [1.62, 0.22, -2.96] }
+      { position: [1.68, 0.22, -2.96] }
     ),
+    buildPlatformLuggageTrolley(),
+    ...buildWroughtIronLamppost(),
     dioramaGroup(
       "station clock post",
       [
@@ -290,7 +465,7 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
           size: [0.42, 0.12, 0.42],
           position: [0, 1.98, 0.01],
           rotation: [Math.PI * 0.5, 0, 0],
-          material: ceramicMat("#FFFDF5", false),
+          material: clockDialMat("#FFFDF5"),
           castShadow: false,
           receiveShadow: false
         }),
@@ -315,7 +490,7 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
     )
   );
 
-  // Friendly railway semaphore post + gently nodding mint/coral signal paddle
+  // 5. Friendly railway semaphore post + gently nodding mint/coral signal paddle (`station-semaphore-arm`)
   const semPostX = -2.92;
   const semPostZ = -2.62;
   const armPivot: Vec3 = [semPostX, 1.72, semPostZ];
@@ -362,35 +537,39 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   });
 
-  // 5. Single-draw instanced hillside conifer pines (with GPU wind) & drifting clouds
+  // 6. Single-draw instanced sculpted hillside conifer pines (with GPU wind) & drifting cumulus clouds
+  const pineTreeSpec = cachedDioramaSpec("station-sculpted-conifer", () =>
+    composeGeometry([
+      { geometry: cylinderSpec(0.08, 0.11, 0.42, 12), position: [0, 0.21, 0], color: srgbHexToLinearRgba("#7E5838") },
+      { geometry: coneSpec(0.5, 0.92, 16, 0.04), position: [0, 0.72, 0], color: srgbHexToLinearRgba("#FFFFFF") },
+      { geometry: coneSpec(0.39, 0.82, 16, 0.035), position: [0, 1.2, 0], color: srgbHexToLinearRgba("#FFFFFF") },
+      { geometry: coneSpec(0.28, 0.68, 16, 0.03), position: [0, 1.62, 0], color: srgbHexToLinearRgba("#FFFFFF") }
+    ])
+  );
+
   const pinePositions: readonly [number, number, number, number][] = [
-    [-6.6, 0.65, -5.8, 1.12],
-    [-4.8, 0.45, -7.8, 1.3],
-    [-2.4, 0.5, -9.2, 1.25],
-    [2.6, 0.5, -9.1, 1.28],
-    [4.9, 0.42, -7.4, 1.18],
-    [6.8, 0.35, -6.2, 1.14],
-    [-5.8, 0.12, -3.7, 0.96],
-    [6.3, 0.25, -2.9, 0.94]
+    [-6.6, 0.45, -5.8, 1.08],
+    [-4.8, 0.35, -7.8, 1.24],
+    [-2.4, 0.38, -9.2, 1.2],
+    [2.6, 0.38, -9.1, 1.22],
+    [4.9, 0.32, -7.4, 1.14],
+    [6.8, 0.25, -6.2, 1.1],
+    [-5.8, 0.06, -3.7, 0.92],
+    [6.3, 0.18, -2.9, 0.9]
   ];
-  const pineConeTransforms: AuraTransformSpec[] = [];
-  const pineConeColors: AuraColor[] = [];
   const pineShades: readonly AuraColor[] = ["#568F63", "#649E6F", "#4D835A"];
-  pinePositions.forEach(([px, py, pz, s], idx) => {
-    pineConeTransforms.push(
-      { position: [px, py + 0.55 * s, pz], scale: [1.05 * s, 0.95 * s, 1.05 * s] },
-      { position: [px, py + 1.05 * s, pz], scale: [0.8 * s, 0.85 * s, 0.8 * s] }
-    );
-    pineConeColors.push(pineShades[idx % pineShades.length]!, pineShades[(idx + 1) % pineShades.length]!);
-  });
-  const pineWind = gentleBreezeWind(ctx.reducedMotion, 0.18, 1.2, 30);
+  const pineInstances: AuraInstanceInput[] = pinePositions.map(([px, py, pz, s], idx) => ({
+    position: [px, py, pz],
+    rotation: [0, idx * 0.9, 0],
+    scale: s,
+    color: pineShades[idx % pineShades.length]!
+  }));
+  const pineWind = gentleBreezeWind(ctx.reducedMotion, 0.18, 1.8, 30);
   nodes.push(
-    instances.cone({
+    instances.custom(pineTreeSpec, {
       name: "station hillside pine crowns",
-      size: [0.92, 1.05, 0.92],
       material: instanceClayMat("#FFFFFF"),
-      transforms: pineConeTransforms,
-      colors: pineConeColors,
+      ...splitInstancePlacements(pineInstances),
       ...(pineWind ? { wind: pineWind } : {}),
       castShadow: true,
       receiveShadow: true
@@ -398,21 +577,33 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
   );
 
   const cloudPuffMat = plushCloudMat("#FFFDF9");
+  const stationCloudSpec = cachedDioramaSpec("station-cumulus-puff", () => {
+    const built = sculptFbmOrganicPuffs(
+      [
+        { position: [0, 0, 0], scale: [1.5, 0.84, 0.98] },
+        { position: [-0.68, -0.06, 0.04], scale: [1.05, 0.68, 0.84] },
+        { position: [0.7, -0.05, -0.04], scale: [1.1, 0.72, 0.86] }
+      ],
+      { seed: 431, amplitude: 0.025, frequency: 2.4 }
+    );
+    return built.geometry;
+  });
+
   const stationClouds: readonly { readonly id: string; readonly at: Vec3; readonly amp: number; readonly speed: number }[] = [
     { id: "station-cloud-drift-1", at: [-3.8, 4.7, -9.2], amp: 0.44, speed: 0.15 },
     { id: "station-cloud-drift-2", at: [3.4, 5.0, -9.8], amp: 0.48, speed: 0.13 }
   ];
   stationClouds.forEach((c, idx) => {
     nodes.push(
-      dioramaGroup(
-        c.id,
-        [
-          primitives.sphere({ name: `${c.id}-a`, size: [1.5, 0.84, 0.98], material: cloudPuffMat, castShadow: false, receiveShadow: false }),
-          primitives.sphere({ name: `${c.id}-b`, size: [1.05, 0.68, 0.84], position: [-0.68, -0.06, 0.04], material: cloudPuffMat, castShadow: false, receiveShadow: false }),
-          primitives.sphere({ name: `${c.id}-c`, size: [1.1, 0.72, 0.86], position: [0.7, -0.05, -0.04], material: cloudPuffMat, castShadow: false, receiveShadow: false })
-        ],
-        { position: c.at }
-      ).runtime({ id: c.id, tags: ["diorama", "cloud"], mutable: true })
+      geometry
+        .custom(stationCloudSpec, {
+          name: c.id,
+          material: cloudPuffMat,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(c.at[0], c.at[1], c.at[2])
+        .runtime({ id: c.id, tags: ["diorama", "cloud"], mutable: true })
     );
     animated.push({
       id: c.id,
@@ -431,17 +622,18 @@ function buildStationDiorama(ctx: WorldDioramaContext): WorldDioramaSlice {
 }
 
 /**
- * GoGo Station — meadow-sage island, raised limestone gravel ballast bed,
- * continuous closed-oval brushed-steel rails & cedar sleepers looping into the
- * grassy brick `tunnel` on the left, bevelled stone platform on the right with
- * yellow tactile safety stripe, canopy bench, clock, semaphore, and hillside pines.
+ * GoGo Station — meadow-sage island, continuous `railTrackSleepers` loop with
+ * batched oak sleepers & swept steel I-rails entering the brick `tunnel`,
+ * bevelled stone platform with vintage wooden luggage trolley & 2 stitched
+ * suitcases, wrought-iron lamppost with warm practical lantern, dial clock,
+ * and nodding semaphore.
  */
 export const station: WorldDefinition = {
   id: "station",
   workingTitle: "GoGo Station",
   ground: { color: "#8FBB7D", size: 70 },
   musicBed: "stationBed",
-  buildDiorama: buildStationDiorama,
+  buildDiorama: stationScene,
   dressing: [
     { kind: "model", key: "station", at: [3.45, 0.2, -4.05], heightM: 2.55 },
     { kind: "model", key: "tunnel", at: [-5.8, 0, TRACK_Z], heightM: 1.85, yaw: Math.PI / 2 },

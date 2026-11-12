@@ -45,6 +45,12 @@ else if (!/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(readFi
 const files = existsSync(dist) ? filesUnder(dist) : [];
 const maps = files.filter((file) => file.endsWith(".map"));
 if (maps.length > 0) problems.push(`${maps.length} source map(s): ${maps.map((file) => relative(dist, file)).join(", ")}`);
+const glbs = files.filter((file) => file.toLowerCase().endsWith(".glb"));
+if (glbs.length > 0) problems.push(`${glbs.length} forbidden .glb file(s): ${glbs.map((file) => relative(dist, file)).join(", ")}`);
+const decoderFiles = files.filter((file) => relative(dist, file).split(/[\\/]/)[0] === "aura-decoders");
+if (decoderFiles.length > 0 || existsSync(join(dist, "aura-decoders"))) {
+  problems.push(`forbidden aura-decoders/ directory in dist (${decoderFiles.length} file(s))`);
+}
 
 const textFiles = files.filter((file) => TEXT_FILE.test(file));
 // 07 O8: the owner's welcome. src/personal.ts puts the name into the bundle as one string literal ("<name>"), and

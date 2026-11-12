@@ -1,11 +1,7 @@
-// Lulu (PRD 04 D02): rounded mint baby dinosaur, the rhythm leader. Lulu moves
-// procedurally (dance sway, stomp hop, clap pulses, freeze): the Meshy rig was
-// tried on Lulu and rejected (`aura3d assets validate --skin` failed in every
-// clip; MASTER-PROMPT section 3.6, MODEL_INFO.lulu has rigged: false and no
-// clips). The clip names below (idle, walk, run, dance, hop, cheer, wave, talk,
-// sway, jazzHands, happyJump, funnyDance) are candidates for a later rig: a
-// clip plays only when MODEL_INFO lists it, so today a clap is a soft
-// three-beat dip, a stomp marches in place and a freeze holds still.
+// Lulu (PRD 04 D02): rounded mint baby dinosaur, the rhythm leader. Lulu is a
+// procedural matte-clay and felt joint rig (`MODEL_INFO.lulu.procedural === true`)
+// whose head, arms, feet, tail, eyelids, jaw, and cheeks dance, clap, stomp,
+// and freeze deterministically via `sampleCharacterSubParts`.
 
 import type { CharacterDefinition } from "./character-registry.js";
 import { gestureMotion, proc } from "../scenes/motion.js";

@@ -1,14 +1,10 @@
-// Wonder World character registry (PRD 04 D07, PRD 02 section 2).
+// Wonder World character registry (PRD 04 D07, PRD 02 section 2, PRD 5.5.1 §3).
 //
-// Each character id maps to its typed model key, a display-name string key, a
-// colour, a height and a voice, plus the permitted animation list. A gesture
-// plays a clip only when MODEL_INFO lists that exact clip name for the
-// admitted GLB. In this build no model is rigged (the Meshy humanoid rig was
-// tried on Lulu and rejected, MASTER-PROMPT section 3.6), so every character
-// moves procedurally (hop, squash-stretch, wag, bob, roll, float); Momo's and
-// Lulu's clip names stay as candidates for a later rig that passes
-// `aura3d assets validate --skin`. "Talking" is a gentle squash/bob pulse
-// while the line plays; it is never lip sync.
+// Each character id maps to its typed procedural model key, a display-name
+// string key, a colour, a height and a voice, plus its articulated joint list
+// and expressive procedural gestures (hop, squash-stretch, wag, bob, roll,
+// float, head gaze, eyelid blink, and 20 Hz speech envelope). "Talking" is a
+// gentle jaw/body pulse while a spoken line plays; it is never phoneme lip sync.
 
 import { MODEL_INFO, type ModelInfo, type ModelKey } from "../aura-assets.js";
 import type { CharacterId, Gesture, MoveStyle, SpeakerId } from "../types.js";
@@ -26,22 +22,22 @@ import { MOMO } from "./momo.js";
 import { PEEKO } from "./peeko.js";
 import { SHERU } from "./sheru.js";
 
-/** What a character file declares. Clip names are candidates; only clips MODEL_INFO lists are ever played. */
+/** What a character file declares for procedural puppetry and articulated sub-parts. */
 export interface CharacterDefinition {
   readonly id: CharacterId;
   readonly modelKey: ModelKey;
   /** UI string key for the character's name, defined in the locale's UI strings (for example `ui.speaker.momo`). */
   readonly displayNameKey: string;
-  /** Main colour (stand-in body, menu accents). */
+  /** Main colour (menu accents, tactile palette). */
   readonly color: string;
   readonly voice: SpeakerId;
   /** False for Sheru, who only barks (sound effect "woof"). */
   readonly speaks: boolean;
-  /** Named articulated sub-parts this character drives via `handle.part(name)` or `${id}__${part}`. */
+  /** Named articulated sub-parts this character drives via `${id}__${part}`. */
   readonly articulatedParts?: readonly SubPartId[];
-  /** Preferred clip names per gesture, best first. */
+  /** Optional clip candidate metadata (procedural rigs drive all gestures natively). */
   readonly clipCandidates: Partial<Readonly<Record<Gesture, readonly string[]>>>;
-  /** Preferred clip names while travelling in a style, best first. */
+  /** Optional locomotion clip candidate metadata. */
   readonly locomotionClips: Partial<Readonly<Record<MoveStyle, readonly string[]>>>;
   /** Procedural motion per gesture; gestures not listed use SHARED_GESTURES. */
   readonly gestures: Partial<Readonly<Record<Gesture, GestureMotionSpec>>>;
@@ -59,22 +55,21 @@ export interface CharacterProfile {
   readonly modelKey: ModelKey;
   readonly displayNameKey: string;
   readonly color: string;
-  /** Height in metres the model is fitted to (MODEL_INFO). */
+  /** Height in metres the procedural rig is scaled to (MODEL_INFO). */
   readonly heightM: number;
   readonly voice: SpeakerId;
   readonly speaks: boolean;
-  /** The admitted GLB carries a skeleton and at least one listed clip. */
+  /** False on procedural joint rigs (all motion is deterministic procedural kinematics). */
   readonly rigged: boolean;
-  /** The permitted animation list: exactly the clip names MODEL_INFO lists for the admitted GLB. */
+  /** Empty on procedural rigs (no external skeletal GLB clips). */
   readonly clips: readonly string[];
   /** Named articulated sub-parts declared for this character. */
   readonly articulatedParts: readonly SubPartId[];
-  /** The clip that plays a gesture, or null when MODEL_INFO lists none of its candidates. */
   gestureClip(gesture: Gesture): string | null;
   locomotionClip(style: MoveStyle): string | null;
   idleClip(): string | null;
   talkClip(): string | null;
-  /** Procedural motion for a gesture (used whenever no clip plays it). */
+  /** Procedural motion for a gesture. */
   procedural(gesture: Gesture): GestureMotionSpec;
   idleMotion(): GestureMotionSpec | null;
   /** Articulated sub-part pose for gestures, locomotion, carry, eyelid blink and 20 Hz speech envelope. */
@@ -132,8 +127,7 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
   blink: gestureMotion([], { durationSec: 0.35 }),
   bow: gestureMotion([proc("bow", 1.4, 0.38)]),
   // Surprised: a quick small stretch up and a little hop, then back (02 section 2 expression sheet; never a
-  // startle: 02 section 1). Stretch and hop together stay under 15% taller. Characters that cannot hop or
-  // stretch like this override it (07 B20).
+  // startle: 02 section 1). Stretch and hop together stay under 15% taller.
   surprise: gestureMotion([proc("stretch", 0.8, 0.1), proc("hop", 0.8, 0.06)]),
   // Waiting: lean in a little toward the child and hold still, attentive (01 section 3.1: wait, do not ask again).
   wait: gestureMotion([proc("lean", 1.0, 0.1)], { hold: true })
@@ -142,27 +136,8 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
 /** Gentle breathing for characters at rest. */
 export const BREATHING_IDLE: GestureMotionSpec = gestureMotion([proc("pulse", 3.0, 0.012)]);
 
-/** Thrown when code asks a character for a clip its admitted GLB does not list. */
-export class MissingClipError extends Error {
-  readonly character: CharacterId;
-  readonly clip: string;
-
-  constructor(character: CharacterId, clip: string, available: readonly string[]) {
-    super(`Wonder World: "${character}" has no clip "${clip}" (listed clips: ${available.length > 0 ? available.join(", ") : "none"}). Use profile.gestureClip(g) or the procedural fallback.`);
-    this.name = "MissingClipError";
-    this.character = character;
-    this.clip = clip;
-  }
-}
-
-/** Builds a profile from a definition and the generated model info. Pure: pass any ModelInfo in tests. */
+/** Builds a profile from a definition and the procedural model info. Pure: pass any ModelInfo in tests. */
 export function createCharacterProfile(def: CharacterDefinition, info: ModelInfo): CharacterProfile {
-  const clips: readonly string[] = info.admitted ? [...info.clips] : [];
-  const first = (candidates: readonly string[] | undefined): string | null => {
-    if (!candidates) return null;
-    for (const name of candidates) if (clips.includes(name)) return name;
-    return null;
-  };
   return {
     id: def.id,
     modelKey: def.modelKey,
@@ -171,13 +146,13 @@ export function createCharacterProfile(def: CharacterDefinition, info: ModelInfo
     heightM: info.heightM,
     voice: def.voice,
     speaks: def.speaks,
-    rigged: info.admitted && clips.length > 0,
-    clips,
+    rigged: false,
+    clips: [],
     articulatedParts: def.articulatedParts ?? ["body", "head", "eyelidL", "eyelidR"],
-    gestureClip: (gesture) => first(def.clipCandidates[gesture]),
-    locomotionClip: (style) => first(def.locomotionClips[style]),
-    idleClip: () => first(def.clipCandidates.idle ?? ["idle"]),
-    talkClip: () => first(def.clipCandidates.talk ?? ["talk"]),
+    gestureClip: () => null,
+    locomotionClip: () => null,
+    idleClip: () => null,
+    talkClip: () => null,
     procedural: (gesture) => def.gestures[gesture] ?? SHARED_GESTURES[gesture],
     idleMotion: () => def.idleMotion,
     subParts: (input) => sampleCharacterSubParts({ ...input, id: def.id }),
@@ -218,29 +193,4 @@ export function characterProfile(id: CharacterId): CharacterProfile {
 /** The on-screen character who voices a speaker, or null for the narrator and the robot. */
 export function profileForSpeaker(speaker: SpeakerId): CharacterProfile | null {
   return isCharacterId(speaker) ? CHARACTERS[speaker] : null;
-}
-
-/** The permitted animation list for a character. */
-export function permittedClips(profile: CharacterProfile): readonly string[] {
-  return profile.clips;
-}
-
-/** Throws MissingClipError unless the clip is in the permitted list. */
-export function assertClip(profile: CharacterProfile, clip: string): string {
-  if (!profile.clips.includes(clip)) throw new MissingClipError(profile.id, clip, profile.clips);
-  return clip;
-}
-
-/** For each gesture: the clip that plays it, or null when procedural motion stands in. */
-export function clipCoverage(profile: CharacterProfile): ReadonlyArray<{ readonly gesture: Gesture; readonly clip: string | null }> {
-  return GESTURES.map((gesture) => ({ gesture, clip: profile.gestureClip(gesture) }));
-}
-
-/** Candidate clips a definition names that the admitted GLB does not list (for diagnostics and tests). */
-export function missingClipCandidates(def: CharacterDefinition, info: ModelInfo): readonly string[] {
-  const listed = new Set(info.admitted ? info.clips : []);
-  const wanted = new Set<string>();
-  for (const names of Object.values(def.clipCandidates)) for (const name of names ?? []) wanted.add(name);
-  for (const names of Object.values(def.locomotionClips)) for (const name of names ?? []) wanted.add(name);
-  return [...wanted].filter((name) => !listed.has(name)).sort();
 }

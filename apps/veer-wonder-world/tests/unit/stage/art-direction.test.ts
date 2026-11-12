@@ -14,8 +14,9 @@ import {
   type ArtDirectionSnapshot
 } from "@aura3d/engine/game/art";
 import direction from "../../../art/direction.js";
-import { MODEL_INFO, MODEL_KEYS } from "../../../src/aura-assets.js";
+import { MODEL_KEYS } from "../../../src/aura-assets.js";
 import { STORIES } from "../../../src/content/catalog.js";
+import { PROCEDURAL_RIGS } from "../../../src/scenes/procedural-rigs/index.js";
 import { buildStoryScene } from "../../../src/scenes/stage.js";
 import { WORLD_IDS } from "../../../src/scenes/worlds.js";
 
@@ -40,7 +41,7 @@ function buildManifest() {
   return assetManifestLike({
     assets: MODEL_KEYS.map((id) => ({
       id,
-      triangles: 4500,
+      triangles: PROCEDURAL_RIGS[id].triangleCount,
       textures: 2,
       unlit: false
     }))
@@ -64,9 +65,7 @@ describe("Wonder World 5.5.1 art direction (C-35)", () => {
     for (const worldId of WORLD_IDS) {
       const story = STORIES.find((entry) => entry.world === worldId);
       expect(story, `representative story for ${worldId}`).toBeDefined();
-      const built = buildStoryScene(story!, {
-        modelAvailable: (key) => MODEL_INFO[key].admitted
-      });
+      const built = buildStoryScene(story!);
       const snapshot = snapshotForAudit(
         { scene: built.builder.toJSON() } as unknown as AuraApp,
         manifest
